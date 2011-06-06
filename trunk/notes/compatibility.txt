@@ -1,0 +1,38 @@
+Compatibility issues between RADS3 and RADS4
+
+- New RADS4 XML files
+  . Need to further test converter rads_nml2xml
+  . Should also include conversion of .rmf files
+
+- Variables
+  . Names of variables have changed for CF-1 compliance (already updated in RADS3 as well)
+  . Some long_name's have changed to better reflect content
+  . Field numbers are backward compatible
+
+- netCDF data files
+  . Variable names changed (but field numbers are still supported)
+  . Global log<xx> attributes replaced by global 'history' attribute as per standard
+  . Added 'original' global attribute to indicate original (GDR) file.
+  . Need to update RADS3 software to make forward compatible.
+
+- radsstat
+  . Weighted rms-about-mean replaced by weighted standard deviation
+
+- rads2asc
+  . Rms-about-mean replaced by standard deviation (West 1979 method)
+  . Different layout of output of rads_stat
+
+- rads2adr / rads2xadr / rads2xgf
+  . Now separate program from rads2asc
+  . Fully compatible with the previous version
+
+- rads2grd
+  . Rms-about-mean replaced by standard deviation (West 1979 method)
+  . Output format now determined by variables (instead of 4f9.3)
+
+- rads2nc
+  . New in RADS4
+
+- radscolin
+  . New layout of header
+  . Rms-about-mean replaced by standard deviation (West 1979 method)
