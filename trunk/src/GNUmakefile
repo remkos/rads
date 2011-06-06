@@ -2,7 +2,7 @@
 #
 #       Makefile for RADS4 library and utilities
 #
-# $Id: $
+# $Id$
 ########################################################################
 
 include config.mk
