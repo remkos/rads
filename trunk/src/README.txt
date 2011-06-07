@@ -1,2 +1,2 @@
 $Id$
-$Rev$
+$Revision$
