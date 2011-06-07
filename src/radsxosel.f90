@@ -35,7 +35,7 @@ S%sat = '' ! Initialize blank
 S%error = rads_noerr
 
 ! Start with this-is message
-call rads_version ('$Revision: 4$')
+call rads_version ('$Revision$')
 
 ! Get filename
 call getarg(iargc(), arg)
@@ -91,7 +91,7 @@ contains
 !***********************************************************************
 
 subroutine synopsis
-if (rads_version('$Revision: 4$','Add RADS data to crossover file')) return
+if (rads_version('$Revision$','Add RADS data to crossover file')) return
 call rads_synopsis()
 write (0,1300)
 1300 format (/ &

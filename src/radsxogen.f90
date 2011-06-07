@@ -48,7 +48,7 @@ if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 dt(1) = 0.5d0
 
 ! Start with this-is message
-l = rads_version ('$Revision: 4$')
+l = rads_version ('$Revision$')
 
 ! If no sat= is given, exit
 if (S(1)%sat == '') call rads_exit ('Need at least one sat= option')
@@ -219,7 +219,7 @@ contains
 !***********************************************************************
 
 subroutine synopsis
-if (rads_version ('$Revision: 4$','Generate altimeter crossovers from RADS')) return
+if (rads_version ('$Revision$','Generate altimeter crossovers from RADS')) return
 call rads_synopsis()
 write (0,1300)
 1300 format (/ &

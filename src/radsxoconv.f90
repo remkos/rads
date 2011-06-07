@@ -44,7 +44,7 @@ t = prod_ ('', 0)
 x = prod_ ('', 0)
 
 ! Start with this-is message
-l = rads_version ('$Revision: 4$')
+l = rads_version ('$Revision$')
 
 ! Scan command line arguments
 do i = 1,iargc()
