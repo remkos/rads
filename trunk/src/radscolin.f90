@@ -117,7 +117,7 @@ contains
 !***********************************************************************
 
 subroutine synopsis
-if (rads_version ('$Revision: 4$','Make collinear data sets from RADS')) return
+if (rads_version ('$Revision$','Make collinear data sets from RADS')) return
 call rads_synopsis ()
 write (0,1300)
 1300 format (/ &

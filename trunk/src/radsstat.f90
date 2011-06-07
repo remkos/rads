@@ -125,7 +125,7 @@ contains
 !***********************************************************************
 
 subroutine synopsis
-if (rads_version ('Revision: 4$','Print RADS statistics per cycle, pass or day(s)')) return
+if (rads_version ('Revision: $','Print RADS statistics per cycle, pass or day(s)')) return
 call rads_synopsis ()
 write (0,1300)
 1300 format (/ &
