@@ -1974,50 +1974,86 @@ if (ierr /= rads_noerr) S%error = ierr
 end subroutine rads_error
 
 !***********************************************************************
-!*rads_this_is -- Print "This is" message about current program
+!*rads_rev -- Get the library or program revision number
 !+
-subroutine rads_this_is (revision, description, unit)
-character(len=*), intent(in), optional :: revision, description
-integer(fourbyteint), intent(in), optional :: unit
+function rads_rev (string)
+character(len=*), optional :: string
+integer(fourbyteint) :: rads_rev
 !
-! This routine prints out the message in the form:
-! "This is rads_program (4.0): Do some RADS stuff"
-! If <revision> and/or <description> are given, this information is added
-! to the line.
+! This function returns the revision number given by string (which needs
+! to be an SVN rev-tag) or the revision number of the RADS library (when
+! string is not given).
+!
+! Argument:
+!  string  : SVN revision tag
+!
+! Return value:
+!  rads_rev: Revision number of SVN revision tag, or of library
+!-----------------------------------------------------------------------
+character(len=20) :: libversion = '$Rev: 0$'
+integer :: l, ios
+save libversion
+ios = 1
+if (present(string)) then
+	l = len_trim(string)-1
+	if (string(2:5) == 'Rev:') read (string(6:l),*,iostat=ios) rads_rev
+	if (ios == 0) return
+endif
+l = len_trim(libversion)-1
+read (libversion(6:l),*,iostat=ios) rads_rev
+end function rads_rev
+
+!***********************************************************************
+!*rads_version -- Print message about current program and version
+!+
+function rads_version (revision, description, unit)
+character(len=*), intent(in) :: revision
+character(len=*), intent(in), optional :: description
+integer(fourbyteint), intent(in), optional :: unit
+logical :: rads_version
+!
+! This routine prints out a message in one of the following forms:
+! 1) When first command line argument is empty or --help:
+!    "rads_program (r<number>): <description>"
+! 2) When the first command line argument is --version:
+!    "rads_program: revision <number>, library revision <number>"
+!    The program then terminates here.
+! 3) When no <description> is given:
+!    "rads_program (r<number>)"
+! 4) No output
 !
 ! Arguments:
-!  revision    : CVS revision tag, or revision number
+!  revision    : SVN revision tag
 !  description : One-line description of program
 !  unit        : Fortran output unit (6 = stdout (default), 0 = stderr)
+!
+! Return value:
+!  rads_version: .false. if output is of type 1, otherwise .true.
 !-----------------------------------------------------------------------
-integer :: i0, i1, iunit
-character(len=80) :: progname
-character(len=40), parameter :: libversion = '$Revision: 4.0 $'
+integer :: iunit
+character(len=80) :: progname,arg
 call getarg (0, progname)
+call getarg (1, arg)
+rads_version = .true.
 if (present(unit)) then
 	iunit = unit
 else
 	iunit = stdout
 endif
-if (present(revision)) then
-	i1 = len_trim(revision)
-	if (revision(2:10) == 'Revision:') then
-		i0 = 12
-		i1 = i1 - 2
-	else
-		i0 = 1
-	endif
-	write (iunit, 1300, advance='no') trim(progname), revision(i0:i1)//','//libversion(12:len_trim(libversion)-2)
+if (arg == '--version') then
+	write (iunit, 1320) trim(progname), rads_rev(revision), rads_rev()
+	stop
+else if (.not.present(description)) then
+	write (iunit, 1300) trim(progname), max(rads_rev(),rads_rev(revision))
+else if (arg == '--help' .or. arg == '') then
+	write (iunit, 1310) trim(progname), max(rads_rev(),rads_rev(revision)), trim(description)
+	rads_version = .false.
 else
-	write (iunit, 1300, advance='no') trim(progname), libversion(12:len_trim(libversion)-2)
 endif
-if (present(description)) then
-	write (iunit, '(": ",a)') trim(description)
-else
-	write (iunit, *)
-endif
-1300 format ('This is ',a,' (',a,')')
-end subroutine rads_this_is
+1300 format (a,' (r',i2,')')
+1310 format (a,' (r',i2,'): ',a)
+1320 format (a,': revision ',i2,', library revision ',i2)
+end function rads_version
 
 !***********************************************************************
 !*rads_synopsis -- Print general usage information for all RADS programs
@@ -2041,10 +2077,10 @@ else
 endif
 write (iunit, 1300) trim(progname)
 1300 format (/ &
-'usage: ',a,' sat=sat[/phase] [RADS_dataselectors] [RADS_options] [program_options]' // &
+'usage: ',a,' sat=sat[/phase] [rads_dataselectors] [rads_options] [program_options]' // &
 'Required argument is:'/ &
 '  sat=sat[/phase]   : specify satellite [and phase] (e.g. e1/g, tx)'// &
-'Optional [RADS_dataselectors] are:'/ &
+'Optional [rads_dataselectors] are:'/ &
 '  sel=var1,...      : select variables to be read'/ &
 '  cycle=c0[,c1[,dc]]: specify first and last cycle and modulo'/ &
 '  pass=p0[,p1[,dp]] : specify first and last pass and modulo'/ &
@@ -2061,10 +2097,12 @@ write (iunit, 1300) trim(progname)
 '  opt=j             : use selection code j when j/100 requested (now alias:var1=var2)'/ &
 '  opt:i=j           : set option for data item i to j (now alias:var1=var2)'/ &
 '  h=n0,h1           : specify range for SLA (m) (now sla=h0,h1)'// &
-'Common [RADS_options] are:'/ &
+'Common [rads_options] are:'/ &
 '  -v                : be verbose'/ &
 '  debug=level       : set debug level'/ &
-'  args=filename     : get any of the above arguments from filename (one argument per line)')
+'  args=filename     : get any of the above arguments from filename (one argument per line)'/ &
+'  --help            : this syntax massage'/ &
+'  --version         : version info')
 end subroutine rads_synopsis
 
 !***********************************************************************

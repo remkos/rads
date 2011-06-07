@@ -24,7 +24,7 @@ integer(fourbyteint), parameter :: msat = 10, vbase = 13, mtrk = 500000
 real(eightbytereal) :: dt(msat) = -1d0
 type(rads_sat) :: S(msat)
 integer(fourbyteint) :: i, j, nsat = 0, nsel = 0, reject = -1, ios, debug, ncid, dimid(3), start(2), varid(vbase)
-logical :: duals = .true., singles = .true.
+logical :: duals = .true., singles = .true., l
 character(len=80) :: arg, filename = 'radsxogen.nc'
 character(len=1) :: interpolant = 'q'
 type :: nr_
@@ -39,15 +39,15 @@ type(trk_) :: trk(mtrk)
 integer(fourbyteint), allocatable :: selid(:), key(:), idx(:), trkid(:,:)
 
 ! Initialize RADS or issue help
-if (iargc() < 1) call synopsis
+call synopsis
 S%sat = '' ! Initialize blank
 S%error = rads_noerr
 call rads_init (S)
-if (any(S%error /= rads_noerr)) call synopsis
+if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 dt(1) = 0.5d0
 
 ! Start with this-is message
-call rads_this_is ('$Revision: 4.0 $')
+l = rads_version ('$Rev: 4$')
 
 ! If no sat= is given, exit
 if (S(1)%sat == '') call rads_exit ('Need at least one sat= option')
@@ -218,7 +218,7 @@ contains
 !***********************************************************************
 
 subroutine synopsis
-call rads_this_is('$Revision: 4.0 $','Generate altimeter crossovers from RADS')
+if (rads_version ('$Rev: 4$','Generate altimeter crossovers from RADS')) return
 call rads_synopsis()
 write (0,1300)
 1300 format (/ &

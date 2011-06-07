@@ -40,7 +40,7 @@ type(stat_type), allocatable :: stat(:)
 real(eightbytereal), allocatable :: r(:), q(:)
 
 ! Initialize RADS or issue help
-if (iargc() < 1) call synopsis
+call synopsis
 call rads_init (S)
 if (S%error /= rads_noerr) call rads_exit ('Fatal error')
 
@@ -156,7 +156,7 @@ contains
 !***********************************************************************
 
 subroutine synopsis
-call rads_this_is ('$Revision: 4.0 $','Select RADS altimeter data and output to ASCII')
+if (rads_version ('$Rev: 4$','Select RADS altimeter data and output to ASCII')) return
 call rads_synopsis
 write (*,1300)
 1300 format (/ &

@@ -28,9 +28,9 @@ type(rads_sat) :: S
 type(rads_pass) :: P
 
 ! Initialize RADS or issue help
-if (iargc() < 1) call synopsis
+call synopsis
 call rads_init (S)
-if (S%error /= rads_noerr) call synopsis
+if (S%error /= rads_noerr) call rads_exit ('Fatal error')
 
 ! If no sel= is given, use sla
 if (S%nsel == 0)  call rads_parse_varlist (S, 'sla')
@@ -126,7 +126,7 @@ contains
 !***********************************************************************
 
 subroutine synopsis
-call rads_this_is ('Revision: 4.0 $','Print RADS statistics per cycle, pass or day(s)')
+if (rads_version ('Rev: 4$','Print RADS statistics per cycle, pass or day(s)')) return
 call rads_synopsis ()
 write (0,1300)
 1300 format (/ &

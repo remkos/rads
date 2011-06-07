@@ -28,11 +28,10 @@ end type
 type(stat), allocatable :: pp(:,:)
 
 ! Initialize RADS or issue help
-if (iargc() < 1) call synopsis
+call synopsis
 S%sat = '' ! Initialize blank
 S%error = rads_noerr
 call rads_init (S)
-if (any(S%error /= rads_noerr)) call synopsis
 
 ! If no sat= is given, exit
 if (S(1)%sat == '') call rads_exit ('Need at least one sat= option')
@@ -119,7 +118,7 @@ contains
 !***********************************************************************
 
 subroutine synopsis
-call rads_this_is ('$Revision: 4.0 $','Make collinear data sets from RADS')
+if (rads_version ('$Rev: 4$','Make collinear data sets from RADS')) return
 call rads_synopsis ()
 write (0,1300)
 1300 format (/ &

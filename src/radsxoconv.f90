@@ -36,17 +36,16 @@ real(eightbytereal), parameter :: inclination(msat) = (/60d0,108.05d0,108.05d0,9
 !character(len=2) :: sat(11) = (/'g3','ss','gs','e1','tx','pn','e2','g1','j1','n1','j2'/)
 integer(twobyteint), parameter :: bound(4) = (/-180,180,-90,90/)
 integer(fourbyteint), parameter :: maxtrk = 32768
+logical :: l
 
 ! Initialize RADS or issue help
-if (iargc() < 1) call synopsis
+call synopsis
 a = prod_ ('', 0)
 t = prod_ ('', 0)
 x = prod_ ('', 0)
 
 ! Start with this-is message
-call rads_this_is ('$Revision: 4.0 $')
-
-if (iargc() == 0) call synopsis
+l = rads_version ('$Rev: 4$')
 
 ! Scan command line arguments
 do i = 1,iargc()
@@ -61,8 +60,6 @@ do i = 1,iargc()
 		x%fmt = 'x'
 	else if (arg(:2) == '-p') then
 		read (arg(3:), *, iostat=ios) npar
-	else if (arg(:2) == '-h') then
-		call synopsis
 	endif
 enddo
 
@@ -159,7 +156,7 @@ end subroutine process
 !***********************************************************************
 
 subroutine synopsis
-call rads_this_is ('$Revision: 4.0 $','RADS crossover file converter')
+if (rads_version ('$Revision$','RADS crossover file converter')) return
 call rads_synopsis ()
 write (0,1300)
 1300 format (/ &
