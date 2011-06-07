@@ -7,8 +7,7 @@ program rads2grd
 !
 ! usage: rads2grd sat=<sat> sel=x,y,z [RADS_options] [options]
 !-
-! $Log: rads2grd.f90,v $
-! Created by Remko Scharroo, Altimetrics LLC, 2002/07/12
+! $Id$
 !-----------------------------------------------------------------------
 use rads
 
@@ -135,7 +134,7 @@ contains
 !***********************************************************************
 
 subroutine synopsis
-if (rads_version ('$Rev: 4$','Quickly grid RADS data to xyz or netCDF grid')) return
+if (rads_version ('$Revision: 4$','Quickly grid RADS data to xyz or netCDF grid')) return
 call rads_synopsis ()
 write (*,1300)
 1300 format (/ &

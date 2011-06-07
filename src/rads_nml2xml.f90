@@ -1,5 +1,7 @@
 !*rads_nml2xml -- Convert RADS3 NML file to RADS4 XML file
 !+
+! $Id$
+!-
 program rads_nml2xml
 use typesizes
 use rads_misc

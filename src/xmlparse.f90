@@ -44,7 +44,7 @@
 ! - Allow reading/writing from/to standard input/output
 ! - Indent tags with tabs instead of multiples of three spaces.
 !
-! $Log: $
+! $Id$
 !
 module xmlparse
 

@@ -9,8 +9,7 @@ program rads2nc
 !
 ! usage: rads2nc sat=<sat> [RADS_options] [options]
 !-
-! $Log: rads2nc.f90,v $
-! Created by Remko Scharroo, Altimetrics LLC, 2010/08/23
+! $Id$
 !-----------------------------------------------------------------------
 use rads
 use rads_netcdf

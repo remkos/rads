@@ -10,9 +10,7 @@ program rads2adr
 !
 ! usage: rads2adr|rads2xadr|rads2xgf sat=<sat> [RADS_options] [options]
 !-
-! $Log: rads2adr.f90,v $
-! Created by Remko Scharroo, Altimetrics LLC, based on earlier versions
-! starting 11-Sep-2000.
+! $Id$
 !-----------------------------------------------------------------------
 use rads
 use rads_netcdf
@@ -133,7 +131,7 @@ contains
 !***********************************************************************
 
 subroutine synopsis
-if (rads_version ('$Rev: 4$','Select RADS altimeter data and output to ADR or XGF')) return
+if (rads_version ('$Revision: 4$','Select RADS altimeter data and output to ADR or XGF')) return
 call rads_synopsis ()
 write (*,1300)
 1300 format (/ &

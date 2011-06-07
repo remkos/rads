@@ -6,7 +6,7 @@
 !
 ! To access the interface, add 'use rads_netcdf' to your Fortran 90 program
 !-
-! $Log: rads_netcdf.f90,v $
+! $Id:$
 !-----------------------------------------------------------------------
 module rads_netcdf
 integer, parameter, private :: stderr = 0

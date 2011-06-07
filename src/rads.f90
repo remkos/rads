@@ -1,3 +1,9 @@
+!***********************************************************************
+! RADS 4 Library
+!
+! $Id$
+!***********************************************************************
+
 module rads
 use typesizes
 use rads_grid
@@ -1990,17 +1996,17 @@ integer(fourbyteint) :: rads_rev
 ! Return value:
 !  rads_rev: Revision number of SVN revision tag, or of library
 !-----------------------------------------------------------------------
-character(len=20) :: libversion = '$Rev: 0$'
+character(len=20) :: libversion = '$Revision: 0$'
 integer :: l, ios
 save libversion
 ios = 1
 if (present(string)) then
 	l = len_trim(string)-1
-	if (string(2:5) == 'Rev:') read (string(6:l),*,iostat=ios) rads_rev
+	if (string(2:10) == 'Revision:') read (string(11:l),*,iostat=ios) rads_rev
 	if (ios == 0) return
 endif
 l = len_trim(libversion)-1
-read (libversion(6:l),*,iostat=ios) rads_rev
+read (libversion(11:l),*,iostat=ios) rads_rev
 end function rads_rev
 
 !***********************************************************************

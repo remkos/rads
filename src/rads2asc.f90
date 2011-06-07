@@ -8,8 +8,7 @@ program rads2asc
 !
 ! usage: rads2asc sat=<sat> [RADS_options] [options]
 !-
-! $Log: rads2asc.f90,v $
-! Created by Remko Scharroo, Altimetrics LLC, 2000/09/11
+! $Id$
 !-----------------------------------------------------------------------
 use rads
 use rads_netcdf
@@ -156,7 +155,7 @@ contains
 !***********************************************************************
 
 subroutine synopsis
-if (rads_version ('$Rev: 4$','Select RADS altimeter data and output to ASCII')) return
+if (rads_version ('$Revision: 4$','Select RADS altimeter data and output to ASCII')) return
 call rads_synopsis
 write (*,1300)
 1300 format (/ &

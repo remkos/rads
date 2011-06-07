@@ -7,8 +7,7 @@ program radscolin
 !
 ! Usage: radscolin [RADS_options] [options]
 !-
-! $Log: radscolin.f90,v $
-! Created by Remko Scharroo, Altimetrics LLC, 2002-01-11
+! $Id$
 !-----------------------------------------------------------------------
 use rads
 integer(fourbyteint), parameter :: msat = 10
@@ -118,7 +117,7 @@ contains
 !***********************************************************************
 
 subroutine synopsis
-if (rads_version ('$Rev: 4$','Make collinear data sets from RADS')) return
+if (rads_version ('$Revision: 4$','Make collinear data sets from RADS')) return
 call rads_synopsis ()
 write (0,1300)
 1300 format (/ &

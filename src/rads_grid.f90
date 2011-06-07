@@ -29,7 +29,7 @@ integer, parameter, private :: stderr = 0
 ! Information about the grid is stored in a structure of type 'grid'.
 ! Use the module 'rads_grid' to define the structure.
 !-
-! - Created by Remko Scharroo, Altimetrics LLC
+! $Id$
 !-----------------------------------------------------------------------
 
 contains
