@@ -5,8 +5,7 @@ program radsxoconv
 ! This program converts RADS netCDF crossover files into the historical
 ! DEOS XAF, XTF and XXF/XXO format.
 !-
-! Created by Remko Scharroo, Altimetrics LLC, based in part on previous
-! programs, max and max2, developed at DEOS.
+! $Id$
 !-----------------------------------------------------------------------
 use rads
 use netcdf
@@ -45,7 +44,7 @@ t = prod_ ('', 0)
 x = prod_ ('', 0)
 
 ! Start with this-is message
-l = rads_version ('$Rev: 4$')
+l = rads_version ('$Revision: 4$')
 
 ! Scan command line arguments
 do i = 1,iargc()

@@ -58,8 +58,7 @@ integer(fourbyteint), intent(in) :: value(*), nr
 ! Printing the values in ascending order after this goes the same as in
 ! Example 1.
 !-
-! 30-Mar-1994 - Created by Marc Naeije
-! 24-Sep-2010 - Adopted to Fortran 90 by Remko Scharroo
+! $Id:$
 !-----------------------------------------------------------------------
 integer(fourbyteint), parameter :: m = 7, nstack = 2000
 integer(fourbyteint) :: i,indxt,ir,itemp,j,jstack,k,l,istack(nstack)

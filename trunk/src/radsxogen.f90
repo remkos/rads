@@ -12,6 +12,7 @@ program radsxogen
 ! the respective passes. With a consecutive run of radsxosel
 ! more information can be added to the crossover file.
 !-
+! $Id$
 ! Created by Remko Scharroo, Altimetrics LLC, based in part on previous
 ! programs, max and max2, developed at DEOS.
 !-----------------------------------------------------------------------
@@ -47,7 +48,7 @@ if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 dt(1) = 0.5d0
 
 ! Start with this-is message
-l = rads_version ('$Rev: 4$')
+l = rads_version ('$Revision: 4$')
 
 ! If no sat= is given, exit
 if (S(1)%sat == '') call rads_exit ('Need at least one sat= option')
@@ -218,7 +219,7 @@ contains
 !***********************************************************************
 
 subroutine synopsis
-if (rads_version ('$Rev: 4$','Generate altimeter crossovers from RADS')) return
+if (rads_version ('$Revision: 4$','Generate altimeter crossovers from RADS')) return
 call rads_synopsis()
 write (0,1300)
 1300 format (/ &

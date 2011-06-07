@@ -39,7 +39,7 @@ module rads3
 ! Using this module in an older RADS3 program should require only the addition
 ! of the line 'use rads3' before the first executable line.
 !-
-! Remko Scharroo -- Altimetrics LLC
+! $Id$
 !-----------------------------------------------------------------------
 use rads
 type(rads_sat), save :: S
