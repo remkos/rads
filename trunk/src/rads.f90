@@ -1996,7 +1996,7 @@ integer(fourbyteint) :: rads_rev
 ! Return value:
 !  rads_rev: Revision number of SVN revision tag, or of library
 !-----------------------------------------------------------------------
-character(len=20) :: libversion = '$Revision: 0$'
+character(len=20) :: libversion = '$Revision$'
 integer :: l, ios
 save libversion
 ios = 1
