@@ -26,7 +26,7 @@ type(rads_sat) :: S
 type(rads_pass) :: P
 
 ! Initialize RADS or issue help
-if (iargc() < 1) call synopsis
+call synopsis
 call rads_init (S)
 if (S%error /= rads_noerr) call rads_exit ('Fatal error')
 
@@ -135,7 +135,7 @@ contains
 !***********************************************************************
 
 subroutine synopsis
-call rads_this_is ('$Revision: 4.0 $','Quickly grid RADS data to xyz or netCDF grid')
+if (rads_version ('$Rev: 4$','Quickly grid RADS data to xyz or netCDF grid')) return
 call rads_synopsis ()
 write (*,1300)
 1300 format (/ &

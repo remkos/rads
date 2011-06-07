@@ -29,12 +29,12 @@ integer(fourbyteint), allocatable :: cycle(:,:), pass(:,:), idx(:,:)
 integer(fourbyteint) :: ncid
 
 ! Initialize RADS or issue help
-if (iargc() < 1) call synopsis
+call synopsis
 S%sat = '' ! Initialize blank
 S%error = rads_noerr
 
 ! Start with this-is message
-call rads_this_is ('$Revision: 4.0 $')
+call rads_version ('$Rev: 4$')
 
 ! Get filename
 call getarg(iargc(), arg)
@@ -90,7 +90,7 @@ contains
 !***********************************************************************
 
 subroutine synopsis
-call rads_this_is('$Revision: 4.0 $','Add RADS data to crossover file')
+if (rads_version('$Rev: 4$','Add RADS data to crossover file')) return
 call rads_synopsis()
 write (0,1300)
 1300 format (/ &

@@ -48,15 +48,15 @@ man:	$(MAN)
 # Object dependencies
 ########################################################################
 
-$(PROGS_O): rads.mod rads_misc.mod rads_time.mod rads_netcdf.mod
+$(OBJS2):	$(OBJS1)
+$(PROGS_O):	$(OBJS)
 rads_nml2xml.o:	xmlparse.mod
-
-nag.o:  nag.f
-	$(FC) -O -c nag.f
-
 $(OBJS):	typesizes.mod
 rads.o:		$(INCS) $(OBJS1)
 rads3.o rads_test.o:	rads.o
+
+nag.o:  nag.f
+	$(FC) -O -c nag.f
 
 ########################################################################
 # Create config.inc when config.mk is updated

@@ -31,7 +31,7 @@ integer(fourbyteint) :: reject = -1
 integer(fourbyteint) :: nselpass = 0
 
 ! Initialize RADS or issue help
-if (iargc() < 1) call synopsis
+call synopsis
 call rads_init (S)
 if (S%error /= rads_noerr) call rads_exit ('Fatal error')
 
@@ -92,7 +92,7 @@ contains
 !***********************************************************************
 
 subroutine synopsis
-call rads_this_is ('$Revsion 4.0 $','Select RADS altimeter data and output to netCDF')
+if (rads_version ('$Revsion 4.0 $','Select RADS altimeter data and output to netCDF')) return
 call rads_synopsis ()
 write (*,1300)
 1300 format (/ &

@@ -39,10 +39,8 @@ integer(fourbyteint) :: adr4(5), xgf4(4), rec_length, nselfile = 0, nselpass = 0
 integer(twobyteint) :: adr2(4), xgf2
 character(len=4) :: suffix
 
-! If no arguments are given, issue the help
-if (iargc() < 1) call synopsis
-
-! Initialize RADS
+! Initialize RADS or issue help
+call synopsis
 call rads_init (S)
 if (S%error /= rads_noerr) call rads_exit ('Fatal error')
 
@@ -135,7 +133,7 @@ contains
 !***********************************************************************
 
 subroutine synopsis
-call rads_this_is ('$Revision: 4.0 $','Select RADS altimeter data and output to ADR or XGF')
+if (rads_version ('$Rev: 4$','Select RADS altimeter data and output to ADR or XGF')) return
 call rads_synopsis ()
 write (*,1300)
 1300 format (/ &
