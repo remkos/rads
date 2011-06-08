@@ -10,8 +10,9 @@ include config.mk
 %.o:	%.mod
 
 OBJS1	= rads_netcdf.o rads_time.o rads_math.o rads_misc.o rads_grid.o xmlparse.o
-OBJS2	= rads.o rads3.o
-OBJS	= $(OBJS1) $(OBJS2)
+OBJS2	= rads.o
+OBJS3	= rads3.o
+OBJS	= $(OBJS1) $(OBJS2) $(OBJS3)
 
 LIB	= librads.a
 
@@ -49,11 +50,12 @@ man:	$(MAN)
 ########################################################################
 
 $(OBJS2):	$(OBJS1)
+$(OBJS3):	$(OBJS1) $(OBJS2)
 $(PROGS_O):	$(OBJS)
 rads_nml2xml.o:	xmlparse.mod
 $(OBJS):	typesizes.mod
-rads.o:		$(INCS) $(OBJS1)
-rads3.o rads_test.o:	rads.o
+rads.o:		$(INCS)
+rads_test.o:	$(OBJS2)
 
 nag.o:  nag.f
 	$(FC) -O -c nag.f
