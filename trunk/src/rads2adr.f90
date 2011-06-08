@@ -1,3 +1,20 @@
+!-----------------------------------------------------------------------
+! $Id$
+!
+! Copyright (C) 2011  Remko Scharroo (Altimetrics LLC)
+! See LICENSE.TXT file for copying and redistribution conditions.
+!
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+!
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+!-----------------------------------------------------------------------
+
 !*rads2adr -- Select RADS data and output to ADR or XGF
 !+
 program rads2adr
@@ -9,8 +26,6 @@ program rads2adr
 ! and allows some further modifications and selections.
 !
 ! usage: rads2adr|rads2xadr|rads2xgf sat=<sat> [RADS_options] [options]
-!-
-! $Id$
 !-----------------------------------------------------------------------
 use rads
 use rads_netcdf

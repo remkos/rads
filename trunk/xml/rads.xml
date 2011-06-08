@@ -1,4 +1,22 @@
 <?xml version="1.0"?>
+<!--
+$Id: iqsort.f90 11 2011-06-07 03:13:42Z remko@altimetrics.com $
+** Global RADS configuration file
+
+Copyright (C) 2011  Remko Scharroo (Altimetrics LLC)
+See LICENSE.TXT file for copying and redistribution conditions.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+-->
+
 <var name="sla" field="0">
 	<long_name>sea level anomaly</long_name>
 	<standard_name>sea_surface_height_above_sea_level</standard_name>
@@ -15,7 +33,6 @@
 	<quality_flag sat="e2" action="append">swh_rms_ku off_nadir_angle2_wf_ku</quality_flag>
 	<quality_flag sat="j1 j2" action="append">swh_rms_ku sig0_rms_ku off_nadir_angle2_wf_ku</quality_flag>
 	<quality_flag sat="n1" action="append">swh_rms_ku peakiness_ku</quality_flag>
-	<compress>int4 1d-4</compress>
 	<comment>sea level determined from satellite altitude - range - all altimetric corrections</comment>
 </var>
 <var name="time" field="101">

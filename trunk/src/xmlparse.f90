@@ -1,4 +1,6 @@
-! xmlparse.f90 - Simple, limited XML parser in Fortran
+!-----------------------------------------------------------------------
+! $Id$
+! - Simple, limited XML parser in Fortran
 !
 ! Adapted from the package xml-fortan-1.00 by Arjen Markus (April 2008)
 ! http://xml-fortran.sourceforge.net/
@@ -46,9 +48,7 @@
 ! - Also count first <?...?> line in the XML file
 ! - Properly report comment tags as '!--'
 ! - Keep track of level also when reading
-!
-! $Id$
-!
+!-----------------------------------------------------------------------
 module xmlparse
 
 implicit none

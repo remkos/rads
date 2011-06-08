@@ -1,3 +1,20 @@
+!-----------------------------------------------------------------------
+! $Id$
+!
+! Copyright (C) 2011  Remko Scharroo (Altimetrics LLC)
+! See LICENSE.TXT file for copying and redistribution conditions.
+!
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+!
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+!-----------------------------------------------------------------------
+
 !*iqsort -- Make a quick sort of an INTEGER*4 array
 !+
 subroutine iqsort (index, value, nr)
@@ -57,8 +74,6 @@ integer(fourbyteint), intent(in) :: value(*), nr
 !
 ! Printing the values in ascending order after this goes the same as in
 ! Example 1.
-!-
-! $Id:$
 !-----------------------------------------------------------------------
 integer(fourbyteint), parameter :: m = 7, nstack = 2000
 integer(fourbyteint) :: i,indxt,ir,itemp,j,jstack,k,l,istack(nstack)

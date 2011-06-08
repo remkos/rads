@@ -1,3 +1,20 @@
+!-----------------------------------------------------------------------
+! $Id$
+!
+! Copyright (C) 2011  Remko Scharroo (Altimetrics LLC)
+! See LICENSE.TXT file for copying and redistribution conditions.
+!
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+!
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+!-----------------------------------------------------------------------
+
 !*rads_netcdf -- Module with useful interfaces to netCDF
 !+
 ! This module provides a selections of routines that make it easier
@@ -5,8 +22,6 @@
 ! the creating or reading of netCDF grids and other netCDF files
 !
 ! To access the interface, add 'use rads_netcdf' to your Fortran 90 program
-!-
-! $Id:$
 !-----------------------------------------------------------------------
 module rads_netcdf
 integer, parameter, private :: stderr = 0

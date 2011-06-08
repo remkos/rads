@@ -1,11 +1,26 @@
+!-----------------------------------------------------------------------
+! $Id$
+!
+! Copyright (C) 2011  Remko Scharroo (Altimetrics LLC)
+! See LICENSE.TXT file for copying and redistribution conditions.
+!
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+!
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+!-----------------------------------------------------------------------
+
 program radsstat
 
 ! This program reads the RADS data base and computes statistics
 ! by pass, cycle or day of a number of RADS data variables.
 !
 ! usage: radsstat sat=<sat> [RADS_options] [options]
-!-
-! $Id$
 !-----------------------------------------------------------------------
 use rads
 use rads_time
