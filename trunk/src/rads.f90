@@ -49,7 +49,7 @@ type :: rads_varinfo
 	character(len=rads_varl) :: netcdf               ! NetCDF variable name
 	character(len=rads_varl) :: backup               ! Optional backup RADS variable name (or value) ('' if none)
 	character(len=320) :: quality_flag               ! Quality flag associated with this variable ('' if none)
-	character(len=512) :: math                       ! Math string (alternative to netcdf)
+	character(len=640) :: math                       ! Math string (alternative to netcdf)
 	character(len=rads_varl) :: gridx, gridy         ! RADS variable names of the grid x and y coordinates
 	type(grid), pointer :: grid                      ! Pointer to grid for interpolation (alternative to netcdf)
 	real(eightbytereal) :: limits(2)                 ! Lower and upper limit for editing
@@ -394,7 +394,7 @@ end subroutine rads_init_sat_1d
 subroutine rads_init_cmd_0d (S)
 type(rads_sat), intent(inout) :: S
 integer :: isatopt(1), n, debug
-character(len=512), pointer :: options(:), selopt
+character(len=640), pointer :: options(:), selopt
 nullify (selopt)
 call rads_load_options (options, isatopt, n, debug)
 if (n < 1) call rads_exit ('Failed to find "sat=" on command line')
@@ -408,7 +408,7 @@ end subroutine rads_init_cmd_0d
 subroutine rads_init_cmd_1d (S)
 type(rads_sat), intent(inout) :: S(:)
 integer :: isatopt(size(S)), i, n, debug
-character(len=512), pointer :: options(:), selopt
+character(len=640), pointer :: options(:), selopt
 call rads_load_options (options, isatopt, n, debug)
 if (n < 1) call rads_exit ('Failed to find "sat=" on command line')
 do i = 1,n
@@ -430,7 +430,7 @@ end subroutine rads_init_cmd_1d
 !+
 subroutine rads_load_options (options, isatopt, n, debug)
 use rads_misc
-character(len=512), pointer, intent(out) :: options(:)
+character(len=640), pointer, intent(out) :: options(:)
 integer, intent(out) :: isatopt(:), n, debug
 !
 ! Scan the command line for common options (sat=, debug=, -v) and
@@ -665,7 +665,7 @@ type(rads_sat), intent(inout) :: S
 !  S : Satellite/mission dependent structure
 !-----------------------------------------------------------------------
 integer :: isatopt(1), n, debug
-character(len=512), pointer :: options(:), selopt
+character(len=640), pointer :: options(:), selopt
 nullify (selopt)
 call rads_load_options (options, isatopt, n, debug)
 call rads_parse_options (S, options, selopt)
@@ -741,7 +741,7 @@ integer(fourbyteint), intent(in) :: cycle, pass
 !  S%error  : rads_noerr, rads_warn_nc_file, rads_err_nc_parse
 !-----------------------------------------------------------------------
 character(len=40) :: date
-character(len=512) :: string
+character(len=640) :: string
 integer(fourbyteint) :: i,k,ascdes
 real(eightbytereal) :: d
 real(eightbytereal), allocatable :: tll(:,:)
@@ -1396,7 +1396,7 @@ type(xml_parse) :: X
 integer, parameter :: max_lvl = 20
 character(len=rads_varl) :: tag, attr(2,max_lvl), name, tags(max_lvl)
 character(len=160) :: val(max_lvl)
-integer :: nattr, nval, i, ios, tag_lvl, skip, skip_lvl
+integer :: nattr, nval, i, ios, skip, skip_lvl
 integer(twobyteint) :: field
 logical :: endtag
 type(rads_varinfo), pointer :: info => null()
@@ -1404,7 +1404,6 @@ type(rads_var), pointer :: var => null()
 type(rads_phase), pointer :: phase => null()
 
 S%error = rads_noerr
-tag_lvl = 0
 skip_lvl = 0
 
 ! Open XML file
@@ -1425,30 +1424,24 @@ call xml_options (X, ignore_whitespace = .true.)
 do
 	if (X%eof) exit
 	call xml_get (X, tag, endtag, attr, nattr, val, nval)
-	if (X%error) call rads_error (S, rads_err_xml_parse, 'Error parsing '//trim(filename))
+	if (X%error) then
+		S%error = rads_err_xml_parse
+		exit
+	endif
 
 	! Process closing tags
 	if (endtag) then
-		if (tag_lvl == 0) then
-			call rads_error (S, rads_err_xml_parse, 'Error in '//trim(filename)// &
-				': Use of closing tag </'//trim(tag)//'> while none are open')
-			cycle
-		else if (tag /= tags(tag_lvl)) then
-			call rads_error (S, rads_err_xml_parse, 'Error in '//trim(filename)// &
-				': Closing tag </'//trim(tag)//'> follows opening tag <'//trim(tags(tag_lvl))//'>')
-		endif
-		if (tag_lvl == skip_lvl) skip_lvl = 0	! Stop skipping when descended back to starting level
-		tag_lvl = tag_lvl - 1
+		if (tag /= tags(X%level+1)) &
+			call xmlparse_error ('Closing tag "'//trim(tag)//'" follows opening tag "'//trim(tags(X%level+1))//'"')
+		if (X%level < skip_lvl) skip_lvl = 0	! Stop skipping when descended back below the starting level
 		cycle  ! Ignore all other end tags
 	endif
 	
 	! Process opening tags
-	tag_lvl = tag_lvl + 1
-	if (tag(1:3) == '!--') tag = ''
-	tags(tag_lvl) = tag
-	if (skip_lvl > 0 .and. tag_lvl >= skip_lvl) cycle	! Skip all data at level equal or larger than skip level
+	tags(X%level) = tag
+	if (skip_lvl > 0 .and. X%level >= skip_lvl) cycle	! Skip all data at level equal or larger than skip level
 
-	! Check for sat attribute
+	! Check if we need to skip this level
 	skip = 0
 	skip_lvl = 0
 	do i = 1,nattr
@@ -1457,7 +1450,10 @@ do
 			if (index(attr(2,i),S%sat) > 0) skip = -1
 		endif
 	enddo
-	if (skip == 1) skip_lvl = tag_lvl
+	if (skip == 1) then
+		skip_lvl = X%level
+		cycle
+	endif
 
 	select case (tag)
 	case ('satellite')
@@ -1516,7 +1512,7 @@ do
 			end select
 		enddo
 		if (info%gridx == '' .or. info%gridy == '') then
-			call rads_error (S, rads_err_xml_parse, 'Grid tag requires both x and y attributes')
+			call xmlparse_error ('Grid tag requires both x and y attributes')
 			cycle
 		endif
 		allocate (info%grid)
@@ -1579,18 +1575,17 @@ do
 	case ('math')
 		call assign_or_append (info%math)
 		info%datasrc = rads_src_math
-	case ('if')
-		! Dummy tag
+	case ('if', '!--')
+		! Dummy and comment tags
 	case default
-		call rads_error (S, rads_err_xml_parse, 'Error in '//trim(filename)//': Unknown tag <'//trim(tag)//'>')
+		call xmlparse_error ('Unknown tag "'//trim(tag)//'"')
 	end select
 enddo
 
 ! Close XML file
 call xml_close (X)
 
-if (tag_lvl > 0) call rads_error (S, rads_err_xml_parse, 'Error in '//trim(filename)// &
-	': Did not close tag <'//trim(tags(tag_lvl))//'>')
+if (X%level > 0) call xmlparse_error ('Did not close tag "'//trim(tags(X%level))//'"')
 
 if (S%error > rads_noerr) call rads_exit ('Fatal errors occurred while parsing xml-file '//trim(filename))
 
@@ -1610,7 +1605,7 @@ do i = 1,nattr
 	endif
 enddo
 has_name = (name /= '')
-if (.not.has_name) call rads_error (S, rads_err_xml_parse, 'Tag <'//trim(tag)//'> requires name attribute')
+if (.not.has_name) call xmlparse_error ('Tag <'//trim(tag)//'> requires name attribute')
 end function has_name
 
 subroutine assign_or_append (string)
@@ -1632,6 +1627,15 @@ do i = j,nval
 	string = trim(string) // ' ' // val(i)
 enddo
 end subroutine assign_or_append
+
+subroutine xmlparse_error (string)
+! Issue error message with filename and line number
+character(*), intent(in) :: string
+character(160) :: text
+write (text, 1300) trim(filename), X%lineno, string
+call rads_error (S, rads_err_xml_parse, text)
+1300 format ('Error parsing ',a,' at line',i5,': ',a)
+end subroutine xmlparse_error
 
 end subroutine rads_read_xml
 
