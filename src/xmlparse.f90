@@ -43,6 +43,9 @@
 ! - Whitespace now includes tabs
 ! - Allow reading/writing from/to standard input/output
 ! - Indent tags with tabs instead of multiples of three spaces.
+! - Also count first <?...?> line in the XML file
+! - Properly report comment tags as '!--'
+! - Keep track of level also when reading
 !
 ! $Id$
 !
@@ -250,12 +253,12 @@ if (fname /= '-') then
 			info%lun = i
 			inquire (file = fname, exist = exists)
 			if (.not. exists .and. mustread) then
-				call xml_report_errors ('XML_OPEN: file does not exist:', trim(fname))
+				call xml_report_errors ('xml_open: file does not exist:', trim(fname))
 				info%lun   = -1
 				info%error = .true.
 			else
 				open (unit = info%lun, file = fname)
-				call xml_report_details ('XML_OPEN: opened file ', trim(fname))
+				call xml_report_details ('xml_open: opened file ', trim(fname))
 				call xml_report_details ('at LU-number: ', info%lun)
 			endif
 			exit
@@ -263,15 +266,16 @@ if (fname /= '-') then
 	enddo
 else if (mustread) then
 	info%lun = 5
-	call xml_report_details ('XML_OPEN: opened ','standard input for reading')
+	call xml_report_details ('xml_open: opened ','standard input for reading')
 else
 	info%lun = 6
-	call xml_report_details ('XML_OPEN: opened ','standard output for writing')
+	call xml_report_details ('xml_open: opened ','standard output for writing')
 endif
 if (.not. info%error .and. mustread) then
 	k = 1
 	do while  (k >= 1)
 		read (info%lun, '(a)', iostat = ierr) info%line
+		info%lineno = info%lineno + 1
 		if (ierr == 0) then
 			info%line = adjustl(info%line)
 			k         = index(info%line, '<?')
@@ -281,14 +285,14 @@ if (.not. info%error .and. mustread) then
 			if (k >= 1) then
 				kend = index(info%line, '?>')
 				if (kend <= 0) then
-					call xml_report_errors ('XML_OPEN: error reading file with LU-number: ', info%lun)
+					call xml_report_errors ('xml_open: error reading file with LU-number: ', info%lun)
 					call xml_report_errors ('Line starting with "<?xml" should end with "?>"', ' ')
 					info%error = .true.
 					exit
 				endif
 			endif
 		else
-			call xml_report_errors ('XML_OPEN: error reading file with LU-number: ', info%lun)
+			call xml_report_errors ('xml_open: error reading file with LU-number: ', info%lun)
 			call xml_report_errors ('Possibly no line starting with "<?xml"', ' ')
 			call xml_close (info)
 			info%error = .true.
@@ -313,7 +317,8 @@ if (info%lun >= 10) close (info%lun)
 ! Only clean up the LU-number, so that the calling program
 ! can examine the last condition
 !
-call xml_report_details ('XML_CLOSE: Closing file with LU-number ', info%lun)
+call xml_report_details ('xml_close: Closing file with LU-number ', info%lun)
+if (info%level > 0) call xml_report_errors ('xml_close: level(s) still open when closing file', ' ')
 info%lun = -1
 end subroutine xml_close
 
@@ -352,7 +357,7 @@ info%too_many_attribs = .false.
 info%too_many_data    = .false.
 
 if (info%lun < 0) then
-	call xml_report_details ('XML_GET on closed file ', ' ')
+	call xml_report_details ('xml_get on closed file ', ' ')
 	return
 endif
 
@@ -373,7 +378,7 @@ do while  (kend <= 0)
 		info%line = trim(info%line) // ' ' // adjustl(nextline)
 	else
 		info%error = .true.
-		call xml_report_errors ('XML_GET - end of tag not found ', &
+		call xml_report_errors ('xml_get - end of tag not found ', &
 			'(buffer too small?)', info%lineno)
 		call xml_close (info)
 		return
@@ -391,25 +396,32 @@ endif
 !
 if (info%line(1:3) == '-->') then
 	endtag = .true.
-	tag    = info%line(4:kend-1)
+	tag    = '!--'
+	info%level = info%level - 1
 else if (info%line(1:2) == '</') then
 	endtag = .true.
 	tag    = info%line(3:kend-1)
+	info%level = info%level - 1
+else if (info%line(1:4) == '<!--') then
+	kend = 4
+	tag  = info%line(2:4)
+	info%level = info%level + 1
+	comment_tag = .true.
+	call xml_report_details ('xml_get - comment tag found: ', trim(tag))
+else if (info%line(1:1) == '<') then
+	tag  = info%line(2:kend-1)
+	info%level = info%level + 1
+	call xml_report_details ('xml_get - tag found: ', trim(tag))
 else
-	if (info%line(1:1) == '<') then
-		tag  = info%line(2:kend-1)
-		call xml_report_details ('XML_GET - tag found: ', trim(tag))
-	else
-		kend = 0 ! Beginning of data!
-	endif
+	kend = 0 ! Beginning of data!
 endif
+if (info%level < 0) call xml_report_errors ('xml_get - level dropped below zero: ', &
+			trim(info%line), info%lineno)
 
 info%line = adjustl (info%line(kend+1:))
 
 idxat  = 0
 idxdat = 0
-
-if (tag(1:3) == '!--') comment_tag = .true.
 
 do while  (info%line /= ' ' .and. .not. close_bracket .and. .not. comment_tag)
 
@@ -428,7 +440,7 @@ do while  (info%line /= ' ' .and. .not. close_bracket .and. .not. comment_tag)
 		else
 			kend = index (info%line, '>')
 			if (kend < 1) then
-				call xml_report_errors ('XML_GET - wrong ending of tag ', &
+				call xml_report_errors ('xml_get - wrong ending of tag ', &
 					trim(info%line), info%lineno)
 				info%error = .true. ! Wrong ending of line!
 				call xml_close (info)
@@ -452,7 +464,7 @@ do while  (info%line /= ' ' .and. .not. close_bracket .and. .not. comment_tag)
 		!
 		kfirst  = index (info%line, '"')
 		if (kfirst < 1) then
-			call xml_report_errors ('XML_GET - malformed attribute-value pair: ', &
+			call xml_report_errors ('xml_get - malformed attribute-value pair: ', &
 				trim(info%line), info%lineno)
 			info%error = .true. ! Wrong form of attribute-value pair
 			call xml_close (info)
@@ -461,7 +473,7 @@ do while  (info%line /= ' ' .and. .not. close_bracket .and. .not. comment_tag)
 
 		ksecond = index (info%line(kfirst+1:), '"') + kfirst
 		if (ksecond < 1) then
-			call xml_report_errors ('XML_GET - malformed attribute-value pair: ', &
+			call xml_report_errors ('xml_get - malformed attribute-value pair: ', &
 				trim(info%line), info%lineno)
 			info%error = .true. ! Wrong form of attribute-value pair
 			call xml_close (info)
@@ -473,7 +485,7 @@ do while  (info%line /= ' ' .and. .not. close_bracket .and. .not. comment_tag)
 	endif
 
 	if (idxat > size(attribs,2)) then
-		call xml_report_errors ('XML_GET - more attributes than could be stored: ', &
+		call xml_report_errors ('xml_get - more attributes than could be stored: ', &
 			trim(info%line), info%lineno)
 		info%too_many_attribs = .true.
 		info%line             = ' '
@@ -501,7 +513,7 @@ do
 		endif
 		no_data = idxdat
 	else
-		call xml_report_errors ('XML_GET - more data lines than could be stored: ', &
+		call xml_report_errors ('xml_get - more data lines than could be stored: ', &
 			trim(info%line), info%lineno)
 		info%too_many_data = .true.
 		exit
@@ -515,10 +527,10 @@ do
 	info%lineno = info%lineno + 1
 
 	if (ierr < 0) then
-		call xml_report_details ('XML_GET - end of file found - LU-number: ', info%lun)
+		call xml_report_details ('xml_get - end of file found - LU-number: ', info%lun)
 		info%eof = .true.
 	else if (ierr > 0) then
-		call xml_report_errors ('XML_GET - error reading file with LU-number ', info%lun, info%lineno)
+		call xml_report_errors ('xml_get - error reading file with LU-number ', info%lun, info%lineno)
 		info%error = .true.
 	endif
 	if (ierr /= 0) exit
@@ -534,8 +546,8 @@ if (info%ignore_whitespace) call xml_compress_ (data, no_data)
 !
 call xml_replace_entities_ (data, no_data)
 
-call xml_report_details ('XML_GET - number of attributes: ', no_attribs)
-call xml_report_details ('XML_GET - number of data lines: ', no_data)
+call xml_report_details ('xml_get - number of attributes: ', no_attribs)
+call xml_report_details ('xml_get - number of data lines: ', no_data)
 
 end subroutine xml_get
 
