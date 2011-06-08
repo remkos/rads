@@ -1,3 +1,20 @@
+!-----------------------------------------------------------------------
+! $Id$
+!
+! Copyright (C) 2011  Remko Scharroo (Altimetrics LLC)
+! See LICENSE.TXT file for copying and redistribution conditions.
+!
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+!
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+!-----------------------------------------------------------------------
+
 module rads3
 !
 ! This module provides backward compatibility of RADS3 code with the RADS4 library.
@@ -38,8 +55,6 @@ module rads3
 !
 ! Using this module in an older RADS3 program should require only the addition
 ! of the line 'use rads3' before the first executable line.
-!-
-! $Id$
 !-----------------------------------------------------------------------
 use rads
 type(rads_sat), save :: S

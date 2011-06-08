@@ -1,3 +1,20 @@
+!-----------------------------------------------------------------------
+! $Id$
+!
+! Copyright (C) 2011  Remko Scharroo (Altimetrics LLC)
+! See LICENSE.TXT file for copying and redistribution conditions.
+!
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+!
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+!-----------------------------------------------------------------------
+
 !*radsxosel -- RADS crossover extender
 !+
 program radsxosel
@@ -8,7 +25,6 @@ program radsxosel
 ! The output is a new netCDF file containing all the information from
 ! the input file plus the data fields indicated on the sel= option.
 !-
-! $Id$
 ! Created by Remko Scharroo, Altimetrics LLC, based in part on previous
 ! programs, max and max2, developed at DEOS.
 !-----------------------------------------------------------------------
