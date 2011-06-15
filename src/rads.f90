@@ -1799,10 +1799,11 @@ end subroutine rads_set_alias
 !*rads_set_limits -- Set limits on given variable
 !+
 subroutine rads_set_limits (S, varname, lo, hi, string)
+use rads_misc
 type(rads_sat), intent(inout) :: S
 character(len=*), intent(in) :: varname
 real(eightbytereal), intent(in), optional :: lo, hi
-character(len=*), intent(in), optional :: string
+character(len=*), intent(inout), optional :: string
 !
 ! This routine set the lower and upper limits for a given variable in
 ! RADS.
@@ -1827,7 +1828,7 @@ integer :: ios
 var => rads_varptr (S, varname)
 if (associated(var)) then
 	if (present(lo)) var%info%limits(1) = lo
-	if (present(hi)) var%info%limits(1) = hi
+	if (present(hi)) var%info%limits(2) = hi
 	if (present(string)) then
 		call chartrans(string, '/', ',')
 		read (string, *, iostat=ios) var%info%limits
