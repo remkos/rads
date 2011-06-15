@@ -839,10 +839,10 @@ if (P%ndata == 0) return
 S%total_read = S%total_read + P%ndata
 
 ! Read history
-if (.not.nft(nf90_inquire_attribute(P%ncid,nf90_global,'history',attnum=k))) then
+if (nff(nf90_inquire_attribute(P%ncid,nf90_global,'history',attnum=k))) then
 	allocate (P%history(1))
 	call nfs(nf90_get_att(P%ncid,nf90_global,'history',P%history(1)))
-else if (.not.nft(nf90_inquire_attribute(P%ncid,nf90_global,'log01',attnum=k))) then ! Read logs
+else if (nff(nf90_inquire_attribute(P%ncid,nf90_global,'log01',attnum=k))) then ! Read logs
 	allocate (P%history(1))
 	i = 0
 	do
@@ -1123,7 +1123,7 @@ else ! Go look for alternative variable
 	if (.not.associated(var)) then
 		data = S%nan
 	else
-		call rads_get_var_by_name (S, P, info%backup, data, skip_edit)
+		call rads_get_var_by_var (S, P, var, data, skip_edit)
 		! Copy a few variables upward
 		info%long_name = var%info%long_name
 		info%standard_name = var%info%standard_name
@@ -1142,9 +1142,8 @@ contains
 recursive subroutine rads_get_var_nc ! Get data variable from RADS netCDF file
 use netcdf
 use rads_netcdf
-integer(fourbyteint) :: start(1)
-logical :: l
-real(eightbytereal) :: fillvalue
+integer(fourbyteint) :: start(1), e, nctype, ndims
+real(eightbytereal) :: fillvalue, scale_factor, add_offset
 
 ! If time, lat, lon are already read, return those arrays upon request
 if (P%first_meas == 0) then
@@ -1162,31 +1161,29 @@ endif
 ! Look for the variable name in the netCDF file (or take the stored one)
 if (P%cycle == info%cycle .and. P%pass == info%pass) then
 	! Keep old varid
-else if (nft(nf90_inq_varid(P%ncid, info%netcdf, info%varid))) then
+else if (nff(nf90_inq_varid(P%ncid, info%netcdf, info%varid))) then
+	! Read variable attributes if not yet set
+	if (info%nctype == 0) info%nctype = nctype
+	if (info%long_name(:1) == ' ') e =nf90_get_att(P%ncid, info%varid, 'long_name', info%long_name)
+	if (info%units(:1) == ' ') e =nf90_get_att(P%ncid, info%varid, 'units', info%units)
+	if (info%standard_name(:1) == ' ') e =nf90_get_att(P%ncid, info%varid, 'standard_name', info%standard_name)
+	if (info%comment(:1) == ' ') e =nf90_get_att(P%ncid, info%varid, 'comment', info%comment)
+else
+	! Failed to find variable
 	S%error = rads_err_nc_var
 	return
 endif
-
-! Read variable attributes
-if (nft(nf90_inquire_variable (P%ncid, info%varid, xtype=info%nctype, ndims=info%ndims))) info%nctype = 0
-if (nft(nf90_get_att(P%ncid, info%varid, 'scale_factor', info%scale_factor))) info%scale_factor = 1d0
-if (nft(nf90_get_att(P%ncid, info%varid, 'add_offset', info%add_offset))) info%add_offset = 0d0
-if (nft(nf90_get_att(P%ncid, info%varid, '_FillValue', fillvalue))) fillvalue = S%nan
-l = nft(nf90_get_att(P%ncid, info%varid, 'long_name', info%long_name))
-l = nft(nf90_get_att(P%ncid, info%varid, 'units', info%units))
-l = nft(nf90_get_att(P%ncid, info%varid, 'standard_name', info%standard_name))
-l = nft(nf90_get_att(P%ncid, info%varid, 'comment', info%comment))
+e = nf90_inquire_variable (P%ncid, info%varid, xtype=nctype, ndims=ndims)
 
 ! Load the data
 start = max(1,P%first_meas)
-select case (info%ndims)
+select case (ndims)
 case (0) ! Constant
 	if (nft(nf90_get_var(P%ncid, info%varid, data(1)))) then
 		call rads_error (S, rads_err_nc_get, 'Error reading netCDF constant "'//trim(info%netcdf)//'"')
 		return
 	endif
 	data = data(1)
-	info%ndims = 1
 case (1) ! Array
 	if (nft(nf90_get_var(P%ncid, info%varid, data(1:P%ndata), start))) then
 		call rads_error (S, rads_err_nc_get, 'Error reading netCDF array "'//trim(info%netcdf)//'"')
@@ -1198,9 +1195,9 @@ case default
 end select
 
 ! Set NaN values and apply optional scale_factor and add_offset
-where (data == fillvalue) data = S%nan
-if (info%scale_factor /= 1d0) data = data * info%scale_factor
-if (info%add_offset /= 0d0) data = data + info%add_offset
+if (nff(nf90_get_att(P%ncid, info%varid, '_FillValue', fillvalue))) where (data == fillvalue) data = S%nan
+if (nff(nf90_get_att(P%ncid, info%varid, 'scale_factor', scale_factor))) data = data * scale_factor
+if (nff(nf90_get_att(P%ncid, info%varid, 'add_offset', add_offset))) data = data + add_offset
 end subroutine rads_get_var_nc
 
 recursive subroutine rads_get_att_nc ! Get data attribute from RADS netCDF file
