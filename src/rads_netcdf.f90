@@ -140,15 +140,34 @@ deallocate(x)
 end subroutine nf90_put_axis
 
 !-----------------------------------------------------------------------
-!&nft -- Test for netCDF error
+!&nff -- Return .false. upon netCDF error
+!+
+logical function nff(ios)
+use netcdf
+integer, intent(in) :: ios
+!
+! This is a wrapper for netCDF functions. It catches the status return code of the
+! netCDF routine and checks if an error occurred. The function returns:
+!
+! nff  : Error (.false.) or no error (.true.)
+!
+! Example:
+! if (nff(nf90_open ('file.nc', nf90_write, ncid))) write (*,*) 'Opening successful'
+!-----------------------------------------------------------------------
+nff = (ios == nf90_noerr)
+end function nff
+
+!-----------------------------------------------------------------------
+!&nft -- Return .true. upon netCDF error
 !+
 logical function nft(ios)
 use netcdf
 integer, intent(in) :: ios
 !
 ! This is a wrapper for netCDF functions. It catches the status return code of the
-! netCDF routine and checks if an error occurred. If so, the function returns
-! a .true.
+! netCDF routine and checks if an error occurred. The function returns:
+!
+! nft  : Error (.true.) or no error (.false.)
 !
 ! Example:
 ! if (nft(nf90_open ('file.nc', nf90_write, ncid))) write (*,*) 'Error opening file'
@@ -157,15 +176,15 @@ nft = (ios /= nf90_noerr)
 end function nft
 
 !-----------------------------------------------------------------------
-!&nfs -- Stop on netCDF error
+!&nfs -- Stop execution upon netCDF error
 !+
 subroutine nfs(ios)
 use netcdf
 integer, intent(in) :: ios
 !
 ! This is a wrapper for netCDF functions. It catches the status return code of the
-! netCDF routine and checks if an error occurred. If so, it prints an error message
-! and stops execution.
+! netCDF routine and checks if an error occurred. Upon error, an error message
+! is printed to standard error and execution stops.
 !
 ! Example:
 ! call nfs (nf90_open ('file.nc', nf90_write, ncid))
