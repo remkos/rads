@@ -817,28 +817,28 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 #
 #                                           REJECTED  SELECTED       LOWER       UPPER         MIN         MAX        MEAN      STDDEV
 # sea level anomaly [m]                         1116     15736      -5.000       5.000      -1.012       0.756       0.002       0.119
-# REAPER orbital altitude [m]                      0     16852         NaN         NaN  779576.859  798111.473  786329.774    5788.884
-# altimeter range corrected for instr. eff         1     16851         NaN         NaN  775342.315  798110.816  786331.345    5782.575
-# dry tropospheric correction, ECMWF [m]           0     16852      -2.400      -2.100      -2.351      -2.226      -2.314       0.016
-# wet tropospheric correction, MWR (NN) [m        80     16772      -0.600       0.000      -0.598      -0.005      -0.172       0.095
-# ionospheric correction, NIC09 [m]                0     16852      -0.400       0.040      -0.177      -0.016      -0.097       0.044
-# local+global inverse barometer correctio         0     16852      -1.000       1.000      -0.210       0.328      -0.038       0.067
+# REAPER/COMBI orbital altitude [m]                0     16852         NaN         NaN  779576.859  798111.473  786329.774    5788.884
+# Ku-band range corrected for instr. effec         1     16851         NaN         NaN  775342.315  798110.816  786331.345    5782.575
+# ECMWF dry tropospheric correction [m]            0     16852      -2.400      -2.100      -2.351      -2.226      -2.314       0.016
+# radiometer wet tropospheric correction [        80     16772      -0.600       0.000      -0.598      -0.005      -0.172       0.095
+# NIC09 ionospheric correction [m]                 0     16852      -0.400       0.040      -0.177      -0.016      -0.097       0.044
+# inverse barometer correction [m]                 0     16852      -1.000       1.000      -0.210       0.328      -0.038       0.067
 # MOK2D inverse barometer correction [m]           0     16852      -1.000       1.000      -0.198       0.316      -0.034       0.064
 # solid earth tide [m]                             0     16852      -1.000       1.000       0.014       0.198       0.133       0.043
-# ocean tide, GOT4.7 [m]                         152     16700      -5.000       5.000      -1.858       1.163      -0.166       0.451
-# load tide, GOT4.7 [m]                            0     16852      -0.500       0.500      -0.032       0.069       0.014       0.022
+# GOT4.7 ocean tide [m]                          152     16700      -5.000       5.000      -1.858       1.163      -0.166       0.451
+# GOT4.7 load tide [m]                             0     16852      -0.500       0.500      -0.032       0.069       0.014       0.022
 # pole tide [m]                                    0     16852      -0.100       0.100      -0.017       0.018       0.001       0.009
-# sea state bias, BM3 [m]                         30     16822      -1.000       1.000      -0.924       0.227      -0.130       0.093
-# mean sea surface height, DNSC08 [m]              0     16852    -200.000     200.000    -101.786      57.194      -4.050      31.565
-# significant wave height [m]                     77     16775       0.000       8.000       0.000       8.000       2.067       1.398
-# backscatter coefficient [dB]                    50     16802       6.000      27.000       6.020      25.280      11.325       1.785
-# wind speed [m/s]                                23     16829      -1.000      30.000       0.000      29.403       6.711       3.788
-# std dev of range (20-Hz) [m]                   339     16513       0.000       0.400       0.027       0.398       0.160       0.053
-# number of averaged 20-Hz measurements [c       172     16680      16.500      20.500      17.000      20.000      19.895       0.542
-# engineering flags [count]                      909     15943   65512.000       0.000       1.000       1.000       1.000       0.000
-# altimeter range bias (added) [m]                 0     16852         NaN         NaN       0.409       0.409       0.409       0.000
-# std dev of significant wave height (20-H       350     16502       0.000       2.100       0.010       2.100       0.980       0.264
+# BM3 sea state bias [m]                          30     16822      -1.000       1.000      -0.924       0.227      -0.130       0.093
+# DNSC08 mean sea surface height [m]               0     16852    -200.000     200.000    -101.786      57.194      -4.050      31.565
+# Ku-band significant wave height [m]             77     16775       0.000       8.000       0.000       8.000       2.067       1.398
+# Ku-band backscatter coefficient [dB]            50     16802       6.000      27.000       6.020      25.280      11.325       1.785
+# altimeter wind speed [m/s]                      23     16829      -1.000      30.000       0.000      29.403       6.711       3.788
+# std dev of Ku-band range [m]                   339     16513       0.000       0.400       0.027       0.398       0.160       0.053
+# number of valid Ku-band measurements [co       172     16680      16.500      20.500      17.000      20.000      19.895       0.542
+# flag word [count]                              909     15943   65512.000       0.000       1.000       1.000       1.000       0.000
+# Ku-band range bias [m]                           0     16852         NaN         NaN       0.409       0.409       0.409       0.000
+# std dev of Ku-band significant wave heig       350     16502       0.000       2.100       0.010       2.100       0.980       0.264
 # reference frame offset [m]                       0     16852      -1.000       1.000       0.023       0.023       0.023       0.000
 # pass number []                                   0     16852         NaN         NaN       1.000      85.000      62.645      25.165
  End of program
-CLOCK, CPU =   0.0710   0.0701
+CLOCK, CPU =   0.0670   0.0657
