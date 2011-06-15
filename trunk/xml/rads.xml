@@ -22,7 +22,6 @@ GNU General Public License for more details.
 	<standard_name>sea_surface_height_above_sea_level</standard_name>
 	<units>m</units>
 	<limits>-5 5</limits>
-	<limits sat="c2">-8 0</limits>
 	<format>f8.4</format>
 	<compress>int4 1e-4</compress>
 	<math>alt range SUB dry_tropo SUB wet_tropo SUB iono SUB inv_bar SUB tide_solid SUB tide_ocean SUB tide_load SUB
