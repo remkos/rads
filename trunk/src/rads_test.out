@@ -187,7 +187,7 @@
          182 dsig0                                   dswh_ku                                      32
          183 liquid_water                            liquid_water                               3301
          184 f3300                                   liquid_water                                 33
-         185 wvc                                     wvc                                        3301
+         185 wvc                                     wvc                                        3302
          186 frame_count                             frame_count                                3401
          187 flags_sdr_status                        flags_sdr_status                           3402
          188 flags_sdr_qual                          flags_sdr_qual                             3403
@@ -841,4 +841,4 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 # reference frame offset [m]                       0     16852      -1.000       1.000       0.023       0.023       0.023       0.000
 # pass number []                                   0     16852         NaN         NaN       1.000      85.000      62.645      25.165
  End of program
-CLOCK, CPU =   0.0670   0.0657
+CLOCK, CPU =   0.0650   0.0647
