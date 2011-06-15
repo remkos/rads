@@ -96,7 +96,7 @@ type(grid), intent(inout) :: info
 integer(fourbyteint) :: i,ncid,z_id
 character(80) :: units
 
-call grid_open
+call grid_load_nc
 if (grid_load /= 0) then
 	if (grid_load == -1) call grid_error (3, 'Error loading grid attributes from '//filenm)
 	i = nf90_close (ncid)
@@ -137,7 +137,7 @@ return
 
 contains
 
-subroutine grid_open
+subroutine grid_load_nc
 integer(fourbyteint) :: i,l,noff,x_id,y_id,nvars,dims(2),ndims,dims2(1),start(1)=1,stride(1)=1
 real(eightbytereal) :: dummy(2),x
 
@@ -264,7 +264,7 @@ else
 endif
 
 grid_load = 0
-end subroutine grid_open
+end subroutine grid_load_nc
 
 subroutine grid_error (err, string)
 integer, intent(in) :: err
