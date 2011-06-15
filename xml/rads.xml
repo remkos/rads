@@ -1911,8 +1911,6 @@ GNU General Public License for more details.
 		<ref_pass>2010-08-02 09:22:36 223.367831 5 1</ref_pass>
 		<start_time>2010-07-15</start_time>
 	</phase>
-
-	<alias name="mss">geoid_egm96</alias>
 </if>
 
 <if sat="e1">
