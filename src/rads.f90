@@ -564,14 +564,12 @@ else if (arg(:5) == 'pass=') then
 	if (S%passes(2) < 0) S%passes(2) = S%passes(1)
 else if (arg(:4) == 'lat=' .or. arg(:4) == 'lon=' .or. arg(:5) == 'time=' .or. arg(:4) == 'sla=' &
 	.or. arg(:4) == 'lim:') then
-	call chartrans(arg(j+1:),'/',',')
-	read (arg(j+1:),*,iostat=ios) val
-	call rads_set_limits (S, arg(i+1:j-1), val(1), val(2))
+	call rads_set_limits (S, arg(i+1:j-1), string=arg(j+1:))
 else if (arg(:6) == 'alias:') then
 	call rads_set_alias (S, arg(i+1:j-1), arg(j+1:))
 else if (arg(:4) == 'fmt:') then
 	call rads_set_format (S, arg(i+1:j-1), arg(j+1:))
-else if (datearg(arg,val(1),val(2))) then
+else if (datearg(arg, val(1), val(2))) then
 	call rads_set_limits (S, 'time', val(1), val(2))
 else if (arg(:6) == 'debug=') then
 	read (arg(7:),*,iostat=ios) S%debug
@@ -580,9 +578,7 @@ else if (arg(:4) == 'sel=') then
 
 ! The next are only for compatibility with RADS 3
 else if (arg(:2) == 'h=') then
-	call chartrans(arg(j+1:),'/',',')
-	read (arg(j+1:),*,iostat=ios) val
-	call rads_set_limits (S, 'sla', val(1), val(2))
+	call rads_set_limits (S, 'sla', string=arg(j+1:))
 else if (arg(:4) == 'opt:') then
 	call rads_set_alias (S, arg(i+1:j-1), arg(i+1:j-1)//arg(j+1:))
 else if (arg(:4) == 'opt=') then
@@ -1802,26 +1798,40 @@ end subroutine rads_set_alias
 !***********************************************************************
 !*rads_set_limits -- Set limits on given variable
 !+
-subroutine rads_set_limits (S, varname, lo, hi)
+subroutine rads_set_limits (S, varname, lo, hi, string)
 type(rads_sat), intent(inout) :: S
 character(len=*), intent(in) :: varname
-real(eightbytereal), intent(in) :: lo, hi
+real(eightbytereal), intent(in), optional :: lo, hi
+character(len=*), intent(in), optional :: string
 !
 ! This routine set the lower and upper limits for a given variable in
 ! RADS.
+! The limits can either be set by giving the lower and upper limits
+! as double floats <lo> and <hi> or as a character string <string> which
+! contains the two number separated by whitespace, a comma or a slash.
+! In case only one number is given, only <lo> or <hi> (following the
+! separator) is set.
 !
 ! Arguments:
 !  S        : Satellite/mission dependent structure
 !  varname  : Variable name
 !  lo, hi   : Lower and upper limit
+!  string   : String of up to two values, with separating whitespace
+!             or comma or slash.
 !
 ! Error code:
 !  S%error  : rads_noerr, rads_err_var
 !-----------------------------------------------------------------------
 type(rads_var), pointer :: var
+integer :: ios
 var => rads_varptr (S, varname)
 if (associated(var)) then
-	var%info%limits = (/ lo, hi /)
+	if (present(lo)) var%info%limits(1) = lo
+	if (present(hi)) var%info%limits(1) = hi
+	if (present(string)) then
+		call chartrans(string, '/', ',')
+		read (string, *, iostat=ios) var%info%limits
+	endif
 	if (var%info%datatype == rads_type_lat .or. var%info%datatype == rads_type_lon) then
 		! If latitude or longitude limits are changed, recompute equator longitude limits
 		call traxxing (S)
