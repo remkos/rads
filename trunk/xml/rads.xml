@@ -35,6 +35,7 @@ GNU General Public License for more details.
 	<quality_flag sat="n1" action="append">swh_rms_ku peakiness_ku</quality_flag>
 	<comment>sea level determined from satellite altitude - range - all altimetric corrections</comment>
 </var>
+
 <var name="time" field="101">
 	<long_name>time</long_name>
 	<standard_name>time</standard_name>
@@ -80,6 +81,7 @@ GNU General Public License for more details.
 	<format>f16.6</format>
 </var>
 <alias name="f0100" field="1">time</alias>
+
 <var name="lat" field="201">
 	<long_name>latitude</long_name>
 	<standard_name>latitude</standard_name>
@@ -91,6 +93,7 @@ GNU General Public License for more details.
 	<compress>int4 1d-6</compress>
 </var>
 <alias name="f0200" field="2">lat</alias>
+
 <var name="lon" field="301">
 	<long_name>longitude</long_name>
 	<standard_name>longitude</standard_name>
@@ -102,6 +105,7 @@ GNU General Public License for more details.
 	<comment>East longitude relative to Greenwich meridian</comment>
 </var>
 <alias name="f0300" field="3">lon</alias>
+
 <var name="alt_jgm3" field="401">
 	<long_name>JGM-3 orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
@@ -345,6 +349,7 @@ GNU General Public License for more details.
 <alias name="alt" sat="gs">alt_gdrcp</alias>
 <alias name="alt" sat="j1 j2 n1">alt_eiggl04s</alias>
 <alias name="alt" sat="pn tx">alt_gdrcp</alias>
+
 <var name="alt_rate" field="501">
 	<long_name>orbital altitude rate</long_name>
 	<units>m/s</units>
@@ -369,6 +374,7 @@ GNU General Public License for more details.
 	<compress>int2 1d-3</compress>
 </var>
 <alias name="f0500" field="5">alt_rate</alias>
+
 <var name="range_ku" field="601">
 	<long_name>Ku-band range corrected for instr. effects</long_name>
 	<standard_name>altimeter_range</standard_name>
@@ -401,6 +407,7 @@ GNU General Public License for more details.
 	<format>f11.3</format>
 </var>
 <alias name="range" field="6">range_ku</alias>
+
 <var name="dry_tropo_ecmwf" field="701">
 	<long_name>ECMWF dry tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_dry_troposphere</standard_name>
@@ -448,6 +455,7 @@ GNU General Public License for more details.
 </var>
 <alias name="dry_tropo" field="7">dry_tropo_ecmwf</alias>
 <alias name="dry_tropo" sat="g1 gs">dry_tropo_ncep</alias>
+
 <var name="wet_tropo_rad" field="801">
 	<long_name>radiometer wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
@@ -555,6 +563,7 @@ GNU General Public License for more details.
 <alias name="wet_tropo" field="8">wet_tropo_rad</alias>
 <alias name="wet_tropo" sat="c2">wet_tropo_ecmwf</alias>
 <alias name="wet_tropo" sat="gs">wet_tropo_ncep</alias>
+
 <var name="iono_alt" field="901">
 	<long_name>dual-frequency ionospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
@@ -639,6 +648,7 @@ GNU General Public License for more details.
 <alias name="iono" sat="c2">iono_gim</alias>
 <alias name="iono" sat="e2 g1">iono_gim</alias>
 <alias name="iono" sat="j1 j2 n1 tx">iono_alt_smooth</alias>
+
 <var name="inv_bar_static" field="1001">
 	<long_name>inverse barometer correction</long_name>
 	<standard_name>sea_surface_height_correction_due_to_air_pressure_at_low_frequency</standard_name>
@@ -695,6 +705,7 @@ GNU General Public License for more details.
 	<comment>Long-term temporal mean of the MOG2D dynamic atmospheric correction at measurement location</comment>
 </var>
 <alias name="inv_bar" field="10">inv_bar_mog2d</alias>
+
 <var name="tide_solid" field="1101">
 	<long_name>solid earth tide</long_name>
 	<standard_name>sea_surface_height_amplitude_due_to_earth_tide</standard_name>
@@ -707,6 +718,7 @@ GNU General Public License for more details.
 	<comment>Calculated using second and third degree constituents, excluding permanent tide</comment>
 </var>
 <alias name="f1100" field="11">tide_solid</alias>
+
 <var name="tide_ocean_fes04" field="1213">
 	<long_name>FES2004 ocean tide</long_name>
 	<source>FES2004</source>
@@ -749,6 +761,7 @@ GNU General Public License for more details.
 </var>
 <alias name="tide_ocean" field="12">tide_ocean_got47</alias>
 <alias name="tide_ocean" sat="c2">tide_ocean_fes04</alias>
+
 <var name="tide_load_fes04" field="1313">
 	<long_name>FES2004 load tide</long_name>
 	<source>FES2004</source>
@@ -781,6 +794,7 @@ GNU General Public License for more details.
 </var>
 <alias name="tide_load" field="13">tide_load_got47</alias>
 <alias name="tide_load" sat="c2">tide_load_fes04</alias>
+
 <var name="tide_pole" field="1401">
 	<long_name>pole tide</long_name>
 	<standard_name>sea_surface_height_amplitude_due_pole_tide</standard_name>
@@ -793,6 +807,7 @@ GNU General Public License for more details.
 	<comment>Variation of absolute sea level due to polar motion</comment>
 </var>
 <alias name="f1400" field="14">tide_pole</alias>
+
 <var name="ssb_bm3" field="1501">
 	<long_name>BM3 sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
@@ -839,6 +854,7 @@ GNU General Public License for more details.
 <alias name="ssb" field="15">ssb_bm3</alias>
 <alias name="ssb" sat="g1 gs">ssb_hyb</alias>
 <alias name="ssb" sat="j1 j2 n1 tx">ssb_cls</alias>
+
 <var name="mss_cls01" field="1605">
 	<long_name>CLS01 mean sea surface height</long_name>
 	<source>CLS01</source>
@@ -907,6 +923,7 @@ GNU General Public License for more details.
 	<compress>int4 1d-4</compress>
 </var>
 <alias name="mss" field="16">mss_dnsc08</alias>
+
 <var name="swh_ku" field="1701">
 	<long_name>Ku-band significant wave height</long_name>
 	<standard_name>sea_surface_wave_significant_height</standard_name>
@@ -927,6 +944,7 @@ GNU General Public License for more details.
 	<compress>int2 1d-3</compress>
 </var>
 <alias name="swh" field="17">swh_ku</alias>
+
 <var name="sig0_ku" field="1801">
 	<long_name>Ku-band backscatter coefficient</long_name>
 	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
@@ -955,6 +973,7 @@ GNU General Public License for more details.
 	<compress>int2 1d-3</compress>
 </var>
 <alias name="sig0" field="18">sig0_ku</alias>
+
 <var name="wind_speed_alt" field="1901">
 	<long_name>altimeter wind speed</long_name>
 	<standard_name>wind_speed_alt</standard_name>
@@ -1005,6 +1024,7 @@ GNU General Public License for more details.
 	<compress>int2 1d-3</compress>
 </var>
 <alias name="wind_speed" field="19">wind_speed_alt</alias>
+
 <var name="range_rms_norm" field="2001">
 	<long_name>normalized std dev of Ku-band range</long_name>
 	<units>m</units>
@@ -1036,6 +1056,7 @@ GNU General Public License for more details.
 	<comment>Based on valid high-rate measurements</comment>
 </var>
 <alias name="range_rms" field="20">range_rms_ku</alias>
+
 <var name="range_numval_ku" field="2101">
 	<long_name>number of valid Ku-band measurements</long_name>
 	<limits>16.5 20.5</limits>
@@ -1053,6 +1074,7 @@ GNU General Public License for more details.
 	<compress>int1</compress>
 </var>
 <alias name="range_numval" field="21">range_numval_ku</alias>
+
 <var name="topo_etopo2" field="2201">
 	<long_name>ETOPO2 ocean depth</long_name>
 	<source>ETOPO2</source>
@@ -1086,6 +1108,7 @@ GNU General Public License for more details.
 	<compress>int2</compress>
 </var>
 <alias name="topo" field="22">topo_dnsc08</alias>
+
 <var name="tb_187" field="2301">
 	<long_name>radiometer brightness temperature (Ch.1)</long_name>
 	<standard_name>surface_brightness_temperature</standard_name>
@@ -1117,6 +1140,7 @@ GNU General Public License for more details.
 	<comment>Brightness temperatures are unsmoothed</comment>
 </var>
 <alias name="tb" field="23">tb_238</alias>
+
 <var name="peakiness_ku" field="2401">
 	<long_name>Ku-band peakiness</long_name>
 	<limits>1.4 1.9</limits>
@@ -1148,6 +1172,7 @@ GNU General Public License for more details.
 		<flag_meanings>side_A side_B</flag_meanings>
 	</if>
 </var>
+
 <var name="flag_attitude" field="2501">
 	<long_name>attitude status</long_name>
 	<long_name sat="n1">not used</long_name>
@@ -1298,6 +1323,7 @@ GNU General Public License for more details.
 	<flag_meanings>ok degraded</flag_meanings>
 </var>
 <alias name="f2500" field="25">flag_status</alias>
+
 <var name="flags" field="2601">
 	<long_name>flag word</long_name>
 	<limits>65512 0</limits>
@@ -1325,6 +1351,7 @@ GNU General Public License for more details.
 	<compress>int2</compress>
 </var>
 <alias name="f2600" field="26">flags</alias>
+
 <var name="drange_ku" field="2701">
 	<long_name>Ku-band range bias</long_name>
 	<units>m</units>
@@ -1390,6 +1417,7 @@ GNU General Public License for more details.
 	<comment>Range bias already added to range</comment>
 </var>
 <alias name="drange" field="27">drange_ku</alias>
+
 <var name="swh_rms_ku_norm" field="2801">
 	<long_name>normalized std dev of Ku-band significant wave height</long_name>
 	<units>m</units>
@@ -1420,6 +1448,7 @@ GNU General Public License for more details.
 	<comment>Based on valid high-rate measurements</comment>
 </var>
 <alias name="swh_rms" field="28">swh_rms_ku</alias>
+
 <var name="sig0_rms_ku_norm" field="2901">
 	<long_name>normalized std dev of Ku-band backscatter coefficient</long_name>
 	<units>dB</units>
@@ -1445,6 +1474,7 @@ GNU General Public License for more details.
 	<comment>Based on valid high-rate measurements</comment>
 </var>
 <alias name="sig0_rms" field="29">sig0_rms_ku</alias>
+
 <var name="off_nadir_angle_wf_ku" field="3001">
 	<long_name>off-nadir pointing angle from waveform</long_name>
 	<units>degrees</units>
@@ -1486,6 +1516,7 @@ GNU General Public License for more details.
 	<compress>int2 1d-4</compress>
 </var>
 <alias name="attitude" field="30">off_nadir_angle2_wf_ku</alias>
+
 <var name="dswh_ku" field="3101">
 	<long_name>Ku-band significant wave height bias</long_name>
 	<units>m</units>
@@ -1521,6 +1552,7 @@ GNU General Public License for more details.
 	<comment>Bias already added to significant wave height</comment>
 </var>
 <alias name="dswh" field="31">dswh_ku</alias>
+
 <var name="dsig0_ku" field="3201">
 	<long_name>Ku-band backscatter coefficient bias</long_name>
 	<units>dB</units>
@@ -1580,6 +1612,7 @@ GNU General Public License for more details.
 	<comment>Bias already added to backscatter coefficient</comment>
 </var>
 <alias name="dsig0" field="32">dswh_ku</alias>
+
 <var name="liquid_water" field="3301">
 	<long_name>radiometer liquid water content</long_name>
 	<standard_name>atmosphere_cloud_liquid_water_content</standard_name>
@@ -1589,7 +1622,7 @@ GNU General Public License for more details.
 	<compress>int2 1d-2</compress>
 </var>
 <alias name="f3300" field="33">liquid_water</alias>
-<var name="wvc" field="3301">
+<var name="wvc" field="3302">
 	<long_name>radiometer water vapor content</long_name>
 	<standard_name>atmosphere_water_vapor_content</standard_name>
 	<units>kg/m^2</units>
@@ -1597,6 +1630,7 @@ GNU General Public License for more details.
 	<format>f6.2</format>
 	<compress>int2 1d-2</compress>
 </var>
+
 <var name="frame_count" field="3401">
 	<long_name>frame count</long_name>
 	<netcdf>frame_count</netcdf>
@@ -1660,6 +1694,7 @@ GNU General Public License for more details.
 	<compress>int2</compress>
 </var>
 <alias name="34004" field="34">frame_count</alias>
+
 <var name="rain_ice_index" field="3501">
 	<long_name>rain/ice index</long_name>
 	<limits>0 2</limits>
@@ -1668,6 +1703,7 @@ GNU General Public License for more details.
 	<compress>int2 1d-2</compress>
 </var>
 <alias name="f3500" field="35">rain_ice_index</alias>
+
 <var name="basin" field="3601">
 	<long_name>basin code</long_name>
 	<limits>-0.5 255.5</limits>
@@ -1676,6 +1712,7 @@ GNU General Public License for more details.
 	<compress>int1</compress>
 </var>
 <alias name="f3600" field="36">basin</alias>
+
 <var name="waveform_data" field="3701">
 	<long_name>waveform data</long_name>
 	<netcdf>waveform_data</netcdf>
@@ -1689,6 +1726,7 @@ GNU General Public License for more details.
 	<compress>int1</compress>
 </var>
 <alias name="f3700" field="37">waveform_data</alias>
+
 <var name="ref_frame_offset" field="3801">
 	<long_name>reference frame offset</long_name>
 	<units>m</units>
@@ -1699,6 +1737,7 @@ GNU General Public License for more details.
 	<compress>int2 1d-4</compress>
 </var>
 <alias name="f3800" field="38">ref_frame_offset</alias>
+
 <var name="tide_equil" field="3901">
 	<long_name>long-period equilibrium tide</long_name>
 	<standard_name>sea_surface_height_amplitude_due_to_equilibrium_ocean_tide</standard_name>
@@ -1718,6 +1757,7 @@ GNU General Public License for more details.
 	<compress>int2 1d-4</compress>
 </var>
 <alias name="f3900" field="39">tide_equil</alias>
+
 <var name="wave_m0" field="4001">
 	<long_name>wave height variance (WaveWatch3)</long_name>
 	<source>WaveWatch3</source>
@@ -1726,6 +1766,7 @@ GNU General Public License for more details.
 	<compress>int2 1d-3</compress>
 </var>
 <alias name="f4000" field="40">wave_m0</alias>
+
 <var name="wave_m1" field="4101">
 	<long_name>first moment of wave height (WaveWatch3)</long_name>
 	<source>WaveWatch3</source>
@@ -1735,6 +1776,7 @@ GNU General Public License for more details.
 	<compress>int2 1d-4</compress>
 </var>
 <alias name="f4100" field="41">wave_m1</alias>
+
 <var name="wave_m2" field="4201">
 	<long_name>wave velocity variance (WaveWatch3)</long_name>
 	<source>WaveWatch3</source>
@@ -1744,6 +1786,7 @@ GNU General Public License for more details.
 	<compress>int2 1d-5</compress>
 </var>
 <alias name="f4200" field="42">wave_m2</alias>
+
 <var name="wave_m4" field="4301">
 	<long_name>wave slope variance (WaveWatch3)</long_name>
 	<source>WaveWatch3</source>
@@ -1753,6 +1796,7 @@ GNU General Public License for more details.
 	<compress>int2 1d-6</compress>
 </var>
 <alias name="f4300" field="43">wave_m4</alias>
+
 <var name="wave_shs" field="4401">
 	<long_name>wave swell (WaveWatch3)</long_name>
 	<source>WaveWatch3</source>
@@ -1762,6 +1806,7 @@ GNU General Public License for more details.
 	<compress>int2 1d-3</compress>
 </var>
 <alias name="f4400" field="44">wave_shs</alias>
+
 <var name="dist_coast" field="4501">
 	<long_name>distance to coast</long_name>
 	<units>km</units>
@@ -1771,6 +1816,7 @@ GNU General Public License for more details.
 	<compress>int2</compress>
 </var>
 <alias name="f4500" field="45">dist_coast</alias>
+
 <var name="seaice_class" field="4601">
 	<long_name>sea ice classification</long_name>
 	<limits>-0.5 15.5</limits>
@@ -1779,6 +1825,7 @@ GNU General Public License for more details.
 	<compress>int1</compress>
 </var>
 <alias name="r4600" field="46">seaice_class</alias>
+
 <var name="seaice_conc" field="4701">
 	<long_name>sea ice concentration</long_name>
 	<units>%</units>
@@ -1788,6 +1835,7 @@ GNU General Public License for more details.
 	<compress>int1</compress>
 </var>
 <alias name="f4700" field="47">seaice_conc</alias>
+
 <var name="sst" field="4801">
 	<long_name>sea surface temperature</long_name>
 	<source>Reynolds SST</source>
@@ -1812,35 +1860,42 @@ GNU General Public License for more details.
 	<netcdf>:first_meas_time</netcdf>
 	<format>f16.6</format>
 </var>
+
 <var name="last_meas_time" field="9902">
 	<long_name>time of last measurement in pass</long_name>
 	<units>seconds since 1985-01-01 00:00:00</units>
 	<netcdf>:last_meas_time</netcdf>
 	<format>f16.6</format>
 </var>
+
 <var name="eqtime" field="9903">
 	<long_name>time of equator crossing</long_name>
 	<units>seconds since 1985-01-01 00:00:00</units>
 	<netcdf>:equator_time</netcdf>
 	<format>f16.6</format>
 </var>
+
 <var name="eqlon" field="9904">
 	<long_name>longitude of equator crossing</long_name>
 	<units>degrees_east</units>
 	<netcdf>:equator_lon</netcdf>
 	<format>f11.6</format>
 </var>
+
 <var name="cycle" field="9905">
 	<long_name>cycle number</long_name>
 	<netcdf>:cycle_number</netcdf>
 	<format>f4.0</format>
 </var>
+
 <var name="pass" field="9906">
 	<long_name>pass number</long_name>
 	<netcdf>:pass_number</netcdf>
 	<format>f5.0</format>
 </var>
 <alias name="f9900" field="99">first_meas_time</alias>
+
+<!-- Mission definitions for various satellites -->
 
 <if sat="c2">
 	<satellite>CRYOSAT2</satellite>
