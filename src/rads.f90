@@ -1103,7 +1103,7 @@ if (S%error == rads_noerr) then ! No error, edit if requested
 else if (info%backup == '') then ! No backup alternative, print error
 	call rads_error (S, rads_err_var, 'Error loading variable "'//trim(varname)//'"')
 	data = S%nan
-else if (info%backup(:1) == '-' .or. info%backup(:1) == '.' .or. &
+else if (info%backup == 'nan' .or. info%backup(:1) == '-' .or. info%backup(:1) == '.' .or. &
 	(info%backup(:1) >= '0' .and. info%backup(:1) <= '9')) then ! Numerical backup
 	read (info%backup,*,iostat=ios) data(1)
 	if (ios == 0) then
