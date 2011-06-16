@@ -1901,7 +1901,7 @@ GNU General Public License for more details.
 	<satid>12</satid>
 	<dt1hz>0.980469</dt1hz>
 	<inclination>92</inclination>
-	<frequency>13.8</frequency>
+	<frequency>13.575</frequency>
 	<phase name="a">
 		<mission>Multi-disciplinary Phase</mission>
 		<cycles>4 10</cycles>
