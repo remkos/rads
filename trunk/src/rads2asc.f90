@@ -63,7 +63,7 @@ do i = 1,iargc()
 	call getarg(i,arg)
 	if (arg(:4) == 'out=') then
 		outname = arg(5:)
-	else if (arg(:2) == '-rn') then
+	else if (arg(:3) == '-rn') then
 		reject = -2
 	else if (arg(:2) == '-r') then
 		reject = 0
