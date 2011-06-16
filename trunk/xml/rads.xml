@@ -734,6 +734,7 @@ GNU General Public License for more details.
 	<units>m</units>
 	<limits>-5 5</limits>
 	<netcdf>tide_ocean_webtide</netcdf>
+	<backup>nan</backup>
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
