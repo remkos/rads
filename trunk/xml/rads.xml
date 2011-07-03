@@ -260,7 +260,7 @@ GNU General Public License for more details.
 	<source>EIGEN-GL04c</source>
 	<units>m</units>
 	<netcdf>alt_eiggl04s</netcdf>
-	<backup sat="n1">alt_cnes</backup>
+	<backup sat="n1 c2">alt_cnes</backup>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
 	<comment>Altitude of satellite above the reference ellipsoid</comment>
