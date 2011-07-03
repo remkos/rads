@@ -2125,7 +2125,7 @@ write (iunit, 1300) trim(progname)
 'Still working for backwards compatibility with RADS 3 are options:'/ &
 '  opt=j             : use selection code j when j/100 requested (now alias:var1=var2)'/ &
 '  opt:i=j           : set option for data item i to j (now alias:var1=var2)'/ &
-'  h=n0,h1           : specify range for SLA (m) (now sla=h0,h1)'// &
+'  h=h0,h1           : specify range for SLA (m) (now sla=h0,h1)'// &
 'Common [rads_options] are:'/ &
 '  -v                : be verbose'/ &
 '  debug=level       : set debug level'/ &
