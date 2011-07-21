@@ -27,7 +27,7 @@ GNU General Public License for more details.
 	<math>alt range SUB dry_tropo SUB wet_tropo SUB iono SUB inv_bar SUB tide_solid SUB tide_ocean SUB tide_load SUB
 	tide_pole SUB ssb SUB mss SUB ref_frame_offset SUB</math>
 	<quality_flag>swh_ku sig0_ku wind_speed range_rms_ku range_numval_ku flags</quality_flag>
-	<quality_flag sat="c2">sig0_ku range_rms_ku range_numval_ku flags</quality_flag>
+	<quality_flag sat="c2">swh_ku sig0_ku range_rms_ku range_numval_ku flags</quality_flag>
 	<quality_flag sat="e1 g1 tx" action="append">swh_rms_ku</quality_flag>
 	<quality_flag sat="e2" action="append">swh_rms_ku off_nadir_angle2_wf_ku</quality_flag>
 	<quality_flag sat="j1 j2" action="append">swh_rms_ku sig0_rms_ku off_nadir_angle2_wf_ku</quality_flag>
@@ -644,8 +644,7 @@ GNU General Public License for more details.
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
 <alias name="iono" field="9">iono_nic09</alias>
-<alias name="iono" sat="c2">iono_gim</alias>
-<alias name="iono" sat="e2 g1">iono_gim</alias>
+<alias name="iono" sat="c2 e2 g1">iono_gim</alias>
 <alias name="iono" sat="j1 j2 n1 tx">iono_alt_smooth</alias>
 
 <var name="inv_bar_static" field="1001">
@@ -760,7 +759,6 @@ GNU General Public License for more details.
 	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
 </var>
 <alias name="tide_ocean" field="12">tide_ocean_got47</alias>
-<alias name="tide_ocean" sat="c2">tide_ocean_fes04</alias>
 
 <var name="tide_load_fes04" field="1313">
 	<long_name>FES2004 load tide</long_name>
@@ -793,7 +791,6 @@ GNU General Public License for more details.
 	<comment>Load tide variation to be added to ocean tide</comment>
 </var>
 <alias name="tide_load" field="13">tide_load_got47</alias>
-<alias name="tide_load" sat="c2">tide_load_fes04</alias>
 
 <var name="tide_pole" field="1401">
 	<long_name>pole tide</long_name>
@@ -1515,6 +1512,13 @@ GNU General Public License for more details.
 	<backup>0</backup>
 	<compress>int2 1d-4</compress>
 </var>
+<var sat="c2" name="off_nadir_angle2_wf_rms_ku" field="3005">
+	<long_name>std dev of off-nadir pointing angle squared from waveform</long_name>
+	<units>degrees^2</units>
+	<netcdf>off_nadir_angle2_wf_rms_ku</netcdf>
+	<format>f7.4</format>
+	<compress>int2 1d-4</compress>
+</var>
 <alias name="attitude" field="30">off_nadir_angle2_wf_ku</alias>
 
 <var name="dswh_ku" field="3101">
@@ -1680,6 +1684,32 @@ GNU General Public License for more details.
 	<netcdf>gate_index_s</netcdf>
 	<format>f6.0</format>
 	<compress>int2</compress>
+</var>
+<var sat="c2" name="mqe" field="3409">
+	<long_name>mean quadratic error of retracking</long_name>
+	<netcdf>mqe</netcdf>
+	<format>f7.2</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="nr_iter" field="3410">
+	<long_name>number of iterations of retracking</long_name>
+	<netcdf>nr_iter</netcdf>
+	<format>f3.0</format>
+	<compress>int1</compress>
+</var>
+<var sat="c2" name="noise_floor_ku" field="3411">
+	<long_name>Ku-band noise floor of waveforms</long_name>
+	<netcdf>noise_floor_ku</netcdf>
+	<units>dB</units>
+	<format>f7.3</format>
+	<compress>int2 1e-3</compress>
+</var>
+<var sat="c2" name="noise_floor_rms_ku" field="3412">
+	<long_name>std dev of Ku-band noise floor of waveforms</long_name>
+	<netcdf>noise_floor_rms ku</netcdf>
+	<units>dB</units>
+	<format>f7.3</format>
+	<compress>int2 1e-3</compress>
 </var>
 <var name="track_mode" field="3415">
 	<long_name>tracking mode</long_name>
