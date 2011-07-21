@@ -420,6 +420,8 @@ subroutine rads_init_cmd_1d (S)
 type(rads_sat), intent(inout) :: S(:)
 integer :: isatopt(size(S)), i, n, debug
 character(len=640), pointer :: options(:), selopt
+S%sat = ''
+S%error = rads_noerr
 call rads_load_options (options, isatopt, n, debug)
 if (n < 1) call rads_exit ('Failed to find "sat=" on command line')
 do i = 1,n
