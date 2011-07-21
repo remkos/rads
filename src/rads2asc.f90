@@ -31,7 +31,9 @@ use rads_misc
 use rads_time
 
 ! RADS structures
-type(rads_sat) :: S
+integer(fourbyteint), parameter :: msat = 5
+type(rads_sat), target :: Sats(msat)
+type(rads_sat), pointer :: S
 type(rads_pass) :: P
 type(rads_var), pointer :: temp(:)
 
@@ -39,7 +41,7 @@ type(rads_var), pointer :: temp(:)
 integer(fourbyteint) :: outunit, listunit = -1, logunit = 6
 character(len=256) :: arg, outname = ''
 character(len=512) :: format_string
-integer(fourbyteint) :: i, l, ios, cycle, pass, step = 1, nseltot = 0, nselmax = huge(0_fourbyteint)
+integer(fourbyteint) :: i, j, l, ios, cycle, pass, step = 1, nseltot = 0, nselmax = huge(0_fourbyteint)
 logical :: freeform = .false.
 integer(fourbyteint) :: isflags = 0, reject = -1
 
@@ -55,8 +57,8 @@ real(eightbytereal), allocatable :: r(:), q(:)
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_init (S)
-if (S%error /= rads_noerr) call rads_exit ('Fatal error')
+call rads_init (Sats)
+if (any(Sats%error /= rads_noerr)) call rads_exit ('Fatal error')
 
 ! Scan command line arguments
 do i = 1,iargc()
@@ -84,86 +86,98 @@ do i = 1,iargc()
 	endif
 enddo
 
-! If there is no -f option, add relative time, lat, lon to the front of the list
-if (.not.freeform) then
-	allocate (temp(S%nsel+3))
-	temp(4:S%nsel+3) = S%sel(1:S%nsel)
-	deallocate (S%sel, stat=ios)
-	S%sel => temp
-	temp(1) = rads_varptr (S, 'time_rel_eq')
-	temp(2) = rads_varptr (S, 'lat')
-	temp(3) = rads_varptr (S, 'lon')
-	S%nsel = S%nsel + 3
-endif
+! Now loop through all satellites
 
-! Per-cycle statistics cannot be done for per-pass files
-if (outname == '' .and. stat_mode == cycle_stat) then
-	call rads_error (S, rads_noerr, 'Cannot do per-cycle statistics for per-pass files. -sc ignored')
-	stat_mode = no_stat
-endif
+do j = 1,msat
+	if (Sats(j)%sat == '') exit
+	S => Sats(j)
 
-! If flags or SLA are among the results, remember which they are
-do i = 1,S%nsel
-	if (S%sel(i)%info%datatype == rads_type_flagword) then
-		isflags = i
-	else if (S%sel(i)%info%datatype == rads_type_sla) then
-		if (reject == -1) reject = i
-	endif
-enddo
-
-! Open single output file, if requested
-if (outname == '-') then
-	outunit = 6
-	logunit = 0
-else if (outname /= '') then
-	outunit = getlun()
-	open (outunit, file=outname, status='replace')
-	if (listunit >= 0) write (listunit,'(a)') trim(outname)
-endif
-
-! Determine format string for ASCII output
-format_string = '('
-l = 1
-do i = 1,S%nsel
-	format_string(l+1:) = trim(S%sel(i)%info%format) // ',1x,'
-	l = len_trim (format_string)
-enddo
-format_string(l-3:) = ')'
-
-! Initialise statistics
-allocate (stat(S%nsel), r(S%nsel), q(S%nsel))
-stat = stat_type (0, 0d0, 0d0, S%nan, S%nan)
-
-! Now loop through all cycles and passes
-do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
-	! Stop processing after too many output lines
-	if (nseltot >= nselmax) then
-		write (logunit,760) nseltot,nselmax
-		exit
+	! If there is no -f option, add relative time, lat, lon to the front of the list
+	if (.not.freeform) then
+		allocate (temp(S%nsel+3))
+		temp(4:S%nsel+3) = S%sel(1:S%nsel)
+		deallocate (S%sel, stat=ios)
+		S%sel => temp
+		temp(1) = rads_varptr (S, 'time_rel_eq')
+		temp(2) = rads_varptr (S, 'lat')
+		temp(3) = rads_varptr (S, 'lon')
+		S%nsel = S%nsel + 3
 	endif
 
-	! Process passes one-by-one
-	do pass = S%passes(1), S%passes(2), S%passes(3)
-		call rads_open_pass (S, P, cycle, pass)
-		if (P%ndata > 0) call process_pass
-		if (S%debug >= 1 .and. outunit /= logunit) call rads_progress_bar (S, P, nselpass, logunit)
-		call rads_close_pass (S, P)
+	! Per-cycle statistics cannot be done for per-pass files
+	if (outname == '' .and. stat_mode == cycle_stat) then
+		call rads_error (S, rads_noerr, 'Cannot do per-cycle statistics for per-pass files. -sc ignored')
+		stat_mode = no_stat
+	endif
+
+	! If flags or SLA are among the results, remember which they are
+	do i = 1,S%nsel
+		if (S%sel(i)%info%datatype == rads_type_flagword) then
+			isflags = i
+		else if (S%sel(i)%info%datatype == rads_type_sla) then
+			if (reject == -1) reject = i
+		endif
 	enddo
 
-	! Print out per-cycle statistics, it requested
-	if (stat_mode == cycle_stat) call print_stat
-enddo
+	! Open single output file, if requested
+	if (outname == '-') then
+		outunit = 6
+		logunit = 0
+	else if (outname /= '') then
+		outunit = getlun()
+		open (outunit, file=outname, status='replace')
+		if (listunit >= 0) write (listunit,'(a)') trim(outname)
+	endif
+
+	! Determine format string for ASCII output
+	format_string = '('
+	l = 1
+	do i = 1,S%nsel
+		format_string(l+1:) = trim(S%sel(i)%info%format) // ',1x,'
+		l = len_trim (format_string)
+	enddo
+	format_string(l-3:) = ')'
+
+	! Initialise statistics
+	allocate (stat(S%nsel), r(S%nsel), q(S%nsel))
+	stat = stat_type (0, 0d0, 0d0, S%nan, S%nan)
+
+	! Now loop through all cycles and passes
+	do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
+		! Stop processing after too many output lines
+		if (nseltot >= nselmax) then
+			write (logunit,760) nseltot,nselmax
+			exit
+		endif
+
+		! Process passes one-by-one
+		do pass = S%passes(1), S%passes(2), S%passes(3)
+			call rads_open_pass (S, P, cycle, pass)
+			if (P%ndata > 0) call process_pass
+			if (S%debug >= 1 .and. outunit /= logunit) call rads_progress_bar (S, P, nselpass, logunit)
+			call rads_close_pass (S, P)
+		enddo
+
+		! Print out per-cycle statistics, it requested
+		if (stat_mode == cycle_stat) call print_stat
+	enddo
 760 format(/'Maximum number of output records reached (',i9,' >=',i9,')')
 
-! Finish progress bar
-if (S%debug >= 1) write (logunit,*)
+	! Finish progress bar
+	if (S%debug >= 1) write (logunit,*)
 
-! Close file before exit
-if (outunit /= 6) close (outunit)
+	! Close file before exit
+	if (outunit /= 6) close (outunit)
+
+	! Deallocate temporary arrays
+	deallocate (stat, r, q)
+	if (.not.freeform) deallocate (temp)
+
+enddo	! Next satellite
 
 ! Print overall statistics and close RADS
-call rads_stat (S, logunit)
-call rads_end (S)
+call rads_stat (Sats, logunit)
+call rads_end (Sats)
 
 contains
 

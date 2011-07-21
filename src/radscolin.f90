@@ -25,7 +25,7 @@ program radscolin
 ! Usage: radscolin [RADS_options] [options]
 !-----------------------------------------------------------------------
 use rads
-integer(fourbyteint), parameter :: msat = 10
+integer(fourbyteint), parameter :: msat = 5
 type(rads_sat) :: S(msat)
 integer(fourbyteint) :: nsel = 0, reject = 9999, cycle, pass, i, j, ios, &
 	nbins, nsat = 0, ntrx = 0, ntrx0, ntrx1, ptrx0, ptrx1, type_sla = 1, step = 1
@@ -43,12 +43,8 @@ type(stat), allocatable :: pp(:,:)
 
 ! Initialize RADS or issue help
 call synopsis
-S%sat = '' ! Initialize blank
-S%error = rads_noerr
 call rads_init (S)
-
-! If no sat= is given, exit
-if (S(1)%sat == '') call rads_exit ('Need at least one sat= option')
+if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 
 ! Determine how many satellites and cycles.
 ! Also check that the same number of variables have been selected for each satellite
