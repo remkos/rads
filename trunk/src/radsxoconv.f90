@@ -43,8 +43,10 @@ character(len=80) :: arg, filename = '', shortname
 integer(fourbyteint), parameter :: msat = 12
 real(eightbytereal), parameter :: period(msat) = (/6037.582d0,6037.582d0,6037.582d0,6035.928d0,6745.759d0,6745.759d0,6035.928d0, &
 	6037.582d0,6745.759d0,6035.928d0,6745.759d0,5953.579433d0/)
-real(eightbytereal), parameter :: altsig(msat) = (/0.2d0,0.07d0,0.07d0,0.05d0,0.02d0,0.04d0,0.05d0,0.05d0,0.04d0,0.05d0,0.04d0,0.07d0/)
-real(eightbytereal), parameter :: orberr(msat) = (/0.8d0,0.8d0,0.15d0,0.05d0,0.035d0,0.035d0,0.05d0,0.05d0,0.035d0,0.05d0,0.035d0,0.05d0/)
+real(eightbytereal), parameter :: altsig(msat) = (/0.2d0,0.07d0,0.07d0,0.05d0,0.02d0,0.04d0,0.05d0,0.05d0,0.04d0,0.05d0,0.04d0, &
+	0.07d0/)
+real(eightbytereal), parameter :: orberr(msat) = (/0.8d0,0.8d0,0.15d0,0.05d0,0.035d0,0.035d0,0.05d0,0.05d0,0.035d0,0.05d0,0.035d0, &
+	0.05d0/)
 real(eightbytereal), parameter :: inclination(msat) = (/60d0,108.05d0,108.05d0,98.54d0,66.04d0,66.04d0,98.54d0,108.05d0,66.04d0, &
 	98.54d0,66.04d0,92.5d0/)
 !character(len=2) :: sat(11) = (/'g3','ss','gs','e1','tx','pn','e2','g1','j1','n1','j2'/)
