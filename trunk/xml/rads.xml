@@ -1477,7 +1477,7 @@ GNU General Public License for more details.
 	<units>degrees</units>
 	<math>off_nadir_angle2_wf_ku SQRT</math>
 	<netcdf sat="gs pn tx">off_nadir_angle_wf_ku</netcdf> <!--Geosat and T/P actually store off-nadir angle, not squared-->
-	<format>f6.3</format>
+	<format>f5.3</format>
 	<compress>int2 1d-3</compress>
 </var>
 <var name="off_nadir_angle2_wf_ku" field="3002">
@@ -1500,7 +1500,7 @@ GNU General Public License for more details.
 	<units>degrees</units>
 	<math>off_nadir_angle2_pf SQRT</math>
 	<netcdf sat="c2 pn tx">off_nadir_angle_pf</netcdf> <!--T/P and CryoSat store off-nadir angle, not squared-->
-	<format>f6.3</format>
+	<format>f5.3</format>
 	<compress>int2 1d-3</compress>
 </var>
 <var name="off_nadir_angle2_pf" field="3004">
@@ -1518,6 +1518,27 @@ GNU General Public License for more details.
 	<netcdf>off_nadir_angle2_wf_rms_ku</netcdf>
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
+</var>
+<var sat="c2" name="attitude_pitch" field="3006">
+	<long_name>platform pitch angle</long_name>
+	<units>degrees</units>
+	<netcdf>attitude_pitch</netcdf>
+	<format>f5.3</format>
+	<compress>int2 1d-3</compress>
+</var>
+<var sat="c2" name="attitude_roll" field="3007">
+	<long_name>platform roll angle</long_name>
+	<units>degrees</units>
+	<netcdf>attitude_roll</netcdf>
+	<format>f5.3</format>
+	<compress>int2 1d-3</compress>
+</var>
+<var sat="c2" name="attitude_yaw" field="3008">
+	<long_name>platform yaw angle</long_name>
+	<units>degrees</units>
+	<netcdf>attitude_yaw</netcdf>
+	<format>f5.3</format>
+	<compress>int2 1d-3</compress>
 </var>
 <alias name="attitude" field="30">off_nadir_angle2_wf_ku</alias>
 
