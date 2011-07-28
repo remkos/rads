@@ -1477,8 +1477,8 @@ GNU General Public License for more details.
 	<units>degrees</units>
 	<math>off_nadir_angle2_wf_ku SQRT</math>
 	<netcdf sat="gs pn tx">off_nadir_angle_wf_ku</netcdf> <!--Geosat and T/P actually store off-nadir angle, not squared-->
-	<format>f7.4</format>
-	<compress>int2 1d-4</compress>
+	<format>f6.3</format>
+	<compress>int2 1d-3</compress>
 </var>
 <var name="off_nadir_angle2_wf_ku" field="3002">
 	<long_name>off-nadir pointing angle squared from waveform</long_name>
@@ -1499,15 +1499,15 @@ GNU General Public License for more details.
 	<long_name>off-nadir pointing angle from platform</long_name>
 	<units>degrees</units>
 	<math>off_nadir_angle2_pf SQRT</math>
-	<netcdf sat="pn tx">off_nadir_angle_pf</netcdf> <!--T/P stores off-nadir angle, not squared-->
-	<format>f7.4</format>
-	<compress>int2 1d-4</compress>
+	<netcdf sat="c2 pn tx">off_nadir_angle_pf</netcdf> <!--T/P and CryoSat store off-nadir angle, not squared-->
+	<format>f6.3</format>
+	<compress>int2 1d-3</compress>
 </var>
 <var name="off_nadir_angle2_pf" field="3004">
 	<long_name>off-nadir pointing angle squared from platform</long_name>
 	<units>degrees^2</units>
 	<netcdf>off_nadir_angle2_pf</netcdf>
-	<math sat="pn tx">off_nadir_angle_pf SQR</math> <!--Compute attitude^2 from attitude-->
+	<math sat="c2 pn tx">off_nadir_angle_pf SQR</math> <!--Compute attitude^2 from attitude-->
 	<format>f7.4</format>
 	<backup>0</backup>
 	<compress>int2 1d-4</compress>
@@ -1688,8 +1688,8 @@ GNU General Public License for more details.
 <var sat="c2" name="mqe" field="3409">
 	<long_name>mean quadratic error of retracking</long_name>
 	<netcdf>mqe</netcdf>
-	<format>f7.2</format>
-	<compress>int2 1e-2</compress>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
 </var>
 <var name="nr_iter" field="3410">
 	<long_name>number of iterations of retracking</long_name>
