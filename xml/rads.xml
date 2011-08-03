@@ -1523,22 +1523,22 @@ GNU General Public License for more details.
 	<long_name>platform pitch angle</long_name>
 	<units>degrees</units>
 	<netcdf>attitude_pitch</netcdf>
-	<format>f5.3</format>
-	<compress>int2 1d-3</compress>
+	<format>f7.4</format>
+	<compress>int2 1d-4</compress>
 </var>
 <var sat="c2" name="attitude_roll" field="3007">
 	<long_name>platform roll angle</long_name>
 	<units>degrees</units>
 	<netcdf>attitude_roll</netcdf>
-	<format>f5.3</format>
-	<compress>int2 1d-3</compress>
+	<format>f7.4</format>
+	<compress>int2 1d-4</compress>
 </var>
 <var sat="c2" name="attitude_yaw" field="3008">
 	<long_name>platform yaw angle</long_name>
 	<units>degrees</units>
 	<netcdf>attitude_yaw</netcdf>
-	<format>f5.3</format>
-	<compress>int2 1d-3</compress>
+	<format>f7.4</format>
+	<compress>int2 1d-4</compress>
 </var>
 <alias name="attitude" field="30">off_nadir_angle2_wf_ku</alias>
 
@@ -1712,7 +1712,7 @@ GNU General Public License for more details.
 	<format>f6.3</format>
 	<compress>int2 1e-3</compress>
 </var>
-<var name="nr_iter" field="3410">
+<var sat="c2" name="nr_iter" field="3410">
 	<long_name>number of iterations of retracking</long_name>
 	<netcdf>nr_iter</netcdf>
 	<format>f3.0</format>
@@ -1727,10 +1727,16 @@ GNU General Public License for more details.
 </var>
 <var sat="c2" name="noise_floor_rms_ku" field="3412">
 	<long_name>std dev of Ku-band noise floor of waveforms</long_name>
-	<netcdf>noise_floor_rms ku</netcdf>
+	<netcdf>noise_floor_rms_ku</netcdf>
 	<units>dB</units>
 	<format>f7.3</format>
 	<compress>int2 1e-3</compress>
+</var>
+<var sat="c2" name="star_tracker" field="3413">
+	<long_name>active star tracker</long_name>
+	<netcdf>star_tracker</netcdf>
+	<compress>int1</compress>
+	<format>f2.0</format>
 </var>
 <var name="track_mode" field="3415">
 	<long_name>tracking mode</long_name>
