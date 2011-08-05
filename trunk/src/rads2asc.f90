@@ -171,7 +171,7 @@ do j = 1,msat
 
 	! Deallocate temporary arrays
 	deallocate (stat, r, q)
-	if (.not.freeform) deallocate (temp)
+	! No need to deallocate temp ... will be done by rads_end.
 
 enddo	! Next satellite
 
