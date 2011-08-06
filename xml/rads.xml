@@ -1499,7 +1499,8 @@ GNU General Public License for more details.
 	<long_name>off-nadir pointing angle from platform</long_name>
 	<units>degrees</units>
 	<math>off_nadir_angle2_pf SQRT</math>
-	<netcdf sat="c2 pn tx">off_nadir_angle_pf</netcdf> <!--T/P and CryoSat store off-nadir angle, not squared-->
+	<math sat="c2">attitude_pitch attitude_roll HYPOT</math>
+	<netcdf sat="pn tx">off_nadir_angle_pf</netcdf> <!--T/P and CryoSat store off-nadir angle, not squared-->
 	<format>f5.3</format>
 	<compress>int2 1d-3</compress>
 </var>
@@ -1507,7 +1508,8 @@ GNU General Public License for more details.
 	<long_name>off-nadir pointing angle squared from platform</long_name>
 	<units>degrees^2</units>
 	<netcdf>off_nadir_angle2_pf</netcdf>
-	<math sat="c2 pn tx">off_nadir_angle_pf SQR</math> <!--Compute attitude^2 from attitude-->
+	<math sat="c2">attitude_pitch SQR attitude_roll SQR ADD</math>
+	<math sat="pn tx">off_nadir_angle_pf SQR</math> <!--Compute attitude^2 from attitude-->
 	<format>f7.4</format>
 	<backup>0</backup>
 	<compress>int2 1d-4</compress>
@@ -1732,9 +1734,9 @@ GNU General Public License for more details.
 	<format>f7.3</format>
 	<compress>int2 1e-3</compress>
 </var>
-<var sat="c2" name="star_tracker" field="3413">
-	<long_name>active star tracker</long_name>
-	<netcdf>star_tracker</netcdf>
+<var sat="c2" name="flags_star_tracker" field="3413">
+	<long_name>star tracker flags</long_name>
+	<netcdf>flags_star_tracker</netcdf>
 	<compress>int1</compress>
 	<format>f2.0</format>
 </var>
