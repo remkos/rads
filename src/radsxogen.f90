@@ -481,7 +481,8 @@ P%tll => tll
 ! Store track info
 nr%trk = nr%trk + 1
 if (nr%trk > mtrk) stop 'Too many tracks'
-trk(nr%trk) = trk_ (P%equator_lon, P%equator_time, tll(1,1), tll(P%ndata,1), P%ndata, 0, S%satid, P%cycle, P%pass)
+trk(nr%trk) = trk_ (P%equator_lon, P%equator_time, tll(1,1), tll(P%ndata,1), &
+	int(P%ndata,twobyteint), 0_twobyteint, S%satid, int(P%cycle,twobyteint), int(P%pass,twobyteint))
 P%trkid = nr%trk
 
 ! Close the pass file, but keep all its info
@@ -587,8 +588,8 @@ call interpolate (t2, P2%tll(k2:k2+5,:), data(2,:))
 
 ! Write the data to file
 nr%xout = nr%xout + 1
-trk(P1%trkid)%nr_xover = trk(P1%trkid)%nr_xover + 1
-trk(P2%trkid)%nr_xover = trk(P2%trkid)%nr_xover + 1
+trk(P1%trkid)%nr_xover = trk(P1%trkid)%nr_xover + 1_twobyteint
+trk(P2%trkid)%nr_xover = trk(P2%trkid)%nr_xover + 1_twobyteint
 start = (/ 1, nr%xout /)
 call nfs (nf90_put_var (ncid, varid(1), nint4(y / S1%lat%info%scale_factor), start(2:2)))
 call nfs (nf90_put_var (ncid, varid(2), nint4(x / S1%lon%info%scale_factor), start(2:2)))
