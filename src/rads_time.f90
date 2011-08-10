@@ -316,9 +316,9 @@ case (4) ! YYMMDDHHMMSS or YYYYMMDDHHMMSS -> SEC85
 	dd = dd - yy*10000
 	mm = dd/100
 	dd = dd - mm*100
-	hh = ff/1d4
+	hh = floor(ff/1d4)
 	ff = ff - hh*1d4
-	mn = ff/1d2
+	mn = floor(ff/1d2)
 	ff = ff - mn*1d2
 	call ymd2mjd (yy,mm,dd,mjd)
 	sec85 = (mjd-mjd85)*day + hh*3600 + mn*60 + ff
