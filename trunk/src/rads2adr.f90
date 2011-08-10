@@ -234,7 +234,7 @@ end subroutine process_pass
 !***********************************************************************
 
 subroutine close_datafile
-integer(twobyteint), parameter :: extra(2) = (/3,0/)
+integer(twobyteint), parameter :: extra(2) = (/3_twobyteint,0_twobyteint/)
 integer(twobyteint) :: bound(4)
 bound(1:2) = nint2(S%lon%info%limits)
 bound(3:4) = nint2(S%lat%info%limits)

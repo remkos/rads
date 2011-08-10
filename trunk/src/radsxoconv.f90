@@ -50,7 +50,7 @@ real(eightbytereal), parameter :: orberr(msat) = (/0.8d0,0.8d0,0.15d0,0.05d0,0.0
 real(eightbytereal), parameter :: inclination(msat) = (/60d0,108.05d0,108.05d0,98.54d0,66.04d0,66.04d0,98.54d0,108.05d0,66.04d0, &
 	98.54d0,66.04d0,92.5d0/)
 !character(len=2) :: sat(11) = (/'g3','ss','gs','e1','tx','pn','e2','g1','j1','n1','j2'/)
-integer(twobyteint), parameter :: bound(4) = (/-180,180,-90,90/)
+integer(twobyteint), parameter :: bound(4) = int((/-180,180,-90,90/), twobyteint)
 integer(fourbyteint), parameter :: maxtrk = 32768
 logical :: l
 
@@ -236,11 +236,11 @@ do i = 1,x%nr
 	xxf%lat = nint(lat(i)*1d6)
 	xxf%lon = nint(lon(i)*1d6)
 	xxf%time = nint(time(:,i))
-	xxf%track = modulo(track(:,i),maxtrk)
+	xxf%track = int(modulo(track(:,i),maxtrk), twobyteint)
 	xxf%sla = nint(sla(:,i)*1d6)
 	xxf%sla_cor = xxf%sla
 	xxf%omega = nint(omega*360d6)
-	xxf%sigma = nint(altsig(trk(track(:,i))%satid)*1d3)
+	xxf%sigma = nint(altsig(trk(track(:,i))%satid)*1d3, twobyteint)
 	write (10,rec = i+1) xxf
 enddo
 close (10)
@@ -274,7 +274,7 @@ do i = 1,x%nr
 	xxo%lon = nint(lon(i)*1d6)
 	xxo%time(1,:) = floor(time(:,i))
 	xxo%time(2,:) = nint((time(:,i)-xxo%time(1,:))*1d6)
-	xxo%track = modulo(track(:,i),maxtrk)
+	xxo%track = int(modulo(track(:,i),maxtrk), twobyteint)
 	xxo%sla = nint(sla(:,i)*1d6)
 	xxo%alt = nint(alt(:,i)*1d3)
 	write (10,rec = i+1) xxo
@@ -308,7 +308,7 @@ call get_var_2d (id_alt_rate, data(:,:,3))
 open (10, file=trim(shortname)//'.xxo.aux', status='replace', access='direct', form='unformatted', recl=4*naux)
 write (10, rec=1) '@AUX',x%nr,2*naux
 do i = 1,x%nr
-	aux = nint(data(:,i,:)*1d3)
+	aux = nint(data(:,i,:)*1d3, twobyteint)
 	write (10,rec = i+1) aux
 enddo
 close (10)
@@ -332,7 +332,7 @@ do i = 1,t%nr
 		trk(i)%equator_lon = trk(i)%equator_lon + 180d0 * (period(trk(i)%satid) / 86400d0 - 1d0)
 		trk(i)%equator_time = trk(i)%equator_time - 0.5d0 * period(trk(i)%satid)
 	endif
-	xtf%track = modulo(i,maxtrk)
+	xtf%track = int(modulo(i,maxtrk), twobyteint)
 	xtf%satid = trk(i)%satid
 	xtf%nr_xover = trk(i)%nr_xover
 	xtf%nr_alt = trk(i)%nr_alt
@@ -343,7 +343,7 @@ do i = 1,t%nr
 	xtf%start_time = nint(trk(i)%start_time)
 	xtf%end_time = nint(trk(i)%end_time)
 	sig = nint(orberr(trk(i)%satid)*1d6)
-	flags = 256 + modulo(trk(i)%pass,2)
+	flags = int(256 + modulo(trk(i)%pass,2), twobyteint)
 	write (10,rec = i+1) xtf,par,sig,flags
 enddo
 close (10)
@@ -353,7 +353,5 @@ end subroutine write_xtf
 
 subroutine write_xaf
 end subroutine write_xaf
-
-!***********************************************************************
 
 end program radsxoconv

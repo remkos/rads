@@ -2499,7 +2499,7 @@ real(eightbytereal), intent(in), optional :: scale_factor, add_offset
 type(rads_varinfo), pointer :: info
 integer(fourbyteint) :: e, i, n
 integer, parameter :: dimid(1:4) = (/ 1, 2, 3, 4 /)
-integer(onebyteint), parameter :: flag_values(0:9) = (/ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 /)
+integer(onebyteint), parameter :: flag_values(0:9) = int((/ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 /), onebyteint)
 S%error = rads_noerr
 info => var%info
 if (present(nctype)) info%nctype = nctype
