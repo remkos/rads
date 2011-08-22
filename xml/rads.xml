@@ -1106,8 +1106,19 @@ GNU General Public License for more details.
 </var>
 <alias name="topo" field="22">topo_dnsc08</alias>
 
-<var name="tb_187" field="2301">
-	<long_name>radiometer brightness temperature (Ch.1)</long_name>
+<var name="tb_180" field="2301" sat="pn tx">
+	<long_name>radiometer brightness temperature (18.0 GHz)</long_name>
+	<standard_name>surface_brightness_temperature</standard_name>
+	<source>radiometer</source>
+	<units>K</units>
+	<netcdf>tb_180</netcdf>
+	<format>f6.2</format>
+	<compress>int2 1d-2</compress>
+	<comment>Brightness temperatures are unsmoothed</comment>
+</var>
+<alias name="tb1" sat="pn tx">tb_180</alias>
+<var name="tb_187" field="2301" sat="j1 j2">
+	<long_name>radiometer brightness temperature (18.7 GHz)</long_name>
 	<standard_name>surface_brightness_temperature</standard_name>
 	<source>radiometer</source>
 	<units>K</units>
@@ -1116,8 +1127,32 @@ GNU General Public License for more details.
 	<compress>int2 1d-2</compress>
 	<comment>Brightness temperatures are unsmoothed</comment>
 </var>
-<var name="tb_238" field="2302">
-	<long_name>radiometer brightness temperature (Ch.2)</long_name>
+<alias name="tb1" sat="j1 j2">tb_187</alias>
+
+<var name="tb_210" field="2302" sat="pn tx">
+	<long_name>radiometer brightness temperature (21.0 GHz)</long_name>
+	<standard_name>surface_brightness_temperature</standard_name>
+	<source>radiometer</source>
+	<units>K</units>
+	<netcdf>tb_210</netcdf>
+	<format>f6.2</format>
+	<compress>int2 1d-2</compress>
+	<comment>Brightness temperatures are unsmoothed</comment>
+</var>
+<alias name="tb2" field="23" sat="pn tx">tb_210</alias>
+<var name="tb_222" field="2302" sat="g1">
+	<long_name>radiometer brightness temperature (22.2 GHz)</long_name>
+	<standard_name>surface_brightness_temperature</standard_name>
+	<source>radiometer</source>
+	<units>K</units>
+	<netcdf>tb_222</netcdf>
+	<format>f6.2</format>
+	<compress>int2 1d-2</compress>
+	<comment>Brightness temperatures are unsmoothed</comment>
+</var>
+<alias name="tb2" field="23" sat="g1">tb_222</alias>
+<var name="tb_238" field="2302" sat="e1 e2 j1 j2 n1">
+	<long_name>radiometer brightness temperature (23.8 GHz)</long_name>
 	<standard_name>surface_brightness_temperature</standard_name>
 	<source>radiometer</source>
 	<units>K</units>
@@ -1126,8 +1161,21 @@ GNU General Public License for more details.
 	<compress>int2 1d-2</compress>
 	<comment>Brightness temperatures are unsmoothed</comment>
 </var>
-<var name="tb_365" field="2303">
-	<long_name>radiometer brightness temperature (Ch.3)</long_name>
+<alias name="tb2" field="23" sat="e1 e2 j1 j2 n1">tb_238</alias>
+
+<var name="tb_340" field="2303" sat="j1 j2">
+	<long_name>radiometer brightness temperature (34.0 GHz)</long_name>
+	<standard_name>surface_brightness_temperature</standard_name>
+	<source>radiometer</source>
+	<units>K</units>
+	<netcdf>tb_340</netcdf>
+	<format>f6.2</format>
+	<compress>int2 1d-2</compress>
+	<comment>Brightness temperatures are unsmoothed</comment>
+</var>
+<alias name="tb3" sat="j1 j2">tb_340</alias>
+<var name="tb_365" field="2303" sat="e1 e2 n1">
+	<long_name>radiometer brightness temperature (36.5 GHz)</long_name>
 	<standard_name>surface_brightness_temperature</standard_name>
 	<source>radiometer</source>
 	<units>K</units>
@@ -1136,7 +1184,18 @@ GNU General Public License for more details.
 	<compress>int2 1d-2</compress>
 	<comment>Brightness temperatures are unsmoothed</comment>
 </var>
-<alias name="tb" field="23">tb_238</alias>
+<alias name="tb3" sat="e1 e2 n1">tb_365</alias>
+<var name="tb_370" field="2303" sat="g1 pn tx">
+	<long_name>radiometer brightness temperature (37.0 GHz)</long_name>
+	<standard_name>surface_brightness_temperature</standard_name>
+	<source>radiometer</source>
+	<units>K</units>
+	<netcdf>tb_370</netcdf>
+	<format>f6.2</format>
+	<compress>int2 1d-2</compress>
+	<comment>Brightness temperatures are unsmoothed</comment>
+</var>
+<alias name="tb3" sat="g1 pn tx">tb_370</alias>
 
 <var name="peakiness_ku" field="2401">
 	<long_name>Ku-band peakiness</long_name>
@@ -1262,7 +1321,7 @@ GNU General Public License for more details.
 </var>
 <var name="flag_rad_tb2" field="2510">
 	<long_name>quality of 36.5 GHz brightness temperature</long_name>
-	<long_name sat="g1">quality of 27 GHz brightness temperature</long_name>
+	<long_name sat="g1">quality of 37 GHz brightness temperature</long_name>
 	<long_name sat="gs">not used</long_name>
 	<long_name sat="j1 j2">quality of 34.0 GHz brightness temperature</long_name>
 	<long_name sat="pn tx">quality of TMR (bit 1 of TMR_bad)</long_name>
