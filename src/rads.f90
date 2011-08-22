@@ -2173,7 +2173,7 @@ if (n == 0) then
 	n = 1
 else
 	allocate (temp(n+1))
-	temp(1:n) = S%phases
+	temp(1:n) = S%phases(1:n)
 	deallocate (S%phases)
 	S%phases => temp
 	n = n + 1
