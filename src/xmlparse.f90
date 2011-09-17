@@ -504,6 +504,7 @@ do
 		kend = index (info%line, '<')
 	endif
 	idxdat = idxdat + 1
+	if (comment_tag) idxdat = min(idxdat, size(data))
 	if (idxdat <= size(data)) then
 		if (kend >= 1) then
 			data(idxdat) = info%line(1:kend-1)
