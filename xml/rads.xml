@@ -34,8 +34,9 @@ GNU General Public License for more details.
 	<quality_flag sat="n1" action="append">swh_rms_ku peakiness_ku</quality_flag>
 	<comment>sea level determined from satellite altitude - range - all altimetric corrections</comment>
 </var>
+<alias name="ssha">sla</alias>
 
-<var name="time" field="101">
+<var name="time_1985" field="101">
 	<long_name>time</long_name>
 	<standard_name>time</standard_name>
 	<units>seconds since 1985-01-01 00:00:00</units>
@@ -79,7 +80,7 @@ GNU General Public License for more details.
 	<comment>UTC time of measurement.</comment>
 	<format>f16.6</format>
 </var>
-<alias name="f0100" field="1">time</alias>
+<alias name="time" field="1">time_1985</alias>
 
 <var name="lat" field="201">
 	<long_name>latitude</long_name>
@@ -113,7 +114,7 @@ GNU General Public License for more details.
 	<netcdf>alt_jgm3</netcdf>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
-	<comment>Altitude of satellite above the reference ellipsoid</comment>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_dgme04" field="402">
 	<long_name>DGM-E04 orbital altitude</long_name>
@@ -123,18 +124,8 @@ GNU General Public License for more details.
 	<netcdf>alt_dgme04</netcdf>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
-	<comment>Altitude of satellite above the reference ellipsoid</comment>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 	<backup sat="e2">alt_gfz</backup>
-</var>
-<var name="alt_gfz" field="403">
-	<long_name>GFZ orbital altitude</long_name>
-	<standard_name>height_above_reference_ellipsoid</standard_name>
-	<source>GFZ</source>
-	<units>m</units>
-	<netcdf>alt_gfz</netcdf>
-	<format>f11.3</format>
-	<compress>int4 1d-3</compress>
-	<comment>Altitude of satellite above the reference ellipsoid</comment>
 </var>
 <var name="alt_cnes" field="404">
 	<long_name>CNES orbital altitude</long_name>
@@ -144,7 +135,7 @@ GNU General Public License for more details.
 	<netcdf>alt_cnes</netcdf>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
-	<comment>Altitude of satellite above the reference ellipsoid</comment>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_pgs7727" field="405">
 	<long_name>PGS7727 orbital altitude</long_name>
@@ -154,8 +145,9 @@ GNU General Public License for more details.
 	<netcdf>alt_pgs7727</netcdf>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
-	<comment>Altitude of satellite above the reference ellipsoid</comment>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
+<!-- OBSOLETE SOLUTIONS
 <var name="alt_grim5" field="406">
 	<long_name>GRIM5 orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
@@ -164,7 +156,7 @@ GNU General Public License for more details.
 	<netcdf>alt_grim5</netcdf>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
-	<comment>Altitude of satellite above the reference ellipsoid</comment>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_ggm01c" field="407">
 	<long_name>GGM01c orbital altitude</long_name>
@@ -174,7 +166,7 @@ GNU General Public License for more details.
 	<netcdf>alt_ggm01c</netcdf>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
-	<comment>Altitude of satellite above the reference ellipsoid</comment>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_ggm01s" field="408">
 	<long_name>GGM01s orbital altitude</long_name>
@@ -184,18 +176,20 @@ GNU General Public License for more details.
 	<netcdf>alt_ggm01s</netcdf>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
-	<comment>Altitude of satellite above the reference ellipsoid</comment>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_eigg01s" field="409">
-	<long_name>EIGEN-GRACE01s orbital altitude</long_name>
+<var name="alt_eiggc03c" field="412">
+	<long_name>EIGEN-GC03c orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
-	<source>EIGEN-GRACE01s</source>
+	<source>EIGEN-GC03c</source>
 	<units>m</units>
-	<netcdf>alt_eigg01s</netcdf>
+	<netcdf>alt_eiggc03c</netcdf>
+	<backup sat="n1">alt_cnes</backup>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
-	<comment>Altitude of satellite above the reference ellipsoid</comment>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
+-->
 <var name="alt_pgs7777" field="410">
 	<long_name>PGS7777 orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
@@ -204,7 +198,7 @@ GNU General Public License for more details.
 	<netcdf>alt_pgs7777</netcdf>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
-	<comment>Altitude of satellite above the reference ellipsoid</comment>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_ggm02c_itrf2000" field="411">
 	<long_name>GGM02c(ITRF2000) orbital altitude</long_name>
@@ -220,23 +214,7 @@ GNU General Public License for more details.
 		<format>f12.4</format>
 		<compress>int4 1d-4 1300d3</compress>
 	</if>
-	<comment>Altitude of satellite above the reference ellipsoid</comment>
-</var>
-<var name="alt_eiggc03c" field="412">
-	<long_name>EIGEN-GC03c orbital altitude</long_name>
-	<standard_name>height_above_reference_ellipsoid</standard_name>
-	<source>EIGEN-GC03c</source>
-	<units>m</units>
-	<netcdf>alt_eiggc03c</netcdf>
-	<backup sat="n1">alt_cnes</backup>
-	<format>f11.3</format>
-	<compress>int4 1d-3</compress>
-	<if sat="j1 j2">
-		<backup>alt_eiggl04s</backup>
-		<format>f12.4</format>
-		<compress>int4 1d-4 1300d3</compress>
-	</if>
-	<comment>Altitude of satellite above the reference ellipsoid</comment>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_ggm02c_itrf2005" field="413">
 	<long_name>GGM02c(ITRF2005) orbital altitude</long_name>
@@ -252,7 +230,7 @@ GNU General Public License for more details.
 		<format>f12.4</format>
 		<compress>int4 1d-4 1300d3</compress>
 	</if>
-	<comment>Altitude of satellite above the reference ellipsoid</comment>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_eiggl04s" field="414">
 	<long_name>EIGEN-GL04c orbital altitude</long_name>
@@ -263,7 +241,7 @@ GNU General Public License for more details.
 	<backup sat="n1 c2">alt_cnes</backup>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
-	<comment>Altitude of satellite above the reference ellipsoid</comment>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 	<if sat="j1 j2">
 		<format>f12.4</format>
 		<compress>int4 1d-4 1300d3</compress>
@@ -283,7 +261,7 @@ GNU General Public License for more details.
 		<format>f12.4</format>
 		<compress>int4 1d-4 1300d3</compress>
 	</if>
-	<comment>Altitude of satellite above the reference ellipsoid</comment>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_gps" field="416">
 	<long_name>GPS orbital altitude</long_name>
@@ -298,7 +276,23 @@ GNU General Public License for more details.
 		<format>f12.4</format>
 		<compress>int4 1d-4 1300d3</compress>
 	</if>
-	<comment>Altitude of satellite above the reference ellipsoid</comment>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<var name="alt_eig6" field="417">
+	<long_name>ESOC EIGEN-6C orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>ESOC, EIGEN-6C</source>
+	<units>m</units>
+	<netcdf>alt_eig6</netcdf>
+	<compress>int4 1d-3</compress>
+	<format>f11.3</format>
+	<if sat="j1 j2">
+		<backup>alt_eiggl04s</backup>
+		<format>f12.4</format>
+		<compress>int4 1d-4 1300d3</compress>
+	</if>
+	<backup sat="n1">alt_cnes</backup>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_reaper" field="420">
 	<long_name>REAPER/COMBI orbital altitude</long_name>
@@ -308,7 +302,7 @@ GNU General Public License for more details.
 	<netcdf>alt_reaper</netcdf>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
-	<comment>Altitude of satellite above the reference ellipsoid</comment>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_reaper_deos" field="421">
 	<long_name>REAPER/DEOS orbital altitude</long_name>
@@ -318,7 +312,7 @@ GNU General Public License for more details.
 	<netcdf>alt_reaper_deos</netcdf>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
-	<comment>Altitude of satellite above the reference ellipsoid</comment>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_reaper_gfz" field="422">
 	<long_name>REAPER/GFZ orbital altitude</long_name>
@@ -328,7 +322,7 @@ GNU General Public License for more details.
 	<netcdf>alt_reaper_gfz</netcdf>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
-	<comment>Altitude of satellite above the reference ellipsoid</comment>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_reaper_esoc" field="423">
 	<long_name>REAPER/ESOC orbital altitude</long_name>
@@ -338,16 +332,15 @@ GNU General Public License for more details.
 	<netcdf>alt_reaper_esoc</netcdf>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
-	<comment>Altitude of satellite above the reference ellipsoid</comment>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<alias name="alt" field="4">alt_jgm3</alias>
-<alias name="alt" sat="c2">alt_cnes</alias>
-<alias name="alt" sat="e1">alt_reaper</alias>
-<alias name="alt" sat="e2">alt_dgme04</alias>
-<alias name="alt" sat="g1">alt_pgs7777</alias>
-<alias name="alt" sat="gs">alt_gdrcp</alias>
-<alias name="alt" sat="j1 j2 n1">alt_eiggl04s</alias>
-<alias name="alt" sat="pn tx">alt_gdrcp</alias>
+<alias name="alt" field="4" sat="c2">alt_cnes</alias>
+<alias name="alt" field="4" sat="e1">alt_reaper</alias>
+<alias name="alt" field="4" sat="e2">alt_dgme04</alias>
+<alias name="alt" field="4" sat="g1">alt_pgs7777</alias>
+<alias name="alt" field="4" sat="gs">alt_gdrcp</alias>
+<alias name="alt" field="4" sat="j1 j2 n1">alt_eiggl04s</alias>
+<alias name="alt" field="4" sat="pn tx">alt_gdrcp</alias>
 
 <var name="alt_rate" field="501">
 	<long_name>orbital altitude rate</long_name>
@@ -429,6 +422,7 @@ GNU General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>A dry tropospheric correction must be added to range to correct for dry troposphere delays</comment>
 </var>
+<!--
 <var name="dry_tropo_ncep2" field="708">
 	<long_name>NCEP(reanalysis2) dry tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_dry_troposphere</standard_name>
@@ -440,6 +434,7 @@ GNU General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>A dry tropospheric correction must be added to range to correct for dry troposphere delays</comment>
 </var>
+-->
 <var name="dry_tropo_era" field="709">
 	<long_name>ERA dry tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_dry_troposphere</standard_name>
@@ -524,6 +519,7 @@ GNU General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
 </var>
+<!--
 <var name="wet_tropo_ncep2" field="808">
 	<long_name>NCEP(reanalysis2) wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
@@ -535,6 +531,7 @@ GNU General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
 </var>
+-->
 <var name="wet_tropo_era" field="809">
 	<long_name>ERA wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
@@ -547,7 +544,7 @@ GNU General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
 </var>
-<var name="wet_tropo_rad_enh" field="810">
+<var name="wet_tropo_rad_enh" field="810" sat="j1 j2">
 	<long_name>enhanced radiometer wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
 	<source>radiometer with coastal correction</source>
@@ -1043,8 +1040,17 @@ GNU General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<var name="range_rms_s" field="2004">
+<var name="range_rms_c" field="2004" sat="j1 j2 tx">
 	<long_name>std dev of C-band range</long_name>
+	<units>m</units>
+	<limits>0.0 0.4</limits>
+	<netcdf>range_rms_c</netcdf>
+	<format>f6.4</format>
+	<compress>int2 1d-4</compress>
+	<comment>Based on valid high-rate measurements</comment>
+</var>
+<var name="range_rms_s" field="2004" sat="n1">
+	<long_name>std dev of S-band range</long_name>
 	<units>m</units>
 	<limits>0.0 0.4</limits>
 	<netcdf>range_rms_s</netcdf>
@@ -1063,10 +1069,10 @@ GNU General Public License for more details.
 	<format>f3.0</format>
 	<compress>int1</compress>
 </var>
-<var name="range_numval_s" field="2102">
+<var name="range_numval_c" field="2102">
 	<long_name>number of valid C-band measurements</long_name>
 	<limits>16.5 20.5</limits>
-	<netcdf>range_numval_s</netcdf>
+	<netcdf>range_numval_c</netcdf>
 	<format>f3.0</format>
 	<compress>int1</compress>
 </var>
@@ -1972,6 +1978,17 @@ GNU General Public License for more details.
 	<compress>int2 1d-2</compress>
 </var>
 <alias name="f4800" field="48">sst</alias>
+
+<var name="dry_tropo_airtide" field="4901">
+	<long_name>air tide correction to the dry tropospheric correction</long_name>
+	<units>m</units>
+	<netcdf>dry_tropo_airtide</netcdf>
+	<format>f7.4</format>
+	<compress>int1 1d-4</compress>
+	<comment>add to dry tropospheric correction to account for missing S1 and S2 tidal signal</comment>
+</var>
+<alias name="f4900" field="49">dry_tropo_airtide</alias>
+
 <var name="first_meas_time" field="9901">
 	<long_name>time of first measurement in pass</long_name>
 	<units>seconds since 1985-01-01 00:00:00</units>
@@ -2161,7 +2178,7 @@ GNU General Public License for more details.
 		<mission>Exact Repeat Mission</mission>
 		<cycles>1 260</cycles>
 		<passes>1 254</passes>
-		<repeat>9.91564185 254</repeat>
+		<repeat>9.91564280 254</repeat>
 		<ref_pass>2002-02-04T01:35:59 99.92 3 1</ref_pass>
 		<start_time>2002-01-15</start_time>
 	</phase>
@@ -2169,7 +2186,7 @@ GNU General Public License for more details.
 		<mission>Interleaved Mission</mission>
 		<cycles>262 400</cycles>
 		<passes>1 254</passes>
-		<repeat>9.915642 254</repeat>
+		<repeat>9.91564280 254</repeat>
 		<ref_pass>2009-02-20T04:19:04 98.50 263 1</ref_pass>
 		<start_time>2009-02-10</start_time>
 	</phase>
@@ -2185,7 +2202,7 @@ GNU General Public License for more details.
 		<mission>Exact Repeat Mission</mission>
 		<cycles>0 200</cycles>
 		<passes>1 254</passes>
-		<repeat>9.91564185 254</repeat>
+		<repeat>9.91564280 254</repeat>
 		<ref_pass>2008-07-12 01:48:13 99.92 1 1</ref_pass>
 		<start_time>2008-07-04</start_time>
 	</phase>
@@ -2225,7 +2242,7 @@ GNU General Public License for more details.
 		<mission>Exact Repeat Mission</mission>
 		<cycles>1 361</cycles>
 		<passes>1 254</passes>
-		<repeat>9.91564185 254</repeat>
+		<repeat>9.91564280 254</repeat>
 		<ref_pass>1992-10-03 02:04:51 99.92 2 1</ref_pass>
 		<start_time>1992-10-01</start_time>
 	</phase>
@@ -2241,7 +2258,7 @@ GNU General Public License for more details.
 		<mission>Exact Repeat Mission</mission>
 		<cycles>1 364</cycles>
 		<passes>1 254</passes>
-		<repeat>9.91564185 254</repeat>
+		<repeat>9.91564280 254</repeat>
 		<ref_pass>1992-10-03 02:04:51 99.92 2 1</ref_pass>
 		<start_time>1992-09-25</start_time>
 	</phase>
