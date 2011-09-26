@@ -379,11 +379,11 @@ GNU General Public License for more details.
 		<compress>int4 1d-4 1300d3</compress>
 	</if>
 </var>
-<var name="range_s" field="602">
+<var sat="j1 j2 tx" name="range_c" field="602">
 	<long_name>C-band range corrected for instr. effects</long_name>
 	<standard_name>altimeter_range</standard_name>
 	<units>m</units>
-	<netcdf>range_s</netcdf>
+	<netcdf>range_c</netcdf>
 	<format>f11.3</format>
 	<compress>int3 1d-4</compress>
 	<if sat="j1 j2">
@@ -391,6 +391,15 @@ GNU General Public License for more details.
 		<compress>int4 1d-4 1300d3</compress>
 	</if>
 </var>
+<var sat="n1" name="range_s" field="602">
+	<long_name>S-band range corrected for instr. effects</long_name>
+	<standard_name>altimeter_range</standard_name>
+	<units>m</units>
+	<netcdf>range_s</netcdf>
+	<format>f11.3</format>
+	<compress>int3 1d-4</compress>
+</var>
+
 <var name="range_corrected" field="603">
 	<long_name>corrected altimeter range</long_name>
 	<standard_name>altimeter_range</standard_name>
@@ -645,7 +654,7 @@ GNU General Public License for more details.
 <alias name="iono" sat="j1 j2 n1 tx">iono_alt_smooth</alias>
 
 <var name="inv_bar_static" field="1001">
-	<long_name>inverse barometer correction</long_name>
+	<long_name>static inverse barometer correction</long_name>
 	<standard_name>sea_surface_height_correction_due_to_air_pressure_at_low_frequency</standard_name>
 	<source>ECMWF</source>
 	<units>m</units>
@@ -802,8 +811,9 @@ GNU General Public License for more details.
 </var>
 <alias name="f1400" field="14">tide_pole</alias>
 
-<var name="ssb_bm3" field="1501">
+<var sat="e1 e2 g1 gs pn tx" name="ssb_bm3" field="1501">
 	<long_name>BM3 sea state bias</long_name>
+	<long_name sat="pn tx">BM4 sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<source>BM3 model</source>
 	<units>m</units>
@@ -813,7 +823,7 @@ GNU General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
-<var name="ssb_cls" field="1502">
+<var sat="j1 j2 n1 tx" name="ssb_cls" field="1502">
 	<long_name>CLS non-parametric sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<source>CLS</source>
@@ -858,16 +868,7 @@ GNU General Public License for more details.
 	<format>f10.4</format>
 	<compress>int4 1d-4</compress>
 </var>
-<var name="geoid_egm96" field="1601">
-	<long_name>EGM96 geoid height</long_name>
-	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
-	<source>EGM96 gravity field</source>
-	<units>m</units>
-	<limits>-200 200</limits>
-	<netcdf>geoid_egm96</netcdf>
-	<format>f10.4</format>
-	<compress>int4 1d-4</compress>
-</var>
+<!--
 <var name="geoid_ggm02c" field="1608">
 	<long_name>GGM02c geoid height</long_name>
 	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
@@ -888,6 +889,7 @@ GNU General Public License for more details.
 	<format>f10.4</format>
 	<compress>int4 1d-4</compress>
 </var>
+-->
 <var name="geoid_egm2008" field="1610">
 	<long_name>EGM2008 geoid height</long_name>
 	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
@@ -898,6 +900,7 @@ GNU General Public License for more details.
 	<format>f10.4</format>
 	<compress>int4 1d-4</compress>
 </var>
+<alias name="geoid">geoid_egm2008</alias>
 <var name="mss_egm2008" field="1611">
 	<long_name>EGM2008 mean sea surface height</long_name>
 	<source>EGM2008</source>
@@ -923,16 +926,25 @@ GNU General Public License for more details.
 	<standard_name>sea_surface_wave_significant_height</standard_name>
 	<units>m</units>
 	<limits>0 8</limits>
-        <limits sat="n1">-0.5 8.0</limits> <!--Due to model bias and noise, allow negative values-->
+        <limits sat="c2 n1">-0.5 8.0</limits> <!--Due to model bias and noise, allow negative values-->
 	<netcdf>swh_ku</netcdf>
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var name="swh_s" field="1702">
+<var sat="j1 j2 tx" name="swh_c" field="1702">
 	<long_name>C-band significant wave height</long_name>
 	<standard_name>sea_surface_wave_significant_height</standard_name>
 	<units>m</units>
 	<limits>0 8</limits>
+	<netcdf>swh_c</netcdf>
+	<format>f6.3</format>
+	<compress>int2 1d-3</compress>
+</var>
+<var sat="n1" name="swh_s" field="1702">
+	<long_name>S-band significant wave height</long_name>
+	<standard_name>sea_surface_wave_significant_height</standard_name>
+	<units>m</units>
+	<limits>-0.5 8</limits>
 	<netcdf>swh_s</netcdf>
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
@@ -948,8 +960,17 @@ GNU General Public License for more details.
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var name="sig0_s" field="1802">
+<var sat="j1 j2 tx" name="sig0_c" field="1802">
 	<long_name>C-band backscatter coefficient</long_name>
+	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
+	<units>dB</units>
+	<limits>6 27</limits>
+	<netcdf>sig0_c</netcdf>
+	<format>f6.3</format>
+	<compress>int2 1d-3</compress>
+</var>
+<var sat="n1" name="sig0_s" field="1802">
+	<long_name>S-band backscatter coefficient</long_name>
 	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 	<units>dB</units>
 	<limits>6 27</limits>
@@ -1031,7 +1052,7 @@ GNU General Public License for more details.
 	<long_name>std dev of Ku-band range</long_name>
 	<units>m</units>
 	<limits>0.0 0.4</limits>
-	<limits sat="g1 gs">0.0 0.25</limits> <!--GFO and Geosat on-board a-b retrackers smooth the data-->
+	<limits sat="g1 gs">0.0 0.25</limits> <!--GFO and Geosat on-board a-b trackers smooth the data-->
 	<limits sat="j1">0.0 0.2</limits> <!--Retracker noise on Jason-1 is lower than others-->
 	<limits sat="j2">0.00 0.17</limits> <!--Retracker noise on Jason-2 is lower than others-->
 	<limits sat="tx">0.00 0.15</limits> <!--TOPEX a-b tracker leads to much lower std dev than other satellites-->
@@ -1040,7 +1061,7 @@ GNU General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<var name="range_rms_c" field="2004" sat="j1 j2 tx">
+<var sat="j1 j2 tx" name="range_rms_c" field="2004">
 	<long_name>std dev of C-band range</long_name>
 	<units>m</units>
 	<limits>0.0 0.4</limits>
@@ -1049,7 +1070,7 @@ GNU General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<var name="range_rms_s" field="2004" sat="n1">
+<var sat="n1" name="range_rms_s" field="2004">
 	<long_name>std dev of S-band range</long_name>
 	<units>m</units>
 	<limits>0.0 0.4</limits>
@@ -1112,112 +1133,129 @@ GNU General Public License for more details.
 </var>
 <alias name="topo" field="22">topo_dnsc08</alias>
 
-<var name="tb_180" field="2301" sat="pn tx">
-	<long_name>radiometer brightness temperature (18.0 GHz)</long_name>
-	<standard_name>surface_brightness_temperature</standard_name>
-	<source>radiometer</source>
-	<units>K</units>
-	<netcdf>tb_180</netcdf>
-	<format>f6.2</format>
-	<compress>int2 1d-2</compress>
-	<comment>Brightness temperatures are unsmoothed</comment>
-</var>
-<alias name="tb1" sat="pn tx">tb_180</alias>
-<var name="tb_187" field="2301" sat="j1 j2">
-	<long_name>radiometer brightness temperature (18.7 GHz)</long_name>
-	<standard_name>surface_brightness_temperature</standard_name>
-	<source>radiometer</source>
-	<units>K</units>
-	<netcdf>tb_187</netcdf>
-	<format>f6.2</format>
-	<compress>int2 1d-2</compress>
-	<comment>Brightness temperatures are unsmoothed</comment>
-</var>
-<alias name="tb1" sat="j1 j2">tb_187</alias>
+<if sat="pn tx">
+	<var name="tb_180" field="2301">
+		<long_name>radiometer brightness temperature (18.0 GHz)</long_name>
+		<standard_name>surface_brightness_temperature</standard_name>
+		<source>radiometer</source>
+		<units>K</units>
+		<netcdf>tb_180</netcdf>
+		<format>f6.2</format>
+		<compress>int2 1d-2</compress>
+		<comment>Brightness temperatures are unsmoothed</comment>
+	</var>
+	<alias name="tb1">tb_180</alias>
+</if>
+<if sat="j1 j2">
+	<var name="tb_187" field="2301">
+		<long_name>radiometer brightness temperature (18.7 GHz)</long_name>
+		<standard_name>surface_brightness_temperature</standard_name>
+		<source>radiometer</source>
+		<units>K</units>
+		<netcdf>tb_187</netcdf>
+		<format>f6.2</format>
+		<compress>int2 1d-2</compress>
+		<comment>Brightness temperatures are unsmoothed</comment>
+	</var>
+	<alias name="tb1">tb_187</alias>
+</if>
 
-<var name="tb_210" field="2302" sat="pn tx">
-	<long_name>radiometer brightness temperature (21.0 GHz)</long_name>
-	<standard_name>surface_brightness_temperature</standard_name>
-	<source>radiometer</source>
-	<units>K</units>
-	<netcdf>tb_210</netcdf>
-	<format>f6.2</format>
-	<compress>int2 1d-2</compress>
-	<comment>Brightness temperatures are unsmoothed</comment>
-</var>
-<alias name="tb2" field="23" sat="pn tx">tb_210</alias>
-<var name="tb_222" field="2302" sat="g1">
-	<long_name>radiometer brightness temperature (22.2 GHz)</long_name>
-	<standard_name>surface_brightness_temperature</standard_name>
-	<source>radiometer</source>
-	<units>K</units>
-	<netcdf>tb_222</netcdf>
-	<format>f6.2</format>
-	<compress>int2 1d-2</compress>
-	<comment>Brightness temperatures are unsmoothed</comment>
-</var>
-<alias name="tb2" field="23" sat="g1">tb_222</alias>
-<var name="tb_238" field="2302" sat="e1 e2 j1 j2 n1">
-	<long_name>radiometer brightness temperature (23.8 GHz)</long_name>
-	<standard_name>surface_brightness_temperature</standard_name>
-	<source>radiometer</source>
-	<units>K</units>
-	<netcdf>tb_238</netcdf>
-	<format>f6.2</format>
-	<compress>int2 1d-2</compress>
-	<comment>Brightness temperatures are unsmoothed</comment>
-</var>
-<alias name="tb2" field="23" sat="e1 e2 j1 j2 n1">tb_238</alias>
+<if sat="pn tx">
+	<var name="tb_210" field="2302">
+		<long_name>radiometer brightness temperature (21.0 GHz)</long_name>
+		<standard_name>surface_brightness_temperature</standard_name>
+		<source>radiometer</source>
+		<units>K</units>
+		<netcdf>tb_210</netcdf>
+		<format>f6.2</format>
+		<compress>int2 1d-2</compress>
+		<comment>Brightness temperatures are unsmoothed</comment>
+	</var>
+	<alias name="tb2" field="23">tb_210</alias>
+</if>
+<if sat="g1">
+		<var name="tb_222" field="2302" sat="g1">
+		<long_name>radiometer brightness temperature (22.2 GHz)</long_name>
+		<standard_name>surface_brightness_temperature</standard_name>
+		<source>radiometer</source>
+		<units>K</units>
+		<netcdf>tb_222</netcdf>
+		<format>f6.2</format>
+		<compress>int2 1d-2</compress>
+		<comment>Brightness temperatures are unsmoothed</comment>
+	</var>
+	<alias name="tb2" field="23">tb_222</alias>
+</if>
+<if sat="e1 e2 j1 j2 n1">
+	<var name="tb_238" field="2302">
+		<long_name>radiometer brightness temperature (23.8 GHz)</long_name>
+		<standard_name>surface_brightness_temperature</standard_name>
+		<source>radiometer</source>
+		<units>K</units>
+		<netcdf>tb_238</netcdf>
+		<format>f6.2</format>
+		<compress>int2 1d-2</compress>
+		<comment>Brightness temperatures are unsmoothed</comment>
+	</var>
+	<alias name="tb2" field="23">tb_238</alias>
+</if>
 
-<var name="tb_340" field="2303" sat="j1 j2">
-	<long_name>radiometer brightness temperature (34.0 GHz)</long_name>
-	<standard_name>surface_brightness_temperature</standard_name>
-	<source>radiometer</source>
-	<units>K</units>
-	<netcdf>tb_340</netcdf>
-	<format>f6.2</format>
-	<compress>int2 1d-2</compress>
-	<comment>Brightness temperatures are unsmoothed</comment>
-</var>
-<alias name="tb3" sat="j1 j2">tb_340</alias>
-<var name="tb_365" field="2303" sat="e1 e2 n1">
-	<long_name>radiometer brightness temperature (36.5 GHz)</long_name>
-	<standard_name>surface_brightness_temperature</standard_name>
-	<source>radiometer</source>
-	<units>K</units>
-	<netcdf>tb_365</netcdf>
-	<format>f6.2</format>
-	<compress>int2 1d-2</compress>
-	<comment>Brightness temperatures are unsmoothed</comment>
-</var>
-<alias name="tb3" sat="e1 e2 n1">tb_365</alias>
-<var name="tb_370" field="2303" sat="g1 pn tx">
-	<long_name>radiometer brightness temperature (37.0 GHz)</long_name>
-	<standard_name>surface_brightness_temperature</standard_name>
-	<source>radiometer</source>
-	<units>K</units>
-	<netcdf>tb_370</netcdf>
-	<format>f6.2</format>
-	<compress>int2 1d-2</compress>
-	<comment>Brightness temperatures are unsmoothed</comment>
-</var>
-<alias name="tb3" sat="g1 pn tx">tb_370</alias>
+<if sat="j1 j2">
+	<var name="tb_340" field="2303">
+		<long_name>radiometer brightness temperature (34.0 GHz)</long_name>
+		<standard_name>surface_brightness_temperature</standard_name>
+		<source>radiometer</source>
+		<units>K</units>
+		<netcdf>tb_340</netcdf>
+		<format>f6.2</format>
+		<compress>int2 1d-2</compress>
+		<comment>Brightness temperatures are unsmoothed</comment>
+	</var>
+	<alias name="tb3">tb_340</alias>
+</if>
+<if sat="e1 e2 n1">
+	<var name="tb_365" field="2303">
+		<long_name>radiometer brightness temperature (36.5 GHz)</long_name>
+		<standard_name>surface_brightness_temperature</standard_name>
+		<source>radiometer</source>
+		<units>K</units>
+		<netcdf>tb_365</netcdf>
+		<format>f6.2</format>
+		<compress>int2 1d-2</compress>
+		<comment>Brightness temperatures are unsmoothed</comment>
+	</var>
+	<alias name="tb3">tb_365</alias>
+</if>
+<if sat="g1 pn tx">
+	<var name="tb_370" field="2303">
+		<long_name>radiometer brightness temperature (37.0 GHz)</long_name>
+		<standard_name>surface_brightness_temperature</standard_name>
+		<source>radiometer</source>
+		<units>K</units>
+		<netcdf>tb_370</netcdf>
+		<format>f6.2</format>
+		<compress>int2 1d-2</compress>
+		<comment>Brightness temperatures are unsmoothed</comment>
+	</var>
+	<alias name="tb3">tb_370</alias>
+</if>
 
-<var name="peakiness_ku" field="2401">
+<var sat="n1" name="peakiness_ku" field="2401">
 	<long_name>Ku-band peakiness</long_name>
 	<limits>1.4 1.9</limits>
 	<netcdf>peakiness_ku</netcdf>
 	<format>f6.2</format>
 	<compress>int2 1d-2</compress>
 </var>
-<var name="peakiness_s" field="2402">
-	<long_name>C-band peakiness</long_name>
+<var sat="n1" name="peakiness_s" field="2402">
+	<long_name>S-band peakiness</long_name>
 	<limits>1.4 1.9</limits>
 	<netcdf>peakiness_s</netcdf>
 	<format>f6.2</format>
 	<compress>int2 1d-2</compress>
 </var>
-<alias name="peakiness" field="24">peakiness_ku</alias>
+<alias sat="n1" name="peakiness" field="24">peakiness_ku</alias>
+
 <var name="flag_status" field="2516">
 	<long_name>hardware/software status</long_name>
 	<long_name sat="e2 g1 gs">not used</long_name>
@@ -1454,10 +1492,10 @@ GNU General Public License for more details.
 	<compress>int2 1d-3</compress>
 	<comment>Range bias already added to range</comment>
 </var>
-<var name="drange_swh_att_s" field="2706">
+<var sat="tx" name="drange_swh_att_c" field="2706">
 	<long_name>C-band range correction due to SWH/attitude</long_name>
 	<units>m</units>
-	<netcdf>drange_swh_att_s</netcdf>
+	<netcdf>drange_swh_att_c</netcdf>
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
 	<comment>Range bias already added to range</comment>
@@ -1492,7 +1530,7 @@ GNU General Public License for more details.
 	<long_name>std dev of Ku-band significant wave height</long_name>
 	<units>m</units>
 	<limits>0.0 2.1</limits>
-	<limits sat="g1">0.0 0.5</limits> <!--GFO on-board a-b retracker smoothes the data-->
+	<limits sat="g1">0.0 0.5</limits> <!--GFO on-board a-b tracker smoothes the data-->
 	<limits sat="j1 j2">0.0 1.5</limits> <!--Retracker noise on Jason-1 is lower than others-->
 	<limits sat="tx">0.0 0.9</limits> <!--TOPEX a-b tracker leads to much lower std dev than other satellites-->
 	<netcdf>swh_rms_ku</netcdf>
@@ -1500,8 +1538,17 @@ GNU General Public License for more details.
 	<compress>int2 1d-3</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<var name="swh_rms_s" field="2804">
+<var sat="j1 j2 tx" name="swh_rms_c" field="2804">
 	<long_name>std dev of C-band significant wave height</long_name>
+	<units>m</units>
+	<limits>0.0 2.1</limits>
+	<netcdf>swh_rms_s</netcdf>
+	<format>f5.3</format>
+	<compress>int2 1d-3</compress>
+	<comment>Based on valid high-rate measurements</comment>
+</var>
+<var sat="n1" name="swh_rms_s" field="2804">
+	<long_name>std dev of S-band significant wave height</long_name>
 	<units>m</units>
 	<limits>0.0 2.1</limits>
 	<netcdf>swh_rms_s</netcdf>
@@ -1527,8 +1574,16 @@ GNU General Public License for more details.
 	<limits>0.0 1.0</limits>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<var name="sig0_rms_s" field="2904">
+<var sat="j1 j2 tx" name="sig0_rms_c" field="2904">
 	<long_name>std dev of C-band backscatter coefficient</long_name>
+	<units>dB</units>
+	<netcdf>sig0_rms_c</netcdf>
+	<format>f5.3</format>
+	<compress>int2 1d-3</compress>
+	<comment>Based on valid high-rate measurements</comment>
+</var>
+<var sat="n1" name="sig0_rms_s" field="2904">
+	<long_name>std dev of S-band backscatter coefficient</long_name>
 	<units>dB</units>
 	<netcdf>sig0_rms_s</netcdf>
 	<format>f5.3</format>
@@ -1609,7 +1664,7 @@ GNU General Public License for more details.
 </var>
 <alias name="attitude" field="30">off_nadir_angle2_wf_ku</alias>
 
-<var name="dswh_ku" field="3101">
+<var sat="tx" name="dswh_ku" field="3101">
 	<long_name>Ku-band significant wave height bias</long_name>
 	<units>m</units>
 	<netcdf>dswh_ku</netcdf>
@@ -1618,16 +1673,16 @@ GNU General Public License for more details.
 	<compress>int2 1d-3</compress>
 	<comment>Bias already added to significant wave height</comment>
 </var>
-<var name="dswh_s" field="3102">
+<var sat="tx" name="dswh_c" field="3102">
 	<long_name>C-band significant wave height bias</long_name>
 	<units>m</units>
-	<netcdf>dswh_s</netcdf>
+	<netcdf>dswh_c</netcdf>
 	<format>f6.3</format>
 	<backup>0</backup>
 	<compress>int2 1d-3</compress>
 	<comment>Bias already added to significant wave height</comment>
 </var>
-<var name="dswh_swh_att_ku" field="3103">
+<var sat="pn tx" name="dswh_swh_att_ku" field="3103">
 	<long_name>Ku-band significant wave height correction due to SWH/attitude</long_name>
 	<units>m</units>
 	<netcdf>dswh_swh_att_ku</netcdf>
@@ -1635,17 +1690,17 @@ GNU General Public License for more details.
 	<compress>int2 1d-3</compress>
 	<comment>Bias already added to significant wave height</comment>
 </var>
-<var name="dswh_swh_att_s" field="3104">
+<var sat="tx" name="dswh_swh_att_c" field="3104">
 	<long_name>C-band significant wave height correction due to SWH/attitude</long_name>
 	<units>m</units>
-	<netcdf>dswh_swh_att_s</netcdf>
+	<netcdf>dswh_swh_att_c</netcdf>
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
 	<comment>Bias already added to significant wave height</comment>
 </var>
-<alias name="dswh" field="31">dswh_ku</alias>
+<alias sat="tx" name="dswh" field="31">dswh_ku</alias>
 
-<var name="dsig0_ku" field="3201">
+<var sat="e1 e2 tx" name="dsig0_ku" field="3201">
 	<long_name>Ku-band backscatter coefficient bias</long_name>
 	<units>dB</units>
 	<netcdf>dsig0_ku</netcdf>
@@ -1654,10 +1709,10 @@ GNU General Public License for more details.
 	<compress>int2 1d-3</compress>
 	<comment>Bias already added to backscatter coefficient</comment>
 </var>
-<var name="dsig0_s" field="3202">
+<var sat="tx" name="dsig0_c" field="3202">
 	<long_name>C-band backscatter coefficient bias</long_name>
 	<units>dB</units>
-	<netcdf>dsig0_s</netcdf>
+	<netcdf>dsig0_c</netcdf>
 	<format>f6.3</format>
 	<backup>0</backup>
 	<compress>int2 1d-3</compress>
@@ -1671,15 +1726,23 @@ GNU General Public License for more details.
 	<compress>int1 1d-2</compress>
 	<comment>Bias already added to backscatter coefficient</comment>
 </var>
-<var name="dsig0_atmos_s" field="3204">
+<var sat="j1 j2 tx" name="dsig0_atmos_c" field="3204">
 	<long_name>C-band backscatter coefficient correction due to atmosphere/attitude</long_name>
+	<units>dB</units>
+	<netcdf>dsig0_atmos_c</netcdf>
+	<format>f6.2</format>
+	<compress>int1 1d-2</compress>
+	<comment>Bias already added to backscatter coefficient</comment>
+</var>
+<var sat="n1" name="dsig0_atmos_s" field="3204">
+	<long_name>S-band backscatter coefficient correction due to atmosphere/attitude</long_name>
 	<units>dB</units>
 	<netcdf>dsig0_atmos_s</netcdf>
 	<format>f6.2</format>
 	<compress>int1 1d-2</compress>
 	<comment>Bias already added to backscatter coefficient</comment>
 </var>
-<var name="dsig0_swh_att" field="3205">
+<var sat="c2" name="dsig0_swh_att" field="3205">
 	<long_name>backscatter coefficient correction due to SWH/attitude</long_name>
 	<units>dB</units>
 	<netcdf>dsig0_swh_att</netcdf>
@@ -1687,7 +1750,7 @@ GNU General Public License for more details.
 	<compress>int1 1d-2</compress>
 	<comment>Bias already added to backscatter coefficient</comment>
 </var>
-<var name="dsig0_range" field="3206">
+<var sat="c2" name="dsig0_range" field="3206>
 	<long_name>backscatter coefficient correction due to range</long_name>
 	<units>dB</units>
 	<netcdf>dsig0_range</netcdf>
@@ -1695,7 +1758,7 @@ GNU General Public License for more details.
 	<compress>int1 1d-2</compress>
 	<comment>Bias already added to backscatter coefficient</comment>
 </var>
-<var name="dsig0_temp" field="3207">
+<var sat="c2" name="dsig0_temp" field="3207>
 	<long_name>backscatter coefficient correction due to temperature</long_name>
 	<units>dB</units>
 	<netcdf>dsig0_temp</netcdf>
@@ -1703,7 +1766,7 @@ GNU General Public License for more details.
 	<compress>int1 1d-2</compress>
 	<comment>Bias already added to backscatter coefficient</comment>
 </var>
-<alias name="dsig0" field="32">dswh_ku</alias>
+<alias sat="e1 e2 tx" name="dsig0" field="32">dsig0_ku</alias>
 
 <var name="liquid_water" field="3301">
 	<long_name>radiometer liquid water content</long_name>
@@ -1723,24 +1786,27 @@ GNU General Public License for more details.
 	<compress>int2 1d-2</compress>
 </var>
 
+<!--
 <var name="frame_count" field="3401">
 	<long_name>frame count</long_name>
 	<netcdf>frame_count</netcdf>
 	<format>f6.0</format>
 	<compress>int2</compress>
 </var>
-<var name="flags_sdr_status" field="3402">
+-->
+<var sat="gs" name="flags_sdr_status" field="3402">
 	<long_name>SDR status flags</long_name>
 	<netcdf>flags_sdr_status</netcdf>
 	<format>f6.0</format>
 	<compress>int2</compress>
 </var>
-<var name="flags_sdr_qual" field="3403">
+<var sat="gs" name="flags_sdr_qual" field="3403">
 	<long_name>SDR quality flags</long_name>
 	<netcdf>flags_sdr_qual</netcdf>
 	<format>f6.0</format>
 	<compress>int2</compress>
 </var>
+<!--
 <var name="temp_rcvr" field="3404">
 	<long_name>receiver temperature</long_name>
 	<units>celsius</units>
@@ -1748,28 +1814,29 @@ GNU General Public License for more details.
 	<format>f6.2</format>
 	<compress>int2 1d-2</compress>
 </var>
-<var name="vatt_t" field="3405">
+<var sat="gs" name="vatt_t" field="3405">
 	<long_name>Vatt_t</long_name>
 	<units>volt</units>
 	<netcdf>vatt_t</netcdf>
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var name="flags_retrack" field="3406">
+-->
+<var sat="c2" name="flags_retrack" field="3406">
 	<long_name>retracking flags</long_name>
 	<netcdf>flags_retrack</netcdf>
 	<format>f6.0</format>
 	<compress>int2</compress>
 </var>
-<var name="gate_index_ku" field="3407">
+<var sat="tx" name="gate_index_ku" field="3407">
 	<long_name>Ku-band gate index</long_name>
 	<netcdf>gate_index_ku</netcdf>
 	<format>f6.0</format>
 	<compress>int2</compress>
 </var>
-<var name="gate_index_s" field="3408">
+<var sat="tx" name="gate_index_c" field="3408">
 	<long_name>C-band gate index</long_name>
-	<netcdf>gate_index_s</netcdf>
+	<netcdf>gate_index_c</netcdf>
 	<format>f6.0</format>
 	<compress>int2</compress>
 </var>
@@ -1817,7 +1884,6 @@ GNU General Public License for more details.
 	<format>f6.0</format>
 	<compress>int2</compress>
 </var>
-<alias name="34004" field="34">frame_count</alias>
 
 <var name="rain_ice_index" field="3501">
 	<long_name>rain/ice index</long_name>
