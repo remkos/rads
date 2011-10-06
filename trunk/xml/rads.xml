@@ -26,13 +26,12 @@ GNU General Public License for more details.
 	<compress>int4 1e-4</compress>
 	<math>alt range SUB dry_tropo SUB wet_tropo SUB iono SUB inv_bar SUB tide_solid SUB tide_ocean SUB tide_load SUB
 	tide_pole SUB ssb SUB mss SUB ref_frame_offset SUB</math>
-	<quality_flag>swh_ku sig0_ku wind_speed range_rms_ku range_numval_ku flags</quality_flag>
-	<quality_flag sat="c2">swh_ku sig0_ku range_rms_ku range_numval_ku flags</quality_flag>
+	<quality_flag>swh_ku sig0_ku range_rms_ku range_numval_ku flags</quality_flag>
 	<quality_flag sat="e1 g1 tx" action="append">swh_rms_ku</quality_flag>
 	<quality_flag sat="e2" action="append">swh_rms_ku off_nadir_angle2_wf_ku</quality_flag>
 	<quality_flag sat="j1 j2" action="append">swh_rms_ku sig0_rms_ku off_nadir_angle2_wf_ku</quality_flag>
 	<quality_flag sat="n1" action="append">swh_rms_ku peakiness_ku</quality_flag>
-	<comment>sea level determined from satellite altitude - range - all altimetric corrections</comment>
+	<comment>Sea level determined from satellite altitude - range - all altimetric corrections</comment>
 </var>
 <alias name="ssha">sla</alias>
 
@@ -241,18 +240,18 @@ GNU General Public License for more details.
 	<backup sat="n1 c2">alt_cnes</backup>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
-	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 	<if sat="j1 j2">
 		<format>f12.4</format>
 		<compress>int4 1d-4 1300d3</compress>
 	</if>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_gdrcp" field="415">
 	<long_name>GDR-C' orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>GDR-C' standards</source>
 	<units>m</units>
-	<netcdf sat="gs">alt_gdrcp</netcdf>
+	<netcdf>alt_gdrcp</netcdf>
         <backup sat="pn tx">alt_jgm3</backup>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
@@ -278,12 +277,12 @@ GNU General Public License for more details.
 	</if>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_eig6" field="417">
+<var name="alt_eig6c" field="417">
 	<long_name>ESOC EIGEN-6C orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>ESOC, EIGEN-6C</source>
 	<units>m</units>
-	<netcdf>alt_eig6</netcdf>
+	<netcdf>alt_eig6c</netcdf>
 	<compress>int4 1d-3</compress>
 	<format>f11.3</format>
 	<if sat="j1 j2">
@@ -291,7 +290,7 @@ GNU General Public License for more details.
 		<format>f12.4</format>
 		<compress>int4 1d-4 1300d3</compress>
 	</if>
-	<backup sat="n1">alt_cnes</backup>
+	<backup sat="c2 n1">alt_cnes</backup>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_reaper" field="420">
@@ -334,12 +333,11 @@ GNU General Public License for more details.
 	<compress>int4 1d-3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<alias name="alt" field="4" sat="c2">alt_cnes</alias>
+<alias name="alt" field="4" sat="c2 j1 j2 n1">alt_eiggl04s</alias>
 <alias name="alt" field="4" sat="e1">alt_reaper</alias>
 <alias name="alt" field="4" sat="e2">alt_dgme04</alias>
 <alias name="alt" field="4" sat="g1">alt_pgs7777</alias>
 <alias name="alt" field="4" sat="gs">alt_gdrcp</alias>
-<alias name="alt" field="4" sat="j1 j2 n1">alt_eiggl04s</alias>
 <alias name="alt" field="4" sat="pn tx">alt_gdrcp</alias>
 
 <var name="alt_rate" field="501">
@@ -855,7 +853,7 @@ GNU General Public License for more details.
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 </var>
-<alias name="ssb" field="15">ssb_bm3</alias>
+<alias name="ssb" sat="e1 e2 g1 gs pn tx" field="15">ssb_bm3</alias>
 <alias name="ssb" sat="g1 gs">ssb_hyb</alias>
 <alias name="ssb" sat="j1 j2 n1 tx">ssb_cls</alias>
 
@@ -865,6 +863,7 @@ GNU General Public License for more details.
 	<units>m</units>
 	<limits>-200 200</limits>
 	<netcdf>mss_cls01</netcdf>
+	<backup>mss_cnescls11</backup>
 	<format>f10.4</format>
 	<compress>int4 1d-4</compress>
 </var>
@@ -893,7 +892,7 @@ GNU General Public License for more details.
 <var name="geoid_egm2008" field="1610">
 	<long_name>EGM2008 geoid height</long_name>
 	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
-	<source>EGM2008 gravity field</source>
+	<source>EGM2008</source>
 	<units>m</units>
 	<limits>-200 200</limits>
 	<netcdf>geoid_egm2008</netcdf>
@@ -916,6 +915,25 @@ GNU General Public License for more details.
 	<units>m</units>
 	<limits>-200 200</limits>
 	<netcdf>mss_dnsc08</netcdf>
+	<backup>mss_dtu10</backup>
+	<format>f10.4</format>
+	<compress>int4 1d-4</compress>
+</var>
+<var name="mss_dtu10" field="1614">
+	<long_name>DTU10 mean sea surface height</long_name>
+	<source>DTU10</source>
+	<units>m</units>
+	<limits>-200 200</limits>
+	<netcdf>mss_dtu10</netcdf>
+	<format>f10.4</format>
+	<compress>int4 1d-4</compress>
+</var>
+<var name="mss_cnescls11" field="1615">
+	<long_name>CNES-CLS11 mean sea surface height</long_name>
+	<source>CNES-CLS11</source>
+	<units>m</units>
+	<limits>-200 200</limits>
+	<netcdf>mss_cnescls11</netcdf>
 	<format>f10.4</format>
 	<compress>int4 1d-4</compress>
 </var>
@@ -992,6 +1010,7 @@ GNU General Public License for more details.
 <var name="wind_speed_alt" field="1901">
 	<long_name>altimeter wind speed</long_name>
 	<standard_name>wind_speed_alt</standard_name>
+	<source>altimeter</source>
 	<units>m/s</units>
 	<limits>-1 30</limits>
 	<netcdf>wind_speed_alt</netcdf>
@@ -1099,16 +1118,8 @@ GNU General Public License for more details.
 </var>
 <alias name="range_numval" field="21">range_numval_ku</alias>
 
-<var name="topo_etopo2" field="2201">
-	<long_name>ETOPO2 ocean depth</long_name>
-	<source>ETOPO2</source>
-	<units>m</units>
-	<netcdf>topo_etopo2</netcdf>
-	<format>f7.0</format>
-	<compress>int2</compress>
-</var>
 <var name="topo_dtm2000" field="2202">
-	<long_name>DTM2000 ocean depth</long_name>
+	<long_name>DTM2000 topography</long_name>
 	<source>DTM2000</source>
 	<units>m</units>
 	<netcdf>topo_dtm2000</netcdf>
@@ -1116,18 +1127,27 @@ GNU General Public License for more details.
 	<compress>int2</compress>
 </var>
 <var name="topo_dnsc08" field="2203">
-	<long_name>DNSC08 ocean depth</long_name>
+	<long_name>DNSC08 topography</long_name>
 	<source>DNSC08</source>
 	<units>m</units>
 	<netcdf>topo_dnsc08</netcdf>
+	<backup>topo_dtu10</backup>
 	<format>f7.0</format>
 	<compress>int2</compress>
 </var>
 <var name="topo_srtm30" field="2204">
-	<long_name>SRTM30 ocean depth</long_name>
+	<long_name>SRTM30 topography</long_name>
 	<source>SRTM30</source>
 	<units>m</units>
 	<netcdf>topo_srtm30</netcdf>
+	<format>f7.0</format>
+	<compress>int2</compress>
+</var>
+<var name="topo_dtu10" field="2205">
+	<long_name>DTU10 topography</long_name>
+	<source>DTU10</source>
+	<units>m</units>
+	<netcdf>topo_dtu10</netcdf>
 	<format>f7.0</format>
 	<compress>int2</compress>
 </var>
@@ -1750,7 +1770,7 @@ GNU General Public License for more details.
 	<compress>int1 1d-2</compress>
 	<comment>Bias already added to backscatter coefficient</comment>
 </var>
-<var sat="c2" name="dsig0_range" field="3206>
+<var sat="c2" name="dsig0_range" field="3206">
 	<long_name>backscatter coefficient correction due to range</long_name>
 	<units>dB</units>
 	<netcdf>dsig0_range</netcdf>
@@ -1758,7 +1778,7 @@ GNU General Public License for more details.
 	<compress>int1 1d-2</compress>
 	<comment>Bias already added to backscatter coefficient</comment>
 </var>
-<var sat="c2" name="dsig0_temp" field="3207>
+<var sat="c2" name="dsig0_temp" field="3207">
 	<long_name>backscatter coefficient correction due to temperature</long_name>
 	<units>dB</units>
 	<netcdf>dsig0_temp</netcdf>
@@ -2106,7 +2126,7 @@ GNU General Public License for more details.
 	<frequency>13.575</frequency>
 	<phase name="a">
 		<mission>Multi-disciplinary Phase</mission>
-		<cycles>4 10</cycles>
+		<cycles>4 99</cycles>
 		<passes>1 840</passes>
 		<repeat>28.94102430 840 -0.272</repeat>
 		<ref_pass>2010-08-02 09:22:36 223.367831 5 1</ref_pass>
