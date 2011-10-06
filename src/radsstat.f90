@@ -133,6 +133,7 @@ enddo
 
 ! Flush the statistics (in "daily" mode) and close RADS4
 call print_stat
+if (S%debug >= 1) call rads_stat (S)
 call rads_end (S)
 
 contains

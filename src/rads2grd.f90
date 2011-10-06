@@ -126,9 +126,6 @@ do j = 1,msat
 	enddo
 enddo
 
-! Print statistics if requested
-if (any(S%debug >= 1)) call rads_stat (S)
-
 ! Post-process grid values
 
 where (box%nr < minnr)
@@ -146,6 +143,9 @@ if (grid_name == '') then
 else
 	call write_nc_grid
 endif
+
+! Print statistics if requested
+if (any(S%debug >= 1)) call rads_stat (S)
 
 ! Deallocate memory
 deallocate (box)
