@@ -1268,7 +1268,7 @@ do while (associated(top))
 	call math_pop(top)
 enddo
 if (i > 0) then
-	write (*,*) i,' remaining items on stack'
+	write (stderr,*) i,' remaining items on stack'
 	call rads_error (S, rads_noerr, 'Cleaned up')
 endif
 end subroutine rads_get_var_math
@@ -1909,6 +1909,7 @@ do i = 1,S%nvar
 		call rads_stat_line (S%var(i)%info)
 	endif
 enddo
+write (iunit, 700)
 
 700 format (134('#'))
 710 format ('# Editing statistics for ',a,' (',a,')')
