@@ -41,15 +41,11 @@ endtype prod_
 type(prod_) :: a, x, t
 character(len=80) :: arg, filename = '', shortname
 integer(fourbyteint), parameter :: msat = 12
-real(eightbytereal), parameter :: period(msat) = (/6037.582d0,6037.582d0,6037.582d0,6035.928d0,6745.759d0,6745.759d0,6035.928d0, &
-	6037.582d0,6745.759d0,6035.928d0,6745.759d0,5953.579433d0/)
-real(eightbytereal), parameter :: altsig(msat) = (/0.2d0,0.07d0,0.07d0,0.05d0,0.02d0,0.04d0,0.05d0,0.05d0,0.04d0,0.05d0,0.04d0, &
-	0.07d0/)
-real(eightbytereal), parameter :: orberr(msat) = (/0.8d0,0.8d0,0.15d0,0.05d0,0.035d0,0.035d0,0.05d0,0.05d0,0.035d0,0.05d0,0.035d0, &
-	0.05d0/)
-real(eightbytereal), parameter :: inclination(msat) = (/60d0,108.05d0,108.05d0,98.54d0,66.04d0,66.04d0,98.54d0,108.05d0,66.04d0, &
-	98.54d0,66.04d0,92.5d0/)
-!character(len=2) :: sat(11) = (/'g3','ss','gs','e1','tx','pn','e2','g1','j1','n1','j2'/)
+type :: sat_
+	character(len=4) :: name
+	real(eightbytereal) :: period, altsig, orberr, inclination
+endtype sat_
+type(sat_) :: sat(msat)
 integer(twobyteint), parameter :: bound(4) = int((/-180,180,-90,90/), twobyteint)
 integer(fourbyteint), parameter :: maxtrk = 32768
 logical :: l
@@ -62,6 +58,20 @@ x = prod_ ('', 0)
 
 ! Start with this-is message
 l = rads_version ('$Revision$')
+
+! Satellite definitions
+sat( 1) = sat_ ('g3', 6037.582d0, 0.20d0, 0.800d0,  60.00d0)
+sat( 2) = sat_ ('ss', 6037.582d0, 0.07d0, 0.800d0, 108.05d0)
+sat( 3) = sat_ ('gs', 6037.582d0, 0.07d0, 0.150d0, 108.05d0)
+sat( 4) = sat_ ('e1', 6035.928d0, 0.05d0, 0.050d0,  98.54d0)
+sat( 5) = sat_ ('tx', 6745.759d0, 0.02d0, 0.035d0,  66.04d0)
+sat( 6) = sat_ ('pn', 6745.759d0, 0.04d0, 0.035d0,  66.04d0)
+sat( 7) = sat_ ('e2', 6035.928d0, 0.05d0, 0.050d0,  98.54d0)
+sat( 8) = sat_ ('g1', 6037.582d0, 0.05d0, 0.150d0, 108.05d0)
+sat( 9) = sat_ ('j1', 6745.759d0, 0.04d0, 0.035d0,  66.04d0)
+sat(10) = sat_ ('n1', 6035.928d0, 0.05d0, 0.050d0,  98.54d0)
+sat(11) = sat_ ('j2', 6745.759d0, 0.04d0, 0.035d0,  66.04d0)
+sat(12) = sat_ ('c2', 5953.579d0, 0.07d0, 0.050d0,  92.50d0)
 
 ! Scan command line arguments
 do i = 1,iargc()
@@ -231,7 +241,7 @@ real(eightbytereal) :: omega(2)
 open (10, file=trim(shortname)//'.xxf', status='replace', access='direct', form='unformatted', recl=48)
 write (10, rec=1) '@XXF',x%nr,bound,0
 do i = 1,x%nr
-	omega = (time(:,i) - trk(track(:,i))%equator_time) / period(trk(track(:,i))%satid)
+	omega = (time(:,i) - trk(track(:,i))%equator_time) / sat(trk(track(:,i))%satid)%period
 	where (modulo(trk(track(:,i))%pass,2) == 0) omega = omega + 0.5d0
 	xxf%lat = nint(lat(i)*1d6)
 	xxf%lon = nint(lon(i)*1d6)
@@ -240,7 +250,7 @@ do i = 1,x%nr
 	xxf%sla = nint(sla(:,i)*1d6)
 	xxf%sla_cor = xxf%sla
 	xxf%omega = nint(omega*360d6)
-	xxf%sigma = nint(altsig(trk(track(:,i))%satid)*1d3, twobyteint)
+	xxf%sigma = nint(sat(trk(track(:,i))%satid)%altsig*1d3, twobyteint)
 	write (10,rec = i+1) xxf
 enddo
 close (10)
@@ -329,20 +339,20 @@ open (10, file=trim(shortname)//'.xtf', status='replace', access='direct', form=
 write (10, rec=1) '@XTB',t%nr,npar,bound,0
 do i = 1,t%nr
 	if (modulo(trk(i)%pass,2) == 0) then ! Move descending node to ascending node
-		trk(i)%equator_lon = trk(i)%equator_lon + 180d0 * (period(trk(i)%satid) / 86400d0 - 1d0)
-		trk(i)%equator_time = trk(i)%equator_time - 0.5d0 * period(trk(i)%satid)
+		trk(i)%equator_lon = trk(i)%equator_lon + 180d0 * (sat(trk(i)%satid)%period / 86400d0 - 1d0)
+		trk(i)%equator_time = trk(i)%equator_time - 0.5d0 * sat(trk(i)%satid)%period
 	endif
 	xtf%track = int(modulo(i,maxtrk), twobyteint)
 	xtf%satid = trk(i)%satid
 	xtf%nr_xover = trk(i)%nr_xover
 	xtf%nr_alt = trk(i)%nr_alt
-	xtf%inclination = nint(inclination(trk(i)%satid) * 1d6)
-	xtf%arglat = nint((trk(i)%start_time - trk(i)%equator_time) / period(trk(i)%satid) * 360d6)
+	xtf%inclination = nint(sat(trk(i)%satid)%inclination * 1d6)
+	xtf%arglat = nint((trk(i)%start_time - trk(i)%equator_time) / sat(trk(i)%satid)%period * 360d6)
 	xtf%equator_time = nint(trk(i)%equator_time)
 	xtf%equator_lon = nint(trk(i)%equator_lon * 1d6)
 	xtf%start_time = nint(trk(i)%start_time)
 	xtf%end_time = nint(trk(i)%end_time)
-	sig = nint(orberr(trk(i)%satid)*1d6)
+	sig = nint(sat(trk(i)%satid)%orberr*1d6)
 	flags = int(256 + modulo(trk(i)%pass,2), twobyteint)
 	write (10,rec = i+1) xtf,par,sig,flags
 enddo
