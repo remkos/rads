@@ -832,7 +832,7 @@ GNU General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
-<var name="ssb_csr" field="1503">
+<var sat="tx" name="ssb_csr" field="1503">
 	<long_name>CSR sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<source>CSR</source>
@@ -843,7 +843,7 @@ GNU General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
-<var name="ssb_hyb" field="1504">
+<var sat="c2 g1 gs n1 pn" name="ssb_hyb" field="1504">
 	<long_name>hybrid sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<source>NOAA hybrid model</source>
@@ -854,7 +854,7 @@ GNU General Public License for more details.
 	<compress>int2 1d-4</compress>
 </var>
 <alias name="ssb" sat="e1 e2 g1 gs pn tx" field="15">ssb_bm3</alias>
-<alias name="ssb" sat="g1 gs">ssb_hyb</alias>
+<alias name="ssb" sat="c2 g1 gs">ssb_hyb</alias>
 <alias name="ssb" sat="j1 j2 n1 tx">ssb_cls</alias>
 
 <var name="mss_cls01" field="1605">
