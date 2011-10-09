@@ -189,7 +189,7 @@ allocate (key(nr%trk), idx(nr%trk), trkid(2,nr%xout))
 forall (i = 1:nr%trk)
 	idx(i) = i
 	key(i) = trk(i)%satid * 10000000 + trk(i)%cycle * 10000 + trk(i)%pass
-endforall
+end forall
 call iqsort (idx, key, nr%trk)
 
 ! Add the track info to the netCDF file
@@ -219,7 +219,7 @@ call nfs (nf90_put_var (ncid, varid(13), trk(idx)%nr_alt))
 ! Renumber the track number for the xover data
 forall (i = 1:nr%trk)
 	key(idx(i)) = i	! key becomes the inverse of idx
-endforall
+end forall
 call nfs (nf90_get_var (ncid, varid(4), trkid))
 trkid(1,:) = key(trkid(1,:))
 trkid(2,:) = key(trkid(2,:))
@@ -301,6 +301,7 @@ if (info%add_offset /= 0d0)  e = e + nf90_put_att (ncid, varid, 'add_offset', in
 if (info%datatype < rads_type_time) e = e + nf90_put_att (ncid, varid, 'coordinates', 'lon lat')
 if (info%source /= '') e = e + nf90_put_att (ncid, varid, 'source', trim(info%source))
 if (info%standard_name /= '') e = e + nf90_put_att (ncid, varid, 'standard_name', trim(info%standard_name))
+if (info%format /= '') e = e + nf90_put_att (ncid, varid, 'format', trim(info%format))
 if (info%comment /= '') e = e + nf90_put_att (ncid, varid, 'comment', trim(info%comment))
 if (e > 0) write (*,*) 'Error writing attributes for variable '//trim(sel%name)
 end subroutine def_var_sel
