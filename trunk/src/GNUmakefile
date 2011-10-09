@@ -28,7 +28,7 @@ OBJS	= $(OBJS1) $(OBJS2) $(OBJS3)
 LIB	= librads.a
 
 PROGS_O = rads2asc.o rads2adr.o rads2nc.o rads2grd.o radsstat.o radscolin.o radsxogen.o radsxoconv.o \
-	rads_test.o rads_nml2xml.o rads_sample.o rads3test.o
+	radsxolist.o rads_test.o rads_nml2xml.o rads_sample.o rads3test.o
 PROGS_L = rads2xadr rads2xgf
 PROGS_L4= rads2asc4 radscolin4 radsstat4 rads2grd4
 PROGS = $(PROGS_O:.o=) $(PROGS_L) $(PROGS_L4)
@@ -152,3 +152,6 @@ radsxogen:	radsxogen.o iqsort.o nag.o $(LIB)
 
 radsxoconv:	radsxoconv.o $(LIB)
 	$(FC) -o $@ radsxoconv.o $(LIB) $(NETCDF)
+
+radsxolist:	radsxolist.o $(LIB)
+	$(FC) -o $@ radsxolist.o $(LIB) $(NETCDF)
