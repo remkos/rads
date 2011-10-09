@@ -26,7 +26,7 @@ use rads
 use netcdf
 use rads_netcdf
 integer(fourbyteint) :: ncid, i, icol, nvar, nxo, ntrk, id_satid, id_track
-real(eightbytereal), allocatable :: lat(:), lon(:), time(:,:), var(:,:,:)
+real(eightbytereal), allocatable :: var(:,:,:), stat(:,:,:)
 integer(fourbyteint), allocatable :: track(:,:)
 type :: trk_
 	real(eightbytereal) :: equator_lon, equator_time, start_time, end_time
@@ -36,6 +36,7 @@ type(trk_), allocatable :: trk(:)
 character(len=256) :: fmt_string
 character(len=80) :: arg, filename
 character(len=1) :: mode = ''
+character(len=4) :: statname(5) = (/ 'min ', 'max ', 'mean', 'rms ', 'std ' /)
 integer(fourbyteint), parameter :: msat = 12
 type :: sat_
 	character(len=4) :: name
@@ -43,7 +44,7 @@ type :: sat_
 endtype sat_
 type(sat_) :: sat(msat)
 integer(fourbyteint), parameter :: maxtrk = 32768
-logical :: diff = .false.
+logical :: diff = .false., stat_only = .false.
 
 ! Initialize RADS or issue help
 call synopsis
@@ -69,6 +70,8 @@ do i = 1,iargc()
 		diff = .true.
 	else if (arg(:2) == '-o') then
 		mode = arg(3:3)
+	else if (arg(:2) == '-s') then
+		stat_only = .true.
 	endif
 enddo
 
@@ -84,7 +87,7 @@ contains
 !***********************************************************************
 
 subroutine process
-integer(fourbyteint) :: i
+integer(fourbyteint) :: i, j, k
 
 ! Open netCDF file
 call nfs (nf90_open (filename, nf90_write, ncid))
@@ -105,12 +108,13 @@ icol = 0
 fmt_string = '('
 
 ! Read all the "base variables" into memory
-allocate (lat(nxo), lon(nxo), time(2,nxo), track(2,nxo), trk(ntrk))
-call get_var_1d (get_varid('lat'), lat)
-call get_var_1d (get_varid('lon'), lon)
-call get_var_2d (get_varid('time'), time)
 id_track = get_varid('track')
 id_satid = get_varid('satid')
+nvar = (id_satid - id_track - 1)
+allocate (track(2,nxo), trk(ntrk), var(2,nxo,-1:nvar), stat(2,-1:nvar,5))
+call get_var_1d (get_varid('lat'), var(1,:,-1))
+call get_var_1d (get_varid('lon'), var(2,:,-1))
+call get_var_2d (get_varid('time'), var(:,:,0))
 call nfs (nf90_get_var (ncid, id_track, track))
 call nfs (nf90_get_var (ncid, id_satid, trk%satid))
 call nfs (nf90_get_var (ncid, get_varid('cycle'), trk%cycle))
@@ -123,8 +127,6 @@ call nfs (nf90_get_var (ncid, get_varid('nr_xover'), trk%nr_xover))
 call nfs (nf90_get_var (ncid, get_varid('nr_alt'), trk%nr_alt))
 
 ! Now load all the "data variables"
-nvar = (id_satid - id_track - 1)
-allocate (var(2,nxo,nvar))
 do i = 1,nvar
 	call get_var_2d (id_track + i, var(:,:,i))
 enddo
@@ -139,10 +141,10 @@ select case (mode)
 		call reorder (mod(trk(track(2,:))%pass,2) < mod(trk(track(1,:))%pass,2))
 		write (*,610) 'descending - ascending'
 	case ('T')
-		call reorder (time(1,:) < time(2,:))
+		call reorder (var(1,:,0) < var(2,:,0))
 		write (*,610) 'later - earlier measurement'
 	case ('t')
-		call reorder (time(2,:) < time(1,:))
+		call reorder (var(2,:,0) < var(1,:,0))
 		write (*,610) 'earlier - later measurement'
 	case ('S')
 		call reorder (trk(track(1,:))%satid < trk(track(2,:))%satid)
@@ -155,19 +157,44 @@ select case (mode)
 end select
 610 format ('# Order     = ',a)
 
+! Now collapse the data if needing difference
+if (diff) var(1,:,1:nvar) = var(1,:,1:nvar) - var(2,:,1:nvar)
+
 ! Print out data
-if (diff) then
+if (stat_only) then
+	! Skip
+else if (diff) then
 	do i = 1,nxo
-		write (*,fmt_string) lat(i),lon(i),time(:,i),var(1,i,:)-var(2,i,:)
+		write (*,fmt_string) var(:,i,-1:0),var(1,i,1:nvar)
 	enddo
 else
 	do i = 1,nxo
-		write (*,fmt_string) lat(i),lon(i),time(:,i),var(:,i,:)
+		write (*,fmt_string) var(:,i,:)
 	enddo
-endif 
+endif
+
+! Do statistics
+do j = -1,nvar
+	do k = 1,2
+		stat(k,j,1) = minval(var(k,:,j))
+		stat(k,j,2) = maxval(var(k,:,j))
+		stat(k,j,3) = sum(var(k,:,j)) / nxo
+		stat(k,j,4) = sqrt(sum(var(k,:,j)**2)/nxo)
+		stat(k,j,5) = sqrt(stat(k,j,4)**2 - stat(k,j,3)**2)
+	enddo
+enddo
+do i = 1,5
+	write (*,620) statname(i)
+	if (diff) then
+		write (*,fmt_string) stat(:,-1:0,i),stat(1,1:nvar,i)
+	else
+		write (*,fmt_string) stat(:,:,i)
+	endif
+enddo
+620 format ('# ',a,' : ',$)
 
 call nfs (nf90_close (ncid))
-deallocate (lat, lon, time, track, trk, var)
+deallocate (track, trk, var, stat)
 end subroutine process
 
 !***********************************************************************
@@ -183,7 +210,8 @@ write (0,1300)
 '  -o[A|a|S|s|T|t]   : Order of the xover values (or difference):'/ &
 '                      A|a = Ascending-Descending or vv'/ &
 '                      S|s = Higher-lower satellite ID or vv'/ &
-'                      T|t = Later-earlier measurement or vv')
+'                      T|t = Later-earlier measurement or vv'/ &
+'  -s                : Print statistics only')
 stop
 end subroutine synopsis
 
@@ -249,8 +277,7 @@ logical, intent(in) :: order(:)
 integer(fourbyteint) :: i, j
 do i = 1,nxo
 	if (order(i)) then
-		call flip(time(:,i))
-		do j = 1,nvar
+		do j = 0,nvar
 			call flip(var(:,i,j))
 		enddo
 	endif
