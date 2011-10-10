@@ -629,26 +629,27 @@ x = tll(:,1) - tll(3,1)
 xc = t - tll(3,1)
 forall (i = 1:nsel)
 	y(:,i) = tll(:,3+i) - tll(3,3+i)
-endforall
+end forall
 
-if (interpolant == 'l') then	! Linear interpolation
-	xoval = xc * y(4,:) / x(4)
-else if (interpolant == 'c') then	! Cubic spline interpolation
+select case (interpolant)
+case ('l')	! Linear interpolation
+		xoval = xc * y(4,:) / x(4)
+case ('c')	! Cubic spline interpolation
 	do i = 1,nsel
 		call e02baf(m,-1,y(:,i),aa,x,xc,xoval(i),f1,v1,vn,cc,d)
 		call e02baf(m,-2,y(:,i),aa,x,xc,xoval(i),f1,v1,vn,cc,d)
 	enddo
-else if (interpolant == 'q') then	! Quadratic polynomial fit
+case ('q') ! Quadratic polynomial fit
 	do i = 1,nsel
 		call e02adf(x,y(:,i),m,3,ss,cf,work)
 		xoval(i) = cf(1)+xc*(cf(2)+xc*cf(3))
 	enddo
-else	! Cubic polynomial fit
+case default	! Cubic polynomial fit
 	do i = 1,nsel
 		call e02adf(x,y(:,i),m,4,ss,cf,work)
 		xoval(i) = cf(1)+xc*(cf(2)+xc*(cf(3)+xc*cf(4)))
 	enddo
-endif
+end select
 xoval = xoval + tll(3,4:)
 end subroutine interpolate
 
@@ -739,7 +740,7 @@ end subroutine sweep_line
 
 function ccw (x1, y1, x2, y2, x3, y3)
 real(eightbytereal), intent(in) :: x1, y1, x2, y2, x3, y3
-logical ccw
+logical :: ccw
 ccw = ((x2-x1) * (y3-y1) > (y2-y1) * (x3-x1))
 end function ccw
 
