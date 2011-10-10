@@ -23,15 +23,17 @@ program radsxolist
 ! computes statistics.
 !-----------------------------------------------------------------------
 use rads
+use rads_time
 use netcdf
 use rads_netcdf
-integer(fourbyteint) :: ncid, i, icol, nvar, nxo, ntrk, id_satid, id_track
+integer(fourbyteint) :: ncid, i, icol, ios, nvar, nxo, ntrk, id_satid, id_track
 real(eightbytereal), allocatable :: var(:,:,:), stat(:,:,:)
 integer(fourbyteint), allocatable :: track(:,:)
+logical, allocatable :: mask(:)
 type :: trk_
 	real(eightbytereal) :: equator_lon, equator_time, start_time, end_time
 	integer(twobyteint) :: nr_alt, nr_xover, satid, cycle, pass
-endtype
+end type
 type(trk_), allocatable :: trk(:)
 character(len=256) :: fmt_string
 character(len=80) :: arg, filename
@@ -41,10 +43,11 @@ integer(fourbyteint), parameter :: msat = 12
 type :: sat_
 	character(len=4) :: name
 	real(eightbytereal) :: period, altsig, orberr, inclination
-endtype sat_
+end type sat_
 type(sat_) :: sat(msat)
 integer(fourbyteint), parameter :: maxtrk = 32768
 logical :: diff = .false., stat_only = .false.
+real(eightbytereal) :: t0 = 0d0, t1 = 0d0, lon0 = 0d0, lon1 = 0d0, lat0 = 0d0, lat1 = 0d0, dt0 = 0d0, dt1 = 0d0
 
 ! Initialize RADS or issue help
 call synopsis
@@ -66,7 +69,20 @@ sat(12) = sat_ ('c2', 5953.579d0, 0.07d0, 0.050d0,  92.50d0)
 ! Scan command line arguments
 do i = 1,iargc()
 	call getarg(i,arg)
-	if (arg == '-d') then
+	if (arg(:4) == 'lon=') then
+		read (arg(5:),*) lon0,lon1
+	else if (arg(:4) == 'lat=') then
+		read (arg(5:),*) lat0,lat1
+	else if (arg(:3) == 'dt=') then
+		read (arg(4:),*,iostat=ios) dt0,dt1
+		if (dt0 > dt1) then
+			dt1 = dt0
+			dt0 = 0d0
+		endif
+		dt0 = dt0 * 86400d0
+		dt1 = dt1 * 86400d0
+	else if (datearg(arg,t0,t1)) then
+	else if (arg == '-d') then
 		diff = .true.
 	else if (arg(:2) == '-o') then
 		mode = arg(3:3)
@@ -78,7 +94,7 @@ enddo
 ! Now process each file
 do i = 1,iargc()
 	call getarg(i,filename)
-	if (filename(:1) == '-') cycle
+	if (filename(:1) == '-' .or. index(filename, '=') > 0) cycle
 	call process
 enddo
 
@@ -100,9 +116,9 @@ if (ntrk >= maxtrk) then
 endif
 
 600 format ( &
-'# File name              : ',a/ &
-'# Number of xovers read  : ',i9/ &
-'# Number of tracks found : ',i9)
+'# File name = ',a/ &
+'# Xovers in = ',i9/ &
+'# Tracks in = ',i9)
 write (*, 600) trim(filename), nxo, ntrk
 icol = 0
 fmt_string = '('
@@ -111,7 +127,8 @@ fmt_string = '('
 id_track = get_varid('track')
 id_satid = get_varid('satid')
 nvar = (id_satid - id_track - 1)
-allocate (track(2,nxo), trk(ntrk), var(2,nxo,-1:nvar), stat(2,-1:nvar,5))
+allocate (track(2,nxo), trk(ntrk), var(2,nxo,-1:nvar), stat(2,-1:nvar,5), mask(nxo))
+mask = .true.
 call get_var_1d (get_varid('lat'), var(1,:,-1))
 call get_var_1d (get_varid('lon'), var(2,:,-1))
 call get_var_2d (get_varid('time'), var(:,:,0))
@@ -134,52 +151,62 @@ fmt_string(len_trim(fmt_string)-3:) = ')'
 
 ! Sort first and last depending on mode
 select case (mode)
-	case ('A')
-		call reorder (mod(trk(track(1,:))%pass,2) < mod(trk(track(2,:))%pass,2))
-		write (*,610) 'ascending - descending'
-	case ('a')
-		call reorder (mod(trk(track(2,:))%pass,2) < mod(trk(track(1,:))%pass,2))
-		write (*,610) 'descending - ascending'
-	case ('T')
-		call reorder (var(1,:,0) < var(2,:,0))
-		write (*,610) 'later - earlier measurement'
-	case ('t')
-		call reorder (var(2,:,0) < var(1,:,0))
-		write (*,610) 'earlier - later measurement'
-	case ('S')
-		call reorder (trk(track(1,:))%satid < trk(track(2,:))%satid)
-		write (*,610) 'higher - lower satellite ID'
-	case ('s')
-		call reorder (trk(track(2,:))%satid < trk(track(1,:))%satid)
-		write (*,610) 'lower - higher satellite ID'
-	case default
-		write (*,610) 'native'
+case ('A')
+	call reorder (mod(trk(track(1,:))%pass,2) < mod(trk(track(2,:))%pass,2))
+	write (*,610) 'ascending - descending'
+case ('a')
+	call reorder (mod(trk(track(2,:))%pass,2) < mod(trk(track(1,:))%pass,2))
+	write (*,610) 'descending - ascending'
+case ('T')
+	call reorder (var(1,:,0) < var(2,:,0))
+	write (*,610) 'later - earlier measurement'
+case ('t')
+	call reorder (var(2,:,0) < var(1,:,0))
+	write (*,610) 'earlier - later measurement'
+case ('S')
+	call reorder (trk(track(1,:))%satid < trk(track(2,:))%satid)
+	write (*,610) 'higher - lower satellite ID'
+case ('s')
+	call reorder (trk(track(2,:))%satid < trk(track(1,:))%satid)
+	write (*,610) 'lower - higher satellite ID'
+case default
+	write (*,610) 'native'
 end select
 610 format ('# Order     = ',a)
 
 ! Now collapse the data if needing difference
 if (diff) var(1,:,1:nvar) = var(1,:,1:nvar) - var(2,:,1:nvar)
 
+! Mask out data not in specified range
+if (lat1 > lat0) where (var(1,:,-1) < lat0 .or. var(1,:,-1) > lat1) mask = .false.
+if (lon1 > lon0) where (var(2,:,-1) < lon0 .or. var(2,:,-1) > lon1) mask = .false.
+if (t1   > t0  ) where (var(1,:, 0) < t0   .or. var(1,:, 0) > t1   .or. &
+						var(2,:, 0) < t0   .or. var(2,:, 0) > t1  ) mask = .false.
+if (dt1 > dt0) where (abs(var(1,:,0)-var(2,:,0)) < dt0 .or. abs(var(1,:,0)-var(2,:,0)) > dt1) mask = .false.
+
 ! Print out data
 if (stat_only) then
 	! Skip
 else if (diff) then
 	do i = 1,nxo
-		write (*,fmt_string) var(:,i,-1:0),var(1,i,1:nvar)
+		if (mask(i)) write (*,fmt_string) var(:,i,-1:0),var(1,i,1:nvar)
 	enddo
 else
 	do i = 1,nxo
-		write (*,fmt_string) var(:,i,:)
+		if (mask(i)) write (*,fmt_string) var(:,i,:)
 	enddo
 endif
 
 ! Do statistics
+nxo = count(mask)
+write (*,615) nxo
+615 format ('# Xovers out= ',i9)
 do j = -1,nvar
 	do k = 1,2
-		stat(k,j,1) = minval(var(k,:,j))
-		stat(k,j,2) = maxval(var(k,:,j))
-		stat(k,j,3) = sum(var(k,:,j)) / nxo
-		stat(k,j,4) = sqrt(sum(var(k,:,j)**2)/nxo)
+		stat(k,j,1) = minval(var(k,:,j),mask)
+		stat(k,j,2) = maxval(var(k,:,j),mask)
+		stat(k,j,3) = sum(var(k,:,j),mask) / nxo
+		stat(k,j,4) = sqrt(sum(var(k,:,j)**2,mask)/nxo)
 		stat(k,j,5) = sqrt(stat(k,j,4)**2 - stat(k,j,3)**2)
 	enddo
 enddo
@@ -194,18 +221,24 @@ enddo
 620 format ('# ',a,' : ',$)
 
 call nfs (nf90_close (ncid))
-deallocate (track, trk, var, stat)
+deallocate (track, trk, var, stat, mask)
 end subroutine process
 
 !***********************************************************************
 
 subroutine synopsis
 if (rads_version ('$Revision$','RADS crossover file lister')) return
-call rads_synopsis ()
 write (0,1300)
 1300 format (/ &
-'Program specific [program_options] are:'/ &
-'  filename          : Input xover file name (extension .nc)'/ &
+'usage: radsxolist [options] filename ...' // &
+'Required argument:' / &
+'  filename          : Input xover file name (extension .nc)'// &
+'Optional arguments [options] are:'/ &
+'  lon=lon0,lon1     : specify longitude boundaries (deg)'/ &
+'  lat=lat0,lat1     : specify latitude boundaries (deg)'/ &
+'  t=t0,t1           : specify time selection'/ &
+'                      (optionally use ymd=, doy=, sec= for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)'/ &
+'  dt=[dtmin,]dtmax  : use only xovers with [dtmin <] dt < dtmax (days)'/&
 '  -d                : Write out xover differences (default is both values)'/ &
 '  -o[A|a|S|s|T|t]   : Order of the xover values (or difference):'/ &
 '                      A|a = Ascending-Descending or vv'/ &
