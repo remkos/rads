@@ -38,7 +38,7 @@ use rads_netcdf
 use rads_misc
 
 integer(fourbyteint), parameter :: msat = 10, vbase = 13, mtrk = 500000
-real(eightbytereal) :: dt(msat) = -1d0
+real(eightbytereal) :: dt(msat)
 type(rads_sat) :: S(msat)
 integer(fourbyteint) :: i, j, nsat = 0, nsel = 0, reject = -1, ios, debug, ncid, dimid(3), start(2), varid(vbase)
 logical :: duals = .true., singles = .true., l
@@ -61,7 +61,8 @@ S%sat = '' ! Initialize blank
 S%error = rads_noerr
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
-dt(1) = 0.5d0
+dt = S(1)%nan
+dt(1) = -0.5d0
 
 ! Start with this-is message
 l = rads_version ('$Revision$')
@@ -113,7 +114,7 @@ enddo
 
 ! Set all unspecified dt equal to the previous
 do i = 2,nsat
-	if (dt(i) < 0d0) dt(i) = dt(i-1)
+	if (isnan(dt(i))) dt(i) = dt(i-1)
 enddo
 
 ! If SLA is among the results, remember which index that is
@@ -168,14 +169,14 @@ enddo
 ! Print statistics
 write (*, 500) nr
 500 format (/ &
-'Number of crossings tested :',i9/ &
-'- Shallow crossings        :',i9/ &
-'- Too few data on pass     :',i9/ &
-'- No intersection          :',i9/ &
-'- Too few data around xover:',i9/ &
-'- Too large time difference:',i9/ &
-'= Number crossovers written:',i9/ &
-'Number of tracks           :',i9/)
+'Number of crossings tested  :',i9/ &
+'- Shallow crossings         :',i9/ &
+'- Too few data on pass      :',i9/ &
+'- No intersection           :',i9/ &
+'- Too few data around xover :',i9/ &
+'- Too large time difference :',i9/ &
+'= Number crossovers written :',i9/ &
+'Number of tracks            :',i9/)
 
 call rads_stat (S)
 
@@ -248,8 +249,8 @@ write (0,1300)
 '                      (default: reject if SLA field is NaN)'/ &
 '  -r0, -r           : do not reject xovers with NaN values'/ &
 '  -rn               : reject xovers if any value is NaN'/ &
-'  dt=fraction       : limit crossover time interval to fraction of repeat cycle (default: 0.5)'/ &
-'                      use negative number to specify interval in days'/ &
+'  dt=value          : limit crossover time interval to number of days'/ &
+'                      use negative number to specify interval in fraction of cycles (default: -0.5)'/ &
 '  filename          : specify output filename (default: radsxogen.nc)')
 stop
 end subroutine synopsis
@@ -261,10 +262,10 @@ function dt_days (S, dt)
 type(rads_sat), intent(in) :: S
 real(eightbytereal), intent(in) :: dt
 real(eightbytereal) :: dt_days
-if (dt < 0d0) then
-	dt_days = -dt
+if (dt > 0d0) then
+	dt_days = dt
 else
-	dt_days = dt * S%phase%repeat_days
+	dt_days = -dt * S%phase%repeat_days
 endif
 end function dt_days
 
@@ -453,7 +454,7 @@ enddo
 if (reject < 0) then	! Reject if any is NaN
 	forall (i=1:P%ndata)
 		keep(i) = .not.any(isnan(data(i,:)))
-	endforall
+	end forall
 else if (reject > 0) then
 	keep = .not.isnan(data(:,reject))
 else
@@ -466,10 +467,10 @@ if (P%ndata == 0) return
 allocate (tll(P%ndata,nsel+3))
 forall (i=1:3)
 	tll(:,i) = pack (P%tll(:,i),keep)
-endforall
+end forall
 forall (i=1:nsel)
 	tll(:,i+3) = pack (data(:,i),keep)
-endforall
+end forall
 
 ! Group all longitudes to within 180 degrees of the equator crossing longitude
 x = P%equator_lon - 180d0
