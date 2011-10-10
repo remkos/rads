@@ -767,11 +767,12 @@ else
 	v21 = xy2v (x21,y21)
 	v22 = xy2v (x22,y22)
 	! Let v1 and v2 be vectors perpendicular to planes through arcs 1 and 2
-	! The cross product of v1 and v2 points to the crossing point, which we convert back to longitude and latitude
+	! The cross product of v1 and v2 points to the crossing point
 	vc = cross_product (cross_product (v11, v12), cross_product (v21, v22))
-	call v2xy (vc, xc, yc)
 	! The result may be pointing the opposite direction to what is intended
 	if (dot_product(vc,v11) < 0d0) vc = -vc
+	! Now convert back to longitude and latitude
+	call v2xy (vc, xc, yc)
 	! Compute the times of the crossing points using proportionalities
 	tc1 = acos(dot_product(vc,v11)) / acos(dot_product(v11,v12)) * (t12-t11) + t11
 	tc2 = acos(dot_product(vc,v21)) / acos(dot_product(v21,v22)) * (t22-t21) + t21
@@ -783,10 +784,13 @@ end function intersect
 function xy2v (x, y) result (v)
 real(eightbytereal), intent(in) :: x, y
 real(eightbytereal) :: v(3)
-v(1) = cos(x*rad)
-v(2) = sin(x*rad)
-v(1:2) = v(1:2) * cos(y*rad)
-v(3) = sin(y*rad)
+real(eightbytereal) :: xx,yy
+xx = x * rad
+yy = y * rad
+v(1) = cos(xx)
+v(2) = sin(xx)
+v(1:2) = v(1:2) * cos(yy)
+v(3) = sin(yy)
 end function xy2v
 
 !***********************************************************************
