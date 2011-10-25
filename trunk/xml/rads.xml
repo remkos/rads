@@ -2128,8 +2128,8 @@ GNU General Public License for more details.
 		<mission>Multi-disciplinary Phase</mission>
 		<cycles>4 99</cycles>
 		<passes>1 840</passes>
-		<repeat>28.94102430 840 -0.272</repeat>
-		<ref_pass>2010-08-02 09:22:36 223.367831 5 1</ref_pass>
+		<repeat>28.941 840 -0.269</repeat>
+		<ref_pass>2011-02-20T23:27:22 221.480407 12 1</ref_pass>
 		<start_time>2010-07-15</start_time>
 	</phase>
 </if>
