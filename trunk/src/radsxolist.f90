@@ -26,7 +26,7 @@ use rads
 use rads_time
 use netcdf
 use rads_netcdf
-integer(fourbyteint) :: ncid, i, icol, ios, nvar, nxo, ntrk, id_satid, id_track
+integer(fourbyteint) :: ncid, i, icol, ios, nvar, nxo, ntrk, id_satid, id_track, id_sla, id_new, id_old
 real(eightbytereal), allocatable :: var(:,:,:), stat(:,:,:)
 integer(fourbyteint), allocatable :: track(:,:)
 logical, allocatable :: mask(:)
@@ -148,6 +148,22 @@ do i = 1,nvar
 	call get_var_2d (id_track + i, var(:,:,i))
 enddo
 fmt_string(len_trim(fmt_string)-3:) = ')'
+
+! Exchange any correction if requested
+do i = 1,iargc()
+	call getarg (i,arg)
+	if (arg(:2) == '-r') then
+		j = index(arg,'=')
+		id_old = get_varid(arg(3:j-1)) - id_track
+		id_new = get_varid(arg(j+1:)) - id_track
+		id_sla = get_varid('sla') - id_track
+		if (arg(3:5) == 'alt') then	! Add change to altitude
+			var(:,:,id_sla) = var(:,:,id_sla) + (var(:,:,id_new) - var(:,:,id_old))
+		else	! Subtract change to corrections
+			var(:,:,id_sla) = var(:,:,id_sla) - (var(:,:,id_new) - var(:,:,id_old))
+		endif
+	endif
+enddo
 
 ! Sort first and last depending on mode
 select case (mode)
