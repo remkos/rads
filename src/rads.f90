@@ -24,7 +24,7 @@ implicit none
 include 'config.inc'
 
 ! Dimensions
-integer(fourbyteint), parameter :: rads_var_chunk = 100, rads_varl = 40
+integer(fourbyteint), parameter :: rads_var_chunk = 100, rads_naml = 80, rads_varl = 40
 ! RADS4 data types
 integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, rads_type_flagword = 2, &
 	rads_type_time = 11, rads_type_lat = 12, rads_type_lon = 13
@@ -50,9 +50,9 @@ private :: traxxing, rads_get_phase
 
 type :: rads_varinfo
 	character(len=rads_varl) :: name                 ! Short name used by RADS
-	character(len=80) :: long_name                   ! Long name (description) of variable
-	character(len=80) :: standard_name               ! Optional pre-described CF-compliant 'standard' name ('' if not available)
-	character(len=80) :: source                      ! Optional data source ('' if none)
+	character(len=rads_naml) :: long_name            ! Long name (description) of variable
+	character(len=rads_naml) :: standard_name        ! Optional pre-described CF-compliant 'standard' name ('' if not available)
+	character(len=rads_naml) :: source               ! Optional data source ('' if none)
 	character(len=rads_varl) :: units                ! Optional units of variable ('' if none)
 	character(len=320) :: flag_meanings              ! Optional meaning of flag values ('' if none)
 	character(len=320) :: comment                    ! Optional comment ('' if none)
