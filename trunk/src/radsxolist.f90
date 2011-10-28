@@ -278,8 +278,8 @@ subroutine get_var_1d (varid, array)
 integer(fourbyteint), intent(in) :: varid
 real(eightbytereal), intent(out) :: array(:)
 real(eightbytereal) :: value
-character(len=128) :: long_name
-character(len=16) :: units, fmt
+character(len=rads_naml) :: long_name
+character(len=rads_varl) :: units, fmt
 call nfs (nf90_get_var (ncid, varid, array))
 if (nf90_get_att (ncid, varid, 'scale_factor', value) == nf90_noerr) array = array * value
 if (nf90_get_att (ncid, varid, 'add_offset', value) == nf90_noerr) array = array + value
@@ -298,8 +298,8 @@ subroutine get_var_2d (varid, array)
 integer(fourbyteint), intent(in) :: varid
 real(eightbytereal), intent(out) :: array(:,:)
 real(eightbytereal) :: value
-character(len=128) :: long_name
-character(len=16) :: units, fmt
+character(len=rads_naml) :: long_name
+character(len=rads_varl) :: units, fmt
 call nfs (nf90_get_var (ncid, varid, array))
 if (nf90_get_att (ncid, varid, 'scale_factor', value) == nf90_noerr) array = array * value
 if (nf90_get_att (ncid, varid, 'add_offset', value) == nf90_noerr) array = array + value
