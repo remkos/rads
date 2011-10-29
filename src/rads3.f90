@@ -66,7 +66,7 @@ contains
 subroutine getraw_init (mission, verbose)
 character(len=*), intent(in) :: mission
 integer(fourbyteint), intent(in) :: verbose
-if (.not.rads_init_done) call rads_init (S, mission, verbose)
+if (.not.rads_init_done) call rads_init (S, mission, debug=verbose)
 rads_init_done = .true.
 end subroutine getraw_init
 
