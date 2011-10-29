@@ -26,7 +26,7 @@ use rads
 use rads_time
 use netcdf
 use rads_netcdf
-integer(fourbyteint) :: ncid, i, icol, ios, nvar, nxo, ntrk, id_satid, id_track, id_sla, id_new, id_old
+integer(fourbyteint) :: ncid, i, k, icol, ios, nvar, nxo, ntrk, id_satid, id_track, id_sla, id_new, id_old
 real(eightbytereal), allocatable :: var(:,:,:), stat(:,:,:)
 integer(fourbyteint), allocatable :: track(:,:)
 logical, allocatable :: mask(:)
@@ -69,19 +69,21 @@ sat(12) = sat_ ('c2', 5953.579d0, 0.07d0, 0.050d0,  92.50d0)
 ! Scan command line arguments
 do i = 1,iargc()
 	call getarg(i,arg)
-	if (arg(:4) == 'lon=') then
-		read (arg(5:),*) lon0,lon1
-	else if (arg(:4) == 'lat=') then
-		read (arg(5:),*) lat0,lat1
-	else if (arg(:3) == 'dt=') then
-		read (arg(4:),*,iostat=ios) dt0,dt1
+	k = 1
+	if (arg(1:2) == '--') k = 3
+	if (arg(k:k+3) == 'lon=') then
+		read (arg(k+4:),*) lon0,lon1
+	else if (arg(k:k+3) == 'lat=') then
+		read (arg(k+4:),*) lat0,lat1
+	else if (arg(k:k+2) == 'dt=') then
+		read (arg(k+3:),*,iostat=ios) dt0,dt1
 		if (dt0 > dt1) then
 			dt1 = dt0
 			dt0 = 0d0
 		endif
 		dt0 = dt0 * 86400d0
 		dt1 = dt1 * 86400d0
-	else if (datearg(arg,t0,t1)) then
+	else if (datearg(arg(k:),t0,t1)) then
 	else if (arg == '-d') then
 		diff = .true.
 	else if (arg(:2) == '-o') then

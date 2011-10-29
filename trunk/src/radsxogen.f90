@@ -100,6 +100,8 @@ do i = 1,iargc()
 		if (interpolant == 'Q') interpolant = 'q'
 	else if (arg(:3) == 'dt=') then
 		read (arg(4:),*,iostat=ios) dt
+	else if (arg(:5) == '--dt=') then
+		read (arg(6:),*,iostat=ios) dt
 	endif
 enddo
 
@@ -249,7 +251,7 @@ write (0,1300)
 '                      (default: reject if SLA field is NaN)'/ &
 '  -r0, -r           : do not reject xovers with NaN values'/ &
 '  -rn               : reject xovers if any value is NaN'/ &
-'  dt=value          : limit crossover time interval to number of days'/ &
+'  --dt=value        : limit crossover time interval to number of days'/ &
 '                      use negative number to specify interval in fraction of cycles (default: -0.5)'/ &
 '  filename          : specify output filename (default: radsxogen.nc)')
 stop

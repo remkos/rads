@@ -54,6 +54,10 @@ do i = 1,iargc()
 	call getarg(i,arg)
 	if (arg(:4) == 'out=') then
 		outname = arg(5:)
+	else if (arg(:6) == '--out=') then
+		outname = arg(7:)
+	else if (arg(:2) == '-o') then
+		outname = arg(3:)
 	else if (arg(:2) == '-rn') then
 		reject = -2
 	else if (arg(:2) == '-r') then
@@ -63,6 +67,8 @@ do i = 1,iargc()
 		read (arg(8:),*) nselmax
 	else if (arg(:5) == 'step=') then
 		read (arg(6:),*) step
+	else if (arg(:7) == '--step=') then
+		read (arg(8:),*) step
 	endif
 enddo
 
@@ -115,8 +121,8 @@ write (*,1300)
 '                      (default: reject if SLA field is NaN)'/ &
 '  -r0, -r           : do not reject lines with NaN values'/ &
 '  -rn               : reject lines if any value is NaN'/ &
-'  step=n            : step through records with stride n (default = 1)'/ &
-'  out=outname       : specify name of a single output file (default is pass files)')
+'  --step=n          : step through records with stride n (default = 1)'/ &
+'  -o, --out=outname : specify name of a single output file (default is pass files)')
 stop
 end subroutine synopsis
 
