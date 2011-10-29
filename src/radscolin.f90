@@ -81,8 +81,12 @@ do i = 1,iargc()
 		read (arg(3:),*,iostat=ios) reject
 	else if (arg(:5) == 'step=') then
 		read (arg(6:),*) step
+	else if (arg(:7) == '--step=') then
+		read (arg(8:),*) step
 	else if (arg(:3) == 'dt=') then
 		read (arg(4:),*) dt
+	else if (arg(:5) == '--dt=') then
+		read (arg(6:),*) dt
 	else if (arg(:2) == '-a') then
 		ptrx1 = ntrx + 1
 	else if (arg(:2) == '-A') then
@@ -137,7 +141,8 @@ write (0,1300)
 '                      (default: # = number of selected cycles)'/ &
 '  -r0, -r           : keep all stacked data points'/ &
 '  -rn               : reject data when any track is NaN (default)'/ &
-'  dt=dt             : set minimum bin size in seconds (default is determined by satellite)'/ &
+'  --dt=dt           : set minimum bin size in seconds (default is determined by satellite)'/ &
+'  --step=n          : write out only every n points'/ &
 '  -a                : print mean in addition to pass data'/ &
 '  -A                : print only mean'/ &
 '  -s                : print mean and standard deviation in addition to pass data'/ &

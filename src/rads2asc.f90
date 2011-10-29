@@ -65,6 +65,13 @@ do i = 1,iargc()
 	call getarg(i,arg)
 	if (arg(:4) == 'out=') then
 		outname = arg(5:)
+		if (outname == '') outname = '-'
+	else if (arg(:6) == '--out=') then
+		outname = arg(7:)
+		if (outname == '') outname = '-'
+	else if (arg(:2) == '-o') then
+		outname = arg(3:)
+		if (outname == '') outname = '-'
 	else if (arg(:3) == '-rn') then
 		reject = -2
 	else if (arg(:2) == '-r') then
@@ -80,9 +87,14 @@ do i = 1,iargc()
 		read (arg(8:),*) nselmax
 	else if (arg(:5) == 'step=') then
 		read (arg(6:),*) step
+	else if (arg(:7) == '--step=') then
+		read (arg(8:),*) step
 	else if (arg(:5) == 'list=') then
 		listunit = getlun()
 		open (listunit, file=arg(6:), status='replace')
+	else if (arg(:7) == '--list=') then
+		listunit = getlun()
+		open (listunit, file=arg(8:), status='replace')
 	endif
 enddo
 
@@ -195,9 +207,9 @@ write (*,1300)
 '  -rn               : reject lines if any value is NaN'/ &
 '  -f                : do not start with t,lat,lon in output'/ &
 '  -sp, -sc          : include statistics per pass or per cycle'/ &
-'  step=n            : step through records with stride n (default = 1)'/ &
-'  list=listname     : specify creation of list of output files'/ &
-'  out=outname       : specify name of a single output file (default is pass files, - is stdout)')
+'  --step=n          : step through records with stride n (default = 1)'/ &
+'  --list=listname   : specify creation of list of output files'/ &
+'  -o, --out=outname : specify name of a single output file (default is pass files, - is stdout)')
 stop
 end subroutine synopsis
 

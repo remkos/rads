@@ -77,6 +77,9 @@ do i = 1,iargc()
 	else if (arg(:4) == 'res=') then
 		call chartrans(arg(5:),'-+x',',,,')
 		read (arg(5:),*) dx,dy
+	else if (arg(:6) == '--res=') then
+		call chartrans(arg(7:),'-+x',',,,')
+		read (arg(7:),*) dx,dy
 	endif
 enddo
 
@@ -154,7 +157,7 @@ write (0,1300)
 '  -a                : weight measurements by cosine of latitude'/ &
 '  -s                : use inclination-dependent weight'/ &
 '  -l                : print min and max in addition to mean and stddev'/ &
-'  res=dx,dy         : size of averaging boxes (def: 3x1)')
+'  --res=dx,dy       : size of averaging boxes (def: 3x1)')
 stop
 end subroutine synopsis
 

@@ -52,31 +52,33 @@ do j = 1,msat
 	if (S(j)%nsel == 0) then
 		call rads_parse_varlist (S(j), 'lon,lat,sla')
 	else if (S(j)%nsel /= 3) then
-		call rads_exit ('sel= needs exactly three elements')
+		call rads_exit ('--var= needs exactly three elements')
 	endif
 enddo
 
 ! Scan command line arguments
 do i = 1,iargc()
 	call getarg(i,arg)
-	if (arg(:2) == 'x=') then
-		read (arg(3:),*,iostat=ios) S(1)%sel(1)%info%limits,res(1)
-	else if (arg(:2) == 'y=') then
-		read (arg(3:),*,iostat=ios) S(1)%sel(2)%info%limits,res(2)
-	else if (arg(:4) == 'res=') then
-		read (arg(5:),*) res
+	l = 1
+	if (arg(:2) == '--') l = 3
+	if (arg(l:l+1) == 'x=') then
+		read (arg(l+2:),*,iostat=ios) S(1)%sel(1)%info%limits,res(1)
+	else if (arg(l:l+1) == 'y=') then
+		read (arg(l+2:),*,iostat=ios) S(1)%sel(2)%info%limits,res(2)
+	else if (arg(l:l+3) == 'res=') then
+		read (arg(l+4:),*) res
 	else if (arg(:3) == '-Cx') then
 		c(1) = .true.
 	else if (arg(:3) == '-Cy') then
 		c(2) = .true.
 	else if (arg(:2) == '-C') then
 		c = .true.
-	else if (arg(:4) == 'min=') then
-		read (arg(5:),*) minnr
-	else if (arg(:4) == 'grd=') then
-		grid_name = arg(5:)
-	else if (arg(:4) == 'fmt=') then
-		format_string = arg(5:)
+	else if (arg(l:l+3) == 'min=') then
+		read (arg(l+4:),*) minnr
+	else if (arg(l:l+3) == 'grd=') then
+		grid_name = arg(l+4:)
+	else if (arg(l:l+3) == 'fmt=') then
+		format_string = arg(l+4:)
 	endif
 enddo
 
@@ -161,13 +163,13 @@ call rads_synopsis ()
 write (*,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
-'  x=x0,x1[,dx]      : set x-range and interval (def: as set by limits() and res=)'/ &
-'  y=y0,y1[,dy]      : set y-range and interval (def: as set by limits() and res=)'/ &
-'  res=dx,dy         : set resolution in x and y (def:1,1)'/ &
-'  sel=x,y,z         : selection codes for x, y and z (def:lon,lat,sla)'/ &
-'  min=minnr         : minimum number of points per grid cell (def:2)'/ &
-'  grd=gridname      : create netCDF grid (suppresses ASCII)'/ &
-'  fmt=format        : format to be used for ASCII output (default is determined by variables)'/ &
+'  --x=x0,x1[,dx]    : set x-range and interval (def: as set by limits() and res=)'/ &
+'  --y=y0,y1[,dy]    : set y-range and interval (def: as set by limits() and res=)'/ &
+'  --res=dx,dy       : set resolution in x and y (def:1,1)'/ &
+'  --sel=x,y,z       : selection codes for x, y and z (def:lon,lat,sla)'/ &
+'  --min=minnr       : minimum number of points per grid cell (def:2)'/ &
+'  --grd=gridname    : create netCDF grid (suppresses ASCII)'/ &
+'  --fmt=format      : format to be used for ASCII output (default is determined by variables)'/ &
 '  -C                : boundaries are cell oriented'/ &
 '  -C[x|y]           : only [x|y]-boundaries are cell oriented')
 stop
