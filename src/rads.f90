@@ -544,8 +544,8 @@ character(len=*), pointer :: varopt
 ! array <options>.
 ! The -S or --sat= option is ignored (it should be dealt with separately).
 ! The -V or --var= option is not parsed, but a pointer is returned to the element
-! of the list of variables following -V or --var=
-!
+! of the list of variables following -V or --var=. Same for --sel=, sel=, var=.
+
 ! Arguments:
 !  S       : Satellite/mission dependent structure
 !  options : Array of options (usually command line arguments)
@@ -646,15 +646,15 @@ else
 endif
 
 ! Avoid parsing empty string
-l = len_trim(string(k:))
-if (l == 0) then
+l = len_trim(string)
+if (l < k) then
 	call rads_error (S, rads_err_var, 'No variables selected')
 	return
 endif
 
 ! Count the number of commas or slashes first to determine number of variables
 n = 1
-do i = k,k+l
+do i = k,l
 	if (string(i:i) == ',' .or. string(i:i) == '/') n = n + 1
 enddo
 
@@ -670,7 +670,7 @@ endif
 
 ! Parse the variable list
 i0 = k
-do i = k,k+l
+do i = k,l
 	if (i == l .or. string(i+1:i+1) == ',' .or. string(i+1:i+1) == '/') then
 		noedit = 0
 		if (string(i:i) == char_noedit) noedit = 1
