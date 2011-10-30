@@ -53,11 +53,11 @@ module xmlparse
 
 implicit none
 
-integer, parameter :: XML_BUFFER_LENGTH = 1000
+integer, parameter :: xml_buffer_length = 1000
 !
 ! Define the data type that holds the parser information
 !
-type XML_PARSE
+type xml_parse
 	integer          :: lun                ! LU-number of the XML-file
 	integer          :: level              ! Indentation level (output)
 	integer          :: lineno             ! Line in file
@@ -67,14 +67,14 @@ type XML_PARSE
 	logical          :: too_many_data      ! More lines of data than could be stored?
 	logical          :: eof                ! End of file?
 	logical          :: error              ! Invalid XML file or other error?
-	character(len=XML_BUFFER_LENGTH) :: line  ! Buffer
-end type XML_PARSE
+	character(len=xml_buffer_length) :: line  ! Buffer
+end type xml_parse
 
 !
 ! Global options
 !
-integer, parameter    :: XML_STDOUT       = -1
-integer, private      :: report_lun_      = XML_STDOUT
+integer, parameter    :: xml_stdout       = -1
+integer, private      :: report_lun_      = xml_stdout
 logical, private      :: report_errors_   = .false.
 logical, private      :: report_details_  = .false.
 
@@ -123,7 +123,7 @@ character(len=*), intent(in) :: text
 integer,          intent(in) :: int
 
 if (report_details_) then
-	if (report_lun_ == XML_STDOUT) then
+	if (report_lun_ == xml_stdout) then
 		write(*,*) trim(text), int
 	else
 		write(report_lun_,*) trim(text), int
@@ -142,7 +142,7 @@ character(len=*), intent(in) :: text
 character(len=*), intent(in) :: string
 
 if (report_details_) then
-	if (report_lun_ == XML_STDOUT) then
+	if (report_lun_ == xml_stdout) then
 		write(*,*) trim(text), ' ', trim(string)
 	else
 		write(report_lun_,*) trim(text), ' ', trim(string)
@@ -164,7 +164,7 @@ integer,           intent(in) :: int
 integer, optional, intent(in) :: lineno
 
 if (report_errors_ .or. report_details_) then
-	if (report_lun_ == XML_STDOUT) then
+	if (report_lun_ == xml_stdout) then
 		write(*,*) trim(text), int
 		if (present(lineno)) write(*,*) '   At or near line', lineno
 	else
@@ -187,7 +187,7 @@ character(len=*),  intent(in) :: string
 integer, optional, intent(in) :: lineno
 
 if (report_errors_ .or. report_details_) then
-	if (report_lun_ == XML_STDOUT) then
+	if (report_lun_ == xml_stdout) then
 		write(*,*) trim(text), ' ', trim(string)
 		if (present(lineno)) write(*,*) '   At or near line', lineno
 	else
@@ -207,10 +207,10 @@ end subroutine xml_report_errors_string_
 !    this module
 !
 subroutine xml_report_errors_extern_ (info, text)
-type(XML_PARSE),   intent(in)     :: info
+type(xml_parse),   intent(in)     :: info
 character(len=*),  intent(in)     :: text
 
-if (report_lun_ == XML_STDOUT) then
+if (report_lun_ == xml_stdout) then
 	write(*,*) trim(text), ' - at or near line', info%lineno
 else
 	write(report_lun_,*) trim(text), ' - at or near line', info%lineno
@@ -227,7 +227,7 @@ end subroutine xml_report_errors_extern_
 subroutine xml_open (info, fname, mustread)
 character(len=*), intent(in)  :: fname
 logical,          intent(in)  :: mustread
-type(XML_PARSE),  intent(out) :: info
+type(xml_parse),  intent(out) :: info
 
 integer                       :: i
 integer                       :: k
@@ -309,7 +309,7 @@ end subroutine xml_open
 !    info        Structure holding information on the XML-file
 !
 subroutine xml_close (info)
-type(XML_PARSE), intent(inout) :: info
+type(xml_parse), intent(inout) :: info
 
 if (info%lun >= 10) close (info%lun)
 
@@ -334,7 +334,7 @@ end subroutine xml_close
 !    no_data     Number of lines of character data
 !
 subroutine xml_get (info, tag, endtag, attribs, no_attribs, data, no_data)
-type(XML_PARSE),  intent(inout)               :: info
+type(xml_parse),  intent(inout)               :: info
 character(len=*), intent(out)                 :: tag
 logical,          intent(out)                 :: endtag
 character(len=*), intent(out), dimension(:,:) :: attribs
@@ -344,7 +344,7 @@ integer,          intent(out)                 :: no_data
 
 integer         :: kspace, kend, keq, kfirst, ksecond, idxat, idxdat, ierr
 logical         :: close_bracket, comment_tag
-character(len=XML_BUFFER_LENGTH) :: nextline
+character(len=xml_buffer_length) :: nextline
 
 !
 ! Initialise the output
@@ -569,7 +569,7 @@ end subroutine xml_get
 !
 subroutine xml_put(info, tag, attribs, no_attribs, data, no_data, type)
 
-type(XML_PARSE),  intent(inout)              :: info
+type(xml_parse),  intent(inout)              :: info
 character(len=*), intent(in)                 :: tag
 character(len=*), intent(in), dimension(:,:) :: attribs
 integer,          intent(in)                 :: no_attribs
@@ -599,7 +599,7 @@ end subroutine xml_put
 !
 subroutine xml_put_open_tag_(info, tag, attribs, no_attribs)
 
-type(XML_PARSE),  intent(inout)               :: info
+type(xml_parse),  intent(inout)               :: info
 character(len=*), intent(in)                  :: tag
 character(len=*), intent(in), dimension(:,:)  :: attribs
 integer,          intent(in)                  :: no_attribs
@@ -639,7 +639,7 @@ end subroutine xml_put_open_tag_
 !
 subroutine xml_put_element_(info, tag, attribs, no_attribs, data, no_data)
 
-type(XML_PARSE),  intent(inout)               :: info
+type(xml_parse),  intent(inout)               :: info
 character(len=*), intent(in)                  :: tag
 character(len=*), intent(in), dimension(:,:)  :: attribs
 integer,          intent(in)                  :: no_attribs
@@ -691,7 +691,7 @@ end subroutine xml_put_element_
 !
 subroutine xml_put_close_tag_(info, tag)
 
-type(XML_PARSE),  intent(inout)               :: info
+type(xml_parse),  intent(inout)               :: info
 character(len=*), intent(in)                  :: tag
 
 integer          :: i
@@ -782,7 +782,7 @@ end subroutine xml_replace_entities_
 !
 subroutine xml_options (info, ignore_whitespace, no_data_truncation, &
            report_lun, report_errors, report_details)
-type(XML_PARSE),  intent(inout) :: info
+type(xml_parse),  intent(inout) :: info
 logical, intent(in), optional   :: ignore_whitespace
 logical, intent(in), optional   :: no_data_truncation
 integer, intent(in), optional   :: report_lun
@@ -805,7 +805,7 @@ end subroutine xml_options
 !    .true. if there was no error, .false. otherwise
 !
 logical function xml_ok (info)
-type(XML_PARSE),  intent(in)               :: info
+type(xml_parse),  intent(in)               :: info
 
 xml_ok = info%eof .or. info%error .or.  (info%no_data_truncation .and. &
 			(info%too_many_attribs .or. info%too_many_data))
@@ -820,7 +820,7 @@ end function xml_ok
 !    .true. if there was an error, .false. if there was none
 !
 logical function xml_error (info)
-type(XML_PARSE),  intent(in)               :: info
+type(xml_parse),  intent(in)               :: info
 
 xml_error = info%error .or.  (info%no_data_truncation .and. &
 			(info%too_many_attribs .or. info%too_many_data))
@@ -834,7 +834,7 @@ end function xml_error
 !    .true. if data were truncated, .false. otherwise
 !
 logical function xml_data_trunc (info)
-type(XML_PARSE),  intent(in)               :: info
+type(xml_parse),  intent(in)               :: info
 
 xml_data_trunc = info%too_many_attribs .or. info%too_many_data
 end function xml_data_trunc
@@ -904,7 +904,7 @@ interface
 	end subroutine
 end interface
 
-type(XML_PARSE)    :: info
+type(xml_parse)    :: info
 character(len=80)  :: tag
 logical            :: endtag
 integer            :: noattribs
