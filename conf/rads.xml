@@ -455,7 +455,7 @@ GNU General Public License for more details.
 	<comment>A dry tropospheric correction must be added to range to correct for dry troposphere delays</comment>
 </var>
 <alias name="dry_tropo" field="7">dry_tropo_ecmwf</alias>
-<alias name="dry_tropo" sat="g1 gs">dry_tropo_ncep</alias>
+<alias name="dry_tropo" field="7" sat="g1 gs">dry_tropo_ncep</alias>
 
 <var name="wet_tropo_rad" field="801">
 	<long_name>radiometer wet tropospheric correction</long_name>
@@ -564,8 +564,8 @@ GNU General Public License for more details.
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
 </var>
 <alias name="wet_tropo" field="8">wet_tropo_rad</alias>
-<alias name="wet_tropo" sat="c2">wet_tropo_ecmwf</alias>
-<alias name="wet_tropo" sat="gs">wet_tropo_ncep</alias>
+<alias name="wet_tropo" field="8" sat="c2">wet_tropo_ecmwf</alias>
+<alias name="wet_tropo" field="8" sat="gs">wet_tropo_ncep</alias>
 
 <var name="iono_alt" field="901">
 	<long_name>dual-frequency ionospheric correction</long_name>
@@ -648,8 +648,8 @@ GNU General Public License for more details.
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
 <alias name="iono" field="9">iono_nic09</alias>
-<alias name="iono" sat="c2 e2 g1">iono_gim</alias>
-<alias name="iono" sat="j1 j2 n1 tx">iono_alt_smooth</alias>
+<alias name="iono" field="9" sat="c2 e2 g1">iono_gim</alias>
+<alias name="iono" field="9" sat="j1 j2 n1 tx">iono_alt_smooth</alias>
 
 <var name="inv_bar_static" field="1001">
 	<long_name>static inverse barometer correction</long_name>
@@ -873,9 +873,9 @@ GNU General Public License for more details.
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 </var>
-<alias name="ssb" sat="e1 e2 g1 gs pn tx" field="15">ssb_bm3</alias>
-<alias name="ssb" sat="c2 g1 gs">ssb_hyb</alias>
-<alias name="ssb" sat="j1 j2 n1 tx">ssb_cls</alias>
+<alias name="ssb" field="15" sat="e1 e2 pn">ssb_bm3</alias>
+<alias name="ssb" field="15" sat="c2 g1 gs">ssb_hyb</alias>
+<alias name="ssb" field="15" sat="j1 j2 n1 tx">ssb_cls</alias>
 
 <var name="mss_cls01" field="1605">
 	<long_name>CLS01 mean sea surface height</long_name>
