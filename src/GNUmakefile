@@ -105,7 +105,7 @@ rads_test:	$(LIB) rads_test.o
 rads_sample:	$(LIB) rads_sample.o
 	$(FC) -o $@ rads_sample.o $(LIB) $(NETCDF)
 rads_nml2xml:	$(LIB) rads_nml2xml.o
-	$(FC) -o $@ rads_nml2xml.o $(LIB)
+	$(FC) -o $@ rads_nml2xml.o $(LIB) $(NETCDF)
 rads3test:	$(LIB) rads3test.o
 	$(FC) -o $@ rads3test.o $(LIB) $(NETCDF)
 
