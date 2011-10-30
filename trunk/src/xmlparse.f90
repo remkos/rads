@@ -608,7 +608,7 @@ integer         :: i
 
 character(len=1), parameter :: indent = char(9)
 
-write (info%lun, '(a)', advance = 'no') (indent, i = 1,info%level)
+write (info%lun, '(20a)', advance = 'no') (indent, i = 1,info%level)
 write (info%lun, '(2a)', advance = 'no') '<', trim(adjustl(tag))
 do i=1,no_attribs
 	if (attribs(2,i) == '') then
@@ -653,7 +653,7 @@ character(len=1), parameter :: indent = char(9)
 if (no_attribs == 0 .and. no_data == 0) return
 if (all(attribs(2,1:no_attribs) == '') .and. all(data(1:no_data) == '')) return
 
-write (info%lun, '(a)', advance = 'no') (indent, i = 1,info%level)
+write (info%lun, '(20a)', advance = 'no') (indent, i = 1,info%level)
 write (info%lun, '(2a)', advance = 'no') '<', trim(adjustl(tag))
 do i = 1,no_attribs
 	if (attribs(2,i) == '') then
@@ -699,7 +699,7 @@ integer          :: i
 character(len=1), parameter :: indent = char(9)
 
 info%level=info%level-1
-write (info%lun, '(a)', advance='no') (indent, i = 1,info%level)
+write (info%lun, '(20a)', advance='no') (indent, i = 1,info%level)
 write (info%lun, '(3a)') '</', trim(adjustl(tag)), '>'
 
 end subroutine xml_put_close_tag_
