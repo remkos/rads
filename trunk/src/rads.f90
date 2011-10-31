@@ -1682,9 +1682,7 @@ enddo
 select case (action)
 case ('replace')
 	string = ''
-	call append (string)
 case ('append')
-	call append (string)
 case ('delete')
 	do i = 1,nval
 		l = len_trim(val(i))
@@ -1692,6 +1690,7 @@ case ('delete')
 		if (j == 0) cycle
 		string(j:) = string(j+l:)
 	enddo
+	return
 case ('merge')
 	do i = 1,nval
 		l = len_trim(val(i))
@@ -1702,12 +1701,9 @@ case ('merge')
 			string = trim(string) // ' ' // val(i)
 		endif
 	enddo
+	return
 end select
-end subroutine assign_or_append
 
-subroutine append (string)
-character(len=*), intent(inout) :: string
-integer :: i, j
 if (nval == 0) return
 j = 1
 if (string == '') then
