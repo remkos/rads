@@ -26,8 +26,8 @@ use xmlparse
 type(rads_sat) :: S
 type(xml_parse) :: X
 character(len=80) :: filenm
-logical :: init
-character(len=2) :: satnm(10) = (/ 'c2', 'e1', 'e2', 'g1', 'gs', 'j1', 'j2', 'n1', 'pn', 'tx' /)
+integer, parameter :: nsat = 10
+character(len=2) :: satnm(nsat+1) = (/ 'c2', 'e1', 'e2', 'g1', 'gs', 'j1', 'j2', 'n1', 'pn', 'tx', '??' /)
 
 integer :: passes(2),cycles(2)=0,i,j
 character(len=4) :: radsfmt
@@ -57,24 +57,25 @@ call xml_options (X, ignore_whitespace=.true.)
 ! Do things for all files on the command line
 do i = 1,iargc()
 	call getarg (i, filenm)
-	init = .false.
-	do j = 1,10
-		if (index(filenm, 'getraw_'//satnm(j)) > 0) then
-			call rads_init (S, satnm(j))
-			attr(1,1) = 'sat'
-			attr(2,1) = satnm(j)
-			init = .true.
-			exit
-		endif
+	do j = 1,nsat
+		if (index(filenm, 'getraw_'//satnm(j)) > 0) exit
 	enddo
-	if (.not.init) call rads_init (S, 'j2')
-	if (init) call xml_put (X, 'if', attr, 1, string, 0, 'open')
 
+	! Set up the S structure
+	S%sat = satnm(j)
+	S%debug = 0
+	S%error = rads_noerr
+	nullify (S%sel, S%phases)
+	S%nvar = 0
+	allocate (S%var(rads_var_chunk))
+	S%var = rads_var ('', null(), .false., rads_nofield)
+	call rads_read_xml (S, trim(radsdataroot) // '/conf/rads.xml', .true.)
+	call rads_read_xml (S, trim(radsuserroot) // '/.rads/rads.xml', .false.)
 
 	! Init some variables
 	formts=''
 	limits = nan
-	factors = nan
+	factors = 0d0
 	factors(4) = 1d0
 	factors(6:16) = -1d0
 	factors(38) = -1d0
@@ -84,8 +85,13 @@ do i = 1,iargc()
 	open (10, file=filenm)
 	read (10, nml=getraw_nml)
 	close (10)
+
+	! Output XML
+	attr(1,1) = 'sat'
+	attr(2,1) = satnm(j)
+	if (j <= nsat) call xml_put (X, 'if', attr, 1, string, 0, 'open')
 	call xml_output ()
-	if (init) call xml_put (X, 'if', attr, 0, string, 0, 'close')
+	if (j <= nsat) call xml_put (X, 'if', attr, 0, string, 0, 'close')
 	call rads_end (S)
 enddo
 
@@ -116,7 +122,7 @@ do i = 0,99
 	call xml_put (X, 'var', attr, 1, string, 0, 'open')
 	if (.not.all(isnan(limits(:,i)))) then
 		where (isnan(limits(:,i))) limits(:,i) = var%info%limits(:)
-		call xml_dble (limits(:,i), 'limits', '2f0.3')
+		call xml_dble (limits(:,i), 'limits', 'f0.3')
 	endif
 	if (formts(i) /= '') call xml_text (formts(i), 'format')
 	call xml_put (X, 'var', attr, 0, string, 0, 'close')
@@ -146,10 +152,8 @@ do i = 6,99
 	var => rads_varptr (S, field)
 	if (options(i) <= 0) then
 		call del_string (math, trim(var%name)//' SUB ', newmath)
-		call del_string (qual, trim(var%info%name)//' ', newqual)
+		call del_string (qual, trim(var%name)//' ', newqual)
 	else if (factors(i) == 0d0) then
-		write (field, '(i4.4)') i*100+options(i)
-		var => rads_varptr (S, field)
 		call add_string (qual, trim(var%name)//' ', newqual)
 	else if (factors(i) < 0d0) then
 		call add_string (math, trim(var%name)//' SUB ', newmath)
@@ -174,12 +178,14 @@ character(len=*) :: name, format
 integer :: i,n
 character(len=640) :: attr(2,1), string(size(var))
 n = size(var)
-if (sum(abs(var)) /= 0d0) then
-	do i = 1,n
+do i = 1,n
+	if (abs(var(i)-nint(var(i))) < 1d-10) then
+		write (string(i), '(i20)') nint(var(i))
+	else
 		write (string(i), '('//format//')') var(i)
-	enddo
-	call xml_put (X, name, attr, 0, string, n, 'elem')
-endif
+	endif
+enddo
+call xml_put (X, name, attr, 0, string, n, 'elem')
 end subroutine xml_dble
 
 subroutine xml_text (var, name)
@@ -190,16 +196,6 @@ if (var /= '') then
 	call xml_put (X, name, attr, 0, string, 1, 'elem')
 endif
 end subroutine xml_text
-
-subroutine xml_int (var, name, format)
-integer(fourbyteint) :: var(:)
-character(len=*) :: name,format
-character(len=640) :: attr(2,1), string(1)
-if (sum(abs(var)) /= 0) then
-	write (string(1), '('//format//')') var
-	call xml_put (X, name, attr, 0, string, 1, 'elem')
-endif
-end subroutine xml_int
 
 subroutine add_string (string, sub, change)
 character(len=*) :: string, sub
