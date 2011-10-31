@@ -26,11 +26,11 @@ GNU General Public License for more details.
 	<compress>int4 1e-4</compress>
 	<math>alt range SUB dry_tropo SUB wet_tropo SUB iono SUB inv_bar SUB tide_solid SUB tide_ocean SUB tide_load SUB
 	tide_pole SUB ssb SUB mss SUB ref_frame_offset SUB</math>
-	<quality_flag>swh_ku sig0_ku range_rms_ku range_numval_ku flags</quality_flag>
-	<quality_flag sat="e1 g1 tx" action="append">swh_rms_ku</quality_flag>
-	<quality_flag sat="e2" action="append">swh_rms_ku off_nadir_angle2_wf_ku</quality_flag>
-	<quality_flag sat="j1 j2" action="append">swh_rms_ku sig0_rms_ku off_nadir_angle2_wf_ku</quality_flag>
-	<quality_flag sat="n1" action="append">swh_rms_ku peakiness_ku</quality_flag>
+	<quality_flag>swh sig0 range_rms range_numval flags</quality_flag>
+	<quality_flag sat="e1 e2 g1 j1 j2 n1 tx" action="append">swh_rms</quality_flag>
+	<quality_flag sat="j1 j2" action="append">sig0_rms</quality_flag>
+	<quality_flag sat="e2 j1 j2" action="append">off_nadir_angle2_wf</quality_flag>
+	<quality_flag sat="n1" action="append">peakiness</quality_flag>
 	<comment>Sea level determined from satellite altitude - range - all altimetric corrections</comment>
 </var>
 <alias name="ssha">sla</alias>
