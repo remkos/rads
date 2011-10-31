@@ -28,7 +28,7 @@ OBJS	= $(OBJS1) $(OBJS2) $(OBJS3)
 LIB	= librads.a
 
 PROGS_O = rads2asc.o rads2adr.o rads2nc.o rads2grd.o radsstat.o radscolin.o radsxogen.o radsxoconv.o \
-	radsxolist.o rads_test.o rads_nml2xml.o rads_sample.o rads3test.o
+	radsxolist.o rads_test.o radsreconfig.o rads_sample.o rads3test.o
 PROGS_L = rads2xadr rads2xgf
 PROGS_L4= rads2asc4 radscolin4 radsstat4 rads2grd4
 PROGS = $(PROGS_O:.o=) $(PROGS_L) $(PROGS_L4)
@@ -63,7 +63,7 @@ man:	$(MAN)
 $(OBJS2):	$(OBJS1)
 $(OBJS3):	$(OBJS1) $(OBJS2)
 $(PROGS_O):	$(OBJS)
-rads_nml2xml.o:	xmlparse.mod
+radsreconfig.o:	xmlparse.mod
 $(OBJS):	typesizes.mod
 rads.o:		$(INCS)
 rads_test.o:	$(OBJS2)
@@ -104,8 +104,8 @@ rads_test:	$(LIB) rads_test.o
 	$(FC) -o $@ rads_test.o $(LIB) $(NETCDF)
 rads_sample:	$(LIB) rads_sample.o
 	$(FC) -o $@ rads_sample.o $(LIB) $(NETCDF)
-rads_nml2xml:	$(LIB) rads_nml2xml.o
-	$(FC) -o $@ rads_nml2xml.o $(LIB) $(NETCDF)
+radsreconfig:	$(LIB) radsreconfig.o
+	$(FC) -o $@ radsreconfig.o $(LIB) $(NETCDF)
 rads3test:	$(LIB) rads3test.o
 	$(FC) -o $@ rads3test.o $(LIB) $(NETCDF)
 
