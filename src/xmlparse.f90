@@ -247,7 +247,7 @@ info%level              = 0
 info%lineno             = 0
 
 if (fname /= '-') then
-	do i = 10,99
+	do i = 99,10,-1
 		inquire (unit = i, opened = opend)
 		if (.not. opend) then
 			info%lun = i
