@@ -98,7 +98,7 @@ $(LIB):	$(OBJS)
 ########################################################################
 test:	rads_test
 	rads_test debug=3 sat=e1/a ymd=19910924,19910925 lat=-50,30 lon=-90,120 \
-	sel=time,lat,lon,sla,12%,tide_ocean%,pass,drange > $(TMPDIR)/rads_test.out
+	sel=time,lat,lon,sla,12_,tide_ocean_,pass,drange > $(TMPDIR)/rads_test.out
 	diff rads_test.out $(TMPDIR)/rads_test.out
 rads_test:	$(LIB) rads_test.o
 	$(FC) -o $@ rads_test.o $(LIB) $(NETCDF)
