@@ -369,12 +369,15 @@ call rads_read_xml (S, trim(userroot) // '/.rads/rads.xml', .false.)
 call rads_read_xml (S, 'rads.xml', .false.)
 if (present(xml) .and. xml /= '') call rads_read_xml (S, xml, .true.)
 
+! If no phases are defined, then the satellite is not known
+if (.not.associated(S%phases)) call rads_exit ('Satellite '//sat(k:k+1)//' unknown')
+
 ! When a phase/mission is specifically given, load the appropriate settings
 i = k + 2
 if (sat(i:i) == '/' .or. sat(i:i) == ':') i = i + 1
 if (sat(i:) /= '') then
 	S%phase => rads_get_phase(S, sat(i:i))
-	if (.not.associated(S%phase)) call rads_exit ('No such mission phase '//sat(i:i)//' of satellite '//sat(:2))
+	if (.not.associated(S%phase)) call rads_exit ('No such mission phase '//sat(i:i)//' of satellite '//sat(k:k+1))
 	S%phase%dataroot = trim(S%dataroot) // '/' // S%sat // '/' // trim(sat(i:))
 	S%cycles(1:2) = S%phase%cycles
 	S%passes(1:2) = S%phase%passes
@@ -1503,7 +1506,7 @@ do
 	do i = 1,nattr
 		if (attr(1,i) == 'sat') then
 			if (skip == 0) skip = 1
-			if (index(attr(2,i),S%sat) > 0) skip = -1
+			if (index(attr(2,i),S%sat) > 0 .or. S%sat == '??') skip = -1
 		endif
 	enddo
 	if (skip == 1) then
