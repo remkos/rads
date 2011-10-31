@@ -43,7 +43,7 @@ integer(fourbyteint), parameter :: rads_noerr = 0, &
 integer(fourbyteint) :: rads_err_incompat = 101, rads_err_noinit = 102
 integer(twobyteint), parameter :: rads_nofield = -1
 real(eightbytereal), parameter :: pi = 4d0*atan(1d0), rad = pi/180d0
-character(len=1), parameter, private :: char_linefeed = char(10), char_noedit = '%'
+character(len=1), parameter :: rads_linefeed = char(10), rads_noedit = '_'
 integer, parameter, private :: stderr = 0, stdout = 6
 
 private :: traxxing, rads_get_phase
@@ -698,7 +698,7 @@ i0 = k
 do i = k,l
 	if (i == l .or. string(i+1:i+1) == ',' .or. string(i+1:i+1) == '/') then
 		noedit = 0
-		if (string(i:i) == char_noedit) noedit = 1
+		if (string(i:i) == rads_noedit) noedit = 1
 		var => rads_varptr(S, string(i0:i-noedit))
 		if (associated(var)) then
 			S%nsel = S%nsel + 1
@@ -911,7 +911,7 @@ else if (nff(nf90_inquire_attribute(P%ncid,nf90_global,'log01',attnum=k))) then 
 				P%original = string(k+14:)
 			endif
 		else
-			P%history(1) = trim(string) // char_linefeed // P%history(1)
+			P%history(1) = trim(string) // rads_linefeed // P%history(1)
 		endif
 	enddo
 endif
@@ -1098,7 +1098,7 @@ if (P%ndata <= 0) return ! Skip empty files
 
 ! If varname ends with %, suspend editing, otherwise follow noedit, or default = .false.
 l = len_trim(varname)
-if (varname(l:l) == char_noedit) then
+if (varname(l:l) == rads_noedit) then
 	l = l - 1
 	skip_edit = .true.
 else if (present(noedit)) then
@@ -1669,16 +1669,48 @@ end function has_name
 
 subroutine assign_or_append (string)
 ! Assign or append concatenation of val(1:nval) to string
-character(*), intent(inout) :: string
-integer :: i, j
-j = 2
+character(len=*), intent(inout) :: string
+integer :: i, j, l
+character(len=8) :: action
+
+! Check for "action=
+action = 'replace'
 do i = 1,nattr
-	if (attr(1,i) == 'action' .and. attr(2,i) == 'append') j = 1
+	if (attr(1,i) == 'action') action = attr(2,i)(:8)
 enddo
-if (j == 1 .and. string /= '') then
-else if (nval == 0) then
+
+select case (action)
+case ('replace')
 	string = ''
-else
+	call append (string)
+case ('append')
+	call append (string)
+case ('delete')
+	do i = 1,nval
+		l = len_trim(val(i))
+		j = index(string, val(i)(:l))
+		if (j == 0) cycle
+		string(j:) = string(j+l:)
+	enddo
+case ('merge')
+	do i = 1,nval
+		l = len_trim(val(i))
+		if (index(string, val(i)(:l)) > 0) cycle
+		if (string == '') then
+			string = val(i)
+		else
+			string = trim(string) // ' ' // val(i)
+		endif
+	enddo
+end select
+end subroutine assign_or_append
+
+subroutine append (string)
+character(len=*), intent(inout) :: string
+integer :: i, j
+if (nval == 0) return
+j = 1
+if (string == '') then
 	string = val(1)
 	j = 2
 endif
@@ -1744,10 +1776,10 @@ type(rads_var), pointer :: temp(:)
 integer(twobyteint) :: field
 
 S%error = rads_noerr
+field = -999
 
 ! If variable name is numerical, look for field number
 if (varname(1:1) >= '0' .and. varname(1:1) <= '9') then
-	field = -999
 	read (varname, *, iostat=i) field
 	do i = 1,S%nvar
 		if (S%var(i)%field == field) exit
@@ -1793,7 +1825,12 @@ if (i > n) then
 endif
 S%nvar = i
 ptr => S%var(i)
-ptr%name = varname
+if (field >= 0) then ! Was given field number
+	write (ptr%name, '("f",i4.4)') field
+	ptr%field = field
+else
+	ptr%name = varname
+endif
 
 ! Finally assign the info struct to that of tgt or make a new one
 if (associated(tgt)) then
@@ -2529,7 +2566,7 @@ e = e + nf90_put_att(P%ncid, nf90_global, 'original', P%original)
 call gmtime(time(),values)
 write (yymmdd, '(i4.4,2("-",i2.2))') values(6)+1900,values(5)+1,values(4)
 if (allocated(P%history)) then
-	e = e + nf90_put_att(P%ncid, nf90_global, 'history', yymmdd//': '//trim(S%command)//char_linefeed//trim(P%history(1)))
+	e = e + nf90_put_att(P%ncid, nf90_global, 'history', yymmdd//': '//trim(S%command)//rads_linefeed//trim(P%history(1)))
 else
 	e = e + nf90_put_att(P%ncid, nf90_global, 'history', yymmdd//': '//trim(S%command))
 endif
