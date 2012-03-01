@@ -26,7 +26,7 @@ include 'config.inc'
 ! Dimensions
 integer(fourbyteint), parameter :: rads_var_chunk = 100, rads_naml = 80, rads_varl = 40
 ! RADS4 data types
-integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, rads_type_flagword = 2, &
+integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, rads_type_flagmasks = 2, rads_type_flagvalues = 3, &
 	rads_type_time = 11, rads_type_lat = 12, rads_type_lon = 13
 ! RADS4 data sources
 integer(fourbyteint), parameter :: rads_src_none = 0, rads_src_nc_var = 10, rads_src_nc_att = 11, rads_src_math = 20, &
@@ -44,7 +44,7 @@ integer(fourbyteint) :: rads_err_incompat = 101, rads_err_noinit = 102
 integer(twobyteint), parameter :: rads_nofield = -1
 real(eightbytereal), parameter :: pi = 4d0*atan(1d0), rad = pi/180d0
 character(len=1), parameter :: rads_linefeed = char(10), rads_noedit = '_'
-integer, parameter, private :: stderr = 0, stdout = 6
+integer, parameter, private :: stderr = 0, stdout = 6, maxsubcycles = 20
 
 private :: traxxing, rads_get_phase
 
@@ -68,7 +68,7 @@ type :: rads_varinfo
 	integer(fourbyteint) :: ndims                    ! Number of dimensions of variable
 	integer(fourbyteint) :: nctype                   ! netCDF data type (nf90_int, etc.)
 	integer(fourbyteint) :: varid                    ! netCDF variable ID
-	integer(fourbyteint) :: datatype                 ! Type of data (rads_type_other|flagword|time|lat|lon)
+	integer(fourbyteint) :: datatype                 ! Type of data (rads_type_other|flagmasks|flagvalues|time|lat|lon)
 	integer(fourbyteint) :: datasrc                  ! Retrieval source (rads_src_nc_var|nc_att|math|bilinear|cspline)
 	integer(fourbyteint) :: cycle, pass              ! Last processed cycle and pass
 	integer(fourbyteint) :: selected, rejected       ! Number of selected or rejected measurements
@@ -86,6 +86,7 @@ type :: rads_phase
 	character(len=rads_varl) :: name, mission        ! Name (1-letter), and mission description
 	character(len=160) :: dataroot                   ! Root directory of satellite and phase
 	integer(fourbyteint) :: cycles(2),passes(2)      ! Cycle and pass limits
+	integer(fourbyteint) :: nsubcycles,subcycles(maxsubcycles)	! Subcycles, if any
 	real(eightbytereal) :: start_time, end_time      ! Start time and end time of this phase
 	real(eightbytereal) :: ref_time, ref_lon         ! Time and longitude of equator crossing of "reference pass"
 	integer(fourbyteint) :: ref_cycle, ref_pass      ! Cycle and pass number of "reference pass"
@@ -804,7 +805,7 @@ integer(fourbyteint), intent(in) :: cycle, pass
 !-----------------------------------------------------------------------
 character(len=40) :: date
 character(len=640) :: string
-integer(fourbyteint) :: i,k,ascdes
+integer(fourbyteint) :: i,k,ascdes,cc,pp
 real(eightbytereal) :: d
 real(eightbytereal), allocatable :: tll(:,:)
 
@@ -831,12 +832,21 @@ if (pass < S%passes(1) .or. pass > S%passes(2) .or. pass > S%phase%passes(2)) th
 endif
 
 ! Make estimates of the equator time and longitude and time range, which helps screening
-d = S%phase%repeat_days * 86400d0 / S%phase%repeat_passes
-P%equator_time = S%phase%ref_time + ((cycle - S%phase%ref_cycle) * S%phase%repeat_passes + (pass - S%phase%ref_pass)) * d
+! For constructions with subcycles, convert first to "real" cycle/pass number
+d = S%phase%repeat_days * 86400d0 / S%phase%repeat_passes ! Length in seconds of single pass
+if (S%phase%nsubcycles > 0) then
+	cc = cycle - 1
+	pp = S%phase%subcycles(modulo(cc,S%phase%nsubcycles)+1) + pass
+	cc = cc / S%phase%nsubcycles + 1
+else
+	cc = cycle
+	pp = pass
+endif
+P%equator_time = S%phase%ref_time + ((cc - S%phase%ref_cycle) * S%phase%repeat_passes + (pp - S%phase%ref_pass)) * d
 P%start_time = P%equator_time - 0.5d0 * d
 P%end_time = P%equator_time + 0.5d0 * d
 d = -nint(S%phase%repeat_days) * 360d0 / S%phase%repeat_passes
-P%equator_lon = modulo(S%phase%ref_lon + (pass - S%phase%ref_pass) * d + modulo(pass - S%phase%ref_pass,2) * 180d0, 360d0)
+P%equator_lon = modulo(S%phase%ref_lon + (pp - S%phase%ref_pass) * d + modulo(pp - S%phase%ref_pass,2) * 180d0, 360d0)
 if (S%debug >= 4) write (*,*) 'Estimated start/end/equator time/longitude = ', &
 	P%equator_time, P%start_time, P%end_time, P%equator_lon
 
@@ -1363,8 +1373,8 @@ else if (info%datatype == rads_type_lon) then
 	data = info%limits(1) + modulo (data - info%limits(1), 360d0)
 	! Then only check the upper (east) limit
 	where (data > info%limits(2)) data = S%nan
-else if (info%datatype == rads_type_flagword) then
-	! Do editing of flagword
+else if (info%datatype == rads_type_flagmasks) then
+	! Do editing of flag based on mask
 	mask = nint(info%limits)
 	! Reject when any of the set bits of the lower limit are set in the data
 	if (mask(1) /= 0) where (iand(nint(data),mask(1)) /= 0) data = S%nan
@@ -1531,6 +1541,17 @@ do
 		read (val(1),*,iostat=ios) phase%passes
 	case ('cycles')
 		read (val(1),*,iostat=ios) phase%cycles
+	case ('subcycles')
+		read (val(1),*,iostat=ios) phase%subcycles
+		! Turn length of subcycles in passes into number of accumulative passes before subcycle
+		do i = 1,maxsubcycles
+			if (phase%subcycles(i) == 0) exit
+		enddo
+		phase%nsubcycles = i - 1
+		do i = phase%nsubcycles, 2, -1
+			phase%subcycles(i) = sum(phase%subcycles(1:i-1))
+		enddo
+		phase%subcycles(1) = 0
 	case ('ref_pass') ! First part is a date string, at least 19 characters long
 		i = index(val(1)(20:),' ')+19
 		phase%ref_time = strp1985f(val(1)(:i))
@@ -1597,11 +1618,12 @@ do
 		info%source = val(1)(:80)
 	case ('units')
 		info%units = val(1)(:rads_varl)
-	case ('flag_values', 'flag_meanings')
-		call assign_or_append (info%flag_meanings)
 	case ('flag_masks')
 		call assign_or_append (info%flag_meanings)
-		info%datatype = rads_type_flagword
+		info%datatype = rads_type_flagmasks
+	case ('flag_values')
+		call assign_or_append (info%flag_meanings)
+		info%datatype = rads_type_flagvalues
 	case ('comment')
 		call assign_or_append (info%comment)
 	case ('netcdf')
@@ -2267,7 +2289,8 @@ else
 endif
 
 ! Initialize the new phase information and direct the pointer
-S%phases(n) = rads_phase (name, '', '', (/999,0/), (/9999,0/), S%nan, S%nan, S%nan, S%nan, 0, 0, S%nan, S%nan, 0)
+S%phases(n) = rads_phase (name, '', '', (/999,0/), (/9999,0/), 0, (/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/), &
+	S%nan, S%nan, S%nan, S%nan, 0, 0, S%nan, S%nan, 0)
 phase => S%phases(n)
 
 end function rads_get_phase
@@ -2290,7 +2313,7 @@ integer(fourbyteint) :: rads_time_to_cycle
 ! Return value:
 !  rads_time_to_cycle : Cycle number in which <time> falls
 !-----------------------------------------------------------------------
-integer :: i
+integer :: i, j, n
 real(eightbytereal) :: d, t0
 i = 1
 S%error = rads_noerr
@@ -2300,6 +2323,14 @@ enddo
 d = S%phases(i)%repeat_days * 86400d0 / S%phases(i)%repeat_passes ! Length in seconds of single pass
 t0 = S%phases(i)%ref_time - (S%phases(i)%ref_pass - 0.5d0) * d ! Time of start of ref_cycle
 rads_time_to_cycle = floor((time - t0) / (S%phases(i)%repeat_days * 86400d0)) + S%phases(i)%ref_cycle
+if (S%phases(i)%nsubcycles == 0) return
+! When there are subcycles, compute the subcycle number
+rads_time_to_cycle = (rads_time_to_cycle - 1) * S%phases(i)%nsubcycles
+n = floor((time - t0) / d)
+do j = 1,S%phases(i)%nsubcycles
+	if (S%phases(i)%subcycles(j) > n) exit
+	rads_time_to_cycle = rads_time_to_cycle + 1
+enddo
 end function rads_time_to_cycle
 
 !***********************************************************************
@@ -2319,7 +2350,7 @@ real(eightbytereal) :: rads_cycle_to_time
 ! Return value:
 !  rads_cycle_to_time : Start time of <cycle> in seconds since 1985
 !-----------------------------------------------------------------------
-integer :: i
+integer :: i, cc, pp
 real(eightbytereal) :: d, t0
 i = 1
 do i = 1,size(S%phases)-1
@@ -2327,7 +2358,15 @@ do i = 1,size(S%phases)-1
 enddo
 d = S%phases(i)%repeat_days * 86400d0 / S%phases(i)%repeat_passes ! Length in seconds of single pass
 t0 = S%phases(i)%ref_time - (S%phases(i)%ref_pass - 0.5d0) * d ! Time of start of ref_cycle
-rads_cycle_to_time = max(S%phases(i)%start_time, t0 + (cycle - S%phases(i)%ref_cycle) * S%phases(i)%repeat_days * 86400d0)
+if (S%phases(i)%nsubcycles == 0) then
+	rads_cycle_to_time = max(S%phases(i)%start_time, t0 + (cycle - S%phases(i)%ref_cycle) * S%phases(i)%repeat_days * 86400d0)
+else
+	cc = cycle - 1
+	pp = S%phase%subcycles(modulo(cc,S%phase%nsubcycles)+1)
+	cc = cc / S%phase%nsubcycles + 1
+	rads_cycle_to_time = max(S%phases(i)%start_time, t0 + (cc - S%phases(i)%ref_cycle) * S%phases(i)%repeat_days * 86400d0) + &
+		pp * d
+endif
 end function rads_cycle_to_time
 
 !***********************************************************************
@@ -2584,7 +2623,7 @@ real(eightbytereal), intent(in), optional :: scale_factor, add_offset
 ! Zero-dimensional version of rads_def_var.
 !-----------------------------------------------------------------------
 type(rads_varinfo), pointer :: info
-integer(fourbyteint) :: e, i, n
+integer(fourbyteint) :: e, n
 integer, parameter :: dimid(1:4) = (/ 1, 2, 3, 4 /)
 integer(onebyteint), parameter :: flag_values(0:9) = int((/ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 /), onebyteint)
 S%error = rads_noerr
@@ -2603,24 +2642,20 @@ if (info%source /= '') e = e + nf90_put_att (P%ncid, info%varid, 'source', trim(
 if (info%units /= '') e = e + nf90_put_att (P%ncid, info%varid, 'units', trim(info%units))
 if (info%datatype >= rads_type_time) then
 	! No _FillValue, flag_values or flag_masks
-else if (info%flag_meanings /= '') then
-	! Count the number of spaces in flag_meanings
-	n = 0
-	do i = 1,len_trim(info%flag_meanings)
-		if (info%flag_meanings(i:i) == ' ') n = n + 1
-	enddo
-	if (info%datatype == rads_type_flagword) then
-		if (info%nctype == nf90_int1) then
-			e = e + nf90_put_att (P%ncid, info%varid, 'flag_masks', int(2**flag_values(0:n),onebyteint))
-		else
-			e = e + nf90_put_att (P%ncid, info%varid, 'flag_masks', int(2**flag_values(0:n),twobyteint))
-		endif
+else if (info%datatype == rads_type_flagmasks) then
+	n = count_spaces (info%flag_meanings)
+	if (info%nctype == nf90_int1) then
+		e = e + nf90_put_att (P%ncid, info%varid, 'flag_masks', int(2**flag_values(0:n),onebyteint))
 	else
-		if (info%nctype == nf90_int1) then
-			e = e + nf90_put_att (P%ncid, info%varid, 'flag_values', int(flag_values(0:n),onebyteint))
-		else
-			e = e + nf90_put_att (P%ncid, info%varid, 'flag_values', int(flag_values(0:n),twobyteint))
-		endif
+		e = e + nf90_put_att (P%ncid, info%varid, 'flag_masks', int(2**flag_values(0:n),twobyteint))
+	endif
+	e = e + nf90_put_att (P%ncid, info%varid, 'flag_meanings', info%flag_meanings)
+else if (info%datatype == rads_type_flagvalues) then
+	n = count_spaces (info%flag_meanings)
+	if (info%nctype == nf90_int1) then
+		e = e + nf90_put_att (P%ncid, info%varid, 'flag_values', int(flag_values(0:n),onebyteint))
+	else
+		e = e + nf90_put_att (P%ncid, info%varid, 'flag_values', int(flag_values(0:n),twobyteint))
 	endif
 	e = e + nf90_put_att (P%ncid, info%varid, 'flag_meanings', info%flag_meanings)
 else if (info%nctype == nf90_int1) then
@@ -2639,6 +2674,18 @@ if (e > 0) call rads_error (S, rads_err_nc_var, &
 	'Error writing attributes for variable '//trim(var%name)//' in '//trim(P%filename))
 info%cycle = P%cycle
 info%pass = P%pass
+
+contains
+
+function count_spaces (string)
+character(len=*), intent(in) :: string
+integer(fourbyteint) :: count_spaces, i
+count_spaces = 0
+do i = 2,len_trim(string)-1
+	if (string(i:i) == ' ') count_spaces = count_spaces + 1
+enddo
+end function count_spaces
+
 end subroutine rads_def_var_0d
 
 subroutine rads_def_var_1d (S, P, var, nctype, scale_factor, add_offset)
