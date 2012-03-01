@@ -31,7 +31,7 @@ PROGS_O = rads2asc.o rads2adr.o rads2nc.o rads2grd.o radsstat.o radscolin.o rads
 	radsxolist.o rads_test.o radsreconfig.o rads_sample.o rads3test.o
 PROGS_L = rads2xadr rads2xgf
 PROGS_L4= rads2asc4 radscolin4 radsstat4 rads2grd4
-PROGS = $(PROGS_O:.o=) $(PROGS_L) $(PROGS_L4)
+PROGS = $(PROGS_O:.o=)
 
 INCS	= config.inc
 
@@ -41,18 +41,17 @@ MODULES = typesizes.mod $(OBJS:.o=.mod)
 # What to create?
 ########################################################################
 
-all:	$(LIB) $(PROGS)
+all:	$(LIB) $(PROGS) $(PROGS_L) $(PROGS_L4)
 
 install:	all
 	$(INSTALL) -d $(LIBDIR)
 	$(INSTALL) -m 644 $(LIB) $(LIBDIR)
 	$(INSTALL) -d $(INCDIR)
-	$(INSTALL) -m 644 ../include/*.h ../include/*.inc ../include/*.mk $(INCDIR)
-	$(INSTALL) -m 644 *.mod $(INCDIR)
+	$(INSTALL) -m 644 *.inc *.mod $(INCDIR)
 	$(INSTALL) -d $(BINDIR)
 	$(INSTALL) -m 755 $(PROGS) $(BINDIR)
-	( cd $(BINDIR) ; ln -fs rads2adr rads2xadr )
-	( cd $(BINDIR) ; ln -fs rads2adr rads2xgf )
+	for p in $(PROGS_L); do ( cd $(BINDIR) ; ln -fs rads2adr $$p ) ; done
+	for p in $(PROGS_L4); do ( cd $(BINDIR) ; ln -fs $${p/4/} $$p ) ; done
 
 man:	$(MAN)
 
