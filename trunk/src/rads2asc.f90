@@ -124,7 +124,7 @@ do j = 1,msat
 
 	! If flags or SLA are among the results, remember which they are
 	do i = 1,S%nsel
-		if (S%sel(i)%info%datatype == rads_type_flagword) then
+		if (S%sel(i)%info%datatype == rads_type_flagmasks) then
 			isflags = i
 		else if (S%sel(i)%info%datatype == rads_type_sla) then
 			if (reject == -1) reject = i
@@ -345,7 +345,7 @@ write (outunit,600) trim(S%satellite), trim(S%phase%name), cycle, pass, &
 if (outname /= '') continued = .true.
 m = 0
 do j = 1,S%nsel
-	if (S%sel(j)%info%datatype == rads_type_flagword) then
+	if (S%sel(j)%info%datatype == rads_type_flagmasks) then
 		do k = 0,15
 			m = m + 1
 			var => rads_varptr (S, flagname(k))
