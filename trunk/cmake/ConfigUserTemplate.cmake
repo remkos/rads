@@ -1,5 +1,5 @@
 # 
-#	$Id: ConfigUserTemplate.cmake 9221 2011-10-07 08:03:43Z fwobbe $
+#	$Id$
 #
 #	Copyright (c) 1991-2011 by P. Wessel, W. H. F. Smith, R. Scharroo, J. Luis, and F. Wobbe
 #	See LICENSE.TXT file for copying and redistribution conditions.
