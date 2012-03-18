@@ -1,5 +1,5 @@
 #
-# $Id: ConfigCMake.cmake 9131 2011-09-27 01:24:06Z remko $
+# $Id$
 #
 # Useful CMake variables.
 #

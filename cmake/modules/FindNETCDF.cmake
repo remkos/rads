@@ -1,5 +1,5 @@
 #
-# $Id: FindNETCDF.cmake 9220 2011-10-06 14:39:24Z fwobbe $
+# $Id$
 #
 # Locate netcdf
 #
@@ -22,14 +22,14 @@
 #
 # This software is distributed WITHOUT ANY WARRANTY; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# See the License for more information.
+# See COPYING-CMAKE-SCRIPTS for more information.
 #=============================================================================
 
 # This makes the presumption that you are include netcdf.h like
 #
 #include "netcdf.h"
 
-if (UNIX)
+if (UNIX AND NOT NETCDF_FOUND)
 	# Use nc-config to obtain the libraries
 	find_program (NETCDF_CONFIG nc-config
 		HINTS
@@ -46,13 +46,17 @@ if (UNIX)
 	)
 
 	if (NETCDF_CONFIG)
-		exec_program (${NETCDF_CONFIG} ARGS --cflags OUTPUT_VARIABLE NETCDF_CONFIG_CFLAGS)
+		execute_process (COMMAND ${NETCDF_CONFIG} --cflags
+			ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE
+			OUTPUT_VARIABLE NETCDF_CONFIG_CFLAGS)
 		if (NETCDF_CONFIG_CFLAGS)
 			string (REGEX MATCHALL "-I[^ ]+" _netcdf_dashI ${NETCDF_CONFIG_CFLAGS})
 			string (REGEX REPLACE "-I" "" _netcdf_includepath "${_netcdf_dashI}")
 			string (REGEX REPLACE "-I[^ ]+" "" _netcdf_cflags_other ${NETCDF_CONFIG_CFLAGS})
 		endif (NETCDF_CONFIG_CFLAGS)
-		exec_program (${NETCDF_CONFIG} ARGS --libs OUTPUT_VARIABLE NETCDF_CONFIG_LIBS)
+		execute_process (COMMAND ${NETCDF_CONFIG} --libs
+			ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE
+			OUTPUT_VARIABLE NETCDF_CONFIG_LIBS)
 		if (NETCDF_CONFIG_LIBS)
 			string (REGEX MATCHALL "-l[^ ]+" _netcdf_dashl ${NETCDF_CONFIG_LIBS})
 			string (REGEX REPLACE "-l" "" _netcdf_lib "${_netcdf_dashl}")
@@ -64,7 +68,7 @@ if (UNIX)
 		list (REMOVE_DUPLICATES _netcdf_lib)
 		list (REMOVE_ITEM _netcdf_lib netcdf)
 	endif (_netcdf_lib)
-endif (UNIX)
+endif (UNIX AND NOT NETCDF_FOUND)
 
 find_path (NETCDF_INCLUDE_DIR netcdf.h
 	HINTS
@@ -75,6 +79,8 @@ find_path (NETCDF_INCLUDE_DIR netcdf.h
 	$ENV{NETCDF_ROOT}
 	PATH_SUFFIXES
 	include/netcdf
+	include/netcdf-4
+	include/netcdf-3
 	include
 	PATHS
 	/sw # Fink
@@ -83,7 +89,7 @@ find_path (NETCDF_INCLUDE_DIR netcdf.h
 	/opt
 )
 
-find_library (NETCDF_LIBRARY 
+find_library (NETCDF_LIBRARY
 	NAMES netcdf
 	HINTS
 	${_netcdf_libpath}
@@ -97,14 +103,12 @@ find_library (NETCDF_LIBRARY
 	/opt/local
 	/opt/csw
 	/opt
-	/usr/freeware
 )
 
 # find all libs that nc-config reports
 foreach (_extralib ${_netcdf_lib})
 	find_library (_found_lib_${_extralib}
 		NAMES ${_extralib}
-		HINTS ${_netcdf_libpath}
 		PATHS ${_netcdf_libpath})
 	list (APPEND NETCDF_LIBRARY ${_found_lib_${_extralib}})
 endforeach (_extralib)

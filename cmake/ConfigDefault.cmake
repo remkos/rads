@@ -1,5 +1,5 @@
 # 
-#	$Id: ConfigDefault.cmake 9213 2011-10-06 01:57:06Z fwobbe $
+#	$Id$
 #
 #	Copyright (c) 1991-2011 by P. Wessel, W. H. F. Smith, R. Scharroo, J. Luis, and F. Wobbe
 #	See LICENSE.TXT file for copying and redistribution conditions.
