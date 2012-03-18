@@ -145,6 +145,62 @@ if (temp /= ' ') string = temp
 end subroutine checkenv
 
 !***********************************************************************
+!*parseenv -- Parse a string for embedded environment variable
+!+
+recursive subroutine parseenv (input, output)
+character(len=*), intent(in) :: input
+character(len=*), intent(inout) :: output
+!
+! This routine parse the string <input> for embedded environment
+! variables and replaces them with its value. The result is returned
+! in <output>.
+! Environment variables are of the form ${parameter}.
+! Alternatively use ${parameter:-word} to substitude the expansion of
+! word when parameter is unset or empty; or use ${parameter:+word}
+! to substitute the expansion of word when parameter is not empty
+! (same meaning as in the bash shell).
+! Nesting of variable names is not allowed.
+!
+! Arguments:
+!   input   (input) : String to be parsed.
+!   output (output) : String with environment variables replaced.
+!-
+character(len=160) :: env
+integer :: j, k = 0, l, m, n
+output = input
+do
+	l = len_trim(output)
+	j = index (output(1:), '${')
+	if (j == 0) exit
+	j = j + 2
+	n = 1
+	do k = j,l
+		if (output(k:k) == '}') then
+			n = n - 1
+			if (n == 0) exit
+		else if (output(k:k) == '{') then
+			n = n + 1
+		endif
+	enddo
+	if (n > 0) exit
+	k = k - 1
+	m = index(output(j:k), ':')
+	if (m == 0) then
+		call getenv (output(j:k),env)
+	else
+		m = j + m - 1
+		call getenv (output(j:m-1),env)
+		if (index ('-=?', output(m+1:m+1)) > 0) then
+			if (env == '') env = output(m+2:k)
+		else if (output(m+1:m+1) == '+') then
+			if (env /= '') env = output(m+2:k)
+		endif
+	endif
+	output = output(:j-3) // trim(env) // output(k+2:)
+enddo
+end subroutine parseenv
+
+!***********************************************************************
 !*outofrange - Verify if value is within limits
 !+
 function outofrange (limits, value)
