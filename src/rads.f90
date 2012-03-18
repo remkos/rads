@@ -30,7 +30,7 @@ integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, rads_
 	rads_type_time = 11, rads_type_lat = 12, rads_type_lon = 13
 ! RADS4 data sources
 integer(fourbyteint), parameter :: rads_src_none = 0, rads_src_nc_var = 10, rads_src_nc_att = 11, rads_src_math = 20, &
-	rads_src_bilinear = 30, rads_src_cspline = 31, rads_src_query = 32
+	rads_src_grid_lininter = 30, rads_src_grid_splinter = 31, rads_src_grid_query = 32
 ! RADS4 warnings
 integer(fourbyteint), parameter :: rads_warn_xml_file = -1, rads_warn_alias_circular = -2, rads_warn_nc_file = -3
 ! RADS4 errors
@@ -69,7 +69,7 @@ type :: rads_varinfo
 	integer(fourbyteint) :: nctype                   ! netCDF data type (nf90_int, etc.)
 	integer(fourbyteint) :: varid                    ! netCDF variable ID
 	integer(fourbyteint) :: datatype                 ! Type of data (rads_type_other|flagmasks|flagvalues|time|lat|lon)
-	integer(fourbyteint) :: datasrc                  ! Retrieval source (rads_src_nc_var|nc_att|math|bilinear|cspline)
+	integer(fourbyteint) :: datasrc                  ! Retrieval source (rads_src_nc_var|nc_att|math|grid_lininter|grid_splinter|grid_query)
 	integer(fourbyteint) :: cycle, pass              ! Last processed cycle and pass
 	integer(fourbyteint) :: selected, rejected       ! Number of selected or rejected measurements
 	real(eightbytereal) :: xmin, xmax, mean, sum2    ! Minimum, maximum, mean, sum squared deviation
@@ -1155,7 +1155,7 @@ case (rads_src_nc_att)
 	call rads_get_att_nc
 case (rads_src_math)
 	call rads_get_var_math
-case (rads_src_bilinear, rads_src_cspline, rads_src_query)
+case (rads_src_grid_lininter, rads_src_grid_splinter, rads_src_grid_query)
 	call rads_get_var_grid
 case default
 	data = S%nan
@@ -1353,9 +1353,10 @@ call rads_get_var_by_name (S, P, info%gridx, x, .true.)
 if (S%error <= rads_noerr) call rads_get_var_by_name (S, P, info%gridy, y, .true.)
 
 if (S%error > rads_noerr) then
-else if (info%datasrc == rads_src_bilinear) then
+	S%error = rads_err_source
+else if (info%datasrc == rads_src_grid_lininter) then
 	forall (i = 1:P%ndata) data(i) = grid_lininter (info%grid, x(i), y(i))
-else if (info%datasrc == rads_src_cspline) then
+else if (info%datasrc == rads_src_grid_splinter) then
 	forall (i = 1:P%ndata) data(i) = grid_splinter (info%grid, x(i), y(i))
 else
 	forall (i = 1:P%ndata) data(i) = grid_query (info%grid, x(i), y(i))
@@ -1493,10 +1494,6 @@ call xml_options (X, ignore_whitespace = .true.)
 do
 	if (X%eof) exit
 	call xml_get (X, tag, endtag, attr, nattr, val, nval)
-	if (X%error) then
-		S%error = rads_err_xml_parse
-		exit
-	endif
 
 	! Process closing tags
 	if (endtag) then
@@ -1509,6 +1506,13 @@ do
 	! Process opening tags
 	tags(X%level) = tag
 	if (skip_lvl > 0 .and. X%level >= skip_lvl) cycle	! Skip all data at level equal or larger than skip level
+
+	! Error maybe?
+	if (X%error) then
+		call xmlparse_error ('Error parsing xml line')
+		S%error = rads_err_xml_parse
+		exit
+	endif
 
 	! Check if we need to skip this level
 	skip = 0
@@ -1578,8 +1582,8 @@ do
 			if (field > rads_nofield) var%field = field
 		endif
 	case ('grid')
-		info%datasrc = rads_src_bilinear
-		info%gridx = '' ; info%gridy = ''
+		info%datasrc = rads_src_grid_lininter
+		info%gridx = 'lon' ; info%gridy = 'lat'
 		do i = 1,nattr
 			select case (attr(1,i))
 			case ('x')
@@ -1587,8 +1591,8 @@ do
 			case ('y')
 				info%gridy = attr(2,i)
 			case ('inter')
-				if (attr(2,i)(:1) == 'c') info%datasrc = rads_src_cspline
-				if (attr(2,i)(:1) == 'q') info%datasrc = rads_src_query
+				if (attr(2,i)(:1) == 'c') info%datasrc = rads_src_grid_splinter
+				if (attr(2,i)(:1) == 'q') info%datasrc = rads_src_grid_query
 			end select
 		enddo
 		if (info%gridx == '' .or. info%gridy == '') then
@@ -1596,7 +1600,7 @@ do
 			cycle
 		endif
 		allocate (info%grid)
-		info%grid%filenm = val(1)(:128)
+		call parseenv (val(1), info%grid%filenm)
 		info%grid%ntype = 0	! This signals that the grid was not loaded yet
 	case ('long_name')
 		call assign_or_append (info%long_name)
