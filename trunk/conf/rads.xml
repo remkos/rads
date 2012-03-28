@@ -2371,7 +2371,7 @@ GNU General Public License for more details.
 
 <if sat="tx">
 	<satellite>TOPEX</satellite>
-	<satid>4</satid>
+	<satid>5</satid>
 	<dt1hz>1.072414</dt1hz>
 	<inclination>66.04</inclination>
 	<frequency>13.6 5.3</frequency>
