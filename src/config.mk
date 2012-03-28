@@ -18,8 +18,8 @@ RADS   = $(LIBDIR)/librads.a
 INSTALL = /usr/bin/install -c
 
 # Include and load option for NetCDF
-NETCDF_INC = /sw/opt/netcdf7/include
-NETCDF = -L/sw/lib -L/sw/opt/netcdf7/lib -lnetcdff -lnetcdf
+NETCDF_INC = /sw/include
+NETCDF = -L/sw/lib -lnetcdff -lnetcdf
 
 # Other libraries for tools only
 GDRSUBS= $(ALTIM)/lib/gdrsubs.a
