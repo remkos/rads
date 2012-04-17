@@ -30,7 +30,7 @@ GNU General Public License for more details.
 	<quality_flag sat="e1 e2 g1 j1 j2 n1 tx" action="append">swh_rms</quality_flag>
 	<quality_flag sat="j1 j2" action="append">sig0_rms</quality_flag>
 	<quality_flag sat="e2 j1 j2" action="append">attitude</quality_flag>
-	<quality_flag sat="n1" action="append">peakiness</quality_flag>
+	<quality_flag sat="c2 n1" action="append">peakiness</quality_flag>
 	<comment>Sea level determined from satellite altitude - range - all altimetric corrections</comment>
 </var>
 <alias name="ssha">sla</alias>
@@ -1103,6 +1103,7 @@ GNU General Public License for more details.
 	<limits sat="g1 gs">0.0 0.25</limits> <!--GFO and Geosat on-board a-b trackers smooth the data-->
 	<limits sat="j1">0.0 0.2</limits> <!--Retracker noise on Jason-1 is lower than others-->
 	<limits sat="j2">0.00 0.17</limits> <!--Retracker noise on Jason-2 is lower than others-->
+	<limits sat="c2">0.00 0.15</limits> <!--Retracker noise on CryoSat-2 is particularly low-->
 	<limits sat="tx">0.00 0.15</limits> <!--TOPEX a-b tracker leads to much lower std dev than other satellites-->
 	<netcdf>range_rms_ku</netcdf>
 	<format>f6.4</format>
@@ -1291,13 +1292,17 @@ GNU General Public License for more details.
 	<alias name="tb3">tb_370</alias>
 </if>
 
-<var sat="n1" name="peakiness_ku" field="2401">
-	<long_name>Ku-band peakiness</long_name>
-	<limits>1.4 1.9</limits>
-	<netcdf>peakiness_ku</netcdf>
-	<format>f6.2</format>
-	<compress>int2 1d-2</compress>
-</var>
+<if sat="c2 n1">
+	<var name="peakiness_ku" field="2401">
+		<long_name>Ku-band peakiness</long_name>
+		<limits sat="n1">1.4 1.9</limits>
+		<limits sat="c2">1.2 1.5</limits>
+		<netcdf>peakiness_ku</netcdf>
+		<format>f6.2</format>
+		<compress>int2 1d-2</compress>
+	</var>
+	<alias name="peakiness" field="24">peakiness_ku</alias>
+</if>
 <var sat="n1" name="peakiness_s" field="2402">
 	<long_name>S-band peakiness</long_name>
 	<limits>1.4 1.9</limits>
@@ -1305,7 +1310,6 @@ GNU General Public License for more details.
 	<format>f6.2</format>
 	<compress>int2 1d-2</compress>
 </var>
-<alias sat="n1" name="peakiness" field="24">peakiness_ku</alias>
 
 <var name="flag_status" field="2516">
 	<long_name>hardware/software status</long_name>
