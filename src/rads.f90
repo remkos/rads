@@ -131,7 +131,7 @@ type :: rads_pass
 	integer(fourbyteint) :: first_meas, last_meas    ! Measurement index of first and last point in region
 	integer(fourbyteint) :: trkid                    ! Numerical track identifiers
 	character(len=2) :: sat                          ! 2-Letter satellite abbreviation
-	integer(twobyteint) :: satid                     ! Numerical satellite identifiers
+	integer(twobyteint) :: satid                     ! Numerical satellite identifier
 	type (rads_pass), pointer :: next                ! Pointer to next pass in linked list
 endtype
 
@@ -505,11 +505,12 @@ xml = ''
 debug = 0
 
 ! If first option is 'args=' then load the options from file
+! Otherwise load the options from the command line
 nopts = 0
 call getarg(1,arg)
 k = 1
 if (arg(:2) == '--') k = 3
-if (arg(k:k+4) == 'args=') then
+if (arg(k:k+4) == 'args=') then	! Options from file
 	iunit = getlun()
 	open (iunit, file=arg(k+5:), status='old', iostat=ios)
 	nopts = -1
@@ -527,7 +528,7 @@ if (arg(k:k+4) == 'args=') then
 		nopts = nopts + 1
 		call getarg(iarg, options(nopts))
 	enddo
-else ! Load the options from the command line
+else ! Options from command line
 	nopts = iargc()
 	allocate (options(nopts))
 	do iarg = 1,nopts
@@ -539,7 +540,7 @@ endif
 n = 0
 do iarg = 1,nopts
 	k = 1
-	if (options(iarg)(:1) == '--') k = 3
+	if (options(iarg)(:2) == '--') k = 3
 	j = index(options(iarg), '=')
 	if (j == 0) j = 2
 	if (options(iarg)(k:k+3) == 'sat=' .or. options(iarg)(:2) == '-S') then
