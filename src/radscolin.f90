@@ -87,16 +87,17 @@ do i = 1,iargc()
 		read (arg(4:),*) dt
 	else if (arg(:5) == '--dt=') then
 		read (arg(6:),*) dt
+	else if (arg(:3) == '-as' .or. arg(:2) == '-s') then
+		! -s for backward compatibility
+		ptrx1 = ntrx + 2
 	else if (arg(:2) == '-a') then
 		ptrx1 = ntrx + 1
+	else if (arg(:3) == '-As') then
+		ptrx0 = ntrx + 1
+		ptrx1 = ntrx + 2
 	else if (arg(:2) == '-A') then
 		ptrx0 = ntrx + 1
 		ptrx1 = ntrx + 1
-	else if (arg(:2) == '-s') then
-		ptrx1 = ntrx + 2
-	else if (arg(:2) == '-S') then
-		ptrx0 = ntrx + 1
-		ptrx1 = ntrx + 2
 	else if (arg(:2) == '-n') then
 		numbered = .true.
 	else if (arg(:2) == '-N') then
@@ -144,9 +145,9 @@ write (0,1300)
 '  --dt=dt           : set minimum bin size in seconds (default is determined by satellite)'/ &
 '  --step=n          : write out only every n points'/ &
 '  -a                : print mean in addition to pass data'/ &
-'  -A                : print only mean'/ &
-'  -s                : print mean and standard deviation in addition to pass data'/ &
-'  -S                : print only mean and standard deviation'/ &
+'  -as               : print mean and standard deviation in addition to pass data'/ &
+'  -A                : print only mean (no pass data)'/ &
+'  -As               : print only mean and standard deviation (no pass data)'/ &
 '  -n                : add record number' / &
 '  -N                : add number of measurements in each bin')
 end subroutine synopsis
