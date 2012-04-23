@@ -2197,7 +2197,7 @@ else
 endif
 1300 format (a,' (r',i3.3,')')
 1310 format (a,' (r',i3.3,'): ',a)
-1320 format (a,': revision ',i2,', library revision ',i2)
+1320 format (a,': revision ',i3.3,', library revision ',i3.3)
 end function rads_version
 
 !***********************************************************************
