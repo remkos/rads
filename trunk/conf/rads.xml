@@ -1312,8 +1312,8 @@ GNU General Public License for more details.
 </var>
 
 <var name="flag_status" field="2516">
-	<long_name>hardware/software status</long_name>
-	<long_name sat="e2 g1 gs">not used</long_name>
+	<long_name>not used</long_name>
+	<long_name sat="j1 pn tx">hardware/software status</long_name>
 	<math>flags 0 BTEST</math>
 	<format>f2.0</format>
 	<compress>int1</compress>
@@ -1329,8 +1329,8 @@ GNU General Public License for more details.
 </var>
 
 <var name="flag_attitude" field="2501">
-	<long_name>attitude status</long_name>
-	<long_name sat="n1">not used</long_name>
+	<long_name>not used</long_name>
+	<long_name sat="e2 g1 gs j1 j2 n1 pn tx">attitude status</long_name>
 	<math>flags 1 BTEST</math>
 	<format>f2.0</format>
 	<compress>int1</compress>
@@ -1342,8 +1342,8 @@ GNU General Public License for more details.
 	</if>
 </var>
 <var name="flag_ice" field="2502">
-	<long_name>continental ice</long_name>
-	<long_name sat="e1 e2 g1">not used</long_name>
+	<long_name>not used</long_name>
+	<long_name sat="j1 j2 n1">>continental ice</long_name>
 	<math>flags 2 BTEST</math>
 	<format>f2.0</format>
 	<compress>int1</compress>
@@ -1381,7 +1381,7 @@ GNU General Public License for more details.
 </var>
 <var name="flag_land_rad" field="2506">
 	<long_name>radiometer land flag</long_name>
-	<long_name sat="gs">not used</long_name>
+	<long_name sat="c2 gs">not used</long_name>
 	<math>flags 6 BTEST</math>
 	<format>f2.0</format>
 	<compress>int1</compress>
@@ -1389,7 +1389,7 @@ GNU General Public License for more details.
 </var>
 <var name="flag_alt_rain_ice" field="2507">
 	<long_name>corruption of altimeter measurement (ice)</long_name>
-	<long_name sat="e1 e2 gs">not used</long_name>
+	<long_name sat="c2 e1 e2 gs">not used</long_name>
 	<math>flags 7 BTEST</math>
 	<format>f2.0</format>
 	<compress>int1</compress>
@@ -1401,7 +1401,7 @@ GNU General Public License for more details.
 </var>
 <var name="flag_rad_rain_ice" field="2508">
 	<long_name>corruption of radiometer measurement (rain or ice)</long_name>
-	<long_name sat="g1">not used</long_name>
+	<long_name sat="c2 g1">not used</long_name>
 	<math>flags 8 BTEST</math>
 	<format>f2.0</format>
 	<compress>int1</compress>
@@ -1440,7 +1440,7 @@ GNU General Public License for more details.
 <var name="flag_swh" field="2512">
 	<long_name>quality of the wave height estimate</long_name>
 	<long_name sat="gs">quality of sea state bias</long_name>
-	<long_name sat="n1">not used</long_name>
+	<long_name sat="c2 n1">not used</long_name>
 	<math>flags 12 BTEST</math>
 	<format>f2.0</format>
 	<compress>int1</compress>
@@ -1449,6 +1449,7 @@ GNU General Public License for more details.
 <var name="flag_sig0" field="2513">
 	<long_name>quality of the backscatter coefficient estimate</long_name>
 	<long_name sat="gs">quality of wind speed estimate</long_name>
+	<long_name sat="c2">not used</long_name>
 	<math>flags 13 BTEST</math>
 	<format>f2.0</format>
 	<compress>int1</compress>
@@ -1456,7 +1457,7 @@ GNU General Public License for more details.
 </var>
 <var name="flag_track_mode" field="2514">
 	<long_name>tracking mode</long_name>
-	<long_name sat="g1 j2">not used</long_name>
+	<long_name sat="c2 g1 j2">not used</long_name>
 	<math>flags 14 BTEST</math>
 	<format>f2.0</format>
 	<compress>int1</compress>
