@@ -2195,8 +2195,8 @@ else if (arg == '--help' .or. arg == '') then
 	rads_version = .false.
 else
 endif
-1300 format (a,' (r',i2,')')
-1310 format (a,' (r',i2,'): ',a)
+1300 format (a,' (r',i3.3,')')
+1310 format (a,' (r',i3.3,'): ',a)
 1320 format (a,': revision ',i2,', library revision ',i2)
 end function rads_version
 
