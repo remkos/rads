@@ -165,6 +165,7 @@ type(stat) :: pm
 ! Initialize data array
 data = S(1)%nan
 i = 0
+nr_in_bin = 0
 do j = 1,nsat
 	do cycle = S(j)%cycles(1), S(j)%cycles(2), S(j)%cycles(3)
 		i = i + 1 ! track id
@@ -176,18 +177,21 @@ do j = 1,nsat
 				call rads_get_var (S(j), P, S(j)%sel(l), temp)
 				data(i,l,bin(:)) = temp(:)
 			enddo
+			! If reject == 0, count number of measurements in bin, even if NaN
+			if (reject == 0) nr_in_bin(bin(:)) = nr_in_bin(bin(:)) + 1
 			deallocate (temp,bin)
 		endif
 		call rads_close_pass (S(j), P)
 	enddo
 enddo
 
-! Check if there are common bins
-nr_in_bin = 0
-do k = -nbins/2,nbins/2,step
-	j = count(.not.isnan(data(:,type_sla,k)))
-	if (j >= reject) nr_in_bin(k) = j
-enddo
+! Count the number of non-NaN SLA measurements per bin, only when reject > 0
+if (reject > 0) then
+	do k = -nbins/2,nbins/2,step
+		j = count(.not.isnan(data(:,type_sla,k)))
+		if (j >= reject) nr_in_bin(k) = j
+	enddo
+endif
 if (sum(nr_in_bin) == 0) return
 
 ! Print the header
