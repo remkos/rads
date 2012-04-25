@@ -834,7 +834,6 @@ endif
 
 ! Make estimates of the equator time and longitude and time range, which helps screening
 ! For constructions with subcycles, convert first to "real" cycle/pass number
-d = S%phase%repeat_days * 86400d0 / S%phase%repeat_passes ! Length in seconds of single pass
 if (S%phase%nsubcycles > 0) then
 	cc = cycle - 1
 	pp = S%phase%subcycles(modulo(cc,S%phase%nsubcycles)+1) + pass
@@ -843,13 +842,14 @@ else
 	cc = cycle
 	pp = pass
 endif
+d = S%phase%repeat_days * 86400d0 / S%phase%repeat_passes ! Length in seconds of single pass
 P%equator_time = S%phase%ref_time + ((cc - S%phase%ref_cycle) * S%phase%repeat_passes + (pp - S%phase%ref_pass)) * d
 P%start_time = P%equator_time - 0.5d0 * d
 P%end_time = P%equator_time + 0.5d0 * d
-d = -nint(S%phase%repeat_days) * 360d0 / S%phase%repeat_passes
+d = -nint(S%phase%repeat_days * 1.00274d0) * 360d0 / S%phase%repeat_passes ! 366.25/365.25 = 1.00274
 P%equator_lon = modulo(S%phase%ref_lon + (pp - S%phase%ref_pass) * d + modulo(pp - S%phase%ref_pass,2) * 180d0, 360d0)
 if (S%debug >= 4) write (*,*) 'Estimated start/end/equator time/longitude = ', &
-	P%equator_time, P%start_time, P%end_time, P%equator_lon
+	P%start_time, P%end_time, P%equator_time, P%equator_lon
 
 ! Do checking on the time criteria (only when such are given)
 if (.not.all(isnan(S%time%info%limits))) then
@@ -1047,7 +1047,7 @@ do i = 1,S%nvar
 		return
 	endif
 enddo
-write (name,'(i4)') field
+write (name,'(i0)') field
 call rads_error (S, rads_err_var, 'Variable with field number '//name//' not found')
 data(:P%ndata) = S%nan
 end subroutine rads_get_var_by_number
@@ -1558,10 +1558,10 @@ do
 		enddo
 		phase%subcycles(1) = 0
 	case ('ref_pass') ! First part is a date string, at least 19 characters long
-		i = index(val(1)(20:),' ')+19
-		phase%ref_time = strp1985f(val(1)(:i))
+		i = index(val(1),' ') ! Position of first space
+		phase%ref_time = strp1985f(val(1)(:i-1))
 		phase%ref_pass = 1
-		read (val(1)(i+1:),*,iostat=ios) phase%ref_lon, phase%ref_cycle, phase%ref_pass
+		read (val(1)(i:),*,iostat=ios) phase%ref_lon, phase%ref_cycle, phase%ref_pass
 	case ('start_time')
 		phase%start_time = strp1985f(val(1))
 	case ('end_time')
@@ -1748,7 +1748,7 @@ character(*), intent(in) :: string
 character(160) :: text
 write (text, 1300) trim(filename), X%lineno, string
 call rads_error (S, rads_err_xml_parse, text)
-1300 format ('Error parsing ',a,' at line',i5,': ',a)
+1300 format ('Error parsing ',a,' at line ',i0,': ',a)
 end subroutine xmlparse_error
 
 end subroutine rads_read_xml
@@ -2195,9 +2195,9 @@ else if (arg == '--help' .or. arg == '') then
 	rads_version = .false.
 else
 endif
-1300 format (a,' (r',i3.3,')')
-1310 format (a,' (r',i3.3,'): ',a)
-1320 format (a,': revision ',i3.3,', library revision ',i3.3)
+1300 format (a,' (r',i0,')')
+1310 format (a,' (r',i0,'): ',a)
+1320 format (a,': revision ',i0,', library revision ',i0)
 end function rads_version
 
 !***********************************************************************
