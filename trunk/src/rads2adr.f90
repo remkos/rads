@@ -135,7 +135,7 @@ do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
 		call rads_close_pass (S, P)
 	enddo
 enddo
-760 format(/'Maximum number of output records reached (',i9,' >=',i9,')')
+760 format(/'Maximum number of output records reached (',i0,' >= ',i0,')')
 
 ! Finish progress bar
 if (S%debug >= 1) write (logunit,*)

@@ -173,7 +173,7 @@ do j = 1,msat
 		! Print out per-cycle statistics, it requested
 		if (stat_mode == cycle_stat) call print_stat
 	enddo
-760 format(/'Maximum number of output records reached (',i9,' >=',i9,')')
+760 format(/'Maximum number of output records reached (',i0,' >= ',i0,')')
 
 	! Finish progress bar
 	if (S%debug >= 1) write (logunit,*)

@@ -96,7 +96,7 @@ n = nint((hi-lo)/res+0.999d0)
 
 allocate (box(n(1),n(2)),stat=ios)
 if (ios /= 0) then
-	write (*,'("rads2grd: unable to allocate memory for",i7,"x",i7," points")') n
+	write (*,'("rads2grd: unable to allocate memory for ",i0,"x",i0," points")') n
 	stop
 endif
 
@@ -216,7 +216,7 @@ end subroutine write_header
 subroutine write_xyz_grid
 integer :: kx, ky
 if (format_string == '') format_string = '(' // trim(S(1)%sel(1)%info%format) // ',1x,' // &
-	trim(S(1)%sel(2)%info%format) // ',2(1x,' // trim(S(1)%sel(3)%info%format) // '),i10)'
+	trim(S(1)%sel(2)%info%format) // ',2(1x,' // trim(S(1)%sel(3)%info%format) // '),1x,i0)'
 do ky = 1,n(2)
 	y = lo(2) + (ky-1)*res(2)
 	do kx = 1,n(1)

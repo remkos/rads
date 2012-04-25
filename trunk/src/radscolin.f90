@@ -215,7 +215,7 @@ enddo
 call end_stat (pp)
 
 ! Print out data that are common to some passes
-635 format(i6)
+635 format(1x,i0)
 
 do k = -nbins/2,nbins/2,step
 	if (nr_in_bin(k) == 0) cycle
