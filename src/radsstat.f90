@@ -113,7 +113,7 @@ do i = 1,S%nsel
 	arg = S%sel(i)%info%format(2:)
 	call chartrans (arg,'.',' ')
 	read (arg,*) j,k
-	write (format_string(l+1:),'(",",i1,"(1x,f",i2.2,".",i2.2,")")') 2*lstat,j+1,k+1
+	write (format_string(l+1:),'(",",i0,"(1x,f",i0,".",i0,")")') 2*lstat,j+1,k+1
 enddo
 l = len_trim(format_string)
 format_string(l+1:) = ')'

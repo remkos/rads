@@ -383,7 +383,7 @@ character(len=*), intent(in) :: text
 integer(fourbyteint), intent(in) :: n
 character(len=80) :: prog
 call getarg (0,prog)
-write (stderr, '(a,": math_eval (",a,") ",a,i5)') trim(prog), trim(string), trim(text), n
+write (stderr, '(a,": math_eval (",a,") ",a,1x,i0)') trim(prog), trim(string), trim(text), n
 stop
 end subroutine math_exit
 
