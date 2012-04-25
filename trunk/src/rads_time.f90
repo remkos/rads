@@ -175,7 +175,7 @@ real(eightbytereal) :: ss
 character(len=1) :: x
 call sec85ymdhms (sec, yy, mm, dd, hh, mn, ss)
 if (present(sep)) then
-	x = sep
+	x = sep(1:1)
 else
 	x = ' '
 endif
@@ -187,7 +187,7 @@ end function strf1985f
 !+
 elemental function strp1985f (string)
 use typesizes
-character(len=26), intent(in) :: string
+character(len=*), intent(in) :: string
 real(eightbytereal) :: strp1985f
 !
 ! This routine reads a string of the form YYYY-MM-DDxHH:MM:SS.SSSSSS,
@@ -201,12 +201,13 @@ real(eightbytereal) :: strp1985f
 ! Return value:
 !  strp1985f : Seconds since 1.0 Jan 1985
 !-----------------------------------------------------------------------
-integer(fourbyteint) :: yy,mm,dd,hh,mn,mjd,ios
-real(eightbytereal) :: ss
-hh = 0 ; mn = 0 ; ss = 0d0
-read (string,'(i4,4(1x,i2),1x,f9.6)',iostat=ios) yy,mm,dd,hh,mn,ss
+integer(fourbyteint) :: yy,mm,dd,hh,mn,ss,mjd,ios
+real(eightbytereal) :: fs
+hh = 0 ; mn = 0 ; ss = 0 ; fs = 0d0
+read (string,'(i4,5(1x,i2))',iostat=ios) yy,mm,dd,hh,mn,ss
+if (len(string) > 19) read (string(20:),*,iostat=ios) fs
 call ymd2mjd(yy,mm,dd,mjd)
-strp1985f = (mjd - 46066) * 86400d0 + hh * 3600d0 + mn * 60d0 + ss
+strp1985f = (mjd - 46066) * 86400d0 + hh * 3600d0 + mn * 60d0 + ss + fs
 end function strp1985f
 
 !*sec85 -- Convert MJD or YYMMDD or YYDDD to SEC85
