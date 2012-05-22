@@ -44,7 +44,7 @@ integer(fourbyteint) :: rads_err_incompat = 101, rads_err_noinit = 102
 integer(twobyteint), parameter :: rads_nofield = -1
 real(eightbytereal), parameter :: pi = 4d0*atan(1d0), rad = pi/180d0
 character(len=1), parameter :: rads_linefeed = char(10), rads_noedit = '_'
-integer, parameter, private :: stderr = 0, stdout = 6, maxsubcycles = 20
+integer, parameter, private :: stderr = 0, stdout = 6, maxsubcycles = 50
 
 private :: traxxing, rads_get_phase
 
@@ -86,11 +86,13 @@ type :: rads_phase
 	character(len=rads_varl) :: name, mission        ! Name (1-letter), and mission description
 	character(len=160) :: dataroot                   ! Root directory of satellite and phase
 	integer(fourbyteint) :: cycles(2),passes(2)      ! Cycle and pass limits
-	integer(fourbyteint) :: nsubcycles,subcycles(maxsubcycles)	! Subcycles, if any
+	integer(fourbyteint) :: nsubcycles,subcycle1     ! Number of subcycles, number of first subcycle in "real" cycle 1
+	integer(fourbyteint), pointer :: subcycles(:)    ! Subcycle lengths
 	real(eightbytereal) :: start_time, end_time      ! Start time and end time of this phase
 	real(eightbytereal) :: ref_time, ref_lon         ! Time and longitude of equator crossing of "reference pass"
 	integer(fourbyteint) :: ref_cycle, ref_pass      ! Cycle and pass number of "reference pass"
 	real(eightbytereal) :: repeat_days               ! Length of repeat period in days
+	integer(fourbyteint) :: repeat_nodal             ! Length of repeat period in nodal days
 	real(eightbytereal) :: repeat_shift              ! Eastward shift of track pattern for near repeats
 	integer(fourbyteint) :: repeat_passes            ! Number of passes per repeat period
 endtype
@@ -759,6 +761,9 @@ do i = S%nvar,1,-1
 		nullify (S%var(i)%info)
 	endif
 enddo
+do i = 1,size(S%phases)
+	if (S%phases(i)%nsubcycles > 0) deallocate (S%phases(i)%subcycles, stat=ios)
+enddo
 deallocate (S%var, S%sel, S%phases, stat=ios)
 end subroutine rads_end
 
@@ -835,7 +840,7 @@ endif
 ! Make estimates of the equator time and longitude and time range, which helps screening
 ! For constructions with subcycles, convert first to "real" cycle/pass number
 if (S%phase%nsubcycles > 0) then
-	cc = cycle - 1
+	cc = cycle - S%phase%subcycle1
 	pp = S%phase%subcycles(modulo(cc,S%phase%nsubcycles)+1) + pass
 	cc = cc / S%phase%nsubcycles + 1
 else
@@ -846,7 +851,7 @@ d = S%phase%repeat_days * 86400d0 / S%phase%repeat_passes ! Length in seconds of
 P%equator_time = S%phase%ref_time + ((cc - S%phase%ref_cycle) * S%phase%repeat_passes + (pp - S%phase%ref_pass)) * d
 P%start_time = P%equator_time - 0.5d0 * d
 P%end_time = P%equator_time + 0.5d0 * d
-d = -nint(S%phase%repeat_days * 1.00274d0) * 360d0 / S%phase%repeat_passes ! 366.25/365.25 = 1.00274
+d = -S%phase%repeat_nodal * 360d0 / S%phase%repeat_passes ! Longitude advance per pass due to precession of node and earth rotation
 P%equator_lon = modulo(S%phase%ref_lon + (pp - S%phase%ref_pass) * d + modulo(pp - S%phase%ref_pass,2) * 180d0, 360d0)
 if (S%debug >= 4) write (*,*) 'Estimated start/end/equator time/longitude = ', &
 	P%start_time, P%end_time, P%equator_time, P%equator_lon
@@ -1470,6 +1475,7 @@ character(len=160) :: val(max_lvl)
 integer :: nattr, nval, i, ios, skip, skip_lvl
 integer(twobyteint) :: field
 logical :: endtag
+real(eightbytereal) :: node_rate
 type(rads_varinfo), pointer :: info => null()
 type(rads_var), pointer :: var => null()
 type(rads_phase), pointer :: phase => null()
@@ -1547,12 +1553,15 @@ do
 	case ('cycles')
 		read (val(1),*,iostat=ios) phase%cycles
 	case ('subcycles')
+		allocate (phase%subcycles(maxsubcycles))
+		phase%subcycles = 0
+		phase%subcycle1 = 1
+		do i = 1,nattr
+			if (attr(1,i) == 'start') read (attr(2,i),*,iostat=ios) phase%subcycle1
+		enddo
 		read (val(1),*,iostat=ios) phase%subcycles
 		! Turn length of subcycles in passes into number of accumulative passes before subcycle
-		do i = 1,maxsubcycles
-			if (phase%subcycles(i) == 0) exit
-		enddo
-		phase%nsubcycles = i - 1
+		phase%nsubcycles = count(phase%subcycles /= 0)
 		do i = phase%nsubcycles, 2, -1
 			phase%subcycles(i) = sum(phase%subcycles(1:i-1))
 		enddo
@@ -1568,6 +1577,10 @@ do
 		phase%end_time = strp1985f(val(1))
 	case ('repeat')
 		read (val(1),*,iostat=ios) phase%repeat_days, phase%repeat_passes, phase%repeat_shift
+		! Compute length of repeat in nodal days from inclination and repeat in solar days
+		! This assumes 1000 km altitude to get an approximate node rate (in rad/s)
+		node_rate = -1.21306d-6 * cos(S%inclination*rad)
+		phase%repeat_nodal = nint(phase%repeat_days * (7.292115d-5 - node_rate) / 7.272205d-5)
 	case ('dt1hz')
 		read (val(1),*,iostat=ios) S%dt1hz
 	case ('inclination')
@@ -2294,8 +2307,7 @@ else
 endif
 
 ! Initialize the new phase information and direct the pointer
-S%phases(n) = rads_phase (name, '', '', (/999,0/), (/9999,0/), 0, (/0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/), &
-	S%nan, S%nan, S%nan, S%nan, 0, 0, S%nan, S%nan, 0)
+S%phases(n) = rads_phase (name, '', '', (/999,0/), (/9999,0/), 0, 0, null(), S%nan, S%nan, S%nan, S%nan, 0, 0, S%nan, 0, S%nan, 0)
 phase => S%phases(n)
 
 end function rads_get_phase
@@ -2330,9 +2342,9 @@ t0 = S%phases(i)%ref_time - (S%phases(i)%ref_pass - 0.5d0) * d ! Time of start o
 rads_time_to_cycle = floor((time - t0) / (S%phases(i)%repeat_days * 86400d0)) + S%phases(i)%ref_cycle
 if (S%phases(i)%nsubcycles == 0) return
 ! When there are subcycles, compute the subcycle number
-rads_time_to_cycle = (rads_time_to_cycle - 1) * S%phases(i)%nsubcycles
+rads_time_to_cycle = (rads_time_to_cycle - 1) * S%phases(i)%nsubcycles + S%phases(i)%subcycle1
 n = floor((time - t0) / d)
-do j = 1,S%phases(i)%nsubcycles
+do j = 2,S%phases(i)%nsubcycles
 	if (S%phases(i)%subcycles(j) > n) exit
 	rads_time_to_cycle = rads_time_to_cycle + 1
 enddo
@@ -2366,7 +2378,7 @@ t0 = S%phases(i)%ref_time - (S%phases(i)%ref_pass - 0.5d0) * d ! Time of start o
 if (S%phases(i)%nsubcycles == 0) then
 	rads_cycle_to_time = max(S%phases(i)%start_time, t0 + (cycle - S%phases(i)%ref_cycle) * S%phases(i)%repeat_days * 86400d0)
 else
-	cc = cycle - 1
+	cc = cycle - S%phase%subcycle1
 	pp = S%phase%subcycles(modulo(cc,S%phase%nsubcycles)+1)
 	cc = cc / S%phase%nsubcycles + 1
 	rads_cycle_to_time = max(S%phases(i)%start_time, t0 + (cc - S%phases(i)%ref_cycle) * S%phases(i)%repeat_days * 86400d0) + &
@@ -2417,10 +2429,10 @@ do i = 1,2
 		u(i) = asin(sin(S%lat%info%limits(i)*rad)/sin(S%inclination*rad))/rad
 		l(i) = asin(tan(S%lat%info%limits(i)*rad)/tan(S%inclination*rad))/rad
 	endif
-
-	! Compute the longitude advance corrected for time
-	l(i) = l(i) - 2d0*u(i)*S%phase%repeat_days/S%phase%repeat_passes
 enddo
+
+! Compute the longitude advance corrected for time
+l = l - u * 2d0 * S%phase%repeat_nodal / S%phase%repeat_passes
 
 ! Compute the equator crossing longitudes for ascending tracks
 ! Add 2-degree margin

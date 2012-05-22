@@ -334,8 +334,7 @@ GNU General Public License for more details.
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <alias name="alt" field="4" sat="c2 j1 j2 n1">alt_eiggl04s</alias>
-<alias name="alt" field="4" sat="e1">alt_reaper</alias>
-<alias name="alt" field="4" sat="e2">alt_dgme04</alias>
+<alias name="alt" field="4" sat="e1 e2">alt_reaper</alias>
 <alias name="alt" field="4" sat="g1">alt_pgs7777</alias>
 <alias name="alt" field="4" sat="gs">alt_gdrcp</alias>
 <alias name="alt" field="4" sat="pn tx">alt_gdrcp</alias>
@@ -2310,11 +2309,25 @@ GNU General Public License for more details.
 	</phase>
 	<phase name="b">
 		<mission>Interleaved Mission</mission>
-		<cycles>262 400</cycles>
+		<cycles>262 374</cycles>
 		<passes>1 254</passes>
 		<repeat>9.91564280 254</repeat>
 		<ref_pass>2009-02-20T04:19:04 98.50 263 1</ref_pass>
 		<start_time>2009-02-10</start_time>
+	</phase>
+	<phase name="c">
+		<mission>Geodetic Mission</mission>
+		<cycles>380 499</cycles>
+		<passes>1 280</passes>
+		<subcycles start="382">
+		280 280 280 280 102 280 280 280 280 102 280 280 280 280 102 280 280 280 102
+		280 280 280 280 102 280 280 280 280 102 280 280 280 280 102 280 280 280 102
+		280 280 280 280 102
+		</subcycles>
+		<!--This is "real" cycle and pass, i.e. subcycle 381, pass 1-->
+		<repeat>406.5 10438</repeat>
+		<ref_pass>2012-05-13T03:41:01 100.18 1 1121</ref_pass>
+		<start_time>2012-05-06</start_time>
 	</phase>
 </if>
 
