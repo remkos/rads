@@ -2317,17 +2317,17 @@ GNU General Public License for more details.
 	</phase>
 	<phase name="c">
 		<mission>Geodetic Mission</mission>
-		<cycles>380 499</cycles>
+		<cycles>382 499</cycles>
 		<passes>1 280</passes>
 		<subcycles start="382">
-		280 280 280 280 102 280 280 280 280 102 280 280 280 280 102 280 280 280 102
-		280 280 280 280 102 280 280 280 280 102 280 280 280 280 102 280 280 280 102
-		280 280 280 280 102
+			280 280 280 280 102 280 280 280 280 102 280 280 280 280 102 280 280 280 102
+			280 280 280 280 102 280 280 280 280 102 280 280 280 280 102 280 280 280 102
+			280 280 280 280 102
 		</subcycles>
-		<!--This is "real" cycle and pass, i.e. subcycle 381, pass 1-->
-		<repeat>406.5 10438</repeat>
-		<ref_pass>2012-05-13T03:41:01 100.18 1 1121</ref_pass>
-		<start_time>2012-05-06</start_time>
+		<!--This is "real" cycle and pass, i.e. subcycle 382, pass 1-->
+		<repeat>406.528444 10438</repeat>
+		<ref_pass>2012-05-07T14:57:08 308.15 1 1</ref_pass>
+		<start_time>2012-05-07</start_time>
 	</phase>
 </if>
 
