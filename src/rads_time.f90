@@ -312,7 +312,7 @@ case (3) ! YYDDD or YYYYDDD -> SEC85
 	sec85 = (mjd-mjd85+ff)*day
 case (4) ! YYMMDDHHMMSS or YYYYMMDDHHMMSS -> SEC85
 	dd = int(date/1d6)
-	ff = date - dd*1000000
+	ff = date - dd*1d6
 	yy = dd/10000
 	dd = dd - yy*10000
 	mm = dd/100
@@ -414,6 +414,7 @@ else
 	read (arg(l+1:),*,iostat=ios) tt0
 endif
 if (abs(tt0) < 1d49) t0 = sec85(mode,tt0)
+write (*,*) arg,t0,t1
 datearg = .true.
 end function datearg
 
