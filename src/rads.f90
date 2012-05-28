@@ -553,7 +553,7 @@ do iarg = 1,nopts
 		debug = debug + 1
 		read (options(iarg)(j+1:),*,iostat=ios) debug
 	else if (options(iarg)(k:k+3) == 'xml=' .or. options(iarg)(:2) == '-X') then
-		if (present(xml)) xml = arg(j+1:)
+		if (present(xml)) xml = options(iarg)(j+1:)
 	endif
 enddo
 end subroutine rads_load_options
