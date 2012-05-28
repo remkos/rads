@@ -31,7 +31,9 @@ character(len=32) :: wtype(0:3)=(/ &
 	'box weight                  ', 'constant weight             ', &
 	'area weighted               ', 'inclination-dependent weight'/)
 character(len=512) :: format_string
-integer(fourbyteint) :: nr=0, day=-999999, dayold=-99999, cycle, pass, i, j, k, l, per=0, wmode=0, nx, ny, kx, ky, ios
+integer(fourbyteint), parameter :: period_day=0, period_pass=1, period_cycle=2
+integer(fourbyteint) :: nr=0, day=-999999, dayold=-99999, cycle, pass, i, j, k, l, &
+	period=period_day, wmode=0, nx, ny, kx, ky, ios
 real(eightbytereal), allocatable :: z(:,:), lat_w(:)
 real(eightbytereal) :: sini, step=1d0, x0, y0, dx=3d0, dy=1d0
 type :: stat
@@ -53,14 +55,14 @@ if (S%nsel == 0)  call rads_parse_varlist (S, 'sla')
 do i = 1,iargc()
 	call getarg(i,arg)
 	if (arg(:2) == '-d') then
-		per = 0
+		period = period_day
 		read (arg(3:),*,iostat=ios) step
 	else if (arg(:2) == '-p') then
-		per = 1
+		period = period_pass
 		read (arg(3:),*,iostat=ios) step
 		step = dble(S%passes(2))/nint(S%passes(2)/step)
 	else if (arg(:2) == '-c') then
-		per = 2
+		period = period_cycle
 		read (arg(3:),*,iostat=ios) step
 	else if (arg(:2) == '-b') then
 		wmode = 0
@@ -126,15 +128,17 @@ do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
 		if (P%ndata > 0) call process_pass
 
 		! Print the statistics at the end of the data pass (if requested)
-		if (per == 1 .and. pass == nint(nint(pass/step)*step)) call print_stat
+		if (period == period_pass .and. nint(modulo(dble(pass),step)) == 0) call print_stat
 		call rads_close_pass (S, P)
 	enddo
 
 	! Print the statistics at the end of the cycle (if requested)
-	if (per == 2 .and. cycle == nint(nint(cycle/step)*step)) call print_stat
+	if (period == period_cycle .and. nint(modulo(dble(cycle),step)) == 0) call print_stat
 enddo
 
-! Flush the statistics (in "daily" mode) and close RADS4
+! Flush the statistics and close RADS4
+cycle = S%cycles(2)
+pass = S%passes(2)
 call print_stat
 if (S%debug >= 1) call rads_stat (S)
 call rads_end (S)
@@ -178,7 +182,7 @@ enddo
 do i = 1,P%ndata
 	! Print the statistics (if in "daily" mode)
 	day = floor(P%tll(i,1)/86400d0)
-	if (per == 0 .and. day >= nint(dayold+step)) call print_stat
+	if (period == period_day .and. day >= nint(dayold+step)) call print_stat
    	if (any(isnan(z(i,:)))) cycle ! Reject outliers
 
 	! Update the box statistics
@@ -244,13 +248,14 @@ endif
 
 ! Print results
 call mjd2ymd(dayold+46066,yy,mm,dd)
-if (per == 0) then
+select case (period)
+case (period_day)
 	write (*,600) modulo(yy,100),mm,dd
-else if (per == 1) then
+case (period_pass)
 	write (*,601) cycle,pass
-else
+case default
 	write (*,602) cycle,modulo(yy,100),mm,dd
-endif
+endselect
 if (lstat == 1) then
 	write (*,format_string) nr,tot(0)%mean,(tot(j)%mean,tot(j)%sum2,j=1,S%nsel)
 else
@@ -284,16 +289,17 @@ integer :: j0, j
 622 format ('# (',i2,'-',i2,') mean, stddev, min and max of ',a,' [',a,']')
 
 write (*,600) trim(wtype(wmode)),trim(S%sat),trim(S%phase%name),S%cycles(1:2),S%passes(1:2)
-if (per == 0) then
+select case (period)
+case (period_day)
 	write (*,610)
 	j0 = 1
-else if (per == 1) then
+case (period_pass)
 	write (*,611)
 	j0 = 2
-else
+case default
 	write (*,612)
 	j0 = 2
-endif
+endselect
 write (*,620) j0+1,j0+2,trim(S%time%info%units)
 do j = 1,S%nsel
 	if (lstat == 1) then
