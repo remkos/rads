@@ -414,7 +414,6 @@ else
 	read (arg(l+1:),*,iostat=ios) tt0
 endif
 if (abs(tt0) < 1d49) t0 = sec85(mode,tt0)
-write (*,*) arg,t0,t1
 datearg = .true.
 end function datearg
 
