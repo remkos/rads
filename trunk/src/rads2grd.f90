@@ -67,11 +67,11 @@ do i = 1,iargc()
 		read (arg(l+2:),*,iostat=ios) S(1)%sel(2)%info%limits,res(2)
 	else if (arg(l:l+3) == 'res=') then
 		read (arg(l+4:),*) res
-	else if (arg(:3) == '-Cx') then
+	else if (arg(:3) == '-cx') then
 		c(1) = .true.
-	else if (arg(:3) == '-Cy') then
+	else if (arg(:3) == '-cy') then
 		c(2) = .true.
-	else if (arg(:2) == '-C') then
+	else if (arg(:2) == '-c') then
 		c = .true.
 	else if (arg(l:l+3) == 'min=') then
 		read (arg(l+4:),*) minnr
@@ -163,15 +163,15 @@ call rads_synopsis ()
 write (*,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
-'  --x=x0,x1[,dx]    : set x-range and interval (def: as set by limits() and res=)'/ &
-'  --y=y0,y1[,dy]    : set y-range and interval (def: as set by limits() and res=)'/ &
+'  --x=x0,x1[,dx]    : set x-range and interval (def: as set by default limits and --res=)'/ &
+'  --y=y0,y1[,dy]    : set y-range and interval (def: as set by default limits and --res=)'/ &
 '  --res=dx,dy       : set resolution in x and y (def:1,1)'/ &
 '  --sel=x,y,z       : selection codes for x, y and z (def:lon,lat,sla)'/ &
 '  --min=minnr       : minimum number of points per grid cell (def:2)'/ &
 '  --grd=gridname    : create netCDF grid (suppresses ASCII)'/ &
 '  --fmt=format      : format to be used for ASCII output (default is determined by variables)'/ &
-'  -C                : boundaries are cell oriented'/ &
-'  -C[x|y]           : only [x|y]-boundaries are cell oriented')
+'  -c                : boundaries are cell oriented'/ &
+'  -c[x|y]           : only [x|y]-boundaries are cell oriented')
 stop
 end subroutine synopsis
 
