@@ -90,8 +90,7 @@ x0 = S%lon%info%limits(1)
 y0 = S%lat%info%limits(1)
 nx = int((S%lon%info%limits(2)-x0)/dx+0.999d0)
 ny = int((S%lat%info%limits(2)-y0)/dy+0.999d0)
-allocate (box(0:S%nsel,nx,ny),lat_w(ny))
-allocate (tot(0:S%nsel))
+allocate (box(0:S%nsel,nx,ny),tot(0:S%nsel),lat_w(ny))
 
 ! Set up the weights
 sini = sin(S%inclination*rad)
@@ -142,13 +141,14 @@ pass = S%passes(2)
 call print_stat
 if (S%debug >= 1) call rads_stat (S)
 call rads_end (S)
+deallocate (box,tot,lat_w)
 
 contains
 
 !***********************************************************************
 
 subroutine synopsis
-if (rads_version ('Revision: $','Print RADS statistics per cycle, pass or day(s)')) return
+if (rads_version ('$Revision$','Print RADS statistics per cycle, pass or day(s)')) return
 call rads_synopsis ()
 write (0,1300)
 1300 format (/ &
@@ -189,13 +189,13 @@ do i = 1,P%ndata
    	if (any(isnan(z(i,:)))) cycle ! Reject outliers
 
 	! Update the box statistics
-   	kx = floor((P%tll(i,2)-x0)/dx + 1d0)
-   	ky = floor((P%tll(i,3)-y0)/dy + 1d0)
+   	kx = floor((P%tll(i,3)-x0)/dx + 1d0)
+   	ky = floor((P%tll(i,2)-y0)/dy + 1d0)
    	kx = max(1,min(kx,nx))
    	ky = max(1,min(ky,ny))
    	box(:,kx,ky)%wgt  = box(:,kx,ky)%wgt  + 1d0
    	box(:,kx,ky)%mean = box(:,kx,ky)%mean + z(i,:)
-   	box(:,kx,ky)%sum2 = box(:,kx,ky)%sum2 + z(i,:)**2
+   	box(:,kx,ky)%sum2 = box(:,kx,ky)%sum2 + z(i,:)*z(i,:)
    	box(:,kx,ky)%xmin = min(box(:,kx,ky)%xmin, z(i,:))
    	box(:,kx,ky)%xmax = max(box(:,kx,ky)%xmax, z(i,:))
    	nr = nr + 1
@@ -244,7 +244,7 @@ enddo
 
 tot%mean = tot%mean / tot%wgt
 if (nr > 1) then
-	tot%sum2 = sqrt((tot%sum2 / tot%wgt - tot%mean**2) * nr / (nr - 1d0))
+	tot%sum2 = sqrt((tot%sum2 / tot%wgt - tot%mean*tot%mean) * nr / (nr - 1d0))
 else
 	tot%sum2 = S%nan
 endif
