@@ -42,7 +42,7 @@ integer(fourbyteint), parameter :: rads_noerr = 0, &
 ! RADS3 errors or incompatibilities
 integer(fourbyteint) :: rads_err_incompat = 101, rads_err_noinit = 102
 integer(twobyteint), parameter :: rads_nofield = -1
-real(eightbytereal), parameter :: pi = 4d0*atan(1d0), rad = pi/180d0
+real(eightbytereal), parameter :: pi = 3.1415926535897932d0, rad = pi/180d0
 character(len=1), parameter :: rads_linefeed = char(10), rads_noedit = '_'
 integer, parameter, private :: stderr = 0, stdout = 6, maxsubcycles = 50
 
@@ -105,7 +105,7 @@ type :: rads_sat
 	real(eightbytereal) :: dt1hz                     ! "1 Hz" sampling interval
 	real(eightbytereal) :: frequency(2)              ! Frequency (GHz) of primary and secondary channel
 	real(eightbytereal) :: eqlonlim(0:1,2)           ! Equator longitude limits for ascending and descending passes
-	real(eightbytereal) :: inclination               ! Satellite inclination and orbital period
+	real(eightbytereal) :: inclination               ! Satellite inclination (deg)
 	integer(fourbyteint) :: cycles(3),passes(3)      ! Cycle and pass limits and steps
 	integer(fourbyteint) :: error                    ! Error code (positive is fatal, negative is warning)
 	integer(fourbyteint) :: nvar, nsel               ! Number of available and selected variables and aliases
