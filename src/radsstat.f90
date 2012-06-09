@@ -173,10 +173,13 @@ integer :: i, j
 
 ! Read the data for this pass
 allocate (z(P%ndata,0:S%nsel))
-z(:,0) = P%tll(:,1)
+z(:,0) = P%tll(:,1)	! Store time
 do j = 1,S%nsel
 	call rads_get_var (S, P, S%sel(j), z(:,j))
 enddo
+
+! Initialise dayold if not done before
+if (dayold == -99999) dayold = floor(P%tll(1,1)/86400d0)
 
 ! Update the statistics with data in this pass
 do i = 1,P%ndata
