@@ -31,8 +31,8 @@ character(len=32) :: wtype(0:3)=(/ &
 	'box weight                  ', 'constant weight             ', &
 	'area weighted               ', 'inclination-dependent weight'/)
 character(len=512) :: format_string
-integer(fourbyteint), parameter :: period_day=0, period_pass=1, period_cycle=2
-integer(fourbyteint) :: nr=0, day=-999999, dayold=-99999, cycle, pass, i, j, k, l, &
+integer(fourbyteint), parameter :: period_day=0, period_pass=1, period_cycle=2, day_init=-999999
+integer(fourbyteint) :: nr=0, day=day_init, day_old=day_init, cycle, pass, i, j, k, l, &
 	period=period_day, wmode=0, nx, ny, kx, ky, ios
 real(eightbytereal), allocatable :: z(:,:), lat_w(:)
 real(eightbytereal) :: sini, step=1d0, x0, y0, dx=3d0, dy=1d0
@@ -178,14 +178,14 @@ do j = 1,S%nsel
 	call rads_get_var (S, P, S%sel(j), z(:,j))
 enddo
 
-! Initialise dayold if not done before
-if (dayold == -99999) dayold = floor(P%tll(1,1)/86400d0)
+! Initialise day_old if not done before
+if (day_old == day_init) day_old = floor(P%tll(1,1)/86400d0)
 
 ! Update the statistics with data in this pass
 do i = 1,P%ndata
 	! Print the statistics (if in "daily" mode)
 	day = floor(P%tll(i,1)/86400d0)
-	if (period == period_day .and. day >= nint(dayold+step)) call print_stat
+	if (period == period_day .and. day >= nint(day_old+step)) call print_stat
    	if (any(isnan(z(i,:)))) cycle ! Reject outliers
 
 	! Update the box statistics
@@ -212,7 +212,7 @@ integer(fourbyteint) :: j,yy,mm,dd
 real(eightbytereal) :: w
 
 if (nr == 0) then
-	dayold = day
+	day_old = day
 	return
 endif
 
@@ -250,7 +250,7 @@ else
 endif
 
 ! Print results
-call mjd2ymd(dayold+46066,yy,mm,dd)
+call mjd2ymd(day_old+46066,yy,mm,dd)
 select case (period)
 case (period_day)
 	write (*,600) modulo(yy,100),mm,dd
@@ -268,7 +268,7 @@ endif
 ! Reset statistics
 box = stat(0d0, 0d0, 0d0, S%nan, S%nan)
 nr  = 0
-dayold = day
+day_old = day
 
 600 format (3i2.2,$)
 601 format (i3,i5,$)
