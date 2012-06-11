@@ -214,6 +214,13 @@ case ('ACOSH')
 case ('ATANH')
 	call math_check (1)
 	top%data = atanh_(top%data)
+case ('ISNAN')
+	call math_check (1)
+	where (isnan(top%data))
+		top%data = 1d0
+	elsewhere
+		top%data = 0d0
+	endwhere
 case ('RINT', 'NINT')
 	call math_check (1)
 	top%data = nint(top%data)
@@ -286,7 +293,7 @@ case ('EQ')
 		top%prev%data = 1d0
 	elsewhere
 		top%prev%data = 0d0
-	end where
+	endwhere
 	call math_pop (top)
 case ('NEQ', 'NE')
 	call math_check (2)
@@ -294,7 +301,7 @@ case ('NEQ', 'NE')
 		top%prev%data = 1d0
 	elsewhere
 		top%prev%data = 0d0
-	end where
+	endwhere
 	call math_pop (top)
 case ('LT')
 	call math_check (2)
@@ -302,7 +309,7 @@ case ('LT')
 		top%prev%data = 1d0
 	elsewhere
 		top%prev%data = 0d0
-	end where
+	endwhere
 	call math_pop (top)
 case ('LE')
 	call math_check (2)
@@ -310,7 +317,7 @@ case ('LE')
 		top%prev%data = 1d0
 	elsewhere
 		top%prev%data = 0d0
-	end where
+	endwhere
 	call math_pop (top)
 case ('GT')
 	call math_check (2)
@@ -318,7 +325,7 @@ case ('GT')
 		top%prev%data = 1d0
 	elsewhere
 		top%prev%data = 0d0
-	end where
+	endwhere
 	call math_pop (top)
 case ('GE')
 	call math_check (2)
@@ -326,7 +333,11 @@ case ('GE')
 		top%prev%data = 1d0
 	elsewhere
 		top%prev%data = 0d0
-	end where
+	endwhere
+	call math_pop (top)
+case ('NAN')
+	call math_check (2)
+	where (top%prev%data == top%data) top%prev%data = nan
 	call math_pop (top)
 case ('AND')
 	call math_check (2)
@@ -336,19 +347,19 @@ case ('BTEST')
 	call math_check (2)
 	where (isnan(top%prev%data) .or. isnan(top%data))
 		top%prev%data = nan
-	else where (btest(nint(top%prev%data),nint(top%data)))
+	elsewhere (btest(nint(top%prev%data),nint(top%data)))
 		top%prev%data = 1d0
-	else where
+	elsewhere
 		top%prev%data = 0d0
-	end where
+	endwhere
 	call math_pop (top)
 case ('AVG')
 	call math_check (2)
 	where (isnan(top%prev%data))
 		top%prev%data = top%data
-	else where (.not.isnan(top%data))
+	elsewhere (.not.isnan(top%data))
 		top%prev%data = 0.5d0 * (top%prev%data + top%data)
-	end where
+	endwhere
 	call math_pop (top)
 
 ! x y MATH x y (2 arguments to 2)
@@ -366,7 +377,7 @@ case ('INRANGE')
 		top%prev%prev%data = 1d0
 	elsewhere
 		top%prev%prev%data = 0d0
-	end where
+	endwhere
 	call math_pop (top)
 	call math_pop (top)
 
