@@ -107,6 +107,7 @@ type :: rads_sat
 	real(eightbytereal) :: eqlonlim(0:1,2)           ! Equator longitude limits for ascending and descending passes
 	real(eightbytereal) :: inclination               ! Satellite inclination (deg)
 	integer(fourbyteint) :: cycles(3),passes(3)      ! Cycle and pass limits and steps
+	integer(fourbyteint) :: nexcl_cycles             ! Number of excluded cycles
 	integer(fourbyteint), pointer :: excl_cycles(:)  ! List of excluded cycles
 	integer(fourbyteint) :: error                    ! Error code (positive is fatal, negative is warning)
 	integer(fourbyteint) :: nvar, nsel               ! Number of available and selected variables and aliases
@@ -358,6 +359,7 @@ S%error = rads_noerr
 nullify (S%sel, S%phases, S%excl_cycles)
 S%nvar = 0
 S%nsel = 0
+S%nexcl_cycles = 0
 allocate (S%var(rads_var_chunk))
 S%var = rads_var ('', null(), .false., rads_nofield)
 S%total_read = 0
@@ -830,8 +832,8 @@ if (cycle < S%cycles(1) .or. cycle > S%cycles(2)) then
 endif
 
 ! Do check on excluded cycles
-if (associated(S%excl_cycles)) then
-	if (any(S%excl_cycles == cycle)) then
+if (S%nexcl_cycles > 0) then
+	if (any(S%excl_cycles(:S%nexcl_cycles) == cycle)) then
 		S%pass_stat(1) = S%pass_stat(1) + 1
 		return
 	endif
@@ -1565,6 +1567,7 @@ do
 		allocate (S%excl_cycles(maxsubcycles))
 		S%excl_cycles = -1
 		read (val(:nval),*,iostat=ios) S%excl_cycles
+		S%nexcl_cycles = count(S%excl_cycles /= -1)
 	case ('subcycles')
 		allocate (phase%subcycles(maxsubcycles))
 		phase%subcycles = 0
