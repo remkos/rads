@@ -24,7 +24,7 @@ implicit none
 include 'config.inc'
 
 ! Dimensions
-integer(fourbyteint), parameter :: rads_var_chunk = 100, rads_naml = 80, rads_varl = 40
+integer(fourbyteint), parameter :: rads_var_chunk = 100, rads_naml = 160, rads_varl = 40
 ! RADS4 data types
 integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, rads_type_flagmasks = 2, rads_type_flagvalues = 3, &
 	rads_type_time = 11, rads_type_lat = 12, rads_type_lon = 13
@@ -84,7 +84,7 @@ endtype
 
 type :: rads_phase
 	character(len=rads_varl) :: name, mission        ! Name (1-letter), and mission description
-	character(len=160) :: dataroot                   ! Root directory of satellite and phase
+	character(len=rads_naml) :: dataroot             ! Root directory of satellite and phase
 	integer(fourbyteint) :: cycles(2),passes(2)      ! Cycle and pass limits
 	integer(fourbyteint) :: nsubcycles,subcycle1     ! Number of subcycles, number of first subcycle in "real" cycle 1
 	integer(fourbyteint), pointer :: subcycles(:)    ! Subcycle lengths
@@ -98,8 +98,8 @@ type :: rads_phase
 endtype
 
 type :: rads_sat
-	character(len=160) :: dataroot                   ! Root directory of RADS data directory
-	character(len=160) :: command                    ! Command line
+	character(len=rads_naml) :: dataroot             ! Root directory of RADS data directory
+	character(len=rads_naml) :: command              ! Command line
 	character(len=8) :: satellite                    ! Satellite name
 	real(eightbytereal) :: nan                       ! NaN value
 	real(eightbytereal) :: dt1hz                     ! "1 Hz" sampling interval
@@ -107,6 +107,7 @@ type :: rads_sat
 	real(eightbytereal) :: eqlonlim(0:1,2)           ! Equator longitude limits for ascending and descending passes
 	real(eightbytereal) :: inclination               ! Satellite inclination (deg)
 	integer(fourbyteint) :: cycles(3),passes(3)      ! Cycle and pass limits and steps
+	integer(fourbyteint), pointer :: excl_cycles(:)  ! List of excluded cycles
 	integer(fourbyteint) :: error                    ! Error code (positive is fatal, negative is warning)
 	integer(fourbyteint) :: nvar, nsel               ! Number of available and selected variables and aliases
 	integer(fourbyteint) :: debug                    ! Silent (0), verbose (1), or debug level
@@ -121,8 +122,8 @@ type :: rads_sat
 endtype
 
 type :: rads_pass
-	character(len=160) :: filename                   ! Name of the netCDF pass file
-	character(len=160) :: original                   ! Name of the original (GDR) pass file
+	character(len=rads_naml) :: filename                   ! Name of the netCDF pass file
+	character(len=rads_naml) :: original                   ! Name of the original (GDR) pass file
 	character(len=2048), allocatable :: history(:)   ! File creation history
 	real(eightbytereal) :: equator_time, equator_lon ! Equator time and longitude
 	real(eightbytereal) :: start_time, end_time      ! Start and end time of pass
@@ -320,7 +321,7 @@ integer(fourbyteint), intent(in), optional :: debug
 !  S%error  : rads_noerr, rads_err_xml_parse, rads_err_var, rads_warn_xml_file
 !-----------------------------------------------------------------------
 integer(fourbyteint) :: i, k
-character(len=160) :: userroot
+character(len=rads_naml) :: userroot
 
 ! First skip -S, --sat=, or sat=, if any
 if (sat(:2) == '-S') then
@@ -354,7 +355,7 @@ S%dt1hz = 1d0
 S%inclination = 90d0
 S%frequency = (/13.8d0, S%nan/)
 S%error = rads_noerr
-nullify (S%sel, S%phases)
+nullify (S%sel, S%phases, S%excl_cycles)
 S%nvar = 0
 S%nsel = 0
 allocate (S%var(rads_var_chunk))
@@ -433,7 +434,7 @@ subroutine rads_init_cmd_0d (S)
 type(rads_sat), intent(inout) :: S
 integer :: isatopt(1), n, debug
 character(len=640), pointer :: options(:), varopt
-character(len=80) :: xml
+character(len=rads_naml) :: xml
 nullify (varopt)
 call rads_load_options (options, isatopt, n, xml, debug)
 if (n < 1) call rads_exit ('Failed to find "-S" or "--sat=" on command line')
@@ -448,7 +449,7 @@ subroutine rads_init_cmd_1d (S)
 type(rads_sat), intent(inout) :: S(:)
 integer :: isatopt(size(S)), i, n, debug
 character(len=640), pointer :: options(:), varopt
-character(len=80) :: xml
+character(len=rads_naml) :: xml
 S%sat = ''
 S%error = rads_noerr
 call rads_load_options (options, isatopt, n, xml, debug)
@@ -499,7 +500,7 @@ integer, intent(out), optional :: debug
 !  debug   : Optional: Verbose level from -v or --debug=
 !-----------------------------------------------------------------------
 integer :: m, iarg, nopts, ios, iunit, j, k
-character(len=80) :: arg
+character(len=rads_naml) :: arg
 
 ! Initialize
 m = size(isatopt)
@@ -762,9 +763,9 @@ do i = S%nvar,1,-1
 	endif
 enddo
 do i = 1,size(S%phases)
-	if (S%phases(i)%nsubcycles > 0) deallocate (S%phases(i)%subcycles, stat=ios)
+	deallocate (S%phases(i)%subcycles, stat=ios)
 enddo
-deallocate (S%var, S%sel, S%phases, stat=ios)
+deallocate (S%var, S%sel, S%phases, S%excl_cycles, stat=ios)
 end subroutine rads_end
 
 !***********************************************************************
@@ -826,6 +827,14 @@ if (S%debug >= 2) write (*,*) 'Checking cycle/pass : ',cycle,pass
 if (cycle < S%cycles(1) .or. cycle > S%cycles(2)) then
 	S%pass_stat(1) = S%pass_stat(1) + 1
 	return
+endif
+
+! Do check on excluded cycles
+if (associated(S%excl_cycles)) then
+	if (any(S%excl_cycles == cycle)) then
+		S%pass_stat(1) = S%pass_stat(1) + 1
+		return
+	endif
 endif
 
 ! If the cycle is out of range for the current phase, look for a new phase
@@ -1471,7 +1480,7 @@ logical, intent(in) :: fatal
 type(xml_parse) :: X
 integer, parameter :: max_lvl = 20
 character(len=rads_varl) :: tag, attr(2,max_lvl), name, tags(max_lvl)
-character(len=160) :: val(max_lvl)
+character(len=rads_naml) :: val(max_lvl)
 integer :: nattr, nval, i, ios, skip, skip_lvl
 integer(twobyteint) :: field
 logical :: endtag
@@ -1539,7 +1548,7 @@ do
 	case ('satellite')
 		S%satellite = val(1)(:8)
 	case ('satid')
-		read (val(1),*,iostat=ios) S%satid
+		read (val(:nval),*,iostat=ios) S%satid
 	case ('phase')
 		if (has_name()) then
 			phase => rads_get_phase (S, name, .true.)
@@ -1549,9 +1558,13 @@ do
 	case ('mission')
 		phase%mission = val(1)(:rads_varl)
 	case ('passes')
-		read (val(1),*,iostat=ios) phase%passes
+		read (val(:nval),*,iostat=ios) phase%passes
 	case ('cycles')
-		read (val(1),*,iostat=ios) phase%cycles
+		read (val(:nval),*,iostat=ios) phase%cycles
+	case ('exclude_cycles')
+		allocate (S%excl_cycles(maxsubcycles))
+		S%excl_cycles = -1
+		read (val(:nval),*,iostat=ios) S%excl_cycles
 	case ('subcycles')
 		allocate (phase%subcycles(maxsubcycles))
 		phase%subcycles = 0
@@ -1559,7 +1572,7 @@ do
 		do i = 1,nattr
 			if (attr(1,i) == 'start') read (attr(2,i),*,iostat=ios) phase%subcycle1
 		enddo
-		read (val(1),*,iostat=ios) phase%subcycles
+		read (val(:nval),*,iostat=ios) phase%subcycles
 		! Turn length of subcycles in passes into number of accumulative passes before subcycle
 		phase%nsubcycles = count(phase%subcycles /= 0)
 		do i = phase%nsubcycles, 2, -1
@@ -1576,17 +1589,17 @@ do
 	case ('end_time')
 		phase%end_time = strp1985f(val(1))
 	case ('repeat')
-		read (val(1),*,iostat=ios) phase%repeat_days, phase%repeat_passes, phase%repeat_shift
+		read (val(:nval),*,iostat=ios) phase%repeat_days, phase%repeat_passes, phase%repeat_shift
 		! Compute length of repeat in nodal days from inclination and repeat in solar days
 		! This assumes 1000 km altitude to get an approximate node rate (in rad/s)
 		node_rate = -1.21306d-6 * cos(S%inclination*rad)
 		phase%repeat_nodal = nint(phase%repeat_days * (7.292115d-5 - node_rate) / 7.272205d-5)
 	case ('dt1hz')
-		read (val(1),*,iostat=ios) S%dt1hz
+		read (val(:nval),*,iostat=ios) S%dt1hz
 	case ('inclination')
-		read (val(1),*,iostat=ios) S%inclination
+		read (val(:nval),*,iostat=ios) S%inclination
 	case ('frequency')
-		read (val(1),*,iostat=ios) S%frequency
+		read (val(:nval),*,iostat=ios) S%frequency
 	case ('alias')
 		if (has_name (field)) call rads_set_alias (S, name, val(1), field)
 	case ('var')
@@ -1619,7 +1632,7 @@ do
 	case ('long_name')
 		call assign_or_append (info%long_name)
 	case ('standard_name')
-		info%standard_name = val(1)(:80)
+		info%standard_name = val(1)(:rads_naml)
 		select case (val(1))
 		case ('time')
 			info%datatype = rads_type_time
@@ -1633,7 +1646,7 @@ do
 			info%datatype = rads_type_other
 		end select
 	case ('source')
-		info%source = val(1)(:80)
+		info%source = val(1)(:rads_naml)
 	case ('units')
 		info%units = val(1)(:rads_varl)
 	case ('flag_masks')
@@ -1668,9 +1681,9 @@ do
 		case default
 			info%nctype = nf90_double
 		end select
-		read (val(1)(i+1:), *, iostat=ios) info%scale_factor, info%add_offset
+		read (val(1)(i+1:),*,iostat=ios) info%scale_factor, info%add_offset
 	case ('limits') ! Do not use routine rads_set_limits here!
-		read (val(1), *, iostat=ios) info%limits
+		read (val(:nval),*,iostat=ios) info%limits
 	case ('math')
 		call assign_or_append (info%math)
 		info%datasrc = rads_src_math
@@ -1758,7 +1771,7 @@ end subroutine assign_or_append
 subroutine xmlparse_error (string)
 ! Issue error message with filename and line number
 character(*), intent(in) :: string
-character(160) :: text
+character(rads_naml) :: text
 write (text, 1300) trim(filename), X%lineno, string
 call rads_error (S, rads_err_xml_parse, text)
 1300 format ('Error parsing ',a,' at line ',i0,': ',a)
@@ -2101,7 +2114,7 @@ character(len=*), intent(in) :: string
 ! Argument:
 !  string   : Error message
 !-----------------------------------------------------------------------
-character(len=80) :: progname
+character(len=rads_naml) :: progname
 call getarg (0, progname)
 write (stderr, '(a,": ",a)') trim(progname),trim(string)
 stop
@@ -2125,7 +2138,7 @@ character(len=*), intent(in) :: string
 ! Error code:
 !  S%error  : Will be set to ierr when not rads_noerr
 !-----------------------------------------------------------------------
-character(len=80) :: progname
+character(len=rads_naml) :: progname
 call getarg (0, progname)
 write (stderr, '(a,": ",a)') trim(progname),trim(string)
 if (ierr /= rads_noerr) S%error = ierr
@@ -2189,7 +2202,7 @@ logical :: rads_version
 !  rads_version: .false. if output is of type 1, otherwise .true.
 !-----------------------------------------------------------------------
 integer :: iunit
-character(len=80) :: progname,arg
+character(len=rads_naml) :: progname,arg
 call getarg (0, progname)
 call getarg (1, arg)
 rads_version = .true.
@@ -2226,7 +2239,7 @@ integer(fourbyteint), intent(in), optional :: unit
 !  unit        : Fortran output unit (6 = stdout (default), 0 = stderr)
 !-----------------------------------------------------------------------
 integer :: iunit
-character(len=80) :: progname
+character(len=rads_naml) :: progname
 call getarg (0, progname)
 if (present(unit)) then
 	iunit = unit
