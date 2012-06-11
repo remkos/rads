@@ -133,11 +133,11 @@ enddo
 where (box%nr < minnr)
 	box%mean = S(1)%nan
 	box%sum2 = S(1)%nan
-else where (box%nr == 1)
+elsewhere (box%nr == 1)
 	box%sum2 = S(1)%nan
-else where
+elsewhere
 	box%sum2 = sqrt(box%sum2/(box%nr - 1))
-end where
+endwhere
 
 ! Write out xyz or netCDF grid
 if (grid_name == '') then
