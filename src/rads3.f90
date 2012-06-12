@@ -112,10 +112,10 @@ endif
 src => rads_varptr (S, name(1:2))
 sla => rads_varptr (S, 'sla')
 if (option > 0) then
-	if (.not.associated(src) .or. index(sla%info%math,src%name) <= 0) &
+	if (.not.associated(src) .or. index(sla%info%dataname,src%name) <= 0) &
 		call rads_error (S, rads_err_incompat, 'getraw_options('//name(1:2)//','//name(3:4)//') will not affect SLA computation')
 else
-	if (associated(src) .and. index(sla%info%math,src%name) > 0) &
+	if (associated(src) .and. index(sla%info%dataname,src%name) > 0) &
 		call rads_error (S, rads_err_incompat, 'getraw_options('//name(1:2)//',-'//name(3:4)//') will not affect SLA computation')
 endif
 call rads_set_alias (S, name(1:2), name)
