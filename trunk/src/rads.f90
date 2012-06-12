@@ -30,7 +30,7 @@ integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, rads_
 	rads_type_time = 11, rads_type_lat = 12, rads_type_lon = 13
 ! RADS4 data sources
 integer(fourbyteint), parameter :: rads_src_none = 0, rads_src_nc_var = 10, rads_src_nc_att = 11, rads_src_math = 20, &
-	rads_src_grid_lininter = 30, rads_src_grid_splinter = 31, rads_src_grid_query = 32
+	rads_src_grid_lininter = 30, rads_src_grid_splinter = 31, rads_src_grid_query = 32, rads_src_constant = 40
 ! RADS4 warnings
 integer(fourbyteint), parameter :: rads_warn_xml_file = -1, rads_warn_alias_circular = -2, rads_warn_nc_file = -3
 ! RADS4 errors
@@ -53,21 +53,19 @@ type :: rads_varinfo
 	character(len=rads_naml) :: long_name            ! Long name (description) of variable
 	character(len=rads_naml) :: standard_name        ! Optional pre-described CF-compliant 'standard' name ('' if not available)
 	character(len=rads_naml) :: source               ! Optional data source ('' if none)
-	character(len=rads_varl) :: units                ! Optional units of variable ('' if none)
+	character(len=640) :: dataname                   ! Name associated with data (e.g. netCDF var name, math string)
 	character(len=320) :: flag_meanings              ! Optional meaning of flag values ('' if none)
-	character(len=320) :: comment                    ! Optional comment ('' if none)
-	character(len=rads_varl) :: format               ! Fortran format for output
-	character(len=rads_varl) :: netcdf               ! NetCDF variable name
-	character(len=rads_varl) :: backup               ! Optional backup RADS variable name (or value) ('' if none)
 	character(len=320) :: quality_flag               ! Quality flag associated with this variable ('' if none)
-	character(len=640) :: math                       ! Math string (alternative to netcdf)
+	character(len=320) :: comment                    ! Optional comment ('' if none)
+	character(len=rads_varl) :: units                ! Optional units of variable ('' if none)
+	character(len=rads_varl) :: format               ! Fortran format for output
+	character(len=rads_varl) :: backup               ! Optional backup RADS variable name (or value) ('' if none)
 	character(len=rads_varl) :: gridx, gridy         ! RADS variable names of the grid x and y coordinates
 	type(grid), pointer :: grid                      ! Pointer to grid for interpolation (alternative to netcdf)
 	real(eightbytereal) :: limits(2)                 ! Lower and upper limit for editing
 	real(eightbytereal) :: add_offset, scale_factor  ! Offset and scale factor in case of netCDF
 	integer(fourbyteint) :: ndims                    ! Number of dimensions of variable
-	integer(fourbyteint) :: nctype                   ! netCDF data type (nf90_int, etc.)
-	integer(fourbyteint) :: varid                    ! netCDF variable ID
+	integer(fourbyteint) :: nctype, varid            ! netCDF data type (nf90_int, etc.) and variable ID
 	integer(fourbyteint) :: datatype                 ! Type of data (rads_type_other|flagmasks|flagvalues|time|lat|lon)
 	integer(fourbyteint) :: datasrc                  ! Retrieval source (rads_src_nc_var|nc_att|math|grid_lininter|grid_splinter|grid_query)
 	integer(fourbyteint) :: cycle, pass              ! Last processed cycle and pass
@@ -1155,7 +1153,6 @@ type(rads_varinfo), pointer, intent(inout) :: info
 real(eightbytereal), intent(out) :: data(:)
 logical, intent(in) :: skip_edit
 !-
-integer(fourbyteint) :: ios
 type(rads_var), pointer :: var
 
 ! Check size of array
@@ -1174,6 +1171,8 @@ case (rads_src_math)
 	call rads_get_var_math
 case (rads_src_grid_lininter, rads_src_grid_splinter, rads_src_grid_query)
 	call rads_get_var_grid
+case (rads_src_constant)
+	call rads_get_var_constant (info%dataname)
 case default
 	data = S%nan
 	return
@@ -1187,14 +1186,7 @@ else if (info%backup == '') then ! No backup alternative, print error
 	data = S%nan
 else if (info%backup == 'nan' .or. info%backup(:1) == '-' .or. info%backup(:1) == '.' .or. &
 	(info%backup(:1) >= '0' .and. info%backup(:1) <= '9')) then ! Numerical backup
-	read (info%backup,*,iostat=ios) data(1)
-	if (ios == 0) then
-		S%error = rads_noerr
-		data = data(1)
-	else
-		S%error = rads_err_var
-		data = S%nan
-	endif
+	call rads_get_var_constant (info%backup)
 else ! Go look for alternative variable
 	S%error = rads_noerr
 	var => rads_varptr (S, info%backup)
@@ -1239,7 +1231,7 @@ endif
 ! Look for the variable name in the netCDF file (or take the stored one)
 if (P%cycle == info%cycle .and. P%pass == info%pass) then
 	! Keep old varid
-else if (nff(nf90_inq_varid(P%ncid, info%netcdf, info%varid))) then
+else if (nff(nf90_inq_varid(P%ncid, info%dataname, info%varid))) then
 	! Read variable attributes if not yet set
 	if (info%nctype == 0) info%nctype = nctype
 	if (info%long_name(:1) == ' ') e =nf90_get_att(P%ncid, info%varid, 'long_name', info%long_name)
@@ -1258,17 +1250,17 @@ start = max(1,P%first_meas)
 select case (ndims)
 case (0) ! Constant
 	if (nft(nf90_get_var(P%ncid, info%varid, data(1)))) then
-		call rads_error (S, rads_err_nc_get, 'Error reading netCDF constant "'//trim(info%netcdf)//'"')
+		call rads_error (S, rads_err_nc_get, 'Error reading netCDF constant "'//trim(info%dataname)//'"')
 		return
 	endif
 	data = data(1)
 case (1) ! Array
 	if (nft(nf90_get_var(P%ncid, info%varid, data(1:P%ndata), start))) then
-		call rads_error (S, rads_err_nc_get, 'Error reading netCDF array "'//trim(info%netcdf)//'"')
+		call rads_error (S, rads_err_nc_get, 'Error reading netCDF array "'//trim(info%dataname)//'"')
 		return
 	endif
 case default
-	call rads_error (S, rads_err_nc_get, 'Wrong dimensions of variable "'//trim(info%netcdf)//'" (not 0 or 1)')
+	call rads_error (S, rads_err_nc_get, 'Wrong dimensions of variable "'//trim(info%dataname)//'" (not 0 or 1)')
 	return
 end select
 
@@ -1286,29 +1278,29 @@ integer(fourbyteint) :: varid, i
 character(len=26) :: date
 
 ! First locate the colon in the name
-i = index(info%netcdf, ':')
+i = index(info%dataname, ':')
 
 ! If name starts with colon, then we have a global attribute, else a variable attribute
 if (i == 1) then
 	varid = nf90_global
-else if (nft(nf90_inq_varid(P%ncid, info%netcdf(:i-1), varid))) then
+else if (nft(nf90_inq_varid(P%ncid, info%dataname(:i-1), varid))) then
 	S%error = rads_err_nc_var
 	return
 endif
-if (nft(nf90_inquire_attribute (P%ncid, varid, info%netcdf(i+1:), xtype=info%nctype))) info%nctype = 0
+if (nft(nf90_inquire_attribute (P%ncid, varid, info%dataname(i+1:), xtype=info%nctype))) info%nctype = 0
 
 ! Read the attribute
 if (info%nctype == nf90_char) then
 	! This is likely a date string
-	if (nft(nf90_get_att(P%ncid, varid, info%netcdf(i+1:), date))) then
-		call rads_error (S, rads_err_nc_get, 'Error reading netCDF attribute "'//trim(info%netcdf)//'"')
+	if (nft(nf90_get_att(P%ncid, varid, info%dataname(i+1:), date))) then
+		call rads_error (S, rads_err_nc_get, 'Error reading netCDF attribute "'//trim(info%dataname)//'"')
 		return
 	endif
 	data = strp1985f (date)
 else
 	! Load an integer or float value
-	if (nft(nf90_get_att(P%ncid, varid, info%netcdf(i+1:), data(1)))) then
-		call rads_error (S, rads_err_nc_get, 'Error reading netCDF attribute "'//trim(info%netcdf)//'"')
+	if (nft(nf90_get_att(P%ncid, varid, info%dataname(i+1:), data(1)))) then
+		call rads_error (S, rads_err_nc_get, 'Error reading netCDF attribute "'//trim(info%dataname)//'"')
 		return
 	endif
 	data = data(1)
@@ -1324,14 +1316,14 @@ integer(fourbyteint) :: i, j, l, istat
 nullify(top)
 
 ! Process the math commands left to right
-l = len_trim(info%math)
+l = len_trim(info%dataname)
 i = 0
 do
-	j = index(info%math(i+1:),' ')
-	istat = math_eval(info%math(i+1:i+j),P%ndata,top)
+	j = index(info%dataname(i+1:),' ')
+	istat = math_eval(info%dataname(i+1:i+j),P%ndata,top)
 	if (istat /= 0) then  ! No command or value, likely to be a variable
 		call math_push (P%ndata,top)
-		call rads_get_var_by_name (S, P, info%math(i+1:i+j), top%data)
+		call rads_get_var_by_name (S, P, info%dataname(i+1:i+j), top%data)
 	endif
 	if (S%error /= rads_noerr) exit
 	i = i+j
@@ -1379,6 +1371,19 @@ else
 	forall (i = 1:P%ndata) data(i) = grid_query (info%grid, x(i), y(i))
 endif
 end subroutine rads_get_var_grid
+
+subroutine rads_get_var_constant (string)
+character(len=*) :: string
+integer :: ios
+read (string,*,iostat=ios) data(1)
+if (ios == 0) then
+	S%error = rads_noerr
+	data = data(1)
+else
+	S%error = rads_err_var
+	data = S%nan
+endif
+end subroutine rads_get_var_constant
 
 subroutine rads_edit_data ! Edit the data base on limits
 integer(fourbyteint) :: mask(2)
@@ -1483,6 +1488,7 @@ type(xml_parse) :: X
 integer, parameter :: max_lvl = 20
 character(len=rads_varl) :: tag, attr(2,max_lvl), name, tags(max_lvl)
 character(len=rads_naml) :: val(max_lvl)
+character(len=6) :: src
 integer :: nattr, nval, i, ios, skip, skip_lvl
 integer(twobyteint) :: field
 logical :: endtag
@@ -1549,25 +1555,32 @@ do
 	select case (tag)
 	case ('satellite')
 		S%satellite = val(1)(:8)
+
 	case ('satid')
 		read (val(:nval),*,iostat=ios) S%satid
+
 	case ('phase')
 		if (has_name()) then
 			phase => rads_get_phase (S, name, .true.)
 			phase%name = attr(2,1)
 			phase%dataroot = trim(S%dataroot) // '/' // S%sat // '/' // trim(name)
 		endif
+
 	case ('mission')
 		phase%mission = val(1)(:rads_varl)
+
 	case ('passes')
 		read (val(:nval),*,iostat=ios) phase%passes
+
 	case ('cycles')
 		read (val(:nval),*,iostat=ios) phase%cycles
+
 	case ('exclude_cycles')
 		allocate (S%excl_cycles(maxsubcycles))
 		S%excl_cycles = -1
 		read (val(:nval),*,iostat=ios) S%excl_cycles
 		S%nexcl_cycles = count(S%excl_cycles /= -1)
+
 	case ('subcycles')
 		allocate (phase%subcycles(maxsubcycles))
 		phase%subcycles = 0
@@ -1582,58 +1595,48 @@ do
 			phase%subcycles(i) = sum(phase%subcycles(1:i-1))
 		enddo
 		phase%subcycles(1) = 0
+
 	case ('ref_pass') ! First part is a date string, at least 19 characters long
 		i = index(val(1),' ') ! Position of first space
 		phase%ref_time = strp1985f(val(1)(:i-1))
 		phase%ref_pass = 1
 		read (val(1)(i:),*,iostat=ios) phase%ref_lon, phase%ref_cycle, phase%ref_pass
+
 	case ('start_time')
 		phase%start_time = strp1985f(val(1))
+
 	case ('end_time')
 		phase%end_time = strp1985f(val(1))
+
 	case ('repeat')
 		read (val(:nval),*,iostat=ios) phase%repeat_days, phase%repeat_passes, phase%repeat_shift
 		! Compute length of repeat in nodal days from inclination and repeat in solar days
 		! This assumes 1000 km altitude to get an approximate node rate (in rad/s)
 		node_rate = -1.21306d-6 * cos(S%inclination*rad)
 		phase%repeat_nodal = nint(phase%repeat_days * (7.292115d-5 - node_rate) / 7.272205d-5)
+
 	case ('dt1hz')
 		read (val(:nval),*,iostat=ios) S%dt1hz
+
 	case ('inclination')
 		read (val(:nval),*,iostat=ios) S%inclination
+
 	case ('frequency')
 		read (val(:nval),*,iostat=ios) S%frequency
+
 	case ('alias')
 		if (has_name (field)) call rads_set_alias (S, name, val(1), field)
+
 	case ('var')
 		if (has_name (field)) then
 			var => rads_varptr (S, name, null())
 			info => var%info
 			if (field > rads_nofield) var%field = field
 		endif
-	case ('grid')
-		info%datasrc = rads_src_grid_lininter
-		info%gridx = 'lon' ; info%gridy = 'lat'
-		do i = 1,nattr
-			select case (attr(1,i))
-			case ('x')
-				info%gridx = attr(2,i)
-			case ('y')
-				info%gridy = attr(2,i)
-			case ('inter')
-				if (attr(2,i)(:1) == 'c') info%datasrc = rads_src_grid_splinter
-				if (attr(2,i)(:1) == 'q') info%datasrc = rads_src_grid_query
-			end select
-		enddo
-		if (info%gridx == '' .or. info%gridy == '') then
-			call xmlparse_error ('Grid tag requires both x and y attributes')
-			cycle
-		endif
-		allocate (info%grid)
-		call parseenv (val(1), info%grid%filenm)
-		info%grid%ntype = 0	! This signals that the grid was not loaded yet
+
 	case ('long_name')
 		call assign_or_append (info%long_name)
+
 	case ('standard_name')
 		info%standard_name = val(1)(:rads_naml)
 		select case (val(1))
@@ -1648,28 +1651,33 @@ do
 		case default
 			info%datatype = rads_type_other
 		end select
+
 	case ('source')
 		info%source = val(1)(:rads_naml)
+
 	case ('units')
 		info%units = val(1)(:rads_varl)
+
 	case ('flag_masks')
 		call assign_or_append (info%flag_meanings)
 		info%datatype = rads_type_flagmasks
+
 	case ('flag_values')
 		call assign_or_append (info%flag_meanings)
 		info%datatype = rads_type_flagvalues
+
 	case ('comment')
 		call assign_or_append (info%comment)
-	case ('netcdf')
-		info%datasrc = rads_src_nc_var
-		info%netcdf = val(1)(:rads_varl)
-		if (index(info%netcdf, ':') > 0) info%datasrc = rads_src_nc_att
+
 	case ('backup')
 		info%backup = val(1)(:rads_varl)
+
 	case ('quality_flag')
 		call assign_or_append (info%quality_flag)
+
 	case ('format')
 		info%format = val(1)(:rads_varl)
+
 	case ('compress')
 		i = index(val(1), ' ')
 		select case (val(1)(:i-1))
@@ -1685,15 +1693,97 @@ do
 			info%nctype = nf90_double
 		end select
 		read (val(1)(i+1:),*,iostat=ios) info%scale_factor, info%add_offset
+
 	case ('limits') ! Do not use routine rads_set_limits here!
 		read (val(:nval),*,iostat=ios) info%limits
-	case ('math')
-		call assign_or_append (info%math)
-		info%datasrc = rads_src_math
+
+	case ('data')
+		call assign_or_append (info%dataname)
+		src = ''
+		do i = 1,nattr
+			if (attr(1,i) == 'source') src = attr(2,i)(:6)
+		enddo
+		! Work out which data source
+		select case (src)
+		case ('constant')
+			info%datasrc = rads_src_constant
+		case ('grid', 'grid_l')
+			info%datasrc = rads_src_grid_lininter
+		case ('grid_c')
+			info%datasrc = rads_src_grid_splinter
+		case ('grid_q')
+			info%datasrc = rads_src_grid_query
+		case ('math')
+			info%datasrc = rads_src_math
+		case ('netcdf', 'nc_var', 'nc_att')
+			info%datasrc = rads_src_nc_var
+			if (index(info%dataname,':') > 0) info%datasrc = rads_src_nc_att
+		case default
+			! Make "educated guess" of data source
+			if (index(info%dataname,'.nc') > 0) then
+				info%datasrc = rads_src_grid_lininter
+			else if (index(trim(info%dataname),' ') > 0) then
+				info%datasrc = rads_src_math
+			else if (index(info%dataname,':') > 0) then
+				info%datasrc = rads_src_nc_att
+			else if ((info%dataname(:1) >= '0' .and. info%dataname(:1) <= '9') .or. &
+				info%dataname(:1) == '-' .or. info%dataname(:1) == '+' .or. info%dataname(:1) == '.' .or. &
+				info%dataname == 'nan') then
+				info%datasrc = rads_src_constant
+			else
+				info%datasrc = rads_src_nc_var
+			endif
+		end select
+		! Additional stuff to do for grids
+		if (info%datasrc / 10 * 10 == rads_src_grid_lininter) then
+			info%gridx = 'lon' ; info%gridy = 'lat'
+			do i = 1,nattr
+				select case (attr(1,i))
+				case ('x')
+					info%gridx = attr(2,i)
+				case ('y')
+					info%gridy = attr(2,i)
+				end select
+			enddo
+			allocate (info%grid)
+			call parseenv (val(1), info%grid%filenm)
+			info%grid%ntype = 0	! This signals that the grid was not loaded yet
+		endif
+
 	case ('if', '!--')
 		! Dummy and comment tags
+
+	! FOR BACKWARD COMPATIBILITY
+	case ('netcdf')
+		info%datasrc = rads_src_nc_var
+		info%dataname = val(1)
+		if (index(info%dataname, ':') > 0) info%datasrc = rads_src_nc_att
+
+	case ('math')
+		call assign_or_append (info%dataname)
+		info%datasrc = rads_src_math
+
+	case ('grid')
+		info%datasrc = rads_src_grid_lininter
+		info%gridx = 'lon' ; info%gridy = 'lat'
+		do i = 1,nattr
+			select case (attr(1,i))
+			case ('x')
+				info%gridx = attr(2,i)
+			case ('y')
+				info%gridy = attr(2,i)
+			case ('inter')
+				if (attr(2,i)(:1) == 'c') info%datasrc = rads_src_grid_splinter
+				if (attr(2,i)(:1) == 'q') info%datasrc = rads_src_grid_query
+			end select
+		enddo
+		allocate (info%grid)
+		call parseenv (val(1), info%grid%filenm)
+		info%grid%ntype = 0	! This signals that the grid was not loaded yet
+
 	case default
 		call xmlparse_error ('Unknown tag "'//trim(tag)//'"')
+
 	end select
 enddo
 
@@ -1889,7 +1979,7 @@ if (associated(tgt)) then
 	ptr%info => tgt%info
 else
 	allocate (ptr%info)
-	ptr%info = rads_varinfo (varname, varname, '', '', '', '', '', 'f7.3', '', '', '', '', '', '', null(), &
+	ptr%info = rads_varinfo (varname, varname, '', '', '', '', '', '', '', 'f0.3', '', '', '', null(), &
 	S%nan, 0d0, 1d0, 1, nf90_double, 0, 0, 0, 0, 0, 0, 0, S%nan, S%nan, 0d0, 0d0)
 endif
 

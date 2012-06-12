@@ -52,6 +52,7 @@ character(len=16) :: formts(0:99)
 real(eightbytereal) :: limits(2,0:99),factors(0:99)=0,scales(0:99)=0,offsets(0:99)=0,nan
 character(len=80) :: pass_fmt,cycle_fmt
 character(len=1) :: phase_def=''
+character(len=6) :: grid_type(3) = (/'grid  ','grid_c','grid_q'/)
 
 namelist /getraw_nml/ texts,limits,factors,options,scales,offsets, &
 	satname,satpref,satnams,incl,period,freq,dt1hz,pass_fmt,cycle_fmt, &
@@ -128,7 +129,7 @@ character(len=*) :: filenm
 integer :: i, j, ix, iy, type
 type(rads_var), pointer :: var
 character(len=5) :: field
-character(len=640) :: line, math, long_name, gridnm(1)
+character(len=640) :: line, math(1), long_name, gridnm(1)
 logical :: dummy 
 
 ! Open RMF file
@@ -158,9 +159,11 @@ do
 
 
 		! Add math string
-		call replace_string (math)
-		call del_string (math, ' =', dummy)
-		call xml_text (math, 'math')
+		call replace_string (math(1))
+		call del_string (math(1), ' =', dummy)
+		attr(1,1) = 'source'
+		attr(2,1) = 'math'
+		call xml_put (X, 'data', attr, 1, math, 1, 'elem')
 		call xml_put (X, 'var', attr, 0, string, 0, 'close')
 
 	else if (line(:4) == 'GRID') then
@@ -191,9 +194,9 @@ do
 		var => rads_varptr (S, field)
 		attr(1,2) = 'y'
 		attr(2,2) = var%name
-		attr(1,3) = 'inter'
-		attr(2,3) = 'c'
-		call xml_put (X, 'grid', attr, 1+type, gridnm, 1, 'elem')
+		attr(1,3) = 'source'
+		attr(2,3) = trim(grid_type(type))
+		call xml_put (X, 'data', attr, 3, gridnm, 1, 'elem')
 		call xml_put (X, 'var', attr, 0, string, 0, 'close')
 
 	else if (line(:5) == 'ALIAS') then
@@ -233,7 +236,7 @@ integer :: i
 logical :: newmath, newqual
 type(rads_var), pointer :: var
 character(len=5) :: field
-character(len=640) :: qual, math
+character(len=640) :: qual, math(1)
 
 ! Init some variables
 formts=''
@@ -290,7 +293,8 @@ enddo
 ! Load math and quality strings
 var => rads_varptr (S, 'sla')
 qual = var%info%quality_flag
-math = var%info%math
+math(1) = ''
+if (var%info%datasrc == rads_src_math) math(1) = var%info%dataname
 
 newmath = .false.
 newqual = .false.
@@ -303,7 +307,7 @@ do i = 6,99
 	write (field, '(i2.2)') i
 	var => rads_varptr (S, field)
 	if (options(i) <= 0) then
-		call del_string (math, trim(var%name)//' SUB ', newmath)
+		call del_string (math(1), trim(var%name)//' SUB ', newmath)
 		string(1) = var%name
 		attr(2,2) = 'delete'
 		if (.not.newqual) call xml_put (X, 'var', attr, 1, string, 0, 'open')
@@ -316,15 +320,17 @@ do i = 6,99
 		call xml_put (X, 'quality_flag', attr(:,2:2), 1, string, 1, 'elem')
 		newqual = .true.
 	else if (factors(i) < 0d0) then
-		call add_string (math, trim(var%name)//' SUB ', newmath)
+		call add_string (math(1), trim(var%name)//' SUB ', newmath)
 	else if (factors(i) > 0d0) then
-		call add_string (math, trim(var%name)//' ADD ', newmath)
+		call add_string (math(1), trim(var%name)//' ADD ', newmath)
 	endif
 enddo
 
 if (newmath) then
 	if (.not.newqual) call xml_put (X, 'var', attr, 1, string, 0, 'open')
-	call xml_text (math, 'math')
+	attr(1,1) = 'source'
+	attr(2,1) = 'math'
+	call xml_put (X, 'data', attr, 1, math, 1, 'elem')
 endif
 if (newqual.or.newmath) call xml_put (X, 'var', attr, 0, string, 0, 'close')
 
@@ -365,10 +371,9 @@ end subroutine xml_dble
 subroutine xml_text (var, name)
 character(len=*) :: var, name
 character(len=640) :: attr(2,1), string(1)
-if (var /= '') then
-	string(1) = var
-	call xml_put (X, name, attr, 0, string, 1, 'elem')
-endif
+if (var == '') return
+string(1) = var
+call xml_put (X, name, attr, 0, string, 1, 'elem')
 end subroutine xml_text
 
 subroutine add_string (string, sub, change)
