@@ -24,7 +24,7 @@ implicit none
 include 'config.inc'
 
 ! Dimensions
-integer(fourbyteint), parameter :: rads_var_chunk = 100, rads_naml = 160, rads_varl = 40
+integer(fourbyteint), parameter :: rads_var_chunk = 100, rads_naml = 160, rads_varl = 40, rads_cyclistl = 50
 ! RADS4 data types
 integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, rads_type_flagmasks = 2, rads_type_flagvalues = 3, &
 	rads_type_time = 11, rads_type_lat = 12, rads_type_lon = 13
@@ -44,9 +44,9 @@ integer(fourbyteint) :: rads_err_incompat = 101, rads_err_noinit = 102
 integer(twobyteint), parameter :: rads_nofield = -1
 real(eightbytereal), parameter :: pi = 3.1415926535897932d0, rad = pi/180d0
 character(len=1), parameter :: rads_linefeed = char(10), rads_noedit = '_'
-integer, parameter, private :: stderr = 0, stdout = 6, maxsubcycles = 50
+integer, parameter, private :: stderr = 0, stdout = 6
 
-private :: traxxing, rads_get_phase
+private :: rads_traxxing, rads_get_phase
 
 type :: rads_varinfo
 	character(len=rads_varl) :: name                 ! Short name used by RADS
@@ -80,12 +80,15 @@ type :: rads_var
 	integer(twobyteint) :: field                     ! RADS3 field number (rads_nofield = none)
 endtype
 
+type :: rads_cyclist
+	integer(fourbyteint) :: n, i                     ! Number of elements in list, additional value
+	integer(fourbyteint) :: list(rads_cyclistl)      ! List of values
+endtype
+
 type :: rads_phase
 	character(len=rads_varl) :: name, mission        ! Name (1-letter), and mission description
 	character(len=rads_naml) :: dataroot             ! Root directory of satellite and phase
 	integer(fourbyteint) :: cycles(2),passes(2)      ! Cycle and pass limits
-	integer(fourbyteint) :: nsubcycles,subcycle1     ! Number of subcycles, number of first subcycle in "real" cycle 1
-	integer(fourbyteint), pointer :: subcycles(:)    ! Subcycle lengths
 	real(eightbytereal) :: start_time, end_time      ! Start time and end time of this phase
 	real(eightbytereal) :: ref_time, ref_lon         ! Time and longitude of equator crossing of "reference pass"
 	integer(fourbyteint) :: ref_cycle, ref_pass      ! Cycle and pass number of "reference pass"
@@ -93,6 +96,7 @@ type :: rads_phase
 	integer(fourbyteint) :: repeat_nodal             ! Length of repeat period in nodal days
 	real(eightbytereal) :: repeat_shift              ! Eastward shift of track pattern for near repeats
 	integer(fourbyteint) :: repeat_passes            ! Number of passes per repeat period
+	type(rads_cyclist), pointer :: subcycles         ! Subcycle definition (if requested)
 endtype
 
 type :: rads_sat
@@ -105,8 +109,6 @@ type :: rads_sat
 	real(eightbytereal) :: eqlonlim(0:1,2)           ! Equator longitude limits for ascending and descending passes
 	real(eightbytereal) :: inclination               ! Satellite inclination (deg)
 	integer(fourbyteint) :: cycles(3),passes(3)      ! Cycle and pass limits and steps
-	integer(fourbyteint) :: nexcl_cycles             ! Number of excluded cycles
-	integer(fourbyteint), pointer :: excl_cycles(:)  ! List of excluded cycles
 	integer(fourbyteint) :: error                    ! Error code (positive is fatal, negative is warning)
 	integer(fourbyteint) :: nvar, nsel               ! Number of available and selected variables and aliases
 	integer(fourbyteint) :: debug                    ! Silent (0), verbose (1), or debug level
@@ -114,6 +116,7 @@ type :: rads_sat
 	integer(fourbyteint) :: total_read, total_inside ! Total number of measurements read and inside region
 	character(len=2) :: sat                          ! 2-Letter satellite abbreviation
 	integer(twobyteint) :: satid                     ! Numerical satellite identifier
+	type(rads_cyclist), pointer :: excl_cycles       ! Excluded cycles (if requested)
 	type(rads_var), pointer :: var(:)                ! List of all (possibly) available variables and aliases
 	type(rads_var), pointer :: sel(:)                ! List of selected variables and aliases
 	type(rads_var), pointer :: time, lat, lon        ! Pointers to time, lat, lon variables
@@ -357,7 +360,6 @@ S%error = rads_noerr
 nullify (S%sel, S%phases, S%excl_cycles)
 S%nvar = 0
 S%nsel = 0
-S%nexcl_cycles = 0
 allocate (S%var(rads_var_chunk))
 S%var = rads_var ('', null(), .false., rads_nofield)
 S%total_read = 0
@@ -406,7 +408,7 @@ if (.not.any(isnan(S%time%info%limits))) then
 endif
 
 ! Compute equator longitude limits
-call traxxing (S)
+call rads_traxxing (S)
 
 ! List the variables
 if (S%debug >= 3) then
@@ -552,7 +554,7 @@ do iarg = 1,nopts
 		isatopt(n) = iarg
 	else if (options(iarg)(k:k+5) == 'debug=' .or. options(iarg)(:2) == '-v') then
 		debug = debug + 1
-		read (options(iarg)(j+1:),*,iostat=ios) debug
+		read (options(iarg)(j+1:), *, iostat=ios) debug
 	else if (options(iarg)(k:k+3) == 'xml=' .or. options(iarg)(:2) == '-X') then
 		if (present(xml)) xml = options(iarg)(j+1:)
 	endif
@@ -605,13 +607,13 @@ if (arg(:2) == '-C' .or. arg(k:k+5) == 'cycle=') then
 	call chartrans(arg(j+1:),'/-x',',,,')
 	S%cycles(2) = -1
 	S%cycles(3) = 1
-	read (arg(j+1:),*,iostat=ios) S%cycles
+	read (arg(j+1:), *, iostat=ios) S%cycles
 	if (S%cycles(2) < 0) S%cycles(2) = S%cycles(1)
 else if (arg(:2) == '-P' .or. arg(k:k+4) == 'pass=') then
 	call chartrans(arg(j+1:),'/-x',',,,')
 	S%passes(2) = -1
 	S%passes(3) = 1
-	read (arg(j+1:),*,iostat=ios) S%passes
+	read (arg(j+1:), *, iostat=ios) S%passes
 	if (S%passes(2) < 0) S%passes(2) = S%passes(1)
 else if (arg(k:k+3) == 'lat=' .or. arg(k:k+3) == 'lon=' .or. arg(k:k+4) == 'time=' &
 	.or. arg(k:k+3) == 'sla=' .or. arg(k:k+3) == 'lim:' .or. arg(:2) == '-L') then
@@ -830,8 +832,8 @@ if (cycle < S%cycles(1) .or. cycle > S%cycles(2)) then
 endif
 
 ! Do check on excluded cycles
-if (S%nexcl_cycles > 0) then
-	if (any(S%excl_cycles(:S%nexcl_cycles) == cycle)) then
+if (associated(S%excl_cycles)) then
+	if (any(S%excl_cycles%list(:S%excl_cycles%n) == cycle)) then
 		S%pass_stat(1) = S%pass_stat(1) + 1
 		return
 	endif
@@ -848,10 +850,10 @@ endif
 
 ! Make estimates of the equator time and longitude and time range, which helps screening
 ! For constructions with subcycles, convert first to "real" cycle/pass number
-if (S%phase%nsubcycles > 0) then
-	cc = cycle - S%phase%subcycle1
-	pp = S%phase%subcycles(modulo(cc,S%phase%nsubcycles)+1) + pass
-	cc = cc / S%phase%nsubcycles + 1
+if (associated(S%phase%subcycles)) then
+	cc = cycle - S%phase%subcycles%i
+	pp = S%phase%subcycles%list(modulo(cc,S%phase%subcycles%n)+1) + pass
+	cc = cc / S%phase%subcycles%n + 1
 else
 	cc = cycle
 	pp = pass
@@ -865,7 +867,7 @@ P%equator_lon = modulo(S%phase%ref_lon + (pp - S%phase%ref_pass) * d + modulo(pp
 if (S%debug >= 4) write (*,*) 'Estimated start/end/equator time/longitude = ', &
 	P%start_time, P%end_time, P%equator_time, P%equator_lon
 
-! Do checking on the time criteria (only when such are given)
+! Do checking of pass ends on the time criteria (only when such are given)
 if (.not.all(isnan(S%time%info%limits))) then
 	if (P%end_time + 300d0 < S%time%info%limits(1) .or. P%start_time - 300d0 > S%time%info%limits(2)) then ! Allow 5 minute slop
 		if (S%debug >= 2) write (*,*) 'Bail out on estimated time:', S%time%info%limits, P%start_time, P%end_time
@@ -874,7 +876,7 @@ if (.not.all(isnan(S%time%info%limits))) then
 	endif
 endif
 
-! Do checking on the longitude criteria (only when those are limiting)
+! Do checking of equator longitude on the longitude criteria (only when those are limiting)
 d = P%equator_lon
 if (S%eqlonlim(ascdes,2) - S%eqlonlim(ascdes,1) < 360d0) then
 	if (checklon(S%eqlonlim(ascdes,:),d)) then
@@ -941,11 +943,15 @@ else if (nff(nf90_inquire_attribute(P%ncid,nf90_global,'log01',attnum=k))) then 
 	enddo
 endif
 
-! Read time, lon, lat
+! Read time, lon, lat; including checking their limits
 allocate (tll(P%ndata,3))
 call rads_get_var_by_var (S, P, S%time, tll(:,1))
 call rads_get_var_by_var (S, P, S%lat, tll(:,2))
 call rads_get_var_by_var (S, P, S%lon, tll(:,3))
+
+! If requested, check for distance to point
+! if (.not.isnan(S%max_distance)) then
+! endif
 
 ! Look for first non-NaN measurement
 do i = 1,P%ndata
@@ -976,7 +982,7 @@ S%total_inside = S%total_inside + P%ndata
 
 contains
 
-subroutine rads_set_phase
+subroutine rads_set_phase ()
 integer :: i
 if (cycle >= S%phase%cycles(1) .and. cycle <= S%phase%cycles(2)) return
 do i = 1,size(S%phases)
@@ -1140,7 +1146,6 @@ endif
 call rads_get_var_common (S, P, var%name, var%info, data(:P%ndata), skip_edit)
 end subroutine rads_get_var_by_name
 
-
 !***********************************************************************
 !*rads_get_var_common -- Read variable (data) from RADS database (common to all)
 !+
@@ -1209,7 +1214,7 @@ call rads_update_stat	! Update statistics on variable
 
 contains
 
-recursive subroutine rads_get_var_nc ! Get data variable from RADS netCDF file
+recursive subroutine rads_get_var_nc () ! Get data variable from RADS netCDF file
 use netcdf
 use rads_netcdf
 integer(fourbyteint) :: start(1), e, nctype, ndims
@@ -1270,7 +1275,7 @@ if (nff(nf90_get_att(P%ncid, info%varid, 'scale_factor', scale_factor))) data = 
 if (nff(nf90_get_att(P%ncid, info%varid, 'add_offset', add_offset))) data = data + add_offset
 end subroutine rads_get_var_nc
 
-recursive subroutine rads_get_att_nc ! Get data attribute from RADS netCDF file
+recursive subroutine rads_get_att_nc () ! Get data attribute from RADS netCDF file
 use netcdf
 use rads_netcdf
 use rads_time
@@ -1307,7 +1312,7 @@ else
 endif
 end subroutine rads_get_att_nc
 
-recursive subroutine rads_get_var_math ! Get data variable from MATH statement
+recursive subroutine rads_get_var_math () ! Get data variable from MATH statement
 use rads_math
 type(math_ll), pointer :: top
 integer(fourbyteint) :: i, j, l, istat
@@ -1345,7 +1350,7 @@ if (i > 0) then
 endif
 end subroutine rads_get_var_math
 
-subroutine rads_get_var_grid ! Get data by interpolating a grid
+subroutine rads_get_var_grid () ! Get data by interpolating a grid
 real (eightbytereal) :: x(P%ndata), y(P%ndata)
 integer(fourbyteint) :: i
 
@@ -1375,7 +1380,7 @@ end subroutine rads_get_var_grid
 subroutine rads_get_var_constant (string)
 character(len=*) :: string
 integer :: ios
-read (string,*,iostat=ios) data(1)
+read (string, *, iostat=ios) data(1)
 if (ios == 0) then
 	S%error = rads_noerr
 	data = data(1)
@@ -1385,7 +1390,7 @@ else
 endif
 end subroutine rads_get_var_constant
 
-subroutine rads_edit_data ! Edit the data base on limits
+subroutine rads_edit_data () ! Edit the data base on limits
 integer(fourbyteint) :: mask(2)
 
 if (all(isnan(info%limits))) then
@@ -1409,7 +1414,7 @@ else
 endif
 end subroutine rads_edit_data
 
-subroutine rads_quality_check
+subroutine rads_quality_check ()
 real(eightbytereal) :: qual(P%ndata)
 integer(fourbyteint) :: i, j, l
 if (info%quality_flag == '') return
@@ -1429,7 +1434,7 @@ do
 enddo
 end subroutine rads_quality_check
 
-subroutine rads_update_stat	! Update the statistics for given var
+subroutine rads_update_stat	() ! Update the statistics for given var
 real(eightbytereal) :: q, r
 integer(fourbyteint) :: i
 
@@ -1522,7 +1527,7 @@ do
 	! Process closing tags
 	if (endtag) then
 		if (tag /= tags(X%level+1)) &
-			call xmlparse_error ('Closing tag "'//trim(tag)//'" follows opening tag "'//trim(tags(X%level+1))//'"')
+			call xmlparse_error ('Closing tag </'//trim(tag)//'> follows opening tag <'//trim(tags(X%level+1))//'>')
 		if (X%level < skip_lvl) skip_lvl = 0	! Stop skipping when descended back below the starting level
 		cycle  ! Ignore all other end tags
 	endif
@@ -1557,7 +1562,7 @@ do
 		S%satellite = val(1)(:8)
 
 	case ('satid')
-		read (val(:nval),*,iostat=ios) S%satid
+		read (val(:nval), *, iostat=ios) S%satid
 
 	case ('phase')
 		if (has_name()) then
@@ -1570,37 +1575,37 @@ do
 		phase%mission = val(1)(:rads_varl)
 
 	case ('passes')
-		read (val(:nval),*,iostat=ios) phase%passes
+		read (val(:nval), *, iostat=ios) phase%passes
 
 	case ('cycles')
-		read (val(:nval),*,iostat=ios) phase%cycles
+		read (val(:nval), *, iostat=ios) phase%cycles
 
 	case ('exclude_cycles')
-		allocate (S%excl_cycles(maxsubcycles))
-		S%excl_cycles = -1
-		read (val(:nval),*,iostat=ios) S%excl_cycles
-		S%nexcl_cycles = count(S%excl_cycles /= -1)
+		allocate (S%excl_cycles)
+		S%excl_cycles%list = -1
+		read (val(:nval), *, iostat=ios) S%excl_cycles%list
+		S%excl_cycles%n = count(S%excl_cycles%list /= -1)
 
 	case ('subcycles')
-		allocate (phase%subcycles(maxsubcycles))
-		phase%subcycles = 0
-		phase%subcycle1 = 1
+		allocate (phase%subcycles)
+		phase%subcycles%list = 0
+		phase%subcycles%i = 1
 		do i = 1,nattr
-			if (attr(1,i) == 'start') read (attr(2,i),*,iostat=ios) phase%subcycle1
+			if (attr(1,i) == 'start') read (attr(2,i), *, iostat=ios) phase%subcycles%i
 		enddo
-		read (val(:nval),*,iostat=ios) phase%subcycles
+		read (val(:nval), *, iostat=ios) phase%subcycles%list
 		! Turn length of subcycles in passes into number of accumulative passes before subcycle
-		phase%nsubcycles = count(phase%subcycles /= 0)
-		do i = phase%nsubcycles, 2, -1
-			phase%subcycles(i) = sum(phase%subcycles(1:i-1))
+		phase%subcycles%n = count(phase%subcycles%list /= 0)
+		do i = phase%subcycles%n, 2, -1
+			phase%subcycles%list(i) = sum(phase%subcycles%list(1:i-1))
 		enddo
-		phase%subcycles(1) = 0
+		phase%subcycles%list(1) = 0
 
 	case ('ref_pass') ! First part is a date string, at least 19 characters long
 		i = index(val(1),' ') ! Position of first space
 		phase%ref_time = strp1985f(val(1)(:i-1))
 		phase%ref_pass = 1
-		read (val(1)(i:),*,iostat=ios) phase%ref_lon, phase%ref_cycle, phase%ref_pass
+		read (val(1)(i:), *, iostat=ios) phase%ref_lon, phase%ref_cycle, phase%ref_pass
 
 	case ('start_time')
 		phase%start_time = strp1985f(val(1))
@@ -1609,20 +1614,20 @@ do
 		phase%end_time = strp1985f(val(1))
 
 	case ('repeat')
-		read (val(:nval),*,iostat=ios) phase%repeat_days, phase%repeat_passes, phase%repeat_shift
+		read (val(:nval), *, iostat=ios) phase%repeat_days, phase%repeat_passes, phase%repeat_shift
 		! Compute length of repeat in nodal days from inclination and repeat in solar days
 		! This assumes 1000 km altitude to get an approximate node rate (in rad/s)
 		node_rate = -1.21306d-6 * cos(S%inclination*rad)
 		phase%repeat_nodal = nint(phase%repeat_days * (7.292115d-5 - node_rate) / 7.272205d-5)
 
 	case ('dt1hz')
-		read (val(:nval),*,iostat=ios) S%dt1hz
+		read (val(:nval), *, iostat=ios) S%dt1hz
 
 	case ('inclination')
-		read (val(:nval),*,iostat=ios) S%inclination
+		read (val(:nval), *, iostat=ios) S%inclination
 
 	case ('frequency')
-		read (val(:nval),*,iostat=ios) S%frequency
+		read (val(:nval), *, iostat=ios) S%frequency
 
 	case ('alias')
 		if (has_name (field)) call rads_set_alias (S, name, val(1), field)
@@ -1692,10 +1697,10 @@ do
 		case default
 			info%nctype = nf90_double
 		end select
-		read (val(1)(i+1:),*,iostat=ios) info%scale_factor, info%add_offset
+		read (val(1)(i+1:), *, iostat=ios) info%scale_factor, info%add_offset
 
 	case ('limits') ! Do not use routine rads_set_limits here!
-		read (val(:nval),*,iostat=ios) info%limits
+		read (val(:nval), *, iostat=ios) info%limits
 
 	case ('data')
 		call assign_or_append (info%dataname)
@@ -1753,7 +1758,7 @@ do
 	case ('if', '!--')
 		! Dummy and comment tags
 
-	! FOR BACKWARD COMPATIBILITY
+	! FOR BACKWARD COMPATIBILITY, here are tags <netcdf>, <math> and <grid>
 	case ('netcdf')
 		info%datasrc = rads_src_nc_var
 		info%dataname = val(1)
@@ -1782,7 +1787,7 @@ do
 		info%grid%ntype = 0	! This signals that the grid was not loaded yet
 
 	case default
-		call xmlparse_error ('Unknown tag "'//trim(tag)//'"')
+		call xmlparse_error ('Unknown tag <'//trim(tag)//'>')
 
 	end select
 enddo
@@ -1790,7 +1795,7 @@ enddo
 ! Close XML file
 call xml_close (X)
 
-if (X%level > 0) call xmlparse_error ('Did not close tag "'//trim(tags(X%level))//'"')
+if (X%level > 0) call xmlparse_error ('Did not close tag <'//trim(tags(X%level))//'>')
 
 if (S%error > rads_noerr) call rads_exit ('Fatal errors occurred while parsing XML file '//trim(filename))
 
@@ -2060,21 +2065,20 @@ character(len=*), intent(inout), optional :: string
 type(rads_var), pointer :: var
 integer :: ios
 var => rads_varptr (S, varname)
-if (associated(var)) then
-	if (present(lo)) var%info%limits(1) = lo
-	if (present(hi)) var%info%limits(2) = hi
-	if (present(string)) then
-		call chartrans(string, '/', ',')
-		read (string, *, iostat=ios) var%info%limits
-	endif
-	if (var%info%datatype == rads_type_lat .or. var%info%datatype == rads_type_lon) then
-		! If latitude or longitude limits are changed, recompute equator longitude limits
-		call traxxing (S)
-	else if (var%info%datatype == rads_type_time) then
-		! If time limits are changed, also limit the cycles
-		S%cycles(1) = max(S%cycles(1), rads_time_to_cycle (S, lo))
-		S%cycles(2) = min(S%cycles(2), rads_time_to_cycle (S, hi))
-	endif
+if (.not.associated(var)) return
+if (present(lo)) var%info%limits(1) = lo
+if (present(hi)) var%info%limits(2) = hi
+if (present(string)) then
+	call chartrans(string, '/', ',')
+	read (string, *, iostat=ios) var%info%limits
+endif
+if (var%info%datatype == rads_type_lat .or. var%info%datatype == rads_type_lon) then
+	! If latitude or longitude limits are changed, recompute equator longitude limits
+	call rads_traxxing (S)
+else if (var%info%datatype == rads_type_time) then
+	! If time limits are changed, also limit the cycles
+	S%cycles(1) = max(S%cycles(1), rads_time_to_cycle (S, var%info%limits(1)))
+	S%cycles(2) = min(S%cycles(2), rads_time_to_cycle (S, var%info%limits(2)))
 endif
 end subroutine rads_set_limits
 
@@ -2260,11 +2264,11 @@ save libversion
 ios = 1
 if (present(string)) then
 	l = len_trim(string)-1
-	if (string(2:10) == 'Revision:') read (string(11:l),*,iostat=ios) rads_rev
+	if (string(2:10) == 'Revision:') read (string(11:l), *, iostat=ios) rads_rev
 	if (ios == 0) return
 endif
 l = len_trim(libversion)-1
-read (libversion(11:l),*,iostat=ios) rads_rev
+read (libversion(11:l), *, iostat=ios) rads_rev
 end function rads_rev
 
 !***********************************************************************
@@ -2413,7 +2417,7 @@ else
 endif
 
 ! Initialize the new phase information and direct the pointer
-S%phases(n) = rads_phase (name, '', '', (/999,0/), (/9999,0/), 0, 0, null(), S%nan, S%nan, S%nan, S%nan, 0, 0, S%nan, 0, S%nan, 0)
+S%phases(n) = rads_phase (name, '', '', (/999,0/), (/9999,0/), S%nan, S%nan, S%nan, S%nan, 0, 0, S%nan, 0, S%nan, 0, null())
 phase => S%phases(n)
 
 end function rads_get_phase
@@ -2443,17 +2447,20 @@ S%error = rads_noerr
 do i = 1,size(S%phases)-1
 	if (time < S%phases(i+1)%start_time) exit
 enddo
+
 d = S%phases(i)%repeat_days * 86400d0 / S%phases(i)%repeat_passes ! Length in seconds of single pass
 t0 = S%phases(i)%ref_time - (S%phases(i)%ref_pass - 0.5d0) * d ! Time of start of ref_cycle
 rads_time_to_cycle = floor((time - t0) / (S%phases(i)%repeat_days * 86400d0)) + S%phases(i)%ref_cycle
-if (S%phases(i)%nsubcycles == 0) return
-! When there are subcycles, compute the subcycle number
-rads_time_to_cycle = (rads_time_to_cycle - 1) * S%phases(i)%nsubcycles + S%phases(i)%subcycle1
-n = floor((time - t0) / d)
-do j = 2,S%phases(i)%nsubcycles
-	if (S%phases(i)%subcycles(j) > n) exit
-	rads_time_to_cycle = rads_time_to_cycle + 1
-enddo
+
+if (associated(S%phases(i)%subcycles)) then
+	! When there are subcycles, compute the subcycle number
+	rads_time_to_cycle = (rads_time_to_cycle - 1) * S%phases(i)%subcycles%n + S%phases(i)%subcycles%i
+	n = floor((time - t0) / d)
+	do j = 2,S%phases(i)%subcycles%n
+		if (S%phases(i)%subcycles%list(j) > n) exit
+		rads_time_to_cycle = rads_time_to_cycle + 1
+	enddo
+endif
 end function rads_time_to_cycle
 
 !***********************************************************************
@@ -2479,23 +2486,25 @@ i = 1
 do i = 1,size(S%phases)-1
 	if (cycle < S%phases(i+1)%cycles(1)) exit
 enddo
+
 d = S%phases(i)%repeat_days * 86400d0 / S%phases(i)%repeat_passes ! Length in seconds of single pass
 t0 = S%phases(i)%ref_time - (S%phases(i)%ref_pass - 0.5d0) * d ! Time of start of ref_cycle
-if (S%phases(i)%nsubcycles == 0) then
-	rads_cycle_to_time = max(S%phases(i)%start_time, t0 + (cycle - S%phases(i)%ref_cycle) * S%phases(i)%repeat_days * 86400d0)
-else
-	cc = cycle - S%phase%subcycle1
-	pp = S%phase%subcycles(modulo(cc,S%phase%nsubcycles)+1)
-	cc = cc / S%phase%nsubcycles + 1
+
+if (associated(S%phases(i)%subcycles)) then
+	cc = cycle - S%phase%subcycles%i
+	pp = S%phase%subcycles%list(modulo(cc,S%phase%subcycles%n)+1)
+	cc = cc / S%phase%subcycles%n + 1
 	rads_cycle_to_time = max(S%phases(i)%start_time, t0 + (cc - S%phases(i)%ref_cycle) * S%phases(i)%repeat_days * 86400d0) + &
 		pp * d
+else
+	rads_cycle_to_time = max(S%phases(i)%start_time, t0 + (cycle - S%phases(i)%ref_cycle) * S%phases(i)%repeat_days * 86400d0)
 endif
 end function rads_cycle_to_time
 
 !***********************************************************************
-!*traxxing -- Determine which tracks cross an area
+!*rads_traxxing -- Determine which tracks cross an area
 !+
-subroutine traxxing (S)
+subroutine rads_traxxing (S)
 type(rads_sat), intent(inout) :: S
 !
 ! Given an area and a certain satellite in a low circular orbit with
@@ -2552,7 +2561,7 @@ S%eqlonlim(0,2) = S%lon%info%limits(2) + max(l(1),l(2)) + 2d0
 
 if (S%debug >= 3) write (*,*) "Eqlonlim = ",S%eqlonlim
 
-end subroutine traxxing
+end subroutine rads_traxxing
 
 !***********************************************************************
 !*rads_progress_bar -- Print and update progress of scanning cycles/passes
