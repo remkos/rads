@@ -24,9 +24,9 @@ program radsxosel
 !
 ! The output is a new netCDF file containing all the information from
 ! the input file plus the data fields indicated on the sel= option.
-!-
-! Created by Remko Scharroo, Altimetrics LLC, based in part on previous
-! programs, max and max2, developed at DEOS.
+!
+! This program is based in part on previous programs, max and max2,
+! developed by Marc Naeije and Remko Scharroo at TU Delft/DEOS.
 !-----------------------------------------------------------------------
 use rads
 use netcdf

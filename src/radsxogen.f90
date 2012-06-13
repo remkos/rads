@@ -28,9 +28,9 @@ program radsxogen
 ! and locations of the crossovers, with the information of
 ! the respective passes. With a consecutive run of radsxosel
 ! more information can be added to the crossover file.
-!-
-! Created by Remko Scharroo, Altimetrics LLC, based in part on previous
-! programs, max and max2, developed at DEOS.
+!
+! This program is based in part on previous programs, max and max2,
+! developed by Marc Naeije and Remko Scharroo at TU Delft/DEOS.
 !-----------------------------------------------------------------------
 use rads
 use netcdf

@@ -48,7 +48,11 @@ contains
 subroutine strconcat (val, string)
 character(len=*), intent(in) :: val(:)
 character(len=*), intent(out) :: string
-!-
+!
+! Concatenate character strings from array val(:) into a single character
+! string named string. Individual strings from val(:) are separated by
+! a single space.
+!
 ! Arguments
 !  val     : array of strings
 !  string  : concatenation of all strings val(:), separated by spaces
@@ -138,7 +142,7 @@ character(len=*), intent(inout) :: string
 !   env     (input) : Name of the environment variable.
 !   string  (input) : Default value for string.
 !          (output) : Contents of the environment variable or default.
-!-
+!-----------------------------------------------------------------------
 character(len=160) :: temp
 call getenv (env,temp)
 if (temp /= ' ') string = temp
@@ -164,7 +168,7 @@ character(len=*), intent(inout) :: output
 ! Arguments:
 !   input   (input) : String to be parsed.
 !   output (output) : String with environment variables replaced.
-!-
+!-----------------------------------------------------------------------
 character(len=160) :: env
 integer :: j, k = 0, l, m, n
 output = input
@@ -218,12 +222,12 @@ logical :: outofrange
 !  limits     : minimum and maximum allowed value
 !  value      : value to be checked
 !  outofrange : .true. if value is outside limits, .false. otherwise.
-!-
+!-----------------------------------------------------------------------
 outofrange = (value < limits(1) .or. value > limits(2))
 end function outofrange
 
 !***********************************************************************
-!&nint1 -- Round 8-byte real to 1-byte integer
+!*nint1 -- Round 8-byte real to 1-byte integer
 !+
 elemental function nint1(x)
 integer(onebyteint) :: nint1
@@ -243,7 +247,7 @@ endif
 end function nint1
 
 !***********************************************************************
-!&nint2 -- Round 8-byte real to 2-byte integer
+!*nint2 -- Round 8-byte real to 2-byte integer
 !+
 elemental function nint2(x)
 integer(twobyteint) :: nint2
@@ -263,7 +267,7 @@ endif
 end function nint2
 
 !***********************************************************************
-!&nint4 -- Round 8-byte real to 4-byte integer
+!*nint4 -- Round 8-byte real to 4-byte integer
 !+
 elemental function nint4(x)
 integer(fourbyteint) :: nint4
@@ -291,7 +295,7 @@ integer :: to16bits(0:15)
 !
 ! Convert a double float first to integer and then to individual 16 bits.
 ! Takes into account NaN and out of bounds numbers.
-!-
+!-----------------------------------------------------------------------
 integer(twobyteint), parameter :: imax = huge(0_twobyteint)
 real(eightbytereal), parameter :: xmin = -imax-1.5d0, xmax = imax+0.5d0
 integer(twobyteint) :: i, j

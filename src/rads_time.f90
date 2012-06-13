@@ -167,8 +167,6 @@ character(len=26) :: strf1985f
 !
 ! Return value:
 !  strf1985f : Character string of time
-!-
-! Copyright (c) Remko Scharroo, Altimetrics LLC
 !-----------------------------------------------------------------------
 integer(fourbyteint) :: yy, mm, dd, hh, mn
 real(eightbytereal) :: ss
@@ -253,8 +251,6 @@ real(eightbytereal) :: sec85
 !          i=0, convert any of the above to SEC85
 !  date  : Input value.
 !  sec85 : Output value, seconds from 1.0 Jan 1985.
-!-
-! 1995 -- Created by Remko Scharroo
 !-----------------------------------------------------------------------
 integer(fourbyteint) :: mjd,yy,mm,dd,hh,mn,ii
 real(eightbytereal) :: ff
@@ -368,8 +364,6 @@ real(eightbytereal), intent(out), optional :: t1, dt
 !   t0, t1  (output): datation arguments converted to SEC85
 !                     (seconds since 1.0 Jan 1985)
 !   dt      (output): third datation argument (not converted)
-!-
-! 03-Nov-1999 : Created by Remko Scharroo
 !-----------------------------------------------------------------------
 integer :: ios,l,mode
 real(eightbytereal) :: tt0,tt1

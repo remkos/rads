@@ -29,7 +29,7 @@ integer, parameter, private :: stderr = 0
 contains
 
 !-----------------------------------------------------------------------
-!&nf90_def_axis -- Define dimension as a coordinate axis
+!*nf90_def_axis -- Define dimension as a coordinate axis
 !+
 subroutine nf90_def_axis (ncid,varnm,longname,units,nx,x0,x1,dimid,varid,xtype)
 use typesizes
@@ -63,7 +63,7 @@ integer, intent(in), optional :: xtype
 ! dimid   : NetCDF dimension ID
 ! varid   : NetCDF variable ID
 ! xtype   : Type of variable (optional, default = nf90_double)
-!-
+!-----------------------------------------------------------------------
 integer(fourbyteint) :: i,j
 real(eightbytereal) :: xrange(2)
 xrange(1) = x0; xrange(2) = x1
@@ -90,7 +90,7 @@ call nfs(nf90_put_att(ncid,varid,'actual_range',xrange))
 end subroutine nf90_def_axis
 
 !-----------------------------------------------------------------------
-!&nf90_put_axis -- Fill an coordinate array
+!*nf90_put_axis -- Fill an coordinate array
 !+
 subroutine nf90_put_axis (ncid, varid, len)
 use typesizes
@@ -140,7 +140,7 @@ deallocate(x)
 end subroutine nf90_put_axis
 
 !-----------------------------------------------------------------------
-!&nff -- Return .false. upon netCDF error
+!*nff -- Return .false. upon netCDF error
 !+
 logical function nff(ios)
 use netcdf
@@ -158,7 +158,7 @@ nff = (ios == nf90_noerr)
 end function nff
 
 !-----------------------------------------------------------------------
-!&nft -- Return .true. upon netCDF error
+!*nft -- Return .true. upon netCDF error
 !+
 logical function nft(ios)
 use netcdf
@@ -176,7 +176,7 @@ nft = (ios /= nf90_noerr)
 end function nft
 
 !-----------------------------------------------------------------------
-!&nfs -- Stop execution upon netCDF error
+!*nfs -- Stop execution upon netCDF error
 !+
 subroutine nfs(ios)
 use netcdf

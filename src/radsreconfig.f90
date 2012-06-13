@@ -26,7 +26,7 @@
 !
 ! When called with one of more filenames as arguments, the program combines
 ! those and provides output to stdout. 
-!-
+!-----------------------------------------------------------------------
 program radsreconfig
 use rads
 use typesizes
