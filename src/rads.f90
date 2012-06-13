@@ -108,6 +108,7 @@ type :: rads_sat
 	real(eightbytereal) :: frequency(2)              ! Frequency (GHz) of primary and secondary channel
 	real(eightbytereal) :: eqlonlim(0:1,2)           ! Equator longitude limits for ascending and descending passes
 	real(eightbytereal) :: inclination               ! Satellite inclination (deg)
+	real(eightbytereal) :: centroid(3)               ! Longitude, latitude, distance (in radians) selection criteria
 	integer(fourbyteint) :: cycles(3),passes(3)      ! Cycle and pass limits and steps
 	integer(fourbyteint) :: error                    ! Error code (positive is fatal, negative is warning)
 	integer(fourbyteint) :: nvar, nsel               ! Number of available and selected variables and aliases
@@ -124,8 +125,8 @@ type :: rads_sat
 endtype
 
 type :: rads_pass
-	character(len=rads_naml) :: filename                   ! Name of the netCDF pass file
-	character(len=rads_naml) :: original                   ! Name of the original (GDR) pass file
+	character(len=rads_naml) :: filename             ! Name of the netCDF pass file
+	character(len=rads_naml) :: original             ! Name of the original (GDR) pass file
 	character(len=2048), allocatable :: history(:)   ! File creation history
 	real(eightbytereal) :: equator_time, equator_lon ! Equator time and longitude
 	real(eightbytereal) :: start_time, end_time      ! Start and end time of pass
@@ -367,6 +368,7 @@ S%total_inside = 0
 S%pass_stat = 0
 S%cycles(3) = 1
 S%passes(3) = 1
+S%centroid = 0d0
 S%error = rads_noerr
 
 ! Read the global rads.xml setup file, the one in ~/.rads and the one in the current directory
@@ -615,6 +617,8 @@ else if (arg(:2) == '-P' .or. arg(k:k+4) == 'pass=') then
 	S%passes(3) = 1
 	read (arg(j+1:), *, iostat=ios) S%passes
 	if (S%passes(2) < 0) S%passes(2) = S%passes(1)
+else if (arg(:2) == '-R') then
+	call rads_set_region (S, arg(3:))
 else if (arg(k:k+3) == 'lat=' .or. arg(k:k+3) == 'lon=' .or. arg(k:k+4) == 'time=' &
 	.or. arg(k:k+3) == 'sla=' .or. arg(k:k+3) == 'lim:' .or. arg(:2) == '-L') then
 	call rads_set_limits (S, arg(i+1:j-1), string=arg(j+1:))
@@ -778,6 +782,7 @@ use netcdf
 use rads_netcdf
 use rads_time
 use rads_misc
+use rads_geo
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 integer(fourbyteint), intent(in) :: cycle, pass
@@ -949,9 +954,13 @@ call rads_get_var_by_var (S, P, S%time, tll(:,1))
 call rads_get_var_by_var (S, P, S%lat, tll(:,2))
 call rads_get_var_by_var (S, P, S%lon, tll(:,3))
 
-! If requested, check for distance to point
-! if (.not.isnan(S%max_distance)) then
-! endif
+! If requested, check for distance to centroid
+if (S%centroid(3) > 0d0) then
+	do i = 1,P%ndata
+		if (any(isnan(tll(i,2:3)))) cycle
+		if (sfdist(tll(i,2)*rad, tll(i,3)*rad, S%centroid(2), S%centroid(1)) > S%centroid(3)) tll(i,2:3) = S%nan
+	enddo
+endif
 
 ! Look for first non-NaN measurement
 do i = 1,P%ndata
@@ -2048,7 +2057,7 @@ character(len=*), intent(inout), optional :: string
 ! RADS.
 ! The limits can either be set by giving the lower and upper limits
 ! as double floats <lo> and <hi> or as a character string <string> which
-! contains the two number separated by whitespace, a comma or a slash.
+! contains the two numbers separated by whitespace, a comma or a slash.
 ! In case only one number is given, only <lo> or <hi> (following the
 ! separator) is set.
 !
@@ -2081,6 +2090,55 @@ else if (var%info%datatype == rads_type_time) then
 	S%cycles(2) = min(S%cycles(2), rads_time_to_cycle (S, var%info%limits(2)))
 endif
 end subroutine rads_set_limits
+
+!***********************************************************************
+!*rads_set_region -- Set latitude/longitude limits or distance to point
+!+
+subroutine rads_set_region (S, string)
+use rads_misc
+type(rads_sat), intent(inout) :: S
+character(len=*), intent(inout) :: string
+!
+! This routine set the region for data selection (after the -R option).
+! The region can either be specified as a box by four values "W/E/S/N",
+! or as a circular region by three values "E/N/radius". Separators
+! can be commas, slashes, or whitespace.
+!
+! In case of a circular region, longitude and latitude limits are set
+! accordingly for a rectangular box surrounding the circle. However, when
+! reading pass data, the distance to the centroid is used as well to
+! edit out data.
+! 
+! Arguments:
+!  S        : Satellite/mission dependent structure
+!  string   : String of three or four values with separating whitespace.
+!             For rectangular region: W/E/S/N.
+!             For circular region: E/N/radius (radius in degrees).
+!
+! Error code:
+!  S%error  : rads_noerr, rads_err_var
+!-----------------------------------------------------------------------
+real(eightbytereal) :: r(4), c
+integer :: ios
+call chartrans (string, '/', ',')
+r = S%nan
+read (string, *, iostat=ios) r
+if (isnan(r(4))) then ! Circular region
+	if (r(2)-r(3) < -90d0 .or. r(2)+r(3) > 90d0) then
+		S%lon%info%limits = r(1) + (/-180d0,180d0/)
+	else
+		c = cos(max(abs(r(2)-r(3)),abs(r(2)+r(3)))*rad)
+		S%lon%info%limits = r(1) + r(3) / (/ -c, c /)
+	endif
+	S%lat%info%limits(1) = max(-90d0,r(2)-r(3))
+	S%lat%info%limits(2) = min( 90d0,r(2)+r(3))
+	S%centroid = r(1:3)*rad	! Convert longitude, latitude, radius from degrees to radians
+else ! Rectangular region
+	S%lon%info%limits = r(1:2)
+	S%lat%info%limits = r(3:4)
+endif
+call rads_traxxing (S)
+end subroutine rads_set_region
 
 !***********************************************************************
 !*rads_set_format -- Set output format for given variable
@@ -2137,7 +2195,7 @@ call rads_stat_line (S%lon%info)
 write (iunit, 720) 'MEASUREMENTS IN REQUESTED PERIOD AND REGION', S%total_inside
 write (iunit, 723)
 do i = 1,S%nvar
-	if (.not. associated(S%var(i)%info)) then ! Skip undefined variables
+	if (.not.associated(S%var(i)%info)) then ! Skip undefined variables
 	else if (S%var(i)%info%selected + S%var(i)%info%rejected == 0) then ! Skip "unused" variables
 	else if (S%var(i)%info%datatype >= rads_type_time) then ! Skip time, lat, lon
 	else if (S%var(i)%name /= S%var(i)%info%name) then ! Skip aliases
@@ -2352,6 +2410,8 @@ write (iunit, 1300) trim(progname)
 '  -V, --var=var1,...      : select variables to be read'/ &
 '  -C, --cycle=c0[,c1[,dc]]: specify first and last cycle and modulo'/ &
 '  -P, --pass=p0[,p1[,dp]] : specify first and last pass and modulo'/ &
+'  -Rlon0,lon1,lat0,lat1   : specify rectangular region (deg)'/ &
+'  -Rlon0,lat0,radius      : specify circular region (deg)' / &
 '  --lon=lon0,lon1         : specify longitude boundaries (deg)'/ &
 '  --lat=lat0,lat1         : specify latitude  boundaries (deg)'/ &
 '  --t=t0,t1               : specify time selection (optionally use --ymd=, --doy=,'/ &
