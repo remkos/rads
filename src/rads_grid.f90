@@ -15,6 +15,7 @@
 ! GNU General Public License for more details.
 !-----------------------------------------------------------------------
 
+!***********************************************************************
 !*rads_grid -- A set of grid reading and interpolation routines
 !+
 module rads_grid
@@ -29,7 +30,6 @@ type grid
 	real(fourbytereal), allocatable :: grid_real(:,:)
 	real(eightbytereal), allocatable :: grid_dble(:,:)
 end type
-integer, parameter, private :: stderr = 0
 !
 ! Use the following routines to load grids into memory and interpolate
 ! or query them:
@@ -46,9 +46,12 @@ integer, parameter, private :: stderr = 0
 ! Information about the grid is stored in a structure of type 'grid'.
 ! Use the module 'rads_grid' to define the structure.
 !-----------------------------------------------------------------------
+integer, parameter, private :: stderr = 0
+private :: make_nan
 
 contains
 
+!***********************************************************************
 !*grid_load -- Load a grid into memory (NetCDF format)
 !+
 function grid_load (filenm, info)
@@ -227,7 +230,7 @@ info%zmin = dummy(1)
 info%zmax = dummy(2)
 
 if (nf90_get_att(ncid,z_id,'_FillValue',info%znan) /= 0 .and. nf90_get_att(ncid,z_id,'missing_value',info%znan) /= 0) &
-	call set_nan (info%znan)
+	info%znan = make_nan()
 
 ! Get x- and y-ranges
 if (nf90_get_att(ncid,nf90_global,'node_offset',noff) /= 0) noff = 0
@@ -277,6 +280,7 @@ end subroutine grid_error
 
 end function grid_load
 
+!***********************************************************************
 !*grid_free -- Free grid buffer
 !+
 elemental subroutine grid_free (info)
@@ -297,6 +301,7 @@ if (allocated(info%grid_dble)) deallocate(info%grid_dble)
 info%ntype = 0
 end subroutine grid_free
 
+!***********************************************************************
 !*grid_query -- Look-up value in buffered grid
 !+
 pure function grid_query (info, x, y)
@@ -304,7 +309,7 @@ use netcdf
 type(grid), intent(in) :: info
 real(eightbytereal), intent(in) :: x, y
 real(eightbytereal) :: grid_query
-
+!
 ! This function looks up a single value in a buffered grid that
 ! was previously loaded using grid_load. No interpolation is
 ! performed, the value at the closest grid point is returned.
@@ -330,7 +335,7 @@ integer(fourbyteint) :: jx,jy
 
 ! If x or y are NaN or beyond allowed range, return NaN
 if (.not.grid_inside (info, x, y)) then
-	call set_nan (grid_query)
+	grid_query = make_nan()
 	return
 endif
 
@@ -361,7 +366,7 @@ end select
 
 ! Check against missing value and scale
 if (z == info%znan) then
-	call set_nan (z)
+	z = make_nan()
 else if (isnan(z)) then
 else
 	z = z * info%dz + info%z0
@@ -369,6 +374,7 @@ endif
 grid_query = z
 end function grid_query
 
+!***********************************************************************
 !*grid_lininter -- Bi-linear interpolation of buffered grid
 !+
 pure function grid_lininter (info, x, y)
@@ -407,7 +413,7 @@ integer(fourbyteint) :: jx,jy,jx1,jy1
 
 ! If x or y are NaN or beyond allowed range, return NaN
 if (.not.grid_inside (info, x, y)) then
-	call set_nan (grid_lininter)
+	grid_lininter = make_nan()
 	return
 endif
 
@@ -472,6 +478,7 @@ enddo
 grid_lininter = vtot / wtot * info%dz + info%z0
 end function grid_lininter
 
+!***********************************************************************
 !*grid_splinter -- Bi-cubic spline interpolation of buffered grid
 !+
 pure function grid_splinter (info, x, y)
@@ -479,7 +486,7 @@ use netcdf
 type(grid), intent(in) :: info
 real(eightbytereal), intent(in) :: x, y
 real(eightbytereal) :: grid_splinter
-
+!
 ! This function interpolates a buffered grid that was previously loaded
 ! using grid_load. Bi-cubic spline interpolation is used whenever possible.
 !
@@ -514,7 +521,7 @@ real(eightbytereal) :: xj,yj,z(6,6),zy(6),w(6),u(6)
 
 ! If x or y are NaN or beyond allowed range, return NaN
 if (.not.grid_inside (info, x, y)) then
-	call set_nan (grid_splinter)
+	grid_splinter = make_nan()
 	return
 endif
 
@@ -530,14 +537,14 @@ jy = jy - 2
 
 ! Check if spline window is completely within y-range
 if (jy < 0 .or. jy+5 >= info%ny) then
-	call set_nan (grid_splinter)
+	grid_splinter = make_nan()
 	return
 endif
 
 if (info%nxwrap == 0) then
 	! Check if spline window is completely within x-range
 	if (jx < 0 .or. jx+5 >= info%nx) then
-		call set_nan (grid_splinter)
+		grid_splinter = make_nan()
 		return
 	endif
 
@@ -611,13 +618,14 @@ end function grid_splinteru
 
 end function grid_splinter
 
+!***********************************************************************
 !*grid_x -- Get x-coordinate of grid pixel
 !+
 pure function grid_x (info, i)
 type(grid), intent(in) :: info
 integer(fourbyteint), intent(in) :: i
 real(eightbytereal) :: grid_x
-
+!
 ! This function returns the x-coordinate of a grid pixel.
 ! The input i is the index along the horizontal axis, running from 1 to
 ! info%nx. If i is out of range, NaN is returned.
@@ -630,7 +638,7 @@ real(eightbytereal) :: grid_x
 !  grid_x : x-coordinate of the grid pixel
 !-----------------------------------------------------------------------
 if (i < 1 .or. i > info%nx) then
-	call set_nan (grid_x)
+	grid_x = make_nan()
 else if (i == info%nx) then
 	grid_x = info%xmax
 else
@@ -638,13 +646,14 @@ else
 endif
 end function grid_x
 
+!***********************************************************************
 !*grid_y -- Get y-coordinate of grid pixel
 !+
 pure function grid_y (info, i)
 type(grid), intent(in) :: info
 integer(fourbyteint), intent(in) :: i
 real(eightbytereal) :: grid_y
-
+!
 ! This function returns the y-coordinate of a grid pixel.
 ! The input i is the index along the vertical axis, running from 1 to
 ! info%ny. If i is out of range, NaN is returned.
@@ -657,7 +666,7 @@ real(eightbytereal) :: grid_y
 !  grid_y : y-coordinate of the grid pixel
 !-----------------------------------------------------------------------
 if (i < 1 .or. i > info%ny) then
-	call set_nan (grid_y)
+	grid_y = make_nan()
 else if (i == info%ny) then
 	grid_y = info%ymax
 else
@@ -665,6 +674,7 @@ else
 endif
 end function grid_y
 
+!***********************************************************************
 !*grid_inside -- Check if coordinates are within grid boundaries
 !+
 pure function grid_inside (info, x, y)
@@ -688,15 +698,16 @@ else
 endif
 end function grid_inside
 
-!*set_nan -- Set variable to NaN
+!***********************************************************************
+!*make_nan -- Create a NaN value
 !+
-elemental subroutine set_nan (x)
-real(eightbytereal), intent(inout) :: x
+pure function make_nan ()
+real(eightbytereal) :: make_nan
 !
-! This routine set the double float x to NaN (Not-A-Number)
+! This function returns a double float NaN scalar
 !-----------------------------------------------------------------------
-x = 0d0
-x = x / x
-end subroutine set_nan
+make_nan = 0d0
+make_nan = make_nan / make_nan
+end function make_nan
 
 end module rads_grid
