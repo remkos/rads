@@ -20,7 +20,7 @@ include config.mk
 
 %.o:	%.mod
 
-OBJS1	= rads_netcdf.o rads_time.o rads_math.o rads_misc.o rads_grid.o xmlparse.o
+OBJS1	= rads_netcdf.o rads_time.o rads_math.o rads_misc.o rads_grid.o rads_geo.o xmlparse.o
 OBJS2	= rads.o
 OBJS3	= rads3.o
 OBJS	= $(OBJS1) $(OBJS2) $(OBJS3)
