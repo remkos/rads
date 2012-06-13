@@ -49,7 +49,7 @@ integer, parameter, private :: stderr = 0
 
 contains
 
-!&grid_load -- Load a grid into memory (NetCDF format)
+!*grid_load -- Load a grid into memory (NetCDF format)
 !+
 function grid_load (filenm, info)
 use netcdf
@@ -277,7 +277,7 @@ end subroutine grid_error
 
 end function grid_load
 
-!&grid_free -- Free grid buffer
+!*grid_free -- Free grid buffer
 !+
 elemental subroutine grid_free (info)
 type (grid), intent(inout) :: info
@@ -297,7 +297,7 @@ if (allocated(info%grid_dble)) deallocate(info%grid_dble)
 info%ntype = 0
 end subroutine grid_free
 
-!&grid_query -- Look-up value in buffered grid
+!*grid_query -- Look-up value in buffered grid
 !+
 pure function grid_query (info, x, y)
 use netcdf
@@ -369,7 +369,7 @@ endif
 grid_query = z
 end function grid_query
 
-!&grid_lininter -- Bi-linear interpolation of buffered grid
+!*grid_lininter -- Bi-linear interpolation of buffered grid
 !+
 pure function grid_lininter (info, x, y)
 use netcdf
@@ -472,7 +472,7 @@ enddo
 grid_lininter = vtot / wtot * info%dz + info%z0
 end function grid_lininter
 
-!&grid_splinter -- Bi-cubic spline interpolation of buffered grid
+!*grid_splinter -- Bi-cubic spline interpolation of buffered grid
 !+
 pure function grid_splinter (info, x, y)
 use netcdf
@@ -611,7 +611,7 @@ end function grid_splinteru
 
 end function grid_splinter
 
-!&grid_x -- Get x-coordinate of grid pixel
+!*grid_x -- Get x-coordinate of grid pixel
 !+
 pure function grid_x (info, i)
 type(grid), intent(in) :: info
@@ -638,7 +638,7 @@ else
 endif
 end function grid_x
 
-!&grid_y -- Get y-coordinate of grid pixel
+!*grid_y -- Get y-coordinate of grid pixel
 !+
 pure function grid_y (info, i)
 type(grid), intent(in) :: info
@@ -665,7 +665,7 @@ else
 endif
 end function grid_y
 
-!&grid_inside -- Check if coordinates are within grid boundaries
+!*grid_inside -- Check if coordinates are within grid boundaries
 !+
 pure function grid_inside (info, x, y)
 type(grid), intent(in) :: info
@@ -688,7 +688,7 @@ else
 endif
 end function grid_inside
 
-!&set_nan -- Set variable to NaN
+!*set_nan -- Set variable to NaN
 !+
 elemental subroutine set_nan (x)
 real(eightbytereal), intent(inout) :: x

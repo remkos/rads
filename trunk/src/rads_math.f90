@@ -40,7 +40,7 @@ type(math_ll), pointer :: top
 ! Arguments:
 !   n     : Number of elements for new data buffer
 !   top   : Pointer to the top of the stack
-!-
+!-----------------------------------------------------------------------
 type(math_ll), pointer :: temp
 allocate (temp)
 allocate (temp%data(n))
@@ -59,7 +59,7 @@ type(math_ll), pointer :: top
 !
 ! Argument:
 !   top   : Pointer to the top of the stack
-!-
+!-----------------------------------------------------------------------
 type(math_ll), pointer :: temp
 if (.not.associated(top)) return
 temp => top%prev
@@ -84,7 +84,7 @@ integer(fourbyteint) :: math_eval
 !
 ! Returned value:
 !  math_eval : 0 = no error, -1 = no matching command
-!-
+!-----------------------------------------------------------------------
 type(math_ll), pointer :: temp
 real(eightbytereal) :: value, nan
 real(eightbytereal), parameter :: pi = 4d0*atan(1d0), d2r = pi/180d0, r2d = 180d0/pi

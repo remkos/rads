@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! $Id:$
+! $Id$
 !
 ! Copyright (C) 2011  Remko Scharroo (Altimetrics LLC)
 ! See LICENSE.TXT file for copying and redistribution conditions.
@@ -40,7 +40,7 @@ logical :: checklon
 !  lon_bounds : longitude limits (degrees)
 !  lon        : longitude (degrees)
 !  checklon   : .true. if lon is outside limits, .false. otherwise.
-!-
+!-----------------------------------------------------------------------
 if (any(isnan(lon_bounds))) then
 	checklon = .false.
 	return

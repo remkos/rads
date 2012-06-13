@@ -1166,7 +1166,10 @@ character(len=*), intent(in) :: varname
 type(rads_varinfo), pointer, intent(inout) :: info
 real(eightbytereal), intent(out) :: data(:)
 logical, intent(in) :: skip_edit
-!-
+!
+! This routine is common to all rads_get_var_* routines. It should only
+! be called from those routines.
+!-----------------------------------------------------------------------
 type(rads_var), pointer :: var
 
 ! Check size of array
