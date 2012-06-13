@@ -43,26 +43,52 @@ end interface d_int
 contains
 
 !***********************************************************************
-!*strconcat -- Concatenate strings
+!*strtolower -- Convert string to lower case
 !+
-subroutine strconcat (val, string)
-character(len=*), intent(in) :: val(:)
-character(len=*), intent(out) :: string
+function strtolower (string) result (lower)
+character(len=*), intent(in) :: string
+character(len=len(string)) :: lower
 !
-! Concatenate character strings from array val(:) into a single character
-! string named string. Individual strings from val(:) are separated by
-! a single space.
+! Convert character string to all lower case letters, leaving all non-
+! alphabetical characters as is.
 !
-! Arguments
-!  val     : array of strings
-!  string  : concatenation of all strings val(:), separated by spaces
+! Arguments:
+!  string : String to be converted
+!  lower  : String returned in lower case
 !-----------------------------------------------------------------------
 integer :: i
-string = val(1)
-do i = 2,size(val)
-	string = trim(string) // ' ' // val(i)
+do i = 1,len(string)
+	if (string(i:i) >= 'A' .and. string(i:i) <= 'Z') then
+		lower(i:i) = achar(iachar(string(i:i)) + 32)
+	else
+		lower(i:i) = string(i:i)
+	endif
 enddo
-end subroutine strconcat
+end function strtolower
+
+!***********************************************************************
+!*strtoupper -- Convert string to upper case
+!+
+function strtoupper (string) result (upper)
+character(len=*), intent(in) :: string
+character(len=len(string)) :: upper
+!
+! Convert character string to all upper case letters, leaving all non-
+! alphabetical characters as is.
+!
+! Arguments:
+!  string : String to be converted
+!  upper  : String returned in upper case
+!-----------------------------------------------------------------------
+integer :: i
+do i = 1,len(string)
+	if (string(i:i) >= 'a' .and. string(i:i) <= 'z') then
+		upper(i:i) = achar(iachar(string(i:i)) - 32)
+	else
+		upper(i:i) = string(i:i)
+	endif
+enddo
+end function strtoupper
 
 !***********************************************************************
 !*chartrans -- Translate characters in a string
@@ -91,12 +117,8 @@ character(len=*), intent(in) :: from, to
 integer :: i, j, n
 n = min(len(from),len(to))
 do i = 1,len(string)
-	do j = 1,n
-		if (string(i:i) == from(j:j)) then
-			string(i:i) = to(j:j)
-			exit
-		endif
-	enddo
+	j = index(from,string(i:i))
+	if (j >= 1 .and. j <= n) string(i:i) = to(j:j)
 enddo
 end subroutine chartrans
 
