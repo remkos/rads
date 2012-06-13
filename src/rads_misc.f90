@@ -26,7 +26,7 @@ use typesizes
 ! real(eightbytereal) :: d_int
 !
 ! Convert an integer (or integer array) to a double, while taking into
-! account that the maximum value for that type of integer (127, 3276, etc)
+! account that the maximum value for that type of integer (127, 32767, etc)
 ! indicates NaN.
 !
 ! Arguments:
@@ -221,35 +221,6 @@ logical :: outofrange
 !-
 outofrange = (value < limits(1) .or. value > limits(2))
 end function outofrange
-
-!***********************************************************************
-!*checklon - Convert and verify longitude
-!+
-function checklon (lon_bounds, lon)
-real(eightbytereal), intent(in) :: lon_bounds(2)
-real(eightbytereal), intent(inout) :: lon
-logical :: checklon
-!
-! This function converts the logitude lon (in degrees) to within limits
-! lon_bounds, where lon_bounds(1) < lon_bounds(2). If lon is not within those
-! boundaries, checklon is set to .true.
-! The longitude will be wrapped (advanced or reduced by a multiple of 360
-! degrees) if needed.
-!
-! If either of the limits is NaN, no wrapping and no check is performed.
-!
-! Arguments:
-!  lon_bounds : longitude limits (degrees)
-!  lon        : longitude (degrees)
-!  checklon   : .true. if lon is outside limits, .false. otherwise.
-!-
-if (any(isnan(lon_bounds))) then
-	checklon = .false.
-	return
-endif
-lon = lon_bounds(1) + modulo (lon-lon_bounds(1),360d0)
-checklon = (lon > lon_bounds(2))
-end function checklon
 
 !***********************************************************************
 !&nint1 -- Round 8-byte real to 1-byte integer
