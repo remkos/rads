@@ -94,10 +94,7 @@ do i = 1,iargc()
 	else if (arg(:2) == '-d') then
 		singles = .false.
 	else if (arg(:2) == '-i') then
-		interpolant = arg(3:3)
-		if (interpolant == 'L') interpolant = 'l'
-		if (interpolant == 'C') interpolant = 'c'
-		if (interpolant == 'Q') interpolant = 'q'
+		interpolant = strtolower(arg(3:3))
 	else if (arg(:3) == 'dt=') then
 		read (arg(4:),*,iostat=ios) dt
 	else if (arg(:5) == '--dt=') then
@@ -150,7 +147,7 @@ allocate (selid(nsel))
 
 ! Open output netCDF file
 call nfs (nf90_create (filename, nf90_write, ncid))
-call nfs (nf90_def_dim (ncid, 'sat', 2, dimid(1)))
+call nfs (nf90_def_dim (ncid, 'track', 2, dimid(1)))
 call nfs (nf90_def_dim (ncid, 'xover', nf90_unlimited, dimid(2)))
 call def_var_sel (ncid, S(1)%lat, dimid(2:2), varid(1))
 call def_var_sel (ncid, S(1)%lon, dimid(2:2), varid(2))
@@ -197,7 +194,7 @@ call iqsort (idx, key, nr%trk)
 
 ! Add the track info to the netCDF file
 call nfs (nf90_redef (ncid))
-call nfs (nf90_def_dim (ncid, 'track', nr%trk, dimid(3)))
+call nfs (nf90_def_dim (ncid, 'pass', nr%trk, dimid(3)))
 call def_var (ncid, 'satid', 'satellite id', '', nf90_int1, dimid(3:3), varid(5))
 call def_var (ncid, 'cycle', 'cycle number', '', nf90_int2, dimid(3:3), varid(6))
 call def_var (ncid, 'pass', 'pass number', '', nf90_int2, dimid(3:3), varid(7))
