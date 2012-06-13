@@ -32,7 +32,7 @@ integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, rads_
 integer(fourbyteint), parameter :: rads_src_none = 0, rads_src_nc_var = 10, rads_src_nc_att = 11, rads_src_math = 20, &
 	rads_src_grid_lininter = 30, rads_src_grid_splinter = 31, rads_src_grid_query = 32, rads_src_constant = 40
 ! RADS4 warnings
-integer(fourbyteint), parameter :: rads_warn_xml_file = -1, rads_warn_alias_circular = -2, rads_warn_nc_file = -3
+integer(fourbyteint), parameter :: rads_warn_alias_circular = -2, rads_warn_nc_file = -3
 ! RADS4 errors
 integer(fourbyteint), parameter :: rads_noerr = 0, &
 	rads_err_nc_file = 1, rads_err_nc_parse = 2, rads_err_nc_close = 3, rads_err_memory = 4, &
@@ -321,7 +321,7 @@ integer(fourbyteint), intent(in), optional :: debug
 !  debug    : Optional: debug level (default = 0)
 !
 ! Error code:
-!  S%error  : rads_noerr, rads_err_xml_parse, rads_err_var, rads_warn_xml_file
+!  S%error  : rads_noerr, rads_err_xml_file, rads_err_xml_parse, rads_err_var
 !-----------------------------------------------------------------------
 integer(fourbyteint) :: i, k
 character(len=rads_naml) :: userroot
@@ -372,10 +372,27 @@ S%centroid = 0d0
 S%error = rads_noerr
 
 ! Read the global rads.xml setup file, the one in ~/.rads and the one in the current directory
-call rads_read_xml (S, trim(S%dataroot) // '/conf/rads.xml', .true.)
-call rads_read_xml (S, trim(userroot) // '/.rads/rads.xml', .false.)
-call rads_read_xml (S, 'rads.xml', .false.)
-if (present(xml) .and. xml /= '') call rads_read_xml (S, xml, .true.)
+call rads_read_xml (S, trim(S%dataroot) // '/conf/rads.xml')
+if (S%error == rads_err_xml_file) call rads_exit ('Required XML file '//trim(S%dataroot)//'/conf/rads.xml does not exist')
+call rads_read_xml (S, trim(userroot) // '/.rads/rads.xml')
+call rads_read_xml (S, 'rads.xml')
+
+! Now read the file <xml> if present
+! If it is not an absolute path name, also look for it in $RADSDATAROOT/conf as well as in ~/.rads
+if (present(xml) .and. xml /= '') then
+	call rads_read_xml (S, xml)
+	if (S%error /= rads_err_xml_file) then
+	else if (xml(1:1) == '/') then
+		call rads_exit ('Requested XML file ' // trim(xml) // ' does not exist')
+	else
+		call rads_read_xml (S, trim(S%dataroot) // '/conf/' // xml)
+		if (S%error == rads_err_xml_file) call rads_read_xml (S, trim(userroot) // '/.rads/' // xml)
+		if (S%error == rads_err_xml_file) then
+			call rads_message ('Requested XML file ' // trim(xml) // ' does not exist in current directory,')
+			call rads_exit ('nor in ' // trim(S%dataroot) // '/conf, nor in ' // trim(userroot) // '/.rads')
+		endif
+	endif
+endif
 
 ! If no phases are defined, then the satellite is not known
 if (.not.associated(S%phases)) call rads_exit ('Satellite '//sat(k:k+1)//' unknown')
@@ -385,7 +402,7 @@ i = k + 2
 if (sat(i:i) == '/' .or. sat(i:i) == ':') i = i + 1
 if (sat(i:) /= '') then
 	S%phase => rads_get_phase(S, sat(i:i))
-	if (.not.associated(S%phase)) call rads_exit ('No such mission phase '//sat(i:i)//' of satellite '//sat(k:k+1))
+	if (.not.associated(S%phase)) call rads_exit ('No such mission phase "'//sat(i:i)//'" of satellite "'//sat(k:k+1)//'"')
 	S%phase%dataroot = trim(S%dataroot) // '/' // S%sat // '/' // trim(sat(i:))
 	S%cycles(1:2) = S%phase%cycles
 	S%passes(1:2) = S%phase%passes
@@ -1211,10 +1228,6 @@ else ! Go look for alternative variable
 		data = S%nan
 	else
 		call rads_get_var_by_var (S, P, var, data, skip_edit)
-		! Copy a few variables upward
-		info%long_name = var%info%long_name
-		info%standard_name = var%info%standard_name
-		info%comment = var%info%comment
 		! When this returns, editing and statistics will have been done, so we should directly return
 		return
 	endif
@@ -1477,14 +1490,13 @@ end subroutine rads_get_var_common
 !***********************************************************************
 !*rads_read_xml -- Read RADS4 XML file
 !+
-subroutine rads_read_xml (S, filename, fatal)
+subroutine rads_read_xml (S, filename)
 use netcdf
 use xmlparse
 use rads_time
 use rads_misc
 type(rads_sat), intent(inout) :: S
 character(len=*), intent(in) :: filename
-logical, intent(in) :: fatal
 !
 ! This routine parses a RADS4 XML file and fills the <S> struct with
 ! information pertaining to the given satellite and all variable info
@@ -1499,7 +1511,7 @@ logical, intent(in) :: fatal
 !  fatal    : If .true., then all warnings are fatal.
 !
 ! Error code:
-!  S%error  : rads_noerr, rads_err_xml_parse, rads_warn_xml_file
+!  S%error  : rads_noerr, rads_err_xml_parse, rads_err_xml_file
 !-----------------------------------------------------------------------
 type(xml_parse) :: X
 integer, parameter :: max_lvl = 20
@@ -1519,13 +1531,10 @@ skip_lvl = 0
 
 ! Open XML file
 call xml_open (X, filename, .true.)
-if (.not.X%error) then
-else if (fatal) then
+! If failed, try with ".xml" extension (if not already)
+if (X%error .and. index(filename,'.xml') == 0) call xml_open (X, trim(filename) // '.xml', .true.)
+if (X%error) then
 	S%error = rads_err_xml_file
-	call rads_exit ('Required XML file '//trim(filename)//' does not exist')
-	return
-else
-	S%error = rads_warn_xml_file
 	return
 endif
 if (S%debug >= 2) write (*,*) 'Parsing XML file '//trim(filename)
@@ -1836,7 +1845,7 @@ character(len=*), intent(inout) :: string
 integer :: i, j, l
 character(len=8) :: action
 
-! Check for "action=
+! Check for "action="
 action = 'replace'
 do i = 1,nattr
 	if (attr(1,i) == 'action') action = attr(2,i)(:8)
@@ -1865,6 +1874,8 @@ case ('merge')
 		endif
 	enddo
 	return
+case default
+	call xmlparse_error ('Unknown option "action=' // trim(action) //'"')
 end select
 
 if (nval == 0) return
@@ -1884,7 +1895,7 @@ character(*), intent(in) :: string
 character(rads_naml) :: text
 write (text, 1300) trim(filename), X%lineno, string
 call rads_error (S, rads_err_xml_parse, text)
-1300 format ('Error parsing ',a,' at line ',i0,': ',a)
+1300 format ('Error parsing file ',a,' at line ',i0,': ',a)
 end subroutine xmlparse_error
 
 end subroutine rads_read_xml
@@ -2272,9 +2283,7 @@ character(len=*), intent(in) :: string
 ! Argument:
 !  string   : Error message
 !-----------------------------------------------------------------------
-character(len=rads_naml) :: progname
-call getarg (0, progname)
-write (stderr, '(a,": ",a)') trim(progname),trim(string)
+call rads_message (string)
 stop
 end subroutine rads_exit
 
@@ -2286,7 +2295,7 @@ type(rads_sat), intent(inout) :: S
 integer(fourbyteint), intent(in) :: ierr
 character(len=*), intent(in) :: string
 !
-! This routine prints an error message.
+! This routine prints an error message and sets the error code.
 !
 ! Arguments:
 !  S        : Satellite/mission dependent structure
@@ -2296,11 +2305,25 @@ character(len=*), intent(in) :: string
 ! Error code:
 !  S%error  : Will be set to ierr when not rads_noerr
 !-----------------------------------------------------------------------
+call rads_message (string)
+if (ierr /= rads_noerr) S%error = ierr
+end subroutine rads_error
+
+!***********************************************************************
+!*rads_message -- Print message to standard error
+!+
+subroutine rads_message (string)
+character(len=*), intent(in) :: string
+!
+! This routine prints a message to standard error.
+!
+! Arguments:
+!  string   : Error message
+!-----------------------------------------------------------------------
 character(len=rads_naml) :: progname
 call getarg (0, progname)
 write (stderr, '(a,": ",a)') trim(progname),trim(string)
-if (ierr /= rads_noerr) S%error = ierr
-end subroutine rads_error
+end subroutine rads_message
 
 !***********************************************************************
 !*rads_rev -- Get the library or program revision number
