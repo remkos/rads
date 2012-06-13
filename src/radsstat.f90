@@ -56,18 +56,18 @@ do i = 1,iargc()
 	call getarg(i,arg)
 	if (arg(:2) == '-d') then
 		period = period_day
-		read (arg(3:),*,iostat=ios) step
+		read (arg(3:), *, iostat=ios) step
 	else if (arg(:2) == '-p') then
 		period = period_pass
-		read (arg(3:),*,iostat=ios) step
+		read (arg(3:), *, iostat=ios) step
 		step = dble(S%passes(2))/nint(S%passes(2)/step)
 	else if (arg(:2) == '-c') then
 		period = period_cycle
-		read (arg(3:),*,iostat=ios) step
+		read (arg(3:), *, iostat=ios) step
 	else if (arg(:2) == '-b') then
 		wmode = 0
-		call chartrans(arg(3:),'-+x',',,,')
-		read (arg(5:),*,iostat=ios) dx,dy
+		call chartrans(arg(3:),'/-+x',',,,,')
+		read (arg(3:),*,iostat=ios) dx,dy
 	else if (arg(:2) == '-m') then
 		wmode = 1
 	else if (arg(:2) == '-a') then
@@ -77,10 +77,10 @@ do i = 1,iargc()
 	else if (arg(:2) == '-l') then
 		lstat = 2
 	else if (arg(:4) == 'res=') then
-		call chartrans(arg(5:),'-+x',',,,')
+		call chartrans(arg(5:),'/-+x',',,,,')
 		read (arg(5:),*) dx,dy
 	else if (arg(:6) == '--res=') then
-		call chartrans(arg(7:),'-+x',',,,')
+		call chartrans(arg(7:),'/-+x',',,,,')
 		read (arg(7:),*) dx,dy
 	endif
 enddo
@@ -112,7 +112,7 @@ do i = 1,S%nsel
 	l = len_trim(format_string)
 	! Add one decimal to the format
 	arg = S%sel(i)%info%format(2:)
-	call chartrans (arg,'.',' ')
+	call chartrans (arg,'.',',')
 	read (arg,*) j,k
 	write (format_string(l+1:),'(",",i0,"(1x,f",i0,".",i0,")")') 2*lstat,j+1,k+1
 enddo
