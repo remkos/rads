@@ -103,13 +103,13 @@ call xml_close (X)
 
 contains
 
-subroutine rads_setup (filenm)
-character(len=*) :: filenm
+subroutine rads_setup (filename)
+character(len=*) :: filename
 integer :: j
 
 ! Check if this file is satellite-specific
 do j = 1,nsat
-	if (index(filenm, 'getraw_'//satnm(j)) > 0) exit
+	if (index(filename, 'getraw_'//satnm(j)) > 0) exit
 enddo
 
 ! Set up the S structure
@@ -120,12 +120,13 @@ nullify (S%sel, S%phases)
 S%nvar = 0
 allocate (S%var(rads_var_chunk))
 S%var = rads_var ('', null(), .false., rads_nofield)
-call rads_read_xml (S, trim(radsdataroot) // '/conf/rads.xml', .true.)
-call rads_read_xml (S, trim(radsuserroot) // '/.rads/rads.xml', .false.)
+call rads_read_xml (S, trim(radsdataroot) // '/conf/rads.xml')
+if (S%error == rads_err_xml_file) call rads_exit ('Required XML file '//trim(radsdataroot)//'/conf/rads.xml does not exist')
+call rads_read_xml (S, trim(radsuserroot) // '/.rads/rads.xml')
 end subroutine rads_setup
 
-subroutine convert_rmf (filenm)
-character(len=*) :: filenm
+subroutine convert_rmf (filename)
+character(len=*) :: filename
 integer :: i, j, ix, iy, type
 type(rads_var), pointer :: var
 character(len=5) :: field
@@ -133,7 +134,7 @@ character(len=640) :: line, math(1), long_name, gridnm(1)
 logical :: dummy 
 
 ! Open RMF file
-open (10, file=filenm, status='old', iostat=i)
+open (10, file=filename, status='old', iostat=i)
 if (i /= 0) return
 
 ! Output XML
@@ -230,8 +231,8 @@ if (S%sat /= '??') call xml_put (X, 'if', attr, 0, string, 0, 'close')
 close (10)
 end subroutine convert_rmf
 
-subroutine convert_nml (filenm)
-character(len=*) :: filenm
+subroutine convert_nml (filename)
+character(len=*) :: filename
 integer :: i
 logical :: newmath, newqual
 type(rads_var), pointer :: var
@@ -248,7 +249,7 @@ factors(38) = -1d0
 options = 100
 
 ! Read NML file to be converted
-open (10, file=filenm, status='old', iostat=i)
+open (10, file=filename, status='old', iostat=i)
 if (i /= 0) return
 read (10, nml=getraw_nml, iostat=i)
 close (10)
