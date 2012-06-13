@@ -315,6 +315,9 @@ end function to16bits
 !+
 pure function make_nan ()
 real(eightbytereal) :: make_nan
+!
+! This function returns a double float NaN scalar
+!-----------------------------------------------------------------------
 make_nan = 0d0
 make_nan = make_nan / make_nan
 end function make_nan
