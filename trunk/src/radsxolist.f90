@@ -194,10 +194,10 @@ case ('s')
 	call reorder (trk(track(2,:))%satid < trk(track(1,:))%satid)
 	write (*,610) 'lower - higher satellite ID'
 case ('H')
-	call reorder (sat(trk(track(1,:))%satid)%period > sat(trk(track(2,:))%satid)%period)
+	call reorder (sat(trk(track(1,:))%satid)%period < sat(trk(track(2,:))%satid)%period)
 	write (*,610) 'higher - lower satellite'
 case ('h')
-	call reorder (sat(trk(track(2,:))%satid)%period > sat(trk(track(1,:))%satid)%period)
+	call reorder (sat(trk(track(2,:))%satid)%period < sat(trk(track(1,:))%satid)%period)
 	write (*,610) 'lower - higher satellite'
 case default
 	write (*,610) 'native'
