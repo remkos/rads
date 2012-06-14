@@ -2161,6 +2161,7 @@ GNU General Public License for more details.
 	<dt1hz>0.980469</dt1hz>
 	<inclination>92</inclination>
 	<frequency>13.575</frequency>
+	<xover_params>0.04 0.05</xover_params>
 	<phase name="a">
 		<mission>Multi-disciplinary Phase</mission>
 		<cycles>4 99</cycles>
@@ -2179,6 +2180,7 @@ GNU General Public License for more details.
 	<dt1hz>0.980469</dt1hz>
 	<inclination>98.54</inclination>
 	<frequency>13.8</frequency>
+	<xover_params>0.05 0.05</xover_params>
 	<phase name="a">
 		<mission>Calibration Phase</mission>
 		<cycles>1 46</cycles>
@@ -2243,6 +2245,7 @@ GNU General Public License for more details.
 	<dt1hz>0.980469</dt1hz>
 	<inclination>98.54</inclination>
 	<frequency>13.8</frequency>
+	<xover_params>0.05 0.05</xover_params>
 	<phase name="a">
 		<mission>Multi-disciplinary Phase</mission>
 		<cycles>0 200</cycles>
@@ -2259,6 +2262,7 @@ GNU General Public License for more details.
 	<dt1hz>0.979922</dt1hz>
 	<inclination>108.05</inclination>
 	<frequency>13.495</frequency>
+	<xover_params>0.05 0.15</xover_params>
 	<phase name="a">
 		<mission>Exact Repeat Mission</mission>
 		<cycles>37 223</cycles>
@@ -2269,12 +2273,23 @@ GNU General Public License for more details.
 	</phase>
 </if>
 
+<if sat="g3">
+	<satellite>GEOS-3</satellite>
+	<satid>1</satid>
+	<inclination>60</inclination>
+	<xover_params>0.20 0.80</xover_params>
+	<phase name="a">
+		<mission>Geodetic Mission</mission>
+	</phase>
+</if>
+
 <if sat="gs">
 	<satellite>GEOSAT</satellite>
 	<satid>3</satid>
 	<dt1hz>0.979922</dt1hz>
 	<inclination>108.05</inclination>
 	<frequency>13.5</frequency>
+	<xover_params>0.07 0.15</xover_params>
 	<phase name="a">
 		<mission>Exact Repeat Mission</mission>
 		<cycles>1 25</cycles>
@@ -2299,6 +2314,7 @@ GNU General Public License for more details.
 	<dt1hz>1.019577</dt1hz>
 	<inclination>66.04</inclination>
 	<frequency>13.575 5.3</frequency>
+	<xover_params>0.04 0.035</xover_params>
 	<phase name="a">
 		<mission>Exact Repeat Mission</mission>
 		<cycles>1 260</cycles>
@@ -2337,6 +2353,7 @@ GNU General Public License for more details.
 	<dt1hz>1.020152</dt1hz>
 	<inclination>66.04</inclination>
 	<frequency>13.575 5.3</frequency>
+	<xover_params>0.04 0.035</xover_params>
 	<phase name="a">
 		<mission>Exact Repeat Mission</mission>
 		<cycles>0 200</cycles>
@@ -2353,6 +2370,7 @@ GNU General Public License for more details.
 	<dt1hz>1.114000</dt1hz>
 	<inclination>98.54</inclination>
 	<frequency>13.575 3.2</frequency>
+	<xover_params>0.05 0.05</xover_params>
 	<phase name="b">
 		<mission>Multi-disciplinary Phase</mission>
 		<cycles>9 94</cycles>
@@ -2377,6 +2395,7 @@ GNU General Public License for more details.
 	<dt1hz>1.001040</dt1hz>
 	<inclination>66.04</inclination>
 	<frequency>13.65</frequency>
+	<xover_params>0.04 0.035</xover_params>
 	<phase name="a">
 		<mission>Exact Repeat Mission</mission>
 		<cycles>1 361</cycles>
@@ -2393,6 +2412,7 @@ GNU General Public License for more details.
 	<dt1hz>1.072414</dt1hz>
 	<inclination>66.04</inclination>
 	<frequency>13.6 5.3</frequency>
+	<xover_params>0.02 0.035</xover_params>
 	<phase name="a">
 		<mission>Exact Repeat Mission</mission>
 		<cycles>1 364</cycles>
@@ -2417,5 +2437,15 @@ GNU General Public License for more details.
 		<ref_pass>2002-09-20T03:08:57 98.50 369 1</ref_pass>
 		<start_time>1992-09-25</start_time>
 		<start_time>2002-09-20T02:40:50</start_time>
+	</phase>
+</if>
+
+<if sat="ss">
+	<satellite>SEASAT</satellite>
+	<satid>2</satid>
+	<inclination>108.05</inclination>
+	<xover_params>0.07 0.80</xover_params>
+	<phase name="a">
+		<mission>Geodetic Mission</mission>
 	</phase>
 </if>
