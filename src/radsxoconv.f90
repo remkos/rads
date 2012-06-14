@@ -40,12 +40,14 @@ type :: prod_
 endtype prod_
 type(prod_) :: a, x, t
 character(len=80) :: arg, filename = '', shortname
-integer(fourbyteint), parameter :: msat = 12
+integer(fourbyteint), parameter :: msat = 20
 type :: sat_
-	character(len=4) :: name
+	character(len=2) :: name
 	real(eightbytereal) :: period, altsig, orberr, inclination
 endtype sat_
 type(sat_) :: sat(msat)
+character(len=3*msat) :: satlist
+type(rads_sat) :: S
 integer(twobyteint), parameter :: bound(4) = int((/-180,180,-90,90/), twobyteint)
 integer(fourbyteint), parameter :: maxtrk = 32768
 logical :: l
@@ -58,20 +60,6 @@ x = prod_ ('', 0)
 
 ! Start with this-is message
 l = rads_version ('$Revision$')
-
-! Satellite definitions
-sat( 1) = sat_ ('g3', 6037.582d0, 0.20d0, 0.800d0,  60.00d0)
-sat( 2) = sat_ ('ss', 6037.582d0, 0.07d0, 0.800d0, 108.05d0)
-sat( 3) = sat_ ('gs', 6037.582d0, 0.07d0, 0.150d0, 108.05d0)
-sat( 4) = sat_ ('e1', 6035.928d0, 0.05d0, 0.050d0,  98.54d0)
-sat( 5) = sat_ ('tx', 6745.759d0, 0.02d0, 0.035d0,  66.04d0)
-sat( 6) = sat_ ('pn', 6745.759d0, 0.04d0, 0.035d0,  66.04d0)
-sat( 7) = sat_ ('e2', 6035.928d0, 0.05d0, 0.050d0,  98.54d0)
-sat( 8) = sat_ ('g1', 6037.582d0, 0.05d0, 0.150d0, 108.05d0)
-sat( 9) = sat_ ('j1', 6745.759d0, 0.04d0, 0.035d0,  66.04d0)
-sat(10) = sat_ ('n1', 6035.928d0, 0.05d0, 0.050d0,  98.54d0)
-sat(11) = sat_ ('j2', 6745.759d0, 0.04d0, 0.035d0,  66.04d0)
-sat(12) = sat_ ('c2', 5953.579d0, 0.07d0, 0.050d0,  92.50d0)
 
 ! Scan command line arguments
 do i = 1,iargc()
@@ -159,6 +147,24 @@ call nfs (nf90_get_var (ncid, get_varid('end_time'), trk%end_time))
 call nfs (nf90_get_var (ncid, get_varid('nr_xover'), trk%nr_xover))
 call nfs (nf90_get_var (ncid, get_varid('nr_alt'), trk%nr_alt))
 call get_var_2d (id_sla, sla)
+
+! Get essential satellite information
+! Older files only have IDs, newer have the satellite abbreviations
+if (nf90_get_att (ncid, get_varid('satid'), 'flag_meanings', satlist) == nf90_noerr) then
+	do i = 1,len_trim(satlist)/3+1
+		call rads_init (S, satlist(i*3-2:i*3-1))
+		sat(S%satid) = sat_ (S%sat, 2*S%phase%pass_seconds, &
+			S%xover_params(1), S%xover_params(2), S%inclination)
+	enddo
+else
+	satlist = 'g3 ss gs e1 tx pn e2 g1 j1 n1 j2 c2'
+	do i = 1,12
+		if (.not.any(trk%satid == i)) cycle
+		call rads_init (S, satlist(i*3-2:i*3-1))
+		sat(S%satid) = sat_ (S%sat, 2*S%phase%pass_seconds, &
+			S%xover_params(1), S%xover_params(2), S%inclination)
+	enddo
+endif
 
 600 format (/ &
 'File name              : ',a/ &
