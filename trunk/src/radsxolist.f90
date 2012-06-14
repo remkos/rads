@@ -39,32 +39,20 @@ character(len=256) :: fmt_string
 character(len=80) :: arg, filename
 character(len=1) :: mode = ''
 character(len=4) :: statname(5) = (/ 'min ', 'max ', 'mean', 'rms ', 'std ' /)
-integer(fourbyteint), parameter :: msat = 12
+integer(fourbyteint), parameter :: msat = 20
 type :: sat_
 	character(len=4) :: name
 	real(eightbytereal) :: period, altsig, orberr, inclination
 end type sat_
 type(sat_) :: sat(msat)
+character(len=3*msat) :: satlist
+type(rads_sat) :: S
 integer(fourbyteint), parameter :: maxtrk = 32768
 logical :: diff = .false., stat_only = .false.
 real(eightbytereal) :: t0 = 0d0, t1 = 0d0, lon0 = 0d0, lon1 = 0d0, lat0 = 0d0, lat1 = 0d0, dt0 = 0d0, dt1 = 0d0
 
 ! Initialize RADS or issue help
 call synopsis
-
-! Satellite definitions
-sat( 1) = sat_ ('g3', 6037.582d0, 0.20d0, 0.800d0,  60.00d0)
-sat( 2) = sat_ ('ss', 6037.582d0, 0.07d0, 0.800d0, 108.05d0)
-sat( 3) = sat_ ('gs', 6037.582d0, 0.07d0, 0.150d0, 108.05d0)
-sat( 4) = sat_ ('e1', 6035.928d0, 0.05d0, 0.050d0,  98.54d0)
-sat( 5) = sat_ ('tx', 6745.759d0, 0.02d0, 0.035d0,  66.04d0)
-sat( 6) = sat_ ('pn', 6745.759d0, 0.04d0, 0.035d0,  66.04d0)
-sat( 7) = sat_ ('e2', 6035.928d0, 0.05d0, 0.050d0,  98.54d0)
-sat( 8) = sat_ ('g1', 6037.582d0, 0.05d0, 0.150d0, 108.05d0)
-sat( 9) = sat_ ('j1', 6745.759d0, 0.04d0, 0.035d0,  66.04d0)
-sat(10) = sat_ ('n1', 6035.928d0, 0.05d0, 0.050d0,  98.54d0)
-sat(11) = sat_ ('j2', 6745.759d0, 0.04d0, 0.035d0,  66.04d0)
-sat(12) = sat_ ('c2', 5953.579d0, 0.07d0, 0.050d0,  92.50d0)
 
 ! Scan command line arguments
 do i = 1,iargc()
@@ -145,6 +133,24 @@ call nfs (nf90_get_var (ncid, get_varid('end_time'), trk%end_time))
 call nfs (nf90_get_var (ncid, get_varid('nr_xover'), trk%nr_xover))
 call nfs (nf90_get_var (ncid, get_varid('nr_alt'), trk%nr_alt))
 
+! Get essential satellite information
+! Older files only have IDs, newer have the satellite abbreviations
+if (nf90_get_att (ncid, get_varid('satid'), 'flag_meanings', satlist) == nf90_noerr) then
+	do i = 1,len_trim(satlist)/3+1
+		call rads_init (S, satlist(i*3-2:i*3-1))
+		sat(S%satid) = sat_ (S%sat, 2*S%phase%pass_seconds, &
+			S%xover_params(1), S%xover_params(2), S%inclination)
+	enddo
+else
+	satlist = 'g3 ss gs e1 tx pn e2 g1 j1 n1 j2 c2'
+	do i = 1,12
+		if (.not.any(trk%satid == i)) cycle
+		call rads_init (S, satlist(i*3-2:i*3-1))
+		sat(S%satid) = sat_ (S%sat, 2*S%phase%pass_seconds, &
+			S%xover_params(1), S%xover_params(2), S%inclination)
+	enddo
+endif
+
 ! Now load all the "data variables"
 do i = 1,nvar
 	call get_var_2d (id_track + i, var(:,:,i))
@@ -187,6 +193,12 @@ case ('S')
 case ('s')
 	call reorder (trk(track(2,:))%satid < trk(track(1,:))%satid)
 	write (*,610) 'lower - higher satellite ID'
+case ('H')
+	call reorder (sat(trk(track(1,:))%satid)%period > sat(trk(track(2,:))%satid)%period)
+	write (*,610) 'higher - lower satellite'
+case ('h')
+	call reorder (sat(trk(track(2,:))%satid)%period > sat(trk(track(1,:))%satid)%period)
+	write (*,610) 'lower - higher satellite'
 case default
 	write (*,610) 'native'
 end select
@@ -250,19 +262,20 @@ write (0,1300)
 1300 format (/ &
 'usage: radsxolist [options] filename ...' // &
 'Required argument:' / &
-'  filename          : Input xover file name (extension .nc)'// &
+'  filename            : Input xover file name (extension .nc)'// &
 'Optional arguments [options] are:'/ &
-'  lon=lon0,lon1     : specify longitude boundaries (deg)'/ &
-'  lat=lat0,lat1     : specify latitude boundaries (deg)'/ &
-'  t=t0,t1           : specify time selection'/ &
-'                      (optionally use ymd=, doy=, sec= for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)'/ &
-'  dt=[dtmin,]dtmax  : use only xovers with [dtmin <] dt < dtmax (days)'/&
-'  -d                : Write out xover differences (default is both values)'/ &
-'  -o[A|a|S|s|T|t]   : Order of the xover values (or difference):'/ &
-'                      A|a = Ascending-Descending or vv'/ &
-'                      S|s = Higher-lower satellite ID or vv'/ &
-'                      T|t = Later-earlier measurement or vv'/ &
-'  -s                : Print statistics only')
+'  lon=lon0,lon1       : specify longitude boundaries (deg)'/ &
+'  lat=lat0,lat1       : specify latitude boundaries (deg)'/ &
+'  t=t0,t1             : specify time selection'/ &
+'                        (optionally use ymd=, doy=, sec= for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)'/ &
+'  dt=[dtmin,]dtmax    : use only xovers with [dtmin <] dt < dtmax (days)'/&
+'  -d                  : Write out xover differences (default is both values)'/ &
+'  -o[A|a|H|h|S|s|T|t] : Order of the xover values (or difference):'/ &
+'                        A|a = ascending-descending or vv'/ &
+'                        H|h = higher-lower satellite or vv'/ &
+'                        S|s = higher-lower satellite ID or vv'/ &
+'                        T|t = later-earlier measurement or vv'/ &
+'  -s                  : Print statistics only')
 stop
 end subroutine synopsis
 

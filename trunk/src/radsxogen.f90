@@ -42,7 +42,7 @@ real(eightbytereal) :: dt(msat)
 type(rads_sat) :: S(msat)
 integer(fourbyteint) :: i, j, nsat = 0, nsel = 0, reject = -1, ios, debug, ncid, dimid(3), start(2), varid(vbase)
 logical :: duals = .true., singles = .true., l
-character(len=80) :: arg, filename = 'radsxogen.nc'
+character(len=80) :: arg, satlist, filename = 'radsxogen.nc'
 character(len=1) :: interpolant = 'q'
 type :: nr_
 	integer :: test, shallow, xdat, ins, gap, xdt, xout, trk
@@ -111,9 +111,11 @@ do i = iargc(),1,-1
 	endif
 enddo
 
-! Set all unspecified dt equal to the previous
+! Set all unspecified dt equal to the previous and create a string of sat names
+satlist = S(1)%sat
 do i = 2,nsat
 	if (isnan(dt(i))) dt(i) = dt(i-1)
+	satlist = trim(satlist) // ' ' // S(i)%sat
 enddo
 
 ! If SLA is among the results, remember which index that is
@@ -147,12 +149,13 @@ allocate (selid(nsel))
 
 ! Open output netCDF file
 call nfs (nf90_create (filename, nf90_write, ncid))
-call nfs (nf90_def_dim (ncid, 'track', 2, dimid(1)))
+call nfs (nf90_def_dim (ncid, 'leg', 2, dimid(1)))
 call nfs (nf90_def_dim (ncid, 'xover', nf90_unlimited, dimid(2)))
 call def_var_sel (ncid, S(1)%lat, dimid(2:2), varid(1))
 call def_var_sel (ncid, S(1)%lon, dimid(2:2), varid(2))
 call def_var_sel (ncid, S(1)%time, dimid(1:2), varid(3))
 call def_var (ncid, 'track', 'track number', '', nf90_int4, dimid(1:2), varid(4))
+call nfs (nf90_put_att (ncid, varid(4), 'comment', 'Internal track number relating to satid/cycle/pass below'))
 do i = 1,nsel
 	call def_var_sel (ncid, S(1)%sel(i), dimid(1:2), selid(i))
 enddo
@@ -194,8 +197,11 @@ call iqsort (idx, key, nr%trk)
 
 ! Add the track info to the netCDF file
 call nfs (nf90_redef (ncid))
-call nfs (nf90_def_dim (ncid, 'pass', nr%trk, dimid(3)))
-call def_var (ncid, 'satid', 'satellite id', '', nf90_int1, dimid(3:3), varid(5))
+call nfs (nf90_def_dim (ncid, 'track', nr%trk, dimid(3)))
+call def_var (ncid, 'satid', 'satellite ID', '', nf90_int1, dimid(3:3), varid(5))
+call nfs (nf90_put_att (ncid, varid(5), 'flag_values', int(S(1:nsat)%satid, onebyteint)))
+call nfs (nf90_put_att (ncid, varid(5), 'flag_meanings', trim(satlist)))
+call nfs (nf90_put_att (ncid, varid(5), 'comment', 'Satellite IDs relate to the different missions'))
 call def_var (ncid, 'cycle', 'cycle number', '', nf90_int2, dimid(3:3), varid(6))
 call def_var (ncid, 'pass', 'pass number', '', nf90_int2, dimid(3:3), varid(7))
 call def_var (ncid, 'equator_lon', 'longitude of equator crossing', 'degrees_east', nf90_double, dimid(3:3), varid(8))
