@@ -92,9 +92,10 @@ type :: rads_phase
 	real(eightbytereal) :: start_time, end_time      ! Start time and end time of this phase
 	real(eightbytereal) :: ref_time, ref_lon         ! Time and longitude of equator crossing of "reference pass"
 	integer(fourbyteint) :: ref_cycle, ref_pass      ! Cycle and pass number of "reference pass"
+	real(eightbytereal) :: pass_seconds              ! Length of pass in seconds
 	real(eightbytereal) :: repeat_days               ! Length of repeat period in days
-	integer(fourbyteint) :: repeat_nodal             ! Length of repeat period in nodal days
 	real(eightbytereal) :: repeat_shift              ! Eastward shift of track pattern for near repeats
+	integer(fourbyteint) :: repeat_nodal             ! Length of repeat period in nodal days
 	integer(fourbyteint) :: repeat_passes            ! Number of passes per repeat period
 	type(rads_cyclist), pointer :: subcycles         ! Subcycle definition (if requested)
 endtype
@@ -109,6 +110,7 @@ type :: rads_sat
 	real(eightbytereal) :: eqlonlim(0:1,2)           ! Equator longitude limits for ascending and descending passes
 	real(eightbytereal) :: inclination               ! Satellite inclination (deg)
 	real(eightbytereal) :: centroid(3)               ! Longitude, latitude, distance (in radians) selection criteria
+	real(eightbytereal) :: xover_params(2)           ! Crossover parameters used in radsxoconv
 	integer(fourbyteint) :: cycles(3),passes(3)      ! Cycle and pass limits and steps
 	integer(fourbyteint) :: error                    ! Error code (positive is fatal, negative is warning)
 	integer(fourbyteint) :: nvar, nsel               ! Number of available and selected variables and aliases
@@ -460,8 +462,7 @@ nullify (varopt)
 call rads_load_options (options, isatopt, n, xml, debug)
 if (n < 1) call rads_exit ('Failed to find "-S" or "--sat=" on command line')
 call rads_init_sat_0d (S, options(isatopt(1)), xml, debug)
-call rads_parse_options (S, options(:isatopt(1)-1), varopt)
-call rads_parse_options (S, options(isatopt(1)+1:), varopt)
+call rads_parse_options (S, options, varopt)	! It is OK that -S is one of these
 if (associated(varopt)) call rads_parse_varlist (S, varopt)
 deallocate (options)
 end subroutine rads_init_cmd_0d
@@ -880,7 +881,7 @@ else
 	cc = cycle
 	pp = pass
 endif
-d = S%phase%repeat_days * 86400d0 / S%phase%repeat_passes ! Length in seconds of single pass
+d = S%phase%pass_seconds
 P%equator_time = S%phase%ref_time + ((cc - S%phase%ref_cycle) * S%phase%repeat_passes + (pp - S%phase%ref_pass)) * d
 P%start_time = P%equator_time - 0.5d0 * d
 P%end_time = P%equator_time + 0.5d0 * d
@@ -1640,6 +1641,8 @@ do
 		! This assumes 1000 km altitude to get an approximate node rate (in rad/s)
 		node_rate = -1.21306d-6 * cos(S%inclination*rad)
 		phase%repeat_nodal = nint(phase%repeat_days * (7.292115d-5 - node_rate) / 7.272205d-5)
+		! Determine length in seconds of single pass
+		phase%pass_seconds = phase%repeat_days * 86400d0 / phase%repeat_passes
 
 	case ('dt1hz')
 		read (val(:nval), *, iostat=ios) S%dt1hz
@@ -1649,6 +1652,9 @@ do
 
 	case ('frequency')
 		read (val(:nval), *, iostat=ios) S%frequency
+	
+	case ('xover_params')
+		read (val(:nval), *, iostat=ios) S%xover_params
 
 	case ('alias')
 		if (has_name (field)) call rads_set_alias (S, name, val(1), field)
@@ -2503,7 +2509,7 @@ else
 endif
 
 ! Initialize the new phase information and direct the pointer
-S%phases(n) = rads_phase (name, '', '', (/999,0/), (/9999,0/), S%nan, S%nan, S%nan, S%nan, 0, 0, S%nan, 0, S%nan, 0, null())
+S%phases(n) = rads_phase (name, '', '', (/999,0/), (/9999,0/), S%nan, S%nan, S%nan, S%nan, 0, 0, S%nan, S%nan, S%nan, 0, 0, null())
 phase => S%phases(n)
 
 end function rads_get_phase
@@ -2534,7 +2540,7 @@ do i = 1,size(S%phases)-1
 	if (time < S%phases(i+1)%start_time) exit
 enddo
 
-d = S%phases(i)%repeat_days * 86400d0 / S%phases(i)%repeat_passes ! Length in seconds of single pass
+d = S%phases(i)%pass_seconds
 t0 = S%phases(i)%ref_time - (S%phases(i)%ref_pass - 0.5d0) * d ! Time of start of ref_cycle
 rads_time_to_cycle = floor((time - t0) / (S%phases(i)%repeat_days * 86400d0)) + S%phases(i)%ref_cycle
 
@@ -2573,7 +2579,7 @@ do i = 1,size(S%phases)-1
 	if (cycle < S%phases(i+1)%cycles(1)) exit
 enddo
 
-d = S%phases(i)%repeat_days * 86400d0 / S%phases(i)%repeat_passes ! Length in seconds of single pass
+d = S%phases(i)%pass_seconds
 t0 = S%phases(i)%ref_time - (S%phases(i)%ref_pass - 0.5d0) * d ! Time of start of ref_cycle
 
 if (associated(S%phases(i)%subcycles)) then
