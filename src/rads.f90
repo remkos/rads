@@ -2222,6 +2222,7 @@ end subroutine rads_set_format
 !*rads_stat_0d -- Print the RADS statistics for a given satellite
 !+
 subroutine rads_stat_0d (S, unit)
+use rads_time
 type(rads_sat), intent(in) :: S
 integer(fourbyteint), intent(in), optional :: unit
 !
@@ -2231,7 +2232,7 @@ integer(fourbyteint) :: iunit, i
 iunit = 6
 if (present(unit)) iunit = unit
 write (iunit, 700)
-write (iunit, 710) trim(S%satellite), S%sat
+write (iunit, 710) trim(S%satellite), S%sat, timestamp(), trim(S%command)
 
 write (iunit, 720) 'PASSES QUERIED', sum(S%pass_stat)
 write (iunit, 722)
@@ -2261,7 +2262,7 @@ enddo
 write (iunit, 700)
 
 700 format (134('#'))
-710 format ('# Editing statistics for ',a,' (',a,')')
+710 format ('# Editing statistics for ',a,' (',a,')'/'# Created: ',a,' UTC: ',a)
 720 format ('#'/'# ',a,t53,i10/'#')
 721 format ('#'/'# ',a,t43,2i10/'#')
 722 format ('#',t43,'  REJECTED  SELECTED       LOWER       UPPER        STEP')
