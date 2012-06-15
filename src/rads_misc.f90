@@ -360,55 +360,70 @@ c(3) = a(1) * b(2) - a(2) * b(1)
 end function cross_product
 
 !***********************************************************************
-!*splitarg -- Split command line argument in option and value
+!*splitarg -- Split command line argument in option and option-argument
 !+
-subroutine splitarg (arg, option, value)
+subroutine splitarg (arg, option, optarg, pos)
 character(len=*), intent(in) :: arg
-character(len=*), intent(out) :: option, value
+character(len=*), intent(out) :: option, optarg
+integer(fourbyteint), optional :: pos
 !
 ! This routine splits command line arguments in forms like
-! arg:    '-A'  '-x1'  '-oH'  '--lon=0,10'  'sel=sla'  'filename'
-! into and option (-? or --*) and a value. For the above examples:
-! option: '-A'  '-x'   '-o'   '--lon'       '--sel'    ''
-! value:   ''   '1'    'H'    '0,10'        'sla'      ''
+! arg:    '-A'  '-x1'  '--lon=0,10'  'sel=sla'  lim:sla=-1,1  'filename'
+! into and option (-? or --*) and an argument. For the above examples:
+! option: '-A'  '-x'   '--lon'       '--sel'    '--lim'       ''
+! optarg: ''    '1'    '0,10'        'sla'      'sla=-1,1'    ''
 !
 ! Thus the option is either -? (dash followed by a single character), or
 ! --* (double-dash followed by one or more characters).
 ! Note that for the old-style argument 'sel=', the prefix '--' is added.
 ! When this is not an recognisable option, a blank string is returned.
 !
-! The value, or optional argument, is what follows -? or the '=' sign.
+! The optarg, or optional argument, is what follows -? or the ':' or the
+! '=' sign (whatever comes first).
 ! When there is no optional argument, or arg is not a recognisable option,
 ! a blank string is returned.
 !
+! Finally, pos returns the position of the equal sign in optarg.
+!
 ! Arguments:
 !  arg    : Command line argument
-!  option : Option part of the argument
-!  value  : Value part of the argument
+!  option : Identifier of the option
+!  optarg : Argument of the option
+!  pos    : Optional: position of the equal sign in optarg
 !-----------------------------------------------------------------------
-integer :: j
+integer :: i, j
+i = index(arg, ':')
+j = index(arg, '=')
 if (arg(:2) == '--') then
-	j = index(arg, '=')
-	if (j > 0) then
+	if (i > 0) then
+		option = arg(:i-1)
+		optarg = arg(i+1:)
+		j = j - i
+	else if (j > 0) then
 		option = arg(:j-1)
-		value = arg(j+1:)
+		optarg = arg(j+1:)
+		j = 0
 	else
 		option = arg
-		value = ''
+		optarg = ''
 	endif
 else if (arg(:1) == '-') then
 	option = arg(:2)
-	value = arg(3:)
+	optarg = arg(3:)
+	j = j - 2
+else if (j == 0) then
+	option = ''
+	optarg = ''
+else if (i > 0) then
+	option = '--' // arg(:i-1)
+	optarg = arg(i+1:)
+	j = j - i
 else
-	j = index(arg, '=')
-	if (j > 0) then
-		option = '--' // arg(:j-1)
-		value = arg(j+1:)
-	else
-		option = ''
-		value = ''
-	endif
+	option = '--' // arg(:j-1)
+	optarg = arg(j+1:)
+	j = 0
 endif
+if (present(pos)) pos = j
 end subroutine splitarg
 
 elemental function d_int1 (i)
