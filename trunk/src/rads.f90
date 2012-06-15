@@ -2173,21 +2173,26 @@ character(len=*), intent(inout) :: string
 ! Error code:
 !  S%error  : rads_noerr, rads_err_var
 !-----------------------------------------------------------------------
-real(eightbytereal) :: r(4), c
+real(eightbytereal) :: r(4), x
 integer :: ios
 call chartrans (string, '/', ',')
 r = S%nan
 read (string, *, iostat=ios) r
 if (isnan(r(4))) then ! Circular region
-	if (r(2)-r(3) < -90d0 .or. r(2)+r(3) > 90d0) then
-		S%lon%info%limits = r(1) + (/-180d0,180d0/)
-	else
-		c = cos(max(abs(r(2)-r(3)),abs(r(2)+r(3)))*rad)
-		S%lon%info%limits = r(1) + r(3) / (/ -c, c /)
+	r(3) = abs(r(3))
+	! For longitude limits, do some trigonometry to determine furthest meridians
+	x = sin(r(3)*rad) / cos(r(2)*rad)
+	if (r(3) < 90d0 .and. x >= 0d0 .and. x <= 1d0) then
+		x = asin(x)/rad
+	else ! Circle includes either pole
+		x = 180d0
 	endif
+	S%lon%info%limits = r(1) + (/ -x, x /)
+	! For latitude limits, add and subtract radius from centroid latitude
 	S%lat%info%limits(1) = max(-90d0,r(2)-r(3))
 	S%lat%info%limits(2) = min( 90d0,r(2)+r(3))
-	S%centroid = r(1:3)*rad	! Convert longitude, latitude, radius from degrees to radians
+	! Convert longitude, latitude and radius from degrees to radians
+	S%centroid = r(1:3)*rad
 else ! Rectangular region
 	S%lon%info%limits = r(1:2)
 	S%lat%info%limits = r(3:4)
