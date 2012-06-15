@@ -19,6 +19,7 @@ module rads_time
 
 contains
 
+!***********************************************************************
 !*ymd2mjd -- Convert YY, MM and DD to MJD
 !+
 pure subroutine ymd2mjd (yy, mm, dd, mjd)
@@ -92,6 +93,7 @@ if (dd > cal(mm+1,leap)) mm = mm + 1
 dd = dd - cal(mm,leap)
 end subroutine mjd2ymd
 
+!***********************************************************************
 !*mjd2yd -- Convert MJD to YY and DDD
 !+
 pure subroutine mjd2yd (mjd, yy, ddd)
@@ -116,6 +118,7 @@ yy = j + 1901
 ddd = ddd - j*365 - j/4 + 1 ! Day of year
 end subroutine mjd2yd
 
+!***********************************************************************
 !*sec85ymdhms -- Convert SEC85 to YY, MM, DD, HH, MN, SS
 !+
 pure subroutine sec85ymdhms (sec, yy, mm, dd, hh, mn, ss)
@@ -148,6 +151,7 @@ mn = floor(tt/60d0)
 ss = tt - mn * 60
 end subroutine sec85ymdhms
 
+!***********************************************************************
 !*strf1985f -- Construct date string from seconds since 1985
 !+
 elemental function strf1985f (sec, sep)
@@ -181,6 +185,7 @@ write (strf1985f, '(i4.4,2("-",i2.2),a1,2(i2.2,":"),i2.2,f7.6)') &
 	yy, mm, dd, x, hh, mn, floor(ss), modulo(ss,1d0)
 end function strf1985f
 
+!***********************************************************************
 !*strp1985f -- Parse date string and convert it to seconds since 1985
 !+
 elemental function strp1985f (string)
@@ -208,6 +213,7 @@ call ymd2mjd(yy,mm,dd,mjd)
 strp1985f = (mjd - 46066) * 86400d0 + hh * 3600d0 + mn * 60d0 + ss + fs
 end function strp1985f
 
+!***********************************************************************
 !*sec85 -- Convert MJD or YYMMDD or YYDDD to SEC85
 !+
 pure function sec85 (i, date)
@@ -325,6 +331,7 @@ end select
 
 end function sec85
 
+!***********************************************************************
 !*datearg -- Processes standard datation arguments
 !+
 function datearg (arg, t0, t1, dt)
@@ -410,5 +417,33 @@ endif
 if (abs(tt0) < 1d49) t0 = sec85(mode,tt0)
 datearg = .true.
 end function datearg
+
+!***********************************************************************
+!*datestamp - Create character string with current date
+!+
+function datestamp ()
+character(len=10) :: datestamp
+!
+! This function produces the current date (in UTC) in the form
+! 2012-06-15
+!-----------------------------------------------------------------------
+integer :: values(9)
+call gmtime(time(),values)
+write (datestamp, '(i4.4,2("-",i2.2))') values(6)+1900,values(5)+1,values(4)
+end function datestamp
+
+!***********************************************************************
+!*timestamp - Create character string with current date
+!+
+function timestamp ()
+character(len=19) :: timestamp
+!
+! This function produces the current date (in UTC) in the form
+! 2012-06-15 02:58:15
+!-----------------------------------------------------------------------
+integer :: values(9)
+call gmtime(time(),values)
+write (timestamp, '(i4.4,2("-",i2.2)," ",i2.2,2(":",i2.2))') values(6)+1900,values(5)+1,values(4:1:-1)
+end function timestamp
 
 end module rads_time
