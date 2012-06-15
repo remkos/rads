@@ -69,8 +69,10 @@ do i = 1,iargc()
 		call chartrans (value, '/', ',')
 		read (value,*,iostat=ios) S(1)%sel(2)%info%limits,res(2)
 	case ('--res')
+		res(2) = S(1)%nan
 		call chartrans (value, '/', ',')
 		read (value,*,iostat=ios) res
+		if (isnan(res(2))) res(2) = res(1)
 	case ('-c')
 		c(1) = (value /= 'y')
 		c(2) = (value /= 'x') 
@@ -165,7 +167,7 @@ write (*,1300)
 'Program specific [program_options] are:'/ &
 '  --x=x0,x1[,dx]    : set x-range and interval (def: as set by default limits and --res=)'/ &
 '  --y=y0,y1[,dy]    : set y-range and interval (def: as set by default limits and --res=)'/ &
-'  --res=dx,dy       : set resolution in x and y (def:1,1)'/ &
+'  --res=dx[,dy]     : set resolution in x and y (def:1)'/ &
 '  --var=x,y,z       : variables for x, y and z (def:lon,lat,sla)'/ &
 '  --min=minnr       : minimum number of points per grid cell (def:2)'/ &
 '  --grd=gridname    : create netCDF grid (suppresses ASCII)'/ &
