@@ -56,9 +56,17 @@ function sfdist (lat0, lon0, lat1, lon1)
 real(eightbytereal), intent(in) :: lat0, lon0, lat1, lon1
 real(eightbytereal) :: sfdist
 !
-! Compute spherical distance between two points of given geocentric latitude
-! and longitude. This function is optimized for computing very small spherical
-! distances.
+! Compute spherical distance between two points of given geocentric
+! latitude and longitude.
+! To avoid rounding errors at small distances, we use the haversine
+! formula which is optimized for computing very small spherical
+! distances, but only has inaccuracies determining distances to
+! antipodal points.
+!
+! References:
+! - R.W. Sinnott, "Virtues of the Haversine", Sky and Telescope,
+!   vol. 68, no. 2, p. 159, 1984.
+! - http://en.wikipedia.org/wiki/Great-circle_distance
 !
 ! Arguments:
 !  lat0, lon0 : Geocentic latitude and longitude of one point (rad).
@@ -67,7 +75,7 @@ real(eightbytereal) :: sfdist
 !-----------------------------------------------------------------------
 real(eightbytereal) :: s
 s = sin((lat0-lat1)/2d0)**2 + cos(lat0)*cos(lat1)*sin((lon0-lon1)/2d0)**2
-sfdist = asin(2d0*sqrt(s*(1-s)))
+sfdist = 2d0*asin(sqrt(s))
 end function sfdist
 
 end module rads_geo
