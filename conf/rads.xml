@@ -299,6 +299,7 @@ GNU General Public License for more details.
 	<source>REAPER project, combined solution</source>
 	<units>m</units>
 	<data>alt_reaper</data>
+	<backup>nan</backup>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
@@ -309,6 +310,7 @@ GNU General Public License for more details.
 	<source>REAPER project, DEOS solution</source>
 	<units>m</units>
 	<data>alt_reaper_deos</data>
+	<backup>nan</backup>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
@@ -319,6 +321,7 @@ GNU General Public License for more details.
 	<source>REAPER project, GFZ solution</source>
 	<units>m</units>
 	<data>alt_reaper_gfz</data>
+	<backup>nan</backup>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
@@ -329,6 +332,7 @@ GNU General Public License for more details.
 	<source>REAPER project, ESOC solution</source>
 	<units>m</units>
 	<data>alt_reaper_esoc</data>
+	<backup>nan</backup>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
