@@ -2803,8 +2803,6 @@ character(len=*), intent(in), optional :: name
 integer(fourbyteint) :: l, e
 logical :: exist
 character(len=26) :: date(3)
-character(len=10) :: yymmdd
-integer :: values(9)
 S%error = rads_noerr
 
 ! Build the filename, make directory if needed
@@ -2832,7 +2830,7 @@ if (nft(nf90_create(P%filename, nf90_write+nf90_nofill, P%ncid))) then
 endif
 
 ! Define the principle dimension
-if (nft(nf90_def_dim (P%ncid, 'time', P%ndata, values(1)))) then
+if (nft(nf90_def_dim (P%ncid, 'time', P%ndata, l))) then
 	call rads_error (S, rads_err_nc_create, 'Error creating time dimension of ' // trim(P%filename))
 	return
 endif
@@ -2857,12 +2855,10 @@ if (ndata > 0) then
 endif
 e = e + nf90_put_att(P%ncid, nf90_global, 'original', P%original)
 
-call gmtime(time(),values)
-write (yymmdd, '(i4.4,2("-",i2.2))') values(6)+1900,values(5)+1,values(4)
 if (allocated(P%history)) then
-	e = e + nf90_put_att(P%ncid, nf90_global, 'history', yymmdd//': '//trim(S%command)//rads_linefeed//trim(P%history(1)))
+	e = e + nf90_put_att(P%ncid, nf90_global, 'history', datestamp()//': '//trim(S%command)//rads_linefeed//trim(P%history(1)))
 else
-	e = e + nf90_put_att(P%ncid, nf90_global, 'history', yymmdd//': '//trim(S%command))
+	e = e + nf90_put_att(P%ncid, nf90_global, 'history', datestamp()//': '//trim(S%command))
 endif
 if (e > 0) call rads_error (S, rads_err_nc_create, 'Error writing global attributes to '//trim(P%filename))
 end subroutine rads_create_pass
