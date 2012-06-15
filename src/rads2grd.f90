@@ -25,8 +25,9 @@ program rads2grd
 ! usage: rads2grd sat=<sat> sel=x,y,z [RADS_options] [options]
 !-----------------------------------------------------------------------
 use rads
+use rads_misc
 
-character(len=80) :: arg, grid_name='', format_string=''
+character(len=rads_naml) :: arg, grid_name='', format_string='', option, value
 integer(fourbyteint) :: minnr=2, n(2), k(2), i, j, l, cycle, pass, ios
 real(eightbytereal) :: lo(2), hi(2), res(2)=1d0, x, y
 logical :: c(2)=.false.
@@ -52,34 +53,34 @@ do j = 1,msat
 	if (S(j)%nsel == 0) then
 		call rads_parse_varlist (S(j), 'lon,lat,sla')
 	else if (S(j)%nsel /= 3) then
-		call rads_exit ('--var= needs exactly three elements')
+		call rads_exit ('-V|--var= needs exactly three elements')
 	endif
 enddo
 
 ! Scan command line arguments
 do i = 1,iargc()
-	call getarg(i,arg)
-	l = 1
-	if (arg(:2) == '--') l = 3
-	if (arg(l:l+1) == 'x=') then
-		read (arg(l+2:),*,iostat=ios) S(1)%sel(1)%info%limits,res(1)
-	else if (arg(l:l+1) == 'y=') then
-		read (arg(l+2:),*,iostat=ios) S(1)%sel(2)%info%limits,res(2)
-	else if (arg(l:l+3) == 'res=') then
-		read (arg(l+4:),*) res
-	else if (arg(:3) == '-cx') then
-		c(1) = .true.
-	else if (arg(:3) == '-cy') then
-		c(2) = .true.
-	else if (arg(:2) == '-c') then
-		c = .true.
-	else if (arg(l:l+3) == 'min=') then
-		read (arg(l+4:),*) minnr
-	else if (arg(l:l+3) == 'grd=') then
-		grid_name = arg(l+4:)
-	else if (arg(l:l+3) == 'fmt=') then
-		format_string = arg(l+4:)
-	endif
+	call getarg (i,arg)
+	call splitarg (arg, option, value)
+	select case (option)
+	case ('--x','-x')
+		call chartrans (value, '/', ',')
+		read (value,*,iostat=ios) S(1)%sel(1)%info%limits,res(1)
+	case ('--y', '-y')
+		call chartrans (value, '/', ',')
+		read (value,*,iostat=ios) S(1)%sel(2)%info%limits,res(2)
+	case ('--res')
+		call chartrans (value, '/', ',')
+		read (value,*,iostat=ios) res
+	case ('-c')
+		c(1) = (value /= 'y')
+		c(2) = (value /= 'x') 
+	case ('--min')
+		read (value,*) minnr
+	case ('--grd')
+		grid_name = value
+	case ('--fmt')
+		format_string = value
+	end select
 enddo
 
 ! Set up the grid cells
@@ -87,7 +88,6 @@ forall (j=1:2)
 	lo(j) = S(1)%sel(j)%info%limits(1)
 	hi(j) = S(1)%sel(j)%info%limits(2)
 end forall
-
 where (c)
 	lo = lo + 0.5d0 * res
 	hi = hi - 0.5d0 * res
@@ -157,7 +157,7 @@ contains
 
 !***********************************************************************
 
-subroutine synopsis
+subroutine synopsis ()
 if (rads_version ('$Revision$','Quickly grid RADS data to xyz or netCDF grid')) return
 call rads_synopsis ()
 write (*,1300)
@@ -166,7 +166,7 @@ write (*,1300)
 '  --x=x0,x1[,dx]    : set x-range and interval (def: as set by default limits and --res=)'/ &
 '  --y=y0,y1[,dy]    : set y-range and interval (def: as set by default limits and --res=)'/ &
 '  --res=dx,dy       : set resolution in x and y (def:1,1)'/ &
-'  --sel=x,y,z       : selection codes for x, y and z (def:lon,lat,sla)'/ &
+'  --var=x,y,z       : variables for x, y and z (def:lon,lat,sla)'/ &
 '  --min=minnr       : minimum number of points per grid cell (def:2)'/ &
 '  --grd=gridname    : create netCDF grid (suppresses ASCII)'/ &
 '  --fmt=format      : format to be used for ASCII output (default is determined by variables)'/ &
@@ -192,7 +192,7 @@ end subroutine update_stat
 !***********************************************************************
 ! Write out the header
 
-subroutine write_header
+subroutine write_header ()
 integer :: j
 
 600 format ('# Grid of RADS variables'/'#')
@@ -213,7 +213,7 @@ end subroutine write_header
 !***********************************************************************
 ! Write out xyz grid
 
-subroutine write_xyz_grid
+subroutine write_xyz_grid ()
 integer :: kx, ky
 if (format_string == '') format_string = '(' // trim(S(1)%sel(1)%info%format) // ',1x,' // &
 	trim(S(1)%sel(2)%info%format) // ',2(1x,' // trim(S(1)%sel(3)%info%format) // '),1x,i0)'
@@ -229,7 +229,7 @@ end subroutine write_xyz_grid
 !***********************************************************************
 ! Write out netCDF grid
 
-subroutine write_nc_grid
+subroutine write_nc_grid ()
 use netcdf
 use rads_netcdf
 use rads_time
