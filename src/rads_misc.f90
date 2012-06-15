@@ -359,6 +359,58 @@ c(2) = a(3) * b(1) - a(1) * b(3)
 c(3) = a(1) * b(2) - a(2) * b(1)
 end function cross_product
 
+!***********************************************************************
+!*splitarg -- Split command line argument in option and value
+!+
+subroutine splitarg (arg, option, value)
+character(len=*), intent(in) :: arg
+character(len=*), intent(out) :: option, value
+!
+! This routine splits command line arguments in forms like
+! arg:    '-A'  '-x1'  '-oH'  '--lon=0,10'  'sel=sla'  'filename'
+! into and option (-? or --*) and a value. For the above examples:
+! option: '-A'  '-x'   '-o'   '--lon'       '--sel'    ''
+! value:   ''   '1'    'H'    '0,10'        'sla'      ''
+!
+! Thus the option is either -? (dash followed by a single character), or
+! --* (double-dash followed by one or more characters).
+! Note that for the old-style argument 'sel=', the prefix '--' is added.
+! When this is not an recognisable option, a blank string is returned.
+!
+! The value, or optional argument, is what follows -? or the '=' sign.
+! When there is no optional argument, or arg is not a recognisable option,
+! a blank string is returned.
+!
+! Arguments:
+!  arg    : Command line argument
+!  option : Option part of the argument
+!  value  : Value part of the argument
+!-----------------------------------------------------------------------
+integer :: j
+if (arg(:2) == '--') then
+	j = index(arg, '=')
+	if (j > 0) then
+		option = arg(:j-1)
+		value = arg(j+1:)
+	else
+		option = arg
+		value = ''
+	endif
+else if (arg(:1) == '-') then
+	option = arg(:2)
+	value = arg(3:)
+else
+	j = index(arg, '=')
+	if (j > 0) then
+		option = '--' // arg(:j-1)
+		value = arg(j+1:)
+	else
+		option = ''
+		value = ''
+	endif
+endif
+end subroutine splitarg
+
 elemental function d_int1 (i)
 integer(onebyteint), intent(in) :: i
 real(eightbytereal) :: d_int1
