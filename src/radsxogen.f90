@@ -36,6 +36,7 @@ use rads
 use netcdf
 use rads_netcdf
 use rads_misc
+use rads_time
 
 integer(fourbyteint), parameter :: msat = 10, vbase = 13, mtrk = 500000
 real(eightbytereal) :: dt(msat)
@@ -140,7 +141,7 @@ else
 endif
 write (*, '(/"Satellite  Cycles    Passes  Delta-time cutoff (days)")')
 do i = 1,nsat
-	write (*, '(a,i5,i4,2i5,f8.3)') S(i)%satellite, S(i)%cycles(1:2), S(i)%passes(1:2), dt_days(S(i),dt(i))
+	write (*, '(a,i5,i4,2i5,f8.3)') S(i)%satellite, S(i)%cycles(1:2), S(i)%passes(1:2), dt_secs(S(i),dt(i))/86400d0
 enddo
 
 ! Do further initialisations
@@ -156,6 +157,10 @@ call def_var_sel (ncid, S(1)%lon, dimid(2:2), varid(2))
 call def_var_sel (ncid, S(1)%time, dimid(1:2), varid(3))
 call def_var (ncid, 'track', 'track number', '', nf90_int4, dimid(1:2), varid(4))
 call nfs (nf90_put_att (ncid, varid(4), 'comment', 'Internal track number relating to satid/cycle/pass below'))
+call nfs (nf90_put_att (ncid, nf90_global, 'Conventions', 'CF-1.5'))
+call nfs (nf90_put_att (ncid, nf90_global, 'title', 'RADS 4.0 crossover file'))
+call nfs (nf90_put_att (ncid, nf90_global, 'reference_document', 'RADS Data Manual, Issue 4.0'))
+call nfs (nf90_put_att (ncid, nf90_global, 'history', timestamp()//': '//trim(S(1)%command)))
 do i = 1,nsel
 	call def_var_sel (ncid, S(1)%sel(i), dimid(1:2), selid(i))
 enddo
@@ -261,18 +266,21 @@ stop
 end subroutine synopsis
 
 !***********************************************************************
-! Function to convert time interval to days
+! Function to convert requested time interval to seconds
+! Note that we DO NOT use repeat_days because that would give a terribly
+! long time for geodetic orbits (like c2 and j1/c). Thus we use the length
+! of the subcycle instead
 
-function dt_days (S, dt)
+function dt_secs (S, dt)
 type(rads_sat), intent(in) :: S
 real(eightbytereal), intent(in) :: dt
-real(eightbytereal) :: dt_days
+real(eightbytereal) :: dt_secs
 if (dt > 0d0) then
-	dt_days = dt
+	dt_secs = dt * 86400d0
 else
-	dt_days = -dt * S%phase%repeat_days
+	dt_secs = -dt * S%phase%pass_seconds * S%phase%passes(2)
 endif
-end function dt_days
+end function dt_secs
 
 !***********************************************************************
 ! Define variables for the output file
@@ -336,7 +344,7 @@ else
 endif
 
 ! See if there is any chance of a temporal overlap between S1 and S2
-dt = min (dt_days(S1,dt1), dt_days(S2,dt2)) * 86400d0
+dt = min (dt_secs(S1,dt1), dt_secs(S2,dt2))
 t0 = rads_cycle_to_time (S1, S1%cycles(1)) - dt
 t1 = rads_cycle_to_time (S1, S1%cycles(2)) + S1%phase%repeat_days * 86400d0 + dt
 t2 = rads_cycle_to_time (S2, S2%cycles(1))

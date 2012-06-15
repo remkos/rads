@@ -193,9 +193,10 @@ end subroutine update_stat
 ! Write out the header
 
 subroutine write_header
+use rads_time
 integer :: j
 
-600 format ('# Grid of RADS variables'/'#')
+600 format ('# Grid of RADS variables'/'#'/'# Created: ',a,' UTC: ',a/'#')
 610 format ('# Satellite : ',a,'/',a/'# Cycles    :',i5,' -',i5/'# Passes    :',i5,' -',i5/'#')
 620 format ('# Output columns per grid cell:'/ &
 '#   (1) ',a,' [',a,']'/ &
@@ -203,7 +204,7 @@ integer :: j
 '# (3-4) mean and stddev of ',a,' [',a,']'/ &
 '#   (5) nr of measurements')
 
-write (*,600)
+write (*,600) timestamp(),trim(S(1)%command)
 do j = 1,msat
 	if (S(j)%sat /= '') write (*,610) trim(S(j)%sat),trim(S(j)%phase%name),S(j)%cycles(1:2),S(j)%passes(1:2)
 enddo
@@ -232,37 +233,39 @@ end subroutine write_xyz_grid
 subroutine write_nc_grid
 use netcdf
 use rads_netcdf
+use rads_time
 integer(fourbyteint) :: ncid,varid(5),dimid(2),k
 
-call nfs(nf90_create(grid_name,nf90_write+nf90_nofill,ncid))
-call nfs(nf90_put_att(ncid,nf90_global,'title',grid_name))
-call nfs(nf90_put_att(ncid,nf90_global,'history',S(1)%command))
-if (all(c)) call nfs(nf90_put_att(ncid,nf90_global,'node_offset',1))
+call nfs (nf90_create(grid_name,nf90_write+nf90_nofill,ncid))
+call nfs (nf90_put_att (ncid, nf90_global, 'Conventions', 'CF-1.5'))
+call nfs (nf90_put_att(ncid,nf90_global,'title',grid_name))
+call nfs (nf90_put_att(ncid,nf90_global,'history',timestamp()//': '//S(1)%command))
+if (all(c)) call nfs (nf90_put_att(ncid,nf90_global,'node_offset',1))
 
 do k = 1,2
 	call nf90_def_axis(ncid,S(1)%sel(k)%name,S(1)%sel(k)%info%long_name,S(1)%sel(k)%info%units,n(k), &
 		S(1)%sel(k)%info%limits(1),S(1)%sel(k)%info%limits(2),dimid(k),varid(k))
 enddo
 
-call nfs(nf90_def_var(ncid,'mean'  ,nf90_real,dimid,varid(3)))
-call nfs(nf90_def_var(ncid,'stddev',nf90_real,dimid,varid(4)))
-call nfs(nf90_def_var(ncid,'nr'    ,nf90_int ,dimid,varid(5)))
-call nfs(nf90_put_att(ncid,varid(3),'long_name','mean of '//trim(S(1)%sel(3)%info%long_name)))
-call nfs(nf90_put_att(ncid,varid(4),'long_name','std dev of '//trim(S(1)%sel(3)%info%long_name)))
-call nfs(nf90_put_att(ncid,varid(5),'long_name','number of points per cell'))
+call nfs (nf90_def_var(ncid,'mean'  ,nf90_real,dimid,varid(3)))
+call nfs (nf90_def_var(ncid,'stddev',nf90_real,dimid,varid(4)))
+call nfs (nf90_def_var(ncid,'nr'    ,nf90_int ,dimid,varid(5)))
+call nfs (nf90_put_att(ncid,varid(3),'long_name','mean of '//trim(S(1)%sel(3)%info%long_name)))
+call nfs (nf90_put_att(ncid,varid(4),'long_name','std dev of '//trim(S(1)%sel(3)%info%long_name)))
+call nfs (nf90_put_att(ncid,varid(5),'long_name','number of points per cell'))
 do k = 3,4
-   call nfs(nf90_put_att(ncid,varid(k),'units',trim(S(1)%sel(3)%info%units)))
-   call nfs(nf90_put_att(ncid,varid(k),'_FillValue',real(S(1)%nan)))
+   call nfs (nf90_put_att(ncid,varid(k),'units',trim(S(1)%sel(3)%info%units)))
+   call nfs (nf90_put_att(ncid,varid(k),'_FillValue',real(S(1)%nan)))
 enddo
-call nfs(nf90_enddef(ncid))
+call nfs (nf90_enddef(ncid))
 
 call nf90_put_axis(ncid,varid(1))
 call nf90_put_axis(ncid,varid(2))
 
-call nfs(nf90_put_var(ncid,varid(3),box%mean))
-call nfs(nf90_put_var(ncid,varid(4),box%sum2))
-call nfs(nf90_put_var(ncid,varid(5),box%nr))
-call nfs(nf90_close(ncid))
+call nfs (nf90_put_var(ncid,varid(3),box%mean))
+call nfs (nf90_put_var(ncid,varid(4),box%sum2))
+call nfs (nf90_put_var(ncid,varid(5),box%nr))
+call nfs (nf90_close(ncid))
 end subroutine write_nc_grid
 
 !***********************************************************************
