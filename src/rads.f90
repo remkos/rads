@@ -113,7 +113,7 @@ type :: rads_sat
 	real(eightbytereal) :: xover_params(2)           ! Crossover parameters used in radsxoconv
 	integer(fourbyteint) :: cycles(3),passes(3)      ! Cycle and pass limits and steps
 	integer(fourbyteint) :: error                    ! Error code (positive is fatal, negative is warning)
-	integer(fourbyteint) :: debug                    ! Silent (0), verbose (1), or debug level
+	integer(fourbyteint) :: debug                    ! Quiet (-1), normal (0), verbose (1), or debug level
 	integer(fourbyteint) :: pass_stat(7)             ! Statistics of rejection at start of rads_open_pass
 	integer(fourbyteint) :: total_read, total_inside ! Total number of measurements read and inside region
 	integer(fourbyteint) :: nvar, nsel               ! Number of available and selected variables and aliases
@@ -606,6 +606,9 @@ do iarg = 1,nopts
 	else if (options(iarg)(k:k+5) == 'debug=' .or. options(iarg)(:2) == '-v') then
 		debug = debug + 1
 		read (options(iarg)(j+1:), *, iostat=ios) debug
+		iopt(iarg) = nsat*10+3
+	else if (options(iarg)(k:k+4) == 'quiet' .or. options(iarg)(:2) == '-q') then
+		debug = -1
 		iopt(iarg) = nsat*10+3
 	else
 		iopt(iarg) = nsat*10
@@ -2343,6 +2346,7 @@ integer(fourbyteint), intent(in) :: ierr
 character(len=*), intent(in) :: string
 !
 ! This routine prints an error message and sets the error code.
+! The message is subpressed when -q is used (S%debug < 0)
 !
 ! Arguments:
 !  S        : Satellite/mission dependent structure
@@ -2352,7 +2356,7 @@ character(len=*), intent(in) :: string
 ! Error code:
 !  S%error  : Will be set to ierr when not rads_noerr
 !-----------------------------------------------------------------------
-call rads_message (string)
+if (S%debug >= 0) call rads_message (string)
 if (ierr /= rads_noerr) S%error = ierr
 end subroutine rads_error
 
@@ -2500,6 +2504,7 @@ write (iunit, 1300) trim(progname)
 '  --opt:i=j               : set option for data item i to j (now alias:var1=var2)'/ &
 '  --h=h0,h1               : specify range for SLA (m) (now sla=h0,h1)'// &
 'Common [rads_options] are:'/ &
+'  -q, --quiet             : suppress warning messages (but keeps fatal error messages)' / &
 '  -v, --debug=level       : set debug level'/ &
 '  --args=filename         : get any of the above arguments from filename (one argument per line)'/ &
 '  --help                  : this syntax massage'/ &
