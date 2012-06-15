@@ -193,10 +193,9 @@ end subroutine update_stat
 ! Write out the header
 
 subroutine write_header
-use rads_time
 integer :: j
 
-600 format ('# Grid of RADS variables'/'#'/'# Created: ',a,' UTC: ',a/'#')
+600 format ('# Grid of RADS variables'/'#')
 610 format ('# Satellite : ',a,'/',a/'# Cycles    :',i5,' -',i5/'# Passes    :',i5,' -',i5/'#')
 620 format ('# Output columns per grid cell:'/ &
 '#   (1) ',a,' [',a,']'/ &
@@ -204,7 +203,7 @@ integer :: j
 '# (3-4) mean and stddev of ',a,' [',a,']'/ &
 '#   (5) nr of measurements')
 
-write (*,600) timestamp(),trim(S(1)%command)
+write (*,600)
 do j = 1,msat
 	if (S(j)%sat /= '') write (*,610) trim(S(j)%sat),trim(S(j)%phase%name),S(j)%cycles(1:2),S(j)%passes(1:2)
 enddo
