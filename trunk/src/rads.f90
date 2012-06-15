@@ -301,6 +301,29 @@ interface rads_stat
 	module procedure rads_stat_1d
 end interface rads_stat
 
+!***********************************************************************
+!*rads_parse_varlist -- Parse a string of variables
+!+
+! subroutine rads_parse_varlist (S, string)
+! type (rads_sat), intent(inout) :: S
+! character(len=*), intent(in) :: string <or> string(:)
+!
+! Parse the string <string> of comma- or slash-separated names of variables.
+! This will allocate the array S%sel and update counter S%nsel.
+!
+! Arguments:
+!  S        : Satellite/mission dependent structure
+!  string   : String of variables
+!
+! Error codes:
+!  S%error  : rads_err_var
+!-----------------------------------------------------------------------
+private :: rads_parse_varlist_0d, rads_parse_varlist_1d
+interface rads_parse_varlist
+	module procedure rads_parse_varlist_0d
+	module procedure rads_parse_varlist_1d
+end interface rads_parse_varlist
+
 contains
 
 !***********************************************************************
@@ -484,36 +507,34 @@ end subroutine rads_init_sat_1d
 subroutine rads_init_cmd_0d (S)
 type(rads_sat), intent(inout) :: S
 integer :: sopt(1), nsat, debug
-character(len=640), pointer :: options(:), varopt
+character(len=640), pointer :: options(:)
 integer, pointer :: iopt(:)
-nullify (varopt)
 call rads_load_options (options, iopt, nsat, debug)
 if (nsat < 1) call rads_exit ('Failed to find "-S" or "--sat=" on command line')
 if (nsat > 1) call rads_exit ('Too many "-S" or "--sat=" on command line')
 sopt = minloc (iopt, iopt==11) ! Position of the -S option
 ! The next two "pack"s isolate the -X options and all other options
 call rads_init_sat_0d_xml (S, options(sopt(1)), pack(options, mod(iopt,10)==2), debug)
-call rads_parse_options (S, pack(options, mod(iopt,10)==0), varopt)
-if (associated(varopt)) call rads_parse_varlist (S, varopt)
+call rads_parse_options (S, pack(options, mod(iopt,10)==0))
+call rads_parse_varlist (S, pack(options, mod(iopt,10)==4))
 deallocate (options)
 end subroutine rads_init_cmd_0d
 
 subroutine rads_init_cmd_1d (S)
 type(rads_sat), intent(inout) :: S(:)
 integer :: i, sopt(1), nsat, debug
-character(len=640), pointer :: options(:), varopt
+character(len=640), pointer :: options(:)
 integer, pointer :: iopt(:)
 S%sat = ''
 S%error = rads_noerr
 call rads_load_options (options, iopt, nsat, debug)
 if (nsat < 1) call rads_exit ('Failed to find "-S" or "--sat=" on command line')
 do i = 1,nsat
-	nullify (varopt)
 	sopt = minloc (iopt, iopt==i*10+1) ! Position of i-th -S option
 	! The next two "pack"s isolate the -X options and all other options pertinent to the i-th -S option
 	call rads_init_sat_0d_xml (S(i), options(sopt(1)), pack(options, iopt==2 .or. iopt==i*10+2), debug)
-	call rads_parse_options (S(i), pack(options, iopt==0 .or. iopt==i*10), varopt)
-	if (associated(varopt)) call rads_parse_varlist (S(i), varopt)
+	call rads_parse_options (S(i), pack(options, iopt==0 .or. iopt==i*10))
+	call rads_parse_varlist (S(i), pack(options, mod(iopt,10)==4))
 enddo
 deallocate (options)
 end subroutine rads_init_cmd_1d
@@ -540,8 +561,9 @@ integer, intent(out), optional :: debug
 ! The array <iopt> will contain the identifiers of the various options.
 ! They are given as <nsat>*10+<type>, where <nsat> is 0 before the first
 ! -S option, 1 starting with the first -S option, 2 starting with the second
-! -S option, etc, and <type> is 1 for -S, 2 for -X, 2 for -v, 0 for all
-! other options. The value <nsat> returns the total amount of -S options.
+! -S option, etc, and <type> is 1 for -S, 2 for -X, 3 for -v, 4 for -V,
+! 0 for all other.
+! The value <nsat> returns the total amount of -S options.
 !
 ! Finally, <debug> gives the result of the '-v' or '--debug=' options.
 !
@@ -610,6 +632,9 @@ do iarg = 1,nopts
 	else if (options(iarg)(k:k+4) == 'quiet' .or. options(iarg)(:2) == '-q') then
 		debug = -1
 		iopt(iarg) = nsat*10+3
+	else if (options(iarg)(k:k+3) == 'sel=' .or. options(iarg)(k:k+3) == 'var=' .or. &
+		options(iarg)(:2) == '-V') then
+		iopt(iarg) = nsat*10+4
 	else
 		iopt(iarg) = nsat*10
 	endif
@@ -619,12 +644,11 @@ end subroutine rads_load_options
 !***********************************************************************
 !*rads_parse_options -- Parse RADS options
 !+
-subroutine rads_parse_options (S, options, varopt)
+subroutine rads_parse_options (S, options)
 use rads_time
 use rads_misc
 type(rads_sat), intent(inout) :: S
-character(len=*) :: options(:)
-character(len=*), pointer :: varopt
+character(len=*), intent(in) :: options(:)
 !
 ! This routine fills the <S> struct with the information pertaining
 ! to a given satellite and mission as read from the options in the
@@ -636,7 +660,6 @@ character(len=*), pointer :: varopt
 ! Arguments:
 !  S       : Satellite/mission dependent structure
 !  options : Array of options (usually command line arguments)
-!  varopt  : Argument following -V or --var= (if found)
 !-----------------------------------------------------------------------
 integer :: i
 do i = 1,size(options)
@@ -647,68 +670,77 @@ if (S%error /= rads_noerr) call rads_exit ('Error parsing command line arguments
 contains
 
 subroutine rads_parse_option (arg)
-character(len=*), target, intent(inout) :: arg
-integer :: ios, i, j, k, k0, k1
+character(len=*), target, intent(in) :: arg
+integer :: ios, j, k, k0, k1
 real(eightbytereal) :: val(2)
+character(len=rads_naml) :: opt, optarg
 ! Scan a single command line argument (option)
-i = index(arg,':')
-j = index(arg,'=')
-k = 1
-if (arg(1:2) == '--') k = 3
-if (arg(1:1) == '-' .and. j == 0) j = 2
-if (arg(1:1) == '-' .and. i == 0) i = 2
+call splitarg (arg, opt, optarg, j)
 val = S%nan
-if (arg(:2) == '-C' .or. arg(k:k+5) == 'cycle=') then
-	call chartrans(arg(j+1:),'/-x',',,,')
+select case (opt)
+case ('-C', '--cycle')
 	S%cycles(2) = -1
 	S%cycles(3) = 1
-	read (arg(j+1:), *, iostat=ios) S%cycles
+	call chartrans(opt,'/-x',',,,')
+	read (optarg, *, iostat=ios) S%cycles
 	if (S%cycles(2) < 0) S%cycles(2) = S%cycles(1)
-else if (arg(:2) == '-P' .or. arg(k:k+4) == 'pass=') then
-	call chartrans(arg(j+1:),'/-x',',,,')
+case ('-P', '--pass')
 	S%passes(2) = -1
 	S%passes(3) = 1
-	read (arg(j+1:), *, iostat=ios) S%passes
+	call chartrans(optarg,'/-x',',,,')
+	read (optarg, *, iostat=ios) S%passes
 	if (S%passes(2) < 0) S%passes(2) = S%passes(1)
-else if (arg(:2) == '-R') then
-	call rads_set_region (S, arg(3:))
-else if (arg(k:k+3) == 'lat=' .or. arg(k:k+3) == 'lon=' .or. arg(k:k+4) == 'time=' &
-	.or. arg(k:k+3) == 'sla=' .or. arg(k:k+3) == 'lim:' .or. arg(:2) == '-L') then
-	call rads_set_limits (S, arg(i+1:j-1), string=arg(j+1:))
-else if (arg(k:k+5) == 'alias:' .or. arg(:2) == '-A') then
-	call rads_set_alias (S, arg(i+1:j-1), arg(j+1:))
-else if (arg(k:k+3) == 'fmt:' .or. arg(:2) == '-F') then
-	call rads_set_format (S, arg(i+1:j-1), arg(j+1:))
-else if (datearg(arg(k:), val(1), val(2))) then
-	call rads_set_limits (S, 'time', val(1), val(2))
-else if (arg(k:k+3) == 'sel=' .or. arg(k:k+3) == 'var=' .or. arg(:2) == '-V') then
-	varopt => arg
+case ('-R')
+	call rads_set_region (S, optarg)
+case ('--lat', '--lon', '--time', '--sla')
+	call rads_set_limits (S, opt(3:), string=optarg)
+case ('-L', '--lim')
+	call rads_set_limits (S, optarg(:j-1), string=optarg(j+1:))
+case ('-A', '--alias')
+	call rads_set_alias (S, optarg(:j-1), optarg(j+1:))
+case ('-F', '--fmt')
+	call rads_set_format (S, optarg(:j-1), optarg(j+1:))
 
 ! The next are only for compatibility with RADS 3
-else if (arg(k:k+1) == 'h=') then
-	call rads_set_limits (S, 'sla', string=arg(j+1:))
-else if (arg(k:k+3) == 'opt:') then
-	call rads_set_alias (S, arg(i+1:j-1), arg(i+1:j-1)//arg(j+1:))
-else if (arg(k:k+3) == 'opt=') then
-	k0 = j + 1
-	k1 = len_trim(arg)
-	do k = j+1,k1
-		if (k == k1 .or. arg(k+1:k+1) == ',' .or. arg(k+1:k+1) == '/') then
-			call rads_set_alias (S, arg(k0:k-2), arg(k0:k))
-			k0 = k + 2
+case ('--h')
+	call rads_set_limits (S, 'sla', string=optarg)
+case ('--opt')
+	if (j > 0) then
+		if (len_trim(optarg) == j+1) then
+			optarg(j:j) = '0'
+			call rads_set_alias (S, optarg(:j-1), optarg)
+		else
+			call rads_set_alias (S, optarg(:j-1), optarg(:j-1)//optarg(j+1:))
 		endif
-	enddo
-endif
+	else
+		k0 = 1
+		k1 = len_trim(optarg)
+		do k = 1,k1
+			if (k == k1 .or. optarg(k+1:k+1) == ',' .or. optarg(k+1:k+1) == '/') then
+				call rads_set_alias (S, optarg(k0:k-2), optarg(k0:k))
+				k0 = k + 2
+			endif
+		enddo
+	endif
+
+! Finally try data arguments
+case default
+	if (datearg(arg(:3), val(1), val(2))) then
+		call rads_set_limits (S, 'time', val(1), val(2))
+	else if (datearg(arg, val(1), val(2))) then
+		call rads_set_limits (S, 'time', val(1), val(2))
+	endif
+end select
 end subroutine rads_parse_option
 
 end subroutine rads_parse_options
 
 !***********************************************************************
-!*rads_parse_varlist -- Parse a string of variables
+!*rads_parse_varlist_0d -- Parse a string of variables
 !+
-subroutine rads_parse_varlist (S, string)
+subroutine rads_parse_varlist_0d (S, string)
 type (rads_sat), intent(inout) :: S
-character(len=*) :: string
+character(len=*), intent(in) :: string
 !
 ! Parse the string <string> of comma- or slash-separated names of variables.
 ! This will allocate the array S%sel and update counter S%nsel.
@@ -774,7 +806,16 @@ do i = k,l
 		i0 = i + 2
 	endif
 enddo
-end subroutine rads_parse_varlist
+end subroutine rads_parse_varlist_0d
+
+subroutine rads_parse_varlist_1d (S, string)
+type (rads_sat), intent(inout) :: S
+character(len=*), intent(in) :: string(:)
+integer :: i
+do i = 1,size(string)
+	call rads_parse_varlist_0d (S, string(i))
+enddo
+end subroutine rads_parse_varlist_1d
 
 !***********************************************************************
 !*rads_parse_cmd -- Parse command line options
@@ -791,12 +832,11 @@ type(rads_sat), intent(inout) :: S
 !  S : Satellite/mission dependent structure
 !-----------------------------------------------------------------------
 integer :: nsat
-character(len=640), pointer :: options(:), varopt
+character(len=640), pointer :: options(:)
 integer, pointer :: iopt(:)
-nullify (varopt)
 call rads_load_options (options, iopt, nsat)
-call rads_parse_options (S, options, varopt)
-if (associated(varopt)) call rads_parse_varlist (S, varopt)
+call rads_parse_options (S, options)
+call rads_parse_varlist (S, pack(options, mod(iopt,10)==4))
 deallocate (options)
 end subroutine rads_parse_cmd
 
@@ -2500,9 +2540,9 @@ write (iunit, 1300) trim(progname)
 '  -X, --xml=xmlfile       : load XML file in addition to defaults'// &
 'Still working for backwards compatibility with RADS 3 are options:'/ &
 '  --sel=var1,...          : select variables to read'/ &
-'  --opt=j                 : use selection code j when j/100 requested (now alias:var1=var2)'/ &
-'  --opt:i=j               : set option for data item i to j (now alias:var1=var2)'/ &
-'  --h=h0,h1               : specify range for SLA (m) (now sla=h0,h1)'// &
+'  --opt=j                 : use selection code j when j/100 requested (now -Avar1=var2)'/ &
+'  --opt:i=j               : set option for data item i to j (now -Avar1=var2)'/ &
+'  --h=h0,h1               : specify range for SLA (m) (now --sla=h0,h1)'// &
 'Common [rads_options] are:'/ &
 '  -q, --quiet             : suppress warning messages (but keeps fatal error messages)' / &
 '  -v, --debug=level       : set debug level'/ &
