@@ -1,20 +1,19 @@
-########################################################################
+#-----------------------------------------------------------------------
 # $Id$
-# - Makefile for RADS4 library and utilities
 #
-# Copyright (C) 2011  Remko Scharroo (Altimetrics LLC)
+# Copyright (C) 2012  Remko Scharroo (Altimetrics LLC)
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# it under the terms of the GNU Lesser General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-########################################################################
+# GNU Lesser General Public License for more details.
+#-----------------------------------------------------------------------
 
 include config.mk
 
@@ -37,9 +36,9 @@ INCS	= config.inc
 
 MODULES = typesizes.mod $(OBJS:.o=.mod)
 
-########################################################################
+#-----------------------------------------------------------------------
 # What to create?
-########################################################################
+#-----------------------------------------------------------------------
 
 all:	$(LIB) $(PROGS) $(PROGS_L) $(PROGS_L4)
 
@@ -55,9 +54,9 @@ install:	all
 
 man:	$(MAN)
 
-########################################################################
+#-----------------------------------------------------------------------
 # Object dependencies
-########################################################################
+#-----------------------------------------------------------------------
 
 $(OBJS2):	$(OBJS1)
 $(OBJS3):	$(OBJS1) $(OBJS2)
@@ -70,47 +69,50 @@ rads_test.o:	$(OBJS2)
 nag.o:  nag.f
 	$(FC) -O -c nag.f
 
-########################################################################
+#-----------------------------------------------------------------------
 # Create config.inc when config.mk is updated
-########################################################################
+#-----------------------------------------------------------------------
 config.inc:	config.mk
 	printf "character(80) :: radsdataroot = '%s', radsuserroot = '%s'\n" $(datarootdir) $(HOME) > $@
 
-########################################################################
+#-----------------------------------------------------------------------
 # Create Fortran 90 interface if needed
-########################################################################
+#-----------------------------------------------------------------------
 
 typesizes.mod:	typeSizes.f90
 	$(FC) $(FFLAGS) -c typeSizes.f90
 	rm -f typeSizes.o
 
-########################################################################
+#-----------------------------------------------------------------------
 # How to create the library
-########################################################################
+#-----------------------------------------------------------------------
 
 $(LIB):	$(OBJS)
 	$(AR) $(ARFLAGS) $@ $(OBJS)
 	$(RANLIB) $@
 
-########################################################################
+#-----------------------------------------------------------------------
 # Test programs
-########################################################################
+#-----------------------------------------------------------------------
 test:	rads_test
 	rads_test debug=3 sat=e1/a ymd=19910924,19910925 lat=-50,30 lon=-90,120 \
-	sel=time,lat,lon,sla,12_,tide_ocean_,pass,drange > $(TMPDIR)/rads_test.out
-	diff rads_test.out $(TMPDIR)/rads_test.out
+	sel=time,lat,lon,sla,12_,tide_ocean_,pass,drange | diff rads_test.out -
+
 rads_test:	$(LIB) rads_test.o
 	$(FC) -o $@ rads_test.o $(LIB) $(NETCDF)
+
 rads_sample:	$(LIB) rads_sample.o
 	$(FC) -o $@ rads_sample.o $(LIB) $(NETCDF)
+
 radsreconfig:	$(LIB) radsreconfig.o
 	$(FC) -o $@ radsreconfig.o $(LIB) $(NETCDF)
+
 rads3test:	$(LIB) rads3test.o
 	$(FC) -o $@ rads3test.o $(LIB) $(NETCDF)
 
-########################################################################
+#-----------------------------------------------------------------------
 #       Definition of executable generation
-########################################################################
+#-----------------------------------------------------------------------
 
 radsconfig.sh:	radsconfig.sh.in
 	@echo "Error: Need to run configure in src directory first"
@@ -146,8 +148,8 @@ radscolin:	radscolin.o $(LIB)
 radscont:	radscont.o $(LIB)
 	$(FC) -o $@ radscont.o $(LIB) $(NETCDF)
 
-radsxogen:	radsxogen.o iqsort.o nag.o $(LIB)
-	$(FC) -o $@ radsxogen.o iqsort.o nag.o $(LIB) $(NETCDF)
+radsxogen:	radsxogen.o nag.o $(LIB)
+	$(FC) -o $@ radsxogen.o nag.o $(LIB) $(NETCDF)
 
 radsxoconv:	radsxoconv.o $(LIB)
 	$(FC) -o $@ radsxoconv.o $(LIB) $(NETCDF)

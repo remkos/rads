@@ -1,18 +1,18 @@
 !-----------------------------------------------------------------------
 ! $Id$
 !
-! Copyright (C) 2011  Remko Scharroo (Altimetrics LLC)
+! Copyright (C) 2012  Remko Scharroo (Altimetrics LLC)
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
-! it under the terms of the GNU General Public License as published by
-! the Free Software Foundation, either version 3 of the License, or
-! (at your option) any later version.
+! it under the terms of the GNU Lesser General Public License as
+! published by the Free Software Foundation, either version 3 of the
+! License, or (at your option) any later version.
 !
 ! This program is distributed in the hope that it will be useful,
 ! but WITHOUT ANY WARRANTY; without even the implied warranty of
 ! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-! GNU General Public License for more details.
+! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
 module rads_misc
@@ -161,9 +161,9 @@ character(len=*), intent(inout) :: string
 ! If the environment variable <env> is not set, <string> is unchanged.
 !
 ! Arguments:
-!   env     (input) : Name of the environment variable.
-!   string  (input) : Default value for string.
-!          (output) : Contents of the environment variable or default.
+!   env    : Name of the environment variable.
+!   string : Upon input: default value for string.
+!          : Upon output: contents of the environment variable or default.
 !-----------------------------------------------------------------------
 character(len=160) :: temp
 call getenv (env,temp)
@@ -188,8 +188,8 @@ character(len=*), intent(inout) :: output
 ! Nesting of variable names is not allowed.
 !
 ! Arguments:
-!   input   (input) : String to be parsed.
-!   output (output) : String with environment variables replaced.
+!   input  : String to be parsed.
+!   output : String with environment variables replaced.
 !-----------------------------------------------------------------------
 character(len=160) :: env
 integer :: j, k = 0, l, m, n
@@ -234,9 +234,9 @@ real(eightbytereal), intent(in) :: limits(2)
 real(eightbytereal), intent(inout) :: value
 logical :: outofrange
 !
-! This function checks if value is within limits(1) and limits(2), where
-! limits(1) < llimits(2). If value is not within those limits, outofrange
-! is set to .true.
+! This function checks if value is within <limits(1:2)>, where
+! <limits(1)> is less than <limits(2)>. If <value> is not within those
+! limits, <outofrange> is set to .true.
 !
 ! If either of the limits is NaN, no check is performed at that limit.
 !
@@ -367,23 +367,23 @@ character(len=*), intent(in) :: arg
 character(len=*), intent(out) :: option, optarg
 integer(fourbyteint), optional :: pos
 !
-! This routine splits command line arguments in forms like
+! This routine splits a command line argument <arg> in a form like
 ! arg:    '-A'  '-x1'  '--lon=0,10'  'sel=sla'  lim:sla=-1,1  'filename'
 ! into and option (-? or --*) and an argument. For the above examples:
 ! option: '-A'  '-x'   '--lon'       '--sel'    '--lim'       ''
 ! optarg: ''    '1'    '0,10'        'sla'      'sla=-1,1'    ''
 !
-! Thus the option is either -? (dash followed by a single character), or
+! Thus the <option> is either -? (dash followed by a single character), or
 ! --* (double-dash followed by one or more characters).
 ! Note that for the old-style argument 'sel=', the prefix '--' is added.
 ! When this is not an recognisable option, a blank string is returned.
 !
-! The optarg, or optional argument, is what follows -? or the ':' or the
+! The <optarg>, or optional argument, is what follows -? or the ':' or the
 ! '=' sign (whatever comes first).
 ! When there is no optional argument, or arg is not a recognisable option,
 ! a blank string is returned.
 !
-! Finally, pos returns the position of the equal sign in optarg.
+! Finally, <pos> returns the position of the equal sign in optarg.
 !
 ! Arguments:
 !  arg    : Command line argument
@@ -425,6 +425,147 @@ else
 endif
 if (present(pos)) pos = j
 end subroutine splitarg
+
+!***********************************************************************
+!*iqsort -- Make a quick sort of an INTEGER*4 array
+!+
+subroutine iqsort (idx, val, nr)
+use typesizes
+integer(fourbyteint), intent(inout) :: idx(nr)
+integer(fourbyteint), intent(in) :: val(:), nr
+!
+! This routine quick-sorts an integer array <idx> according to the
+! corresponding value in array <val> of type integer.
+! The array <idx> contains <nr> pointers to the values in array <val>,
+! which does not have to be equally large.
+!
+! Arguments:
+!  idx (input) : One-dimensional array of index numbers
+!     (output) : Row of index numbers sorted on corresponding value
+!  val (input) : One-dimensional array of values
+!  nr  (input) : Number of indices/values
+!
+! Example 1:
+! Assume you have 6 values 100, 10, 11, 21, 17, and 90, stored in array
+! <val>. These values have to be sorted in ascending order. Your input
+! will be like this:
+!
+!   idx    1    2    3    4    5    6
+!   val  100   10   11   21   17   90
+!    nr    6
+!
+! After running iqsort, the output will look like this:
+!
+!   idx    2    3    5    4    6    1
+!   val  100   10   11   21   17   90
+!    nr    6
+!
+! Note that the array <val> has not been changed, but that <idx> is sorted by
+! the order in which <val> should be sorted. You may print the values in
+! the ascending order as follows:
+!
+!     do i=1,nr
+!        write (*,*) val(idx(i))
+!     enddo
+!
+! Example 2:
+! It is also possible that the indices are not in logical order. As long as
+! they point to the respective locations of the values in array <val>, the
+! sorting will be done accordingly. Assume you have the following input:
+! (values ** are irrelevant)
+!
+!   idx    1    2    4    5    6    8
+!   val  100   10   **   21   17   90   **   1
+!    nr    6
+!
+! Then after running iqsort, the result will be:
+!
+!   idx    8    2    5    4    6    1
+!   val  100   10   **   21   17   90   **   1
+!    nr    6
+!
+! Printing the values in ascending order after this goes the same as in
+! Example 1.
+!-----------------------------------------------------------------------
+integer(fourbyteint), parameter :: m = 7, nstack = 2000
+integer(fourbyteint) :: i,indxt,ir,itemp,j,jstack,k,l,istack(nstack)
+integer(fourbyteint) :: a
+jstack = 0
+l = 1
+ir = nr
+do
+	if (ir-l < m) then
+		jloop: do j = l+1,ir
+			indxt = idx(j)
+			a = val(indxt)
+			do i = j-1,1,-1
+				if (val(idx(i)) < a) then
+					idx(i+1) = indxt
+					cycle jloop
+				endif
+				idx(i+1) = idx(i)
+			enddo
+			i = 0
+			idx(i+1)=indxt
+		enddo jloop
+		if (jstack == 0) return
+		ir = istack(jstack)
+		l = istack(jstack-1)
+		jstack = jstack-2
+	else
+		k = (l+ir) / 2
+		itemp = idx(k)
+		idx(k) = idx(l+1)
+		idx(l+1) = itemp
+		if (val(idx(l+1)) > val(idx(ir))) then
+			itemp = idx(l+1)
+			idx(l+1) = idx(ir)
+			idx(ir) = itemp
+		endif
+		if (val(idx(l)) > val(idx(ir))) then
+			itemp = idx(l)
+			idx(l) = idx(ir)
+			idx(ir) = itemp
+		endif
+		if (val(idx(l+1)) > val(idx(l))) then
+			itemp = idx(l+1)
+			idx(l+1) = idx(l)
+			idx(l) = itemp
+		endif
+		i = l+1
+		j = ir
+		indxt = idx(l)
+		a = val(indxt)
+		do
+			do
+				i = i+1
+				if (val(idx(i)) >= a) exit
+			enddo
+			do
+				j = j-1
+				if (val(idx(j)) <= a) exit
+			enddo
+			if (j < i) exit
+			itemp=idx(i)
+			idx(i)=idx(j)
+			idx(j)=itemp
+		enddo
+		idx(l) = idx(j)
+		idx(j) = indxt
+		jstack = jstack+2
+		if (jstack > nstack) stop 'NSTACK too small in IQSORT'
+		if (ir-i+1 >= j-1) then
+			istack(jstack) = ir
+			istack(jstack-1) = i
+			ir = j-1
+		else
+			istack(jstack) = j-1
+			istack(jstack-1) = l
+			l = i
+		endif
+	endif
+enddo
+end subroutine iqsort
 
 elemental function d_int1 (i)
 integer(onebyteint), intent(in) :: i
