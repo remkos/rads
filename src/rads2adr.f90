@@ -1,18 +1,18 @@
 !-----------------------------------------------------------------------
 ! $Id$
 !
-! Copyright (C) 2011  Remko Scharroo (Altimetrics LLC)
+! Copyright (C) 2012  Remko Scharroo (Altimetrics LLC)
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
-! it under the terms of the GNU General Public License as published by
-! the Free Software Foundation, either version 3 of the License, or
-! (at your option) any later version.
+! it under the terms of the GNU Lesser General Public License as
+! published by the Free Software Foundation, either version 3 of the
+! License, or (at your option) any later version.
 !
 ! This program is distributed in the hope that it will be useful,
 ! but WITHOUT ANY WARRANTY; without even the implied warranty of
 ! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-! GNU General Public License for more details.
+! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
 !*rads2adr -- Select RADS data and output to ADR or XGF
@@ -38,7 +38,7 @@ type(rads_pass) :: P
 
 ! Local declarations, etc.
 integer(fourbyteint) :: outunit, logunit = 6
-character(len=256) :: arg, outname = ''
+character(len=rads_naml) :: arg, opt, optarg, outname = ''
 integer(fourbyteint) :: i, ios, cycle, pass, step = 1, nseltot = 0, nselmax = huge(0_fourbyteint)
 integer(fourbyteint) :: reject = -1
 
@@ -59,25 +59,23 @@ if (S%error /= rads_noerr) call rads_exit ('Fatal error')
 
 ! Set default options related to output data type
 do i = 1,iargc()
-	call getarg(i,arg)
-	if (arg(:4) == 'out=') then
-		outname = arg(5:)
-	else if (arg(:6) == '--out=') then
-		outname = arg(7:)
-	else if (arg(:2) == '-o') then
-		outname = arg(3:)
-	else if (arg(:2) == '-rn') then
-		reject = -2
-	else if (arg(:2) == '-r') then
-		reject = 0
-		read (arg(3:),*,iostat=ios) reject
-	else if (arg(:7) == 'maxrec=') then
-		read (arg(8:),*) nselmax
-	else if (arg(:5) == 'step=') then
-		read (arg(6:),*) step
-	else if (arg(:7) == '--step=') then
-		read (arg(8:),*) step
-	endif
+	call getarg (i, arg)
+	call splitarg (arg, opt, optarg)
+	select case (opt)
+	case ('-o', '--out')
+		outname = optarg
+	case ('-r')
+		if (optarg == 'n') then
+			reject = -2
+		else
+			reject = 0
+			read (arg(3:), *, iostat=ios) reject
+		endif
+	case ('--maxrec')
+		read (optarg, *, iostat=ios) nselmax
+	case ('--step')
+		read (optarg, *, iostat=ios) step
+	end select
 enddo
 
 ! Force the sel= option to conform to the operation mode (rads2adr, rads2xadr, rads2xgf)

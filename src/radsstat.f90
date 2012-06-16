@@ -1,18 +1,18 @@
 !-----------------------------------------------------------------------
 ! $Id$
 !
-! Copyright (C) 2011  Remko Scharroo (Altimetrics LLC)
+! Copyright (C) 2012  Remko Scharroo (Altimetrics LLC)
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
-! it under the terms of the GNU General Public License as published by
-! the Free Software Foundation, either version 3 of the License, or
-! (at your option) any later version.
+! it under the terms of the GNU Lesser General Public License as
+! published by the Free Software Foundation, either version 3 of the
+! License, or (at your option) any later version.
 !
 ! This program is distributed in the hope that it will be useful,
 ! but WITHOUT ANY WARRANTY; without even the implied warranty of
 ! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-! GNU General Public License for more details.
+! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
 program radsstat
@@ -20,17 +20,17 @@ program radsstat
 ! This program reads the RADS data base and computes statistics
 ! by pass, cycle or day of a number of RADS data variables.
 !
-! usage: radsstat sat=<sat> [RADS_options] [options]
+! usage: radsstat [RADS_options] [options]
 !-----------------------------------------------------------------------
 use rads
 use rads_time
 use rads_misc
 integer(fourbyteint) :: lstat=1
-character(len=80) :: arg
+character(len=rads_naml) :: arg, opt, optarg
 character(len=32) :: wtype(0:3)=(/ &
 	'box weight                  ', 'constant weight             ', &
 	'area weighted               ', 'inclination-dependent weight'/)
-character(len=512) :: format_string
+character(len=640) :: format_string
 integer(fourbyteint), parameter :: period_day=0, period_pass=1, period_cycle=2, day_init=-999999
 integer(fourbyteint) :: nr=0, day=day_init, day_old=day_init, cycle, pass, i, j, k, l, &
 	period=period_day, wmode=0, nx, ny, kx, ky, ios
@@ -53,36 +53,35 @@ if (S%nsel == 0)  call rads_parse_varlist (S, 'sla')
 
 ! Scan command line arguments
 do i = 1,iargc()
-	call getarg(i,arg)
-	if (arg(:2) == '-d') then
+	call getarg (i,arg)
+	call splitarg (arg, opt, optarg)
+	select case (opt)
+	case ('-d')
 		period = period_day
-		read (arg(3:), *, iostat=ios) step
-	else if (arg(:2) == '-p') then
+		read (optarg, *, iostat=ios) step
+	case ('-p')
 		period = period_pass
-		read (arg(3:), *, iostat=ios) step
+		read (optarg, *, iostat=ios) step
 		step = dble(S%passes(2))/nint(S%passes(2)/step)
-	else if (arg(:2) == '-c') then
+	case ('-c')
 		period = period_cycle
-		read (arg(3:), *, iostat=ios) step
-	else if (arg(:2) == '-b') then
+		read (optarg, *, iostat=ios) step
+	case ('-b')
 		wmode = 0
-		call chartrans(arg(3:),'/-+x',',,,,')
-		read (arg(3:),*,iostat=ios) dx,dy
-	else if (arg(:2) == '-m') then
+		call chartrans (optarg, '/-+x', ',,,,')
+		read (optarg, *, iostat=ios) dx,dy
+	case ('-m')
 		wmode = 1
-	else if (arg(:2) == '-a') then
+	case ('-a')
 		wmode = 2
-	else if (arg(:2) == '-s') then
+	case ('-s')
 		wmode = 3
-	else if (arg(:2) == '-l') then
+	case ('-l')
 		lstat = 2
-	else if (arg(:4) == 'res=') then
-		call chartrans(arg(5:),'/-+x',',,,,')
-		read (arg(5:),*) dx,dy
-	else if (arg(:6) == '--res=') then
-		call chartrans(arg(7:),'/-+x',',,,,')
-		read (arg(7:),*) dx,dy
-	endif
+	case ('--res')
+		call chartrans (optarg, '/-+x', ',,,,')
+		read (optarg, *, iostat=ios) dx,dy
+	end select
 enddo
 
 ! Set up the boxes

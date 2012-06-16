@@ -1,18 +1,18 @@
 !-----------------------------------------------------------------------
 ! $Id$
 !
-! Copyright (C) 2011  Remko Scharroo (Altimetrics LLC)
+! Copyright (C) 2012  Remko Scharroo (Altimetrics LLC)
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
-! it under the terms of the GNU General Public License as published by
-! the Free Software Foundation, either version 3 of the License, or
-! (at your option) any later version.
+! it under the terms of the GNU Lesser General Public License as
+! published by the Free Software Foundation, either version 3 of the
+! License, or (at your option) any later version.
 !
 ! This program is distributed in the hope that it will be useful,
 ! but WITHOUT ANY WARRANTY; without even the implied warranty of
 ! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-! GNU General Public License for more details.
+! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
 !*radsxolist -- RADS crossover lister
@@ -22,11 +22,12 @@ program radsxolist
 ! This program lists the contents of RADS netCDF crossover files and
 ! computes statistics.
 !-----------------------------------------------------------------------
-use rads
-use rads_time
 use netcdf
+use rads
+use rads_misc
 use rads_netcdf
-integer(fourbyteint) :: ncid, i, k, icol, ios, nvar, nxo, ntrk, id_satid, id_track, id_sla, id_new, id_old
+use rads_time
+integer(fourbyteint) :: ncid, i, icol, ios, nvar, nxo, ntrk, id_satid, id_track, id_sla, id_new, id_old
 real(eightbytereal), allocatable :: var(:,:,:), stat(:,:,:)
 integer(fourbyteint), allocatable :: track(:,:)
 logical, allocatable :: mask(:)
@@ -35,8 +36,8 @@ type :: trk_
 	integer(twobyteint) :: nr_alt, nr_xover, satid, cycle, pass
 end type
 type(trk_), allocatable :: trk(:)
-character(len=256) :: fmt_string
-character(len=80) :: arg, filename
+character(len=640) :: fmt_string
+character(len=rads_naml) :: arg, opt, optarg, filename
 character(len=1) :: mode = ''
 character(len=4) :: statname(5) = (/ 'min ', 'max ', 'mean', 'rms ', 'std ' /)
 integer(fourbyteint), parameter :: msat = 20
@@ -56,29 +57,30 @@ call synopsis
 
 ! Scan command line arguments
 do i = 1,iargc()
-	call getarg(i,arg)
-	k = 1
-	if (arg(1:2) == '--') k = 3
-	if (arg(k:k+3) == 'lon=') then
-		read (arg(k+4:),*) lon0,lon1
-	else if (arg(k:k+3) == 'lat=') then
-		read (arg(k+4:),*) lat0,lat1
-	else if (arg(k:k+2) == 'dt=') then
-		read (arg(k+3:),*,iostat=ios) dt0,dt1
+	call getarg (i, arg)
+	call splitarg (arg, opt, optarg)
+	select case (arg)
+	case ('--lon')
+		read (optarg, *, iostat=ios) lon0,lon1
+	case ('--lat')
+		read (optarg, *, iostat=ios) lat0,lat1
+	case ('--dt')
+		read (optarg, *, iostat=ios) dt0,dt1
 		if (dt0 > dt1) then
 			dt1 = dt0
 			dt0 = 0d0
 		endif
 		dt0 = dt0 * 86400d0
 		dt1 = dt1 * 86400d0
-	else if (datearg(arg(k:),t0,t1)) then
-	else if (arg == '-d') then
+	case ('-d')
 		diff = .true.
-	else if (arg(:2) == '-o') then
+	case ('-o')
 		mode = arg(3:3)
-	else if (arg(:2) == '-s') then
+	case ('-s')
 		stat_only = .true.
-	endif
+	case default
+		if (datearg(arg,t0,t1)) cycle
+	end select
 enddo
 
 ! Now process each file
@@ -264,11 +266,11 @@ write (0,1300)
 'Required argument:' / &
 '  filename            : Input xover file name (extension .nc)'// &
 'Optional arguments [options] are:'/ &
-'  lon=lon0,lon1       : specify longitude boundaries (deg)'/ &
-'  lat=lat0,lat1       : specify latitude boundaries (deg)'/ &
-'  t=t0,t1             : specify time selection'/ &
+'  --lon=lon0,lon1     : specify longitude boundaries (deg)'/ &
+'  --lat=lat0,lat1     : specify latitude boundaries (deg)'/ &
+'  --t=t0,t1           : specify time selection'/ &
 '                        (optionally use ymd=, doy=, sec= for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)'/ &
-'  dt=[dtmin,]dtmax    : use only xovers with [dtmin <] dt < dtmax (days)'/&
+'  --dt=[dtmin,]dtmax  : use only xovers with [dtmin <] dt < dtmax (days)'/&
 '  -d                  : Write out xover differences (default is both values)'/ &
 '  -o[A|a|H|h|S|s|T|t] : Order of the xover values (or difference):'/ &
 '                        A|a = ascending-descending or vv'/ &

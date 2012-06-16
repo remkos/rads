@@ -1,18 +1,18 @@
 !-----------------------------------------------------------------------
 ! $Id$
 !
-! Copyright (C) 2011  Remko Scharroo (Altimetrics LLC)
+! Copyright (C) 2012  Remko Scharroo (Altimetrics LLC)
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
-! it under the terms of the GNU General Public License as published by
-! the Free Software Foundation, either version 3 of the License, or
-! (at your option) any later version.
+! it under the terms of the GNU Lesser General Public License as
+! published by the Free Software Foundation, either version 3 of the
+! License, or (at your option) any later version.
 !
 ! This program is distributed in the hope that it will be useful,
 ! but WITHOUT ANY WARRANTY; without even the implied warranty of
 ! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-! GNU General Public License for more details.
+! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
 !*radsxogen -- RADS crossover generator
@@ -43,7 +43,7 @@ real(eightbytereal) :: dt(msat)
 type(rads_sat) :: S(msat)
 integer(fourbyteint) :: i, j, nsat = 0, nsel = 0, reject = -1, ios, debug, ncid, dimid(3), start(2), varid(vbase)
 logical :: duals = .true., singles = .true., l
-character(len=80) :: arg, satlist, filename = 'radsxogen.nc'
+character(len=rads_naml) :: arg, opt, optarg, satlist, filename = 'radsxogen.nc'
 character(len=1) :: interpolant = 'q'
 type :: nr_
 	integer :: test, shallow, xdat, ins, gap, xdt, xout, trk
@@ -84,28 +84,30 @@ debug = maxval(S(1:nsat)%debug)
 
 ! Scan command line arguments
 do i = 1,iargc()
-	call getarg (i,arg)
-	if (arg(:2) == '-rn') then
-		reject = -2
-	else if (arg(:2) == '-r') then
-		reject = 0
-		read (arg(3:),*,iostat=ios) reject
-	else if (arg(:2) == '-s') then
+	call getarg (i, arg)
+	call splitarg (arg, opt, optarg)
+	select case (arg)
+	case ('-r')
+		if (optarg == 'n') then
+			reject = -2
+		else
+			reject = 0
+			read (optarg, *, iostat=ios) reject
+		endif
+	case ('-s')
 		duals = .false.
-	else if (arg(:2) == '-d') then
+	case ('-d')
 		singles = .false.
-	else if (arg(:2) == '-i') then
-		interpolant = strtolower(arg(3:3))
-	else if (arg(:3) == 'dt=') then
-		read (arg(4:),*,iostat=ios) dt
-	else if (arg(:5) == '--dt=') then
-		read (arg(6:),*,iostat=ios) dt
-	endif
+	case ('-i')
+		interpolant = strtolower(optarg(1:1))
+	case ('--dt')
+		read (optarg, *, iostat=ios) dt
+	end select
 enddo
 
 ! Get the file name (last argument not to start with - or contain =)
 do i = iargc(),1,-1
-	call getarg (i,arg)
+	call getarg (i, arg)
 	if (arg(1:1) /= '-' .and. index(arg,'=') <= 0) then
 		filename = arg
 		exit

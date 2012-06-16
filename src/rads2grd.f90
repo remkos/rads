@@ -1,18 +1,18 @@
 !-----------------------------------------------------------------------
 ! $Id$
 !
-! Copyright (C) 2011  Remko Scharroo (Altimetrics LLC)
+! Copyright (C) 2012  Remko Scharroo (Altimetrics LLC)
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
-! it under the terms of the GNU General Public License as published by
-! the Free Software Foundation, either version 3 of the License, or
-! (at your option) any later version.
+! it under the terms of the GNU Lesser General Public License as
+! published by the Free Software Foundation, either version 3 of the
+! License, or (at your option) any later version.
 !
 ! This program is distributed in the hope that it will be useful,
 ! but WITHOUT ANY WARRANTY; without even the implied warranty of
 ! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-! GNU General Public License for more details.
+! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
 !*rads2grd -- Make grid from RADS data
@@ -27,7 +27,7 @@ program rads2grd
 use rads
 use rads_misc
 
-character(len=rads_naml) :: arg, grid_name='', format_string='', option, value
+character(len=rads_naml) :: arg, opt, optarg, grid_name='', format_string=''
 integer(fourbyteint) :: minnr=2, n(2), k(2), i, j, l, cycle, pass, ios
 real(eightbytereal) :: lo(2), hi(2), res(2)=1d0, x, y
 logical :: c(2)=.false.
@@ -60,28 +60,28 @@ enddo
 ! Scan command line arguments
 do i = 1,iargc()
 	call getarg (i,arg)
-	call splitarg (arg, option, value)
-	select case (option)
+	call splitarg (arg, opt, optarg)
+	select case (opt)
 	case ('--x','-x')
-		call chartrans (value, '/', ',')
-		read (value,*,iostat=ios) S(1)%sel(1)%info%limits,res(1)
+		call chartrans (optarg, '/', ',')
+		read (optarg, *, iostat=ios) S(1)%sel(1)%info%limits,res(1)
 	case ('--y', '-y')
-		call chartrans (value, '/', ',')
-		read (value,*,iostat=ios) S(1)%sel(2)%info%limits,res(2)
+		call chartrans (optarg, '/', ',')
+		read (optarg, *, iostat=ios) S(1)%sel(2)%info%limits,res(2)
 	case ('--res')
 		res(2) = S(1)%nan
-		call chartrans (value, '/', ',')
-		read (value,*,iostat=ios) res
+		call chartrans (optarg, '/', ',')
+		read (optarg, *, iostat=ios) res
 		if (isnan(res(2))) res(2) = res(1)
 	case ('-c')
-		c(1) = (value /= 'y')
-		c(2) = (value /= 'x') 
+		c(1) = (optarg /= 'y')
+		c(2) = (optarg /= 'x') 
 	case ('--min')
-		read (value,*) minnr
+		read (optarg, *, iostat=ios) minnr
 	case ('--grd')
-		grid_name = value
+		grid_name = optarg
 	case ('--fmt')
-		format_string = value
+		format_string = optarg
 	end select
 enddo
 

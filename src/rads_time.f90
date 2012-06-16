@@ -1,18 +1,18 @@
 !-----------------------------------------------------------------------
 ! $Id$
 !
-! Copyright (C) 2011  Remko Scharroo (Altimetrics LLC)
+! Copyright (C) 2012  Remko Scharroo (Altimetrics LLC)
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
-! it under the terms of the GNU General Public License as published by
-! the Free Software Foundation, either version 3 of the License, or
-! (at your option) any later version.
+! it under the terms of the GNU Lesser General Public License as
+! published by the Free Software Foundation, either version 3 of the
+! License, or (at your option) any later version.
 !
 ! This program is distributed in the hope that it will be useful,
 ! but WITHOUT ANY WARRANTY; without even the implied warranty of
 ! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-! GNU General Public License for more details.
+! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
 module rads_time
@@ -231,7 +231,7 @@ real(eightbytereal) :: sec85
 ! a 4-digit indication (YYYY). The routine automatically recognises the
 ! form: whether YY or YYYY is specified.
 !
-! The first parameter (i) defines the input format: i=1 indicates MJD,
+! The first parameter <i> defines the input format: i=1 indicates MJD,
 ! i=2 means YYMMDD or YYYYMMDD, i=3 specifies YYDDD or YYYYDDD, and
 ! i=4 implies YYMMDDHHMMSS or YYYYMMDDHHMMSS, i=5 is a combination of i=2
 ! and i=4 (i.e, it takes YYMMDD, YYYYMMDD, YYMMDDHHMMSS and YYYYMMDDHHMMSS,
@@ -337,23 +337,25 @@ end function sec85
 function datearg (arg, t0, t1, dt)
 use typesizes
 logical :: datearg
-character*(*), intent(in) :: arg
+character(len=*), intent(in) :: arg
 real(eightbytereal), intent(out) :: t0
 real(eightbytereal), intent(out), optional :: t1, dt
 !
 ! This function processes standard datation arguments of either of the
 ! following forms:
 !
-!   mjd=t0[,t1][,dt] : Modified Julian Dates
-!   sec=t0[,t1][,dt] : Seconds since 1.0 Jan 1985
-!   ymd=t0[,t1][,dt] : [YY]YYMMDD.DDD or [YY]YYMMDDHHMMSS.SSS
-!   doy=t0[,t1][,dt] : YYDDD.DDD
-!     t=t0[,t1][,dt] : MJD.DDD or [YY]YYMMDD.DDD or [YY]YYMMDDHHMMSS.SSS
+!   --mjd=t0[,t1][,dt] : Modified Julian Dates
+!   --sec=t0[,t1][,dt] : Seconds since 1.0 Jan 1985
+!   --ymd=t0[,t1][,dt] : [YY]YYMMDD.DDD or [YY]YYMMDDHHMMSS.SSS
+!   --doy=t0[,t1][,dt] : YYDDD.DDD
+!     --t=t0[,t1][,dt] : MJD.DDD or [YY]YYMMDD.DDD or [YY]YYMMDDHHMMSS.SSS
 !
 ! Normally <arg> is read from the argument line of a command using the getarg
 ! routine. When <arg> is parsed through to datearg it checks whether <arg> is
 ! of one of the above forms. If not, datearg gets the value .false., and
-! none of the arguments is altered.
+! none of the arguments is altered. For backward compatibility with earlier
+! software, versions of these arguments without the leading -- are tested as
+! well.
 !
 ! If <arg> is of one of the standard datation forms, the values of <t0> and
 ! <t1> (when given) are read and interpreted as stated above and converted
@@ -375,51 +377,52 @@ real(eightbytereal), intent(out), optional :: t1, dt
 integer :: ios,l,mode
 real(eightbytereal) :: tt0,tt1
 
-! Scan the argument for datation format
+! Default exit is error
+datearg = .false.
 
+! Capture the position of the equal sign. Has to be place 2, 4, or 6.
 l = index(arg,'=')
-if (l /= 2 .and. l /= 4) then
-	datearg = .false.
-	return
-else if (arg(:2) == 't=' .or. arg(:2) == 'T=') then
+if (l /= 2 .and. l /= 4 .and. l /= 6) return
+
+select case (arg(:l-1))
+case ('--t', 't')
 	mode=0
-else if (arg(:4) == 'sec=' .or. arg(:4) == 'SEC=') then
+case ('--sec', 'sec')
 	mode=-1
-else if (arg(:4) == 'mjd=' .or. arg(:4) == 'MJD=') then
+case ('--mjd', 'mjd')
 	mode=1
-else if (arg(:4) == 'doy=' .or. arg(:4) == 'DOY=') then
+case ('--doy', 'doy')
 	mode=3
-else if (arg(:4) == 'ymd=' .or. arg(:4) == 'YMD=') then
+case ('--ymd', 'ymd')
 	mode=5
-else
-	datearg = .false.
+case default
 	return
-endif
+end select
 
 ! Initialize the values to an unlikely value
-
 tt0 = 1d50
 tt1 = 1d50
 
 ! Read the values, and convert when specified
-
 if (present(t1) .and. present(dt)) then
-	read (arg(l+1:),*,iostat=ios) tt0,tt1,dt
-	if (abs(tt1) < 1d49) t1 = sec85(mode,tt1)
+	read (arg(l+1:), *, iostat=ios) tt0, tt1, dt
+	if (abs(tt1) < 1d49) t1 = sec85 (mode, tt1)
 else if (present(t1)) then
-	read (arg(l+1:),*,iostat=ios) tt0,tt1
-	if (abs(tt1) < 1d49) t1 = sec85(mode,tt1)
+	read (arg(l+1:), *, iostat=ios) tt0, tt1
+	if (abs(tt1) < 1d49) t1 = sec85 (mode, tt1)
 else if (present(dt)) then
-	read (arg(l+1:),*,iostat=ios) tt0,dt
+	read (arg(l+1:), *, iostat=ios) tt0, dt
 else
-	read (arg(l+1:),*,iostat=ios) tt0
+	read (arg(l+1:), *, iostat=ios) tt0
 endif
-if (abs(tt0) < 1d49) t0 = sec85(mode,tt0)
+if (abs(tt0) < 1d49) t0 = sec85 (mode, tt0)
+
+! Successful return
 datearg = .true.
 end function datearg
 
 !***********************************************************************
-!*datestamp - Create character string with current date
+!*datestamp -- Create character string with current date
 !+
 function datestamp ()
 character(len=10) :: datestamp
@@ -433,7 +436,7 @@ write (datestamp, '(i4.4,2("-",i2.2))') values(6)+1900,values(5)+1,values(4)
 end function datestamp
 
 !***********************************************************************
-!*timestamp - Create character string with current date
+!*timestamp -- Create character string with current date
 !+
 function timestamp ()
 character(len=19) :: timestamp

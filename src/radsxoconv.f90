@@ -39,7 +39,7 @@ type :: prod_
 	integer(fourbyteint) :: nr
 endtype prod_
 type(prod_) :: a, x, t
-character(len=80) :: arg, filename = '', shortname
+character(len=rads_naml) :: arg, filename = '', shortname
 integer(fourbyteint), parameter :: msat = 20
 type :: sat_
 	character(len=2) :: name
@@ -63,7 +63,7 @@ l = rads_version ('$Revision$')
 
 ! Scan command line arguments
 do i = 1,iargc()
-	call getarg(i,arg)
+	call getarg (i, arg)
 	if (arg == '-xaf') then
 		t%fmt = 'a'
 	else if (arg == '-xtf') then
@@ -368,6 +368,8 @@ end subroutine write_xtf
 !***********************************************************************
 
 subroutine write_xaf
+write (*, 600)
+600 format ('radsxoconv: writing of XAF files not implemented')
 end subroutine write_xaf
 
 end program radsxoconv
