@@ -1,18 +1,18 @@
 !-----------------------------------------------------------------------
 ! $Id$
 !
-! Copyright (C) 2011  Remko Scharroo (Altimetrics LLC)
+! Copyright (C) 2012  Remko Scharroo (Altimetrics LLC)
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
-! it under the terms of the GNU General Public License as published by
-! the Free Software Foundation, either version 3 of the License, or
-! (at your option) any later version.
+! it under the terms of the GNU Lesser General Public License as
+! published by the Free Software Foundation, either version 3 of the
+! License, or (at your option) any later version.
 !
 ! This program is distributed in the hope that it will be useful,
 ! but WITHOUT ANY WARRANTY; without even the implied warranty of
 ! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-! GNU General Public License for more details.
+! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
 !*rads2asc -- Select RADS data and output to ASCII
@@ -39,8 +39,8 @@ type(rads_var), pointer :: temp(:)
 
 ! Local declarations, etc.
 integer(fourbyteint) :: outunit, listunit = -1, logunit = 6
-character(len=256) :: arg, outname = ''
-character(len=512) :: format_string
+character(len=rads_naml) :: arg, opt, optarg, outname = ''
+character(len=640) :: format_string
 integer(fourbyteint) :: i, j, l, ios, cycle, pass, step = 1, nseltot = 0, nselmax = huge(0_fourbyteint)
 logical :: freeform = .false.
 integer(fourbyteint) :: isflags = 0, reject = -1
@@ -62,40 +62,37 @@ if (any(Sats%error /= rads_noerr)) call rads_exit ('Fatal error')
 
 ! Scan command line arguments
 do i = 1,iargc()
-	call getarg(i,arg)
-	if (arg(:4) == 'out=') then
-		outname = arg(5:)
+	call getarg (i, arg)
+	call splitarg (arg, opt, optarg)
+	select case (opt)
+	case ('-o', '--out')
+		outname = optarg
 		if (outname == '') outname = '-'
-	else if (arg(:6) == '--out=') then
-		outname = arg(7:)
-		if (outname == '') outname = '-'
-	else if (arg(:2) == '-o') then
-		outname = arg(3:)
-		if (outname == '') outname = '-'
-	else if (arg(:3) == '-rn') then
-		reject = -2
-	else if (arg(:2) == '-r') then
-		reject = 0
-		read (arg(3:),*,iostat=ios) reject
-	else if (arg(:2) == '-f') then
+	case ('-r')
+		if (optarg == 'n') then
+			reject = -2
+		else
+			reject = 0
+			read (arg(3:), *, iostat=ios) reject
+		endif
+	case ('-f')
 		freeform = .true.
-	else if (arg(:3) == '-sp') then
-		stat_mode = pass_stat
-	else if (arg(:3) == '-sc') then
-		stat_mode = cycle_stat
-	else if (arg(:7) == 'maxrec=') then
-		read (arg(8:),*) nselmax
-	else if (arg(:5) == 'step=') then
-		read (arg(6:),*) step
-	else if (arg(:7) == '--step=') then
-		read (arg(8:),*) step
-	else if (arg(:5) == 'list=') then
+	case ('-s')
+		if (optarg == 'p') then
+			stat_mode = pass_stat
+		else if (optarg == 'c') then
+			stat_mode = cycle_stat
+		else
+			stat_mode = no_stat
+		endif
+	case ('--maxrec')
+		read (optarg, *, iostat=ios) nselmax
+	case ('--step')
+		read (optarg, *, iostat=ios) step
+	case ('--list')
 		listunit = getlun()
-		open (listunit, file=arg(6:), status='replace')
-	else if (arg(:7) == '--list=') then
-		listunit = getlun()
-		open (listunit, file=arg(8:), status='replace')
-	endif
+		open (listunit, file=optarg, status='replace')
+	end select
 enddo
 
 ! Now loop through all satellites

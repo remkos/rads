@@ -1,18 +1,18 @@
 !-----------------------------------------------------------------------
 ! $Id$
 !
-! Copyright (C) 2011  Remko Scharroo (Altimetrics LLC)
+! Copyright (C) 2012  Remko Scharroo (Altimetrics LLC)
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
-! it under the terms of the GNU General Public License as published by
-! the Free Software Foundation, either version 3 of the License, or
-! (at your option) any later version.
+! it under the terms of the GNU Lesser General Public License as
+! published by the Free Software Foundation, either version 3 of the
+! License, or (at your option) any later version.
 !
 ! This program is distributed in the hope that it will be useful,
 ! but WITHOUT ANY WARRANTY; without even the implied warranty of
 ! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-! GNU General Public License for more details.
+! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
 module rads
@@ -351,22 +351,13 @@ integer(fourbyteint), intent(in), optional :: debug
 ! Error code:
 !  S%error  : rads_noerr, rads_err_xml_file, rads_err_xml_parse, rads_err_var
 !-----------------------------------------------------------------------
-integer(fourbyteint) :: i
-character(len=rads_naml) :: userroot, tmp, filename
-
-! First strip -S, --sat=, or sat=, if any
-tmp = sat
-if (tmp(:2) == '-S') then
-	tmp = tmp(3:)
-else if (tmp(:4) == 'sat=') then
-	tmp = tmp(5:)
-else if (tmp(:6) == '--sat=') then
-	tmp = tmp(7:)
-endif
+integer(fourbyteint) :: i, l
+character(len=rads_naml) :: userroot
 
 ! Decipher the satellite and phase
-if (len_trim(tmp) < 2) call rads_exit ('Satellite/phase has fewer than 2 characters')
-S%sat = tmp(:2)
+l = len_trim(sat)
+if (l < 2) call rads_exit ('Satellite/phase has fewer than 2 characters')
+S%sat = sat(:2)
 S%satellite = S%sat
 S%satid = 0
 
@@ -399,57 +390,45 @@ allocate (S%var(rads_var_chunk))
 S%var = rads_var ('', null(), .false., rads_nofield)
 
 ! Read the global rads.xml setup file, the one in ~/.rads and the one in the current directory
-filename = trim(S%dataroot) // '/conf/rads.xml'
-call rads_read_xml (S, filename)
-if (S%error == rads_err_xml_file) call rads_exit ('Required XML file '//trim(filename)//' does not exist')
-call rads_read_xml (S, trim(userroot) // '/.rads/rads.xml')
+call rads_read_xml (S, trim(S%dataroot)//'/conf/rads.xml')
+if (S%error == rads_err_xml_file) call rads_exit ('Required XML file '//trim(S%dataroot)//'/conf/rads.xml does not exist')
+call rads_read_xml (S, trim(userroot)//'/.rads/rads.xml')
 call rads_read_xml (S, 'rads.xml')
 
-! Now read the <xml> files if present
-! Strip -X, --xml= or xml=, if any
+! Now read the xml files
 ! If it is not an absolute path name, also look for it in $RADSDATAROOT/conf as well as in ~/.rads
 do i = 1,size(xml)
-	filename = xml(i)
-	if (filename(:2) == '-X') then
-		filename = filename(3:)
-	else if (filename(:4) == 'xml=') then
-		filename = filename(5:)
-	else if (filename(:6) == '--xml=') then
-		filename = filename(7:)
-	endif
-	call rads_read_xml (S, filename)
-	if (S%error /= rads_err_xml_file) then
-	else if (filename(1:1) == '/') then
-		call rads_exit ('Requested XML file '//trim(filename)//' does not exist')
-	else
-		call rads_read_xml (S, trim(S%dataroot)//'/conf/'//filename)
-		if (S%error == rads_err_xml_file) call rads_read_xml (S, trim(userroot)//'/.rads/'//filename)
-		if (S%error == rads_err_xml_file) then
-			call rads_message ('Requested XML file '//trim(filename)//' does not exist in current directory,')
-			call rads_exit ('nor in '//trim(S%dataroot)//'/conf, nor in '//trim(userroot)//'/.rads')
-		endif
-	endif
+	call rads_read_xml (S, xml(i))
+	if (S%error /= rads_err_xml_file) cycle
+	if (xml(i)(1:1) == '/') call rads_exit ('Requested XML file '//trim(xml(i))//' does not exist')
+	call rads_read_xml (S, trim(S%dataroot)//'/conf/'//xml(i))
+	if (S%error /= rads_err_xml_file) cycle
+	call rads_read_xml (S, trim(userroot)//'/.rads/'//xml(i))
+	if (S%error /= rads_err_xml_file) cycle
+	call rads_message ('Requested XML file '//trim(xml(i))//' does not exist in current directory,')
+	call rads_exit ('nor in '//trim(S%dataroot)//'/conf, nor in '//trim(userroot)//'/.rads')
 enddo
 
 ! If no phases are defined, then the satellite is not known
 if (.not.associated(S%phases)) call rads_exit ('Satellite "'//S%sat//'" unknown')
 
 ! When a phase/mission is specifically given, load the appropriate settings
-i = 3
-if (tmp(i:i) == '/' .or. tmp(i:i) == ':') i = i + 1
-if (tmp(i:) /= '') then
-	S%phase => rads_get_phase(S, tmp(i:i))
-	if (.not.associated(S%phase)) call rads_exit ('No such mission phase "'//tmp(i:i)//'" of satellite "'//S%sat//'"')
-	S%phase%dataroot = trim(S%dataroot)//'/'//S%sat//'/'//tmp(i:)
-	S%cycles(1:2) = S%phase%cycles
-	S%passes(1:2) = S%phase%passes
-else
+if (l == 2) then
 	! By default, use the largest possible cycle and pass range and set the first (default) phase
 	S%phase => S%phases(1)
 	S%cycles(1) = minval(S%phases%cycles(1))
 	S%cycles(2) = maxval(S%phases%cycles(2))
 	S%passes(1) = minval(S%phases%passes(1))
 	S%passes(2) = maxval(S%phases%passes(2))
+else
+	! Phase is given, maybe separated by '/' or ':'
+	i = 3
+	if (l > 3 .and. (sat(3:3) == '/' .or. sat(3:3) == ':')) i = 4
+	S%phase => rads_get_phase(S, sat(i:i))
+	if (.not.associated(S%phase)) call rads_exit ('No such mission phase "'//sat(i:i)//'" of satellite "'//S%sat//'"')
+	S%phase%dataroot = trim(S%dataroot)//'/'//S%sat//'/'//sat(i:)
+	S%cycles(1:2) = S%phase%cycles
+	S%passes(1:2) = S%phase%passes
 endif
 
 ! Link the time, lat, lon variables for later use
@@ -472,7 +451,6 @@ if (S%debug >= 3) then
 		write (*,*) i,S%var(i)%name,S%var(i)%info%name,S%var(i)%field
 	enddo
 endif
-
 end subroutine rads_init_sat_0d_xml
 
 subroutine rads_init_sat_1d_xml (S, sat, xml, debug)
@@ -507,13 +485,14 @@ end subroutine rads_init_sat_1d
 subroutine rads_init_cmd_0d (S)
 type(rads_sat), intent(inout) :: S
 integer :: sopt(1), nsat, debug
-character(len=640), pointer :: options(:)
+character(len=rads_naml), pointer :: options(:)
 integer, pointer :: iopt(:)
 call rads_load_options (options, iopt, nsat, debug)
 if (nsat < 1) call rads_exit ('Failed to find "-S" or "--sat=" on command line')
 if (nsat > 1) call rads_exit ('Too many "-S" or "--sat=" on command line')
 sopt = minloc (iopt, iopt==11) ! Position of the -S option
-! The next two "pack"s isolate the -X options and all other options
+! The next three pack functions isolate the -X option arguments, the command line
+! arguments associcated with the -S option, and  all -V option arguments.
 call rads_init_sat_0d_xml (S, options(sopt(1)), pack(options, mod(iopt,10)==2), debug)
 call rads_parse_options (S, pack(options, mod(iopt,10)==0))
 call rads_parse_varlist (S, pack(options, mod(iopt,10)==4))
@@ -523,15 +502,15 @@ end subroutine rads_init_cmd_0d
 subroutine rads_init_cmd_1d (S)
 type(rads_sat), intent(inout) :: S(:)
 integer :: i, sopt(1), nsat, debug
-character(len=640), pointer :: options(:)
+character(len=rads_naml), pointer :: options(:)
 integer, pointer :: iopt(:)
-S%sat = ''
-S%error = rads_noerr
 call rads_load_options (options, iopt, nsat, debug)
 if (nsat < 1) call rads_exit ('Failed to find "-S" or "--sat=" on command line')
+if (nsat > size(S)) call rads_exit ('Too many "-S" or "--sat=" on command line')
 do i = 1,nsat
 	sopt = minloc (iopt, iopt==i*10+1) ! Position of i-th -S option
-	! The next two "pack"s isolate the -X options and all other options pertinent to the i-th -S option
+	! The next three pack functions isolate the -X option arguments, the command line
+	! arguments associcated with the i-th -S option, and  all -V option arguments.
 	call rads_init_sat_0d_xml (S(i), options(sopt(1)), pack(options, iopt==2 .or. iopt==i*10+2), debug)
 	call rads_parse_options (S(i), pack(options, iopt==0 .or. iopt==i*10))
 	call rads_parse_varlist (S(i), pack(options, mod(iopt,10)==4))
@@ -544,19 +523,20 @@ end subroutine rads_init_cmd_1d
 !+
 subroutine rads_load_options (options, iopt, nsat, debug)
 use rads_misc
-character(len=640), pointer, intent(out) :: options(:)
-integer, pointer, intent(out) :: iopt(:)
+character(len=rads_naml), intent(out), pointer :: options(:)
+integer, intent(out), pointer :: iopt(:)
 integer, intent(out) :: nsat
 integer, intent(out), optional :: debug
 !
-! Scan the command line for common options (-S, --sat=, -v, --debug=, -X,
-! --xml=) and store these, and all others in the array <options> after
-! allocating it to the right size.
+! Scan the command line for common options (-S, --sat=, -v, --debug=,
+! -q, --quiet, -X, --xml=, -V, --var=, --sel=) and store these, and all
+! others in the array <options> after allocating it to the right size.
 !
 ! The <options> array will thus have the same size as the number of options
-! on the command line, unless the first option is '--args=<filename>'.
+! on the command line, unless the first option is --args=<filename>.
 ! In the latter case options are first read from the file and then
 ! from the command line.
+! The prefixes are removed from -S, -X and -V options.
 !
 ! The array <iopt> will contain the identifiers of the various options.
 ! They are given as <nsat>*10+<type>, where <nsat> is 0 before the first
@@ -565,16 +545,18 @@ integer, intent(out), optional :: debug
 ! 0 for all other.
 ! The value <nsat> returns the total amount of -S options.
 !
-! Finally, <debug> gives the result of the '-v' or '--debug=' options.
+! Finally, <debug> gives the result of the -v, --debug=, -q or
+! --quiet options.
 !
 ! Arguments:
 !  options : List of command line options
 !  iopt    : List of indices of options starting with '-S' or '--sat='
-!  nsat    : Number of '--sat=' options
-!  debug   : Optional: Verbose level from -v or --debug=
+!  nsat    : Number of '-S' or '--sat=' options
+!  debug   : Optional: Verbose level from '-v', '--debug=', '-q', or
+!            '--quiet'
 !-----------------------------------------------------------------------
-integer :: iarg, nopts, ios, iunit, j, k
-character(len=rads_naml) :: arg
+integer :: iarg, nopts, ios, iunit, k
+character(len=rads_naml) :: arg, opt, optarg
 
 ! Initialize
 debug = 0
@@ -613,31 +595,31 @@ endif
 allocate (iopt(nopts))
 
 ! Now hunt for '-S', --sat=', '-v', '--debug=', '-X', and '--xml=' in command line options
-! The array iopt is filled to indicate where to find -S, -X and other options
+! The array iopt is filled to indicate where to find -S, -X, -v|q, -V and other options
 nsat = 0
 do iarg = 1,nopts
-	k = 1
-	if (options(iarg)(:2) == '--') k = 3
-	j = index(options(iarg), '=')
-	if (j == 0) j = 2
-	if (options(iarg)(k:k+3) == 'sat=' .or. options(iarg)(:2) == '-S') then
+	call splitarg (options(iarg), opt, optarg)
+	select case (opt)
+	case ('-S', '--sat')
 		nsat = nsat + 1
 		iopt(iarg) = nsat*10+1
-	else if (options(iarg)(k:k+3) == 'xml=' .or. options(iarg)(:2) == '-X') then
+		options(iarg) = optarg ! Remove the prefix
+	case ('-X', '--xml')
 		iopt(iarg) = nsat*10+2
-	else if (options(iarg)(k:k+5) == 'debug=' .or. options(iarg)(:2) == '-v') then
+		options(iarg) = optarg ! Remove the prefix
+	case ('-v', '--debug')
 		debug = debug + 1
-		read (options(iarg)(j+1:), *, iostat=ios) debug
+		read (optarg, *, iostat=ios) debug
 		iopt(iarg) = nsat*10+3
-	else if (options(iarg)(k:k+4) == 'quiet' .or. options(iarg)(:2) == '-q') then
+	case ('-q', '--quiet')
 		debug = -1
 		iopt(iarg) = nsat*10+3
-	else if (options(iarg)(k:k+3) == 'sel=' .or. options(iarg)(k:k+3) == 'var=' .or. &
-		options(iarg)(:2) == '-V') then
+	case ('-V', '--var', '--sel')
 		iopt(iarg) = nsat*10+4
-	else
+		options(iarg) = optarg ! Remove the prefix
+	case default
 		iopt(iarg) = nsat*10
-	endif
+	end select
 enddo
 end subroutine rads_load_options
 
@@ -690,16 +672,16 @@ case ('-P', '--pass')
 	call chartrans(optarg,'/-x',',,,')
 	read (optarg, *, iostat=ios) S%passes
 	if (S%passes(2) < 0) S%passes(2) = S%passes(1)
+case ('-A', '--alias')
+	call rads_set_alias (S, optarg(:j-1), optarg(j+1:))
+case ('-F', '--fmt')
+	call rads_set_format (S, optarg(:j-1), optarg(j+1:))
 case ('-R')
 	call rads_set_region (S, optarg)
 case ('--lat', '--lon', '--time', '--sla')
 	call rads_set_limits (S, opt(3:), string=optarg)
 case ('-L', '--lim')
 	call rads_set_limits (S, optarg(:j-1), string=optarg(j+1:))
-case ('-A', '--alias')
-	call rads_set_alias (S, optarg(:j-1), optarg(j+1:))
-case ('-F', '--fmt')
-	call rads_set_format (S, optarg(:j-1), optarg(j+1:))
 
 ! The next are only for compatibility with RADS 3
 case ('--h')
@@ -723,13 +705,9 @@ case ('--opt')
 		enddo
 	endif
 
-! Finally try data arguments
+! Finally try date arguments
 case default
-	if (datearg(arg(:3), val(1), val(2))) then
-		call rads_set_limits (S, 'time', val(1), val(2))
-	else if (datearg(arg, val(1), val(2))) then
-		call rads_set_limits (S, 'time', val(1), val(2))
-	endif
+	if (datearg(arg, val(1), val(2))) call rads_set_limits (S, 'time', val(1), val(2))
 end select
 end subroutine rads_parse_option
 
@@ -752,30 +730,19 @@ character(len=*), intent(in) :: string
 ! Error codes:
 !  S%error  : rads_err_var
 !-----------------------------------------------------------------------
-integer(fourbyteint) :: i0, i, k, l, n, noedit
+integer(fourbyteint) :: i0, i, l, n, noedit
 type(rads_var), pointer :: temp(:), var
-
-! First skip -V, --var=, var=, --sel=, or sel=, if any
-if (string(:2) == '-V') then
-	k = 3
-else if (string(:4) == 'sel=' .or. string(:4) == 'var=') then
-	k = 5
-else if (string(:6) == '--sel=' .or. string(:6) == '--var=') then
-	k = 7
-else
-	k = 1
-endif
 
 ! Avoid parsing empty string
 l = len_trim(string)
-if (l < k) then
+if (l == 0) then
 	call rads_error (S, rads_err_var, 'No variables selected')
 	return
 endif
 
 ! Count the number of commas or slashes first to determine number of variables
 n = 1
-do i = k,l
+do i = 1,l
 	if (string(i:i) == ',' .or. string(i:i) == '/') n = n + 1
 enddo
 
@@ -790,8 +757,8 @@ else
 endif
 
 ! Parse the variable list
-i0 = k
-do i = k,l
+i0 = 1
+do i = 1,l
 	if (i == l .or. string(i+1:i+1) == ',' .or. string(i+1:i+1) == '/') then
 		noedit = 0
 		if (string(i:i) == rads_noedit) noedit = 1
@@ -832,7 +799,7 @@ type(rads_sat), intent(inout) :: S
 !  S : Satellite/mission dependent structure
 !-----------------------------------------------------------------------
 integer :: nsat
-character(len=640), pointer :: options(:)
+character(len=rads_naml), pointer :: options(:)
 integer, pointer :: iopt(:)
 call rads_load_options (options, iopt, nsat)
 call rads_parse_options (S, options)
@@ -1257,7 +1224,7 @@ use rads_misc
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 character(len=*), intent(in) :: varname
-type(rads_varinfo), pointer, intent(inout) :: info
+type(rads_varinfo), intent(inout), pointer :: info
 real(eightbytereal), intent(out) :: data(:)
 logical, intent(in) :: skip_edit
 !

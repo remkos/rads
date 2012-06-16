@@ -1,18 +1,18 @@
 !-----------------------------------------------------------------------
 ! $Id$
 !
-! Copyright (C) 2011  Remko Scharroo (Altimetrics LLC)
+! Copyright (C) 2012  Remko Scharroo (Altimetrics LLC)
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
-! it under the terms of the GNU General Public License as published by
-! the Free Software Foundation, either version 3 of the License, or
-! (at your option) any later version.
+! it under the terms of the GNU Lesser General Public License as
+! published by the Free Software Foundation, either version 3 of the
+! License, or (at your option) any later version.
 !
 ! This program is distributed in the hope that it will be useful,
 ! but WITHOUT ANY WARRANTY; without even the implied warranty of
 ! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-! GNU General Public License for more details.
+! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
 !*radscolin -- Make collinear data sets from RADS
@@ -25,13 +25,15 @@ program radscolin
 ! Usage: radscolin [RADS_options] [options]
 !-----------------------------------------------------------------------
 use rads
+use rads_misc
+
 integer(fourbyteint), parameter :: msat = 5
 type(rads_sat) :: S(msat)
 integer(fourbyteint) :: nsel = 0, reject = 9999, cycle, pass, i, j, ios, &
 	nbins, nsat = 0, ntrx = 0, ntrx0, ntrx1, ptrx0, ptrx1, type_sla = 1, step = 1
 real(eightbytereal) :: dt = 0.97d0
-character(len=80) :: arg
-character(len=512) :: format_string
+character(len=rads_naml) :: arg, opt, optarg
+character(len=640) :: format_string
 logical :: numbered = .false., counter = .false.
 real(eightbytereal), allocatable :: data(:,:,:)
 integer(fourbyteint), allocatable :: nr_in_bin(:)
@@ -73,36 +75,34 @@ reject = ntrx
 
 ! Scan command line arguments
 do i = 1,iargc()
-	call getarg(i,arg)
-	if (arg(:3) == '-rn') then
-		reject = ntrx
-	else if (arg(:2) == '-r') then
-		reject = 0
-		read (arg(3:),*,iostat=ios) reject
-	else if (arg(:5) == 'step=') then
-		read (arg(6:),*) step
-	else if (arg(:7) == '--step=') then
-		read (arg(8:),*) step
-	else if (arg(:3) == 'dt=') then
-		read (arg(4:),*) dt
-	else if (arg(:5) == '--dt=') then
-		read (arg(6:),*) dt
-	else if (arg(:3) == '-as' .or. arg(:2) == '-s') then
-		! -s for backward compatibility
+	call getarg (i, arg)
+	call splitarg (arg, opt, optarg)
+	select case (opt)
+	case ('-r')
+		if (optarg == 'n') then
+			reject = ntrx
+		else
+			reject = 0
+			read (optarg, *, iostat=ios) reject
+		endif
+	case ('--step')
+		read (optarg, *, iostat=ios) step
+	case ('--dt')
+		read (optarg, *, iostat=ios) dt
+	case ('-s') ! for backward compatibility only
 		ptrx1 = ntrx + 2
-	else if (arg(:2) == '-a') then
+	case ('-a')
 		ptrx1 = ntrx + 1
-	else if (arg(:3) == '-As') then
-		ptrx0 = ntrx + 1
-		ptrx1 = ntrx + 2
-	else if (arg(:2) == '-A') then
+		if (optarg == 's') ptrx1 = ntrx + 2
+	case ('-A')
 		ptrx0 = ntrx + 1
 		ptrx1 = ntrx + 1
-	else if (arg(:2) == '-n') then
+		if (optarg == 's') ptrx1 = ntrx + 2
+	case ('-n')
 		numbered = .true.
-	else if (arg(:2) == '-N') then
+	case ('-N')
 		counter = .true.
-	endif
+	end select
 enddo
 reject = max(0,min(reject,ntrx))
 
