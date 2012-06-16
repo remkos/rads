@@ -1,18 +1,18 @@
 !-----------------------------------------------------------------------
 ! $Id$
 !
-! Copyright (C) 2011  Remko Scharroo (Altimetrics LLC)
+! Copyright (C) 2012  Remko Scharroo (Altimetrics LLC)
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
-! it under the terms of the GNU General Public License as published by
-! the Free Software Foundation, either version 3 of the License, or
-! (at your option) any later version.
+! it under the terms of the GNU Lesser General Public License as
+! published by the Free Software Foundation, either version 3 of the
+! License, or (at your option) any later version.
 !
 ! This program is distributed in the hope that it will be useful,
 ! but WITHOUT ANY WARRANTY; without even the implied warranty of
 ! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-! GNU General Public License for more details.
+! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
 module rads_geo
@@ -21,15 +21,15 @@ use typesizes
 contains
 
 !***********************************************************************
-!*checklon - Convert and verify longitude
+!*checklon -- Convert and verify longitude
 !+
 function checklon (lon_bounds, lon)
 real(eightbytereal), intent(in) :: lon_bounds(2)
 real(eightbytereal), intent(inout) :: lon
 logical :: checklon
 !
-! This function converts the logitude lon (in degrees) to within limits
-! lon_bounds, where lon_bounds(1) < lon_bounds(2). If lon is not within those
+! This function converts the logitude <lon> (in degrees) to within limits
+! <lon_bounds>, where lon_bounds(1) < lon_bounds(2). If lon is not within those
 ! boundaries, checklon is set to .true.
 ! The longitude will be wrapped (advanced or reduced by a multiple of 360
 ! degrees) if needed.
@@ -50,14 +50,15 @@ checklon = (lon > lon_bounds(2))
 end function checklon
 
 !***********************************************************************
-!*sfdist - Spherical distance between two points
+!*sfdist -- Spherical distance between two points
 !+
 function sfdist (lat0, lon0, lat1, lon1)
 real(eightbytereal), intent(in) :: lat0, lon0, lat1, lon1
 real(eightbytereal) :: sfdist
 !
 ! Compute spherical distance between two points of given geocentric
-! latitude and longitude.
+! latitude and longitude. All angles are in radians.
+!
 ! To avoid rounding errors at small distances, we use the haversine
 ! formula which is optimized for computing very small spherical
 ! distances, but only has inaccuracies determining distances to

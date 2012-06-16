@@ -87,243 +87,244 @@
           83 mss_dnsc08                              mss_dnsc08                                 1612
           84 mss_dtu10                               mss_dtu10                                  1614
           85 mss_cnescls11                           mss_cnescls11                              1615
-          86 mss                                     mss_dnsc08                                   16
-          87 swh_ku                                  swh_ku                                     1701
-          88 swh                                     swh_ku                                       17
-          89 sig0_ku                                 sig0_ku                                    1801
-          90 sig0_sdr                                sig0_sdr                                   1803
-          91 sig0                                    sig0_ku                                      18
-          92 wind_speed_alt                          wind_speed_alt                             1901
-          93 wind_speed_rad                          wind_speed_rad                             1902
-          94 wind_speed_ecmwf_u                      wind_speed_ecmwf_u                         1903
-          95 wind_speed_ecmwf_v                      wind_speed_ecmwf_v                         1904
-          96 wind_speed_cls                          wind_speed_cls                             1905
-          97 wind_speed                              wind_speed_alt                               19
-          98 range_rms_norm                          range_rms_norm                             2001
-          99 range_rms_ku                            range_rms_ku                               2002
-         100 range_rms                               range_rms_ku                                 20
-         101 range_numval_ku                         range_numval_ku                            2101
-         102 range_numval_c                          range_numval_c                             2102
-         103 range_numval                            range_numval_ku                              21
-         104 topo_dtm2000                            topo_dtm2000                               2202
-         105 topo_dnsc08                             topo_dnsc08                                2203
-         106 topo_srtm30                             topo_srtm30                                2204
-         107 topo_dtu10                              topo_dtu10                                 2205
-         108 topo                                    topo_dnsc08                                  22
-         109 tb_238                                  tb_238                                     2302
-         110 tb2                                     tb_238                                       23
-         111 tb_365                                  tb_365                                     2303
-         112 tb3                                     tb_365                                       -1
-         113 flag_status                             flag_status                                2516
-         114 flag_attitude                           flag_attitude                              2501
-         115 flag_ice                                flag_ice                                   2502
-         116 flag_iono                               flag_iono                                  2503
-         117 flag_land                               flag_land                                  2504
-         118 flag_ocean                              flag_ocean                                 2505
-         119 flag_land_rad                           flag_land_rad                              2506
-         120 flag_alt_rain_ice                       flag_alt_rain_ice                          2507
-         121 flag_rad_rain_ice                       flag_rad_rain_ice                          2508
-         122 flag_rad_tb1                            flag_rad_tb1                               2509
-         123 flag_rad_tb2                            flag_rad_tb2                               2510
-         124 flag_range_qual                         flag_range_qual                            2511
-         125 flag_swh                                flag_swh                                   2512
-         126 flag_sig0                               flag_sig0                                  2513
-         127 flag_track_mode                         flag_track_mode                            2514
-         128 flag_orbit                              flag_orbit                                 2515
-         129 f2500                                   flag_status                                  25
-         130 flags                                   flags                                      2601
-         131 flags_enh                               flags_enh                                  2602
-         132 f2600                                   flags                                        26
-         133 drange_ku                               drange_ku                                  2701
-         134 drange_cal                              drange_cal                                 2702
-         135 drange_uso                              drange_uso                                 2703
-         136 drange_fm                               drange_fm                                  2704
-         137 drange_swh_att_ku                       drange_swh_att_ku                          2705
-         138 drange_cg                               drange_cg                                  2707
-         139 drange_dat                              drange_dat                                 2708
-         140 drange                                  drange_ku                                    27
-         141 swh_rms_ku_norm                         swh_rms_ku_norm                            2801
-         142 swh_rms_ku                              swh_rms_ku                                 2802
-         143 swh_rms                                 swh_rms_ku                                   28
-         144 sig0_rms_ku_norm                        sig0_rms_ku_norm                           2901
-         145 sig0_rms_ku                             sig0_rms_ku                                2902
-         146 sig0_rms                                sig0_rms_ku                                  29
-         147 off_nadir_angle_wf_ku                   off_nadir_angle_wf_ku                      3001
-         148 off_nadir_angle2_wf_ku                  off_nadir_angle2_wf_ku                     3002
-         149 off_nadir_angle_pf                      off_nadir_angle_pf                         3003
-         150 off_nadir_angle2_pf                     off_nadir_angle2_pf                        3004
-         151 attitude                                off_nadir_angle2_wf_ku                       30
-         152 dsig0_ku                                dsig0_ku                                   3201
-         153 dsig0_atmos_ku                          dsig0_atmos_ku                             3203
-         154 dsig0                                   dsig0_ku                                     32
-         155 liquid_water                            liquid_water                               3301
-         156 f3300                                   liquid_water                                 33
-         157 wvc                                     wvc                                        3302
-         158 track_mode                              track_mode                                 3415
-         159 seq_nr                                  seq_nr                                     3416
-         160 rain_ice_index                          rain_ice_index                             3501
-         161 f3500                                   rain_ice_index                               35
-         162 basin                                   basin                                      3601
-         163 f3600                                   basin                                        36
-         164 waveform_data                           waveform_data                              3701
-         165 waveform_scale                          waveform_scale                             3764
-         166 f3700                                   waveform_data                                37
-         167 ref_frame_offset                        ref_frame_offset                           3801
-         168 f3800                                   ref_frame_offset                             38
-         169 tide_equil                              tide_equil                                 3901
-         170 tide_non_equil                          tide_non_equil                             3902
-         171 f3900                                   tide_equil                                   39
-         172 wave_m0                                 wave_m0                                    4001
-         173 f4000                                   wave_m0                                      40
-         174 wave_m1                                 wave_m1                                    4101
-         175 f4100                                   wave_m1                                      41
-         176 wave_m2                                 wave_m2                                    4201
-         177 f4200                                   wave_m2                                      42
-         178 wave_m4                                 wave_m4                                    4301
-         179 f4300                                   wave_m4                                      43
-         180 wave_shs                                wave_shs                                   4401
-         181 f4400                                   wave_shs                                     44
-         182 dist_coast                              dist_coast                                 4501
-         183 f4500                                   dist_coast                                   45
-         184 seaice_class                            seaice_class                               4601
-         185 r4600                                   seaice_class                                 46
-         186 seaice_conc                             seaice_conc                                4701
-         187 f4700                                   seaice_conc                                  47
-         188 sst                                     sst                                        4801
-         189 sst_mean                                sst_mean                                   4802
-         190 f4800                                   sst                                          48
-         191 dry_tropo_airtide                       dry_tropo_airtide                          4901
-         192 f4900                                   dry_tropo_airtide                            49
-         193 first_meas_time                         first_meas_time                            9901
-         194 last_meas_time                          last_meas_time                             9902
-         195 eqtime                                  eqtime                                     9903
-         196 eqlon                                   eqlon                                      9904
-         197 cycle                                   cycle                                      9905
-         198 pass                                    pass                                       9906
-         199 f9900                                   first_meas_time                              99
+          86 mss_ucl04                               mss_ucl04                                    -1
+          87 mss                                     mss_dnsc08                                   16
+          88 swh_ku                                  swh_ku                                     1701
+          89 swh                                     swh_ku                                       17
+          90 sig0_ku                                 sig0_ku                                    1801
+          91 sig0_sdr                                sig0_sdr                                   1803
+          92 sig0                                    sig0_ku                                      18
+          93 wind_speed_alt                          wind_speed_alt                             1901
+          94 wind_speed_rad                          wind_speed_rad                             1902
+          95 wind_speed_ecmwf_u                      wind_speed_ecmwf_u                         1903
+          96 wind_speed_ecmwf_v                      wind_speed_ecmwf_v                         1904
+          97 wind_speed_cls                          wind_speed_cls                             1905
+          98 wind_speed                              wind_speed_alt                               19
+          99 range_rms_norm                          range_rms_norm                             2001
+         100 range_rms_ku                            range_rms_ku                               2002
+         101 range_rms                               range_rms_ku                                 20
+         102 range_numval_ku                         range_numval_ku                            2101
+         103 range_numval_c                          range_numval_c                             2102
+         104 range_numval                            range_numval_ku                              21
+         105 topo_dtm2000                            topo_dtm2000                               2202
+         106 topo_dnsc08                             topo_dnsc08                                2203
+         107 topo_srtm30                             topo_srtm30                                2204
+         108 topo_dtu10                              topo_dtu10                                 2205
+         109 topo                                    topo_dnsc08                                  22
+         110 tb_238                                  tb_238                                     2302
+         111 tb2                                     tb_238                                       23
+         112 tb_365                                  tb_365                                     2303
+         113 tb3                                     tb_365                                       -1
+         114 flag_status                             flag_status                                2516
+         115 flag_attitude                           flag_attitude                              2501
+         116 flag_ice                                flag_ice                                   2502
+         117 flag_iono                               flag_iono                                  2503
+         118 flag_land                               flag_land                                  2504
+         119 flag_ocean                              flag_ocean                                 2505
+         120 flag_land_rad                           flag_land_rad                              2506
+         121 flag_alt_rain_ice                       flag_alt_rain_ice                          2507
+         122 flag_rad_rain_ice                       flag_rad_rain_ice                          2508
+         123 flag_rad_tb1                            flag_rad_tb1                               2509
+         124 flag_rad_tb2                            flag_rad_tb2                               2510
+         125 flag_range_qual                         flag_range_qual                            2511
+         126 flag_swh                                flag_swh                                   2512
+         127 flag_sig0                               flag_sig0                                  2513
+         128 flag_track_mode                         flag_track_mode                            2514
+         129 flag_orbit                              flag_orbit                                 2515
+         130 f2500                                   flag_status                                  25
+         131 flags                                   flags                                      2601
+         132 flags_enh                               flags_enh                                  2602
+         133 f2600                                   flags                                        26
+         134 drange_ku                               drange_ku                                  2701
+         135 drange_cal                              drange_cal                                 2702
+         136 drange_uso                              drange_uso                                 2703
+         137 drange_fm                               drange_fm                                  2704
+         138 drange_swh_att_ku                       drange_swh_att_ku                          2705
+         139 drange_cg                               drange_cg                                  2707
+         140 drange_dat                              drange_dat                                 2708
+         141 drange                                  drange_ku                                    27
+         142 swh_rms_ku_norm                         swh_rms_ku_norm                            2801
+         143 swh_rms_ku                              swh_rms_ku                                 2802
+         144 swh_rms                                 swh_rms_ku                                   28
+         145 sig0_rms_ku_norm                        sig0_rms_ku_norm                           2901
+         146 sig0_rms_ku                             sig0_rms_ku                                2902
+         147 sig0_rms                                sig0_rms_ku                                  29
+         148 off_nadir_angle_wf_ku                   off_nadir_angle_wf_ku                      3001
+         149 off_nadir_angle2_wf_ku                  off_nadir_angle2_wf_ku                     3002
+         150 off_nadir_angle_pf                      off_nadir_angle_pf                         3003
+         151 off_nadir_angle2_pf                     off_nadir_angle2_pf                        3004
+         152 attitude                                off_nadir_angle2_wf_ku                       30
+         153 dsig0_ku                                dsig0_ku                                   3201
+         154 dsig0_atmos_ku                          dsig0_atmos_ku                             3203
+         155 dsig0                                   dsig0_ku                                     32
+         156 liquid_water                            liquid_water                               3301
+         157 f3300                                   liquid_water                                 33
+         158 wvc                                     wvc                                        3302
+         159 track_mode                              track_mode                                 3415
+         160 seq_nr                                  seq_nr                                     3416
+         161 rain_ice_index                          rain_ice_index                             3501
+         162 f3500                                   rain_ice_index                               35
+         163 basin                                   basin                                      3601
+         164 f3600                                   basin                                        36
+         165 waveform_data                           waveform_data                              3701
+         166 waveform_scale                          waveform_scale                             3764
+         167 f3700                                   waveform_data                                37
+         168 ref_frame_offset                        ref_frame_offset                           3801
+         169 f3800                                   ref_frame_offset                             38
+         170 tide_equil                              tide_equil                                 3901
+         171 tide_non_equil                          tide_non_equil                             3902
+         172 f3900                                   tide_equil                                   39
+         173 wave_m0                                 wave_m0                                    4001
+         174 f4000                                   wave_m0                                      40
+         175 wave_m1                                 wave_m1                                    4101
+         176 f4100                                   wave_m1                                      41
+         177 wave_m2                                 wave_m2                                    4201
+         178 f4200                                   wave_m2                                      42
+         179 wave_m4                                 wave_m4                                    4301
+         180 f4300                                   wave_m4                                      43
+         181 wave_shs                                wave_shs                                   4401
+         182 f4400                                   wave_shs                                     44
+         183 dist_coast                              dist_coast                                 4501
+         184 f4500                                   dist_coast                                   45
+         185 seaice_class                            seaice_class                               4601
+         186 r4600                                   seaice_class                                 46
+         187 seaice_conc                             seaice_conc                                4701
+         188 f4700                                   seaice_conc                                  47
+         189 sst                                     sst                                        4801
+         190 sst_mean                                sst_mean                                   4802
+         191 f4800                                   sst                                          48
+         192 dry_tropo_airtide                       dry_tropo_airtide                          4901
+         193 f4900                                   dry_tropo_airtide                            49
+         194 first_meas_time                         first_meas_time                            9901
+         195 last_meas_time                          last_meas_time                             9902
+         196 eqtime                                  eqtime                                     9903
+         197 eqlon                                   eqlon                                      9904
+         198 cycle                                   cycle                                      9905
+         199 pass                                    pass                                       9906
+         200 f9900                                   first_meas_time                              99
  Eqlonlim =   -189.09260342695319       -195.85137415828183        195.85137415828183        189.09260342695319     
  Eqlonlim =   -99.092603426953190       -105.85137415828184        135.85137415828183        129.09260342695319     
  debug =           3
  Checking cycle/pass :           19           1
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212103540.64525583        212106554.59874418     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212103263.02325583        212106276.97674417     
  Checking cycle/pass :           19           2
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212106554.59874421        212109568.55223256     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212106276.97674420        212109290.93023255     
  Checking cycle/pass :           19           3
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212109568.55223256        212112582.50572091     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212109290.93023258        212112304.88372093     
  Checking cycle/pass :           19           4
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212112582.50572094        212115596.45920929     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212112304.88372093        212115318.83720928     
  Checking cycle/pass :           19           5
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212115596.45920932        212118610.41269767     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212115318.83720931        212118332.79069766     
  Checking cycle/pass :           19           6
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212118610.41269770        212121624.36618605     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212118332.79069769        212121346.74418604     
  Checking cycle/pass :           19           7
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212121624.36618605        212124638.31967440     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212121346.74418604        212124360.69767439     
  Checking cycle/pass :           19           8
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212124638.31967443        212127652.27316278     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212124360.69767442        212127374.65116277     
  Checking cycle/pass :           19           9
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212127652.27316281        212130666.22665116     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212127374.65116280        212130388.60465115     
  Checking cycle/pass :           19          10
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212130666.22665119        212133680.18013954     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212130388.60465118        212133402.55813953     
  Checking cycle/pass :           19          11
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212133680.18013954        212136694.13362789     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212133402.55813953        212136416.51162788     
  Checking cycle/pass :           19          12
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212136694.13362792        212139708.08711627     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212136416.51162791        212139430.46511626     
  Checking cycle/pass :           19          13
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212139708.08711630        212142722.04060465     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212139430.46511629        212142444.41860464     
  Checking cycle/pass :           19          14
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212142722.04060468        212145735.99409303     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212142444.41860467        212145458.37209302     
  Checking cycle/pass :           19          15
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212145735.99409303        212148749.94758138     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212145458.37209302        212148472.32558137     
  Checking cycle/pass :           19          16
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212148749.94758141        212151763.90106976     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212148472.32558140        212151486.27906975     
  Checking cycle/pass :           19          17
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212151763.90106979        212154777.85455814     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212151486.27906978        212154500.23255813     
  Checking cycle/pass :           19          18
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212154777.85455817        212157791.80804652     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212154500.23255816        212157514.18604651     
  Checking cycle/pass :           19          19
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212157791.80804652        212160805.76153487     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212157514.18604651        212160528.13953486     
  Checking cycle/pass :           19          20
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212160805.76153490        212163819.71502325     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212160528.13953489        212163542.09302324     
  Checking cycle/pass :           19          21
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212163819.71502328        212166833.66851163     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212163542.09302327        212166556.04651162     
  Checking cycle/pass :           19          22
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212166833.66851166        212169847.62200001     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212166556.04651165        212169570.00000000     
  Checking cycle/pass :           19          23
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212169847.62200001        212172861.57548836     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212169570.00000000        212172583.95348835     
  Checking cycle/pass :           19          24
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212172861.57548839        212175875.52897674     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212172583.95348838        212175597.90697673     
  Checking cycle/pass :           19          25
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212175875.52897677        212178889.48246512     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212175597.90697676        212178611.86046511     
  Checking cycle/pass :           19          26
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212178889.48246515        212181903.43595350     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212178611.86046514        212181625.81395349     
  Checking cycle/pass :           19          27
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212181903.43595350        212184917.38944185     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212181625.81395349        212184639.76744184     
  Checking cycle/pass :           19          28
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212184917.38944188        212187931.34293023     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212184639.76744187        212187653.72093022     
  Checking cycle/pass :           19          29
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212187931.34293026        212190945.29641861     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212187653.72093025        212190667.67441860     
  Checking cycle/pass :           19          30
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212190945.29641864        212193959.24990699     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212190667.67441863        212193681.62790698     
  Checking cycle/pass :           19          31
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212193959.24990699        212196973.20339534     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212193681.62790698        212196695.58139533     
  Checking cycle/pass :           19          32
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212196973.20339537        212199987.15688372     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212196695.58139536        212199709.53488371     
  Checking cycle/pass :           19          33
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212199987.15688375        212203001.11037210     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212199709.53488374        212202723.48837209     
  Checking cycle/pass :           19          34
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212203001.11037213        212206015.06386048     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212202723.48837212        212205737.44186047     
  Checking cycle/pass :           19          35
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212206015.06386048        212209029.01734883     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212205737.44186047        212208751.39534882     
  Checking cycle/pass :           19          36
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212209029.01734886        212212042.97083721     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212208751.39534885        212211765.34883720     
  Checking cycle/pass :           19          37
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212212042.97083724        212215056.92432559     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212211765.34883723        212214779.30232558     
  Checking cycle/pass :           19          38
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212215056.92432562        212218070.87781397     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212214779.30232561        212217793.25581396     
  Checking cycle/pass :           19          39
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212218070.87781397        212221084.83130231     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212217793.25581396        212220807.20930231     
  Checking cycle/pass :           19          40
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212221084.83130234        212224098.78479069     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212220807.20930234        212223821.16279069     
  Checking cycle/pass :           19          41
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212224098.78479072        212227112.73827907     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212223821.16279072        212226835.11627907     
  Checking cycle/pass :           19          42
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212227112.73827910        212230126.69176745     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212226835.11627907        212229849.06976742     
  Checking cycle/pass :           19          43
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212230126.69176745        212233140.64525580     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212229849.06976745        212232863.02325580     
  Checking cycle/pass :           19          44
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212233140.64525583        212236154.59874418     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212232863.02325583        212235876.97674417     
  Checking cycle/pass :           19          45
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212236154.59874421        212239168.55223256     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212235876.97674420        212238890.93023255     
  Checking cycle/pass :           19          46
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212239168.55223256        212242182.50572091     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212238890.93023258        212241904.88372093     
  Checking cycle/pass :           19          47
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212242182.50572094        212245196.45920929     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212241904.88372093        212244918.83720928     
  Checking cycle/pass :           19          48
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212245196.45920932        212248210.41269767     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212244918.83720931        212247932.79069766     
  Checking cycle/pass :           19          49
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212248210.41269770        212251224.36618605     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212247932.79069769        212250946.74418604     
  Checking cycle/pass :           19          50
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212251224.36618605        212254238.31967440     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212250946.74418604        212253960.69767439     
  Checking cycle/pass :           19          51
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212254238.31967443        212257252.27316278     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212253960.69767442        212256974.65116277     
  Checking cycle/pass :           19          52
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212257252.27316281        212260266.22665116     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212256974.65116280        212259988.60465115     
  Checking cycle/pass :           19          53
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212260266.22665119        212263280.18013954     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212259988.60465118        212263002.55813953     
  Checking cycle/pass :           19          54
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212263280.18013954        212266294.13362789     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212263002.55813953        212266016.51162788     
  Checking cycle/pass :           19          55
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212266294.13362792        212269308.08711627     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212266016.51162791        212269030.46511626     
  Checking cycle/pass :           19          56
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212269308.08711630        212272322.04060465     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212269030.46511629        212272044.41860464     
  Checking cycle/pass :           19          57
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212272322.04060468        212275335.99409303     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212272044.41860467        212275058.37209302     
  Checking cycle/pass :           19          58
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212275335.99409303        212278349.94758138     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212275058.37209302        212278072.32558137     
  Checking cycle/pass :           19          59
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212278349.94758141        212281363.90106976     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212278072.32558140        212281086.27906975     
  Checking cycle/pass :           19          60
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212281363.90106979        212284377.85455814     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212281086.27906978        212284100.23255813     
  Checking cycle/pass :           19          61
  Opening : /rads/data/e1/a/c019/e1p0061c019.nc
  Start/end/equator time/longitude =    212285607.46814600        212284395.96138999        212287111.31474301       -25.854612999999972     
@@ -592,174 +593,175 @@ tide_ocean                              data(1), data(ndata) =   0.2359  0.3324
 pass                                    data(1), data(ndata) =     3.    3.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           20           4
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212371782.50572094        212374796.45920929     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212371504.88372093        212374518.83720928     
  Checking cycle/pass :           20           5
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212374796.45920932        212377810.41269767     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212374518.83720931        212377532.79069766     
  Checking cycle/pass :           20           6
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212377810.41269770        212380824.36618605     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212377532.79069769        212380546.74418604     
  Checking cycle/pass :           20           7
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212380824.36618605        212383838.31967440     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212380546.74418604        212383560.69767439     
  Checking cycle/pass :           20           8
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212383838.31967443        212386852.27316278     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212383560.69767442        212386574.65116277     
  Checking cycle/pass :           20           9
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212386852.27316281        212389866.22665116     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212386574.65116280        212389588.60465115     
  Checking cycle/pass :           20          10
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212389866.22665119        212392880.18013954     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212389588.60465118        212392602.55813953     
  Checking cycle/pass :           20          11
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212392880.18013954        212395894.13362789     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212392602.55813953        212395616.51162788     
  Checking cycle/pass :           20          12
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212395894.13362792        212398908.08711627     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212395616.51162791        212398630.46511626     
  Checking cycle/pass :           20          13
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212398908.08711630        212401922.04060465     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212398630.46511629        212401644.41860464     
  Checking cycle/pass :           20          14
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212401922.04060468        212404935.99409303     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212401644.41860467        212404658.37209302     
  Checking cycle/pass :           20          15
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212404935.99409303        212407949.94758138     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212404658.37209302        212407672.32558137     
  Checking cycle/pass :           20          16
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212407949.94758141        212410963.90106976     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212407672.32558140        212410686.27906975     
  Checking cycle/pass :           20          17
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212410963.90106979        212413977.85455814     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212410686.27906978        212413700.23255813     
  Checking cycle/pass :           20          18
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212413977.85455817        212416991.80804652     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212413700.23255816        212416714.18604651     
  Checking cycle/pass :           20          19
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212416991.80804652        212420005.76153487     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212416714.18604651        212419728.13953486     
  Checking cycle/pass :           20          20
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212420005.76153490        212423019.71502325     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212419728.13953489        212422742.09302324     
  Checking cycle/pass :           20          21
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212423019.71502328        212426033.66851163     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212422742.09302327        212425756.04651162     
  Checking cycle/pass :           20          22
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212426033.66851166        212429047.62200001     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212425756.04651165        212428770.00000000     
  Checking cycle/pass :           20          23
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212429047.62200001        212432061.57548836     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212428770.00000000        212431783.95348835     
  Checking cycle/pass :           20          24
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212432061.57548839        212435075.52897674     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212431783.95348838        212434797.90697673     
  Checking cycle/pass :           20          25
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212435075.52897677        212438089.48246512     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212434797.90697676        212437811.86046511     
  Checking cycle/pass :           20          26
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212438089.48246515        212441103.43595350     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212437811.86046514        212440825.81395349     
  Checking cycle/pass :           20          27
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212441103.43595350        212444117.38944185     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212440825.81395349        212443839.76744184     
  Checking cycle/pass :           20          28
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212444117.38944188        212447131.34293023     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212443839.76744187        212446853.72093022     
  Checking cycle/pass :           20          29
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212447131.34293026        212450145.29641861     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212446853.72093025        212449867.67441860     
  Checking cycle/pass :           20          30
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212450145.29641864        212453159.24990699     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212449867.67441863        212452881.62790698     
  Checking cycle/pass :           20          31
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212453159.24990699        212456173.20339534     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212452881.62790698        212455895.58139533     
  Checking cycle/pass :           20          32
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212456173.20339537        212459187.15688372     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212455895.58139536        212458909.53488371     
  Checking cycle/pass :           20          33
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212459187.15688375        212462201.11037210     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212458909.53488374        212461923.48837209     
  Checking cycle/pass :           20          34
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212462201.11037213        212465215.06386048     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212461923.48837212        212464937.44186047     
  Checking cycle/pass :           20          35
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212465215.06386048        212468229.01734883     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212464937.44186047        212467951.39534882     
  Checking cycle/pass :           20          36
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212468229.01734886        212471242.97083721     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212467951.39534885        212470965.34883720     
  Checking cycle/pass :           20          37
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212471242.97083724        212474256.92432559     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212470965.34883723        212473979.30232558     
  Checking cycle/pass :           20          38
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212474256.92432562        212477270.87781397     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212473979.30232561        212476993.25581396     
  Checking cycle/pass :           20          39
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212477270.87781397        212480284.83130231     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212476993.25581396        212480007.20930231     
  Checking cycle/pass :           20          40
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212480284.83130234        212483298.78479069     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212480007.20930234        212483021.16279069     
  Checking cycle/pass :           20          41
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212483298.78479072        212486312.73827907     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212483021.16279072        212486035.11627907     
  Checking cycle/pass :           20          42
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212486312.73827910        212489326.69176745     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212486035.11627907        212489049.06976742     
  Checking cycle/pass :           20          43
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212489326.69176745        212492340.64525580     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212489049.06976745        212492063.02325580     
  Checking cycle/pass :           20          44
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212492340.64525583        212495354.59874418     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212492063.02325583        212495076.97674417     
  Checking cycle/pass :           20          45
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212495354.59874421        212498368.55223256     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212495076.97674420        212498090.93023255     
  Checking cycle/pass :           20          46
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212498368.55223256        212501382.50572091     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212498090.93023258        212501104.88372093     
  Checking cycle/pass :           20          47
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212501382.50572094        212504396.45920929     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212501104.88372093        212504118.83720928     
  Checking cycle/pass :           20          48
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212504396.45920932        212507410.41269767     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212504118.83720931        212507132.79069766     
  Checking cycle/pass :           20          49
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212507410.41269770        212510424.36618605     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212507132.79069769        212510146.74418604     
  Checking cycle/pass :           20          50
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212510424.36618605        212513438.31967440     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212510146.74418604        212513160.69767439     
  Checking cycle/pass :           20          51
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212513438.31967443        212516452.27316278     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212513160.69767442        212516174.65116277     
  Checking cycle/pass :           20          52
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212516452.27316281        212519466.22665116     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212516174.65116280        212519188.60465115     
  Checking cycle/pass :           20          53
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212519466.22665119        212522480.18013954     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212519188.60465118        212522202.55813953     
  Checking cycle/pass :           20          54
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212522480.18013954        212525494.13362789     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212522202.55813953        212525216.51162788     
  Checking cycle/pass :           20          55
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212525494.13362792        212528508.08711627     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212525216.51162791        212528230.46511626     
  Checking cycle/pass :           20          56
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212528508.08711630        212531522.04060465     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212528230.46511629        212531244.41860464     
  Checking cycle/pass :           20          57
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212531522.04060468        212534535.99409303     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212531244.41860467        212534258.37209302     
  Checking cycle/pass :           20          58
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212534535.99409303        212537549.94758138     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212534258.37209302        212537272.32558137     
  Checking cycle/pass :           20          59
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212537549.94758141        212540563.90106976     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212537272.32558140        212540286.27906975     
  Checking cycle/pass :           20          60
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212540563.90106979        212543577.85455814     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212540286.27906978        212543300.23255813     
  Checking cycle/pass :           20          61
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212543577.85455817        212546591.80804652     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212543300.23255816        212546314.18604651     
  Checking cycle/pass :           20          62
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212546591.80804652        212549605.76153487     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212546314.18604651        212549328.13953486     
  Checking cycle/pass :           20          63
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212549605.76153490        212552619.71502325     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212549328.13953489        212552342.09302324     
  Checking cycle/pass :           20          64
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212552619.71502328        212555633.66851163     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212552342.09302327        212555356.04651162     
  Checking cycle/pass :           20          65
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212555633.66851166        212558647.62200001     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212555356.04651165        212558370.00000000     
  Checking cycle/pass :           20          66
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212558647.62200001        212561661.57548836     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212558370.00000000        212561383.95348835     
  Checking cycle/pass :           20          67
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212561661.57548839        212564675.52897674     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212561383.95348838        212564397.90697673     
  Checking cycle/pass :           20          68
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212564675.52897677        212567689.48246512     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212564397.90697676        212567411.86046511     
  Checking cycle/pass :           20          69
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212567689.48246515        212570703.43595350     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212567411.86046514        212570425.81395349     
  Checking cycle/pass :           20          70
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212570703.43595350        212573717.38944185     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212570425.81395349        212573439.76744184     
  Checking cycle/pass :           20          71
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212573717.38944188        212576731.34293023     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212573439.76744187        212576453.72093022     
  Checking cycle/pass :           20          72
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212576731.34293026        212579745.29641861     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212576453.72093025        212579467.67441860     
  Checking cycle/pass :           20          73
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212579745.29641864        212582759.24990699     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212579467.67441863        212582481.62790698     
  Checking cycle/pass :           20          74
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212582759.24990699        212585773.20339534     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212582481.62790698        212585495.58139533     
  Checking cycle/pass :           20          75
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212585773.20339537        212588787.15688372     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212585495.58139536        212588509.53488371     
  Checking cycle/pass :           20          76
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212588787.15688375        212591801.11037210     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212588509.53488374        212591523.48837209     
  Checking cycle/pass :           20          77
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212591801.11037213        212594815.06386048     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212591523.48837212        212594537.44186047     
  Checking cycle/pass :           20          78
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212594815.06386048        212597829.01734883     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212594537.44186047        212597551.39534882     
  Checking cycle/pass :           20          79
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212597829.01734886        212600842.97083721     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212597551.39534885        212600565.34883720     
  Checking cycle/pass :           20          80
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212600842.97083724        212603856.92432559     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212600565.34883723        212603579.30232558     
  Checking cycle/pass :           20          81
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212603856.92432562        212606870.87781397     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212603579.30232561        212606593.25581396     
  Checking cycle/pass :           20          82
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212606870.87781397        212609884.83130231     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212606593.25581396        212609607.20930231     
  Checking cycle/pass :           20          83
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212609884.83130234        212612898.78479069     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212609607.20930234        212612621.16279069     
  Checking cycle/pass :           20          84
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212612898.78479072        212615912.73827907     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212612621.16279072        212615635.11627907     
  Checking cycle/pass :           20          85
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212615912.73827910        212618926.69176745     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212615635.11627907        212618649.06976742     
  Checking cycle/pass :           20          86
- Bail out on estimated time:   212284800.00000000        212371200.00000000        212618926.69176745        212621940.64525580     
+ Bail out on estimated time:   212284800.00000000        212371200.00000000        212618649.06976745        212621663.02325580     
  Start rads_end
 ######################################################################################################################################
 # Editing statistics for ERS-1 (e1)
+# Created: 2012-06-16 13:01:25 UTC: rads_test debug=3 sat=e1/a ymd=19910924,19910925 lat=-50,30 lon=-90,120 sel=time,lat,lon,sla,12_,tide_ocean_,pass,drange
 #
 # PASSES QUERIED                                           172
 #
@@ -805,4 +807,4 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 # pass number []                                   0     16852         NaN         NaN       1.000      85.000      62.645      25.165
 ######################################################################################################################################
  End of program
-CLOCK, CPU =   0.0530   0.0526
+CLOCK, CPU =   0.0610   0.0607

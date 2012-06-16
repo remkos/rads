@@ -1,18 +1,18 @@
 !-----------------------------------------------------------------------
 ! $Id$
 !
-! Copyright (C) 2011  Remko Scharroo (Altimetrics LLC)
+! Copyright (C) 2012  Remko Scharroo (Altimetrics LLC)
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
-! it under the terms of the GNU General Public License as published by
-! the Free Software Foundation, either version 3 of the License, or
-! (at your option) any later version.
+! it under the terms of the GNU Lesser General Public License as
+! published by the Free Software Foundation, either version 3 of the
+! License, or (at your option) any later version.
 !
 ! This program is distributed in the hope that it will be useful,
 ! but WITHOUT ANY WARRANTY; without even the implied warranty of
 ! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-! GNU General Public License for more details.
+! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
 !***********************************************************************
@@ -66,15 +66,16 @@ type(grid), intent(inout) :: info
 ! 4- or 8-byte floats.
 !
 ! The argument filenm is the path name of the grid file. Optionally, one
-! can append ?varname to load a specific variable (varname) from a netCDF
+! can append '?varname' to load a specific variable ('varname') from a netCDF
 ! grid. If not given, the first 2-dimensional grid is loaded.
 !
 ! All information about the grid is stored in the structure info.
 !
-! After using grid_load, use grid_query, grid_lininter or grid_splinter
-! to query the grid or do a bi-linear or bi-cubic spline interpolation.
+! After using <grid_load>, use <grid_query>, <grid_lininter> or
+! <grid_splinter> to query the grid or do a bi-linear or bi-cubic spline
+! interpolation.
 !
-! Use grid_free to free the allocated memory. Note that this does
+! Use <grid_free> to free the allocated memory. Note that this does
 ! not free the grid info structure.
 !
 ! When the allocation of memory or the loading of the grid was
@@ -286,7 +287,7 @@ end function grid_load
 elemental subroutine grid_free (info)
 type (grid), intent(inout) :: info
 !
-! This routine frees up the memory allocated by grid_load to store a grid.
+! This routine frees up the memory allocated by <grid_load> to store a grid.
 ! Note that this routine does not deallocate the grid structure info
 ! itself, only the memory allocated to store the grid values.
 !
@@ -311,16 +312,16 @@ real(eightbytereal), intent(in) :: x, y
 real(eightbytereal) :: grid_query
 !
 ! This function looks up a single value in a buffered grid that
-! was previously loaded using grid_load. No interpolation is
+! was previously loaded using <grid_load>. No interpolation is
 ! performed, the value at the closest grid point is returned.
 !
-! The location at which the grid is to be queried is given by x and y.
-! When the grid is geographical, the routine will attempt to wrap
-! x by a multiple of 360 degrees so that it is within the grid.
+! The location at which the grid is to be interpolated is given by
+! <x> and <y>. When the grid is geographical, the routine will attemp
+! to wrap <x> by a multiple of 360 degrees so that it is within the grid.
 !
 ! Upon exit, the function value grid_query will be the value
-! of the grid at a grid node closest to (x, y). When that point is
-! undetermined or when (x, y) is outside the grid, even after
+! of the grid at a grid node closest to (<x>, <y>). When that point is
+! undetermined or when (<x>, <y>) is outside the grid, even after
 ! wrapping, grid_query returns a NaN value.
 !
 ! Input arguments:
@@ -384,29 +385,29 @@ real(eightbytereal), intent(in) :: x, y
 real(eightbytereal) :: grid_lininter
 !
 ! This function interpolates a buffered grid that was previously loaded
-! using grid_load. Bi-linear interpolation is used whenever possible.
+! using <grid_load>. Bi-linear interpolation is used whenever possible.
 !
-! The location at which the grid is to be interpolated is given by x and y.
-! When the grid is geographical, the routine will attempt to wrap
-! x by a multiple of 360 degrees so that it is within the grid.
+! The location at which the grid is to be interpolated is given by
+! <x> and <y>. When the grid is geographical, the routine will attemp
+! to wrap <x> by a multiple of 360 degrees so that it is within the grid.
 !
 ! Upon exit, the function value grid_lininter will be the interpolated
-! value of the grid at the location (x, y). When (x, y) points directly
-! to a grid point, the value at this grid point is returned, otherwise
-! bi-linear interpolation is performed between the four grid points
-! surrounding (x, y). When one of the grid points is not determined, a
+! value of the grid at the location (<x>, <y>). When (<x>, <y>) points
+! directly to a grid point, the value at this grid point is returned,
+! otherwise bi-linear interpolation is performed between the four grid points
+! surrounding (<x>, <y>). When one of the grid points is not determined, a
 ! triangular interpolation is conducted.
 !
-! When (x, y) is outside the grid, even after wrapping, or when (x, y)
-! is close to an undetermined grid point, grid_lininter returns a NaN
-! value.
+! When (<x>, <y>) is outside the grid, even after wrapping, or when
+! (<x>, <y>) is close to an undetermined grid point, <grid_lininter>
+! returns a NaN value.
 !
 ! Input arguments:
 !  info : Grid info structure as returned by grid_load
 !  x, y : x- and y-coordinate of the point to be interpolated
 !
 ! Output argument:
-!  grid_lininter : Interpolated value at the location (X, Y)
+!  grid_lininter : Interpolated value at the location (x, y)
 !-----------------------------------------------------------------------
 real(eightbytereal) :: xj,yj,z(2,2),weight(2,2),wtot,vtot
 integer(fourbyteint) :: jx,jy,jx1,jy1
@@ -488,25 +489,25 @@ real(eightbytereal), intent(in) :: x, y
 real(eightbytereal) :: grid_splinter
 !
 ! This function interpolates a buffered grid that was previously loaded
-! using grid_load. Bi-cubic spline interpolation is used whenever possible.
+! using <grid_load>. Bi-cubic spline interpolation is used whenever possible.
 !
-! The location at which the grid is to be interpolated is given by x and y.
-! When the grid is geographical, the routine will attempt to wrap
-! x by a multiple of 360 degrees so that it is within the grid.
+! The location at which the grid is to be interpolated is given by
+! <x> and <y>. When the grid is geographical, the routine will attemp
+! to wrap <x> by a multiple of 360 degrees so that it is within the grid.
 !
 ! Upon exit, the function value grid_splinter will be the interpolated
-! value of the grid at the location (x, y). When (x, y) points directly
-! to a grid point, the value at this grid point is returned, otherwise
-! bi-cubic spline interpolation is performed between the 6-by-6 grid
-! points surrounding (x, y).
+! value of the grid at the location (<x>, <y>). When (<x>, <y>) points
+! directly to a grid point, the value at this grid point is returned,
+! otherwise bi-cubic spline interpolation is performed between the
+! 6-by-6 grid points surrounding (<x>, <y>).
 !
 ! This routine DOES NOT take into account invalid values. Hence, it
 ! assumes that all values in the 6-by-6 subgrid are valid. This will
 ! work for most geoid and mean sea surface grids.
 !
-! When (x, y) is outside the grid, or too close to the boundary in order
+! When (<x>, <y>) is outside the grid, or too close to the boundary in order
 ! to perform bi-cubic spline interpolation, even after wrapping, or when
-! (x, y) is close to an undetermined grid point, grid_splinter returns
+! (<x>, <y>) is close to an undetermined grid point, grid_splinter returns
 ! a NaN value.
 !
 ! Input arguments:
@@ -628,7 +629,7 @@ real(eightbytereal) :: grid_x
 !
 ! This function returns the x-coordinate of a grid pixel.
 ! The input i is the index along the horizontal axis, running from 1 to
-! info%nx. If i is out of range, NaN is returned.
+! <info%nx>. If <i> is out of range, NaN is returned.
 !
 ! Input arguments:
 !  info : Grid info structure as returned by grid_load
@@ -656,7 +657,7 @@ real(eightbytereal) :: grid_y
 !
 ! This function returns the y-coordinate of a grid pixel.
 ! The input i is the index along the vertical axis, running from 1 to
-! info%ny. If i is out of range, NaN is returned.
+! <info%ny>. If <i> is out of range, NaN is returned.
 !
 ! Input arguments:
 !  info : Grid info structure as returned by grid_load
@@ -682,10 +683,10 @@ type(grid), intent(in) :: info
 real(eightbytereal), intent(in) :: x,y
 logical :: grid_inside
 !
-! This function determines if point (x, y) is within or on the
+! This function determines if point (<x>, <y>) is within or on the
 ! boundaries of a grid designated by its struct info.
-! If x or y are NaN, false is returned.
-! If x is periodical, no boundary check is performed on x.
+! If <x> or <y> are NaN, .false. is returned.
+! If <x> is periodical, no boundary check is performed on <x>.
 !-----------------------------------------------------------------------
 if (y >= info%ymin .and. y <= info%ymax) then
 	if (info%nxwrap == 0) then
