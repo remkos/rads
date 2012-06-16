@@ -1,18 +1,18 @@
 !-----------------------------------------------------------------------
 ! $Id$
 !
-! Copyright (C) 2011  Remko Scharroo (Altimetrics LLC)
+! Copyright (C) 2012  Remko Scharroo (Altimetrics LLC)
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
-! it under the terms of the GNU General Public License as published by
-! the Free Software Foundation, either version 3 of the License, or
-! (at your option) any later version.
+! it under the terms of the GNU Lesser General Public License as
+! published by the Free Software Foundation, either version 3 of the
+! License, or (at your option) any later version.
 !
 ! This program is distributed in the hope that it will be useful,
 ! but WITHOUT ANY WARRANTY; without even the implied warranty of
 ! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-! GNU General Public License for more details.
+! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
 !*rads_netcdf -- Module with useful interfaces to netCDF
@@ -47,22 +47,22 @@ integer, intent(in), optional :: xtype
 ! To fill the coordinate array, use nf90_put_axis after closing the define
 ! stage.
 !
-! The string 'longname' can either contain the 'long_name' attribute or
+! The string <longname> can either contain the 'long_name' attribute or
 ! both the 'long_name' and 'units' attribute. In the latter case one can use,
 ! for example, longname = 'height [m]' and units = '[]', which will make this
 ! routine extract the 'm' as unit.
 !
 ! When creating an 'unlimited' dimension, specify nx as nf90_unlimited (or 0).
 !
-! ncid    : NetCDF file ID
-! varnm   : (short) variable name
-! longname: Longer description of coordinate variable
-! units   : Units of the coordinate variable
-! nx      : Number of elements in coordinate array (can be nf90_unlimited)
-! x0, x1  : Start and end of array
-! dimid   : NetCDF dimension ID
-! varid   : NetCDF variable ID
-! xtype   : Type of variable (optional, default = nf90_double)
+! ncid     : NetCDF file ID
+! varnm    : (short) variable name
+! longname : Longer description of coordinate variable
+! units    : Units of the coordinate variable
+! nx       : Number of elements in coordinate array (can be nf90_unlimited)
+! x0, x1   : Start and end of array
+! dimid    : NetCDF dimension ID
+! varid    : NetCDF variable ID
+! xtype    : Type of variable (optional, default = nf90_double)
 !-----------------------------------------------------------------------
 integer(fourbyteint) :: i,j
 real(eightbytereal) :: xrange(2)
