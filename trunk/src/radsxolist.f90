@@ -59,7 +59,7 @@ call synopsis
 do i = 1,iargc()
 	call getarg (i, arg)
 	call splitarg (arg, opt, optarg)
-	select case (arg)
+	select case (opt)
 	case ('--lon')
 		read (optarg, *, iostat=ios) lon0,lon1
 	case ('--lat')
@@ -75,7 +75,7 @@ do i = 1,iargc()
 	case ('-d')
 		diff = .true.
 	case ('-o')
-		mode = arg(3:3)
+		mode = optarg
 	case ('-s')
 		stat_only = .true.
 	case default
@@ -85,7 +85,7 @@ enddo
 
 ! Now process each file
 do i = 1,iargc()
-	call getarg(i,filename)
+	call getarg (i, filename)
 	if (filename(:1) == '-' .or. index(filename, '=') > 0) cycle
 	call process
 enddo
