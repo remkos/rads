@@ -69,7 +69,7 @@ do i = 1,iargc()
 			reject = -2
 		else
 			reject = 0
-			read (arg(3:), *, iostat=ios) reject
+			read (optarg, *, iostat=ios) reject
 		endif
 	case ('--maxrec')
 		read (optarg, *, iostat=ios) nselmax

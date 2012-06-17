@@ -191,7 +191,7 @@ integer, intent(in) :: ios
 !-----------------------------------------------------------------------
 character(len=80) :: prognm
 if (ios==nf90_noerr) return
-call getarg(0,prognm)
+call getarg (0, prognm)
 write (stderr, '(a,": ",a)') trim(prognm),trim(nf90_strerror(ios))
 stop
 end subroutine nfs

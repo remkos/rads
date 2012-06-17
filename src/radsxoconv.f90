@@ -79,7 +79,7 @@ enddo
 
 ! Now process each file
 do i = 1,iargc()
-	call getarg(i,filename)
+	call getarg (i, filename)
 	if (filename(:1) == '-') cycle
 	call process
 enddo
