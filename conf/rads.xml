@@ -38,7 +38,7 @@ GNU Lesser General Public License for more details.
 <var name="time_1985" field="101">
 	<long_name>time</long_name>
 	<standard_name>time</standard_name>
-	<units>seconds since 1985-01-01 00:00:00</units>
+	<units>seconds since 1985-01-01</units>
 	<data>time</data>
 	<comment>UTC time of measurement. Attribute leap_second gives time of leap second if any occurs
 	during the data set</comment>
@@ -67,14 +67,14 @@ GNU Lesser General Public License for more details.
 </var>
 <var name="time_mjd" field="105">
 	<long_name>Modified Julian Days</long_name>
-	<units>days since 1858-11-17 00:00:00</units>
+	<units>days since 1858-11-17</units>
 	<data>time 86400 DIV 46066 ADD</data>
 	<comment>UTC time of measurement expressed in modified julian days</comment>
 	<format>f12.6</format>
 </var>
 <var name="time_2000" field="106">
 	<long_name>time</long_name>
-	<units>seconds since 2000-01-01 00:00:00</units>
+	<units>seconds since 2000-01-01</units>
 	<data>time 473299200 SUB</data>
 	<comment>UTC time of measurement</comment>
 	<format>f16.6</format>
@@ -2118,21 +2118,21 @@ GNU Lesser General Public License for more details.
 
 <var name="first_meas_time" field="9901">
 	<long_name>time of first measurement in pass</long_name>
-	<units>seconds since 1985-01-01 00:00:00</units>
+	<units>seconds since 1985-01-01</units>
 	<data>:first_meas_time</data>
 	<format>f16.6</format>
 </var>
 
 <var name="last_meas_time" field="9902">
 	<long_name>time of last measurement in pass</long_name>
-	<units>seconds since 1985-01-01 00:00:00</units>
+	<units>seconds since 1985-01-01</units>
 	<data>:last_meas_time</data>
 	<format>f16.6</format>
 </var>
 
 <var name="eqtime" field="9903">
 	<long_name>time of equator crossing</long_name>
-	<units>seconds since 1985-01-01 00:00:00</units>
+	<units>seconds since 1985-01-01</units>
 	<data>:equator_time</data>
 	<format>f16.6</format>
 </var>
