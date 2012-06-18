@@ -34,7 +34,7 @@ PROGS = $(PROGS_O:.o=)
 
 INCS	= config.inc
 
-MODULES = typesizes.mod $(OBJS:.o=.mod)
+MODULES = $(OBJS:.o=.mod)
 
 #-----------------------------------------------------------------------
 # What to create?
@@ -60,28 +60,16 @@ man:	$(MAN)
 
 $(OBJS2):	$(OBJS1)
 $(OBJS3):	$(OBJS1) $(OBJS2)
-$(PROGS_O):	$(OBJS)
-radsreconfig.o:	xmlparse.mod
-$(OBJS):	typesizes.mod
+$(PROGS_O):	$(LIB)
+$(PROGS):	$(LIB)
 rads.o:		$(INCS)
-rads_test.o:	$(OBJS2)
-
-nag.o:  nag.f
-	$(FC) -O -c nag.f
+radsxogen.o:	spline.o
 
 #-----------------------------------------------------------------------
 # Create config.inc when config.mk is updated
 #-----------------------------------------------------------------------
 config.inc:	config.mk
 	printf "character(80) :: radsdataroot = '%s', radsuserroot = '%s'\n" $(datarootdir) $(HOME) > $@
-
-#-----------------------------------------------------------------------
-# Create Fortran 90 interface if needed
-#-----------------------------------------------------------------------
-
-typesizes.mod:	typeSizes.f90
-	$(FC) $(FFLAGS) -c typeSizes.f90
-	rm -f typeSizes.o
 
 #-----------------------------------------------------------------------
 # How to create the library
@@ -98,16 +86,16 @@ test:	rads_test
 	rads_test debug=3 sat=e1/a ymd=19910924,19910925 lat=-50,30 lon=-90,120 \
 	sel=time,lat,lon,sla,12_,tide_ocean_,pass,drange | diff rads_test.out -
 
-rads_test:	$(LIB) rads_test.o
+rads_test:	rads_test.o
 	$(FC) -o $@ rads_test.o $(LIB) $(NETCDF)
 
-rads_sample:	$(LIB) rads_sample.o
+rads_sample:	rads_sample.o
 	$(FC) -o $@ rads_sample.o $(LIB) $(NETCDF)
 
-radsreconfig:	$(LIB) radsreconfig.o
+radsreconfig:	radsreconfig.o
 	$(FC) -o $@ radsreconfig.o $(LIB) $(NETCDF)
 
-rads3test:	$(LIB) rads3test.o
+rads3test:	rads3test.o
 	$(FC) -o $@ rads3test.o $(LIB) $(NETCDF)
 
 #-----------------------------------------------------------------------
@@ -118,41 +106,35 @@ radsconfig.sh:	radsconfig.sh.in
 	@echo "Error: Need to run configure in src directory first"
 	@exit 1
 
-cyclemean:	cyclemean.o $(LIB)
-	$(FC) -o $@ cyclemean.o $(LIB) $(NETCDF)
-
-rads2asc: rads2asc.o $(LIB)
+rads2asc:	rads2asc.o
 	$(FC) -o $@ rads2asc.o $(LIB) $(NETCDF)
 
-rads2adr: rads2adr.o $(LIB)
+rads2adr:	rads2adr.o
 	$(FC) -o $@ rads2adr.o $(LIB) $(NETCDF)
 
-rads2nc: rads2nc.o $(LIB)
+rads2nc:	rads2nc.o
 	$(FC) -o $@ rads2nc.o $(LIB) $(NETCDF)
+
+rads2grd:	rads2grd.o
+	$(FC) -o $@ rads2grd.o $(LIB) $(NETCDF)
+
+radsstat:	radsstat.o
+	$(FC) -o $@ radsstat.o $(LIB) $(NETCDF)
+
+radscolin:	radscolin.o
+	$(FC) -o $@ radscolin.o $(LIB) $(NETCDF)
+
+radsxogen:	radsxogen.o spline.o
+	$(FC) -o $@ radsxogen.o spline.o $(LIB) $(NETCDF)
+
+radsxoconv:	radsxoconv.o
+	$(FC) -o $@ radsxoconv.o $(LIB) $(NETCDF)
+
+radsxolist:	radsxolist.o
+	$(FC) -o $@ radsxolist.o $(LIB) $(NETCDF)
 
 $(PROGS_L): rads2adr
 	ln -fs rads2adr $@
 
 $(PROGS_L4):	%4:	%
 	ln -fs $* $@
-
-rads2grd:	rads2grd.o $(LIB)
-	$(FC) -o $@ rads2grd.o $(LIB) $(NETCDF)
-
-radsstat:	radsstat.o $(LIB)
-	$(FC) -o $@ radsstat.o $(LIB) $(NETCDF)
-
-radscolin:	radscolin.o $(LIB)
-	$(FC) -o $@ radscolin.o $(LIB) $(NETCDF)
-
-radscont:	radscont.o $(LIB)
-	$(FC) -o $@ radscont.o $(LIB) $(NETCDF)
-
-radsxogen:	radsxogen.o nag.o $(LIB)
-	$(FC) -o $@ radsxogen.o nag.o $(LIB) $(NETCDF)
-
-radsxoconv:	radsxoconv.o $(LIB)
-	$(FC) -o $@ radsxoconv.o $(LIB) $(NETCDF)
-
-radsxolist:	radsxolist.o $(LIB)
-	$(FC) -o $@ radsxolist.o $(LIB) $(NETCDF)
