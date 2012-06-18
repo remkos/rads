@@ -75,7 +75,7 @@ do i = 1,iargc()
 	case ('-d')
 		diff = .true.
 	case ('-o')
-		mode = optarg
+		mode = optarg(1:1)
 	case ('-s')
 		stat_only = .true.
 	case default
@@ -96,6 +96,7 @@ contains
 
 subroutine process
 integer(fourbyteint) :: i, j, k
+character(len=rads_naml) :: legs
 
 ! Open netCDF file
 call nfs (nf90_open (filename, nf90_write, ncid))
@@ -108,9 +109,9 @@ if (ntrk >= maxtrk) then
 endif
 
 600 format ( &
-'# File name = ',a/ &
-'# Xovers in = ',i9/ &
-'# Tracks in = ',i9)
+'# File name  = ',a/ &
+'# Xovers in  = ',i9/ &
+'# Tracks in  = ',i9)
 write (*, 600) trim(filename), nxo, ntrk
 icol = 0
 fmt_string = '('
@@ -134,6 +135,7 @@ call nfs (nf90_get_var (ncid, get_varid('start_time'), trk%start_time))
 call nfs (nf90_get_var (ncid, get_varid('end_time'), trk%end_time))
 call nfs (nf90_get_var (ncid, get_varid('nr_xover'), trk%nr_xover))
 call nfs (nf90_get_var (ncid, get_varid('nr_alt'), trk%nr_alt))
+if (nft (nf90_get_att (ncid, nf90_global, 'legs', legs))) legs = 'undetermined undetermined'
 
 ! Get essential satellite information
 ! Older files only have IDs, newer have the satellite abbreviations
@@ -179,32 +181,35 @@ enddo
 select case (mode)
 case ('A')
 	call reorder (mod(trk(track(1,:))%pass,2) < mod(trk(track(2,:))%pass,2))
-	write (*,610) 'ascending - descending'
+	legs = 'ascending_pass descending_pass'
 case ('a')
 	call reorder (mod(trk(track(2,:))%pass,2) < mod(trk(track(1,:))%pass,2))
-	write (*,610) 'descending - ascending'
+	legs = 'descending_pass ascending_pass'
 case ('T')
 	call reorder (var(1,:,0) < var(2,:,0))
-	write (*,610) 'later - earlier measurement'
+	legs = 'later_measurement earlier_measurement'
 case ('t')
 	call reorder (var(2,:,0) < var(1,:,0))
-	write (*,610) 'earlier - later measurement'
+	legs = 'earlier_measurement later_measurement'
 case ('S')
 	call reorder (trk(track(1,:))%satid < trk(track(2,:))%satid)
-	write (*,610) 'higher - lower satellite ID'
+	legs = 'higher_satellite_id lower_satellite_id'
 case ('s')
 	call reorder (trk(track(2,:))%satid < trk(track(1,:))%satid)
-	write (*,610) 'lower - higher satellite ID'
+	legs = 'lower_satellite_id higher_satellite_id'
 case ('H')
 	call reorder (sat(trk(track(1,:))%satid)%period < sat(trk(track(2,:))%satid)%period)
-	write (*,610) 'higher - lower satellite'
+	legs = 'higher_satellite lower_satellite'
 case ('h')
 	call reorder (sat(trk(track(2,:))%satid)%period < sat(trk(track(1,:))%satid)%period)
-	write (*,610) 'lower - higher satellite'
-case default
-	write (*,610) 'native'
+	legs = 'lower_satellite higher_satellite'
 end select
-610 format ('# Order     = ',a)
+if (diff) then
+	write (*,610) 'Difference',trim(legs)
+else
+	write (*,610) 'Order     ',trim(legs)
+endif
+610 format ('# ',a,' = ',a)
 
 ! Now collapse the data if needing difference
 if (diff) var(1,:,1:nvar) = var(1,:,1:nvar) - var(2,:,1:nvar)
@@ -232,7 +237,7 @@ endif
 ! Do statistics
 nxo = count(mask)
 write (*,615) nxo
-615 format ('# Xovers out= ',i9)
+615 format ('# Xovers out = ',i9)
 do j = -1,nvar
 	do k = 1,2
 		stat(k,j,1) = minval(var(k,:,j),mask)
@@ -294,19 +299,19 @@ end function get_varid
 subroutine get_var_1d (varid, array)
 integer(fourbyteint), intent(in) :: varid
 real(eightbytereal), intent(out) :: array(:)
-real(eightbytereal) :: value
+real(eightbytereal) :: val
 character(len=rads_naml) :: long_name
 character(len=rads_varl) :: units, fmt
 call nfs (nf90_get_var (ncid, varid, array))
-if (nf90_get_att (ncid, varid, 'scale_factor', value) == nf90_noerr) array = array * value
-if (nf90_get_att (ncid, varid, 'add_offset', value) == nf90_noerr) array = array + value
+if (nf90_get_att (ncid, varid, 'scale_factor', val) == nf90_noerr) array = array * val
+if (nf90_get_att (ncid, varid, 'add_offset', val) == nf90_noerr) array = array + val
 if (nf90_get_att (ncid, varid, 'long_name', long_name) /= nf90_noerr) long_name = ''
 if (nf90_get_att (ncid, varid, 'units', units) /= nf90_noerr) units = ''
 if (nf90_get_att (ncid, varid, 'format', fmt) /= nf90_noerr) fmt = 'f0.3'
 fmt_string = trim(fmt_string) // trim(fmt) // ',1x,'
 icol = icol + 1
 write (*,600) icol,trim(long_name),trim(units)
-600 format ('# Col ',i2,'    = ',a,' [',a,']')
+600 format ('# Col ',i2,'     = ',a,' [',a,']')
 end subroutine get_var_1d
 
 !***********************************************************************
@@ -314,16 +319,16 @@ end subroutine get_var_1d
 subroutine get_var_2d (varid, array)
 integer(fourbyteint), intent(in) :: varid
 real(eightbytereal), intent(out) :: array(:,:)
-real(eightbytereal) :: value
+real(eightbytereal) :: val
 character(len=rads_naml) :: long_name
 character(len=rads_varl) :: units, fmt
 call nfs (nf90_get_var (ncid, varid, array))
-if (nf90_get_att (ncid, varid, 'scale_factor', value) == nf90_noerr) array = array * value
-if (nf90_get_att (ncid, varid, 'add_offset', value) == nf90_noerr) array = array + value
+if (nf90_get_att (ncid, varid, 'scale_factor', val) == nf90_noerr) array = array * val
+if (nf90_get_att (ncid, varid, 'add_offset', val) == nf90_noerr) array = array + val
 if (nf90_get_att (ncid, varid, 'long_name', long_name) /= nf90_noerr) long_name = ''
 if (nf90_get_att (ncid, varid, 'units', units) /= nf90_noerr) units = ''
 if (nf90_get_att (ncid, varid, 'format', fmt) /= nf90_noerr) fmt = 'f0.3'
-if (diff .and. varid /= 3) then
+if (diff .and. long_name /= 'time') then
 	icol = icol + 1
 	fmt_string = trim(fmt_string) // trim(fmt) // ',1x,'
 	write (*,600) icol,trim(long_name),trim(units)
@@ -332,8 +337,8 @@ else
 	fmt_string = trim(fmt_string) // trim(fmt) // ',1x,' // trim(fmt) // ',1x,'
 	write (*,610) icol-1,icol,trim(long_name),trim(units)
 endif
-600 format ('# Col ',i2,'    = ',a,' [',a,']')
-610 format ('# Col ',i2,'-',i2,' = ',a,' [',a,']')
+600 format ('# Col ',i2,'     = ',a,' [',a,']')
+610 format ('# Col ',i2,'-',i2,'  = ',a,' [',a,']')
 end subroutine get_var_2d
 
 !***********************************************************************
