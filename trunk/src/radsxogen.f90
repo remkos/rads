@@ -45,6 +45,7 @@ integer(fourbyteint) :: i, j, nsat = 0, nsel = 0, reject = -1, ios, debug, ncid,
 logical :: duals = .true., singles = .true., l
 character(len=rads_naml) :: arg, opt, optarg, satlist, filename = 'radsxogen.nc'
 character(len=1) :: interpolant = 'q'
+integer(fourbyteint) :: inter_half = 3, inter_points, max_gap = 3
 type :: nr_
 	integer :: test, shallow, xdat, ins, gap, xdt, xout, trk
 endtype
@@ -86,7 +87,7 @@ debug = maxval(S(1:nsat)%debug)
 do i = 1,iargc()
 	call getarg (i, arg)
 	call splitarg (arg, opt, optarg)
-	select case (arg)
+	select case (opt)
 	case ('-r')
 		if (optarg == 'n') then
 			reject = -2
@@ -94,16 +95,32 @@ do i = 1,iargc()
 			reject = 0
 			read (optarg, *, iostat=ios) reject
 		endif
-	case ('-s')
+	case ('-s', '--single')
 		duals = .false.
-	case ('-d')
+	case ('-d', '--dual')
 		singles = .false.
-	case ('-i')
-		interpolant = strtolower(optarg(1:1))
+	case ('-i', '--interpolant')
+		select case (optarg)
+		case ('a':'z')
+			interpolant = optarg(1:1)
+			read (optarg(2:), *, iostat=ios) inter_half
+		case default
+			read (optarg, *, iostat=ios) inter_half
+		end select
+	case ('-g', '--gap')
+		read (optarg, *, iostat=ios) max_gap
+		if (max_gap < 1) call rads_exit ('Option -g<gap> : needs <gap> > 0')
 	case ('--dt')
 		read (optarg, *, iostat=ios) dt
 	end select
 enddo
+inter_points = inter_half * 2
+select case (interpolant)
+case ('q', 'c', 's')
+	if (inter_half < 2) call rads_exit ('Option -i[c|q|s]<n> : needs <n> > 1')
+case default
+	if (inter_half < 1) call rads_exit ('Option -i[a|l|n]<n> : needs <n> > 0')
+end select
 
 ! Get the file name (last argument not to start with - or contain =)
 do i = iargc(),1,-1
@@ -253,17 +270,21 @@ call rads_synopsis()
 write (0,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
-'  -d                : do dual satellite crossovers only'/ &
-'  -s                : do single satellite crossovers only'/ &
-'  -i[l|c|q|p]       : interpolate values to crossover by linear interpolation, cubic spline'/ &
-'                      quadratic polynomial fit (default) or cubic polynomial fit'/ &
-'  -r#               : reject xovers if data item number # on sel= specifier is NaN'/ &
-'                      (default: reject if SLA field is NaN)'/ &
-'  -r0, -r           : do not reject xovers with NaN values'/ &
-'  -rn               : reject xovers if any value is NaN'/ &
-'  --dt=value        : limit crossover time interval to number of days'/ &
-'                      use negative number to specify interval in fraction of cycles (default: -0.5)'/ &
-'  filename          : specify output filename (default: radsxogen.nc)')
+'  -d                      : do dual satellite crossovers only'/ &
+'  -s                      : do single satellite crossovers only'/ &
+'  -i[n|s|a|l|q|c][<n>]    : interpolate 2<n> along-track values to crossover by picking (n)earest neighbor,'/ &
+'                          : or by cubic (s)pline, or by (a)veraging, or by (l)inear, (q)uadratic or (c)ubic'/ &
+'                            polynomial fit; optionally add number of points <n> required on BOTH sides of the'/ &
+'                            crossover for interpolation. Default: q3'/ &
+'  -g<gap>                 : Specify the maximum gap between two nearest points to crossover, in 1-Hz intervals;' / &
+'                            also sets maximum gaps between 1st and last point of interpolation window to (<n>+1)*<gap>' / &
+'  -r<item>                : reject xovers if data item number <item> on --var= specifier is NaN'/ &
+'                            (default: reject if SLA field is NaN)'/ &
+'  -r0, -r                 : do not reject xovers with NaN values'/ &
+'  -rn                     : reject xovers if any value is NaN'/ &
+'  --dt=<dt>               : limit crossover time interval to number of days'/ &
+'                            use negative number to specify interval in fraction of cycles (default: -0.5)'/ &
+'  <filename>              : specify output filename (default: radsxogen.nc)')
 stop
 end subroutine synopsis
 
@@ -515,7 +536,7 @@ type(rads_pass), intent(inout) :: P1, P2
 real(eightbytereal), intent(in) :: dt
 real(eightbytereal) :: shiftlon, x, y, t1, t2
 real(eightbytereal), allocatable :: data(:,:)
-integer :: i, i1, i2, j1, j2, k1, k2
+integer :: i, i1, i2, j1, j2
 type(rads_varinfo), pointer :: info
 
 ! Count number of calls
@@ -588,20 +609,25 @@ else
 	return
 endif
 
-! For the later interpolation of the variables along-track we will use 6 points, 3 on each side
-! of the crossover. The furthest points have to be within max_gap 1Hz-intervals, the nearest within
-! max_gap/4 1Hz-intervals.
-k1 = min(i1, j1) - 2	! Indices of first of 6 points for interpolation
-k2 = min(i2, j2) - 2
-if (large_gap (S1, P1, k1) .or. large_gap (S2, P2, k2)) then
+! For the later interpolation of the variables along-track we will use <inter_points> points,
+! <inter_half> on each side of the crossover.
+i1 = max(i1, j1) - inter_half ! Indices of first of <inter_points> points for interpolation
+i2 = max(i2, j2) - inter_half
+j1 = i1 + inter_points - 1    ! Indices of last of <inter_points> points for interpolation
+j2 = i2 + inter_points - 1
+
+! Check that interval (i1:j1) and (i2:j2) or still entirely within the pass.
+! The central two points of the interval have to be maximum <max_gap> 1-Hz intervals apart.
+! The furthest two points of the interval have to be maximum <gap>*<inter_half+1> 1-Hz intervals apart.
+if (large_gap (S1, P1, i1, j1) .or. large_gap (S2, P2, i2, j2)) then
 	nr%gap = nr%gap + 1
 	return
 endif
 
 ! Interpolate data along each track
 allocate (data(2,nsel))
-call interpolate (t1, P1%tll(k1:k1+5,:), data(1,:))
-call interpolate (t2, P2%tll(k2:k2+5,:), data(2,:))
+call interpolate (t1, P1%tll(i1:j1,:), data(1,:))
+call interpolate (t2, P2%tll(i2:j2,:), data(2,:))
 
 ! Write the data to file
 nr%xout = nr%xout + 1
@@ -633,54 +659,74 @@ end subroutine xogen_passes
 ! Interpolate the data to the crossover along the track
 
 subroutine interpolate (t, tll, xoval)
-real(eightbytereal), intent(in) :: t, tll(:,:)
+use spline
+real(eightbytereal), intent(in) :: t, tll(1-inter_half:,:)	! This makes indices of central points: 0 and 1
 real(eightbytereal), intent(out) :: xoval(:)
 integer(fourbyteint) :: i
-integer(fourbyteint), parameter :: m = 6, n = 4, mw = 6*n + 2*m
-real(eightbytereal) :: xc, x(m), y(m,nsel), ss(n), cf(n), work(mw), aa(m), v1(m), vn(m), cc(m), d(m), f1
+integer(fourbyteint), parameter :: n = 4
+real(eightbytereal) :: xc, x(1-inter_half:inter_half), y(1-inter_half:inter_half,nsel), aa(1-inter_half:inter_half)
+real(eightbytereal) :: w(inter_points), b(n), c(n), d(n)
 
 ! x = time, y = data value
-! Reduce time and values to numbers relative to the third point
-x = tll(:,1) - tll(3,1)
-xc = t - tll(3,1)
+! Reduce time and values to numbers relative to the left (early) side of the central interval
+x = tll(:,1) - tll(0,1)
+xc = t - tll(0,1)
 forall (i = 1:nsel)
-	y(:,i) = tll(:,3+i) - tll(3,3+i)
+	y(:,i) = tll(:,3+i) - tll(0,3+i)
 end forall
 
 select case (interpolant)
-case ('l')	! Linear interpolation
-		xoval = xc * y(4,:) / x(4)
-case ('c')	! Cubic spline interpolation
+case ('a')   ! Average
 	do i = 1,nsel
-		call e02baf(m,-1,y(:,i),aa,x,xc,xoval(i),f1,v1,vn,cc,d)
-		call e02baf(m,-2,y(:,i),aa,x,xc,xoval(i),f1,v1,vn,cc,d)
+		xoval(i) = sum(y(:,i)) / inter_points
 	enddo
-case ('q') ! Quadratic polynomial fit
+case ('l')   ! Linear fit
+	w = 1d0
 	do i = 1,nsel
-		call e02adf(x,y(:,i),m,3,ss,cf,work)
-		xoval(i) = cf(1)+xc*(cf(2)+xc*cf(3))
+		call least_set (inter_points,x,y(:,i),w,2,b,c,d)
+		call least_val (2,b,c,d,xc,xoval(i))
 	enddo
-case default	! Cubic polynomial fit
+case ('q')   ! Quadratic polynomial fit
+	w = 1d0
 	do i = 1,nsel
-		call e02adf(x,y(:,i),m,4,ss,cf,work)
-		xoval(i) = cf(1)+xc*(cf(2)+xc*(cf(3)+xc*cf(4)))
+		call least_set (inter_points,x,y(:,i),w,3,b,c,d)
+		call least_val (3,b,c,d,xc,xoval(i))
 	enddo
+case ('c')   ! Cubic polynomial fit
+	w = 1d0
+	do i = 1,nsel
+		call least_set (inter_points,x,y(:,i),w,4,b,c,d)
+		call least_val (4,b,c,d,xc,xoval(i))
+	enddo
+case ('s')   ! Cubic spline interpolation
+	do i = 1,nsel
+		call spline_cubic_set (inter_points,x,y(:,i),0,0d0,0,0d0,aa)
+		xoval(i) = xc * (y(1,i)/x(1) - (aa(1)/6d0+aa(0)/3d0) * x(1)  &
+			+ xc * (0.5d0 * aa(0) + xc * (aa(1)-aa(0)) / (6d0 * x(1))))
+	enddo
+case default ! Nearest neighbour
+	if (xc <= 0.5d0 * x(1)) then
+		xoval = 0d0 ! Technically, value at left of central interval
+	else
+		xoval = y(1,:) ! Value at right of centre point
+	endif
 end select
-xoval = xoval + tll(3,4:)
+
+! Restore value at left of central interval
+xoval = xoval + tll(0,4:)
 end subroutine interpolate
 
 !***********************************************************************
 ! Determine if gap between nearest points to the crossover or furthest of six points is too large
 
-function large_gap (S, P, k)
+function large_gap (S, P, i, j)
 type(rads_sat), intent(in) :: S
 type(rads_pass), intent(in) :: P
-integer(fourbyteint), intent(in) :: k
+integer(fourbyteint), intent(in) :: i, j
 logical :: large_gap
-integer, parameter :: max_gap = 12
-large_gap = (k < 1 .or. k+5 > P%ndata .or. &
-	nint((P%tll(k+5,1) - P%tll(k,1)) / S%dt1hz) > max_gap .or. &
-	nint(abs(P%tll(k+2,1) - P%tll(k+3,1)) / S%dt1hz) > max_gap/4)
+large_gap = (i < 1 .or. j > P%ndata .or. &
+	nint((P%tll(j,1) - P%tll(i,1)) / S%dt1hz) > (inter_half+1)*max_gap .or. &
+	nint((P%tll(i+inter_half,1) - P%tll(j-inter_half,1)) / S%dt1hz) > max_gap)
 end function large_gap
 
 !***********************************************************************
@@ -714,8 +760,8 @@ else
 	i2 = n2
 	d2 = -1
 endif
-! i1,i2 are the indices of the left sides of the segments
-! j1,j2 are the indices of the right sides of the segments
+! i1,i2 are the indices of the left (west) sides of the segments
+! j1,j2 are the indices of the right (east) sides of the segments
 ! d1,d2 are the directions of advance (-1 or +1) making x increase
 do
 	j1 = i1 + d1
