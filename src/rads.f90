@@ -19,8 +19,6 @@ module rads
 use typesizes
 use rads_grid
 
-implicit none
-
 include 'config.inc'
 
 ! Dimensions
@@ -46,7 +44,7 @@ real(eightbytereal), parameter :: pi = 3.1415926535897932d0, rad = pi/180d0
 character(len=1), parameter :: rads_linefeed = char(10), rads_noedit = '_'
 integer, parameter, private :: stderr = 0, stdout = 6
 
-private :: rads_traxxing, rads_get_phase
+private :: rads_traxxing, rads_get_phase, rads_init_sat_struct
 
 type :: rads_varinfo
 	character(len=rads_varl) :: name                 ! Short name used by RADS
@@ -354,12 +352,13 @@ integer(fourbyteint), intent(in), optional :: debug
 integer(fourbyteint) :: i, l
 character(len=rads_naml) :: userroot
 
+call rads_init_sat_struct (S)
+
 ! Decipher the satellite and phase
 l = len_trim(sat)
 if (l < 2) call rads_exit ('Satellite/phase has fewer than 2 characters')
 S%sat = sat(:2)
 S%satellite = S%sat
-S%satid = 0
 
 ! Set some global variables
 S%dataroot = radsdataroot
@@ -369,23 +368,7 @@ call get_command (S%command, status=i)
 if (i < 0) S%command (len(S%command)-2:) = '...'
 
 ! Set all values in <S> struct to default
-S%nan = make_nan()
-S%dt1hz = 1d0
-S%frequency = (/13.8d0, S%nan/)
-S%inclination = 90d0
-S%centroid = S%nan
-S%xover_params = S%nan
-S%error = rads_noerr
-S%debug = 0
-S%pass_stat = 0
-S%total_read = 0
-S%total_inside = 0
-S%nvar = 0
-S%nsel = 0
 if (present(debug)) S%debug = debug
-S%cycles(3) = 1
-S%passes(3) = 1
-nullify (S%excl_cycles, S%sel, S%time, S%lat, S%lon, S%phases, S%phase)
 allocate (S%var(rads_var_chunk))
 S%var = rads_var ('', null(), .false., rads_nofield)
 
@@ -515,8 +498,48 @@ do i = 1,nsat
 	call rads_parse_options (S(i), pack(options, iopt==0 .or. iopt==i*10))
 	call rads_parse_varlist (S(i), pack(options, mod(iopt,10)==4))
 enddo
+! Blank out the rest
+do i = nsat+1,size(S)
+	call rads_init_sat_struct (S(i))
+enddo
 deallocate (options)
 end subroutine rads_init_cmd_1d
+
+!***********************************************************************
+!*rads_init_sat_struct -- Initialize empty S struct
+!+
+subroutine rads_init_sat_struct (S)
+use rads_misc
+type(rads_sat), intent(inout) :: S
+!
+! This routine initializes the <S> struct with the bare minimum.
+! It is later updated in rads_init_sat_0d.
+!
+! Arguments:
+!  S        : Satellite/mission dependent structure
+!-----------------------------------------------------------------------
+S%dataroot = ''
+S%command = ''
+S%sat = ''
+S%satellite = ''
+S%satid = 0
+S%nan = make_nan()
+S%dt1hz = 1d0
+S%frequency = (/13.8d0, S%nan/)
+S%inclination = 90d0
+S%centroid = S%nan
+S%xover_params = S%nan
+S%error = rads_noerr
+S%debug = 0
+S%pass_stat = 0
+S%total_read = 0
+S%total_inside = 0
+S%nvar = 0
+S%nsel = 0
+S%cycles(3) = 1
+S%passes(3) = 1
+nullify (S%excl_cycles, S%sel, S%sel, S%time, S%lat, S%lon, S%phases, S%phase)
+end subroutine rads_init_sat_struct
 
 !***********************************************************************
 !*rads_load_options -- Extract options from command line
@@ -2854,29 +2877,29 @@ if (nft(nf90_def_dim (P%ncid, 'time', P%ndata, l))) then
 endif
 
 ! Specify the global attributes
-e = nf90_put_att(P%ncid, nf90_global, 'Conventions', 'CF-1.5') + &
-	nf90_put_att(P%ncid, nf90_global, 'title', 'RADS 4.0 pass file') + &
-	nf90_put_att(P%ncid, nf90_global, 'institution', 'Altimetrics / NOAA / TU Delft') + &
-	nf90_put_att(P%ncid, nf90_global, 'source', 'radar altimeter') + &
-	nf90_put_att(P%ncid, nf90_global, 'reference_document', 'RADS Data Manual, Issue 4.0') + &
-	nf90_put_att(P%ncid, nf90_global, 'mission_name', trim(S%satellite)) + &
-	nf90_put_att(P%ncid, nf90_global, 'mission_phase', S%phase%name(:1))
+e = nf90_put_att (P%ncid, nf90_global, 'Conventions', 'CF-1.5') + &
+	nf90_put_att (P%ncid, nf90_global, 'title', 'RADS 4.0 pass file') + &
+	nf90_put_att (P%ncid, nf90_global, 'institution', 'Altimetrics / NOAA / TU Delft') + &
+	nf90_put_att (P%ncid, nf90_global, 'source', 'radar altimeter') + &
+	nf90_put_att (P%ncid, nf90_global, 'references', 'RADS Data Manual, Issue 4.0') + &
+	nf90_put_att (P%ncid, nf90_global, 'mission_name', trim(S%satellite)) + &
+	nf90_put_att (P%ncid, nf90_global, 'mission_phase', S%phase%name(:1))
 if (ndata > 0) then
 	date = strf1985f ((/P%equator_time,P%start_time,P%end_time/))
 	e = e + &
-	nf90_put_att(P%ncid, nf90_global, 'cycle_number', P%cycle) + &
-	nf90_put_att(P%ncid, nf90_global, 'pass_number', P%pass) + &
-	nf90_put_att(P%ncid, nf90_global, 'equator_longitude', P%equator_lon) + &
-	nf90_put_att(P%ncid, nf90_global, 'equator_time', date(1)) + &
-	nf90_put_att(P%ncid, nf90_global, 'first_meas_time', date(2)) + &
-	nf90_put_att(P%ncid, nf90_global, 'last_meas_time', date(3))
+	nf90_put_att (P%ncid, nf90_global, 'cycle_number', P%cycle) + &
+	nf90_put_att (P%ncid, nf90_global, 'pass_number', P%pass) + &
+	nf90_put_att (P%ncid, nf90_global, 'equator_longitude', P%equator_lon) + &
+	nf90_put_att (P%ncid, nf90_global, 'equator_time', date(1)) + &
+	nf90_put_att (P%ncid, nf90_global, 'first_meas_time', date(2)) + &
+	nf90_put_att (P%ncid, nf90_global, 'last_meas_time', date(3))
 endif
-e = e + nf90_put_att(P%ncid, nf90_global, 'original', P%original)
+e = e + nf90_put_att (P%ncid, nf90_global, 'original', P%original)
 
 if (allocated(P%history)) then
-	e = e + nf90_put_att(P%ncid, nf90_global, 'history', datestamp()//': '//trim(S%command)//rads_linefeed//trim(P%history(1)))
+	e = e + nf90_put_att (P%ncid, nf90_global, 'history', datestamp()//': '//trim(S%command)//rads_linefeed//trim(P%history(1)))
 else
-	e = e + nf90_put_att(P%ncid, nf90_global, 'history', datestamp()//': '//trim(S%command))
+	e = e + nf90_put_att (P%ncid, nf90_global, 'history', datestamp()//': '//trim(S%command))
 endif
 if (e > 0) call rads_error (S, rads_err_nc_create, 'Error writing global attributes to '//trim(P%filename))
 end subroutine rads_create_pass
