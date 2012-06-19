@@ -136,21 +136,21 @@ contains
 subroutine synopsis
 if (rads_version ('$Revision$','Make collinear data sets from RADS')) return
 call rads_synopsis ()
-write (0,1300)
+write (stderr,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
-'  -r#               : reject data when there are fewer than # tracks with valid SLA'/ &
+'  -r#                 reject data when there are fewer than # tracks with valid SLA'/ &
 '                      (default: # = number of selected cycles)'/ &
-'  -r0, -r           : keep all stacked data points'/ &
-'  -rn               : reject data when any track is NaN (default)'/ &
-'  --dt=dt           : set minimum bin size in seconds (default is determined by satellite)'/ &
-'  --step=n          : write out only every n points'/ &
-'  -a                : print mean in addition to pass data'/ &
-'  -as               : print mean and standard deviation in addition to pass data'/ &
-'  -A                : print only mean (no pass data)'/ &
-'  -As               : print only mean and standard deviation (no pass data)'/ &
-'  -n                : add record number' / &
-'  -N                : add number of measurements in each bin')
+'  -r0, -r             keep all stacked data points'/ &
+'  -rn                 reject data when any track is NaN (default)'/ &
+'  --dt=DT             set minimum bin size in seconds (default is determined by satellite)'/ &
+'  --step=N            write out only every N points'/ &
+'  -a                  print mean in addition to pass data'/ &
+'  -as                 print mean and standard deviation in addition to pass data'/ &
+'  -A                  print only mean (no pass data)'/ &
+'  -As                 print only mean and standard deviation (no pass data)'/ &
+'  -n                  add record number' / &
+'  -N                  add number of measurements in each bin')
 end subroutine synopsis
 
 !***********************************************************************

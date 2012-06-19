@@ -204,9 +204,9 @@ write (*,1300)
 '  -rn               : reject lines if any value is NaN'/ &
 '  -f                : do not start with t,lat,lon in output'/ &
 '  -sp, -sc          : include statistics per pass or per cycle'/ &
-'  --step=n          : step through records with stride n (default = 1)'/ &
-'  --list=listname   : specify creation of list of output files'/ &
-'  -o, --out=outname : specify name of a single output file (default is pass files, - is stdout)')
+'  --step=N          : step through records with stride N (default = 1)'/ &
+'  --list=LISTNAME   : specify creation of list of output files'/ &
+'  -o, --out=OUTNAME : specify name of a single output file (default is pass files, - is stdout)')
 stop
 end subroutine synopsis
 

@@ -277,24 +277,24 @@ contains
 subroutine synopsis
 if (rads_version ('$Revision$','Generate altimeter crossovers from RADS')) return
 call rads_synopsis()
-write (0,1300)
+write (stderr,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
-'  -d                      : do dual satellite crossovers only'/ &
-'  -s                      : do single satellite crossovers only'/ &
-'  -i[n|s|a|l|q|c][<n>]    : interpolate 2<n> along-track values to crossover by picking (n)earest neighbor,'/ &
-'                          : or by cubic (s)pline, or by (a)veraging, or by (l)inear, (q)uadratic or (c)ubic'/ &
-'                            polynomial fit; optionally add number of points <n> required on BOTH sides of the'/ &
+'  -d                        do dual satellite crossovers only'/ &
+'  -s                        do single satellite crossovers only'/ &
+'  -i[n|s|a|l|q|c][N]        interpolate 2N along-track values to crossover by picking (n)earest neighbor,'/ &
+'                            or by cubic (s)pline, or by (a)veraging, or by (l)inear, (q)uadratic or (c)ubic'/ &
+'                            polynomial fit; optionally add number of points N required on BOTH sides of the'/ &
 '                            crossover for interpolation. Default: q3'/ &
-'  -g<gap>                 : Specify the maximum gap between two nearest points to crossover, in 1-Hz intervals;' / &
-'                            also sets maximum gaps between 1st and last point of interpolation window to (<n>+1)*<gap>' / &
-'  -r<item>                : reject xovers if data item number <item> on --var= specifier is NaN'/ &
+'  -gGAP                     Specify the maximum gap between two nearest points to crossover, in 1-Hz intervals;' / &
+'                            also sets maximum gaps between 1st and last point of interpolation window to (N+1)*GAP' / &
+'  -rITEM                    reject xovers if data item number ITEM on --var= specifier is NaN'/ &
 '                            (default: reject if SLA field is NaN)'/ &
-'  -r0, -r                 : do not reject xovers with NaN values'/ &
-'  -rn                     : reject xovers if any value is NaN'/ &
-'  --dt=<dt>               : limit crossover time interval to number of days'/ &
-'                            use negative number to specify interval in fraction of cycles (default: -0.5)'/ &
-'  <filename>              : specify output filename (default: radsxogen.nc)')
+'  -r0, -r                   do not reject xovers with NaN values'/ &
+'  -rn                       reject xovers if any value is NaN'/ &
+'  --dt=DT                   limit crossover time interval to number of days'/ &
+'                            use negative number to specify interval in fraction of cycles (default = -0.5)'/ &
+'  FILENAME                  specify output FILENAME (default: radsxogen.nc)')
 stop
 end subroutine synopsis
 
