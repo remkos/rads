@@ -52,7 +52,9 @@ install:	all
 	$(INSTALL) -m 644 *.inc *.mod $(INCDIR)
 	$(INSTALL) -d $(BINDIR)
 	$(INSTALL) -m 755 $(PROGS) $(BINDIR)
-	$(MAKE) -C $(BINDIR) $(PROGS_L)
+	for p in $(PROGS_L1); do ( cd $(BINDIR) ; ln -fs rads2adr $$p ) ; done
+	for p in $(PROGS_L2); do ( cd $(BINDIR) ; ln -fs radsxolist $$p ) ; done
+	for p in $(PROGS_L4); do ( cd $(BINDIR) ; ln -fs $${p/4/} $$p ) ; done
 
 man:	$(MAN)
 
