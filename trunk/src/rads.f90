@@ -59,7 +59,7 @@ type :: rads_varinfo
 	character(len=rads_varl) :: format               ! Fortran format for output
 	character(len=rads_varl) :: backup               ! Optional backup RADS variable name (or value) ('' if none)
 	character(len=rads_varl) :: gridx, gridy         ! RADS variable names of the grid x and y coordinates
-	type(grid), pointer :: grid                      ! Pointer to grid for interpolation (alternative to netcdf)
+	type(grid), pointer :: grid                      ! Pointer to grid for interpolation (if data source is grid)
 	real(eightbytereal) :: limits(2)                 ! Lower and upper limit for editing
 	real(eightbytereal) :: add_offset, scale_factor  ! Offset and scale factor in case of netCDF
 	integer(fourbyteint) :: ndims                    ! Number of dimensions of variable
@@ -929,7 +929,7 @@ if (associated(S%excl_cycles)) then
 endif
 
 ! If the cycle is out of range for the current phase, look for a new phase
-call rads_set_phase
+if (cycle < S%phase%cycles(1) .or. cycle > S%phase%cycles(2)) call rads_set_phase
 
 ! Do checking on pass limits (which may include new phase limits)
 if (pass < S%passes(1) .or. pass > S%passes(2) .or. pass > S%phase%passes(2)) then
@@ -1077,7 +1077,6 @@ contains
 
 subroutine rads_set_phase ()
 integer :: i
-if (cycle >= S%phase%cycles(1) .and. cycle <= S%phase%cycles(2)) return
 do i = 1,size(S%phases)
 	if (cycle >= S%phases(i)%cycles(1) .and. cycle <= S%phases(i)%cycles(2)) then
 		S%phase => S%phases(i)
@@ -2659,13 +2658,14 @@ d = S%phases(i)%pass_seconds
 t0 = S%phases(i)%ref_time - (S%phases(i)%ref_pass - 0.5d0) * d ! Time of start of ref_cycle
 
 if (associated(S%phases(i)%subcycles)) then
-	cc = cycle - S%phase%subcycles%i
-	pp = S%phase%subcycles%list(modulo(cc,S%phase%subcycles%n)+1)
-	cc = cc / S%phase%subcycles%n + 1
-	rads_cycle_to_time = max(S%phases(i)%start_time, t0 + (cc - S%phases(i)%ref_cycle) * S%phases(i)%repeat_days * 86400d0) + &
-		pp * d
+	cc = cycle - S%phases(i)%subcycles%i
+	pp = S%phases(i)%subcycles%list(modulo(cc,S%phases(i)%subcycles%n)+1)
+	cc = cc / S%phases(i)%subcycles%n + 1
+	rads_cycle_to_time = max(S%phases(i)%start_time, &
+		t0 + (cc - S%phases(i)%ref_cycle) * S%phases(i)%repeat_days * 86400d0) + pp * d
 else
-	rads_cycle_to_time = max(S%phases(i)%start_time, t0 + (cycle - S%phases(i)%ref_cycle) * S%phases(i)%repeat_days * 86400d0)
+	rads_cycle_to_time = max(S%phases(i)%start_time, &
+		t0 + (cycle - S%phases(i)%ref_cycle) * S%phases(i)%repeat_days * 86400d0)
 endif
 end function rads_cycle_to_time
 
