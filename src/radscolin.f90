@@ -26,6 +26,7 @@ program radscolin
 !-----------------------------------------------------------------------
 use rads
 use rads_misc
+use rads_time
 
 integer(fourbyteint), parameter :: msat = 5
 type(rads_sat) :: S(msat)
@@ -273,7 +274,7 @@ end subroutine end_stat
 subroutine write_header
 logical :: first = .true.
 
-605 format('# Satellite data selections:')
+600 format('# RADS collinear track file'/'# Created: ',a,' UTC: ',a/'#'/'# Satellite data selections:')
 610 format('#   sat=',a,1x,'cycle=',i3.3,'-',i3.3,' pass=',i4.4)
 611 format(' (',i3,'-',i3,')')
 615 format('#   ',a,' (',i3,')')
@@ -286,7 +287,7 @@ if (.not.first) write (*,*) ! Skip line between passes
 first = .false.
 
 ! Describe data set per variable
-write (*,605)
+write (*,600) timestamp(), trim(S(1)%command)
 i = 1
 do j = 1,nsat
 	if (ptrx0 == 1) then !

@@ -22,7 +22,7 @@ use rads_grid
 include 'config.inc'
 
 ! Dimensions
-integer(fourbyteint), parameter :: rads_var_chunk = 100, rads_naml = 160, rads_varl = 40, rads_cyclistl = 50
+integer(fourbyteint), parameter :: rads_var_chunk = 100, rads_varl = 40, rads_naml = 160, rads_cmdl = 320, rads_cyclistl = 50
 ! RADS4 data types
 integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, rads_type_flagmasks = 2, rads_type_flagvalues = 3, &
 	rads_type_time = 11, rads_type_lat = 12, rads_type_lon = 13
@@ -52,9 +52,9 @@ type :: rads_varinfo
 	character(len=rads_naml) :: standard_name        ! Optional pre-described CF-compliant 'standard' name ('' if not available)
 	character(len=rads_naml) :: source               ! Optional data source ('' if none)
 	character(len=640) :: dataname                   ! Name associated with data (e.g. netCDF var name, math string)
-	character(len=320) :: flag_meanings              ! Optional meaning of flag values ('' if none)
-	character(len=320) :: quality_flag               ! Quality flag associated with this variable ('' if none)
-	character(len=320) :: comment                    ! Optional comment ('' if none)
+	character(len=rads_cmdl) :: flag_meanings        ! Optional meaning of flag values ('' if none)
+	character(len=rads_cmdl) :: quality_flag         ! Quality flag associated with this variable ('' if none)
+	character(len=rads_cmdl) :: comment              ! Optional comment ('' if none)
 	character(len=rads_varl) :: units                ! Optional units of variable ('' if none)
 	character(len=rads_varl) :: format               ! Fortran format for output
 	character(len=rads_varl) :: backup               ! Optional backup RADS variable name (or value) ('' if none)
@@ -100,7 +100,7 @@ endtype
 
 type :: rads_sat
 	character(len=rads_naml) :: dataroot             ! Root directory of RADS data directory
-	character(len=rads_naml) :: command              ! Command line
+	character(len=rads_cmdl) :: command              ! Command line
 	character(len=8) :: satellite                    ! Satellite name
 	real(eightbytereal) :: nan                       ! NaN value
 	real(eightbytereal) :: dt1hz                     ! "1 Hz" sampling interval
