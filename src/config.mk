@@ -36,31 +36,32 @@ IONO   = $(ALTIM)/lib/iono.a
 IRI95  = $(ALTIM)/lib/iri95tec.a
 IRI2007= $(ALTIM)/lib/iri2007tec.a
 
-# Modules
-MODULES= $(INCDIR)/rads.mod $(INCDIR)/typesizes.mod
-
-# .F to .o rules
-.SUFFIXES:	.F
-.F.o:
-	$(FC) $(FFLAGS) $< -c
-
-# .tex and .dvi rules
+# .tex and .pdf rules
 .SUFFIXES:	.tex .dvi
-.c.tex:
+%.tex:	%.c
 	maketex $< > $@
-.f.tex:
+%.tex:	%.f
 	maketex $< > $@
-.F.tex:
+%.tex:	%.F
 	maketex $< > $@
-.tex.dvi:
-	latex $<
+%.pdf:	%.tex
+	pdflatex $<
 
 # .f90 rules
 .SUFFIXES:	.f90
-.f90.o:
+%.o:	%.f90
 	$(COMPILE.f) $(OUTPUT_OPTION) $<
-.f90:
+%:	%.f90
 	$(LINK.f) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+# Cancel default .mod rules
+%:	%.mod
+%.o:	%.mod
+
+# Create new .mod rule
+# Do not add %.f90 dependency because %.mod retain timestamp when not altered
+%.mod:
+	$(COMPILE.f) $(OUTPUT_OPTION) $*.f90
 
 # C preprocessor and other executables
 RANLIB	= ranlib
