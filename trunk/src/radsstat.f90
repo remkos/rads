@@ -281,6 +281,7 @@ subroutine write_header
 integer :: j0, j
 
 600 format ('# Statistics of RADS variables (',a,')'/ &
+'# Created: ',a,' UTC: ',a/ &
 '#'/'# Satellite : ',a,'/',a/'# Cycles    :',i5,' -',i5/ &
 '# Passes    :',i5,' -',i5/'#'/'# Output columns:')
 610 format ('#    ( 1) date [YYMMDD]')
@@ -290,7 +291,8 @@ integer :: j0, j
 621 format ('# (',i2,'-',i2,') mean and stddev of ',a,' [',a,']')
 622 format ('# (',i2,'-',i2,') mean, stddev, min and max of ',a,' [',a,']')
 
-write (*,600) trim(wtype(wmode)),trim(S%sat),trim(S%phase%name),S%cycles(1:2),S%passes(1:2)
+write (*,600) trim(wtype(wmode)),timestamp(),trim(S%command), &
+	trim(S%sat),trim(S%phase%name),S%cycles(1:2),S%passes(1:2)
 select case (period)
 case (period_day)
 	write (*,610)

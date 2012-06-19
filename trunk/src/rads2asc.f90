@@ -323,6 +323,7 @@ type(rads_var), pointer :: var
 ! Format of ASCII header
 600 format( &
 '# RADS_ASC'/ &
+'# Created: ',a,' UTC: ',a/&
 '# Satellite = ',a/ &
 '# Phase     = ',a/ &
 '# Cycle     = ',i3.3/ &
@@ -335,7 +336,7 @@ type(rads_var), pointer :: var
 
 ! Print the top of the header (skip a line first if this is a continuation)
 if (continued) write (outunit,*)
-write (outunit,600) trim(S%satellite), trim(S%phase%name), cycle, pass, &
+write (outunit,600) timestamp(), trim(S%command), trim(S%satellite), trim(S%phase%name), cycle, pass, &
 	P%equator_time, strf1985f (P%equator_time), P%equator_lon, trim(P%original)
 
 ! Write column info

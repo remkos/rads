@@ -26,6 +26,7 @@ program rads2grd
 !-----------------------------------------------------------------------
 use rads
 use rads_misc
+use rads_time
 
 character(len=rads_naml) :: arg, opt, optarg, grid_name='', format_string=''
 integer(fourbyteint) :: minnr=2, n(2), k(2), i, j, l, cycle, pass, ios
@@ -197,15 +198,15 @@ end subroutine update_stat
 subroutine write_header ()
 integer :: j
 
-600 format ('# Grid of RADS variables'/'#')
-610 format ('# Satellite : ',a,'/',a/'# Cycles    :',i5,' -',i5/'# Passes    :',i5,' -',i5/'#')
+600 format ('# Grid of RADS variables'/'# Created: ',a,' UTC: ',a)
+610 format ('#'/'# Satellite : ',a,'/',a/'# Cycles    :',i5,' -',i5/'# Passes    :',i5,' -',i5/'#')
 620 format ('# Output columns per grid cell:'/ &
 '#   (1) ',a,' [',a,']'/ &
 '#   (2) ',a,' [',a,']'/ &
 '# (3-4) mean and stddev of ',a,' [',a,']'/ &
 '#   (5) nr of measurements')
 
-write (*,600)
+write (*,600) timestamp(), trim(S(1)%command)
 do j = 1,msat
 	if (S(j)%sat /= '') write (*,610) trim(S(j)%sat),trim(S(j)%phase%name),S(j)%cycles(1:2),S(j)%passes(1:2)
 enddo
@@ -240,7 +241,7 @@ integer(fourbyteint) :: ncid,varid(5),dimid(2),k
 call nfs (nf90_create(grid_name,nf90_write+nf90_nofill,ncid))
 call nfs (nf90_put_att (ncid, nf90_global, 'Conventions', 'CF-1.5'))
 call nfs (nf90_put_att(ncid,nf90_global,'title',grid_name))
-call nfs (nf90_put_att(ncid,nf90_global,'history',timestamp()//': '//S(1)%command))
+call nfs (nf90_put_att(ncid,nf90_global,'history',timestamp()//' UTC: '//S(1)%command))
 if (all(c)) call nfs (nf90_put_att(ncid,nf90_global,'node_offset',1))
 
 do k = 1,2

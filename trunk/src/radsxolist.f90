@@ -38,6 +38,7 @@ end type
 type(trk_), allocatable :: trk(:)
 character(len=640) :: fmt_string
 character(len=rads_naml) :: arg, opt, optarg, filename
+character(len=rads_cmdl) :: command
 character(len=1) :: mode = ''
 character(len=4) :: statname(5) = (/ 'min ', 'max ', 'mean', 'rms ', 'std ' /)
 integer(fourbyteint), parameter :: msat = 20
@@ -84,11 +85,14 @@ do i = 1,iargc()
 enddo
 
 ! Now process each file
+call get_command (command, status = i)
+write (*, 600) timestamp(), trim(command)
 do i = 1,iargc()
 	call getarg (i, filename)
 	if (filename(:1) == '-' .or. index(filename, '=') > 0) cycle
 	call process
 enddo
+600 format ('# List of RADS crossovers'/'# Created: ',a,' UTC: ',a)
 
 contains
 

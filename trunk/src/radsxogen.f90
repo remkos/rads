@@ -148,24 +148,28 @@ enddo
 
 ! Write info about this job
 if (nsat == 1) duals = .false.
-write (*, '(/"Output file name: ", a)') trim(filename)
+write (*,600) timestamp(), trim(S(1)%command), trim(filename)
 if (singles .and. duals) then
-	write (*, '("Processing single and dual satellite crossovers")')
+	write (*,550) 'Processing single and dual satellite crossovers'
 	if (nsat == 2) legs = 'ascending_pass_or_' // S(1)%sat // ' descending_pass_or_' // S(2)%sat
 else if (singles) then
-	write (*, '("Processing single satellite crossovers")')
+	write (*,550) 'Processing single satellite crossovers'
 	legs = 'ascending_pass descending_pass'
 else if (duals) then
-	write (*, '("Processing dual satellite crossovers")')
+	write (*,550) 'Processing dual satellite crossovers'
 	if (nsat == 2) legs = S(1)%sat // ' ' // S(2)%sat
 else
-	write (*, '("No single or duals satellite crossovers are processed. Aborting.")')
+	write (*,550) 'No single or duals satellite crossovers are processed. Aborting'
 	stop
 endif
-write (*, '(/"Satellite  Cycles    Passes  Delta-time cutoff (days)")')
+write (*,610)
 do i = 1,nsat
-	write (*, '(a,i5,i4,2i5,f8.3)') S(i)%satellite, S(i)%cycles(1:2), S(i)%passes(1:2), dt_secs(S(i),dt(i))/86400d0
+	write (*,620) S(i)%satellite, S(i)%cycles(1:2), S(i)%passes(1:2), dt_secs(S(i),dt(i))/86400d0
 enddo
+550 format (a)
+600 format (/'Created: ',a,' UTC: ',a/'Output file name: ',a)
+610 format (/'Satellite  Cycles    Passes  Delta-time cutoff (days)')
+620 format (a,i5,i4,2i5,f8.3)
 
 ! Do further initialisations
 nr = nr_ (0, 0, 0, 0, 0, 0, 0, 0)
@@ -184,7 +188,7 @@ call nfs (nf90_put_att (ncid, nf90_global, 'Conventions', 'CF-1.5'))
 call nfs (nf90_put_att (ncid, nf90_global, 'title', 'RADS 4.0 crossover file'))
 call nfs (nf90_put_att (ncid, nf90_global, 'institution', 'Altimetrics / NOAA / TU Delft'))
 call nfs (nf90_put_att (ncid, nf90_global, 'references', 'RADS Data Manual, Issue 4.0'))
-call nfs (nf90_put_att (ncid, nf90_global, 'history', timestamp()//': '//trim(S(1)%command)))
+call nfs (nf90_put_att (ncid, nf90_global, 'history', timestamp()//' UTC: '//trim(S(1)%command)))
 call nfs (nf90_put_att (ncid, nf90_global, 'legs', trim(legs)))
 do i = 1,nsel
 	call def_var_sel (ncid, S(1)%sel(i), dimid(1:2), selid(i))
