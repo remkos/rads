@@ -27,7 +27,7 @@ use rads
 use rads_misc
 use rads_netcdf
 use rads_time
-integer(fourbyteint) :: ncid, i, icol, ios, nvar, nxo, ntrk, id_satid, id_track, id_sla, id_new, id_old
+integer(fourbyteint) :: ncid, i, icol, ios, nvar, nxo_in, nxo_out, ntrk, id_satid, id_track, id_sla, id_new, id_old
 real(eightbytereal), allocatable :: var(:,:,:), stat(:,:,:)
 integer(fourbyteint), allocatable :: track(:,:)
 character(len=rads_naml), allocatable :: long_name(:)
@@ -53,7 +53,7 @@ type(rads_sat) :: S
 
 integer(fourbyteint) :: var0 = 0
 logical :: diff = .true., stat_only = .false., singles = .true., duals = .true., xostat = .false.
-real(eightbytereal) :: t0 = 0d0, t1 = 0d0, lon0 = 0d0, lon1 = 0d0, lat0 = 0d0, lat1 = 0d0, dt0 = 0d0, dt1 = 0d0
+real(eightbytereal) :: t0 = 0d0, t1 = 0d0, lon0 = 0d0, lon1 = 0d0, lat0 = 0d0, lat1 = 0d0, dt0 = 0d0, dt1 = 0d0, edit = -1d0
 
 ! Check operation mode
 call getarg (0, arg)
@@ -80,6 +80,9 @@ do i = 1,iargc()
 		endif
 		dt0 = dt0 * 86400d0
 		dt1 = dt1 * 86400d0
+	case ('-e', '--edit')
+		edit = 3.5d0
+		read (optarg, *, iostat=ios) edit
 	case ('-d', '--dual')
 		singles = .false.
 	case ('-s', '--single')
@@ -115,6 +118,7 @@ contains
 subroutine process
 integer(fourbyteint) :: i, j, k
 character(len=rads_naml) :: legs
+real(eightbytereal) :: mean, sigma
 
 ! Open netCDF file
 write (*, 600) trim(filename)
@@ -122,21 +126,23 @@ write (*, 600) trim(filename)
 call nfs (nf90_open (filename, nf90_write, ncid))
 
 ! Get the number of xovers and number of tracks
-call nfs (nf90_inquire_dimension (ncid, 2, len=nxo))
+call nfs (nf90_inquire_dimension (ncid, 2, len=nxo_in))
 call nfs (nf90_inquire_dimension (ncid, 3, len=ntrk))
 if (ntrk >= maxtrk) then
 	write (*,'(a)') 'Output format does not allow track numbers exceeding 32767. We will modulo them.'
 endif
 
-write (*, 605) nxo, ntrk
+write (*, 605) nxo_in, ntrk
 605 format ('# Xovers,tracks = ',2i9)
+if (edit > 0d0) write (*, 606) edit
+606 format ('# Edit sigma    = ',f9.3)
 fmt_string = '('
 
 ! Read all the "base variables" into memory
 id_track = get_varid('track')
 id_satid = get_varid('satid')
 nvar = (id_satid - id_track - 1)
-allocate (track(2,nxo), trk(ntrk), var(2,nxo,-1:nvar), stat(2,-1:nvar,5), mask(nxo), long_name(-2:nvar))
+allocate (track(2,nxo_in), trk(ntrk), var(2,nxo_in,-1:nvar), stat(2,-1:nvar,5), mask(nxo_in), long_name(-2:nvar))
 mask = .true.
 call get_var_1d (get_varid('lat'), var(1,:,-1), long_name(-2))
 call get_var_1d (get_varid('lon'), var(2,:,-1), long_name(-1))
@@ -196,6 +202,68 @@ enddo
 ! Close netCDF file
 call nfs (nf90_close (ncid))
 
+! Mask out data not in specified range
+if (lat1 > lat0) where (var(1,:,-1) < lat0 .or. var(1,:,-1) > lat1) mask = .false.
+if (lon1 > lon0) where (var(2,:,-1) < lon0 .or. var(2,:,-1) > lon1) mask = .false.
+if (t1   > t0  ) where (var(1,:, 0) < t0   .or. var(1,:, 0) > t1   .or. &
+						var(2,:, 0) < t0   .or. var(2,:, 0) > t1  ) mask = .false.
+if (dt1  > dt0 ) where (abs(var(1,:,0)-var(2,:,0)) < dt0 .or. abs(var(1,:,0)-var(2,:,0)) > dt1) mask = .false.
+
+! Mask out singles or duals
+if (.not.singles) then
+	mask = (trk(track(1,:))%satid /= trk(track(2,:))%satid)
+else if (.not.duals) then
+	mask = (trk(track(1,:))%satid == trk(track(2,:))%satid)
+endif
+
+! If editing is requested, mask based on sigma-editing of first variable only
+! - Compute the standard deviation of the first
+! - Edit based on outliers in first variable
+if (edit > 0d0) then
+	do j = 1,1	! For time being: first variable only
+		call mean_variance (pack(var(1,:,j)-var(2,:,j),mask), mean, sigma)
+		sigma = sqrt(sigma)*edit
+		mask = mask .and. (abs(var(1,:,j)-var(2,:,j)-mean) <= sigma)
+	enddo
+endif
+
+! Print number of xovers selected
+nxo_out = count(mask)
+write (*,610) nxo_out
+610 format ('# Xovers sel''d  = ',i9)
+
+! If no xovers skip the rest
+if (nxo_out == 0) then
+	deallocate (track, trk, var, stat, mask, long_name)
+	return
+endif
+
+! Write column info
+if (.not.xostat) then
+	icol = 0
+	do i = -2,-1
+		icol = icol + 1
+		write (*,611) icol,trim(long_name(i))
+	enddo
+	do i = 0,var0-1
+		icol = icol + 2
+		write (*,612) icol-1,icol,trim(long_name(i))
+	enddo
+	if (diff) then
+		do i = var0,nvar
+			icol = icol + 1
+			write (*,611) icol,trim(long_name(i))
+		enddo
+	else
+		do i = var0,nvar
+			icol = icol + 2
+			write (*,612) icol-1,icol,trim(long_name(i))
+		enddo
+	endif
+endif
+611 format ('# Column  ',i2,'    = ',a)
+612 format ('# Columns ',i2,'-',i2,' = ',a)
+
 ! Sort first and last depending on order
 select case (order)
 case ('A')
@@ -227,31 +295,6 @@ case default ! Native order
 	if (.not.singles) legs = satlist
 end select
 
-! Mask out data not in specified range
-if (lat1 > lat0) where (var(1,:,-1) < lat0 .or. var(1,:,-1) > lat1) mask = .false.
-if (lon1 > lon0) where (var(2,:,-1) < lon0 .or. var(2,:,-1) > lon1) mask = .false.
-if (t1   > t0  ) where (var(1,:, 0) < t0   .or. var(1,:, 0) > t1   .or. &
-						var(2,:, 0) < t0   .or. var(2,:, 0) > t1  ) mask = .false.
-if (dt1  > dt0 ) where (abs(var(1,:,0)-var(2,:,0)) < dt0 .or. abs(var(1,:,0)-var(2,:,0)) > dt1) mask = .false.
-
-! Now collapse the data if needing difference
-if (diff) var(1,:,var0:nvar) = var(1,:,var0:nvar) - var(2,:,var0:nvar)
-
-! Mask out singles or duals
-if (.not.singles) where (trk(track(1,:))%satid == trk(track(2,:))%satid) mask = .false.
-if (.not.duals  ) where (trk(track(1,:))%satid /= trk(track(2,:))%satid) mask = .false.
-
-! Print number of xovers selected
-nxo = count(mask)
-write (*,610) nxo
-610 format ('# Xovers sel''d  = ',i9)
-
-! If no xovers skip the rest
-if (nxo == 0) then
-	deallocate (track, trk, var, stat, mask, long_name)
-	return
-endif
-
 ! Specify order of values
 if (diff) then
 	write (*,615) 'Difference',trim(legs)
@@ -260,41 +303,18 @@ else
 endif
 615 format ('# ',a,'    = ',a)
 
-! Write column info
-if (.not.xostat) then
-	icol = 0
-	do i = -2,-1
-		icol = icol + 1
-		write (*,621) icol,trim(long_name(i))
-	enddo
-	do i = 0,var0-1
-		icol = icol + 2
-		write (*,622) icol-1,icol,trim(long_name(i))
-	enddo
-	if (diff) then
-		do i = var0,nvar
-			icol = icol + 1
-			write (*,621) icol,trim(long_name(i))
-		enddo
-	else
-		do i = var0,nvar
-			icol = icol + 2
-			write (*,622) icol-1,icol,trim(long_name(i))
-		enddo
-	endif
-endif
-621 format ('# Column  ',i2,'    = ',a)
-622 format ('# Columns ',i2,'-',i2,' = ',a)
+! Now collapse the data if needing difference
+if (diff) var(1,:,var0:nvar) = var(1,:,var0:nvar) - var(2,:,var0:nvar)
 
 ! Print out data
 if (stat_only) then
 	! Skip
 else if (diff) then
-	do i = 1,nxo
+	do i = 1,nxo_in
 		if (mask(i)) write (*,fmt_string) var(:,i,-1:var0-1),var(1,i,var0:nvar)
 	enddo
 else
-	do i = 1,nxo
+	do i = 1,nxo_in
 		if (mask(i)) write (*,fmt_string) var(:,i,:)
 	enddo
 endif
@@ -304,9 +324,9 @@ do j = -1,nvar
 	do k = 1,2
 		stat(k,j,1) = minval(var(k,:,j),mask)
 		stat(k,j,2) = maxval(var(k,:,j),mask)
-		stat(k,j,3) = sum(var(k,:,j),mask) / nxo
-		stat(k,j,4) = sqrt(sum(var(k,:,j)**2,mask)/nxo)
-		stat(k,j,5) = sqrt(stat(k,j,4)**2 - stat(k,j,3)**2)
+		call mean_variance (pack(var(k,:,j),mask), stat(k,j,3), stat(k,j,5))
+		stat(k,j,4) = sqrt(stat(k,j,3)**2+stat(k,j,5)*(nxo_out-1)/nxo_out)
+		stat(k,j,5) = sqrt(stat(k,j,5))
 	enddo
 enddo
 
@@ -422,7 +442,7 @@ end subroutine get_var_2d
 subroutine reorder (order)
 logical, intent(in) :: order(:)
 integer(fourbyteint) :: i, j
-do i = 1,nxo
+do i = 1,nxo_in
 	if (order(i)) then
 		do j = 0,nvar
 			call flip(var(:,i,j))

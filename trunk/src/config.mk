@@ -61,7 +61,7 @@ IRI2007= $(ALTIM)/lib/iri2007tec.a
 # Create new .mod rule
 # Do not add %.f90 dependency because %.mod retain timestamp when not altered
 %.mod:
-	$(COMPILE.f) $(OUTPUT_OPTION) $*.f90
+	$(COMPILE.f) -o $*.o $*.f90
 
 # C preprocessor and other executables
 RANLIB	= ranlib
