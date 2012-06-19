@@ -17,12 +17,15 @@
 
 include config.mk
 
-%.o:	%.mod
-
 OBJS1	= rads_netcdf.o rads_time.o rads_math.o rads_misc.o rads_grid.o rads_geo.o xmlparse.o
 OBJS2	= rads.o
 OBJS3	= rads3.o
 OBJS	= $(OBJS1) $(OBJS2) $(OBJS3)
+
+MODS1	= $(OBJS1:.o=.mod)
+MODS2	= $(OBJS1:.o=.mod)
+MODS3	= $(OBJS1:.o=.mod)
+MODS	= $(OBJS:.o=.mod)
 
 LIB	= librads.a
 
@@ -33,8 +36,6 @@ PROGS_L4= rads2asc4 radscolin4 radsstat4 rads2grd4
 PROGS = $(PROGS_O:.o=)
 
 INCS	= config.inc
-
-MODULES = $(OBJS:.o=.mod)
 
 #-----------------------------------------------------------------------
 # What to create?
@@ -58,18 +59,17 @@ man:	$(MAN)
 # Object dependencies
 #-----------------------------------------------------------------------
 
-$(OBJS2):	$(OBJS1)
-$(OBJS3):	$(OBJS1) $(OBJS2)
-$(PROGS_O):	$(LIB)
+$(OBJS2):	$(MODS1) $(INCS)
+$(OBJS3):	$(MODS2)
+$(PROGS_O):	$(MODS)
 $(PROGS):	$(LIB)
-rads.o:		$(INCS)
-radsxogen.o:	spline.o
+radsxogen.o:	spline.mod
 
 #-----------------------------------------------------------------------
 # Create config.inc when config.mk is updated
 #-----------------------------------------------------------------------
 config.inc:	config.mk
-	printf "character(80) :: radsdataroot = '%s', radsuserroot = '%s'\n" $(datarootdir) $(HOME) > $@
+	printf "character(len=rads_naml) :: radsdataroot = '%s', radsuserroot = '%s'\n" $(datarootdir) $(HOME) > $@
 
 #-----------------------------------------------------------------------
 # How to create the library

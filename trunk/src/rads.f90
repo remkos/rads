@@ -19,8 +19,6 @@ module rads
 use typesizes
 use rads_grid
 
-include 'config.inc'
-
 ! Dimensions
 integer(fourbyteint), parameter :: rads_var_chunk = 100, rads_varl = 40, rads_naml = 160, rads_cmdl = 320, rads_cyclistl = 50
 ! RADS4 data types
@@ -43,6 +41,8 @@ integer(twobyteint), parameter :: rads_nofield = -1
 real(eightbytereal), parameter :: pi = 3.1415926535897932d0, rad = pi/180d0
 character(len=1), parameter :: rads_linefeed = char(10), rads_noedit = '_'
 integer, parameter, private :: stderr = 0, stdout = 6
+
+include 'config.inc'
 
 private :: rads_traxxing, rads_get_phase, rads_init_sat_struct
 
