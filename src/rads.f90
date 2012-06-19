@@ -1806,9 +1806,9 @@ do
 			info%datasrc = rads_src_constant
 		case ('grid', 'grid_l')
 			info%datasrc = rads_src_grid_lininter
-		case ('grid_c')
+		case ('grid_s', 'grid_c')
 			info%datasrc = rads_src_grid_splinter
-		case ('grid_q')
+		case ('grid_n', 'grid_q')
 			info%datasrc = rads_src_grid_query
 		case ('math')
 			info%datasrc = rads_src_math
@@ -1833,7 +1833,8 @@ do
 		end select
 		! Additional stuff to do for grids
 		if (info%datasrc / 10 * 10 == rads_src_grid_lininter) then
-			info%gridx = 'lon' ; info%gridy = 'lat'
+			info%gridx = 'lon'
+			info%gridy = 'lat'
 			do i = 1,nattr
 				select case (attr(1,i))
 				case ('x')
