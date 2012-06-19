@@ -50,7 +50,7 @@ type(sat_) :: sat(msat)
 character(len=3*msat) :: satlist
 type(rads_sat) :: S
 integer(fourbyteint), parameter :: maxtrk = 32768
-logical :: diff = .false., stat_only = .false.
+logical :: diff = .true., stat_only = .false., singles = .true., duals = .true.
 real(eightbytereal) :: t0 = 0d0, t1 = 0d0, lon0 = 0d0, lon1 = 0d0, lat0 = 0d0, lat1 = 0d0, dt0 = 0d0, dt1 = 0d0
 
 ! Initialize RADS or issue help
@@ -73,12 +73,16 @@ do i = 1,iargc()
 		endif
 		dt0 = dt0 * 86400d0
 		dt1 = dt1 * 86400d0
-	case ('-d')
-		diff = .true.
-	case ('-o')
-		mode = optarg(1:1)
-	case ('-s')
+	case ('-d', '--dual')
+		singles = .false.
+	case ('-s', '--single')
+		duals = .false.
+	case ('-l', '--legs')
+		diff = .false.
+	case ('-n', '--nolist')
 		stat_only = .true.
+	case ('-o', '--order')
+		mode = optarg(1:1)
 	case default
 		if (datearg(arg,t0,t1)) cycle
 	end select
@@ -112,7 +116,7 @@ if (ntrk >= maxtrk) then
 	write (*,'(a)') 'Output format does not allow track numbers exceeding 32767. We will modulo them.'
 endif
 
-600 format ( &
+600 format ('#'/ &
 '# File name  = ',a/ &
 '# Xovers in  = ',i9/ &
 '# Tracks in  = ',i9)
@@ -181,6 +185,9 @@ do i = 1,iargc()
 	endif
 enddo
 
+! Close netCDF file
+call nfs (nf90_close (ncid))
+
 ! Sort first and last depending on mode
 select case (mode)
 case ('A')
@@ -208,12 +215,6 @@ case ('h')
 	call reorder (sat(trk(track(2,:))%satid)%period < sat(trk(track(1,:))%satid)%period)
 	legs = 'lower_satellite higher_satellite'
 end select
-if (diff) then
-	write (*,610) 'Difference',trim(legs)
-else
-	write (*,610) 'Order     ',trim(legs)
-endif
-610 format ('# ',a,' = ',a)
 
 ! Now collapse the data if needing difference
 if (diff) var(1,:,1:nvar) = var(1,:,1:nvar) - var(2,:,1:nvar)
@@ -224,6 +225,29 @@ if (lon1 > lon0) where (var(2,:,-1) < lon0 .or. var(2,:,-1) > lon1) mask = .fals
 if (t1   > t0  ) where (var(1,:, 0) < t0   .or. var(1,:, 0) > t1   .or. &
 						var(2,:, 0) < t0   .or. var(2,:, 0) > t1  ) mask = .false.
 if (dt1 > dt0) where (abs(var(1,:,0)-var(2,:,0)) < dt0 .or. abs(var(1,:,0)-var(2,:,0)) > dt1) mask = .false.
+
+! Mask out singles or duals
+if (.not.singles) where (trk(track(1,:))%satid == trk(track(2,:))%satid) mask = .false.
+if (.not.duals  ) where (trk(track(1,:))%satid /= trk(track(2,:))%satid) mask = .false.
+
+! Do statistics
+nxo = count(mask)
+write (*,615) nxo
+615 format ('# Xovers out = ',i9)
+
+! If no xovers skip the rest
+if (nxo == 0) then
+	deallocate (track, trk, var, stat, mask)
+	return
+endif
+
+! Specify order of values
+if (diff) then
+	write (*,610) 'Difference',trim(legs)
+else
+	write (*,610) 'Order     ',trim(legs)
+endif
+610 format ('# ',a,' = ',a)
 
 ! Print out data
 if (stat_only) then
@@ -238,10 +262,7 @@ else
 	enddo
 endif
 
-! Do statistics
-nxo = count(mask)
-write (*,615) nxo
-615 format ('# Xovers out = ',i9)
+! Print statistics
 do j = -1,nvar
 	do k = 1,2
 		stat(k,j,1) = minval(var(k,:,j),mask)
@@ -261,7 +282,6 @@ do i = 1,5
 enddo
 620 format ('# ',a,' : ',$)
 
-call nfs (nf90_close (ncid))
 deallocate (track, trk, var, stat, mask)
 end subroutine process
 
@@ -279,14 +299,16 @@ write (0,1300)
 '  --lat=lat0,lat1     : specify latitude boundaries (deg)'/ &
 '  --t=t0,t1           : specify time selection'/ &
 '                        (optionally use ymd=, doy=, sec= for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)'/ &
-'  --dt=[dtmin,]dtmax  : use only xovers with [dtmin <] dt < dtmax (days)'/&
-'  -d                  : Write out xover differences (default is both values)'/ &
+'  --dt=[dtmin,]dtmax  : use only xovers with [dtmin <] dt < dtmax (days)'/ &
+'  -d|--dual           : Select duals satellite crossovers only'/ &
+'  -s|--single         : Select single satellite crossovers only'/ &
+'  -l|--legs           : Write out both xover values (default is differences)'/ &
+'  -n|--nolist         : Do not print listing (print statistics only)' &
 '  -o[A|a|H|h|S|s|T|t] : Order of the xover values (or difference):'/ &
-'                        A|a = ascending-descending or vv'/ &
+'    |--order=<type>     A|a = ascending-descending or vv'/ &
 '                        H|h = higher-lower satellite or vv'/ &
 '                        S|s = higher-lower satellite ID or vv'/ &
-'                        T|t = later-earlier measurement or vv'/ &
-'  -s                  : Print statistics only')
+'                        T|t = later-earlier measurement or vv')
 stop
 end subroutine synopsis
 
