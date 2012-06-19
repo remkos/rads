@@ -31,8 +31,10 @@ LIB	= librads.a
 
 PROGS_O = rads2asc.o rads2adr.o rads2nc.o rads2grd.o radsstat.o radscolin.o radsxogen.o radsxoconv.o \
 	radsxolist.o rads_test.o radsreconfig.o rads_sample.o rads3test.o
-PROGS_L = rads2xadr rads2xgf
-PROGS_L4= rads2asc4 radscolin4 radsstat4 rads2grd4
+PROGS_L1 = rads2xadr rads2xgf
+PROGS_L2 = radsxostat
+PROGS_L4 = rads2asc4 radscolin4 radsstat4 rads2grd4
+PROGS_L  = $(PROGS_L1) $(PROGS_L2) $(PROGS_L4)
 PROGS = $(PROGS_O:.o=)
 
 INCS	= config.inc
@@ -41,7 +43,7 @@ INCS	= config.inc
 # What to create?
 #-----------------------------------------------------------------------
 
-all:	$(LIB) $(PROGS) $(PROGS_L) $(PROGS_L4)
+all:	$(LIB) $(PROGS) $(PROGS_L)
 
 install:	all
 	$(INSTALL) -d $(LIBDIR)
@@ -50,8 +52,7 @@ install:	all
 	$(INSTALL) -m 644 *.inc *.mod $(INCDIR)
 	$(INSTALL) -d $(BINDIR)
 	$(INSTALL) -m 755 $(PROGS) $(BINDIR)
-	for p in $(PROGS_L); do ( cd $(BINDIR) ; ln -fs rads2adr $$p ) ; done
-	for p in $(PROGS_L4); do ( cd $(BINDIR) ; ln -fs $${p/4/} $$p ) ; done
+	$(MAKE) -C $(BINDIR) $(PROGS_L)
 
 man:	$(MAN)
 
@@ -133,8 +134,11 @@ radsxoconv:	radsxoconv.o
 radsxolist:	radsxolist.o
 	$(FC) -o $@ radsxolist.o $(LIB) $(NETCDF)
 
-$(PROGS_L): rads2adr
+$(PROGS_L1):	rads2adr
 	ln -fs rads2adr $@
+
+$(PROGS_L2):	radsxolist
+	ln -fs radsxolist $@
 
 $(PROGS_L4):	%4:	%
 	ln -fs $* $@
