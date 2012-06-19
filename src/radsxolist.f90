@@ -30,6 +30,7 @@ use rads_time
 integer(fourbyteint) :: ncid, i, icol, ios, nvar, nxo, ntrk, id_satid, id_track, id_sla, id_new, id_old
 real(eightbytereal), allocatable :: var(:,:,:), stat(:,:,:)
 integer(fourbyteint), allocatable :: track(:,:)
+character(len=rads_naml), allocatable :: long_name(:)
 logical, allocatable :: mask(:)
 type :: trk_
 	real(eightbytereal) :: equator_lon, equator_time, start_time, end_time
@@ -39,19 +40,25 @@ type(trk_), allocatable :: trk(:)
 character(len=640) :: fmt_string
 character(len=rads_naml) :: arg, opt, optarg, filename
 character(len=rads_cmdl) :: command
-character(len=1) :: mode = ''
+character(len=1) :: order = ''
 character(len=4) :: statname(5) = (/ 'min ', 'max ', 'mean', 'rms ', 'std ' /)
-integer(fourbyteint), parameter :: msat = 20
+integer(fourbyteint), parameter :: msat = 20, maxtrk = 32768
 type :: sat_
 	character(len=4) :: name
 	real(eightbytereal) :: period, altsig, orberr, inclination
 end type sat_
 type(sat_) :: sat(msat)
-character(len=3*msat) :: satlist
+character(len=3*msat) :: satlist = ''
 type(rads_sat) :: S
-integer(fourbyteint), parameter :: maxtrk = 32768
-logical :: diff = .true., stat_only = .false., singles = .true., duals = .true.
+
+integer(fourbyteint) :: var0 = 0
+logical :: diff = .true., stat_only = .false., singles = .true., duals = .true., xostat = .false.
 real(eightbytereal) :: t0 = 0d0, t1 = 0d0, lon0 = 0d0, lon1 = 0d0, lat0 = 0d0, lat1 = 0d0, dt0 = 0d0, dt1 = 0d0
+
+! Check operation mode
+call getarg (0, arg)
+xostat = (index(arg, 'radsxostat') > 0)
+stat_only = xostat
 
 ! Initialize RADS or issue help
 call synopsis
@@ -77,12 +84,15 @@ do i = 1,iargc()
 		singles = .false.
 	case ('-s', '--single')
 		duals = .false.
-	case ('-l', '--legs')
+	case ('-l', '--both-legs')
 		diff = .false.
+		var0 = 1
 	case ('-n', '--nolist')
 		stat_only = .true.
 	case ('-o', '--order')
-		mode = optarg(1:1)
+		order = optarg(1:1)
+	case ('-t', '--both-times')
+		var0 = 1
 	case default
 		if (datearg(arg,t0,t1)) cycle
 	end select
@@ -107,6 +117,8 @@ integer(fourbyteint) :: i, j, k
 character(len=rads_naml) :: legs
 
 ! Open netCDF file
+write (*, 600) trim(filename)
+600 format ('#'/'# File name     = ',a)
 call nfs (nf90_open (filename, nf90_write, ncid))
 
 ! Get the number of xovers and number of tracks
@@ -116,23 +128,19 @@ if (ntrk >= maxtrk) then
 	write (*,'(a)') 'Output format does not allow track numbers exceeding 32767. We will modulo them.'
 endif
 
-600 format ('#'/ &
-'# File name  = ',a/ &
-'# Xovers in  = ',i9/ &
-'# Tracks in  = ',i9)
-write (*, 600) trim(filename), nxo, ntrk
-icol = 0
+write (*, 605) nxo, ntrk
+605 format ('# Xovers,tracks = ',2i9)
 fmt_string = '('
 
 ! Read all the "base variables" into memory
 id_track = get_varid('track')
 id_satid = get_varid('satid')
 nvar = (id_satid - id_track - 1)
-allocate (track(2,nxo), trk(ntrk), var(2,nxo,-1:nvar), stat(2,-1:nvar,5), mask(nxo))
+allocate (track(2,nxo), trk(ntrk), var(2,nxo,-1:nvar), stat(2,-1:nvar,5), mask(nxo), long_name(-2:nvar))
 mask = .true.
-call get_var_1d (get_varid('lat'), var(1,:,-1))
-call get_var_1d (get_varid('lon'), var(2,:,-1))
-call get_var_2d (get_varid('time'), var(:,:,0))
+call get_var_1d (get_varid('lat'), var(1,:,-1), long_name(-2))
+call get_var_1d (get_varid('lon'), var(2,:,-1), long_name(-1))
+call get_var_2d (get_varid('time'), var(:,:,0), long_name(0))
 call nfs (nf90_get_var (ncid, id_track, track))
 call nfs (nf90_get_var (ncid, id_satid, trk%satid))
 call nfs (nf90_get_var (ncid, get_varid('cycle'), trk%cycle))
@@ -165,7 +173,7 @@ endif
 
 ! Now load all the "data variables"
 do i = 1,nvar
-	call get_var_2d (id_track + i, var(:,:,i))
+	call get_var_2d (id_track + i, var(:,:,i), long_name(i))
 enddo
 fmt_string(len_trim(fmt_string)-3:) = ')'
 
@@ -188,8 +196,8 @@ enddo
 ! Close netCDF file
 call nfs (nf90_close (ncid))
 
-! Sort first and last depending on mode
-select case (mode)
+! Sort first and last depending on order
+select case (order)
 case ('A')
 	call reorder (mod(trk(track(1,:))%pass,2) < mod(trk(track(2,:))%pass,2))
 	legs = 'ascending_pass descending_pass'
@@ -214,47 +222,76 @@ case ('H')
 case ('h')
 	call reorder (sat(trk(track(2,:))%satid)%period < sat(trk(track(1,:))%satid)%period)
 	legs = 'lower_satellite higher_satellite'
+case default ! Native order
+	if (.not.duals .or. len_trim(satlist) <= 2) legs = 'ascending_pass descending_pass'
+	if (.not.singles) legs = satlist
 end select
-
-! Now collapse the data if needing difference
-if (diff) var(1,:,1:nvar) = var(1,:,1:nvar) - var(2,:,1:nvar)
 
 ! Mask out data not in specified range
 if (lat1 > lat0) where (var(1,:,-1) < lat0 .or. var(1,:,-1) > lat1) mask = .false.
 if (lon1 > lon0) where (var(2,:,-1) < lon0 .or. var(2,:,-1) > lon1) mask = .false.
 if (t1   > t0  ) where (var(1,:, 0) < t0   .or. var(1,:, 0) > t1   .or. &
 						var(2,:, 0) < t0   .or. var(2,:, 0) > t1  ) mask = .false.
-if (dt1 > dt0) where (abs(var(1,:,0)-var(2,:,0)) < dt0 .or. abs(var(1,:,0)-var(2,:,0)) > dt1) mask = .false.
+if (dt1  > dt0 ) where (abs(var(1,:,0)-var(2,:,0)) < dt0 .or. abs(var(1,:,0)-var(2,:,0)) > dt1) mask = .false.
+
+! Now collapse the data if needing difference
+if (diff) var(1,:,var0:nvar) = var(1,:,var0:nvar) - var(2,:,var0:nvar)
 
 ! Mask out singles or duals
 if (.not.singles) where (trk(track(1,:))%satid == trk(track(2,:))%satid) mask = .false.
 if (.not.duals  ) where (trk(track(1,:))%satid /= trk(track(2,:))%satid) mask = .false.
 
-! Do statistics
+! Print number of xovers selected
 nxo = count(mask)
-write (*,615) nxo
-615 format ('# Xovers out = ',i9)
+write (*,610) nxo
+610 format ('# Xovers sel''d  = ',i9)
 
 ! If no xovers skip the rest
 if (nxo == 0) then
-	deallocate (track, trk, var, stat, mask)
+	deallocate (track, trk, var, stat, mask, long_name)
 	return
 endif
 
 ! Specify order of values
 if (diff) then
-	write (*,610) 'Difference',trim(legs)
+	write (*,615) 'Difference',trim(legs)
 else
-	write (*,610) 'Order     ',trim(legs)
+	write (*,615) 'Order     ',trim(legs)
 endif
-610 format ('# ',a,' = ',a)
+615 format ('# ',a,'    = ',a)
+
+! Write column info
+if (.not.xostat) then
+	icol = 0
+	do i = -2,-1
+		icol = icol + 1
+		write (*,621) icol,trim(long_name(i))
+	enddo
+	do i = 0,var0-1
+		icol = icol + 2
+		write (*,622) icol-1,icol,trim(long_name(i))
+	enddo
+	if (diff) then
+		do i = var0,nvar
+			icol = icol + 1
+			write (*,621) icol,trim(long_name(i))
+		enddo
+	else
+		do i = var0,nvar
+			icol = icol + 2
+			write (*,622) icol-1,icol,trim(long_name(i))
+		enddo
+	endif
+endif
+621 format ('# Column  ',i2,'    = ',a)
+622 format ('# Columns ',i2,'-',i2,' = ',a)
 
 ! Print out data
 if (stat_only) then
 	! Skip
 else if (diff) then
 	do i = 1,nxo
-		if (mask(i)) write (*,fmt_string) var(:,i,-1:0),var(1,i,1:nvar)
+		if (mask(i)) write (*,fmt_string) var(:,i,-1:var0-1),var(1,i,var0:nvar)
 	enddo
 else
 	do i = 1,nxo
@@ -262,7 +299,7 @@ else
 	enddo
 endif
 
-! Print statistics
+! Do statistics
 do j = -1,nvar
 	do k = 1,2
 		stat(k,j,1) = minval(var(k,:,j),mask)
@@ -272,43 +309,63 @@ do j = -1,nvar
 		stat(k,j,5) = sqrt(stat(k,j,4)**2 - stat(k,j,3)**2)
 	enddo
 enddo
-do i = 1,5
-	write (*,620) statname(i)
-	if (diff) then
-		write (*,fmt_string) stat(:,-1:0,i),stat(1,1:nvar,i)
-	else
-		write (*,fmt_string) stat(:,:,i)
-	endif
-enddo
-620 format ('# ',a,' : ',$)
 
-deallocate (track, trk, var, stat, mask)
+! Print statistics
+if (xostat) then
+	write (*,640) 'MIN','MAX','MEAN','RMS','STDDEV'
+	write (*,645) trim(long_name(-2)),stat(1,-1,:)
+	write (*,645) trim(long_name(-1)),stat(2,-1,:)
+	do i = 0,nvar
+		write (*,645) trim(long_name(i)),stat(1,i,:)
+		if (.not.diff .or. i < var0) write (*,645) trim(long_name(i)),stat(2,i,:)
+	enddo
+else
+	do i = 1,5
+		write (*,650,advance='no') statname(i)
+		if (diff) then
+			write (*,fmt_string) stat(:,-1:var0-1,i),stat(1,var0:nvar,i)
+		else
+			write (*,fmt_string) stat(:,:,i)
+		endif
+	enddo
+endif
+640 format ('# ',t43,5a16)
+645 format ('# ',a,t43,5f16.4)
+650 format ('# ',a,' : ')
+
+deallocate (track, trk, var, stat, mask, long_name)
 end subroutine process
 
 !***********************************************************************
 
 subroutine synopsis
 if (rads_version ('$Revision$','RADS crossover file lister')) return
-write (0,1300)
+if (xostat) then
+	write (stderr,1300) 'stat'
+else
+	write (stderr,1300) 'list'
+	write (stderr,1301)
+endif
 1300 format (/ &
-'usage: radsxolist [options] filename ...' // &
+'usage: radsxo',a,' [options] filename ...' // &
 'Required argument:' / &
-'  filename            : Input xover file name (extension .nc)'// &
+'  filename              Input netCDF xover file name'// &
 'Optional arguments [options] are:'/ &
-'  --lon=lon0,lon1     : specify longitude boundaries (deg)'/ &
-'  --lat=lat0,lat1     : specify latitude boundaries (deg)'/ &
-'  --t=t0,t1           : specify time selection'/ &
-'                        (optionally use ymd=, doy=, sec= for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)'/ &
-'  --dt=[dtmin,]dtmax  : use only xovers with [dtmin <] dt < dtmax (days)'/ &
-'  -d|--dual           : Select duals satellite crossovers only'/ &
-'  -s|--single         : Select single satellite crossovers only'/ &
-'  -l|--legs           : Write out both xover values (default is differences)'/ &
-'  -n|--nolist         : Do not print listing (print statistics only)' &
-'  -o[A|a|H|h|S|s|T|t] : Order of the xover values (or difference):'/ &
-'    |--order=<type>     A|a = ascending-descending or vv'/ &
+'  --lon=LON0,LON1       specify longitude boundaries (deg)'/ &
+'  --lat=LAT0,LAT1       specify latitude boundaries (deg)'/ &
+'  --t=T0,T1             specify time selection (optionally use --ymd=, --doy=,'/ &
+'                        or --sec= for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)'/ &
+'  --dt=[DTMIN,]DTMAX    use only xovers with [DTMIN <] dt < DTMAX (days)'/ &
+'  -d, --dual            Select duals satellite crossovers only'/ &
+'  -s, --single          Select single satellite crossovers only'/ &
+'  -l, --both-legs       Write out both xover values (default is differences)'/ &
+'  -t, --both-times      Write out both times (default is difference)'/ &
+'  -oTYPE, --order=TYPE  Order of the xover values (or difference), where TYPE is one of:'/ &
+'                        A|a = ascending-descending or vv'/ &
 '                        H|h = higher-lower satellite or vv'/ &
 '                        S|s = higher-lower satellite ID or vv'/ &
 '                        T|t = later-earlier measurement or vv')
+1301 format ('  -n, --no-list         Do not print listing (print statistics only)')
 stop
 end subroutine synopsis
 
@@ -322,12 +379,12 @@ end function get_varid
 
 !***********************************************************************
 
-subroutine get_var_1d (varid, array)
+subroutine get_var_1d (varid, array, long_name)
 integer(fourbyteint), intent(in) :: varid
 real(eightbytereal), intent(out) :: array(:)
+character(len=*), intent(out) :: long_name
 real(eightbytereal) :: val
-character(len=rads_naml) :: long_name
-character(len=rads_varl) :: units, fmt
+character(len=rads_varl) :: fmt, units
 call nfs (nf90_get_var (ncid, varid, array))
 if (nf90_get_att (ncid, varid, 'scale_factor', val) == nf90_noerr) array = array * val
 if (nf90_get_att (ncid, varid, 'add_offset', val) == nf90_noerr) array = array + val
@@ -335,36 +392,29 @@ if (nf90_get_att (ncid, varid, 'long_name', long_name) /= nf90_noerr) long_name 
 if (nf90_get_att (ncid, varid, 'units', units) /= nf90_noerr) units = ''
 if (nf90_get_att (ncid, varid, 'format', fmt) /= nf90_noerr) fmt = 'f0.3'
 fmt_string = trim(fmt_string) // trim(fmt) // ',1x,'
-icol = icol + 1
-write (*,600) icol,trim(long_name),trim(units)
-600 format ('# Col ',i2,'     = ',a,' [',a,']')
+long_name = trim(long_name)//' ['//trim(units)//']'
 end subroutine get_var_1d
 
 !***********************************************************************
 
-subroutine get_var_2d (varid, array)
+subroutine get_var_2d (varid, array, long_name)
 integer(fourbyteint), intent(in) :: varid
 real(eightbytereal), intent(out) :: array(:,:)
+character(len=*), intent(out) :: long_name
 real(eightbytereal) :: val
-character(len=rads_naml) :: long_name
-character(len=rads_varl) :: units, fmt
+character(len=rads_varl) :: fmt, units
 call nfs (nf90_get_var (ncid, varid, array))
 if (nf90_get_att (ncid, varid, 'scale_factor', val) == nf90_noerr) array = array * val
 if (nf90_get_att (ncid, varid, 'add_offset', val) == nf90_noerr) array = array + val
 if (nf90_get_att (ncid, varid, 'long_name', long_name) /= nf90_noerr) long_name = ''
 if (nf90_get_att (ncid, varid, 'units', units) /= nf90_noerr) units = ''
 if (nf90_get_att (ncid, varid, 'format', fmt) /= nf90_noerr) fmt = 'f0.3'
-if (diff .and. long_name /= 'time') then
-	icol = icol + 1
-	fmt_string = trim(fmt_string) // trim(fmt) // ',1x,'
-	write (*,600) icol,trim(long_name),trim(units)
-else
-	icol = icol + 2
+if (.not.diff .or. (var0 == 1 .and. long_name == 'time')) then
 	fmt_string = trim(fmt_string) // trim(fmt) // ',1x,' // trim(fmt) // ',1x,'
-	write (*,610) icol-1,icol,trim(long_name),trim(units)
+else
+	fmt_string = trim(fmt_string) // trim(fmt) // ',1x,'
 endif
-600 format ('# Col ',i2,'     = ',a,' [',a,']')
-610 format ('# Col ',i2,'-',i2,'  = ',a,' [',a,']')
+long_name = trim(long_name)//' ['//trim(units)//']'
 end subroutine get_var_2d
 
 !***********************************************************************

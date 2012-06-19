@@ -2272,7 +2272,7 @@ write (iunit, 700)
 write (iunit, 710) trim(S%satellite), S%sat, timestamp(), trim(S%command)
 
 write (iunit, 720) 'PASSES QUERIED', sum(S%pass_stat)
-write (iunit, 722)
+write (iunit, 724) 'REJECTED','SELECTED','LOWER','UPPER','STEP'
 write (iunit, 730) 'Cycle number limits', S%pass_stat(1), sum(S%pass_stat(2:7)), S%cycles
 write (iunit, 730) 'Pass number limits' , S%pass_stat(2), sum(S%pass_stat(3:7)), S%passes
 write (iunit, 731) 'Time limits' , S%pass_stat(3), sum(S%pass_stat(4:7)), datestring (S%time%info%limits)
@@ -2280,13 +2280,13 @@ write (iunit, 732) 'Equator longitude limits (asc)' , S%pass_stat(5:7:2), S%eqlo
 write (iunit, 732) 'Equator longitude limits (des)' , S%pass_stat(4:6:2), S%eqlonlim(0,:)
 
 write (iunit, 721) 'PASSES AND MEASUREMENTS READ', sum(S%pass_stat(6:7)), S%total_read
-write (iunit, 723)
+write (iunit, 724) 'REJECTED','SELECTED','LOWER','UPPER','MIN',' MAX','MEAN','STDDEV'
 call rads_stat_line (S%time%info)
 call rads_stat_line (S%lat%info)
 call rads_stat_line (S%lon%info)
 
 write (iunit, 720) 'MEASUREMENTS IN REQUESTED PERIOD AND REGION', S%total_inside
-write (iunit, 723)
+write (iunit, 724) 'REJECTED','SELECTED','LOWER','UPPER','MIN',' MAX','MEAN','STDDEV'
 do i = 1,S%nvar
 	if (.not.associated(S%var(i)%info)) then ! Skip undefined variables
 	else if (S%var(i)%info%selected + S%var(i)%info%rejected == 0) then ! Skip "unused" variables
@@ -2302,8 +2302,7 @@ write (iunit, 700)
 710 format ('# Editing statistics for ',a,' (',a,')'/'# Created: ',a,' UTC: ',a)
 720 format ('#'/'# ',a,t53,i10/'#')
 721 format ('#'/'# ',a,t43,2i10/'#')
-722 format ('#',t43,'  REJECTED  SELECTED       LOWER       UPPER        STEP')
-723 format ('#',t43,'  REJECTED  SELECTED       LOWER       UPPER         MIN         MAX        MEAN      STDDEV')
+724 format ('#',t43,2a10,6a12)
 730 format ("# ",a,t43,2i10,3i12)
 731 format ("# ",a,t43,2i10,2a)
 732 format ("# ",a,t43,2i10,2f12.3)

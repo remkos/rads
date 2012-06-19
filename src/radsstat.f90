@@ -252,11 +252,11 @@ endif
 call mjd2ymd(day_old+46066,yy,mm,dd)
 select case (period)
 case (period_day)
-	write (*,600) modulo(yy,100),mm,dd
+	write (*,600,advance='no') modulo(yy,100),mm,dd
 case (period_pass)
-	write (*,601) cycle,pass
+	write (*,601,advance='no') cycle,pass
 case default
-	write (*,602) cycle,modulo(yy,100),mm,dd
+	write (*,602,advance='no') cycle,modulo(yy,100),mm,dd
 endselect
 if (lstat == 1) then
 	write (*,format_string) nr,tot(0)%mean,(tot(j)%mean,tot(j)%sum2,j=1,S%nsel)
@@ -269,9 +269,9 @@ box = stat(0d0, 0d0, 0d0, S%nan, S%nan)
 nr  = 0
 day_old = day
 
-600 format (3i2.2,$)
-601 format (i3,i5,$)
-602 format (i3,1x,3i2.2,$)
+600 format (3i2.2)
+601 format (i3,i5)
+602 format (i3,1x,3i2.2)
 end subroutine print_stat
 
 !***********************************************************************
