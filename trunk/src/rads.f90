@@ -40,7 +40,7 @@ integer(fourbyteint) :: rads_err_incompat = 101, rads_err_noinit = 102
 integer(twobyteint), parameter :: rads_nofield = -1
 real(eightbytereal), parameter :: pi = 3.1415926535897932d0, rad = pi/180d0
 character(len=1), parameter :: rads_linefeed = char(10), rads_noedit = '_'
-integer, parameter, private :: stderr = 0, stdout = 6
+integer, parameter :: stderr = 0, stdin = 5, stdout = 6
 
 include 'config.inc'
 
@@ -2511,33 +2511,33 @@ write (iunit, 1300) trim(progname)
 1300 format (/ &
 'usage: ',a,' [required_arguments] [rads_dataselectors] [rads_options] [program_options]' // &
 'Required argument is:'/ &
-'  -S, --sat=sat[/phase]   : specify satellite [and phase] (e.g. e1/g, tx)'// &
+'  -S, --sat=SAT[/PHASE]     specify satellite [and phase] (e.g. e1/g, tx)'// &
 'Optional [rads_dataselectors] are:'/ &
-'  -V, --var=var1,...      : select variables to be read'/ &
-'  -C, --cycle=c0[,c1[,dc]]: specify first and last cycle and modulo'/ &
-'  -P, --pass=p0[,p1[,dp]] : specify first and last pass and modulo'/ &
-'  -Rlon0,lon1,lat0,lat1   : specify rectangular region (deg)'/ &
-'  -Rlon0,lat0,radius      : specify circular region (deg)' / &
-'  --lon=lon0,lon1         : specify longitude boundaries (deg)'/ &
-'  --lat=lat0,lat1         : specify latitude  boundaries (deg)'/ &
-'  --t=t0,t1               : specify time selection (optionally use --ymd=, --doy=,'/ &
+'  -V, --var=VAR1,...        select variables to be read'/ &
+'  -C, --cycle=C0[,C1[,DC]]  specify first and last cycle and modulo'/ &
+'  -P, --pass=P0[,P1[,DP]]   specify first and last pass and modulo'/ &
+'  -RLON0,LON1,LAT0,LAT1     specify rectangular region (deg)'/ &
+'  -RLON0,LAT0,RADIUS        specify circular region (deg)' / &
+'  --lon=LON0,LON1           specify longitude boundaries (deg)'/ &
+'  --lat=LAT0,LAT1           specify latitude  boundaries (deg)'/ &
+'  --t=T0,T1                 specify time selection (optionally use --ymd=, --doy=,'/ &
 '                            or --sec= for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)'/ &
-'  --sla=sla0,sla1         : specify range for SLA (m)'/ &
-'  -A, --alias:var1=var2   : use variable var2 when var1 is requested'/ &
-'  -L, --lim:var=min,max   : specify edit data range for variable var'/ &
-'  -F, --fmt:var=fmt       : specify the Fortran format used to print var'/ &
-'  -X, --xml=xmlfile       : load XML file in addition to defaults'// &
+'  --sla=SLA0,SLA1           specify range for SLA (m)'/ &
+'  -A, --alias:VAR1=VAR2     use variable VAR2 when VAR1 is requested'/ &
+'  -L, --lim:VAR=MIN,MAX     specify edit data range for variable VAR'/ &
+'  -F, --fmt:VAR=FMT         specify the Fortran format used to print VAR'/ &
+'  -X, --xml=XMLFILE         load XMLFILE in addition to defaults'// &
 'Still working for backwards compatibility with RADS 3 are options:'/ &
-'  --sel=var1,...          : select variables to read'/ &
-'  --opt=j                 : use selection code j when j/100 requested (now -Avar1=var2)'/ &
-'  --opt:i=j               : set option for data item i to j (now -Avar1=var2)'/ &
-'  --h=h0,h1               : specify range for SLA (m) (now --sla=h0,h1)'// &
+'  --sel=VAR1,...            select variables to read'/ &
+'  --opt=J                   use selection code J when J/100 requested (now -AVAR1=VAR2)'/ &
+'  --opt:I=J                 set option for data item I to J (now -AVAR1=VAR2)'/ &
+'  --h=H0,H1                 specify range for SLA (m) (now --sla=H0,H1)'// &
 'Common [rads_options] are:'/ &
-'  -q, --quiet             : suppress warning messages (but keeps fatal error messages)' / &
-'  -v, --debug=level       : set debug level'/ &
-'  --args=filename         : get any of the above arguments from filename (one argument per line)'/ &
-'  --help                  : this syntax massage'/ &
-'  --version               : version info')
+'  -q, --quiet               suppress warning messages (but keeps fatal error messages)' / &
+'  -v, --debug=LEVEL         set debug level'/ &
+'  --args=FILENAME           get any of the above arguments from filename (one argument per line)'/ &
+'  --help                    this syntax massage'/ &
+'  --version                 version info')
 end subroutine rads_synopsis
 
 !***********************************************************************

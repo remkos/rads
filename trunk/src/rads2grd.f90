@@ -166,15 +166,15 @@ call rads_synopsis ()
 write (*,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
-'  --x=x0,x1[,dx]    : set x-range and interval (def: as set by default limits and --res=)'/ &
-'  --y=y0,y1[,dy]    : set y-range and interval (def: as set by default limits and --res=)'/ &
-'  --res=dx[,dy]     : set resolution in x and y (def:1)'/ &
-'  --var=x,y,z       : variables for x, y and z (def:lon,lat,sla)'/ &
-'  --min=minnr       : minimum number of points per grid cell (def:2)'/ &
-'  --grd=gridname    : create netCDF grid (suppresses ASCII)'/ &
-'  --fmt=format      : format to be used for ASCII output (default is determined by variables)'/ &
-'  -c                : boundaries are cell oriented'/ &
-'  -c[x|y]           : only [x|y]-boundaries are cell oriented')
+'  --x=X0,X1[,DX]      set x-range and interval (def: as set by default limits and --res=)'/ &
+'  --y=Y0,Y1[,DY]      set y-range and interval (def: as set by default limits and --res=)'/ &
+'  --res=DX[,DY]       set resolution in x and y (default = 1)'/ &
+'  --var=X,Y,Z         variables for x, y and z (default = lon,lat,sla)'/ &
+'  --min=MINNR         minimum number of points per grid cell (default = 2)'/ &
+'  --grd=GRIDNAME      create netCDF grid (suppresses ASCII)'/ &
+'  --fmt=FORMAT        format to be used for ASCII output (default is determined by variables)'/ &
+'  -c                  boundaries are cell oriented'/ &
+'  -c[x|y]             only [x|y]-boundaries are cell oriented')
 stop
 end subroutine synopsis
 

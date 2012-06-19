@@ -190,14 +190,14 @@ end subroutine process
 subroutine synopsis
 if (rads_version ('$Revision$','RADS crossover file converter')) return
 call rads_synopsis ()
-write (0,1300)
+write (stderr,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
-'  filename          : Input file name (extension .nc)'/ &
-'  -xaf              : Create XAF file (extension .xaf)'/ &
-'  -xtf              : Create XTF file (extension .xtf)'/ &
-'  -xxf              : Create XXF file (extension .xxf)'/ &
-'  -xxo              : Create XXO file (extension .xxo, .xxo.aux)'// &
+'  filename            Input file name (extension .nc)'/ &
+'  -xaf                Create XAF file (extension .xaf)'/ &
+'  -xtf                Create XTF file (extension .xtf)'/ &
+'  -xxf                Create XXF file (extension .xxf)'/ &
+'  -xxo                Create XXO file (extension .xxo, .xxo.aux)'// &
 'The extensions are added to the input file after removing .nc')
 stop
 end subroutine synopsis
