@@ -567,6 +567,42 @@ do
 enddo
 end subroutine iqsort
 
+!***********************************************************************
+!*mean_variance -- Compute mean and standard deviation of a series
+!
+subroutine mean_variance (x, mean, variance)
+real(eightbytereal), intent(in) :: x(:)
+real(eightbytereal), intent(out) :: mean, variance
+!
+! This routine computes the mean and variance of a series
+! of values <x> using the method proposed by West (1979), since it is
+! more stable in the way it computes the variance.
+!
+! This routine does not check for NaN values.
+!
+! Reference:
+!  West, D. H. D
+!  Updating mean and variance estimates: an improved method
+!  Communications of the ACM, 22(9), 532-535, 1979
+!
+! Arguments:
+!  x        : Series of values
+!  mean     : Mean of series <x>
+!  variance : Variance of series <x>
+!-----------------------------------------------------------------------
+real(eightbytereal) :: q, r, sum2
+integer(fourbyteint) :: i
+mean = 0d0
+sum2 = 0d0
+do i = 1,size(x)
+	q = x(i) - mean
+	r = q / i
+	mean = mean + r
+	sum2 = sum2 + r * q * (i-1)
+enddo
+variance = sum2/(size(x)-1)
+end subroutine mean_variance
+
 elemental function d_int1 (i)
 integer(onebyteint), intent(in) :: i
 real(eightbytereal) :: d_int1
