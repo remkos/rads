@@ -41,6 +41,7 @@ use rads_time
 integer(fourbyteint), parameter :: msat = 10, vbase = 13, mtrk = 500000
 real(eightbytereal) :: dt(msat)
 type(rads_sat) :: S(msat)
+type(rads_pass) :: P
 integer(fourbyteint) :: i, j, nsat = 0, nsel = 0, reject = -1, ios, debug, ncid, dimid(3), start(2), varid(vbase)
 logical :: duals = .true., singles = .true., l
 character(len=rads_naml) :: arg, opt, optarg, satlist, filename = 'radsxogen.nc'
@@ -177,12 +178,31 @@ allocate (selid(nsel))
 
 ! Open output netCDF file
 call nfs (nf90_create (filename, nf90_write, ncid))
-call nfs (nf90_def_dim (ncid, 'leg', 2, dimid(1)))
-call nfs (nf90_def_dim (ncid, 'xover', nf90_unlimited, dimid(2)))
-call def_var_sel (ncid, S(1)%lat, dimid(2:2), varid(1))
-call def_var_sel (ncid, S(1)%lon, dimid(2:2), varid(2))
-call def_var_sel (ncid, S(1)%time, dimid(1:2), varid(3))
-call def_var (ncid, 'track', 'track number', '', nf90_int4, dimid(1:2), varid(4))
+call nfs (nf90_def_dim (ncid, 'xover', nf90_unlimited, dimid(1)))
+call nfs (nf90_def_dim (ncid, 'leg', 2, dimid(2)))
+
+! To use general netCDF creation machinary, we trick the library a bit here
+P%ncid = ncid
+P%filename = filename
+S(1)%time%info%ndims = 2
+
+! Define lat and lon (1D) and time (2D)
+call rads_def_var (S(1), P, S(1)%lat)
+call rads_def_var (S(1), P, S(1)%lon)
+call rads_def_var (S(1), P, S(1)%time)
+varid(1) = S(1)%lat%info%varid
+varid(2) = S(1)%lon%info%varid
+varid(3) = S(1)%time%info%varid
+
+! Define selected variables
+do i = 1,nsel
+	S(1)%sel(i)%info%ndims = 2
+	call rads_def_var (S(1), P, S(1)%sel(i))
+	selid(i) = S(1)%sel(i)%info%varid
+enddo
+
+! Define other stuff
+call def_var (ncid, 'track', 'track number', '', nf90_int4, dimid(2:1:-1), varid(4))
 call nfs (nf90_put_att (ncid, varid(4), 'comment', 'Internal track number relating to satid/cycle/pass below'))
 call nfs (nf90_put_att (ncid, nf90_global, 'Conventions', 'CF-1.5'))
 call nfs (nf90_put_att (ncid, nf90_global, 'title', 'RADS 4.0 crossover file'))
@@ -190,9 +210,6 @@ call nfs (nf90_put_att (ncid, nf90_global, 'institution', 'Altimetrics / NOAA / 
 call nfs (nf90_put_att (ncid, nf90_global, 'references', 'RADS Data Manual, Issue 4.0'))
 call nfs (nf90_put_att (ncid, nf90_global, 'history', timestamp()//' UTC: '//trim(S(1)%command)))
 call nfs (nf90_put_att (ncid, nf90_global, 'legs', trim(legs)))
-do i = 1,nsel
-	call def_var_sel (ncid, S(1)%sel(i), dimid(1:2), selid(i))
-enddo
 call nfs (nf90_enddef (ncid))
 
 ! We are now ready to compare the different batches of passes
@@ -328,30 +345,6 @@ call nfs (nf90_def_var (ncid, trim(var), nctype, dimid, varid))
 call nfs (nf90_put_att (ncid, varid, 'long_name', trim(long_name)))
 if (units /= '') call nfs (nf90_put_att (ncid, varid, 'units', trim(units)))
 end subroutine def_var
-
-subroutine def_var_sel (ncid, sel, dimid, varid)
-use netcdf
-use rads_netcdf
-integer(fourbyteint), intent(in) :: ncid, dimid(:)
-type(rads_var), intent(in) :: sel
-integer(fourbyteint), intent(out) :: varid
-type(rads_varinfo), pointer :: info
-integer(fourbyteint) :: e
-info => sel%info
-call nfs(nf90_def_var(ncid, sel%name, info%nctype, dimid, varid))
-e = nf90_put_att (ncid, varid, 'long_name', trim(info%long_name))
-if (info%standard_name /= '') e = e + nf90_put_att (ncid, varid, 'standard_name', trim(info%standard_name))
-if (info%source /= '') e = e + nf90_put_att (ncid, varid, 'source', trim(info%source))
-if (info%units /= '') e = e + nf90_put_att (ncid, varid, 'units', trim(info%units))
-if (info%scale_factor /= 1d0) e = e + nf90_put_att (ncid, varid, 'scale_factor', info%scale_factor)
-if (info%add_offset /= 0d0)  e = e + nf90_put_att (ncid, varid, 'add_offset', info%add_offset)
-if (info%datatype < rads_type_time) e = e + nf90_put_att (ncid, varid, 'coordinates', 'lon lat')
-if (info%source /= '') e = e + nf90_put_att (ncid, varid, 'source', trim(info%source))
-if (info%standard_name /= '') e = e + nf90_put_att (ncid, varid, 'standard_name', trim(info%standard_name))
-if (info%format /= '') e = e + nf90_put_att (ncid, varid, 'format', trim(info%format))
-if (info%comment /= '') e = e + nf90_put_att (ncid, varid, 'comment', trim(info%comment))
-if (e > 0) write (*,*) 'Error writing attributes for variable '//trim(sel%name)
-end subroutine def_var_sel
 
 !***********************************************************************
 ! Batch process passes selected for satellites S1 and S2 (which could be the same).
