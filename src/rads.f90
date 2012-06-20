@@ -686,7 +686,7 @@ select case (opt)
 case ('-C', '--cycle')
 	S%cycles(2) = -1
 	S%cycles(3) = 1
-	call chartrans(opt,'/-x',',,,')
+	call chartrans(optarg,'/-x',',,,')
 	read (optarg, *, iostat=ios) S%cycles
 	if (S%cycles(2) < 0) S%cycles(2) = S%cycles(1)
 case ('-P', '--pass')
