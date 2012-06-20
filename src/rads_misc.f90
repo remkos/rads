@@ -591,16 +591,26 @@ real(eightbytereal), intent(out) :: mean, variance
 !  variance : Variance of series <x>
 !-----------------------------------------------------------------------
 real(eightbytereal) :: q, r, sum2
-integer(fourbyteint) :: i
+integer(fourbyteint) :: i, n
+n = size(x)
+if (n == 0) then
+	mean = make_nan()
+	variance = mean
+	return
+else if (n == 1) then
+	mean = x(1)
+	variance = make_nan()
+	return
+endif
 mean = 0d0
 sum2 = 0d0
-do i = 1,size(x)
+do i = 1,n
 	q = x(i) - mean
 	r = q / i
 	mean = mean + r
 	sum2 = sum2 + r * q * (i-1)
 enddo
-variance = sum2/(size(x)-1)
+variance = sum2/(n-1)
 end subroutine mean_variance
 
 elemental function d_int1 (i)
