@@ -2920,13 +2920,16 @@ real(eightbytereal), intent(in), optional :: scale_factor, add_offset
 !-----------------------------------------------------------------------
 type(rads_varinfo), pointer :: info
 integer(fourbyteint) :: e, n
-integer, parameter :: dimid(1:4) = (/ 1, 2, 3, 4 /)
+integer :: dimid(1:4) = 1
 integer(onebyteint), parameter :: flag_values(0:9) = int((/ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 /), onebyteint)
 S%error = rads_noerr
 info => var%info
 if (present(nctype)) info%nctype = nctype
 if (present(scale_factor)) info%scale_factor = scale_factor
 if (present(add_offset)) info%add_offset = add_offset
+do n = 1,info%ndims
+	dimid(n) = info%ndims - n + 1
+enddo
 	
 if (nft(nf90_def_var(P%ncid, var%name, info%nctype, dimid(1:info%ndims), info%varid))) then
 	call rads_error (S, rads_err_nc_var, 'Error creating variable '//trim(var%name)//' in '//trim(P%filename))
@@ -2964,8 +2967,9 @@ endif
 if (info%scale_factor /= 1d0) e = e + nf90_put_att (P%ncid, info%varid, 'scale_factor', info%scale_factor)
 if (info%add_offset /= 0d0)  e = e + nf90_put_att (P%ncid, info%varid, 'add_offset', info%add_offset)
 if (info%datatype < rads_type_time) e = e + nf90_put_att (P%ncid, info%varid, 'coordinates', 'lon lat')
-if (info%comment /= '') e = e + nf90_put_att (P%ncid, info%varid, 'comment', info%comment)
+if (info%format /= '') e = e + nf90_put_att (P%ncid, info%varid, 'format', trim(info%format))
 if (var%field /= rads_nofield) e = e + nf90_put_att (P%ncid, info%varid, 'field', var%field)
+if (info%comment /= '') e = e + nf90_put_att (P%ncid, info%varid, 'comment', info%comment)
 if (e > 0) call rads_error (S, rads_err_nc_var, &
 	'Error writing attributes for variable '//trim(var%name)//' in '//trim(P%filename))
 info%cycle = P%cycle
