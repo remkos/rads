@@ -75,7 +75,7 @@ type :: rads_var
 	character(len=rads_varl) :: name                 ! Variable name (or alias thereof)
 	type(rads_varinfo), pointer :: info              ! Link to struct of type(rads_varinfo)
 	logical(twobyteint) :: noedit                    ! .true. if editing is suspended
-	integer(twobyteint) :: field                     ! RADS3 field number (rads_nofield = none)
+	integer(twobyteint) :: field(2)                  ! RADS3 field numbers (rads_nofield = none)
 endtype
 
 type :: rads_cyclist
@@ -370,7 +370,7 @@ if (i < 0) S%command (len(S%command)-2:) = '...'
 ! Set all values in <S> struct to default
 if (present(debug)) S%debug = debug
 allocate (S%var(rads_var_chunk))
-S%var = rads_var ('', null(), .false., rads_nofield)
+S%var = rads_var ('', null(), .false., (/ rads_nofield, rads_nofield /))
 
 ! Read the global rads.xml setup file, the one in ~/.rads and the one in the current directory
 call rads_read_xml (S, trim(S%dataroot)//'/conf/rads.xml')
@@ -1154,7 +1154,7 @@ endif
 
 ! Look for field number in variable list
 do i = 1,S%nvar
-	if (S%var(i)%field == field) then
+	if (any(S%var(i)%field == field)) then
 		call rads_get_var_common (S, P, S%var(i)%name, S%var(i)%info, data(:P%ndata), skip_edit)
 		return
 	endif
@@ -1585,7 +1585,7 @@ character(len=rads_varl) :: tag, attr(2,max_lvl), name, tags(max_lvl)
 character(len=rads_naml) :: val(max_lvl)
 character(len=6) :: src
 integer :: nattr, nval, i, ios, skip, skip_lvl
-integer(twobyteint) :: field
+integer(twobyteint) :: field(2)
 logical :: endtag
 real(eightbytereal) :: node_rate
 type(rads_varinfo), pointer :: info => null()
@@ -1728,7 +1728,7 @@ do
 		if (has_name (field)) then
 			var => rads_varptr (S, name, null())
 			info => var%info
-			if (field > rads_nofield) var%field = field
+			if (any(field > rads_nofield)) var%field = field
 		endif
 
 	case ('long_name')
@@ -1895,7 +1895,7 @@ if (S%error > rads_noerr) call rads_exit ('Fatal errors occurred while parsing X
 contains
 
 function has_name (field)
-integer(twobyteint), optional :: field
+integer(twobyteint), optional :: field(2)
 logical :: has_name
 integer :: i, ios
 name = ''
@@ -2026,7 +2026,7 @@ field = -999
 if (varname(1:1) >= '0' .and. varname(1:1) <= '9') then
 	read (varname, *, iostat=i) field
 	do i = 1,S%nvar
-		if (S%var(i)%field == field) exit
+		if (any(S%var(i)%field == field)) exit
 	enddo
 else
 ! Look for the matching variable name
@@ -2062,14 +2062,14 @@ n = size(S%var)
 if (i > n) then
 	allocate (temp(n + rads_var_chunk))
 	temp(1:n) = S%var
-	temp(n+1:n+rads_var_chunk) = rads_var ('', null(), .false., rads_nofield)
+	temp(n+1:n+rads_var_chunk) = rads_var ('', null(), .false., (/ rads_nofield, rads_nofield /))
 	deallocate (S%var)
 	S%var => temp
 	if (S%debug >= 3) write (*,*) 'Increased S%var:',n,n+rads_var_chunk
 endif
 S%nvar = i
 ptr => S%var(i)
-if (field >= 0) then ! Was given field number
+if (field > rads_nofield) then ! Was given field number
 	write (ptr%name, '("f",i4.4)') field
 	ptr%field = field
 else
@@ -2093,7 +2093,7 @@ end function rads_varptr
 subroutine rads_set_alias (S, alias, varname, field)
 type(rads_sat), intent(inout) :: S
 character(len=*), intent(in) :: alias, varname
-integer(twobyteint), intent(in), optional :: field
+integer(twobyteint), intent(in), optional :: field(2)
 !
 ! This routine defines an alias to an existing variable.
 ! If alias is already defined as an alias or variable, it will be overruled.
@@ -2104,7 +2104,7 @@ integer(twobyteint), intent(in), optional :: field
 !  S        : Satellite/mission dependent structure
 !  alias    : New alias for an existing variable
 !  varname  : Existing variable name
-!  field    : Optional: new field number to associate with alias
+!  field    : Optional: new field numbers to associate with alias
 !
 ! Error code:
 !  S%error  : rads_noerr, rads_err_alias, rads_err_var,
@@ -2128,7 +2128,7 @@ if (.not.associated(tgt)) then
 	return
 endif
 src => rads_varptr (S, alias, tgt)
-if (present(field) .and. field /= rads_nofield) src%field = field
+if (present(field) .and. any(field /= rads_nofield)) src%field = field
 end subroutine rads_set_alias
 
 !***********************************************************************
@@ -2968,7 +2968,7 @@ if (info%scale_factor /= 1d0) e = e + nf90_put_att (P%ncid, info%varid, 'scale_f
 if (info%add_offset /= 0d0)  e = e + nf90_put_att (P%ncid, info%varid, 'add_offset', info%add_offset)
 if (info%datatype < rads_type_time) e = e + nf90_put_att (P%ncid, info%varid, 'coordinates', 'lon lat')
 if (info%format /= '') e = e + nf90_put_att (P%ncid, info%varid, 'format', trim(info%format))
-if (var%field /= rads_nofield) e = e + nf90_put_att (P%ncid, info%varid, 'field', var%field)
+if (var%field(1) /= rads_nofield) e = e + nf90_put_att (P%ncid, info%varid, 'field', var%field(1))
 if (info%comment /= '') e = e + nf90_put_att (P%ncid, info%varid, 'comment', info%comment)
 if (e > 0) call rads_error (S, rads_err_nc_var, &
 	'Error writing attributes for variable '//trim(var%name)//' in '//trim(P%filename))

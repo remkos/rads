@@ -81,7 +81,7 @@ GNU Lesser General Public License for more details.
 </var>
 <alias name="time" field="1">time_1985</alias>
 
-<var name="lat" field="201">
+<var name="lat" field="201 2">
 	<long_name>latitude</long_name>
 	<standard_name>latitude</standard_name>
 	<units>degrees_north</units>
@@ -91,9 +91,8 @@ GNU Lesser General Public License for more details.
 	<format>f10.6</format>
 	<compress>int4 1d-6</compress>
 </var>
-<alias name="f0200" field="2">lat</alias>
 
-<var name="lon" field="301">
+<var name="lon" field="301 3">
 	<long_name>longitude</long_name>
 	<standard_name>longitude</standard_name>
 	<units>degrees_east</units>
@@ -103,7 +102,6 @@ GNU Lesser General Public License for more details.
 	<compress>int4 1d-6</compress>
 	<comment>East longitude relative to Greenwich meridian</comment>
 </var>
-<alias name="f0300" field="3">lon</alias>
 
 <var name="alt_jgm3" field="401">
 	<long_name>JGM-3 orbital altitude</long_name>
@@ -343,7 +341,7 @@ GNU Lesser General Public License for more details.
 <alias name="alt" field="4" sat="gs">alt_gdrcp</alias>
 <alias name="alt" field="4" sat="pn tx">alt_gdrcp</alias>
 
-<var name="alt_rate" field="501">
+<var name="alt_rate" field="501 5">
 	<long_name>orbital altitude rate</long_name>
 	<units>m/s</units>
 	<limits>-30 30</limits>
@@ -366,7 +364,6 @@ GNU Lesser General Public License for more details.
 	<format>f7.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<alias name="f0500" field="5">alt_rate</alias>
 
 <var name="range_ku" field="601">
 	<long_name>Ku-band range corrected for instr. effects</long_name>
@@ -711,7 +708,7 @@ GNU Lesser General Public License for more details.
 </var>
 <alias name="inv_bar" field="10">inv_bar_mog2d</alias>
 
-<var name="tide_solid" field="1101">
+<var name="tide_solid" field="1101 11">
 	<long_name>solid earth tide</long_name>
 	<standard_name>sea_surface_height_amplitude_due_to_earth_tide</standard_name>
 	<source>Cartwright, Taylor, Edden</source>
@@ -722,7 +719,6 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>Calculated using second and third degree constituents, excluding permanent tide</comment>
 </var>
-<alias name="f1100" field="11">tide_solid</alias>
 
 <var name="tide_ocean_fes04" field="1213">
 	<long_name>FES2004 ocean tide</long_name>
@@ -819,7 +815,7 @@ GNU Lesser General Public License for more details.
 </var>
 <alias name="tide_load" field="13">tide_load_got47</alias>
 
-<var name="tide_pole" field="1401">
+<var name="tide_pole" field="1401 14">
 	<long_name>pole tide</long_name>
 	<standard_name>sea_surface_height_amplitude_due_pole_tide</standard_name>
 	<source>Wahr [1985]</source>
@@ -830,7 +826,6 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>Variation of absolute sea level due to polar motion</comment>
 </var>
-<alias name="f1400" field="14">tide_pole</alias>
 
 <var sat="e1 e2 g1 gs pn tx" name="ssb_bm3" field="1501">
 	<long_name>BM3 sea state bias</long_name>
@@ -1473,7 +1468,7 @@ GNU Lesser General Public License for more details.
 		<flag_values>nominal biased</flag_values>
 	</if>
 </var>
-<var name="flag_orbit" field="2515">
+<var name="flag_orbit" field="2515 25">
 	<long_name>quality of the orbit</long_name>
 	<long_name sat="g1 gs j2 tx">not used</long_name>
 	<data>flags 15 BTEST</data>
@@ -1481,9 +1476,8 @@ GNU Lesser General Public License for more details.
 	<compress>int1</compress>
 	<flag_values>ok degraded</flag_values>
 </var>
-<alias name="f2500" field="25">flag_status</alias>
 
-<var name="flags" field="2601">
+<var name="flags" field="2601 26">
 	<long_name>flag word</long_name>
 	<limits>65512 0</limits>
 	<limits sat="c2">48 0</limits>
@@ -1509,7 +1503,6 @@ GNU Lesser General Public License for more details.
 	<format>i1,15(1x,i1)</format>
 	<compress>int2</compress>
 </var>
-<alias name="f2600" field="26">flags</alias>
 
 <var name="drange_ku" field="2701">
 	<long_name>Ku-band range bias</long_name>
@@ -1829,7 +1822,7 @@ GNU Lesser General Public License for more details.
 </var>
 <alias sat="e1 e2 tx" name="dsig0" field="32">dsig0_ku</alias>
 
-<var name="liquid_water" field="3301">
+<var name="liquid_water" field="3301 33">
 	<long_name>radiometer liquid water content</long_name>
 	<standard_name>atmosphere_cloud_liquid_water_content</standard_name>
 	<units>kg/m^2</units>
@@ -1837,7 +1830,6 @@ GNU Lesser General Public License for more details.
 	<format>f6.2</format>
 	<compress>int2 1d-2</compress>
 </var>
-<alias name="f3300" field="33">liquid_water</alias>
 <var name="wvc" field="3302">
 	<long_name>radiometer water vapor content</long_name>
 	<standard_name>atmosphere_water_vapor_content</standard_name>
@@ -1946,25 +1938,23 @@ GNU Lesser General Public License for more details.
 	<compress>int2</compress>
 </var>
 
-<var name="rain_ice_index" field="3501">
+<var name="rain_ice_index" field="3501 35">
 	<long_name>rain/ice index</long_name>
 	<limits>0 2</limits>
 	<data>rain_ice_index</data>
 	<format>f4.2</format>
 	<compress>int2 1d-2</compress>
 </var>
-<alias name="f3500" field="35">rain_ice_index</alias>
 
-<var name="basin" field="3601">
+<var name="basin" field="3601 36">
 	<long_name>basin code</long_name>
 	<limits>-0.5 255.5</limits>
 	<data>basin</data>
 	<format>f3.0</format>
 	<compress>int1</compress>
 </var>
-<alias name="f3600" field="36">basin</alias>
 
-<var name="waveform_data" field="3701">
+<var name="waveform_data" field="3701 37">
 	<long_name>waveform data</long_name>
 	<data>waveform_data</data>
 	<format>f4.0</format>
@@ -1976,9 +1966,8 @@ GNU Lesser General Public License for more details.
 	<format>f4.0</format>
 	<compress>int1</compress>
 </var>
-<alias name="f3700" field="37">waveform_data</alias>
 
-<var name="ref_frame_offset" field="3801">
+<var name="ref_frame_offset" field="3801 38">
 	<long_name>reference frame offset</long_name>
 	<units>m</units>
 	<limits>-1 1</limits>
@@ -1987,9 +1976,8 @@ GNU Lesser General Public License for more details.
 	<backup>0</backup>
 	<compress>int2 1d-4</compress>
 </var>
-<alias name="f3800" field="38">ref_frame_offset</alias>
 
-<var name="tide_equil" field="3901">
+<var name="tide_equil" field="3901 39">
 	<long_name>long-period equilibrium tide</long_name>
 	<standard_name>sea_surface_height_amplitude_due_to_equilibrium_ocean_tide</standard_name>
 	<units>m</units>
@@ -2007,18 +1995,16 @@ GNU Lesser General Public License for more details.
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 </var>
-<alias name="f3900" field="39">tide_equil</alias>
 
-<var name="wave_m0" field="4001">
+<var name="wave_m0" field="4001 40">
 	<long_name>wave height variance (WaveWatch3)</long_name>
 	<source>WaveWatch3</source>
 	<units>m^2</units>
 	<data>wave_m0</data>
 	<compress>int2 1d-3</compress>
 </var>
-<alias name="f4000" field="40">wave_m0</alias>
 
-<var name="wave_m1" field="4101">
+<var name="wave_m1" field="4101 41">
 	<long_name>first moment of wave height (WaveWatch3)</long_name>
 	<source>WaveWatch3</source>
 	<units>m^2/s</units>
@@ -2026,9 +2012,8 @@ GNU Lesser General Public License for more details.
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 </var>
-<alias name="f4100" field="41">wave_m1</alias>
 
-<var name="wave_m2" field="4201">
+<var name="wave_m2" field="4201 42">
 	<long_name>wave velocity variance (WaveWatch3)</long_name>
 	<source>WaveWatch3</source>
 	<units>m^2/s^2</units>
@@ -2036,9 +2021,8 @@ GNU Lesser General Public License for more details.
 	<format>f8.5</format>
 	<compress>int2 1d-5</compress>
 </var>
-<alias name="f4200" field="42">wave_m2</alias>
 
-<var name="wave_m4" field="4301">
+<var name="wave_m4" field="4301 43">
 	<long_name>wave slope variance (WaveWatch3)</long_name>
 	<source>WaveWatch3</source>
 	<units>radian^2</units>
@@ -2046,9 +2030,8 @@ GNU Lesser General Public License for more details.
 	<format>f9.6</format>
 	<compress>int2 1d-6</compress>
 </var>
-<alias name="f4300" field="43">wave_m4</alias>
 
-<var name="wave_shs" field="4401">
+<var name="wave_shs" field="4401 44">
 	<long_name>wave swell (WaveWatch3)</long_name>
 	<source>WaveWatch3</source>
 	<units>m</units>
@@ -2056,9 +2039,8 @@ GNU Lesser General Public License for more details.
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<alias name="f4400" field="44">wave_shs</alias>
 
-<var name="dist_coast" field="4501">
+<var name="dist_coast" field="4501 45">
 	<long_name>distance to coast</long_name>
 	<units>km</units>
 	<limits>-10000 10000</limits>
@@ -2066,18 +2048,16 @@ GNU Lesser General Public License for more details.
 	<format>f6.0</format>
 	<compress>int2</compress>
 </var>
-<alias name="f4500" field="45">dist_coast</alias>
 
-<var name="seaice_class" field="4601">
+<var name="seaice_class" field="4601 46">
 	<long_name>sea ice classification</long_name>
 	<limits>-0.5 15.5</limits>
 	<data>seaice_class</data>
 	<format>f3.0</format>
 	<compress>int1</compress>
 </var>
-<alias name="r4600" field="46">seaice_class</alias>
 
-<var name="seaice_conc" field="4701">
+<var name="seaice_conc" field="4701 47">
 	<long_name>sea ice concentration</long_name>
 	<units>%</units>
 	<limits>-0.5 100.5</limits>
@@ -2085,9 +2065,8 @@ GNU Lesser General Public License for more details.
 	<format>f3.0</format>
 	<compress>int1</compress>
 </var>
-<alias name="f4700" field="47">seaice_conc</alias>
 
-<var name="sst" field="4801">
+<var name="sst" field="4801 48">
 	<long_name>sea surface temperature</long_name>
 	<source>Reynolds SST</source>
 	<units>degC</units>
@@ -2104,9 +2083,8 @@ GNU Lesser General Public License for more details.
 	<format>f5.2</format>
 	<compress>int2 1d-2</compress>
 </var>
-<alias name="f4800" field="48">sst</alias>
 
-<var name="dry_tropo_airtide" field="4901">
+<var name="dry_tropo_airtide" field="4901 49">
 	<long_name>air tide correction to the dry tropospheric correction</long_name>
 	<units>m</units>
 	<data>dry_tropo_airtide</data>
@@ -2114,9 +2092,8 @@ GNU Lesser General Public License for more details.
 	<compress>int1 1d-4</compress>
 	<comment>add to dry tropospheric correction to account for missing S1 and S2 tidal signal</comment>
 </var>
-<alias name="f4900" field="49">dry_tropo_airtide</alias>
 
-<var name="first_meas_time" field="9901">
+<var name="first_meas_time" field="9901 99">
 	<long_name>time of first measurement in pass</long_name>
 	<units>seconds since 1985-01-01</units>
 	<data>:first_meas_time</data>
@@ -2155,7 +2132,6 @@ GNU Lesser General Public License for more details.
 	<data>:pass_number</data>
 	<format>f5.0</format>
 </var>
-<alias name="f9900" field="99">first_meas_time</alias>
 
 <!-- Mission definitions for various satellites -->
 
