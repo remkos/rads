@@ -57,7 +57,7 @@ type :: trk_
 	integer(twobyteint) :: nr_alt, nr_xover, satid, cycle, pass
 endtype
 type(trk_) :: trk(mtrk)
-integer(fourbyteint), allocatable :: selid(:), key(:), idx(:), trkid(:,:)
+integer(fourbyteint), allocatable :: key(:), idx(:), trkid(:,:)
 
 ! Initialize RADS or issue help
 call synopsis
@@ -174,7 +174,6 @@ enddo
 
 ! Do further initialisations
 nr = nr_ (0, 0, 0, 0, 0, 0, 0, 0)
-allocate (selid(nsel))
 
 ! Open output netCDF file
 call nfs (nf90_create (filename, nf90_write, ncid))
@@ -198,7 +197,6 @@ varid(3) = S(1)%time%info%varid
 do i = 1,nsel
 	S(1)%sel(i)%info%ndims = 2
 	call rads_def_var (S(1), P, S(1)%sel(i))
-	selid(i) = S(1)%sel(i)%info%varid
 enddo
 
 ! Define other stuff
@@ -540,7 +538,6 @@ real(eightbytereal), intent(in) :: dt
 real(eightbytereal) :: shiftlon, x, y, t1, t2
 real(eightbytereal), allocatable :: data(:,:)
 integer :: i, i1, i2, j1, j2
-type(rads_varinfo), pointer :: info
 
 ! Count number of calls
 nr%test = nr%test + 1
@@ -642,17 +639,7 @@ call nfs (nf90_put_var (ncid, varid(2), nint4(x / S1%lon%info%scale_factor), sta
 call nfs (nf90_put_var (ncid, varid(3), (/ t1, t2 /), start))
 call nfs (nf90_put_var (ncid, varid(4), (/ P1%trkid, P2%trkid /), start))
 do i = 1,nsel
-	info => S1%sel(i)%info
-	select case (info%nctype)
-	case (nf90_int1)
-		call nfs (nf90_put_var (ncid, selid(i), nint1((data(1:2,i) - info%add_offset) / info%scale_factor), start))
-	case (nf90_int2)
-		call nfs (nf90_put_var (ncid, selid(i), nint2((data(1:2,i) - info%add_offset) / info%scale_factor), start))
-	case (nf90_int4)
-		call nfs (nf90_put_var (ncid, selid(i), nint4((data(1:2,i) - info%add_offset) / info%scale_factor), start))
-	case default
-		call nfs (nf90_put_var (ncid, selid(i), (data(1:2,i) - info%add_offset) / info%scale_factor, start))
-	end select
+	call rads_put_var (S1, P, S1%sel(i), data(:,i), start)
 enddo
 deallocate (data)
 

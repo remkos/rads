@@ -129,7 +129,7 @@ end subroutine synopsis
 subroutine process_pass
 real(eightbytereal), allocatable :: data(:,:)
 logical, allocatable :: accept(:)
-integer(fourbyteint) :: i, start
+integer(fourbyteint) :: i, start(1)
 
 ! Read the data
 nselpass = 0
@@ -155,12 +155,12 @@ enddo
 if (nselpass == 0) return
 
 ! Open output pass file
-start = nseltot + 1
+start(1) = nseltot + 1
 if (outname == '') then
 	Pout = P
 	call rads_create_pass (S, Pout, nselpass, '')
 	call rads_def_var (S, Pout, S%sel)
-	start = 1
+	start(1) = 1
 else if (nseltot == 0) then
 	call rads_create_pass (S, Pout, 0, outname)
 	call rads_def_var (S, Pout, S%sel)
