@@ -142,16 +142,16 @@ call rads_synopsis ()
 write (stderr,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
-'  -r#                 reject data when there are fewer than # tracks with valid SLA'/ &
-'                      (default: # = number of selected cycles)'/ &
-'  -r0, -r             keep all stacked data points, even NaN'/ &
-'  -rn                 reject data when any track is NaN (default)'/ &
-'  --dt=DT             set minimum bin size in seconds (default is determined by satellite)'/ &
-'  --step=N            write out only every N points'/ &
-'  -s                  output mean and standard deviation in addition to pass data'/ &
-'  -s[d|m|s]           output combination of (d)ata, (m)ean and (s)tandard deviation'/ &
-'  -o, --out[=OUTNAME] create netCDF output by pass. Optionally specify filename including "#", which'/ &
-'                      is to be replaced by the psss number. Default is "radscolin_p#.nc"')
+'  -r#                       reject data when there are fewer than # tracks with valid SLA'/ &
+'                            (default: # = number of selected cycles)'/ &
+'  -r0, -r                   keep all stacked data points, even NaN'/ &
+'  -rn                       reject data when any track is NaN (default)'/ &
+'  --dt=DT                   set minimum bin size in seconds (default is determined by satellite)'/ &
+'  --step=N                  write out only every N points'/ &
+'  -s                        output mean and standard deviation in addition to pass data'/ &
+'  -s[d|m|s]                 output combination of (d)ata, (m)ean and (s)tandard deviation'/ &
+'  -o, --out[=OUTNAME]       create netCDF output by pass. Optionally specify filename including "#", which'/ &
+'                            is to be replaced by the psss number. Default is "radscolin_p#.nc"')
 stop
 end subroutine synopsis
 
