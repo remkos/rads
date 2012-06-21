@@ -63,7 +63,7 @@ nan=0d0; nan = nan/nan
 
 ! Usage message
 1300 format ('radsreconfig -- Convert RADS3 NML and RMF files to RADS4 rads.xml' // &
-'usage: radsconfig [ file ... ]' // &
+'usage: radsconfig [ FILENAME ... ]' // &
 'When used without arguments:'/ &
 '  Search directory for NML and RMF config files and create rads.xml' / &
 'When used with arguments:'/ &
