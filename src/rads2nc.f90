@@ -115,12 +115,12 @@ call rads_synopsis ()
 write (*,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
-'  -r#               : reject lines if data item number # on sel= specifier is NaN'/ &
+'  -r#                 reject lines if data item number # on sel= specifier is NaN'/ &
 '                      (default: reject if SLA field is NaN)'/ &
-'  -r0, -r           : do not reject lines with NaN values'/ &
-'  -rn               : reject lines if any value is NaN'/ &
-'  --step=N          : step through records with stride n (default = 1)'/ &
-'  -o, --out=OUTNAME : specify name of a single output file (default is pass files)')
+'  -r0, -r             do not reject lines with NaN values'/ &
+'  -rn                 reject lines if any value is NaN'/ &
+'  --step=N            step through records with stride n (default = 1)'/ &
+'  -o, --out=OUTNAME   specify name of a single output file (default is pass files)')
 stop
 end subroutine synopsis
 
