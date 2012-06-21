@@ -235,11 +235,69 @@ stat%sum2 = sqrt(stat%sum2) ! Variance to std dev
 
 ! Print out the pass
 call write_pass_ascii
+! call write_pass_nc
+
+call rads_end (S)
 
 end subroutine process_pass
 
 !***********************************************************************
-! Write the pass header
+! Write the pass in netCDF
+
+subroutine write_pass_nc
+use netcdf
+use rads_netcdf
+character(len=rads_naml) :: filename = 'radscolin.nc'
+integer(fourbyteint) :: ncid, dimid(2), j, k, n, start(2) = 1
+type(rads_pass) :: P
+real(eightbytereal), allocatable :: tmp(:,:)
+
+! Count number of bins
+n = count (nr_in_bin > 0)
+
+! Open output netCDF file
+call nfs (nf90_create (filename, nf90_write, ncid))
+call nfs (nf90_def_dim (ncid, 'time', n, dimid(1)))
+call nfs (nf90_def_dim (ncid, 'track', ntrx, dimid(2)))
+
+! To use general netCDF creation machinary, we trick the library a bit here
+P%ncid = ncid
+P%filename = filename
+S(1)%time%info%ndims = 2
+
+! Define selected variables
+do j = 1,nsel
+	S(1)%sel(j)%info%ndims = 2
+	call rads_def_var (S(1), P, S(1)%sel(j))
+enddo
+
+! Define other stuff
+call nfs (nf90_put_att (ncid, nf90_global, 'Conventions', 'CF-1.5'))
+call nfs (nf90_put_att (ncid, nf90_global, 'title', 'RADS 4.0 colinear tracks file'))
+call nfs (nf90_put_att (ncid, nf90_global, 'institution', 'Altimetrics / NOAA / TU Delft'))
+call nfs (nf90_put_att (ncid, nf90_global, 'references', 'RADS Data Manual, Issue 4.0'))
+call nfs (nf90_put_att (ncid, nf90_global, 'history', timestamp()//' UTC: '//trim(S(1)%command)))
+call nfs (nf90_enddef (ncid))
+
+allocate (tmp(ntrx,n))
+
+do j = 1,nsel
+	i = 0
+	do k = -nbins,nbins
+		if (nr_in_bin(k) == 0) cycle
+		i = i + 1
+		tmp(:,i) = data(1:ntrx,j,k)
+	enddo
+	call rads_put_var (S(1), P, S(1)%sel(j), tmp, start)
+enddo
+
+deallocate (tmp)
+
+call nfs (nf90_close (ncid))
+end subroutine write_pass_nc
+
+!***********************************************************************
+! Write the pass in ASCII
 
 subroutine write_pass_ascii
 logical :: first = .true.
