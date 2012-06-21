@@ -198,15 +198,15 @@ call rads_synopsis
 write (*,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
-'  -r#                       reject lines if data item number # on sel= specifier is NaN'/ &
+'  -r#                       Reject lines if data item number # on sel= specifier is NaN'/ &
 '                            (default: reject if SLA field is NaN)'/ &
-'  -r0, -r                   do not reject lines with NaN values'/ &
-'  -rn                       reject lines if any value is NaN'/ &
-'  -f                        do not start with t,lat,lon in output'/ &
-'  -sp, -sc                  include statistics per pass or per cycle'/ &
-'  --step=N                  step through records with stride N (default = 1)'/ &
-'  --list=LISTNAME           specify creation of list of output files'/ &
-'  -o, --out=OUTNAME         specify name of a single output file (default is pass files, - is stdout)')
+'  -r0, -r                   Do not reject lines with NaN values'/ &
+'  -rn                       Reject lines if any value is NaN'/ &
+'  -f                        Do not start with t,lat,lon in output'/ &
+'  -sp, -sc                  Include statistics per pass or per cycle'/ &
+'  --step=N                  Step through records with stride N (default = 1)'/ &
+'  --list=LISTNAME           Specify creation of list of output files'/ &
+'  -o, --out=OUTNAME         Specify name of a single output file (default is pass files, - is stdout)')
 stop
 end subroutine synopsis
 

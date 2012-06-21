@@ -367,25 +367,26 @@ else
 	write (stderr,1301)
 endif
 1300 format (/ &
-'usage: radsxo',a,' [options] filename ...' // &
+'usage: radsxo',a,' [options] FILENAME ...' // &
 'Required argument:' / &
-'  filename              Input netCDF xover file name'// &
+'  FILENAME                  Name of input netCDF xover file'// &
 'Optional arguments [options] are:'/ &
-'  --lon=LON0,LON1       specify longitude boundaries (deg)'/ &
-'  --lat=LAT0,LAT1       specify latitude boundaries (deg)'/ &
-'  --t=T0,T1             specify time selection (optionally use --ymd=, --doy=,'/ &
-'                        or --sec= for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)'/ &
-'  --dt=[DTMIN,]DTMAX    use only xovers with [DTMIN <] dt < DTMAX (days)'/ &
-'  -d, --dual            Select duals satellite crossovers only'/ &
-'  -s, --single          Select single satellite crossovers only'/ &
-'  -l, --both-legs       Write out both xover values (default is differences)'/ &
-'  -t, --both-times      Write out both times (default is difference)'/ &
-'  -oTYPE, --order=TYPE  Order of the xover values (or difference), where TYPE is one of:'/ &
-'                        A|a = ascending-descending or vv'/ &
-'                        H|h = higher-lower satellite or vv'/ &
-'                        S|s = higher-lower satellite ID or vv'/ &
-'                        T|t = later-earlier measurement or vv')
-1301 format ('  -n, --no-list         Do not print listing (print statistics only)')
+'  --lon=LON0,LON1           Specify longitude boundaries (deg)'/ &
+'  --lat=LAT0,LAT1           Specify latitude boundaries (deg)'/ &
+'  --t=T0,T1                 Specify time selection (optionally use --ymd=, --doy=,'/ &
+'                            or --sec= for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)'/ &
+'  --dt=[DTMIN,]DTMAX        Use only xovers with [DTMIN <] dt < DTMAX (days)'/ &
+'  -d, --dual                Select duals satellite crossovers only'/ &
+'  -s, --single              Select single satellite crossovers only'/ &
+'  -l, --both-legs           Write out both xover values (default is differences)'/ &
+'  -t, --both-times          Write out both times (default is difference)'/ &
+'  -oTYPE, --order=TYPE      Order of the xover values (or difference), where TYPE is one of:'/ &
+'                              A|a = ascending-descending or vv'/ &
+'                              H|h = higher-lower satellite or vv'/ &
+'                              S|s = higher-lower satellite ID or vv'/ &
+'                              T|t = later-earlier measurement or vv')
+1301 format (/ &
+'  -n, --no-list             Do not print listing (print statistics only)')
 stop
 end subroutine synopsis
 

@@ -2552,33 +2552,33 @@ write (iunit, 1300) trim(progname)
 1300 format (/ &
 'usage: ',a,' [required_arguments] [rads_dataselectors] [rads_options] [program_options]' // &
 'Required argument is:'/ &
-'  -S, --sat=SAT[/PHASE]     specify satellite [and phase] (e.g. e1/g, tx)'// &
+'  -S, --sat=SAT[/PHASE]     Specify satellite [and phase] (e.g. e1/g, tx)'// &
 'Optional [rads_dataselectors] are:'/ &
-'  -V, --var=VAR1,...        select variables to be read'/ &
-'  -C, --cycle=C0[,C1[,DC]]  specify first and last cycle and modulo'/ &
-'  -P, --pass=P0[,P1[,DP]]   specify first and last pass and modulo'/ &
-'  -RLON0,LON1,LAT0,LAT1     specify rectangular region (deg)'/ &
-'  -RLON0,LAT0,RADIUS        specify circular region (deg)' / &
-'  --lon=LON0,LON1           specify longitude boundaries (deg)'/ &
-'  --lat=LAT0,LAT1           specify latitude  boundaries (deg)'/ &
-'  --t=T0,T1                 specify time selection (optionally use --ymd=, --doy=,'/ &
+'  -V, --var=VAR1,...        Select variables to be read'/ &
+'  -C, --cycle=C0[,C1[,DC]]  Specify first and last cycle and modulo'/ &
+'  -P, --pass=P0[,P1[,DP]]   Specify first and last pass and modulo'/ &
+'  -RLON0,LON1,LAT0,LAT1     Specify rectangular region (deg)'/ &
+'  -RLON0,LAT0,RADIUS        Specify circular region (deg)' / &
+'  --lon=LON0,LON1           Specify longitude boundaries (deg)'/ &
+'  --lat=LAT0,LAT1           Specify latitude  boundaries (deg)'/ &
+'  --t=T0,T1                 Specify time selection (optionally use --ymd=, --doy=,'/ &
 '                            or --sec= for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)'/ &
-'  --sla=SLA0,SLA1           specify range for SLA (m)'/ &
-'  -A, --alias:VAR1=VAR2     use variable VAR2 when VAR1 is requested'/ &
-'  -L, --lim:VAR=MIN,MAX     specify edit data range for variable VAR'/ &
-'  -F, --fmt:VAR=FMT         specify the Fortran format used to print VAR'/ &
-'  -X, --xml=XMLFILE         load XMLFILE in addition to defaults'// &
-'Still working for backwards compatibility with RADS 3 are options:'/ &
-'  --sel=VAR1,...            select variables to read'/ &
-'  --opt=J                   use selection code J when J/100 requested (now -AVAR1=VAR2)'/ &
-'  --opt:I=J                 set option for data item I to J (now -AVAR1=VAR2)'/ &
-'  --h=H0,H1                 specify range for SLA (m) (now --sla=H0,H1)'// &
+'  --sla=SLA0,SLA1           Specify range for SLA (m)'/ &
+'  -A, --alias:VAR1=VAR2     Use variable VAR2 when VAR1 is requested'/ &
+'  -L, --lim:VAR=MIN,MAX     Specify edit data range for variable VAR'/ &
+'  -F, --fmt:VAR=FMT         Specify the Fortran format used to print VAR'/ &
+'  -X, --xml=XMLFILE         Load XMLFILE in addition to defaults'// &
+'Still working for backwards Compatibility with RADS 3 are options:'/ &
+'  --sel=VAR1,...            Select variables to read'/ &
+'  --opt=J                   Use selection code J when J/100 requested (now -AVAR1=VAR2)'/ &
+'  --opt:I=J                 Set option for data item I to J (now -AVAR1=VAR2)'/ &
+'  --h=H0,H1                 Specify range for SLA (m) (now --sla=H0,H1)'// &
 'Common [rads_options] are:'/ &
-'  -q, --quiet               suppress warning messages (but keeps fatal error messages)' / &
-'  -v, --debug=LEVEL         set debug level'/ &
-'  --args=FILENAME           get any of the above arguments from filename (one argument per line)'/ &
-'  --help                    this syntax massage'/ &
-'  --version                 version info')
+'  -q, --quiet               Suppress warning messages (but keeps fatal error messages)' / &
+'  -v, --debug=LEVEL         Set debug level'/ &
+'  --args=FILENAME           Get any of the above arguments from filename (one argument per line)'/ &
+'  --help                    Print this syntax massage'/ &
+'  --version                 Version info')
 end subroutine rads_synopsis
 
 !***********************************************************************

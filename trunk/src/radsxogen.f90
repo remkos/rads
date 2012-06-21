@@ -295,21 +295,21 @@ call rads_synopsis()
 write (stderr,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
-'  -d                        do dual satellite crossovers only'/ &
-'  -s                        do single satellite crossovers only'/ &
-'  -i[n|s|a|l|q|c][N]        interpolate 2N along-track values to crossover by picking (n)earest neighbor,'/ &
+'  -d                        Do dual satellite crossovers only'/ &
+'  -s                        Do single satellite crossovers only'/ &
+'  -i[n|s|a|l|q|c][N]        Interpolate 2N along-track values to crossover by picking (n)earest neighbor,'/ &
 '                            or by cubic (s)pline, or by (a)veraging, or by (l)inear, (q)uadratic or (c)ubic'/ &
 '                            polynomial fit; optionally add number of points N required on BOTH sides of the'/ &
 '                            crossover for interpolation. Default: q3'/ &
 '  -gGAP                     Specify the maximum gap between two nearest points to crossover, in 1-Hz intervals;' / &
 '                            also sets maximum gaps between 1st and last point of interpolation window to (N+1)*GAP' / &
-'  -rITEM                    reject xovers if data item number ITEM on --var= specifier is NaN'/ &
+'  -rITEM                    Reject xovers if data item number ITEM on --var= specifier is NaN'/ &
 '                            (default: reject if SLA field is NaN)'/ &
-'  -r0, -r                   do not reject xovers with NaN values'/ &
-'  -rn                       reject xovers if any value is NaN'/ &
-'  --dt=DT                   limit crossover time interval to number of days'/ &
+'  -r0, -r                   Do not reject xovers with NaN values'/ &
+'  -rn                       Reject xovers if any value is NaN'/ &
+'  --dt=DT                   Limit crossover time interval to number of days'/ &
 '                            use negative number to specify interval in fraction of cycles (default = -0.5)'/ &
-'  FILENAME                  specify output FILENAME (default: radsxogen.nc)')
+'  FILENAME                  Specify output FILENAME (default: radsxogen.nc)')
 stop
 end subroutine synopsis
 

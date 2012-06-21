@@ -152,15 +152,15 @@ call rads_synopsis ()
 write (stderr,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
-'  -c[N]                     statistics per cycle or N cycles'/ &
-'  -d[N]                     statistics per day (default) or N days'/ &
-'  -p[N]                     statistics per pass or N passes'/ &
-'  -b[DX,DY]                 average by boxes with size (default on: 3x1 degrees)'/ &
-'  -m                        give all measurements equal weight'/ &
-'  -a                        weight measurements by cosine of latitude'/ &
-'  -s                        use inclination-dependent weight'/ &
-'  -l                        print min and max in addition to mean and stddev'/ &
-'  --res=DX,DY               size of averaging boxes (default = 3x1 degrees)')
+'  -c[N]                     Statistics per cycle or N cycles'/ &
+'  -d[N]                     Statistics per day (default) or N days'/ &
+'  -p[N]                     Statistics per pass or N passes'/ &
+'  -b[DX,DY]                 Average by boxes with size (default on: 3x1 degrees)'/ &
+'  -m                        Give all measurements equal weight'/ &
+'  -a                        Weight measurements by cosine of latitude'/ &
+'  -s                        Use inclination-dependent weight'/ &
+'  -l                        Print min and max in addition to mean and stddev'/ &
+'  --res=DX,DY               Size of averaging boxes (default = 3x1 degrees)')
 stop
 end subroutine synopsis
 
