@@ -278,6 +278,47 @@ interface rads_def_var
 end interface rads_def_var
 
 !***********************************************************************
+!*rads_put_var -- Write data for variable to RADS file
+!+
+! subroutine rads_put_var (S, P, var, data, start)
+! use netcdf
+! use rads_netcdf
+! use rads_misc
+! type(rads_sat), intent(inout) :: S
+! type(rads_pass), intent(inout) :: P
+! type(rads_var), intent(in) :: var
+! real(eightbytereal), intent(in) :: data(:)
+! integer(fourbyteint), intent(in) :: start(:)
+!
+! This routine writes the data array <data> for the variable <var>
+! (referenced by the structure of type(rads_var)) to the netCDF file
+! previously opened with rads_create_pass or rads_open_pass.
+!
+! The data in <data> are in the original SI units (like [m] or [s])
+! and will be converted to the internal units based on the values of
+! <var%info%nctype>, <var%info%scale_factor>, <var%info%add_offset>.
+!
+! The argument <start> is be added to indicate an offset
+! for storing the data from the first available position in the file.
+! For example: start=101 first skips 100 records.
+!
+! Arguments:
+!  S        : Satellite/mission dependent structure
+!  P        : Pass structure
+!  var      : Structure of variable of type(rads_var)
+!  data     : Data to be written (in original (SI) units)
+!  start    : Position of the first data point in the file
+!
+! Error codes:
+!  S%error  : rads_noerr, rads_err_nc_put
+!-----------------------------------------------------------------------
+private :: rads_put_var_1d, rads_put_var_2d
+interface rads_put_var
+	module procedure rads_put_var_1d
+	module procedure rads_put_var_2d
+end interface rads_put_var
+
+!***********************************************************************
 !*rads_stat -- Print the RADS statistics for a given satellite
 !+
 ! subroutine rads_stat (S, unit)
@@ -1342,7 +1383,6 @@ endif
 e = nf90_inquire_variable (P%ncid, info%varid, xtype=nctype, ndims=ndims)
 
 ! Load the data
-start = max(1,P%first_meas)
 select case (ndims)
 case (0) ! Constant
 	if (nft(nf90_get_var(P%ncid, info%varid, data(1)))) then
@@ -1351,6 +1391,7 @@ case (0) ! Constant
 	endif
 	data = data(1)
 case (1) ! Array
+	start = max(1,P%first_meas)
 	if (nft(nf90_get_var(P%ncid, info%varid, data(1:P%ndata), start))) then
 		call rads_error (S, rads_err_nc_get, 'Error reading netCDF array "'//trim(info%dataname)//'"')
 		return
@@ -2939,9 +2980,9 @@ e = nf90_put_att (P%ncid, info%varid, 'long_name', trim(info%long_name))
 if (info%standard_name /= '') e = e + nf90_put_att (P%ncid, info%varid, 'standard_name', trim(info%standard_name))
 if (info%source /= '') e = e + nf90_put_att (P%ncid, info%varid, 'source', trim(info%source))
 if (info%units /= '') e = e + nf90_put_att (P%ncid, info%varid, 'units', trim(info%units))
-if (info%datatype >= rads_type_time) then
-	! No _FillValue, flag_values or flag_masks
-else if (info%datatype == rads_type_flagmasks) then
+!if (info%datatype >= rads_type_time) then
+	! No _FillValue, flag_values or flag_masks XXX removed
+if (info%datatype == rads_type_flagmasks) then
 	n = count_spaces (info%flag_meanings)
 	if (info%nctype == nf90_int1) then
 		e = e + nf90_put_att (P%ncid, info%varid, 'flag_masks', int(2**flag_values(0:n),onebyteint))
@@ -3001,10 +3042,7 @@ do i = 1,size(var)
 enddo
 end subroutine rads_def_var_1d
 
-!***********************************************************************
-!*rads_put_var -- Write data for variable to RADS file
-!+
-subroutine rads_put_var (S, P, var, data, start)
+subroutine rads_put_var_1d (S, P, var, data, start)
 use netcdf
 use rads_netcdf
 use rads_misc
@@ -3012,32 +3050,9 @@ type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 type(rads_var), intent(in) :: var
 real(eightbytereal), intent(in) :: data(:)
-integer(fourbyteint), intent(in), optional :: start
-!
-! This routine writes the data array <data> for the variable <var>
-! (referenced by the structure of type(rads_var)) to the netCDF file
-! previously opened with rads_create_pass or rads_open_pass.
-!
-! The data in <data> are in the original SI units (like [m] or [s])
-! and will be converted to the internal units based on the values of
-! <var%info%nctype>, <var%info%scale_factor>, <var%info%add_offset>.
-!
-! The optional argument <start> can be added to indicate an offset
-! for storing the data from the first available position in the file.
-! For example: start=101 first skips 100 records.
-!
-! Arguments:
-!  S        : Satellite/mission dependent structure
-!  P        : Pass structure
-!  var      : Structure of variable of type(rads_var)
-!  data     : Data to be written (in original (SI) units)
-!  start    : (Optional) Position of the first data point in the file
-!
-! Error codes:
-!  S%error  : rads_noerr, rads_err_nc_put
-!-----------------------------------------------------------------------
+integer(fourbyteint), intent(in) :: start(:)
 type(rads_varinfo), pointer :: info
-integer(fourbyteint) :: e, first(1)
+integer(fourbyteint) :: e
 S%error = rads_noerr
 e = nf90_enddef(P%ncid) ! Make sure to get out of define mode
 info => var%info
@@ -3047,23 +3062,50 @@ else if (nft(nf90_inq_varid (P%ncid, var%name, info%varid))) then
 	call rads_error (S, rads_err_nc_var, 'No variable '//trim(var%name)//' in '//trim(P%filename))
 	return
 endif
-if (present(start)) then
-	first = start
-else
-	first = 1
-endif
-
 select case (info%nctype)
 case (nf90_int1)
-	e = nf90_put_var (P%ncid, info%varid, nint1((data - info%add_offset) / info%scale_factor), first)
+	e = nf90_put_var (P%ncid, info%varid, nint1((data - info%add_offset) / info%scale_factor), start)
 case (nf90_int2)
-	e = nf90_put_var (P%ncid, info%varid, nint2((data - info%add_offset) / info%scale_factor), first)
+	e = nf90_put_var (P%ncid, info%varid, nint2((data - info%add_offset) / info%scale_factor), start)
 case (nf90_int4)
-	e = nf90_put_var (P%ncid, info%varid, nint4((data - info%add_offset) / info%scale_factor), first)
+	e = nf90_put_var (P%ncid, info%varid, nint4((data - info%add_offset) / info%scale_factor), start)
 case default
-	e = nf90_put_var (P%ncid, info%varid, (data - info%add_offset) / info%scale_factor, first)
+	e = nf90_put_var (P%ncid, info%varid, (data - info%add_offset) / info%scale_factor, start)
 end select
 if (e > 0) call rads_error (S, rads_err_nc_put, 'Error writing data for variable '//trim(var%name)//' to '//trim(P%filename))
-end subroutine rads_put_var
+end subroutine rads_put_var_1d
+
+subroutine rads_put_var_2d (S, P, var, data, start)
+use netcdf
+use rads_netcdf
+use rads_misc
+type(rads_sat), intent(inout) :: S
+type(rads_pass), intent(inout) :: P
+type(rads_var), intent(in) :: var
+real(eightbytereal), intent(in) :: data(:,:)
+integer(fourbyteint), intent(in) :: start(:)
+type(rads_varinfo), pointer :: info
+integer(fourbyteint) :: e
+S%error = rads_noerr
+e = nf90_enddef(P%ncid) ! Make sure to get out of define mode
+info => var%info
+if (P%cycle == info%cycle .and. P%pass == info%pass) then
+	! Keep old varid
+else if (nft(nf90_inq_varid (P%ncid, var%name, info%varid))) then
+	call rads_error (S, rads_err_nc_var, 'No variable '//trim(var%name)//' in '//trim(P%filename))
+	return
+endif
+select case (info%nctype)
+case (nf90_int1)
+	e = nf90_put_var (P%ncid, info%varid, nint1((data - info%add_offset) / info%scale_factor), start)
+case (nf90_int2)
+	e = nf90_put_var (P%ncid, info%varid, nint2((data - info%add_offset) / info%scale_factor), start)
+case (nf90_int4)
+	e = nf90_put_var (P%ncid, info%varid, nint4((data - info%add_offset) / info%scale_factor), start)
+case default
+	e = nf90_put_var (P%ncid, info%varid, (data - info%add_offset) / info%scale_factor, start)
+end select
+if (e > 0) call rads_error (S, rads_err_nc_put, 'Error writing data for variable '//trim(var%name)//' to '//trim(P%filename))
+end subroutine rads_put_var_2d
 
 end module rads
