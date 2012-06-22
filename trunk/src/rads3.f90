@@ -59,7 +59,7 @@ module rads3
 use rads
 type(rads_sat), save :: S
 type(rads_pass), save :: P
-logical :: rads_init_done = .false.
+logical, save :: rads_init_done = .false.
 
 contains
 
@@ -186,7 +186,7 @@ pass0 = S%passes(1)
 pass1 = S%passes(2)
 dpass = S%passes(3)
 nsel = S%nsel
-sel(1:nsel) = S%sel(1:nsel)%field
+sel(1:nsel) = S%sel(1:nsel)%field(1)
 end function radsargs2
 
 end module rads3
