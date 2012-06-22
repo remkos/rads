@@ -32,10 +32,10 @@ character(len=32) :: wtype(0:3)=(/ &
 	'area weighted               ', 'inclination-dependent weight'/)
 character(len=640) :: format_string
 integer(fourbyteint), parameter :: period_day=0, period_pass=1, period_cycle=2, day_init=-999999
-integer(fourbyteint) :: nr=0, day=day_init, day_old=day_init, cycle, pass, i, j, k, l, &
-	period=period_day, wmode=0, nx, ny, kx, ky, ios
+integer(fourbyteint) :: nr=0, day=day_init, day_old=day_init, cycle, pass, i, l, &
+	period=period_day, wmode=0, nx, ny, kx, ky, ios, sizes(2)
 real(eightbytereal), allocatable :: z(:,:), lat_w(:)
-real(eightbytereal) :: sini, step=1d0, x0, y0, dx=3d0, dy=1d0
+real(eightbytereal) :: sini, step=1d0, x0, y0, res(2)=(/3d0,1d0/)
 type :: stat
 	real(eightbytereal) :: wgt, mean, sum2, xmin, xmax
 end type
@@ -68,8 +68,7 @@ do i = 1,iargc()
 		read (optarg, *, iostat=ios) step
 	case ('-b')
 		wmode = 0
-		call chartrans (optarg, '/-+x', ',,,,')
-		read (optarg, *, iostat=ios) dx,dy
+		call read_val (optarg, res, '/-+x')
 	case ('-m')
 		wmode = 1
 	case ('-a')
@@ -79,16 +78,15 @@ do i = 1,iargc()
 	case ('-l')
 		lstat = 2
 	case ('--res')
-		call chartrans (optarg, '/-+x', ',,,,')
-		read (optarg, *, iostat=ios) dx,dy
+		call read_val (optarg, res, '/-+x')
 	end select
 enddo
 
 ! Set up the boxes
 x0 = S%lon%info%limits(1)
 y0 = S%lat%info%limits(1)
-nx = int((S%lon%info%limits(2)-x0)/dx+0.999d0)
-ny = int((S%lat%info%limits(2)-y0)/dy+0.999d0)
+nx = int((S%lon%info%limits(2)-x0)/res(1)+0.999d0)
+ny = int((S%lat%info%limits(2)-y0)/res(2)+0.999d0)
 allocate (box(0:S%nsel,nx,ny),tot(0:S%nsel),lat_w(ny))
 
 ! Set up the weights
@@ -96,9 +94,9 @@ sini = sin(S%inclination*rad)
 if (wmode == 1) then
 	lat_w = 1d0
 else if (wmode == 3) then
-	forall (ky=1:ny) lat_w(ky) = sqrt(max(1d-2,1d0-(sin((y0+(ky-0.5d0)*dy)*rad)/sini)**2))
+	forall (ky=1:ny) lat_w(ky) = sqrt(max(1d-2,1d0-(sin((y0+(ky-0.5d0)*res(2))*rad)/sini)**2))
 else
-	forall (ky=1:ny) lat_w(ky) = cos((y0+(ky-0.5d0)*dy)*rad)
+	forall (ky=1:ny) lat_w(ky) = cos((y0+(ky-0.5d0)*res(2))*rad)
 endif
 
 ! Initialize statistics
@@ -110,10 +108,8 @@ format_string = '(i9,f12.0'
 do i = 1,S%nsel
 	l = len_trim(format_string)
 	! Add one decimal to the format
-	arg = S%sel(i)%info%format(2:)
-	call chartrans (arg,'.',',')
-	read (arg,*) j,k
-	write (format_string(l+1:),'(",",i0,"(1x,f",i0,".",i0,")")') 2*lstat,j+1,k+1
+	call read_val (S%sel(i)%info%format(2:), sizes, '.')
+	write (format_string(l+1:),'(",",i0,"(1x,f",i0,".",i0,")")') 2*lstat,sizes+1
 enddo
 l = len_trim(format_string)
 format_string(l+1:) = ')'
@@ -188,8 +184,8 @@ do i = 1,P%ndata
    	if (any(isnan(z(i,:)))) cycle ! Reject outliers
 
 	! Update the box statistics
-   	kx = floor((P%tll(i,3)-x0)/dx + 1d0)
-   	ky = floor((P%tll(i,2)-y0)/dy + 1d0)
+   	kx = floor((P%tll(i,3)-x0)/res(1) + 1d0)
+   	ky = floor((P%tll(i,2)-y0)/res(2) + 1d0)
    	kx = max(1,min(kx,nx))
    	ky = max(1,min(ky,ny))
    	box(:,kx,ky)%wgt  = box(:,kx,ky)%wgt  + 1d0

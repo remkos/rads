@@ -30,7 +30,7 @@ use rads_time
 
 character(len=rads_naml) :: arg, opt, optarg, grid_name='', format_string=''
 integer(fourbyteint) :: minnr=2, n(2), k(2), i, j, l, cycle, pass, ios
-real(eightbytereal) :: lo(2), hi(2), res(2)=1d0, x, y
+real(eightbytereal) :: lo(2), hi(2), res(2), x, y, limits(3,2)
 logical :: c(2)=.false.
 type :: stat
 	integer(fourbyteint) :: nr
@@ -58,22 +58,24 @@ do j = 1,msat
 	endif
 enddo
 
+! Set default cell sizes
+limits(1:2,1) = S(1)%sel(1)%info%limits
+limits(1:2,2) = S(1)%sel(2)%info%limits
+limits(3:3,:) = 1d0
+
 ! Scan command line arguments
 do i = 1,iargc()
 	call getarg (i,arg)
 	call splitarg (arg, opt, optarg)
 	select case (opt)
 	case ('--x','-x')
-		call chartrans (optarg, '/', ',')
-		read (optarg, *, iostat=ios) S(1)%sel(1)%info%limits,res(1)
+		call read_val (optarg, limits(:,1), '/')
 	case ('--y', '-y')
-		call chartrans (optarg, '/', ',')
-		read (optarg, *, iostat=ios) S(1)%sel(2)%info%limits,res(2)
+		call read_val (optarg, limits(:,2), '/')
 	case ('--res')
-		res(2) = S(1)%nan
-		call chartrans (optarg, '/', ',')
-		read (optarg, *, iostat=ios) res
-		if (isnan(res(2))) res(2) = res(1)
+		limits(3,2) = S(1)%nan
+		call read_val (optarg, limits(3,:), '/')
+		if (isnan(limits(3,2))) limits(3,2) = limits(3,1)
 	case ('-c')
 		c(1) = (optarg /= 'y')
 		c(2) = (optarg /= 'x') 
@@ -87,10 +89,9 @@ do i = 1,iargc()
 enddo
 
 ! Set up the grid cells
-forall (j=1:2)
-	lo(j) = S(1)%sel(j)%info%limits(1)
-	hi(j) = S(1)%sel(j)%info%limits(2)
-end forall
+lo  = limits(1,:)
+hi  = limits(2,:)
+res = limits(3,:)
 where (c)
 	lo = lo + 0.5d0 * res
 	hi = hi - 0.5d0 * res
