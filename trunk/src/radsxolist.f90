@@ -38,7 +38,7 @@ type :: trk_
 end type
 type(trk_), allocatable :: trk(:)
 character(len=640) :: fmt_string
-character(len=rads_naml) :: arg, opt, optarg, filename
+character(len=rads_naml) :: arg, optopt, optarg, filename
 character(len=rads_cmdl) :: command
 character(len=1) :: order = ''
 character(len=4) :: statname(5) = (/ 'min ', 'max ', 'mean', 'rms ', 'std ' /)
@@ -66,8 +66,8 @@ call synopsis
 ! Scan command line arguments
 do i = 1,iargc()
 	call getarg (i, arg)
-	call splitarg (arg, opt, optarg)
-	select case (opt)
+	call splitarg (arg, optopt, optarg)
+	select case (optopt)
 	case ('--lon')
 		read (optarg, *, iostat=ios) lon0,lon1
 	case ('--lat')
@@ -96,8 +96,8 @@ do i = 1,iargc()
 		order = optarg(1:1)
 	case ('-t', '--both-times')
 		var0 = 1
-	case default
-		if (datearg(arg,t0,t1)) cycle
+	case default ! Note that we need to remove (3:) later when using getopt
+		if (dateopt(optopt(3:), optarg, t0, t1)) cycle
 	end select
 enddo
 

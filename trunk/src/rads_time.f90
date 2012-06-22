@@ -332,12 +332,12 @@ end select
 end function sec85
 
 !***********************************************************************
-!*datearg -- Processes standard datation arguments
+!*dateopt -- Processes standard datation options
 !+
-function datearg (arg, t0, t1, dt)
+function dateopt (optopt, optarg, t0, t1, dt)
 use typesizes
-logical :: datearg
-character(len=*), intent(in) :: arg
+logical :: dateopt
+character(len=*), intent(in) :: optopt, optarg
 real(eightbytereal), intent(out) :: t0
 real(eightbytereal), intent(out), optional :: t1, dt
 !
@@ -350,76 +350,82 @@ real(eightbytereal), intent(out), optional :: t1, dt
 !   --doy=t0[,t1][,dt] : YYDDD.DDD
 !     --t=t0[,t1][,dt] : MJD.DDD or [YY]YYMMDD.DDD or [YY]YYMMDDHHMMSS.SSS
 !
-! Normally <arg> is read from the argument line of a command using the getarg
-! routine. When <arg> is parsed through to datearg it checks whether <arg> is
-! of one of the above forms. If not, datearg gets the value .false., and
-! none of the arguments is altered. For backward compatibility with earlier
-! software, versions of these arguments without the leading -- are tested as
-! well.
+! At input, these arguments have already been split up in an option part
+! (without the --) and an argument part (after the =). This can be the
+! result of the <getopt> routine, for example.
 !
-! If <arg> is of one of the standard datation forms, the values of <t0> and
-! <t1> (when given) are read and interpreted as stated above and converted
-! to seconds since 1.0 Jan 1985. When provided, <dt> is read too, but is not
-! converted. On return, datearg will get the value .true.
+! When <optopt> is parsed through to <dateopt> it checks whether <optopt> is
+! of one of the above forms. If not, <dateopt> gets the value .false., and
+! none of the arguments is altered.
 !
-! When <t1> or <dt> are not provided in <arg>, the arguments of the function
+! If <optopt> is of one of the standard datation forms, the values of <t0> and
+! <t1> (when given) are read from <optarg> and interpreted as stated above
+! and converted to seconds since 1.0 Jan 1985. When provided, <dt> is read
+! too, but is not converted. On return, <dateopt> will get the value .true.
+! Values can be separated by spaced or slashes.
+!
+! When <t1> or <dt> are not provided in <optarg>, the arguments of the function
 ! call will keep their values unchanged.
 ! Since <t1> and <dt> are optional arguments, they can also be omitted from
-! the call to datearg.
+! the call to <dateopt>.
 !
 ! Arguments:
-!   datearg (output): .true. if <arg> is in a standard datation format
-!   arg      (input): datation argument (see above)
+!   dateopt (output): .true. if <optopt> is in a standard datation format
+!   optopt   (input): datation option ('mjd', 'sec', etc.) (see above)
+!   optarg   (input): datation option argument (see above)
 !   t0, t1  (output): datation arguments converted to SEC85
 !                     (seconds since 1.0 Jan 1985)
 !   dt      (output): third datation argument (not converted)
 !-----------------------------------------------------------------------
-integer :: ios,l,mode
+integer :: i,mode
 real(eightbytereal) :: tt0,tt1
+character(len=len(optarg)) :: arg
 
-! Default exit is error
-datearg = .false.
-
-! Capture the position of the equal sign. Has to be place 2, 4, or 6.
-l = index(arg,'=')
-if (l /= 2 .and. l /= 4 .and. l /= 6) return
-
-select case (arg(:l-1))
-case ('--t', 't')
+! Check the options
+select case (optopt)
+case ('t')
 	mode=0
-case ('--sec', 'sec')
+case ('sec')
 	mode=-1
-case ('--mjd', 'mjd')
+case ('mjd')
 	mode=1
-case ('--doy', 'doy')
+case ('doy')
 	mode=3
-case ('--ymd', 'ymd')
+case ('ymd')
 	mode=5
 case default
+	dateopt = .false.
 	return
 end select
 
-! Initialize the values to an unlikely value
-tt0 = 1d50
-tt1 = 1d50
+! Initialize the values to NaN
+tt0 = 0d0
+tt0 = tt0 / tt0
+tt1 = tt0
+
+! Replace any slashes with commas
+arg = optarg
+do i = 1,len_trim(optarg)
+	if (arg(i:i) == '/') arg(i:i) = ','
+enddo
 
 ! Read the values, and convert when specified
 if (present(t1) .and. present(dt)) then
-	read (arg(l+1:), *, iostat=ios) tt0, tt1, dt
-	if (abs(tt1) < 1d49) t1 = sec85 (mode, tt1)
+	read (arg, *, iostat=i) tt0, tt1, dt
+	if (.not.isnan(tt1)) t1 = sec85 (mode, tt1)
 else if (present(t1)) then
-	read (arg(l+1:), *, iostat=ios) tt0, tt1
-	if (abs(tt1) < 1d49) t1 = sec85 (mode, tt1)
+	read (arg, *, iostat=i) tt0, tt1
+	if (.not.isnan(tt1)) t1 = sec85 (mode, tt1)
 else if (present(dt)) then
-	read (arg(l+1:), *, iostat=ios) tt0, dt
+	read (arg, *, iostat=i) tt0, dt
 else
-	read (arg(l+1:), *, iostat=ios) tt0
+	read (arg, *, iostat=i) tt0
 endif
-if (abs(tt0) < 1d49) t0 = sec85 (mode, tt0)
+if (.not.isnan(tt0)) t0 = sec85 (mode, tt0)
 
 ! Successful return
-datearg = .true.
-end function datearg
+dateopt = .true.
+end function dateopt
 
 !***********************************************************************
 !*datestamp -- Create character string with current date
