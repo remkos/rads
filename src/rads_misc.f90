@@ -45,6 +45,34 @@ interface d_int
 	module procedure d_int4
 end interface d_int
 
+!***********************************************************************
+!*real_val -- Read array of values from string with optional substitution
+!+
+! pure subroutine read_val_int (string, val, translate)
+! character(len=*), intent(in) :: string
+! integer(fourbyteint) <or> real(eightbytereal), intent(out) :: val(:)
+! character(len=*), intent(in), optional :: translate
+!
+! This routine reads 4-byte integer or 8-byte real values from a string
+! <string> into an array <val>. To simplify things when the separators
+! between values are not space, comma or tab, we can optionally translate
+! all characters in the string <translate> to commas first.
+!
+! The values in <val> will retain their value when <string> prematurely
+! runs out of values.
+!
+! Arguments:
+!  string    : input character string
+!  val       : output array of values (integer or double)
+!  translate : optional: string of characters that need to be changed
+!             to spaces first
+!-----------------------------------------------------------------------
+private :: read_val_int, read_val_dble
+interface read_val
+	module procedure read_val_int
+	module procedure read_val_dble
+end interface read_val
+
 contains
 
 !***********************************************************************
@@ -294,7 +322,7 @@ end subroutine getopt_reset
 !***********************************************************************
 !*strtolower -- Convert string to lower case
 !+
-function strtolower (string) result (lower)
+elemental function strtolower (string) result (lower)
 character(len=*), intent(in) :: string
 character(len=len(string)) :: lower
 !
@@ -318,7 +346,7 @@ end function strtolower
 !***********************************************************************
 !*strtoupper -- Convert string to upper case
 !+
-function strtoupper (string) result (upper)
+elemental function strtoupper (string) result (upper)
 character(len=*), intent(in) :: string
 character(len=len(string)) :: upper
 !
@@ -338,38 +366,6 @@ do i = 1,len(string)
 	endif
 enddo
 end function strtoupper
-
-!***********************************************************************
-!*chartrans -- Translate characters in a string
-!+
-subroutine chartrans (string, from, to)
-character(len=*), intent(inout) :: string
-character(len=*), intent(in) :: from, to
-
-! This program translates each matching character of <from> in the string
-! <string> with the corresponding character in <to>.
-!
-! <from> and <to> should be of the same length. If not, only the lesser
-! number of characters are considered.
-!
-! Example:
-!     string = 'original'
-!     call chartrans (string, 'oi', 'O!')
-! results in:
-!     string = 'Or!g!nal'
-!
-! Arguments:
-!  string : Character string to be translated
-!  from   : Set of characters to be changed into the set <to>
-!  to     : Set of characters to change <from> into
-!-----------------------------------------------------------------------
-integer :: i, j, n
-n = min(len(from),len(to))
-do i = 1,len(string)
-	j = index(from,string(i:i))
-	if (j >= 1 .and. j <= n) string(i:i) = to(j:j)
-enddo
-end subroutine chartrans
 
 !***********************************************************************
 !*getlun -- Get free logical unit number
@@ -596,7 +592,7 @@ end function make_nan
 !***********************************************************************
 !*cross_product -- Compute cross product of two 3-D vectors
 !+
-function cross_product (a, b) result(c)
+pure function cross_product (a, b) result(c)
 real(eightbytereal), intent(in) :: a(3), b(3)
 real(eightbytereal) :: c(3)
 !
@@ -611,18 +607,18 @@ end function cross_product
 !***********************************************************************
 !*splitarg -- Split command line argument in option and option-argument
 !+
-subroutine splitarg (arg, option, optarg, pos)
+subroutine splitarg (arg, optopt, optarg, pos)
 character(len=*), intent(in) :: arg
-character(len=*), intent(out) :: option, optarg
+character(len=*), intent(out) :: optopt, optarg
 integer(fourbyteint), optional :: pos
 !
 ! This routine splits a command line argument <arg> in a form like
 ! arg:    '-A'  '-x1'  '--lon=0,10'  'sel=sla'  lim:sla=-1,1  'filename'
 ! into and option (-? or --*) and an argument. For the above examples:
-! option: '-A'  '-x'   '--lon'       '--sel'    '--lim'       ''
-! optarg: ''    '1'    '0,10'        'sla'      'sla=-1,1'    ''
+! optopt: '-A'  '-x'   '--lon'       '--sel'    '--lim'       ''
+! optarg: ''    '1'    '0,10'        'sla'      'sla=-1,1'    'filename'
 !
-! Thus the <option> is either -? (dash followed by a single character), or
+! Thus the <optopt> is either -? (dash followed by a single character), or
 ! --* (double-dash followed by one or more characters).
 ! Note that for the old-style argument 'sel=', the prefix '--' is added.
 ! When this is not an recognisable option, a blank string is returned.
@@ -636,7 +632,7 @@ integer(fourbyteint), optional :: pos
 !
 ! Arguments:
 !  arg    : Command line argument
-!  option : Identifier of the option
+!  optopt : Identifier of the option
 !  optarg : Argument of the option
 !  pos    : Optional: position of the equal sign in optarg
 !-----------------------------------------------------------------------
@@ -645,30 +641,30 @@ i = index(arg, ':')
 j = index(arg, '=')
 if (arg(:2) == '--') then
 	if (i > 0) then
-		option = arg(:i-1)
+		optopt = arg(:i-1)
 		optarg = arg(i+1:)
 		j = j - i
 	else if (j > 0) then
-		option = arg(:j-1)
+		optopt = arg(:j-1)
 		optarg = arg(j+1:)
 		j = 0
 	else
-		option = arg
+		optopt = arg
 		optarg = ''
 	endif
 else if (arg(:1) == '-') then
-	option = arg(:2)
+	optopt = arg(:2)
 	optarg = arg(3:)
 	j = j - 2
 else if (j == 0) then
-	option = ''
-	optarg = ''
+	optopt = ''
+	optarg = arg
 else if (i > 0) then
-	option = '--' // arg(:i-1)
+	optopt = '--' // arg(:i-1)
 	optarg = arg(i+1:)
 	j = j - i
 else
-	option = '--' // arg(:j-1)
+	optopt = '--' // arg(:j-1)
 	optarg = arg(j+1:)
 	j = 0
 endif
@@ -819,7 +815,7 @@ end subroutine iqsort
 !***********************************************************************
 !*mean_variance -- Compute mean and standard deviation of a series
 !
-subroutine mean_variance (x, mean, variance)
+pure subroutine mean_variance (x, mean, variance)
 real(eightbytereal), intent(in) :: x(:)
 real(eightbytereal), intent(out) :: mean, variance
 !
@@ -891,5 +887,47 @@ else
 	d_int4 = i
 endif
 end function d_int4
+
+pure subroutine read_val_dble (string, val, translate)
+character(len=*), intent(in) :: string
+real(eightbytereal), intent(out) :: val(:)
+character(len=*), intent(in), optional :: translate
+character(len=len(string)) :: temp
+integer :: i,j
+if (present(translate)) then
+	do i = 1,len(string)
+		j = index(translate, string(i:i))
+		if (j > 0) then
+			temp(i:i) = ','
+		else
+			temp(i:i) = string(i:i)
+		endif
+	enddo
+	read (temp, *, iostat=i) val
+else
+	read (string, *, iostat=i) val
+endif
+end subroutine read_val_dble
+
+pure subroutine read_val_int (string, val, translate)
+character(len=*), intent(in) :: string
+integer(fourbyteint), intent(out) :: val(:)
+character(len=*), intent(in), optional :: translate
+character(len=len(string)) :: temp
+integer :: i,j
+if (present(translate)) then
+	do i = 1,len(string)
+		j = index(translate, string(i:i))
+		if (j > 0) then
+			temp(i:i) = ','
+		else
+			temp(i:i) = string(i:i)
+		endif
+	enddo
+	read (temp, *, iostat=i) val
+else
+	read (string, *, iostat=i) val
+endif
+end subroutine read_val_int
 
 end module rads_misc
