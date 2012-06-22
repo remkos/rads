@@ -768,8 +768,8 @@ case ('--opt')
 	endif
 
 ! Finally try date arguments
-case default
-	if (datearg(opt%arg, val(1), val(2))) call rads_set_limits (S, 'time', val(1), val(2))
+case default ! Note that we need to remove (3:) later when using getopt!
+	if (dateopt(opt%opt(3:), opt%arg, val(1), val(2))) call rads_set_limits (S, 'time', val(1), val(2))
 end select
 end subroutine rads_parse_option
 
