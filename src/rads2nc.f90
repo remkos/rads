@@ -110,7 +110,7 @@ contains
 !***********************************************************************
 
 subroutine synopsis
-if (rads_version ('$Revsion 4.0 $','Select RADS altimeter data and output to netCDF')) return
+if (rads_version ('$Revision$','Select RADS altimeter data and output to netCDF')) return
 call rads_synopsis ()
 write (*,1300)
 1300 format (/ &
