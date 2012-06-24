@@ -348,7 +348,7 @@ real(eightbytereal), intent(out), optional :: t1, dt
 !   --sec=t0[,t1][,dt] : Seconds since 1.0 Jan 1985
 !   --ymd=t0[,t1][,dt] : [YY]YYMMDD.DDD or [YY]YYMMDDHHMMSS.SSS
 !   --doy=t0[,t1][,dt] : YYDDD.DDD
-!     --t=t0[,t1][,dt] : MJD.DDD or [YY]YYMMDD.DDD or [YY]YYMMDDHHMMSS.SSS
+!  --time=t0[,t1][,dt] : MJD.DDD or [YY]YYMMDD.DDD or [YY]YYMMDDHHMMSS.SSS
 !
 ! At input, these arguments have already been split up in an option part
 ! (without the --) and an argument part (after the =). This can be the
@@ -383,7 +383,7 @@ character(len=len(optarg)) :: arg
 
 ! Check the options
 select case (optopt)
-case ('t')
+case ('time', 't:')
 	mode=0
 case ('sec')
 	mode=-1
