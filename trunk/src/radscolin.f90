@@ -33,9 +33,8 @@ type(rads_sat) :: S(msat)
 integer(fourbyteint) :: nsel = 0, reject = 9999, cycle, pass, i, j, ios, &
 	nbins, nsat = 0, ntrx = 0, ntrx1, ntrx2, type_sla = 1, step = 1, ncols
 real(eightbytereal) :: dt = 0.97d0
-character(len=rads_naml) :: arg, opt, optarg, prefix = 'radscolin_p', suffix = '.nc', satlist
-character(len=3) :: out_cols = 'd'
-logical :: ascii = .true., out_data, out_mean, out_sdev
+character(len=rads_naml) :: prefix = 'radscolin_p', suffix = '.nc', satlist
+logical :: ascii = .true., out_data = .true., out_mean = .false., out_sdev = .false.
 real(eightbytereal), allocatable :: data(:,:,:)
 logical, allocatable :: mask(:,:)
 integer(fourbyteint), allocatable :: nr_in_bin(:), bin(:)
@@ -53,6 +52,7 @@ type(info_), allocatable :: info(:)
 
 ! Initialize RADS or issue help
 call synopsis
+call rads_set_options ('adsnNo:r:: step: dt: output:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 
@@ -81,41 +81,33 @@ do j = 1,nsel
 enddo
 
 ! Scan command line arguments
-do i = 1,iargc()
-	call getarg (i, arg)
-	call splitarg (arg, opt, optarg)
-	select case (opt)
-	case ('-r')
-		if (optarg /= 'n') then
+do i = 1,rads_nopt
+	select case (rads_opt(i)%opt)
+	case ('r')
+		if (rads_opt(i)%arg /= 'n') then
 			reject = 0
-			read (optarg, *, iostat=ios) reject
+			read (rads_opt(i)%arg, *, iostat=ios) reject
 		endif
-	case ('--step')
-		read (optarg, *, iostat=ios) step
-	case ('--dt')
-		read (optarg, *, iostat=ios) dt
-	case ('-s')
-		out_cols = 'dms'
-		if (optarg /= '') out_cols = optarg(:3)
-	case ('-a') ! For backward compatibility
-		out_cols = 'dm'
-	case ('-n', '-N')
-		! Silently ignore
-	case ('-o', '--out')
+	case ('step')
+		read (rads_opt(i)%arg, *, iostat=ios) step
+	case ('dt')
+		read (rads_opt(i)%arg, *, iostat=ios) dt
+	case ('a')
+		out_mean = .true.
+	case ('s')
+		out_sdev = .true.
+	case ('d')
+		out_data = .false.
+	case ('o', 'out')
 		ascii = .false.
-		if (optarg == '') cycle
-		j = index (optarg, '#')
+		if (rads_opt(i)%arg == '') cycle
+		j = index (rads_opt(i)%arg, '#')
 		if (j == 0) call rads_exit ('Output file name needs to include at least one "#"')
-		prefix = optarg(:j-1)
-		j = index (optarg, '#', .true.)
-		suffix = optarg(j+1:)
+		prefix = rads_opt(i)%arg(:j-1)
+		j = index (rads_opt(i)%arg, '#', .true.)
+		suffix = rads_opt(i)%arg(j+1:)
 	end select
 enddo
-
-! Select which data are output
-out_data =(index(out_cols, 'd') > 0)
-out_mean =(index(out_cols, 'm') > 0)
-out_sdev =(index(out_cols, 's') > 0)
 
 ! Allocate data arrays
 nbins = nint((S(1)%phase%pass_seconds + 60d0)/dt/2d0) ! Number of bins on either side of equator
@@ -128,6 +120,9 @@ forall (i=-nbins:nbins) bin(i) = i
 do pass = S(1)%passes(1), S(1)%passes(2), S(1)%passes(3)
 	call process_pass
 enddo
+
+! End RADS
+call rads_end (S)
 
 ! Deallocate data arrays
 deallocate (data, mask, nr_in_bin, bin, stat, info)
@@ -148,8 +143,9 @@ write (stderr,1300)
 '  -rn                       Reject data when any track is NaN (default)'/ &
 '  --dt=DT                   Set minimum bin size in seconds (default is determined by satellite)'/ &
 '  --step=N                  Write out only every N points'/ &
-'  -s                        Output mean and standard deviation in addition to pass data'/ &
-'  -s[d|m|s]                 Output combination of (d)ata, (m)ean and (s)tandard deviation'/ &
+'  -a                        Output mean in addition to pass data'/ &
+'  -s                        Output standard deviation in addition to pass data'/ &
+'  -d                        Do not output pass data'/ &
 '  -o, --out[=OUTNAME]       Create netCDF output by pass. Optionally specify filename including "#", which'/ &
 '                            is to be replaced by the psss number. Default is "radscolin_p#.nc"')
 stop
@@ -265,8 +261,6 @@ if (ascii) then
 else
 	call write_pass_nc
 endif
-
-call rads_end (S)
 
 end subroutine process_pass
 
