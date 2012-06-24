@@ -18,11 +18,6 @@
 module rads_misc
 use typesizes
 
-! There are used by getopt
-character(len=160), private, save :: getopt_arg
-logical, private, save :: getopt_new = .true.
-integer, private, save :: getopt_ind = 1, getopt_chr = 2
-
 !***********************************************************************
 !*d_int -- Convert integer to double while accounting for NaNs
 !+
@@ -73,18 +68,23 @@ interface read_val
 	module procedure read_val_dble
 end interface read_val
 
+! These are used by getopt
+integer, save :: getopt_ind = 1, getopt_chr = 2
+logical, save :: getopt_err = .true.
+character(len=160), private, save :: getopt_arg
+logical, private, save :: getopt_new = .true.
+
 contains
 
 !***********************************************************************
 !*getopt -- Get option from command line argument
 !
-integer function getopt (opts, optopt, optarg, unit, opterr)
-character(len=*), intent(in) :: opts
+subroutine getopt (optlist, optopt, optarg, unit)
+character(len=*), intent(in) :: optlist
 character(len=*), intent(out) :: optopt, optarg
 integer, intent(in), optional :: unit
-logical, intent(in), optional :: opterr
 !
-! This function mimics both the GNU C <getopt> and <getopt_long> functions,
+! This subroutine mimics both the GNU C <getopt> and <getopt_long> functions,
 ! and provides several enhancements over those functions (see below).
 !
 ! At every call, <getopt> reads a new option and (if required) its
@@ -92,15 +92,15 @@ logical, intent(in), optional :: opterr
 ! but if <unit> is specified, it will read from a file containing options
 ! that is associated with the i/o unit <unit>.
 !
-! The argument <opts> may contain both short options (i.e. '-f') or long
+! The argument <optlist> may contain both short options (i.e. '-f') or long
 ! options (i.e. '--file'), in the following way.
-! 1) Start with a string of single character short options, optionally
-!    insert a ':' when the option requires an argument.
-! 2) Append, each separated by a space the long options, ending in ':'
-!    when the option requires an argument.
+! 1) Start with a string of single character short options
+! 2) Append, each separated by a space the long options
+! 3) Append ':' when an option requires an argument, or '::' when the
+!    argument is optional
 !
 ! Example:
-! opts = 'f:qo:v quiet verbose file: output: outcome help'
+! optlist = 'f:qo:v? quiet verbose file: output:: outcome t help'
 !
 ! Note 1: There needs to be no association between short and long options
 !    This is different from <getopt_long> and actually more practical in
@@ -108,48 +108,49 @@ logical, intent(in), optional :: opterr
 !    case ('v', 'verbose')
 ! Note 2: Long options are not required, simply leave them out if not needed.
 ! Note 3: Short options are not required, leave them out if not needed, but
-!    then still start <opts> with a space.
+!    then still start <optlist> with a space before the first long option.
 !
 ! The argument <optopt> returns the short or the (full) long option. This
 ! routine will match any shorter unique version of the long option but still
-! return the full one. At the same time, <optarg> will provide the argument
-! to the option.
+! return the full one. If a long option has only one character (though
+! discouraged), <optopt> returns the character followed by a ':' to avoid
+! confusing it with a short option.
+! At the same time, <optarg> will provide the argument to the option.
 !
-! Examples of input, optopt and optarg using opts above:
-! -q           optopt = 'q', optarg = ''
-! --quiet      optopt = 'quiet', optarg = ''
+! The routine <getopt> deals in the following manner with errors:
+! * An option with a required argument was found, but there was no
+!   required argument, because of reaching the end of the input or
+!   because the option was followed by another option.
+!   <optopt> returns the option, <optarg> returns ''.
+! * An argument starts with '--' and no match with an option is found.
+!   <optopt> returns ':' and <optarg> the full argument.
+! * An argument starts with '-' and no match with an option is found.
+!   <optopt> returns ':' and <optarg> the full argument.
+! * No match was found. <optopt> returns '' and <optarg> the full argument.
+! * End of input is reached. <optopt> returns '!' and <optarg> ''.
+!
+! Examples of input, <optopt> and <optarg> using <optlist> above:
+! -i           optopt = ':', optarg = '-i' (Unknown option)
+! -q           optopt = 'q', optarg = '' (Short option)
+! --quiet      optopt = 'quiet', optarg = '' (Long option)
 ! --quiet=0    optopt = 'quiet', optarg = '' (Addition =0 is ignored)
-! -fFILE       optopt = 'f', optarg = 'FILE'
+! --q          optopt = 'quiet', optarg = '' (Returning first match)
+! --t          optopt = 't:', optarg = '' (Colon added to distinguish from -t)
+! -fFILE       optopt = 'f', optarg = 'FILE' (Space is not necessary)
 ! -f FILE      optopt = 'f', optarg = 'FILE' (Two arguments joined)
-! --file=FILE  optopt = 'file', optarg = 'FILE'
-! --out FILE   optopt = 'output', optarg = 'FILE' (Returning first match)
-! file.txt     optopt = '', optarg = 'file.txt' (No match)
-!
-! The function <getopt> returns one of the following error codes:
-! -3) An option with a required argument was found, but there was no
-!     required argument, because of reaching the end of the input or
-!     because the option was followed by another option.
-!     <optopt> returns the option, <optarg> returns ''.
-! -2) An argument starts with '--' and no match with an option is found.
-!     <optopt> returns '?' and <optarg> the full argument.
-! -1) An argument starts with '-' and no match with an option is found.
-!     <optopt> returns '?' and <optarg> the full argument.
-!  0) No error or warning. But if no match was found, <optopt> returns ''
-!     and <optarg> the full argument.
-!  1) And of input is reached. <optopt> and <optarg> remain unchanged.
+! --file FILE  optopt = 'file', optarg = 'FILE' (Separate by space ...)
+! --file=FILE  optopt = 'file', optarg = 'FILE' (... or by equal sign)
+! --output -q  optopt = 'output', optarg = '' (Optional argument)
+! file.txt     optopt = ' ', optarg = 'file.txt' (No match)
 !
 ! Arguments:
-!   opts     : list of short and long options
-!   optopt   : option part of the option, without -- or -
-!   optarg   : argument of the option
-!   unit     : (Optional) input unit number, otherwise command line
-!   opterr   : (Optional) print error messages with .true.
+!  optlist  : list of short and long options
+!  optopt   : option part of the option, without -- or -
+!  optarg   : argument of the option
+!  unit     : (Optional) input unit number, otherwise command line
 !-----------------------------------------------------------------------
-integer :: ios = 0, input, i, j, k, n
-logical :: print_err
-
-! Set default return code
-getopt = 0
+integer :: input, i, j, k, n, l
+logical :: optional_arg
 
 ! Select input unit
 if (.not.present(unit)) then
@@ -158,20 +159,11 @@ else
 	input = unit
 endif
 
-! Determine if error printing is necessary
-if (.not.present(opterr)) then
-	print_err = .false.
-else
-	print_err = opterr
-endif
-
 ! Read next argument when needed
-if (getopt_new) call nextarg
-
-! Return on error
-if (ios /= 0) then
-	getopt = 1
-	return
+if (.not.getopt_new) then
+else if (nextarg()) then
+	optopt = '!'
+	return ! Return on error
 endif
 
 ! Arguments '-' and '--' by itself should be regarded as normal arguments
@@ -184,37 +176,46 @@ endif
 ! Default is no option argument
 optarg = ''
 
+l = len(optlist)
+
 ! Handle double-dash options
 if (getopt_arg(1:2) == '--') then
 	getopt_new = .true.
+	! Find end of option or first : or =
 	i = len_trim(getopt_arg)
 	j = scan (getopt_arg, ' :=')
 	if (j > 3) i = j - 1
-	n = index(opts, ' ' // getopt_arg(3:i))
-	if (n == 0) then
-		getopt = -2
-		optopt = '?'
+	n = index(optlist, ' ' // getopt_arg(3:i)) ! Scan for space + option without the double-dash
+	if (n == 0) then ! Not a recognised option
+		optopt = ':'
 		optarg = getopt_arg
 		return
 	endif
 	n = n + 1
-	k = scan(opts(n:), ' :') + n - 2
-	optopt = opts(n:k)
-	if (opts(k+1:k+1) /= ':') return
-	if (j > 3) then
+	k = scan(optlist(n:), ' :')
+	if (k == 0) then
+		optopt = optlist(n:)
+		if (optopt(2:2) == ' ') optopt(2:2) = ':' ! Distinguish 1-letter option by adding ':'
+		return ! No argument to this option
+	endif
+	k = k + n - 2	
+	optopt = optlist(n:k)
+	if (optopt(2:2) == ' ') optopt(2:2) = ':' ! Distinguish 1-letter option by adding ':'
+	if (optlist(k+1:k+1) /= ':') return ! No argument to this option
+	if (j > 3) then ! Return the remainder of this argument
 		optarg = adjustl(getopt_arg(j+1:))
 		return
 	endif
-	call nextarg
-	if (ios /= 0) then
-		if (print_err) print '(a,a,a)', &
+	optional_arg = (k+2 <= l .and. optlist(k+2:k+2) == ':')
+	if (nextarg()) then
+		if (optional_arg) return ! Argument was optional
+		if (getopt_err) print '(a,a,a)', &
 			'Warning: option "',trim(getopt_arg),'" should contain argument, but end reached'
-		getopt = -3
 	else if (getopt_arg(1:1) == '-' .and. getopt_arg(2:2) /= ' ') then
-		if (print_err) print '(a,a,a)', &
-			'Warning: option "',trim(getopt_arg),'" should contain argument, but new option reached'
-		getopt = -3
 		getopt_new = .false.
+		if (optional_arg) return ! Argument was optional
+		if (getopt_err) print '(a,a,a)', &
+			'Warning: option "',trim(getopt_arg),'" should contain argument, but new option reached'
 	else
 		optarg = getopt_arg
 	endif
@@ -227,36 +228,32 @@ if (getopt_arg(1:1) == '-') then
 	optopt = getopt_arg(getopt_chr:getopt_chr)
 	getopt_chr = getopt_chr + 1
 	if (getopt_arg(getopt_chr:) == '') getopt_new = .true.
-	n = 0
-	do
-		n = n + 1
-		if (opts(n:n) == ' ') exit
-		if (opts(n:n) /= optopt(:1)) cycle
-		if (opts(n+1:n+1) /= ':') return
-		if (.not.getopt_new) then
-			optarg = adjustl(getopt_arg(getopt_chr:))
-			getopt_new = .true.
-			return
-		endif
-		call nextarg
-		if (ios /= 0) then
-			if (print_err) print '(a,a,a)', &
-				'Warning: option "-',trim(optopt),'" should contain argument, but end reached'
-			getopt = -3
-		else if (getopt_arg(1:1) == '-' .and. getopt_arg(2:2) /= ' ') then
-			if (print_err) print '(a,a,a)', &
-				'Warning: option "-',trim(optopt),'" should contain argument, but new option reached'
-			getopt = -3
-			getopt_new = .false.
-		else
-			optarg = getopt_arg
-			getopt_new = .true.
-		endif
+	n = scan (optlist, optopt(1:1)//' ') ! Scan for the actual option or a space
+	if (n == 0 .or. optlist(n:n) == ' ') then ! Not a recognised option
+		optopt = ':'
+		optarg = getopt_arg
 		return
-	enddo
-	getopt = -1
-	optopt = '?'
-	optarg = getopt_arg
+	endif
+	if (n == l .or. optlist(n+1:n+1) /= ':') return ! No argument to this option
+	if (.not.getopt_new) then
+		optarg = adjustl(getopt_arg(getopt_chr:))
+		getopt_new = .true.
+		return
+	endif
+	optional_arg = (n+2 <= l .and. optlist(n+2:n+2) == ':')
+	if (nextarg()) then
+		if (optional_arg) return ! Argument was optional
+		if (getopt_err) print '(a,a,a)', &
+			'Warning: option "-',trim(optopt),'" should contain argument, but end reached'
+	else if (getopt_arg(1:1) == '-' .and. getopt_arg(2:2) /= ' ') then
+		getopt_new = .false.
+		if (optional_arg) return ! Argument was optional
+		if (getopt_err) print '(a,a,a)', &
+			'Warning: option "-',trim(optopt),'" should contain argument, but new option reached'
+	else
+		optarg = getopt_arg
+		getopt_new = .true.
+	endif
 	return
 endif
 
@@ -265,11 +262,11 @@ j = index(getopt_arg, '=')
 if (j > 1) then
 	getopt_new = .true.
 	j = scan (getopt_arg, ':=') - 1
-	n = index (opts, ' ' // getopt_arg(:j))
+	n = index (optlist, ' ' // getopt_arg(:j))
 	if (n > 0) then
 		n = n + 1
-		k = scan (opts(n:), ' :') + n - 2
-		optopt = opts(n:k)
+		k = scan (optlist(n:), ' :') + n - 2
+		optopt = optlist(n:k)
 		optarg = getopt_arg(j+2:)
 		return
 	endif
@@ -282,20 +279,23 @@ optarg = getopt_arg
 contains
 
 ! Get the next argument from command line or file
-subroutine nextarg ()
+! Return .true. on error
+logical function nextarg ()
+integer :: ios
 if (input > 0) then
 	read (input, '(a)', iostat=ios) getopt_arg
+	nextarg = (ios /= 0)
 else if (getopt_ind > iargc()) then
-	ios = 1
+	nextarg = .true.
 else
 	call getarg (getopt_ind, getopt_arg)
 	getopt_ind = getopt_ind + 1
-	ios = 0
+	nextarg = .false.
 endif
 getopt_chr = 2
-end subroutine nextarg
+end function nextarg
 
-end function getopt
+end subroutine getopt
 
 !***********************************************************************
 !*getopt_reset -- Reset to beginning of command line options
