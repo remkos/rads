@@ -38,7 +38,7 @@ type(rads_pass) :: P
 
 ! Local declarations, etc.
 integer(fourbyteint) :: outunit, logunit = 6
-character(len=rads_naml) :: arg, opt, optarg, outname = ''
+character(len=rads_naml) :: outname = ''
 integer(fourbyteint) :: i, ios, cycle, pass, step = 1, nseltot = 0, nselmax = huge(0_fourbyteint)
 integer(fourbyteint) :: reject = -1
 
@@ -54,33 +54,32 @@ character(len=4) :: suffix
 
 ! Initialize RADS or issue help
 call synopsis
+call rads_set_options ('o:r:: output: maxrec: step:')
 call rads_init (S)
 if (S%error /= rads_noerr) call rads_exit ('Fatal error')
 
 ! Set default options related to output data type
-do i = 1,iargc()
-	call getarg (i, arg)
-	call splitarg (arg, opt, optarg)
-	select case (opt)
-	case ('-o', '--out')
-		outname = optarg
-	case ('-r')
-		if (optarg == 'n') then
+do i = 1,rads_nopt
+	select case (rads_opt(i)%opt)
+	case ('o', 'output')
+		outname = rads_opt(i)%arg
+	case ('r')
+		if (rads_opt(i)%arg == 'n') then
 			reject = -2
 		else
 			reject = 0
-			read (optarg, *, iostat=ios) reject
+			read (rads_opt(i)%arg, *, iostat=ios) reject
 		endif
-	case ('--maxrec')
-		read (optarg, *, iostat=ios) nselmax
-	case ('--step')
-		read (optarg, *, iostat=ios) step
+	case ('maxrec')
+		read (rads_opt(i)%arg, *, iostat=ios) nselmax
+	case ('step')
+		read (rads_opt(i)%arg, *, iostat=ios) step
 	end select
 enddo
 
-! Force the sel= option to conform to the operation mode (rads2adr, rads2xadr, rads2xgf)
+! Force the -V option to conform to the operation mode (rads2adr, rads2xadr, rads2xgf)
 if (S%nsel > 0) then
-	call rads_error (S, rads_noerr, 'Ignoring sel= option')
+	call rads_error (S, rads_noerr, 'Ignoring -V|--var|--sel option')
 	S%nsel = 0
 	deallocate (S%sel)
 endif

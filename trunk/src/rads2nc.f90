@@ -37,7 +37,7 @@ type(rads_pass) :: P, Pout
 
 ! Local declarations, etc.
 integer(fourbyteint) :: logunit = 6
-character(len=rads_naml) :: arg, opt, optarg, outname = ''
+character(len=rads_naml) :: outname = ''
 integer(fourbyteint) :: i, ios, cycle, pass, step = 1, nseltot = 0, nselmax = huge(0_fourbyteint)
 integer(fourbyteint) :: reject = -1
 
@@ -46,27 +46,26 @@ integer(fourbyteint) :: nselpass = 0
 
 ! Initialize RADS or issue help
 call synopsis
+call rads_set_options ('r::o: step: output:')
 call rads_init (S)
 if (S%error /= rads_noerr) call rads_exit ('Fatal error')
 
 ! Scan command line arguments
-do i = 1,iargc()
-	call getarg (i, arg)
-	call splitarg (arg, opt, optarg)
-	select case (opt)
-	case ('-o', '--out')
-		outname = optarg
-	case ('-r')
-		if (optarg == 'n') then
+do i = 1,rads_nopt
+	select case (rads_opt(i)%opt)
+	case ('o', 'output')
+		outname = rads_opt(i)%arg
+	case ('r')
+		if (rads_opt(i)%arg == 'n') then
 			reject = -2
 		else
 			reject = 0
-			read (optarg, *, iostat=ios) reject
+			read (rads_opt(i)%arg, *, iostat=ios) reject
 		endif
-	case ('--maxrec')
-		read (optarg, *, iostat=ios) nselmax
-	case ('--step')
-		read (optarg, *, iostat=ios) step
+	case ('maxrec')
+		read (rads_opt(i)%arg, *, iostat=ios) nselmax
+	case ('step')
+		read (rads_opt(i)%arg, *, iostat=ios) step
 	end select
 enddo
 
@@ -120,6 +119,7 @@ write (*,1300)
 '  -r0, -r                   Do not reject lines with NaN values'/ &
 '  -rn                       Reject lines if any value is NaN'/ &
 '  --step=N                  Step through records with stride n (default = 1)'/ &
+'  --maxrec=N                Specify maximum number of output records (default = unlimited)'/ &
 '  -o, --out=OUTNAME         Specify name of a single output file (default is pass files)')
 stop
 end subroutine synopsis

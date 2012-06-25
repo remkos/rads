@@ -44,7 +44,7 @@ type(rads_sat) :: S(msat)
 type(rads_pass) :: P
 integer(fourbyteint) :: i, j, nsat = 0, nsel = 0, reject = -1, ios, debug, ncid, dimid(3), start(2), varid(vbase)
 logical :: duals = .true., singles = .true., l
-character(len=rads_naml) :: arg, opt, optarg, satlist, filename = 'radsxogen.nc'
+character(len=rads_naml) :: satlist, filename = 'radsxogen.nc'
 character(len=rads_naml) :: legs = 'undetermined - undetermined'
 character(len=1) :: interpolant = 'q'
 integer(fourbyteint) :: inter_half = 3, inter_points, max_gap = 3
@@ -61,8 +61,7 @@ integer(fourbyteint), allocatable :: key(:), idx(:), trkid(:,:)
 
 ! Initialize RADS or issue help
 call synopsis
-S%sat = '' ! Initialize blank
-S%error = rads_noerr
+call rads_set_options ('dsi:g:r:: dt:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 dt = S(1)%nan
@@ -86,36 +85,37 @@ nsel = S(1)%nsel
 debug = maxval(S(1:nsat)%debug)
 
 ! Scan command line arguments
-do i = 1,iargc()
-	call getarg (i, arg)
-	call splitarg (arg, opt, optarg)
-	select case (opt)
-	case ('-r')
-		if (optarg == 'n') then
+do i = 1,rads_nopt
+	select case (rads_opt(i)%opt)
+	case ('r')
+		if (rads_opt(i)%arg == 'n') then
 			reject = -2
 		else
 			reject = 0
-			read (optarg, *, iostat=ios) reject
+			read (rads_opt(i)%arg, *, iostat=ios) reject
 		endif
-	case ('-s', '--single')
+	case ('s', 'single')
 		duals = .false.
-	case ('-d', '--dual')
+	case ('d', 'dual')
 		singles = .false.
-	case ('-i', '--interpolant')
-		select case (optarg)
+	case ('i', 'interpolant')
+		select case (rads_opt(i)%arg)
 		case ('a':'z')
-			interpolant = optarg(1:1)
-			read (optarg(2:), *, iostat=ios) inter_half
+			interpolant = rads_opt(i)%arg(1:1)
+			read (rads_opt(i)%arg(2:), *, iostat=ios) inter_half
 		case default
-			read (optarg, *, iostat=ios) inter_half
+			read (rads_opt(i)%arg, *, iostat=ios) inter_half
 		end select
-	case ('-g', '--gap')
-		read (optarg, *, iostat=ios) max_gap
+	case ('g', 'gap')
+		read (rads_opt(i)%arg, *, iostat=ios) max_gap
 		if (max_gap < 1) call rads_exit ('Option -g<gap> : needs <gap> > 0')
-	case ('--dt')
-		read (optarg, *, iostat=ios) dt
+	case ('dt')
+		read (rads_opt(i)%arg, *, iostat=ios) dt
+	case (' ')
+		filename = rads_opt(i)%arg
 	end select
 enddo
+
 inter_points = inter_half * 2
 select case (interpolant)
 case ('q', 'c', 's')
@@ -123,15 +123,6 @@ case ('q', 'c', 's')
 case default
 	if (inter_half < 1) call rads_exit ('Option -i[a|l|n]<n> : needs <n> > 0')
 end select
-
-! Get the file name (last argument not to start with - or contain =)
-do i = iargc(),1,-1
-	call getarg (i, arg)
-	if (arg(1:1) /= '-' .and. index(arg,'=') <= 0) then
-		filename = arg
-		exit
-	endif
-enddo
 
 ! Set all unspecified dt equal to the previous and create a string of sat names
 satlist = S(1)%sat
@@ -295,13 +286,14 @@ call rads_synopsis()
 write (stderr,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
-'  -d                        Do dual satellite crossovers only'/ &
-'  -s                        Do single satellite crossovers only'/ &
-'  -i[n|s|a|l|q|c][N]        Interpolate 2N along-track values to crossover by picking (n)earest neighbor,'/ &
+'  -d, --dual                Do dual satellite crossovers only'/ &
+'  -s, --single              Do single satellite crossovers only'/ &
+'  -i, --interpolant=[n|s|a|l|q|c][N]'/ &
+'                            Interpolate 2N along-track values to crossover by picking (n)earest neighbor,'/ &
 '                            or by cubic (s)pline, or by (a)veraging, or by (l)inear, (q)uadratic or (c)ubic'/ &
 '                            polynomial fit; optionally add number of points N required on BOTH sides of the'/ &
 '                            crossover for interpolation. Default: q3'/ &
-'  -gGAP                     Specify the maximum gap between two nearest points to crossover, in 1-Hz intervals;' / &
+'  -g, --gap=GAP             Specify the maximum gap between two nearest points to crossover, in 1-Hz intervals;' / &
 '                            also sets maximum gaps between 1st and last point of interpolation window to (N+1)*GAP' / &
 '  -rITEM                    Reject xovers if data item number ITEM on --var= specifier is NaN'/ &
 '                            (default: reject if SLA field is NaN)'/ &

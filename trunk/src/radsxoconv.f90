@@ -25,7 +25,8 @@ program radsxoconv
 use rads
 use netcdf
 use rads_netcdf
-integer(fourbyteint) :: ncid, i, nvars
+use rads_misc
+integer(fourbyteint) :: ncid
 real(eightbytereal), allocatable :: lat(:), lon(:), time(:,:), sla(:,:)
 integer(fourbyteint), allocatable :: track(:,:)
 integer(fourbyteint) :: id_sla = 0, id_alt_rate = 0, id_alt = 0, id_sig0 = 0, id_swh = 0, npar = 3, ios
@@ -39,7 +40,8 @@ type :: prod_
 	integer(fourbyteint) :: nr
 endtype prod_
 type(prod_) :: a, x, t
-character(len=rads_naml) :: arg, filename = '', shortname
+character(len=rads_varl) :: optopt
+character(len=rads_naml) :: optarg, shortname
 integer(fourbyteint), parameter :: msat = 20
 type :: sat_
 	character(len=2) :: name
@@ -47,6 +49,7 @@ type :: sat_
 endtype sat_
 type(sat_) :: sat(msat)
 character(len=3*msat) :: satlist
+character(len=*), parameter :: optlist = 'x:p:'
 type(rads_sat) :: S
 integer(twobyteint), parameter :: bound(4) = int((/-180,180,-90,90/), twobyteint)
 integer(fourbyteint), parameter :: maxtrk = 32768
@@ -62,34 +65,37 @@ x = prod_ ('', 0)
 l = rads_version ('$Revision$')
 
 ! Scan command line arguments
-do i = 1,iargc()
-	call getarg (i, arg)
-	if (arg == '-xaf') then
-		t%fmt = 'a'
-	else if (arg == '-xtf') then
-		t%fmt = 't'
-	else if (arg == '-xxo') then
-		x%fmt = 'o'
-	else if (arg == '-xxf') then
-		x%fmt = 'x'
-	else if (arg(:2) == '-p') then
-		read (arg(3:), *, iostat=ios) npar
-	endif
-enddo
-
-! Now process each file
-do i = 1,iargc()
-	call getarg (i, filename)
-	if (filename(:1) == '-') cycle
-	call process
+do
+	call getopt (optlist, optopt, optarg)
+	select case (optopt)
+	case ('!') ! End of options
+		exit
+	case ('x')
+		select case (optarg)
+		case ('af')
+			t%fmt = 'a'
+		case ('tf')
+			t%fmt = 't'
+		case ('xo')
+			x%fmt = 'o'
+		case ('xf')
+			x%fmt = 'x'
+		end select
+	case ('p')
+		read (optarg, *, iostat=ios) npar
+	case (' ')
+		call process (optarg) ! Process each file
+	end select
 enddo
 
 contains
 
 !***********************************************************************
 
-subroutine process
-integer(fourbyteint) :: i
+subroutine process (filename)
+character(len=*), intent(in) :: filename
+character(len=rads_varl) :: varname
+integer(fourbyteint) :: i, nvars
 
 i = index(filename, '.nc')
 if (i > 0) then
@@ -104,16 +110,16 @@ call nfs (nf90_open (filename, nf90_write, ncid))
 ! Check out which data variables are provided
 call nfs (nf90_inquire (ncid, nvariables=nvars))
 do i = 1,nvars
-	call nfs (nf90_inquire_variable (ncid, i, name=arg))
-	if (arg == 'sla') then
+	call nfs (nf90_inquire_variable (ncid, i, name=varname))
+	if (varname == 'sla') then
 		id_sla = i
-	else if (arg == 'alt_rate') then
+	else if (varname == 'alt_rate') then
 		id_alt_rate = i
-	else if (arg == 'sig0') then
+	else if (varname == 'sig0') then
 		id_sig0 = i
-	else if (arg == 'swh') then
+	else if (varname == 'swh') then
 		id_swh = i
-	else if (arg == 'alt' .or. arg(:4) == 'alt_') then
+	else if (varname == 'alt' .or. varname(:4) == 'alt_') then
 		id_alt = i
 	endif
 enddo

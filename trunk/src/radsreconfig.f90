@@ -71,7 +71,7 @@ nan=0d0; nan = nan/nan
 
 ! Check command line arguments
 call getarg (1, arg)
-if (arg == '--help' .or. arg == '-h') then
+if (arg == '--help' .or. arg == '-?') then
 	write (*,1300)
 	stop
 else if (arg == '') then
