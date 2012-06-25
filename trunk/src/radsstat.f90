@@ -22,17 +22,20 @@ program radsstat
 !
 ! usage: radsstat [RADS_options] [options]
 !-----------------------------------------------------------------------
+use netcdf
 use rads
 use rads_time
 use rads_misc
-integer(fourbyteint) :: lstat=1
+use rads_netcdf
+integer(fourbyteint) :: lstat=2
 character(len=32) :: wtype(0:3)=(/ &
 	'box weight                  ', 'constant weight             ', &
 	'area weighted               ', 'inclination-dependent weight'/)
 character(len=640) :: format_string
+character(len=rads_naml) :: filename = ''
 integer(fourbyteint), parameter :: period_day=0, period_pass=1, period_cycle=2, day_init=-999999
 integer(fourbyteint) :: nr=0, day=day_init, day_old=day_init, cycle, pass, i, l, &
-	period=period_day, wmode=0, nx, ny, kx, ky, ios, sizes(2)
+	period=period_day, wmode=0, nx, ny, kx, ky, ios, sizes(2), ncid, varid(2)
 real(eightbytereal), allocatable :: z(:,:), lat_w(:)
 real(eightbytereal) :: sini, step=1d0, x0, y0, res(2)=(/3d0,1d0/)
 type :: stat
@@ -40,11 +43,12 @@ type :: stat
 end type
 type(stat), allocatable :: box(:,:,:), tot(:)
 type(rads_sat) :: S
-type(rads_pass) :: P
+type(rads_pass) :: P, Pout
+logical :: ascii
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('c::d::p::b::masl res:')
+call rads_set_options ('c::d::p::b::maslo:: res: output::')
 call rads_init (S)
 if (S%error /= rads_noerr) call rads_exit ('Fatal error')
 
@@ -74,11 +78,15 @@ do i = 1,rads_nopt
 	case ('s')
 		wmode = 3
 	case ('l')
-		lstat = 2
+		lstat = 4
 	case ('res')
 		call read_val (rads_opt(i)%arg, res, '/-+x')
+	case ('o', 'output')
+		filename = rads_opt(i)%arg
+		if (filename == '') filename = 'radsstat.nc'
 	end select
 enddo
+ascii = (filename == '')
 
 ! Set up the boxes
 x0 = S%lon%info%limits(1)
@@ -99,18 +107,11 @@ endif
 
 ! Initialize statistics
 box = stat(0d0, 0d0, 0d0, S%nan, S%nan)
-call write_header
-
-! Determine format for statistics
-format_string = '(i9,f12.0'
-do i = 1,S%nsel
-	l = len_trim(format_string)
-	! Add one decimal to the format
-	call read_val (S%sel(i)%info%format(2:), sizes, '.')
-	write (format_string(l+1:),'(",",i0,"(1x,f",i0,".",i0,")")') 2*lstat,sizes+1
-enddo
-l = len_trim(format_string)
-format_string(l+1:) = ')'
+if (ascii) then
+	call ascii_header
+else
+	call netcdf_header
+endif
 
 ! Start looping through cycles and passes
 do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
@@ -120,21 +121,24 @@ do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
 		if (P%ndata > 0) call process_pass
 
 		! Print the statistics at the end of the data pass (if requested)
-		if (period == period_pass .and. nint(modulo(dble(pass),step)) == 0) call print_stat
+		if (period == period_pass .and. nint(modulo(dble(pass),step)) == 0) call output_stat
 		call rads_close_pass (S, P)
 	enddo
 
 	! Print the statistics at the end of the cycle (if requested)
-	if (period == period_cycle .and. nint(modulo(dble(cycle),step)) == 0) call print_stat
+	if (period == period_cycle .and. nint(modulo(dble(cycle),step)) == 0) call output_stat
 enddo
 
 ! Flush the statistics and close RADS4
 cycle = S%cycles(2)
 pass = S%passes(2)
-call print_stat
+call output_stat
 if (S%debug >= 1) call rads_stat (S)
 call rads_end (S)
 deallocate (box,tot,lat_w)
+
+! Close netCDF file
+if (.not.ascii) call nfs (nf90_close (ncid))
 
 contains
 
@@ -154,7 +158,8 @@ write (stderr,1300)
 '  -a                        Weight measurements by cosine of latitude'/ &
 '  -s                        Use inclination-dependent weight'/ &
 '  -l                        Print min and max in addition to mean and stddev'/ &
-'  --res=DX,DY               Size of averaging boxes (default = 3x1 degrees)')
+'  --res=DX,DY               Size of averaging boxes (default = 3x1 degrees)'/ &
+'  -o, --out[=OUTNAME]       Create netCDF output (default filename is "radsstat.nc")')
 stop
 end subroutine synopsis
 
@@ -178,7 +183,7 @@ if (day_old == day_init) day_old = floor(P%tll(1,1)/86400d0)
 do i = 1,P%ndata
 	! Print the statistics (if in "daily" mode)
 	day = floor(P%tll(i,1)/86400d0)
-	if (period == period_day .and. day >= nint(day_old+step)) call print_stat
+	if (period == period_day .and. day >= nint(day_old+step)) call output_stat
    	if (any(isnan(z(i,:)))) cycle ! Reject outliers
 
 	! Update the box statistics
@@ -198,10 +203,10 @@ deallocate (z)
 end subroutine process_pass
 
 !***********************************************************************
-! Print statistics for one batch of data
+! Output statistics for one batch of data
 
-subroutine print_stat
-integer(fourbyteint) :: j,yy,mm,dd
+subroutine output_stat
+integer(fourbyteint) :: j, yy, mm, dd, start(2) = 1
 real(eightbytereal) :: w
 
 if (nr == 0) then
@@ -242,20 +247,42 @@ else
 	tot%sum2 = S%nan
 endif
 
-! Print results
-call mjd2ymd(day_old+46066,yy,mm,dd)
-select case (period)
-case (period_day)
-	write (*,600,advance='no') modulo(yy,100),mm,dd
-case (period_pass)
-	write (*,601,advance='no') cycle,pass
-case default
-	write (*,602,advance='no') cycle,modulo(yy,100),mm,dd
-endselect
-if (lstat == 1) then
-	write (*,format_string) nr,tot(0)%mean,(tot(j)%mean,tot(j)%sum2,j=1,S%nsel)
+! Write output to netCDF if requested
+if (.not.ascii) then
+	call nfs (nf90_put_var (ncid, varid(1), nr, start(2:2)))
+	if (period /= period_day) call rads_put_var (S, Pout, rads_varptr(S, 'cycle'), (/ 1d0 * cycle /), start(2:2))
+	if (period == period_pass) call rads_put_var (S, Pout, rads_varptr(S, 'pass'), (/ 1d0 * pass /), start(2:2))
+	call rads_put_var (S, Pout, S%time, (/ tot(0)%mean /), start(2:2))
+	if (lstat == 2) then
+		do j = 1,S%nsel
+			call rads_put_var (S, Pout, S%sel(j), &
+				(/ tot(j)%mean, tot(j)%sum2 /), start)
+		enddo
+	else
+		do j = 1,S%nsel
+			call rads_put_var (S, Pout, S%sel(j), &
+				(/ tot(j)%mean, tot(j)%sum2, tot(j)%xmin, tot(j)%xmax /), start)
+		enddo
+	endif
+	start(2) = start(2) + 1
+
 else
-	write (*,format_string) nr,tot(0)%mean,(tot(j)%mean,tot(j)%sum2,tot(j)%xmin,tot(j)%xmax,j=1,S%nsel)
+
+! Print results
+	call mjd2ymd(day_old+46066,yy,mm,dd)
+	select case (period)
+	case (period_day)
+		write (*,600,advance='no') modulo(yy,100),mm,dd
+	case (period_pass)
+		write (*,601,advance='no') cycle,pass
+	case default
+		write (*,602,advance='no') cycle,modulo(yy,100),mm,dd
+	endselect
+	if (lstat == 2) then
+		write (*,format_string) nr, tot(0)%mean, (tot(j)%mean,tot(j)%sum2,j=1,S%nsel)
+	else
+		write (*,format_string) nr, tot(0)%mean, (tot(j)%mean,tot(j)%sum2,tot(j)%xmin,tot(j)%xmax,j=1,S%nsel)
+	endif
 endif
 
 ! Reset statistics
@@ -266,12 +293,12 @@ day_old = day
 600 format (3i2.2)
 601 format (i3,i5)
 602 format (i3,1x,3i2.2)
-end subroutine print_stat
+end subroutine output_stat
 
 !***********************************************************************
-! Write out the header
+! Write out ASCII the header
 
-subroutine write_header
+subroutine ascii_header
 integer :: j0, j
 
 600 format ('# Statistics of RADS variables (',a,')'/ &
@@ -299,14 +326,78 @@ case default
 	j0 = 2
 endselect
 write (*,620) j0+1,j0+2,trim(S%time%info%units)
+
+format_string = '(i9,f12.0'
 do j = 1,S%nsel
-	if (lstat == 1) then
+	! Write description of variables
+	if (lstat == 2) then
 		write (*,621) 2*j+j0+1,2*j+j0+2,trim(S%sel(j)%info%long_name),trim(S%sel(j)%info%units)
 	else
 		write (*,622) 4*j+j0+1,4*j+j0+2,trim(S%sel(j)%info%long_name),trim(S%sel(j)%info%units)
 	endif
+	! Assemble format for statistics lines
+	l = len_trim(format_string)
+	! Add one decimal to the format
+	call read_val (S%sel(j)%info%format(2:), sizes, '.')
+	write (format_string(l+1:),'(",",i0,"(1x,f",i0,".",i0,")")') lstat,sizes+1
 enddo
-end subroutine write_header
+
+l = len_trim(format_string)
+format_string(l+1:) = ')'
+end subroutine ascii_header
+
+!***********************************************************************
+! Write out the netCDF header
+
+subroutine netcdf_header
+integer :: j, dimid(2)
+integer(onebyteint) :: istat(4) = (/ 1_onebyteint, 2_onebyteint, 3_onebyteint, 4_onebyteint /)
+
+! Open output netCDF file
+call nfs (nf90_create (filename, nf90_write, ncid))
+call nfs (nf90_def_dim (ncid, 'time', nf90_unlimited, dimid(1)))
+call nfs (nf90_def_dim (ncid, 'stat', lstat, dimid(2)))
+
+! To use general netCDF creation machinary, we trick the library a bit here
+Pout%ncid = ncid
+Pout%filename = filename
+
+! Define "time" variables
+call nfs (nf90_def_var (ncid, 'nr', nf90_int4, dimid(1:1), varid(1)))
+call nfs (nf90_put_att (ncid, varid(1), 'long_name', 'number of measurements'))
+if (period /= period_day) call rads_def_var (S, Pout, rads_varptr(S, 'cycle'))
+if (period == period_pass) call rads_def_var (S, Pout, rads_varptr(S, 'pass'))
+call rads_def_var (S, Pout, S%time)
+
+! Define "stat" variable
+call nfs (nf90_def_var (ncid, 'stat', nf90_int1, dimid(2:2), varid(2)))
+call nfs (nf90_put_att (ncid, varid(2), 'long_name', 'statistics type'))
+call nfs (nf90_put_att (ncid, varid(2), 'flag_values', istat))
+call nfs (nf90_put_att (ncid, varid(2), 'flag_meanings', 'mean standard_deviation minimum maximum'))
+if (lstat == 2) then
+	call nfs (nf90_put_att (ncid, varid(2), 'comment', 'Data columns are mean and standard deviation'))
+else
+	call nfs (nf90_put_att (ncid, varid(2), 'comment', 'Data columns are mean, standard deviation, minimum, and maximum'))
+endif
+
+! Define selected variables
+do j = 1,S%nsel
+	S%sel(j)%info%ndims = 2
+	call rads_def_var (S, Pout, S%sel(j))
+enddo
+
+! Define global attibutes
+call nfs (nf90_put_att (ncid, nf90_global, 'Conventions', 'CF-1.5'))
+call nfs (nf90_put_att (ncid, nf90_global, 'title', 'RADS 4.0 statistics file'))
+call nfs (nf90_put_att (ncid, nf90_global, 'institution', 'Altimetrics / NOAA / TU Delft'))
+call nfs (nf90_put_att (ncid, nf90_global, 'references', 'RADS Data Manual, Issue 4.0'))
+call nfs (nf90_put_att (ncid, nf90_global, 'history', timestamp()//' UTC: '//trim(S%command)))
+call nfs (nf90_enddef (ncid))
+
+! Write "stat" coordinate
+call nfs (nf90_put_var (ncid, varid(2), istat(:lstat)))
+
+end subroutine netcdf_header
 
 !***********************************************************************
 
