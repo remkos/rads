@@ -38,7 +38,7 @@ type :: trk_
 end type
 type(trk_), allocatable :: trk(:)
 character(len=640) :: fmt_string
-character(len=rads_naml) :: arg, optopt, optarg, filename
+character(len=rads_naml) :: optopt, optarg
 character(len=rads_cmdl) :: command
 character(len=1) :: order = ''
 character(len=4) :: statname(5) = (/ 'min ', 'max ', 'mean', 'rms ', 'std ' /)
@@ -50,29 +50,42 @@ end type sat_
 type(sat_) :: sat(msat)
 character(len=3*msat) :: satlist = ''
 type(rads_sat) :: S
+character(len=*), parameter :: optlist = &
+	'e::dslnotr: lon: lat: dt: edit:: dual single nolist both-legs order both-times time: ymd: doy: sec:'
 
 integer(fourbyteint) :: var0 = 0
 logical :: diff = .true., stat_only = .false., singles = .true., duals = .true., xostat = .false.
 real(eightbytereal) :: t0 = 0d0, t1 = 0d0, lon0 = 0d0, lon1 = 0d0, lat0 = 0d0, lat1 = 0d0, dt0 = 0d0, dt1 = 0d0, edit = -1d0
 
 ! Check operation mode
-call getarg (0, arg)
-xostat = (index(arg, 'radsxostat') > 0)
+call getarg (0, command)
+xostat = (index(command, 'radsxostat') > 0)
 stat_only = xostat
 
 ! Initialize RADS or issue help
 call synopsis
 
+! Write header
+call get_command (command, status = i)
+if (xostat) then
+	write (*, 600) 'Statistics', timestamp(), trim(command)
+else
+	write (*, 600) 'List', timestamp(), trim(command)
+endif
+600 format ('# ',a,' of RADS crossovers'/'# Created: ',a,' UTC: ',a)
+
 ! Scan command line arguments
-do i = 1,iargc()
-	call getarg (i, arg)
-	call splitarg (arg, optopt, optarg)
+do
+	call getopt (optlist, optopt, optarg)
 	select case (optopt)
-	case ('--lon')
+	case ('!') ! End of arguments
+		exit
+	case (':', 'r') ! Ignore -r for the time being, ignore unknown option
+	case ('lon')
 		read (optarg, *, iostat=ios) lon0,lon1
-	case ('--lat')
+	case ('lat')
 		read (optarg, *, iostat=ios) lat0,lat1
-	case ('--dt')
+	case ('dt')
 		read (optarg, *, iostat=ios) dt0,dt1
 		if (dt0 > dt1) then
 			dt1 = dt0
@@ -80,42 +93,35 @@ do i = 1,iargc()
 		endif
 		dt0 = dt0 * 86400d0
 		dt1 = dt1 * 86400d0
-	case ('-e', '--edit')
+	case ('e', 'edit')
 		edit = 3.5d0
 		read (optarg, *, iostat=ios) edit
-	case ('-d', '--dual')
+	case ('d', 'dual')
 		singles = .false.
-	case ('-s', '--single')
+	case ('s', 'single')
 		duals = .false.
-	case ('-l', '--both-legs')
+	case ('l', 'both-legs')
 		diff = .false.
 		var0 = 1
-	case ('-n', '--nolist')
+	case ('n', 'nolist')
 		stat_only = .true.
-	case ('-o', '--order')
+	case ('o', 'order')
 		order = optarg(1:1)
-	case ('-t', '--both-times')
+	case ('t', 'both-times')
 		var0 = 1
-	case default ! Note that we need to remove (3:) later when using getopt
-		if (dateopt(optopt(3:), optarg, t0, t1)) cycle
+	case (' ')
+		call process (optarg) ! Process each file
+	case default
+		if (dateopt(optopt, optarg, t0, t1)) cycle
 	end select
 enddo
-
-! Now process each file
-call get_command (command, status = i)
-write (*, 600) timestamp(), trim(command)
-do i = 1,iargc()
-	call getarg (i, filename)
-	if (filename(:1) == '-' .or. index(filename, '=') > 0) cycle
-	call process
-enddo
-600 format ('# List of RADS crossovers'/'# Created: ',a,' UTC: ',a)
 
 contains
 
 !***********************************************************************
 
-subroutine process
+subroutine process (filename)
+character(len=*) :: filename
 integer(fourbyteint) :: i, j, k
 character(len=rads_naml) :: legs
 real(eightbytereal) :: mean, sigma
@@ -184,14 +190,15 @@ enddo
 fmt_string(len_trim(fmt_string)-3:) = ')'
 
 ! Exchange any correction if requested
-do i = 1,iargc()
-	call getarg (i,arg)
-	if (arg(:2) == '-r') then
-		j = index(arg,'=')
-		id_old = get_varid(arg(3:j-1)) - id_track
-		id_new = get_varid(arg(j+1:)) - id_track
+do
+	call getopt (optlist, optopt, optarg)
+	if (optopt == '!') exit
+	if (optopt == 'r') then
+		j = index(optarg,'=')
+		id_old = get_varid(optarg(:j-1)) - id_track
+		id_new = get_varid(optarg(j+1:)) - id_track
 		id_sla = get_varid('sla') - id_track
-		if (arg(3:5) == 'alt') then	! Add change to altitude
+		if (optarg(:3) == 'alt') then	! Add change to altitude
 			var(:,:,id_sla) = var(:,:,id_sla) + (var(:,:,id_new) - var(:,:,id_old))
 		else	! Subtract change to corrections
 			var(:,:,id_sla) = var(:,:,id_sla) - (var(:,:,id_new) - var(:,:,id_old))

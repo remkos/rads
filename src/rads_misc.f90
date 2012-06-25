@@ -188,7 +188,7 @@ if (getopt_arg(1:2) == '--') then
 	n = index(optlist, ' ' // getopt_arg(3:i)) ! Scan for space + option without the double-dash
 	if (n == 0) then ! Not a recognised option
 		optopt = ':'
-		optarg = getopt_arg
+		optarg = getopt_arg(:i)
 		return
 	endif
 	n = n + 1
@@ -230,8 +230,8 @@ if (getopt_arg(1:1) == '-') then
 	if (getopt_arg(getopt_chr:) == '') getopt_new = .true.
 	n = scan (optlist, optopt(1:1)//' ') ! Scan for the actual option or a space
 	if (n == 0 .or. optlist(n:n) == ' ') then ! Not a recognised option
+		optarg = '-'//optopt(1:1)
 		optopt = ':'
-		optarg = getopt_arg
 		return
 	endif
 	if (n == l .or. optlist(n+1:n+1) /= ':') return ! No argument to this option
@@ -603,73 +603,6 @@ c(1) = a(2) * b(3) - a(3) * b(2)
 c(2) = a(3) * b(1) - a(1) * b(3)
 c(3) = a(1) * b(2) - a(2) * b(1)
 end function cross_product
-
-!***********************************************************************
-!*splitarg -- Split command line argument in option and option-argument
-!+
-subroutine splitarg (arg, optopt, optarg, pos)
-character(len=*), intent(in) :: arg
-character(len=*), intent(out) :: optopt, optarg
-integer(fourbyteint), optional :: pos
-!
-! This routine splits a command line argument <arg> in a form like
-! arg:    '-A'  '-x1'  '--lon=0,10'  'sel=sla'  lim:sla=-1,1  'filename'
-! into and option (-? or --*) and an argument. For the above examples:
-! optopt: '-A'  '-x'   '--lon'       '--sel'    '--lim'       ''
-! optarg: ''    '1'    '0,10'        'sla'      'sla=-1,1'    'filename'
-!
-! Thus the <optopt> is either -? (dash followed by a single character), or
-! --* (double-dash followed by one or more characters).
-! Note that for the old-style argument 'sel=', the prefix '--' is added.
-! When this is not an recognisable option, a blank string is returned.
-!
-! The <optarg>, or optional argument, is what follows -? or the ':' or the
-! '=' sign (whatever comes first).
-! When there is no optional argument, or arg is not a recognisable option,
-! a blank string is returned.
-!
-! Finally, <pos> returns the position of the equal sign in optarg.
-!
-! Arguments:
-!  arg    : Command line argument
-!  optopt : Identifier of the option
-!  optarg : Argument of the option
-!  pos    : Optional: position of the equal sign in optarg
-!-----------------------------------------------------------------------
-integer :: i, j
-i = index(arg, ':')
-j = index(arg, '=')
-if (arg(:2) == '--') then
-	if (i > 0) then
-		optopt = arg(:i-1)
-		optarg = arg(i+1:)
-		j = j - i
-	else if (j > 0) then
-		optopt = arg(:j-1)
-		optarg = arg(j+1:)
-		j = 0
-	else
-		optopt = arg
-		optarg = ''
-	endif
-else if (arg(:1) == '-') then
-	optopt = arg(:2)
-	optarg = arg(3:)
-	j = j - 2
-else if (j == 0) then
-	optopt = ''
-	optarg = arg
-else if (i > 0) then
-	optopt = '--' // arg(:i-1)
-	optarg = arg(i+1:)
-	j = j - i
-else
-	optopt = '--' // arg(:j-1)
-	optarg = arg(j+1:)
-	j = 0
-endif
-if (present(pos)) pos = j
-end subroutine splitarg
 
 !***********************************************************************
 !*iqsort -- Make a quick sort of an INTEGER*4 array

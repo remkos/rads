@@ -28,7 +28,7 @@ use rads
 use rads_misc
 use rads_time
 
-character(len=rads_naml) :: arg, opt, optarg, grid_name='', format_string=''
+character(len=rads_naml) :: grid_name='', format_string=''
 integer(fourbyteint) :: minnr=2, n(2), k(2), i, j, l, cycle, pass, ios
 real(eightbytereal) :: lo(2), hi(2), res(2), x, y, limits(3,2)
 logical :: c(2)=.false.
@@ -44,6 +44,7 @@ type(rads_pass) :: P
 
 ! Initialize RADS or issue help
 call synopsis
+call rads_set_options ('x:y:c:: x: y: res: min: grd: fmt:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 
@@ -64,27 +65,29 @@ limits(1:2,2) = S(1)%sel(2)%info%limits
 limits(3:3,:) = 1d0
 
 ! Scan command line arguments
-do i = 1,iargc()
-	call getarg (i,arg)
-	call splitarg (arg, opt, optarg)
-	select case (opt)
-	case ('--x','-x')
-		call read_val (optarg, limits(:,1), '/')
-	case ('--y', '-y')
-		call read_val (optarg, limits(:,2), '/')
-	case ('--res')
+do i = 1,rads_nopt
+	select case (rads_opt(i)%opt)
+	case ('x', 'x:')
+		call read_val (rads_opt(i)%arg, limits(:,1), '/')
+	case ('y', 'y:')
+		call read_val (rads_opt(i)%arg, limits(:,2), '/')
+	case ('res')
 		limits(3,2) = S(1)%nan
-		call read_val (optarg, limits(3,:), '/')
+		call read_val (rads_opt(i)%arg, limits(3,:), '/')
 		if (isnan(limits(3,2))) limits(3,2) = limits(3,1)
-	case ('-c')
-		c(1) = (optarg /= 'y')
-		c(2) = (optarg /= 'x') 
-	case ('--min')
-		read (optarg, *, iostat=ios) minnr
-	case ('--grd')
-		grid_name = optarg
-	case ('--fmt')
-		format_string = optarg
+	case ('c')
+		if (rads_opt(i)%arg == '' .or. rads_opt(i)%arg == 'a') then
+			c = .true.
+		else
+			c(1) = (index (rads_opt(i)%arg, 'x') > 0)
+			c(2) = (index (rads_opt(i)%arg, 'y') > 0)
+		endif
+	case ('min')
+		read (rads_opt(i)%arg, *, iostat=ios) minnr
+	case ('grd')
+		grid_name = rads_opt(i)%arg
+	case ('fmt')
+		format_string = rads_opt(i)%arg
 	end select
 enddo
 
@@ -167,10 +170,10 @@ call rads_synopsis ()
 write (*,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
-'  --x=X0,X1[,DX]            Set x-range and interval (def: as set by default limits and --res=)'/ &
-'  --y=Y0,Y1[,DY]            Set y-range and interval (def: as set by default limits and --res=)'/ &
+'  -V, --var=X,Y,Z           Variables for x, y and z (default = lon,lat,sla)'/ &
+'  --x=X0,X1[,DX]            Set x-range and interval (default: as set by default limits and --res=)'/ &
+'  --y=Y0,Y1[,DY]            Set y-range and interval (default: as set by default limits and --res=)'/ &
 '  --res=DX[,DY]             Set resolution in x and y (default = 1)'/ &
-'  --var=X,Y,Z               Variables for x, y and z (default = lon,lat,sla)'/ &
 '  --min=MINNR               Minimum number of points per grid cell (default = 2)'/ &
 '  --grd=GRIDNAME            Create netCDF grid (suppresses ASCII)'/ &
 '  --fmt=FORMAT              Format to be used for ASCII output (default is determined by variables)'/ &

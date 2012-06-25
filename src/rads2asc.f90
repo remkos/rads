@@ -39,7 +39,7 @@ type(rads_var), pointer :: temp(:)
 
 ! Local declarations, etc.
 integer(fourbyteint) :: outunit, listunit = -1, logunit = 6
-character(len=rads_naml) :: arg, opt, optarg, outname = ''
+character(len=rads_naml) :: outname = ''
 character(len=640) :: format_string
 integer(fourbyteint) :: i, j, l, ios, cycle, pass, step = 1, nseltot = 0, nselmax = huge(0_fourbyteint)
 logical :: freeform = .false.
@@ -57,41 +57,40 @@ real(eightbytereal), allocatable :: r(:), q(:)
 
 ! Initialize RADS or issue help
 call synopsis
+call rads_set_options ('r::fs:o: step: list: output: maxrec:')
 call rads_init (Sats)
 if (any(Sats%error /= rads_noerr)) call rads_exit ('Fatal error')
 
 ! Scan command line arguments
-do i = 1,iargc()
-	call getarg (i, arg)
-	call splitarg (arg, opt, optarg)
-	select case (opt)
-	case ('-o', '--out')
-		outname = optarg
+do i = 1,rads_nopt
+	select case (rads_opt(i)%opt)
+	case ('o', 'output')
+		outname = rads_opt(i)%arg
 		if (outname == '') outname = '-'
-	case ('-r')
-		if (optarg == 'n') then
+	case ('r')
+		if (rads_opt(i)%arg == 'n') then
 			reject = -2
 		else
 			reject = 0
-			read (optarg, *, iostat=ios) reject
+			read (rads_opt(i)%arg, *, iostat=ios) reject
 		endif
-	case ('-f')
+	case ('f')
 		freeform = .true.
-	case ('-s')
-		if (optarg == 'p') then
+	case ('s')
+		if (rads_opt(i)%arg == 'p') then
 			stat_mode = pass_stat
-		else if (optarg == 'c') then
+		else if (rads_opt(i)%arg == 'c') then
 			stat_mode = cycle_stat
 		else
 			stat_mode = no_stat
 		endif
-	case ('--maxrec')
-		read (optarg, *, iostat=ios) nselmax
-	case ('--step')
-		read (optarg, *, iostat=ios) step
-	case ('--list')
+	case ('maxrec')
+		read (rads_opt(i)%arg, *, iostat=ios) nselmax
+	case ('step')
+		read (rads_opt(i)%arg, *, iostat=ios) step
+	case ('list')
 		listunit = getlun()
-		open (listunit, file=optarg, status='replace')
+		open (listunit, file=rads_opt(i)%arg, status='replace')
 	end select
 enddo
 
@@ -206,6 +205,7 @@ write (*,1300)
 '  -sp, -sc                  Include statistics per pass or per cycle'/ &
 '  --step=N                  Step through records with stride N (default = 1)'/ &
 '  --list=LISTNAME           Specify creation of list of output files'/ &
+'  --maxrec=N                Specify maximum number of output records (default = unlimited)'/ &
 '  -o, --out=OUTNAME         Specify name of a single output file (default is pass files, - is stdout)')
 stop
 end subroutine synopsis

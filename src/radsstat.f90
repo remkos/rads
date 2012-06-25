@@ -26,7 +26,6 @@ use rads
 use rads_time
 use rads_misc
 integer(fourbyteint) :: lstat=1
-character(len=rads_naml) :: arg, opt, optarg
 character(len=32) :: wtype(0:3)=(/ &
 	'box weight                  ', 'constant weight             ', &
 	'area weighted               ', 'inclination-dependent weight'/)
@@ -45,6 +44,7 @@ type(rads_pass) :: P
 
 ! Initialize RADS or issue help
 call synopsis
+call rads_set_options ('c::d::p::b::masl res:')
 call rads_init (S)
 if (S%error /= rads_noerr) call rads_exit ('Fatal error')
 
@@ -52,33 +52,31 @@ if (S%error /= rads_noerr) call rads_exit ('Fatal error')
 if (S%nsel == 0)  call rads_parse_varlist (S, 'sla')
 
 ! Scan command line arguments
-do i = 1,iargc()
-	call getarg (i,arg)
-	call splitarg (arg, opt, optarg)
-	select case (opt)
-	case ('-d')
+do i = 1,rads_nopt
+	select case (rads_opt(i)%opt)
+	case ('d')
 		period = period_day
-		read (optarg, *, iostat=ios) step
-	case ('-p')
+		read (rads_opt(i)%arg, *, iostat=ios) step
+	case ('p')
 		period = period_pass
-		read (optarg, *, iostat=ios) step
+		read (rads_opt(i)%arg, *, iostat=ios) step
 		step = dble(S%passes(2))/nint(S%passes(2)/step)
-	case ('-c')
+	case ('c')
 		period = period_cycle
-		read (optarg, *, iostat=ios) step
-	case ('-b')
+		read (rads_opt(i)%arg, *, iostat=ios) step
+	case ('b')
 		wmode = 0
-		call read_val (optarg, res, '/-+x')
-	case ('-m')
+		call read_val (rads_opt(i)%arg, res, '/-+x')
+	case ('m')
 		wmode = 1
-	case ('-a')
+	case ('a')
 		wmode = 2
-	case ('-s')
+	case ('s')
 		wmode = 3
-	case ('-l')
+	case ('l')
 		lstat = 2
-	case ('--res')
-		call read_val (optarg, res, '/-+x')
+	case ('res')
+		call read_val (rads_opt(i)%arg, res, '/-+x')
 	end select
 enddo
 
