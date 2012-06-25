@@ -846,7 +846,7 @@ case ('F', 'fmt')
 case ('R')
 	call rads_set_region (S, opt%arg)
 case ('lat', 'lon', 'sla')
-	call rads_set_limits (S, opt%opt(3:), string=opt%arg)
+	call rads_set_limits (S, opt%opt, string=opt%arg)
 case ('L', 'lim')
 	call rads_set_limits (S, opt%arg(:j-1), string=opt%arg(j+1:))
 
