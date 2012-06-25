@@ -28,7 +28,7 @@ use rads_time
 use rads_misc
 use rads_netcdf
 integer(fourbyteint) :: lstat=2
-character(len=32) :: wtype(0:3)=(/ &
+character(len=*), parameter :: wtype(0:3)=(/ &
 	'box weight                  ', 'constant weight             ', &
 	'area weighted               ', 'inclination-dependent weight'/)
 character(len=640) :: format_string
@@ -43,7 +43,7 @@ type :: stat
 end type
 type(stat), allocatable :: box(:,:,:), tot(:)
 type(rads_sat) :: S
-type(rads_pass) :: P, Pout
+type(rads_pass) :: Pin, Pout
 logical :: ascii
 
 ! Initialize RADS or issue help
@@ -117,12 +117,12 @@ endif
 do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
 	! Process passes one-by-one
 	do pass = S%passes(1), S%passes(2), S%passes(3)
-		call rads_open_pass (S, P, cycle, pass)
-		if (P%ndata > 0) call process_pass
+		call rads_open_pass (S, Pin, cycle, pass)
+		if (Pin%ndata > 0) call process_pass
 
 		! Print the statistics at the end of the data pass (if requested)
 		if (period == period_pass .and. nint(modulo(dble(pass),step)) == 0) call output_stat
-		call rads_close_pass (S, P)
+		call rads_close_pass (S, Pin)
 	enddo
 
 	! Print the statistics at the end of the cycle (if requested)
@@ -170,25 +170,25 @@ subroutine process_pass
 integer :: i, j
 
 ! Read the data for this pass
-allocate (z(P%ndata,0:S%nsel))
-z(:,0) = P%tll(:,1)	! Store time
+allocate (z(Pin%ndata,0:S%nsel))
+z(:,0) = Pin%tll(:,1)	! Store time
 do j = 1,S%nsel
-	call rads_get_var (S, P, S%sel(j), z(:,j))
+	call rads_get_var (S, Pin, S%sel(j), z(:,j))
 enddo
 
 ! Initialise day_old if not done before
-if (day_old == day_init) day_old = floor(P%tll(1,1)/86400d0)
+if (day_old == day_init) day_old = floor(Pin%tll(1,1)/86400d0)
 
 ! Update the statistics with data in this pass
-do i = 1,P%ndata
+do i = 1,Pin%ndata
 	! Print the statistics (if in "daily" mode)
-	day = floor(P%tll(i,1)/86400d0)
+	day = floor(Pin%tll(i,1)/86400d0)
 	if (period == period_day .and. day >= nint(day_old+step)) call output_stat
    	if (any(isnan(z(i,:)))) cycle ! Reject outliers
 
 	! Update the box statistics
-   	kx = floor((P%tll(i,3)-x0)/res(1) + 1d0)
-   	ky = floor((P%tll(i,2)-y0)/res(2) + 1d0)
+   	kx = floor((Pin%tll(i,3)-x0)/res(1) + 1d0)
+   	ky = floor((Pin%tll(i,2)-y0)/res(2) + 1d0)
    	kx = max(1,min(kx,nx))
    	ky = max(1,min(ky,ny))
    	box(:,kx,ky)%wgt  = box(:,kx,ky)%wgt  + 1d0
@@ -312,8 +312,8 @@ integer :: j0, j
 621 format ('# (',i2,'-',i2,') mean and stddev of ',a,' [',a,']')
 622 format ('# (',i2,'-',i2,') mean, stddev, min and max of ',a,' [',a,']')
 
-write (*,600) trim(wtype(wmode)),timestamp(),trim(S%command), &
-	trim(S%sat),trim(S%phase%name),S%cycles(1:2),S%passes(1:2)
+write (*,600) trim(wtype(wmode)), timestamp(), trim(S%command), &
+	trim(S%sat), trim(S%phase%name), S%cycles(1:2), S%passes(1:2)
 select case (period)
 case (period_day)
 	write (*,610)
@@ -391,6 +391,8 @@ call nfs (nf90_put_att (ncid, nf90_global, 'Conventions', 'CF-1.5'))
 call nfs (nf90_put_att (ncid, nf90_global, 'title', 'RADS 4.0 statistics file'))
 call nfs (nf90_put_att (ncid, nf90_global, 'institution', 'Altimetrics / NOAA / TU Delft'))
 call nfs (nf90_put_att (ncid, nf90_global, 'references', 'RADS Data Manual, Issue 4.0'))
+call nfs (nf90_put_att (ncid, nf90_global, 'weights', trim(wtype(wmode))))
+call nfs (nf90_put_att (ncid, nf90_global, 'box_size', res))
 call nfs (nf90_put_att (ncid, nf90_global, 'history', timestamp()//' UTC: '//trim(S%command)))
 call nfs (nf90_enddef (ncid))
 
