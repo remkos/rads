@@ -2125,12 +2125,14 @@ GNU Lesser General Public License for more details.
 	<long_name>cycle number</long_name>
 	<data>:cycle_number</data>
 	<format>f4.0</format>
+	<compress>int2</compress>
 </var>
 
 <var name="pass" field="9906">
 	<long_name>pass number</long_name>
 	<data>:pass_number</data>
 	<format>f5.0</format>
+	<compress>int2</compress>
 </var>
 
 <!-- Mission definitions for various satellites -->
