@@ -422,10 +422,10 @@ do cycle1 = S1%cycles(1), S1%cycles(2)
 				pass2 = S2%passes(1) - 1 + step ! Start with pass "1" or "2"
 			endif
 			allocate (P2)
-			if (debug > 2) write (*,*) 'open',cycle2,pass2
+			if (debug > 2) write (*,*) 'open', cycle2, pass2
 			call rads_open_pass (S2, P2, cycle2, pass2)
 			if (P2%end_time < t0) then
-				if (debug > 2) write (*,*) 'release',P2%cycle,P2%pass
+				if (debug > 2) write (*,*) 'release', P2%cycle, P2%pass
 				call rads_close_pass (S2, P2)
 				deallocate (P2)
 				cycle
@@ -452,7 +452,7 @@ enddo
 
 do while (associated(top))
 	P2 => top
-	if (debug > 2) write (*,*) 'release',P2%cycle,P2%pass
+	if (debug > 2) write (*,*) 'release', P2%cycle, P2%pass
 	call rads_close_pass (S2, P2)
 	top => P2%next
 	deallocate (P2)

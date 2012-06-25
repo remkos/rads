@@ -259,7 +259,7 @@ endif
 if (ascii) then
 	call write_pass_ascii
 else
-	call write_pass_nc
+	call write_pass_netcdf
 endif
 
 end subroutine process_pass
@@ -267,7 +267,7 @@ end subroutine process_pass
 !***********************************************************************
 ! Write the pass in netCDF
 
-subroutine write_pass_nc
+subroutine write_pass_netcdf
 use netcdf
 use rads_netcdf
 character(len=rads_naml) :: filename
@@ -316,7 +316,7 @@ call nfs (nf90_put_att (ncid, varid(4), 'comment', 'Bin number is 0 at equator, 
 
 ! Define global attibutes
 call nfs (nf90_put_att (ncid, nf90_global, 'Conventions', 'CF-1.5'))
-call nfs (nf90_put_att (ncid, nf90_global, 'title', 'RADS 4.0 colinear tracks file'))
+call nfs (nf90_put_att (ncid, nf90_global, 'title', 'RADS 4.0 collinear tracks file'))
 call nfs (nf90_put_att (ncid, nf90_global, 'institution', 'Altimetrics / NOAA / TU Delft'))
 call nfs (nf90_put_att (ncid, nf90_global, 'references', 'RADS Data Manual, Issue 4.0'))
 call nfs (nf90_put_att (ncid, nf90_global, 'pass_number', pass))
@@ -348,7 +348,7 @@ call nfs (nf90_put_var (ncid, varid(3), pack(nr_in_bin, nr_in_bin > 0)))
 call nfs (nf90_put_var (ncid, varid(4), pack(bin, nr_in_bin > 0)))
 
 call nfs (nf90_close (ncid))
-end subroutine write_pass_nc
+end subroutine write_pass_netcdf
 
 !***********************************************************************
 ! Write the pass in ASCII
