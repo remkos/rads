@@ -52,7 +52,7 @@ type(info_), allocatable :: info(:)
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('adsnNo:r:: step: dt: output:')
+call rads_set_options ('adsnNo::r:: step: dt: output:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 
