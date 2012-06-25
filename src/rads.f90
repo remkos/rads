@@ -3092,7 +3092,8 @@ else if (info%nctype == nf90_int4) then
 endif
 if (info%scale_factor /= 1d0) e = e + nf90_put_att (P%ncid, info%varid, 'scale_factor', info%scale_factor)
 if (info%add_offset /= 0d0)  e = e + nf90_put_att (P%ncid, info%varid, 'add_offset', info%add_offset)
-if (info%datatype < rads_type_time) e = e + nf90_put_att (P%ncid, info%varid, 'coordinates', 'lon lat')
+if (info%datatype < rads_type_time .and. info%dataname(:1) /= ':') &
+	e = e + nf90_put_att (P%ncid, info%varid, 'coordinates', 'lon lat')
 if (info%format /= '') e = e + nf90_put_att (P%ncid, info%varid, 'format', trim(info%format))
 if (var%field(1) /= rads_nofield) e = e + nf90_put_att (P%ncid, info%varid, 'field', var%field(1))
 if (info%comment /= '') e = e + nf90_put_att (P%ncid, info%varid, 'comment', info%comment)
