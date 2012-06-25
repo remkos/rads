@@ -719,7 +719,7 @@ nsat = 0
 iunit = 0
 allocate (rads_opt(rads_optl))
 opt => rads_opt
-opt = rads_option ('', '', 9999)
+opt = rads_option ('!', '', 9999)
 call getopt_reset ()
 
 ! If any option is 'args=' then load the options from file
@@ -749,6 +749,7 @@ do
 
 	! We do not save any of the next options
 	case (':')
+		call rads_message ('Unknown option: '//trim(opt(nopt)%arg))
 		cycle ! Skip unknown options
 	case ('q', 'quiet')
 		debug = -1
@@ -2569,7 +2570,7 @@ integer(fourbyteint), intent(in), optional :: unit
 logical :: rads_version
 !
 ! This routine prints out a message in one of the following forms:
-! 1) When first command line argument is empty or --help:
+! 1) When first command line argument is empty or -? or --help:
 !    "rads_program (r<number>): <description>"
 ! 2) When the first command line argument is --version:
 !    "rads_program: revision <number>, library revision <number>"
@@ -2602,7 +2603,7 @@ if (arg == '--version') then
 	stop
 else if (.not.present(description)) then
 	write (iunit, 1300) trim(progname), max(rads_rev(),rads_rev(revision))
-else if (arg == '--help' .or. arg == '') then
+else if (arg == '--help' .or. arg == '-?' .or. arg == '') then
 	write (iunit, 1310) trim(progname), max(rads_rev(),rads_rev(revision)), trim(description)
 	rads_version = .false.
 else
