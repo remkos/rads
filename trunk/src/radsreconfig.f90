@@ -49,7 +49,7 @@ character(len=8) :: satname(maxsat)
 character(len=80) :: texts(0:99),satnams(maxsat),attr(2,3),string(1)
 character(len=80) :: flags(0:15),flagon(0:15),flagoff(0:15)
 character(len=16) :: formts(0:99)
-real(eightbytereal) :: limits(2,0:99),factors(0:99)=0,scales(0:99)=0,offsets(0:99)=0,nan
+real(eightbytereal) :: limits(2,0:99),factors(0:99)=0,scales(0:99)=0,offsets(0:99)=0
 character(len=80) :: pass_fmt,cycle_fmt
 character(len=1) :: phase_def=''
 character(len=6) :: grid_type(3) = (/'grid  ','grid_c','grid_q'/)
@@ -57,9 +57,6 @@ character(len=6) :: grid_type(3) = (/'grid  ','grid_c','grid_q'/)
 namelist /getraw_nml/ texts,limits,factors,options,scales,offsets, &
 	satname,satpref,satnams,incl,period,freq,dt1hz,pass_fmt,cycle_fmt, &
 	phase_def,flags,flagon,flagoff,formts,passes,cycles, maxalias,radsfmt
-
-! Initialize
-nan=0d0; nan = nan/nan
 
 ! Usage message
 1300 format ('radsreconfig -- Convert RADS3 NML and RMF files to RADS4 rads.xml' // &
@@ -113,11 +110,7 @@ do j = 1,nsat
 enddo
 
 ! Set up the S structure
-S%sat = satnm(j)
-S%debug = 0
-S%error = rads_noerr
-nullify (S%sel, S%phases)
-S%nvar = 0
+call rads_init_sat_struct (S)
 allocate (S%var(rads_var_chunk))
 S%var = rads_var ('', null(), .false., rads_nofield)
 call rads_read_xml (S, trim(radsdataroot) // '/conf/rads.xml')
@@ -241,7 +234,7 @@ character(len=640) :: qual, math(1)
 
 ! Init some variables
 formts=''
-limits = nan
+limits = make_nan()
 factors = 0d0
 factors(4) = 1d0
 factors(6:16) = -1d0
@@ -264,8 +257,8 @@ if (S%sat /= '??') call xml_put (X, 'if', attr, 1, string, 0, 'open')
 attr(1,1) = 'name'
 do i = 0,99
 	if (all(isnan(limits(:,i))) .and. formts(i) == '') cycle
-	if (limits(1,i) < -1d19) limits(1,i) = nan
-	if (limits(2,i) >  1d19) limits(2,i) = nan
+	if (limits(1,i) < -1d19) limits(1,i) = make_nan()
+	if (limits(2,i) >  1d19) limits(2,i) = make_nan()
 
 	write (field, '(i2.2)') i
 	var => rads_varptr (S, field)
@@ -392,8 +385,8 @@ subroutine del_string (string, sub, change)
 character(len=*) :: string, sub
 logical :: change
 integer :: i, l
-l = len_trim(sub)
-i = index(string, sub(:l))
+l = len(sub)
+i = index(string, sub)
 if (i == 0) return	! String does not contain sub
 change = .true.
 string(i:) = string(i+l:)
