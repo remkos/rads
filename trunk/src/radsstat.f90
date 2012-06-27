@@ -208,6 +208,7 @@ end subroutine process_pass
 subroutine output_stat
 integer(fourbyteint) :: j, yy, mm, dd, start(2) = 1
 real(eightbytereal) :: w
+type(rads_var), pointer :: var
 
 if (nr == 0) then
 	day_old = day
@@ -250,8 +251,14 @@ endif
 ! Write output to netCDF if requested
 if (.not.ascii) then
 	call nfs (nf90_put_var (ncid, varid(1), nr, start(2:2)))
-	if (period /= period_day) call rads_put_var (S, Pout, rads_varptr(S, 'cycle'), (/ 1d0 * cycle /), start(2:2))
-	if (period == period_pass) call rads_put_var (S, Pout, rads_varptr(S, 'pass'), (/ 1d0 * pass /), start(2:2))
+	if (period /= period_day) then
+		var => rads_varptr (S, 'cycle')
+		call rads_put_var (S, Pout, var, (/ dble(cycle) /), start(2:2))
+	endif
+	if (period == period_pass) then
+		var => rads_varptr (S, 'pass')
+		call rads_put_var (S, Pout, var, (/ dble(pass) /), start(2:2))
+	endif
 	call rads_put_var (S, Pout, S%time, (/ tot(0)%mean /), start(2:2))
 	if (lstat == 2) then
 		do j = 1,S%nsel
