@@ -35,7 +35,7 @@ integer(fourbyteint), parameter :: msat = 5
 type(rads_sat), target :: Sats(msat)
 type(rads_sat), pointer :: S
 type(rads_pass) :: P
-type(rads_var), pointer :: temp(:)
+type(rads_var), pointer :: var, temp(:)
 
 ! Local declarations, etc.
 integer(fourbyteint) :: outunit, listunit = -1, logunit = 6
@@ -103,13 +103,14 @@ do j = 1,msat
 	! If there is no -f option, add relative time, lat, lon to the front of the list
 	if (.not.freeform) then
 		allocate (temp(S%nsel+3))
+		var => rads_varptr (S, 'time_rel_eq')
+		temp(1) = var
+		temp(2) = S%lat
+		temp(3) = S%lon
 		temp(4:S%nsel+3) = S%sel(1:S%nsel)
+		S%nsel = S%nsel + 3
 		deallocate (S%sel, stat=ios)
 		S%sel => temp
-		temp(1) = rads_varptr (S, 'time_rel_eq')
-		temp(2) = rads_varptr (S, 'lat')
-		temp(3) = rads_varptr (S, 'lon')
-		S%nsel = S%nsel + 3
 	endif
 
 	! Per-cycle statistics cannot be done for per-pass files
