@@ -44,7 +44,7 @@ type(rads_pass) :: P
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('x:y:c:: x: y: res: min: grd: fmt:')
+call rads_set_options ('x:y:c::o: x: y: res: min: output: grd: fmt:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 
@@ -84,7 +84,7 @@ do i = 1,rads_nopt
 		endif
 	case ('min')
 		read (rads_opt(i)%arg, *, iostat=ios) minnr
-	case ('grd')
+	case ('o', 'output', 'grd')
 		grid_name = rads_opt(i)%arg
 	case ('fmt')
 		format_string = rads_opt(i)%arg
@@ -175,7 +175,8 @@ write (*,1300)
 '  --y=Y0,Y1[,DY]            Set y-range and interval (default: as set by default limits and --res=)'/ &
 '  --res=DX[,DY]             Set resolution in x and y (default = 1)'/ &
 '  --min=MINNR               Minimum number of points per grid cell (default = 2)'/ &
-'  --grd=GRIDNAME            Create netCDF grid (suppresses ASCII)'/ &
+'  -o, --output=GRIDNAME, --grd=GRIDNAME'/ &
+'                            Create netCDF grid (suppresses ASCII)'/ &
 '  --fmt=FORMAT              Format to be used for ASCII output (default is determined by variables)'/ &
 '  -c                        Boundaries are cell oriented'/ &
 '  -c[x|y]                   Only [x|y]-boundaries are cell oriented')
