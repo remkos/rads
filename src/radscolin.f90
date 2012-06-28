@@ -137,10 +137,10 @@ call rads_synopsis ()
 write (stderr,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
-'  -r#                       Reject data when there are fewer than # tracks with valid SLA'/ &
+'  -r#                       Reject stacked data when there are fewer than # tracks with valid SLA'/ &
 '                            (default: # = number of selected cycles)'/ &
 '  -r0, -r                   Keep all stacked data points, even NaN'/ &
-'  -rn                       Reject data when any track is NaN (default)'/ &
+'  -rn                       Reject stacked data when data on any track is NaN (default)'/ &
 '  --dt=DT                   Set minimum bin size in seconds (default is determined by satellite)'/ &
 '  --step=N                  Write out only every N points'/ &
 '  -a                        Output mean in addition to pass data'/ &
@@ -286,17 +286,6 @@ call nfs (nf90_create (filename, nf90_write, ncid))
 call nfs (nf90_def_dim (ncid, 'bin', n, dimid(1)))
 call nfs (nf90_def_dim (ncid, 'track', ncols, dimid(2)))
 
-! To use general netCDF creation machinary, we trick the library a bit here
-P%ncid = ncid
-P%filename = filename
-S(1)%time%info%ndims = 2
-
-! Define selected variables
-do j = 1,nsel
-	S(1)%sel(j)%info%ndims = 2
-	call rads_def_var (S(1), P, S(1)%sel(j))
-enddo
-
 ! Define track info
 call nfs (nf90_def_var (ncid, 'satid', nf90_int1, dimid(2:2), varid(1)))
 call nfs (nf90_put_att (ncid, varid(1), 'long_name', 'satellite ID'))
@@ -308,11 +297,11 @@ call nfs (nf90_put_att (ncid, varid(2), 'long_name', 'cycle number'))
 call nfs (nf90_put_att (ncid, varid(2), 'comment', 'Cycle number 9001 denotes "mean", 9002 denotes "standard deviation"'))
 
 ! Define bin info
-call nfs (nf90_def_var (ncid, 'nr', nf90_int2, dimid(1:1), varid(3)))
-call nfs (nf90_put_att (ncid, varid(3), 'long_name', 'number of collinear measurements in bin'))
-call nfs (nf90_def_var (ncid, 'bin', nf90_int2, dimid(1:1), varid(4)))
-call nfs (nf90_put_att (ncid, varid(4), 'long_name', 'bin number'))
-call nfs (nf90_put_att (ncid, varid(4), 'comment', 'Bin number is 0 at equator, adding/subtracting 1 for each 1-Hz time step'))
+call nfs (nf90_def_var (ncid, 'bin', nf90_int2, dimid(1:1), varid(3)))
+call nfs (nf90_put_att (ncid, varid(3), 'long_name', 'bin number'))
+call nfs (nf90_put_att (ncid, varid(3), 'comment', 'Bin number is 0 at equator, adding/subtracting 1 for each 1-Hz time step'))
+call nfs (nf90_def_var (ncid, 'nr', nf90_int2, dimid(1:1), varid(4)))
+call nfs (nf90_put_att (ncid, varid(4), 'long_name', 'number of collinear measurements in bin'))
 
 ! Define global attibutes
 call nfs (nf90_put_att (ncid, nf90_global, 'Conventions', 'CF-1.5'))
@@ -321,10 +310,29 @@ call nfs (nf90_put_att (ncid, nf90_global, 'institution', 'Altimetrics / NOAA / 
 call nfs (nf90_put_att (ncid, nf90_global, 'references', 'RADS Data Manual, Issue 4.0'))
 call nfs (nf90_put_att (ncid, nf90_global, 'pass_number', pass))
 call nfs (nf90_put_att (ncid, nf90_global, 'history', timestamp()//' UTC: '//trim(S(1)%command)))
+
+! To use general netCDF creation machinary, we trick the library a bit here
+P%ncid = ncid
+P%filename = filename
+S(1)%time%info%ndims = 2
+
+! Define selected variables
+do j = 1,nsel
+	S(1)%sel(j)%info%ndims = 2
+	call rads_def_var (S(1), P, S(1)%sel(j))
+enddo
+
 call nfs (nf90_enddef (ncid))
 
-! Write data
+! Write track info
+call nfs (nf90_put_var (ncid, varid(1), info(1:ncols)%satid))
+call nfs (nf90_put_var (ncid, varid(2), info(1:ncols)%cycle))
 
+! Write bin info
+call nfs (nf90_put_var (ncid, varid(3), pack(bin, nr_in_bin > 0)))
+call nfs (nf90_put_var (ncid, varid(4), pack(nr_in_bin, nr_in_bin > 0)))
+
+! Write data
 allocate (tmp(ncols,n))
 
 do j = 1,nsel
@@ -338,14 +346,6 @@ do j = 1,nsel
 enddo
 
 deallocate (tmp)
-
-! Write track info
-call nfs (nf90_put_var (ncid, varid(1), info(1:ncols)%satid))
-call nfs (nf90_put_var (ncid, varid(2), info(1:ncols)%cycle))
-
-! Write bin info
-call nfs (nf90_put_var (ncid, varid(3), pack(nr_in_bin, nr_in_bin > 0)))
-call nfs (nf90_put_var (ncid, varid(4), pack(bin, nr_in_bin > 0)))
 
 call nfs (nf90_close (ncid))
 end subroutine write_pass_netcdf
