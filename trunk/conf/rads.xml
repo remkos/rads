@@ -871,6 +871,16 @@ GNU Lesser General Public License for more details.
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 </var>
+<var sat="j2" name="ssb_cls_c" field="1505">
+	<long_name>CLS non-parametric sea state bias (C-band)</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<source>CLS</source>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<data>ssb_cls_c</data>
+	<format>f7.4</format>
+	<compress>int2 1d-4</compress>
+</var>
 <alias name="ssb" field="15" sat="e1 e2 pn">ssb_bm3</alias>
 <alias name="ssb" field="15" sat="c2 g1 gs">ssb_hyb</alias>
 <alias name="ssb" field="15" sat="j1 j2 n1 tx">ssb_cls</alias>
