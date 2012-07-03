@@ -79,7 +79,7 @@ integer, parameter :: xml_buffer_length = 1000
 !
 ! Define the data type that holds the parser information
 !
-type xml_parse
+type :: xml_parse
 	integer          :: lun                ! LU-number of the XML-file
 	integer          :: level              ! Indentation level (output)
 	integer          :: lineno             ! Line in file
@@ -95,15 +95,14 @@ end type xml_parse
 !
 ! Global options
 !
-integer, parameter    :: xml_stdout       = -1
-integer, private      :: report_lun_      = xml_stdout
-logical, private      :: report_errors_   = .false.
-logical, private      :: report_details_  = .false.
+integer, save, private :: report_lun_      = 6 ! Default is standard output
+logical, save, private :: report_errors_   = .false.
+logical, save, private :: report_details_  = .false.
 
 !
 ! Global data (the ampersand must come first)
 !
-character(len=10), dimension(2,3), save, private :: entities = &
+character(len=10), parameter, private :: entities(2,3) = &
 	reshape ((/ '&    ', '&amp;', '>    ', '&gt; ',  '<    ', '&lt; ' /), (/2,3/))
 
 !
@@ -117,10 +116,13 @@ private :: xml_replace_entities_
 !
 ! Interfaces to reporting routines
 !
+private :: xml_report_details
 private :: xml_report_details_int_
 private :: xml_report_details_string_
+private :: xml_report_errors
 private :: xml_report_errors_int_
 private :: xml_report_errors_string_
+private :: xml_report_errors_extern_
 
 interface xml_report_details
 	module procedure xml_report_details_int_
@@ -144,13 +146,7 @@ subroutine xml_report_details_int_ (text, int)
 character(len=*), intent(in) :: text
 integer,          intent(in) :: int
 
-if (report_details_) then
-	if (report_lun_ == xml_stdout) then
-		write(*,*) trim(text), int
-	else
-		write(report_lun_,*) trim(text), int
-	endif
-endif
+if (report_details_) write(report_lun_,*) trim(text), int
 end subroutine xml_report_details_int_
 
 ! xml_report_details_string_ --
@@ -163,13 +159,7 @@ subroutine xml_report_details_string_ (text, string)
 character(len=*), intent(in) :: text
 character(len=*), intent(in) :: string
 
-if (report_details_) then
-	if (report_lun_ == xml_stdout) then
-		write(*,*) trim(text), ' ', trim(string)
-	else
-		write(report_lun_,*) trim(text), ' ', trim(string)
-	endif
-endif
+if (report_details_) write(report_lun_,*) trim(text), ' ', trim(string)
 end subroutine xml_report_details_string_
 
 
@@ -186,13 +176,8 @@ integer,           intent(in) :: int
 integer, optional, intent(in) :: lineno
 
 if (report_errors_ .or. report_details_) then
-	if (report_lun_ == xml_stdout) then
-		write(*,*) trim(text), int
-		if (present(lineno)) write(*,*) '   At or near line', lineno
-	else
-		write(report_lun_,*) trim(text), int
-		if (present(lineno)) write(report_lun_,*) '   At or near line', lineno
-	endif
+	write(report_lun_,*) trim(text), int
+	if (present(lineno)) write(report_lun_,*) '   At or near line', lineno
 endif
 end subroutine xml_report_errors_int_
 
@@ -209,13 +194,8 @@ character(len=*),  intent(in) :: string
 integer, optional, intent(in) :: lineno
 
 if (report_errors_ .or. report_details_) then
-	if (report_lun_ == xml_stdout) then
-		write(*,*) trim(text), ' ', trim(string)
-		if (present(lineno)) write(*,*) '   At or near line', lineno
-	else
-		write(report_lun_,*) trim(text), ' ', trim(string)
-		if (present(lineno)) write(report_lun_,*) '   At or near line', lineno
-	endif
+	write(report_lun_,*) trim(text), ' ', trim(string)
+	if (present(lineno)) write(report_lun_,*) '   At or near line', lineno
 endif
 end subroutine xml_report_errors_string_
 
@@ -232,11 +212,7 @@ subroutine xml_report_errors_extern_ (info, text)
 type(xml_parse),   intent(in)     :: info
 character(len=*),  intent(in)     :: text
 
-if (report_lun_ == xml_stdout) then
-	write(*,*) trim(text), ' - at or near line', info%lineno
-else
-	write(report_lun_,*) trim(text), ' - at or near line', info%lineno
-endif
+write(report_lun_,*) trim(text), ' - at or near line', info%lineno
 end subroutine xml_report_errors_extern_
 
 ! xml_open --
