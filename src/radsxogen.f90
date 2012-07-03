@@ -48,15 +48,25 @@ character(len=rads_naml) :: satlist, filename = 'radsxogen.nc'
 character(len=rads_naml) :: legs = 'undetermined - undetermined'
 character(len=1) :: interpolant = 'q'
 integer(fourbyteint) :: inter_half = 3, inter_points, max_gap = 3
+
 type :: nr_
-	integer :: test, shallow, xdat, ins, gap, xdt, xout, trk
+	integer :: test		! Number potential xovers tested
+	integer :: shallow	! Number xovers with shallow angle crossing
+	integer :: xdat		! Number of potential xovers with too few data on pass
+	integer :: ins		! Number of potential xovers with no intersection
+	integer :: gap		! Number xovers with too few data around xover
+	integer :: xdt		! Number xovers with time difference too large
+	integer :: xout		! Number of xovers written
+	integer :: trk		! Number of tracks
 endtype
 type(nr_) :: nr
+
 type :: trk_
 	real(eightbytereal) :: equator_lon, equator_time, start_time, end_time
 	integer(twobyteint) :: nr_alt, nr_xover, satid, cycle, pass
 endtype
 type(trk_) :: trk(mtrk)
+
 integer(fourbyteint), allocatable :: key(:), idx(:), trkid(:,:)
 
 ! Initialize RADS or issue help
@@ -597,6 +607,7 @@ endif
 if (abs(t1-t2) <= dt) then
 	! Continue only for small time interval, not if NaN
 else
+	if (debug > 2) write (*,*) 'rejected: dt: ',t1,t2,abs(t1-t2),dt
 	nr%xdt = nr%xdt + 1
 	return
 endif
