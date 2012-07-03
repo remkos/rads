@@ -27,7 +27,8 @@ use rads
 use rads_misc
 use rads_netcdf
 use rads_time
-integer(fourbyteint) :: ncid, i, icol, ios, nvar, nxo_in, nxo_out, ntrk, id_satid, id_track, id_sla, id_new, id_old
+integer(fourbyteint) :: ncid, i, icol, ios, nvar, nxo_in, nxo_out, ntrk, &
+	id_satid, id_track, id_sla, id_new, id_old, id_offset, nvar_replace = 0
 real(eightbytereal), allocatable :: var(:,:,:), stat(:,:,:)
 integer(fourbyteint), allocatable :: track(:,:)
 character(len=rads_naml), allocatable :: long_name(:)
@@ -38,7 +39,8 @@ type :: trk_
 end type
 type(trk_), allocatable :: trk(:)
 character(len=640) :: fmt_string
-character(len=rads_naml) :: optopt, optarg
+character(len=rads_varl) :: optopt
+character(len=rads_naml) :: optarg, str_replace(10)
 character(len=rads_cmdl) :: command
 character(len=1) :: order = ''
 character(len=4) :: statname(5) = (/ 'min ', 'max ', 'mean', 'rms ', 'std ' /)
@@ -51,7 +53,7 @@ type(sat_) :: sat(msat)
 character(len=3*msat) :: satlist = ''
 type(rads_sat) :: S
 character(len=*), parameter :: optlist = &
-	'e::dslnotr: lon: lat: dt: edit:: dual single nolist both-legs order both-times time: ymd: doy: sec:'
+	'e::dslnotr: lon: lat: dt: edit:: dual single nolist both-legs order both-times time: ymd: doy: sec: replace:'
 
 integer(fourbyteint) :: var0 = 0
 logical :: diff = .true., stat_only = .false., singles = .true., duals = .true., xostat = .false.
@@ -80,7 +82,7 @@ do
 	select case (optopt)
 	case ('!') ! End of arguments
 		exit
-	case (':', 'r') ! Ignore -r for the time being, ignore unknown option
+	case (':') ! Ignore unknown option
 	case ('lon')
 		read (optarg, *, iostat=ios) lon0,lon1
 	case ('lat')
@@ -109,6 +111,10 @@ do
 		order = optarg(1:1)
 	case ('t', 'both-times')
 		var0 = 1
+	case ('r', 'replace')
+		nvar_replace = nvar_replace + 1
+		if (nvar_replace > 10) stop "Too many -r options"
+		str_replace(nvar_replace) = optarg
 	case (' ')
 		call process (optarg) ! Process each file
 	case default
@@ -128,12 +134,14 @@ real(eightbytereal) :: mean, sigma
 
 ! Open netCDF file
 write (*, 600) trim(filename)
-600 format ('#'/'# File name     = ',a)
+600 format (/'# File name     = ',a)
 call nfs (nf90_open (filename, nf90_write, ncid))
 
 ! Get the number of xovers and number of tracks
-call nfs (nf90_inquire_dimension (ncid, 2, len=nxo_in))
-call nfs (nf90_inquire_dimension (ncid, 3, len=ntrk))
+call nfs (nf90_inq_dimid (ncid, 'xover', i))
+call nfs (nf90_inquire_dimension (ncid, i, len=nxo_in))
+call nfs (nf90_inq_dimid (ncid, 'track', i))
+call nfs (nf90_inquire_dimension (ncid, i, len=ntrk))
 if (ntrk >= maxtrk) then
 	write (*,'(a)') 'Output format does not allow track numbers exceeding 32767. We will modulo them.'
 endif
@@ -147,7 +155,13 @@ fmt_string = '('
 ! Read all the "base variables" into memory
 id_track = get_varid('track')
 id_satid = get_varid('satid')
-nvar = (id_satid - id_track - 1)
+if (id_track == 4) then ! Old style xover file
+	nvar = id_satid - 5
+	id_offset = 4
+else ! New style xover file
+	nvar = id_track - 4
+	id_offset = 3
+endif
 allocate (track(2,nxo_in), trk(ntrk), var(2,nxo_in,-1:nvar), stat(2,-1:nvar,5), mask(nxo_in), long_name(-2:nvar))
 mask = .true.
 call get_var_1d (get_varid('lat'), var(1,:,-1), long_name(-2))
@@ -185,24 +199,20 @@ endif
 
 ! Now load all the "data variables"
 do i = 1,nvar
-	call get_var_2d (id_track + i, var(:,:,i), long_name(i))
+	call get_var_2d (i + id_offset, var(:,:,i), long_name(i))
 enddo
 fmt_string(len_trim(fmt_string)-3:) = ')'
 
 ! Exchange any correction if requested
-do
-	call getopt (optlist, optopt, optarg)
-	if (optopt == '!') exit
-	if (optopt == 'r') then
-		j = index(optarg,'=')
-		id_old = get_varid(optarg(:j-1)) - id_track
-		id_new = get_varid(optarg(j+1:)) - id_track
-		id_sla = get_varid('sla') - id_track
-		if (optarg(:3) == 'alt') then	! Add change to altitude
-			var(:,:,id_sla) = var(:,:,id_sla) + (var(:,:,id_new) - var(:,:,id_old))
-		else	! Subtract change to corrections
-			var(:,:,id_sla) = var(:,:,id_sla) - (var(:,:,id_new) - var(:,:,id_old))
-		endif
+do i = 1,nvar_replace
+	j = index(optarg,'=')
+	id_old = get_varid(optarg(:j-1)) - id_offset
+	id_new = get_varid(optarg(j+1:)) - id_offset
+	id_sla = get_varid('sla') - id_offset
+	if (optarg(:3) == 'alt') then	! Add change to altitude
+		var(:,:,id_sla) = var(:,:,id_sla) + (var(:,:,id_new) - var(:,:,id_old))
+	else	! Subtract change to corrections
+		var(:,:,id_sla) = var(:,:,id_sla) - (var(:,:,id_new) - var(:,:,id_old))
 	endif
 enddo
 
