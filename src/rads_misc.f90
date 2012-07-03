@@ -273,8 +273,10 @@ if (j > 1) then
 endif
 
 ! Return simple argument
+getopt_new = .true.
 optopt = ' '
 optarg = getopt_arg
+return
 
 contains
 
