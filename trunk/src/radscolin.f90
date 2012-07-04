@@ -383,7 +383,7 @@ write (*,620)
 i = 1
 do j = 1,nsel
 	write (*,622) i,i+ncols-1,trim(S(nsat)%sel(j)%info%long_name),trim(S(nsat)%sel(j)%info%units)
-	i = i + ncols - 1
+	i = i + ncols
 enddo
 write (*,625) i,'number of measurements'
 i = i + 1
