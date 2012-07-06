@@ -2108,6 +2108,15 @@ GNU Lesser General Public License for more details.
 	<backup>0</backup>
 	<compress>int2 1d-4</compress>
 </var>
+<var name="ref_frame_offset_mle3" field="3811">
+	<long_name>reference frame offset (MLE3)</long_name>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<data>ref_frame_offset_mle3</data>
+	<format>f7.4</format>
+	<backup>0</backup>
+	<compress>int2 1d-4</compress>
+</var>
 
 <var name="tide_equil" field="3901 39">
 	<long_name>long-period equilibrium tide</long_name>
