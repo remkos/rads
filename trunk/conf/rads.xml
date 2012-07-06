@@ -397,13 +397,22 @@ GNU Lesser General Public License for more details.
 	<format>f11.3</format>
 	<compress>int3 1d-4</compress>
 </var>
-
 <var name="range_corrected" field="603">
 	<long_name>corrected altimeter range</long_name>
 	<standard_name>altimeter_range</standard_name>
 	<units>m</units>
 	<data>range_corrected</data>
 	<format>f11.3</format>
+</var>
+<var sat="j2" name="range_ku_mle3" field="611">
+	<long_name>Ku-band range corrected for instr. effects (MLE3)</long_name>
+	<standard_name>altimeter_range</standard_name>
+	<units>m</units>
+	<format>f11.3</format>
+	<data>range_ku_mle3</data>
+	<compress>int3 1d-4</compress>
+	<format>f12.4</format>
+	<compress>int4 1d-4 1300d3</compress>
 </var>
 <alias name="range" field="6">range_ku</alias>
 
@@ -647,6 +656,30 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
+<var sat="j2" name="iono_alt_mle3" field="911">
+	<long_name>dual-frequency ionospheric correction (MLE3)</long_name>
+	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
+	<source>dual-frequency altimeter</source>
+	<units>m</units>
+	<limits>-0.4 0.04</limits>
+	<data>iono_alt_mle3</data>
+	<backup>iono_gim</backup>
+	<format>f7.4</format>
+	<compress>int2 1d-4</compress>
+	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
+</var>
+<var sat="j2" name="iono_alt_smooth_mle3" field="913">
+	<long_name>smoothed dual-frequency ionospheric correction (MLE3)</long_name>
+	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
+	<source>dual-frequency altimeter after smoothing</source>
+	<units>m</units>
+	<limits>-0.4 0.04</limits>
+	<data>iono_alt_smooth_mle3</data>
+	<backup>iono_gim</backup>
+	<format>f7.4</format>
+	<compress>int2 1d-4</compress>
+	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
+</var>
 <alias name="iono" field="9">iono_nic09</alias>
 <alias name="iono" field="9" sat="c2 e2 g1">iono_gim</alias>
 <alias name="iono" field="9" sat="j1 j2 n1 tx">iono_alt_smooth</alias>
@@ -881,6 +914,17 @@ GNU Lesser General Public License for more details.
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 </var>
+<var sat="j2" name="ssb_cls_mle3" field="1512">
+	<long_name>CLS non-parametric sea state bias (MLE3)</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<source>CLS</source>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<data>ssb_cls_mle3</data>
+	<format>f7.4</format>
+	<compress>int2 1d-4</compress>
+	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
+</var>
 <alias name="ssb" field="15" sat="e1 e2 pn">ssb_bm3</alias>
 <alias name="ssb" field="15" sat="c2 g1 gs">ssb_hyb</alias>
 <alias name="ssb" field="15" sat="j1 j2 n1 tx">ssb_cls</alias>
@@ -1004,6 +1048,15 @@ GNU Lesser General Public License for more details.
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
 </var>
+<var sat="j2" name="swh_ku_mle3" field="1711">
+	<long_name>Ku-band significant wave height (MLE3)</long_name>
+	<standard_name>sea_surface_wave_significant_height</standard_name>
+	<units>m</units>
+	<limits>0 8</limits>
+	<data>swh_ku_mle3</data>
+	<format>f6.3</format>
+	<compress>int2 1d-3</compress>
+</var>
 <alias name="swh" field="17">swh_ku</alias>
 
 <var name="sig0_ku" field="1801">
@@ -1039,6 +1092,15 @@ GNU Lesser General Public License for more details.
 	<units>dB</units>
 	<limits>6 27</limits>
 	<data>sig0_sdr</data>
+	<format>f6.3</format>
+	<compress>int2 1d-3</compress>
+</var>
+<var sat="j2" name="sig0_ku_mle3" field="1811">
+	<long_name>Ku-band backscatter coefficient (MLE3)</long_name>
+	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
+	<units>dB</units>
+	<limits>6 27</limits>
+	<data>sig0_ku_mle3</data>
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
 </var>
@@ -1094,6 +1156,16 @@ GNU Lesser General Public License for more details.
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
 </var>
+<var sat="j2" name="wind_speed_alt_mle3" field="1911">
+	<long_name>altimeter wind speed (MLE3)</long_name>
+	<standard_name>wind_speed_alt</standard_name>
+	<source>altimeter</source>
+	<units>m/s</units>
+	<limits>-1 30</limits>
+	<data>wind_speed_alt_mle3</data>
+	<format>f6.3</format>
+	<compress>int2 1d-3</compress>
+</var>
 <alias name="wind_speed" field="19">wind_speed_alt</alias>
 
 <var name="range_rms_norm" field="2001">
@@ -1137,6 +1209,16 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
+<var sat="j2" name="range_rms_ku_mle3" field="2012">
+	<long_name>std dev of Ku-band range (MLE3)</long_name>
+	<units>m</units>
+	<limits>0.00 0.17</limits> <!--May need adjustment-->
+	<data>range_rms_ku_mle3</data>
+	<format>f6.4</format>
+	<backup>0</backup>
+	<compress>int2 1d-4</compress>
+	<comment>Based on valid high-rate measurements</comment>
+</var>
 <alias name="range_rms" field="20">range_rms_ku</alias>
 
 <var name="range_numval_ku" field="2101">
@@ -1153,6 +1235,13 @@ GNU Lesser General Public License for more details.
 	<long_name>number of valid C-band measurements</long_name>
 	<limits>16.5 20.5</limits>
 	<data>range_numval_c</data>
+	<format>f3.0</format>
+	<compress>int1</compress>
+</var>
+<var sat="j2" name="range_numval_ku_mle3" field="2101">
+	<long_name>number of valid Ku-band measurements (MLE3)</long_name>
+	<limits>15.5 20.5</limits>
+	<data>range_numval_ku_mle3</data>
 	<format>f3.0</format>
 	<compress>int1</compress>
 </var>
@@ -1513,6 +1602,19 @@ GNU Lesser General Public License for more details.
 	<format>i1,15(1x,i1)</format>
 	<compress>int2</compress>
 </var>
+<var sat="j2" name="flags_mle3" field="2611">
+	<long_name>flag word (MLE3)</long_name>
+	<limits>65512 0</limits>
+	<data>flags_mle3</data>
+	<format>i1,15(1x,i1)</format>
+	<compress>int2</compress>
+	<flag_masks>
+		hardware_bad attitude_bad not_used not_used
+		alt_land alt_non_ocean rad_land not_used
+		rad_rain_or_ice tb1_bad tb2_bad range_suspect
+		swh_suspect backscatter_suspect tracking_preset orbit_degraded
+	</flag_masks>
+</var>
 
 <var name="drange_ku" field="2701">
 	<long_name>Ku-band range bias</long_name>
@@ -1619,6 +1721,16 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-3</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
+<var sat="j2" name="swh_rms_ku_mle3" field="2812">
+	<long_name>std dev of Ku-band significant wave height (MLE3)</long_name>
+	<units>m</units>
+	<limits>0.0 1.5</limits> <!--Might need to be changed-->
+	<data>swh_rms_ku_mle3</data>
+	<format>f5.3</format>
+	<backup>0</backup>
+	<compress>int2 1d-3</compress>
+	<comment>Based on valid high-rate measurements</comment>
+</var>
 <alias name="swh_rms" field="28">swh_rms_ku</alias>
 
 <var name="sig0_rms_ku_norm" field="2901">
@@ -1652,6 +1764,16 @@ GNU Lesser General Public License for more details.
 	<data>sig0_rms_s</data>
 	<format>f5.3</format>
 	<compress>int2 1d-3</compress>
+	<comment>Based on valid high-rate measurements</comment>
+</var>
+<var sat="j2" name="sig0_rms_ku_mle3" field="2912">
+	<long_name>std dev of Ku-band backscatter coefficient (MLE3)</long_name>
+	<units>dB</units>
+	<data>sig0_rms_ku_mle3</data>
+	<format>f5.3</format>
+	<compress>int2 1d-3</compress>
+	<limits>0.0 1.0</limits>
+	<backup>0</backup>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
 <alias name="sig0_rms" field="29">sig0_rms_ku</alias>
