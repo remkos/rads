@@ -21,7 +21,7 @@ use rads_grid
 
 ! Dimensions
 integer(fourbyteint), parameter :: rads_var_chunk = 100, rads_varl = 40, rads_naml = 160, rads_cmdl = 320, &
-	rads_cyclistl = 50, rads_optl = 50
+	rads_strl = 800, rads_hstl = 3200, rads_cyclistl = 50, rads_optl = 50
 ! RADS4 data types
 integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, rads_type_flagmasks = 2, rads_type_flagvalues = 3, &
 	rads_type_time = 11, rads_type_lat = 12, rads_type_lon = 13
@@ -52,7 +52,7 @@ type :: rads_varinfo
 	character(len=rads_naml) :: long_name            ! Long name (description) of variable
 	character(len=rads_naml) :: standard_name        ! Optional pre-described CF-compliant 'standard' name ('' if not available)
 	character(len=rads_naml) :: source               ! Optional data source ('' if none)
-	character(len=640) :: dataname                   ! Name associated with data (e.g. netCDF var name, math string)
+	character(len=rads_strl) :: dataname             ! Name associated with data (e.g. netCDF var name, math string)
 	character(len=rads_cmdl) :: flag_meanings        ! Optional meaning of flag values ('' if none)
 	character(len=rads_cmdl) :: quality_flag         ! Quality flag associated with this variable ('' if none)
 	character(len=rads_cmdl) :: comment              ! Optional comment ('' if none)
@@ -128,7 +128,7 @@ endtype
 type :: rads_pass
 	character(len=rads_naml) :: filename             ! Name of the netCDF pass file
 	character(len=rads_naml) :: original             ! Name of the original (GDR) pass file
-	character(len=2048), allocatable :: history(:)   ! File creation history
+	character(len=rads_hstl), allocatable :: history ! File creation history
 	real(eightbytereal) :: equator_time, equator_lon ! Equator time and longitude
 	real(eightbytereal) :: start_time, end_time      ! Start and end time of pass
 	real(eightbytereal), pointer :: tll(:,:)         ! Time, lat, lon matrix
@@ -152,7 +152,7 @@ endtype
 
 character(len=*), parameter, private :: default_optlist = 'S:X:vqV:C:P:A:F:R:L:' // &
 	't: h: args: sat: xml: debug: quiet var: sel: cycle: pass: alias: fmt: lat: lon: time: sla: limit: opt: mjd: sec: ymd: doy:'
-character(len=640), save, private :: rads_optlist = default_optlist
+character(len=rads_strl), save, private :: rads_optlist = default_optlist
 
 ! These options can be accessed by RADS programs
 
@@ -1014,7 +1014,7 @@ integer(fourbyteint), intent(in) :: cycle, pass
 !  S%error  : rads_noerr, rads_warn_nc_file, rads_err_nc_parse
 !-----------------------------------------------------------------------
 character(len=40) :: date
-character(len=640) :: string
+character(len=rads_strl) :: string
 integer(fourbyteint) :: i,k,ascdes,cc,pp
 real(eightbytereal) :: d
 real(eightbytereal), allocatable :: tll(:,:)
@@ -1119,17 +1119,17 @@ S%total_read = S%total_read + P%ndata
 
 ! Read history
 if (nff(nf90_inquire_attribute(P%ncid,nf90_global,'history',attnum=k))) then
-	allocate (P%history(1))
-	call nfs(nf90_get_att(P%ncid,nf90_global,'history',P%history(1)))
+	allocate (P%history)
+	call nfs(nf90_get_att(P%ncid,nf90_global,'history',P%history))
 else if (nff(nf90_inquire_attribute(P%ncid,nf90_global,'log01',attnum=k))) then ! Read logs
-	allocate (P%history(1))
+	allocate (P%history)
 	i = 0
 	do
 		i = i + 1
 		write (date, '("log",i2.2)') i
 		if (nft(nf90_get_att(P%ncid,nf90_global,date,string))) exit
 		if (i == 1) then
-			P%history(1) = string
+			P%history = string
 			! If log01 has original file name, save it
 			k = index(string, 'RAW data from file')
 			if (k > 0) then
@@ -1139,7 +1139,7 @@ else if (nff(nf90_inquire_attribute(P%ncid,nf90_global,'log01',attnum=k))) then 
 				P%original = string(k+14:)
 			endif
 		else
-			P%history(1) = trim(string) // rads_linefeed // P%history(1)
+			P%history = trim(string) // rads_linefeed // P%history
 		endif
 	enddo
 endif
@@ -1366,6 +1366,8 @@ logical, intent(in) :: skip_edit
 ! be called from those routines.
 !-----------------------------------------------------------------------
 type(rads_var), pointer :: var
+
+if (S%debug >= 4) write (*,*) 'rads_get_var_common: '//trim(varname)
 
 ! Check size of array
 if (size(data) < P%ndata) then
@@ -3006,7 +3008,7 @@ endif
 e = e + nf90_put_att (P%ncid, nf90_global, 'original', P%original)
 
 if (allocated(P%history)) then
-	e = e + nf90_put_att (P%ncid, nf90_global, 'history', datestamp()//': '//trim(S%command)//rads_linefeed//trim(P%history(1)))
+	e = e + nf90_put_att (P%ncid, nf90_global, 'history', datestamp()//': '//trim(S%command)//rads_linefeed//trim(P%history))
 else
 	e = e + nf90_put_att (P%ncid, nf90_global, 'history', datestamp()//': '//trim(S%command))
 endif

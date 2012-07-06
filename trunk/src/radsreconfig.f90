@@ -123,7 +123,7 @@ character(len=*) :: filename
 integer :: i, j, ix, iy, type
 type(rads_var), pointer :: var
 character(len=5) :: field
-character(len=640) :: line, math(1), long_name, gridnm(1)
+character(len=rads_strl) :: line, math(1), long_name, gridnm(1)
 logical :: dummy 
 
 ! Open RMF file
@@ -230,7 +230,7 @@ integer :: i
 logical :: newmath, newqual
 type(rads_var), pointer :: var
 character(len=5) :: field
-character(len=640) :: qual, math(1)
+character(len=rads_strl) :: qual, math(1)
 
 ! Init some variables
 formts=''
@@ -350,7 +350,8 @@ subroutine xml_dble (var, name, format)
 real(eightbytereal) :: var(:)
 character(len=*) :: name, format
 integer :: i,n
-character(len=640) :: attr(2,1), string(size(var))
+character(len=rads_varl) :: attr(2,1)
+character(len=rads_strl) :: string(size(var))
 n = size(var)
 do i = 1,n
 	if (abs(var(i)-nint(var(i))) < 1d-10) then
@@ -364,7 +365,8 @@ end subroutine xml_dble
 
 subroutine xml_text (var, name)
 character(len=*) :: var, name
-character(len=640) :: attr(2,1), string(1)
+character(len=rads_varl) :: attr(2,1)
+character(len=rads_strl) :: string(1)
 if (var == '') return
 string(1) = var
 call xml_put (X, name, attr, 0, string, 1, 'elem')
