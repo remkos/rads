@@ -128,7 +128,7 @@ endtype
 type :: rads_pass
 	character(len=rads_naml) :: filename             ! Name of the netCDF pass file
 	character(len=rads_naml) :: original             ! Name of the original (GDR) pass file
-	character(len=rads_hstl), allocatable :: history ! File creation history
+	character(len=rads_hstl), pointer :: history     ! File creation history
 	real(eightbytereal) :: equator_time, equator_lon ! Equator time and longitude
 	real(eightbytereal) :: start_time, end_time      ! Start and end time of pass
 	real(eightbytereal), pointer :: tll(:,:)         ! Time, lat, lon matrix
@@ -3007,7 +3007,7 @@ if (ndata > 0) then
 endif
 e = e + nf90_put_att (P%ncid, nf90_global, 'original', P%original)
 
-if (allocated(P%history)) then
+if (associated(P%history)) then
 	e = e + nf90_put_att (P%ncid, nf90_global, 'history', datestamp()//': '//trim(S%command)//rads_linefeed//trim(P%history))
 else
 	e = e + nf90_put_att (P%ncid, nf90_global, 'history', datestamp()//': '//trim(S%command))
