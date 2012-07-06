@@ -1228,11 +1228,17 @@ logical, intent(in), optional :: keep
 !  S%error  : rads_noerr, rads_err_nc_close
 !-----------------------------------------------------------------------
 integer :: ios
+logical :: clear
 S%error = rads_noerr
 if (P%ncid > 0 .and. nft(nf90_close(P%ncid))) S%error = rads_err_nc_close
 P%ncid = 0
 deallocate (P%history, stat=ios)
-if (.not.present(keep) .or. .not.keep) deallocate (P%tll, stat=ios)
+if (present(keep)) then
+	clear = .not.keep
+else
+	clear = .true.
+endif
+if (clear) deallocate (P%tll, stat=ios)
 end subroutine rads_close_pass
 
 !***********************************************************************
@@ -2156,7 +2162,8 @@ endif
 ! If match found, return pointer
 if (i <= S%nvar) then
 	ptr => S%var(i)
-	if (present(tgt) .and. associated(tgt)) then
+	if (.not.present(tgt)) then
+	else if (associated(tgt)) then
 		if (ptr%name == ptr%info%name) then
 			if (associated(ptr%info%grid)) call grid_free(ptr%info%grid)
 			deallocate (ptr%info)
@@ -2242,7 +2249,9 @@ if (.not.associated(tgt)) then
 	return
 endif
 src => rads_varptr (S, alias, tgt)
-if (present(field) .and. any(field /= rads_nofield)) src%field = field
+if (present(field)) then
+	if (any(field /= rads_nofield)) src%field = field
+endif
 end subroutine rads_set_alias
 
 !***********************************************************************
@@ -2278,9 +2287,7 @@ var => rads_varptr (S, varname)
 if (.not.associated(var)) return
 if (present(lo)) var%info%limits(1) = lo
 if (present(hi)) var%info%limits(2) = hi
-if (present(string)) then
-	call read_val (string, var%info%limits, '/')
-endif
+if (present(string)) call read_val (string, var%info%limits, '/')
 if (var%info%datatype == rads_type_lat .or. var%info%datatype == rads_type_lon) then
 	! If latitude or longitude limits are changed, recompute equator longitude limits
 	call rads_traxxing (S)
