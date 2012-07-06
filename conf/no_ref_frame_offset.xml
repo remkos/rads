@@ -1,3 +1,4 @@
 <var name="sla">
 	<data action="delete">ref_frame_offset SUB</data>
+	<data action="delete">ref_frame_offset_mle3 SUB</data>
 </var>

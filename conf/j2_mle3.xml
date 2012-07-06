@@ -10,8 +10,10 @@
 	<alias name="swh_rms" field="28">swh_rms_ku_mle3</alias>
 	<alias name="sig0_rms" field="29">sig0_rms_ku_mle3</alias>
 	<var name="sla">
-		<quality_flag action="delete">attitude</quality_flag> <!--Because this is based on MLE4-->
+		<data action="delete">ref_frame_offset SUB</data>
+		<data action="append">ref_frame_offset_mle3 SUB</data>
 		<quality_flag action="delete">flags</quality_flag>
 		<quality_flag action="append">flags_mle3</quality_flag>
+		<quality_flag action="delete">attitude</quality_flag> <!--Because this is based on MLE4-->
 	</var>
 </if>
