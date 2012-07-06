@@ -1,0 +1,16 @@
+<if sat="j2">
+	<alias name="range" field="6">range_ku_mle3</alias>
+	<alias name="iono" field="9">iono_alt_smooth_mle3</alias>
+	<alias name="ssb" field="15">ssb_cls_mle3</alias>
+	<alias name="swh" field="17">swh_ku_mle3</alias>
+	<alias name="sig0" field="18">sig0_ku_mle3</alias>
+	<alias name="wind_speed" field="19">wind_speed_alt_mle3</alias>
+	<alias name="range_rms" field="20">range_rms_ku_mle3</alias>
+	<alias name="range_numval" field="21">range_numval_ku_mle3</alias>
+	<alias name="swh_rms" field="28">swh_rms_ku_mle3</alias>
+	<alias name="sig0_rms" field="29">sig0_rms_ku_mle3</alias>
+	<var name="sla">
+		<quality_flag action="delete">flags</quality_flag>
+		<quality_flag action="append">flags_mle3</quality_flag>
+	</var>
+</if>
