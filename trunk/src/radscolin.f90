@@ -131,7 +131,7 @@ contains
 
 !***********************************************************************
 
-subroutine synopsis
+subroutine synopsis ()
 if (rads_version ('$Revision$','Make collinear data sets from RADS')) return
 call rads_synopsis ()
 write (stderr,1300)

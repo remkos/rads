@@ -1404,8 +1404,7 @@ if (S%error == rads_noerr) then ! No error, edit if requested
 else if (info%backup == '') then ! No backup alternative, print error
 	call rads_error (S, rads_err_var, 'Error loading variable "'//trim(varname)//'"')
 	data = S%nan
-else if (info%backup == 'nan' .or. info%backup(:1) == '-' .or. info%backup(:1) == '.' .or. &
-	(info%backup(:1) >= '0' .and. info%backup(:1) <= '9')) then ! Numerical backup
+else if (is_number(info%backup)) then ! Numerical backup
 	call rads_get_var_constant (info%backup)
 else ! Go look for alternative variable
 	S%error = rads_noerr
@@ -1943,9 +1942,7 @@ do
 				info%datasrc = rads_src_math
 			else if (index(info%dataname,':') > 0) then
 				info%datasrc = rads_src_nc_att
-			else if ((info%dataname(:1) >= '0' .and. info%dataname(:1) <= '9') .or. &
-				info%dataname(:1) == '-' .or. info%dataname(:1) == '+' .or. info%dataname(:1) == '.' .or. &
-				info%dataname == 'nan') then
+			else if (is_number(info%dataname)) then
 				info%datasrc = rads_src_constant
 			else
 				info%datasrc = rads_src_nc_var

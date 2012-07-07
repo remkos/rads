@@ -290,7 +290,7 @@ contains
 
 !***********************************************************************
 
-subroutine synopsis
+subroutine synopsis ()
 if (rads_version ('$Revision$','Generate altimeter crossovers from RADS')) return
 call rads_synopsis()
 write (stderr,1300)

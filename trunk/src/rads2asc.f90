@@ -192,7 +192,7 @@ contains
 
 !***********************************************************************
 
-subroutine synopsis
+subroutine synopsis ()
 if (rads_version ('$Revision$','Select RADS altimeter data and output to ASCII')) return
 call rads_synopsis
 write (*,1300)
