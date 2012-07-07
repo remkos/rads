@@ -375,7 +375,7 @@ end subroutine process
 
 !***********************************************************************
 
-subroutine synopsis
+subroutine synopsis ()
 if (rads_version ('$Revision$','RADS crossover file lister')) return
 if (xostat) then
 	write (stderr,1300) 'stat'

@@ -793,6 +793,30 @@ enddo
 variance = sum2/(n-1)
 end subroutine mean_variance
 
+!***********************************************************************
+!*is_number -- Is string a number?
+!
+pure function is_number (string)
+character(len=*), intent(in) :: string
+logical :: is_number
+!
+! This function determines if the character string supplied is a number
+! (or starts with a number followed by whitespace).
+! Both floating point (1.0, 1d9, -1e-10) and integers (0, -5) are allowed.
+! 'NaN' or 'nan' is considered a number as well.
+!
+! Arguments:
+!  string   : Inpute character string
+!  is_number: Return value. True is string is a number
+!-----------------------------------------------------------------------
+integer :: ios
+real(eightbytereal) :: val
+read (string,*,iostat=ios) val
+is_number = (ios == 0)
+end function is_number
+
+!***********************************************************************
+
 elemental function d_int1 (i)
 integer(onebyteint), intent(in) :: i
 real(eightbytereal) :: d_int1
