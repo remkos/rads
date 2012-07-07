@@ -197,6 +197,7 @@ do i = 1,Pin%ndata
    	box(:,kx,ky)%xmin = min(box(:,kx,ky)%xmin, z(i,:))
    	box(:,kx,ky)%xmax = max(box(:,kx,ky)%xmax, z(i,:))
    	nr = nr + 1
+   	if (nr == 1) day_old = day
 enddo
 
 deallocate (z)
