@@ -58,17 +58,20 @@ loop: do cycle = S%cycles(1),S%cycles(2)
 enddo loop
 
 write (*,600) timestamp(), trim(S%command)
-600 format('# RADS variable list'/'# Created: ',a,' UTC: ',a/ &
+if (show_x) write (*,610)
+600 format ('# RADS variable list'/'# Created: ',a,' UTC: ',a/ &
 '#'/'# Possible output records:'/ &
 '# A  field  alias     var_name             long_name'/ &
 '# B  field  var_name  backup_for_netcdf    long_name'/ &
 '# G  field  var_name  grid_file_name       long_name'/ &
 '# M  field  var_name  math_rpn_statment    long_name'/ &
-'# N  field  var_name  netcdf_var_name      long_name'/ &
-'# X  field  var_name  non_existent_netcdf  long_name'/'#') 
+'# N  field  var_name  netcdf_var_name      long_name')
+610 format ( &
+'# X  field  var_name  non_existent_netcdf  long_name') 
 
 ! If no file, let it be known
 if (P%ndata == 0) write (*,'(a)') '# Could not find any corresponding file, continuing without ...'
+write (*,'(a)') '#'
 
 ! List the variables
 do i = 1,S%nvar
