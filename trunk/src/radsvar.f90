@@ -100,12 +100,10 @@ do i = 1,S%nvar
 	else if (info%datasrc == rads_src_nc_var) then
 		if (.not.nft(nf90_inq_varid(P%ncid,info%dataname,varid))) then
 			call list ('N',S%var(i))
-		else if (is_number(info%backup)) then
-			call list ('B',S%var(i))
-		else if (.not.nft(nf90_inq_varid(P%ncid,info%backup,varid))) then
-			call list ('B',S%var(i))
-		else
+		else if (info%backup == '') then
 			call list ('X',S%var(i))
+		else
+			call list ('B',S%var(i))
 		endif
 	else
 		call list ('G',S%var(i))
