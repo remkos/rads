@@ -1790,7 +1790,7 @@ GNU Lesser General Public License for more details.
 </var>
 <alias name="sig0_rms" field="29">sig0_rms_ku</alias>
 
-<var name="off_nadir_angle_wf_ku" field="3001">
+<var sat="!n1" name="off_nadir_angle_wf_ku" field="3001">
 	<long_name>off-nadir pointing angle from waveform</long_name>
 	<units>degrees</units>
 	<data>off_nadir_angle2_wf_ku SQRT</data>
@@ -1798,7 +1798,7 @@ GNU Lesser General Public License for more details.
 	<format>f5.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var name="off_nadir_angle2_wf_ku" field="3002">
+<var sat="!n1" name="off_nadir_angle2_wf_ku" field="3002">
 	<long_name>off-nadir pointing angle squared from waveform</long_name>
 	<units>degrees^2</units>
 	<data>off_nadir_angle2_wf_ku</data>
@@ -1813,7 +1813,7 @@ GNU Lesser General Public License for more details.
 		<limits>-0.05 0.05</limits>
 	</if>
 </var>
-<var sat="c2 pn" name="off_nadir_angle_pf" field="3003">
+<var sat="c2 j1 j2 pn" name="off_nadir_angle_pf" field="3003">
 	<long_name>off-nadir pointing angle from platform</long_name>
 	<units>degrees</units>
 	<data>off_nadir_angle2_pf SQRT</data>
@@ -1822,7 +1822,7 @@ GNU Lesser General Public License for more details.
 	<format>f5.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var name="off_nadir_angle2_pf" field="3004">
+<var sat="c2 j1 j2 pn" name="off_nadir_angle2_pf" field="3004">
 	<long_name>off-nadir pointing angle squared from platform</long_name>
 	<units>degrees^2</units>
 	<data>off_nadir_angle2_pf</data>

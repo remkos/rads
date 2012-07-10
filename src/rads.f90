@@ -165,7 +165,7 @@ integer(fourbyteint), save :: rads_nopt = 0
 ! subroutine rads_init (S, sat, xml, debug)
 ! type(rads_sat), intent(inout) :: S or S(:)
 ! character(len=*), intent(in), optional :: sat or sat(:)
-! character(len=*), intent(in), optional :: xml
+! character(len=*), intent(in), optional :: xml(:)
 ! integer, intent(in), optional :: debug
 !
 ! This routine initializes the <S> struct with the information pertaining
@@ -203,7 +203,7 @@ integer(fourbyteint), save :: rads_nopt = 0
 !  S        : Satellite/mission dependent structure
 !  sat      : Optional: Satellite/mission abbreviation
 !  debug    : Optional: Debug (verbose) level
-!  xml      : Optional: Filenames of additional XML file to be loaded
+!  xml      : Optional: Array of names of additional XML files to be loaded
 !  optlist  : Optional: list of command specific short and long options
 !-----------------------------------------------------------------------
 private :: rads_init_sat_0d, rads_init_sat_1d, rads_init_sat_0d_xml, rads_init_sat_1d_xml, &
@@ -238,7 +238,7 @@ end interface rads_end
 !***********************************************************************
 !*rads_get_var -- Read variable (data) from RADS4 file
 !+
-! recursive subroutine rads_get_var (S, P, var, data, noedit)
+! subroutine rads_get_var (S, P, var, data, noedit)
 ! type(rads_sat), intent(inout) :: S
 ! type(rads_pass), intent(inout) :: P
 ! character(len=*) <or> integer(fourbyteint) <or> type(rads_var), intent(in) :: var
@@ -1146,9 +1146,9 @@ endif
 
 ! Read time, lon, lat; including checking their limits
 allocate (tll(P%ndata,3))
-call rads_get_var_by_var (S, P, S%time, tll(:,1))
-call rads_get_var_by_var (S, P, S%lat, tll(:,2))
-call rads_get_var_by_var (S, P, S%lon, tll(:,3))
+call rads_get_var_common (S, P, S%time, tll(:,1), .false.)
+call rads_get_var_common (S, P, S%lat, tll(:,2), .false.)
+call rads_get_var_common (S, P, S%lon, tll(:,3), .false.)
 
 ! If requested, check for distance to centroid
 if (S%centroid(3) > 0d0) then
@@ -1244,7 +1244,7 @@ end subroutine rads_close_pass
 !***********************************************************************
 !*rads_get_var_by_number -- Read variable (data) from RADS4 file by integer
 !+
-recursive subroutine rads_get_var_by_number (S, P, field, data, noedit)
+subroutine rads_get_var_by_number (S, P, field, data, noedit)
 use rads_misc
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
@@ -1285,7 +1285,7 @@ end subroutine rads_get_var_by_number
 !***********************************************************************
 !*rads_get_var_by_var -- Read variable (data) from RADS by type(rads_var)
 !+
-recursive subroutine rads_get_var_by_var (S, P, var, data, noedit)
+subroutine rads_get_var_by_var (S, P, var, data, noedit)
 use rads_misc
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
@@ -1317,7 +1317,7 @@ end subroutine rads_get_var_by_var
 !***********************************************************************
 !*rads_get_var_by_name -- Read variable (data) from RADS by character
 !+
-recursive subroutine rads_get_var_by_name (S, P, varname, data, noedit)
+subroutine rads_get_var_by_name (S, P, varname, data, noedit)
 use rads_misc
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
@@ -1359,7 +1359,7 @@ end subroutine rads_get_var_by_name
 !***********************************************************************
 !*rads_get_var_common -- Read variable (data) from RADS database (common to all)
 !+
-recursive subroutine rads_get_var_common (S, P, var, data, skip_edit)
+subroutine rads_get_var_common (S, P, var, data, skip_edit)
 use rads_misc
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
@@ -1372,6 +1372,8 @@ logical, intent(in) :: skip_edit
 !-----------------------------------------------------------------------
 type(rads_var), pointer :: alt
 type(rads_varinfo), pointer :: info
+integer :: i
+integer, parameter :: max_recursions = 10
 
 if (S%debug >= 4) write (*,*) 'rads_get_var_common: '//trim(var%name)
 
@@ -1384,41 +1386,53 @@ endif
 ! Set pointer to info struct
 info => var%info
 
-! Load data depending on type of data source
-select case (info%datasrc)
-case (rads_src_nc_var)
-	call rads_get_var_nc
-case (rads_src_nc_att)
-	call rads_get_att_nc
-case (rads_src_math)
-	call rads_get_var_math
-case (rads_src_grid_lininter, rads_src_grid_splinter, rads_src_grid_query)
-	call rads_get_var_grid
-case (rads_src_constant)
-	call rads_get_var_constant (info%dataname)
-case default
-	data = S%nan
-	return
-end select
+do i = 1,max_recursions ! This loop is here to allow processing of "backup" fields without needing recursive routines
 
-! Editing or error handling
-if (S%error == rads_noerr) then ! No error, edit if requested
-	if (.not.skip_edit) call rads_edit_data
-else if (info%backup == '') then ! No backup alternative, print error
-	call rads_error (S, rads_err_var, 'Error loading variable "'//trim(var%name)//'"')
-	data = S%nan
-else if (is_number(info%backup)) then ! Numerical backup
-	call rads_get_var_constant (info%backup)
-else ! Go look for alternative variable
-	S%error = rads_noerr
-	alt => rads_varptr (S, info%backup)
-	if (.not.associated(alt)) then
+	! Load data depending on type of data source
+	select case (info%datasrc)
+	case (rads_src_nc_var)
+		call rads_get_var_nc
+	case (rads_src_nc_att)
+		call rads_get_att_nc
+		case (rads_src_math)
+		call rads_get_var_math
+	case (rads_src_grid_lininter, rads_src_grid_splinter, rads_src_grid_query)
+		call rads_get_var_grid
+	case (rads_src_constant)
+		call rads_get_var_constant (info%dataname)
+	case default
 		data = S%nan
-	else
-		call rads_get_var_by_var (S, P, alt, data, skip_edit)
-		! When this returns, editing and statistics will have been done, so we should directly return
 		return
+	end select
+
+	! Editing or error handling
+	if (S%error == rads_noerr) then ! No error, edit if requested
+		if (.not.skip_edit) call rads_edit_data
+		exit
+	else if (info%backup == '') then ! No backup alternative, print error
+		call rads_error (S, rads_err_var, 'Error loading variable "'//trim(var%name)//'"')
+		data = S%nan
+		exit
+	else if (is_number(info%backup)) then ! Numerical backup
+		call rads_get_var_constant (info%backup)
+		exit
+	else ! Go look for alternative variable
+		S%error = rads_noerr
+		alt => rads_varptr (S, info%backup)
+		if (.not.associated(alt)) then
+			data = S%nan
+			exit
+		else
+			info => alt%info ! Do loop again with new variable
+		endif
 	endif
+
+enddo ! End of "recursive" loop
+
+! Did we end loop with too many cycles?
+if (i > max_recursions) then
+	call rads_error (S, rads_err_var, 'Too many recursions while finding variable "'//trim(var%name)//'"')
+	data = S%nan
 endif
 
 call rads_quality_check	! Check quality flags (if provided)
@@ -1427,7 +1441,7 @@ call rads_update_stat	! Update statistics on variable
 
 contains
 
-recursive subroutine rads_get_var_nc () ! Get data variable from RADS netCDF file
+subroutine rads_get_var_nc () ! Get data variable from RADS netCDF file
 use netcdf
 use rads_netcdf
 integer(fourbyteint) :: start(1), e, nctype, ndims
@@ -1488,7 +1502,7 @@ if (nff(nf90_get_att(P%ncid, info%varid, 'scale_factor', scale_factor))) data = 
 if (nff(nf90_get_att(P%ncid, info%varid, 'add_offset', add_offset))) data = data + add_offset
 end subroutine rads_get_var_nc
 
-recursive subroutine rads_get_att_nc () ! Get data attribute from RADS netCDF file
+subroutine rads_get_att_nc () ! Get data attribute from RADS netCDF file
 use netcdf
 use rads_netcdf
 use rads_time
@@ -1525,7 +1539,7 @@ else
 endif
 end subroutine rads_get_att_nc
 
-recursive subroutine rads_get_var_math () ! Get data variable from MATH statement
+subroutine rads_get_var_math () ! Get data variable from MATH statement
 use rads_math
 type(math_ll), pointer :: top
 integer(fourbyteint) :: i, j, l, istat

@@ -116,28 +116,26 @@
          106 sig0_rms                                sig0_rms_ku                                  29     -1
          107 off_nadir_angle_wf_ku                   off_nadir_angle_wf_ku                      3001     -1
          108 off_nadir_angle2_wf_ku                  off_nadir_angle2_wf_ku                     3002     -1
-         109 off_nadir_angle_pf                      off_nadir_angle_pf                         3003     -1
-         110 off_nadir_angle2_pf                     off_nadir_angle2_pf                        3004     -1
-         111 attitude                                off_nadir_angle2_wf_ku                       30     -1
-         112 dsig0_ku                                dsig0_ku                                   3201     -1
-         113 dsig0_atmos_ku                          dsig0_atmos_ku                             3203     -1
-         114 dsig0                                   dsig0_ku                                     32     -1
-         115 basin                                   basin                                      3601     36
-         116 ref_frame_offset                        ref_frame_offset                           3801     38
-         117 tide_equil                              tide_equil                                 3901     39
-         118 tide_non_equil                          tide_non_equil                             3902     -1
-         119 dist_coast                              dist_coast                                 4501     45
-         120 seaice_class                            seaice_class                               4601     46
-         121 seaice_conc                             seaice_conc                                4701     47
-         122 sst                                     sst                                        4801     48
-         123 sst_mean                                sst_mean                                   4802     -1
-         124 dry_tropo_airtide                       dry_tropo_airtide                          4901     49
-         125 first_meas_time                         first_meas_time                            9901     99
-         126 last_meas_time                          last_meas_time                             9902     -1
-         127 eqtime                                  eqtime                                     9903     -1
-         128 eqlon                                   eqlon                                      9904     -1
-         129 cycle                                   cycle                                      9905     -1
-         130 pass                                    pass                                       9906     -1
+         109 attitude                                off_nadir_angle2_wf_ku                       30     -1
+         110 dsig0_ku                                dsig0_ku                                   3201     -1
+         111 dsig0_atmos_ku                          dsig0_atmos_ku                             3203     -1
+         112 dsig0                                   dsig0_ku                                     32     -1
+         113 basin                                   basin                                      3601     36
+         114 ref_frame_offset                        ref_frame_offset                           3801     38
+         115 tide_equil                              tide_equil                                 3901     39
+         116 tide_non_equil                          tide_non_equil                             3902     -1
+         117 dist_coast                              dist_coast                                 4501     45
+         118 seaice_class                            seaice_class                               4601     46
+         119 seaice_conc                             seaice_conc                                4701     47
+         120 sst                                     sst                                        4801     48
+         121 sst_mean                                sst_mean                                   4802     -1
+         122 dry_tropo_airtide                       dry_tropo_airtide                          4901     49
+         123 first_meas_time                         first_meas_time                            9901     99
+         124 last_meas_time                          last_meas_time                             9902     -1
+         125 eqtime                                  eqtime                                     9903     -1
+         126 eqlon                                   eqlon                                      9904     -1
+         127 cycle                                   cycle                                      9905     -1
+         128 pass                                    pass                                       9906     -1
  Eqlonlim =   -189.09260342695319       -195.85137415828183        195.85137415828183        189.09260342695319     
  Eqlonlim =   -99.092603426953190       -105.85137415828184        135.85137415828183        129.09260342695319     
  debug =           3
@@ -697,7 +695,7 @@ drange                                  data(1), data(ndata) =   0.409  0.409
  Start rads_end
 ######################################################################################################################################
 # Editing statistics for ERS-1 (e1)
-# Created: 2012-07-10 03:34:08 UTC: rads_test debug=3 sat=e1/a ymd=19910924,19910925 lat=-50,30 lon=-90,120 sel=time,lat,lon,sla,12_,tide_ocean_,pass,drange
+# Created: 2012-07-10 19:48:35 UTC: rads_test debug=3 sat=e1/a ymd=19910924,19910925 lat=-50,30 lon=-90,120 sel=time,lat,lon,sla,12_,tide_ocean_,pass,drange
 #
 # PASSES QUERIED                                           172
 #
@@ -743,4 +741,4 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 # pass number []                                   0     16852         NaN         NaN       1.000      85.000      62.645      25.165
 ######################################################################################################################################
  End of program
-CLOCK, CPU =   0.0880   0.0647
+CLOCK, CPU =   0.0560   0.0548
