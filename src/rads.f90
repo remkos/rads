@@ -1273,7 +1273,7 @@ endif
 ! Look for field number in variable list
 do i = 1,S%nvar
 	if (any(S%var(i)%field == field)) then
-		call rads_get_var_common (S, P, S%var(i)%name, S%var(i)%info, data(:P%ndata), skip_edit)
+		call rads_get_var_common (S, P, S%var(i), data(:P%ndata), skip_edit)
 		return
 	endif
 enddo
@@ -1311,7 +1311,7 @@ else
 	skip_edit = .false.
 endif
 
-call rads_get_var_common (S, P, var%name, var%info, data(:P%ndata), skip_edit)
+call rads_get_var_common (S, P, var, data(:P%ndata), skip_edit)
 end subroutine rads_get_var_by_var
 
 !***********************************************************************
@@ -1353,33 +1353,36 @@ if (.not.associated(var)) then
 	data(:P%ndata) = S%nan
 	return
 endif
-call rads_get_var_common (S, P, var%name, var%info, data(:P%ndata), skip_edit)
+call rads_get_var_common (S, P, var, data(:P%ndata), skip_edit)
 end subroutine rads_get_var_by_name
 
 !***********************************************************************
 !*rads_get_var_common -- Read variable (data) from RADS database (common to all)
 !+
-recursive subroutine rads_get_var_common (S, P, varname, info, data, skip_edit)
+recursive subroutine rads_get_var_common (S, P, var, data, skip_edit)
 use rads_misc
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
-character(len=*), intent(in) :: varname
-type(rads_varinfo), intent(inout), pointer :: info
+type(rads_var), intent(inout) :: var
 real(eightbytereal), intent(out) :: data(:)
 logical, intent(in) :: skip_edit
 !
 ! This routine is common to all rads_get_var_* routines. It should only
 ! be called from those routines.
 !-----------------------------------------------------------------------
-type(rads_var), pointer :: var
+type(rads_var), pointer :: alt
+type(rads_varinfo), pointer :: info
 
-if (S%debug >= 4) write (*,*) 'rads_get_var_common: '//trim(varname)
+if (S%debug >= 4) write (*,*) 'rads_get_var_common: '//trim(var%name)
 
 ! Check size of array
 if (size(data) < P%ndata) then
 	call rads_error (S, rads_err_memory, 'Too little memory allocated to read data')
 	return
 endif
+
+! Set pointer to info struct
+info => var%info
 
 ! Load data depending on type of data source
 select case (info%datasrc)
@@ -1402,17 +1405,17 @@ end select
 if (S%error == rads_noerr) then ! No error, edit if requested
 	if (.not.skip_edit) call rads_edit_data
 else if (info%backup == '') then ! No backup alternative, print error
-	call rads_error (S, rads_err_var, 'Error loading variable "'//trim(varname)//'"')
+	call rads_error (S, rads_err_var, 'Error loading variable "'//trim(var%name)//'"')
 	data = S%nan
 else if (is_number(info%backup)) then ! Numerical backup
 	call rads_get_var_constant (info%backup)
 else ! Go look for alternative variable
 	S%error = rads_noerr
-	var => rads_varptr (S, info%backup)
-	if (.not.associated(var)) then
+	alt => rads_varptr (S, info%backup)
+	if (.not.associated(alt)) then
 		data = S%nan
 	else
-		call rads_get_var_by_var (S, P, var, data, skip_edit)
+		call rads_get_var_by_var (S, P, alt, data, skip_edit)
 		! When this returns, editing and statistics will have been done, so we should directly return
 		return
 	endif
@@ -1750,12 +1753,28 @@ do
 	endif
 
 	! Check if we need to skip this level
+	! This level well be skipped when both of the following are true
+	! a) Tag contains attribute "sat="
+	! b) The attribute value contains the satellite abbreviaton,
+	!    or the attribute value starts with "!" and does not contain the satellite abbreviation
+	! Examples: for Envisat (n1)
+	! sat="n1" => pass
+	! sat="j1" => skip
+	! sat="j1 n1" => pass
+	! sat="!j1" => pass
+	! sat="!j1 n1" => skip
 	skip = 0
 	skip_lvl = 0
 	do i = 1,nattr
 		if (attr(1,i) == 'sat') then
 			if (skip == 0) skip = 1
-			if (index(attr(2,i),S%sat) > 0 .or. S%sat == '??') skip = -1
+			if (S%sat == '??') then
+				skip = -1
+			else if (attr(2,i)(:1) == '!') then
+				if (index(attr(2,i),S%sat) == 0) skip = -1
+			else
+				if (index(attr(2,i),S%sat) > 0) skip = -1
+			endif
 		endif
 	enddo
 	if (skip == 1) then

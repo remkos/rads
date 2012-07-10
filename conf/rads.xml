@@ -408,7 +408,7 @@ GNU Lesser General Public License for more details.
 </var>
 <alias name="range" field="6">range_ku</alias>
 
-<var name="dry_tropo_ecmwf" field="701">
+<var sat="!g1 gs" name="dry_tropo_ecmwf" field="701">
 	<long_name>ECMWF dry tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_dry_troposphere</standard_name>
 	<source>ECMWF</source>
@@ -458,7 +458,7 @@ GNU Lesser General Public License for more details.
 <alias name="dry_tropo" field="7">dry_tropo_ecmwf</alias>
 <alias name="dry_tropo" field="7" sat="g1 gs">dry_tropo_ncep</alias>
 
-<var name="wet_tropo_rad" field="801">
+<var sat="!c2 g1 gs" name="wet_tropo_rad" field="801">
 	<long_name>radiometer wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
 	<source>radiometer</source>
@@ -472,7 +472,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
 </var>
-<var name="wet_tropo_ecmwf" field="802">
+<var sat="!g1 gs" name="wet_tropo_ecmwf" field="802">
 	<long_name>ECMWF wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
 	<source>ECMWF</source>
@@ -580,7 +580,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<var sat="c2 e1 e2 n1 pn tx" name="iono_bent" field="902">
+<var sat="c2 e1 e2 pn tx" name="iono_bent" field="902">
 	<long_name>Bent ionospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>Bent climatology</source>
@@ -676,18 +676,18 @@ GNU Lesser General Public License for more details.
 <alias name="iono" field="9" sat="c2 e2 g1">iono_gim</alias>
 <alias name="iono" field="9" sat="j1 j2 n1 tx">iono_alt_smooth</alias>
 
-<var name="inv_bar_static" field="1001">
+<var name="inv_bar_static" field="1002">
 	<long_name>static inverse barometer correction</long_name>
-	<standard_name>sea_surface_height_correction_due_to_air_pressure_at_low_frequency</standard_name>
+	<standard_name>sea_surface_height_correction_due_to_air_pressure</standard_name>
 	<source>ECMWF</source>
 	<units>m</units>
 	<limits>-1 1</limits>
 	<data>inv_bar_static</data>
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
-	<comment>Effect of the static atmospheric pressure on sea surface</comment>
+	<comment>Effect of the static atmospheric pressure on sea surface, subtracting global mean</comment>
 </var>
-<var name="inv_bar_global" field="1002">
+<var name="inv_bar_global" field="1003">
 	<long_name>global mean inverse barometer correction</long_name>
 	<source>ECMWF</source>
 	<units>m</units>
@@ -697,9 +697,9 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>Global mean effect of the static atmospheric pressure on sea surface</comment>
 </var>
-<var name="inv_bar_mog2d" field="1003">
+<var name="inv_bar_mog2d" field="1004">
 	<long_name>MOG2D dynamic atmospheric correction</long_name>
-	<standard_name>sea_surface_height_correction_due_to_air_pressure_and_wind_at_high_frequency</standard_name>
+	<standard_name>sea_surface_height_correction_due_to_air_pressure_and_wind</standard_name>
 	<source>MOG2D-G</source>
 	<units>m</units>
 	<limits>-1 1</limits>
@@ -707,11 +707,11 @@ GNU Lesser General Public License for more details.
 	<format>f7.4</format>
 	<backup>inv_bar_mok2d</backup>
 	<compress>int2 1d-4</compress>
-	<comment>Combined low and high frequency effect of atmospheric pressure on sea surface</comment>
+	<comment>Combined low and high frequency effect of atmospheric pressure and wind on sea surface</comment>
 </var>
-<var name="inv_bar_mok2d" field="1004">
+<var name="inv_bar_mok2d" field="1005">
 	<long_name>MOK2D inverse barometer correction</long_name>
-	<standard_name>sea_surface_height_correction_due_to_air_pressure_and_wind_at_high_frequency</standard_name>
+	<standard_name>sea_surface_height_correction_due_to_air_pressure_and_wind</standard_name>
 	<units>m</units>
 	<limits>-1 1</limits>
 	<data>inv_bar_static 0.9603 MUL 0.0025 SUB</data>
@@ -721,7 +721,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>Scaled version of static IB to match MOG2D</comment>
 </var>
-<var name="inv_bar_mog2d_mean" field="1005">
+<var name="inv_bar_mog2d_mean" field="1006">
 	<long_name>local mean MOG2D dynamic atmospheric correction</long_name>
 	<source>MOG2D</source>
 	<units>m</units>
@@ -786,7 +786,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
 </var>
-<var name="tide_ocean_got49" field="1221">
+<var sat="c2 j1 j2 pn tx" name="tide_ocean_got49" field="1221">
 	<long_name>GOT4.9 ocean tide</long_name>
 	<source>GOT4.9</source>
 	<units>m</units>
@@ -828,7 +828,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>Load tide variation to be added to ocean tide</comment>
 </var>
-<var name="tide_load_got49" field="1321">
+<var sat="c2 j1 j2 pn tx" name="tide_load_got49" field="1321">
 	<long_name>GOT4.9 load tide</long_name>
 	<source>GOT4.9</source>
 	<units>m</units>
@@ -1116,7 +1116,7 @@ GNU Lesser General Public License for more details.
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var name="wind_speed_rad" field="1902">
+<var sat="j1 j2 pn tx" name="wind_speed_rad" field="1902">
 	<long_name>radiometer wind speed</long_name>
 	<standard_name>wind_speed_alt</standard_name>
 	<source>radiometer</source>
@@ -1126,7 +1126,7 @@ GNU Lesser General Public License for more details.
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var name="wind_speed_ecmwf_u" field="1903">
+<var sat="!e1 gs" name="wind_speed_ecmwf_u" field="1903">
 	<long_name>ECMWF model wind speed (U)</long_name>
 	<standard_name>eastward_wind</standard_name>
 	<source>ECMWF</source>
@@ -1136,7 +1136,7 @@ GNU Lesser General Public License for more details.
 	<format>f7.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var name="wind_speed_ecmwf_v" field="1904">
+<var sat="!e1 gs" name="wind_speed_ecmwf_v" field="1904">
 	<long_name>ECMWF model wind speed (V)</long_name>
 	<standard_name>northward_wind</standard_name>
 	<source>ECMWF</source>
@@ -1191,7 +1191,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<var sat="j1 j2 tx" name="range_rms_c" field="2004">
+<var sat="j1 j2" name="range_rms_c" field="2004">
 	<long_name>std dev of C-band range</long_name>
 	<units>m</units>
 	<limits>0.0 0.4</limits>
@@ -1200,6 +1200,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
+<!--
 <var sat="n1" name="range_rms_s" field="2004">
 	<long_name>std dev of S-band range</long_name>
 	<units>m</units>
@@ -1209,6 +1210,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
+-->
 <var sat="j2" name="range_rms_ku_mle3" field="2012">
 	<long_name>std dev of Ku-band range (MLE3)</long_name>
 	<units>m</units>
@@ -1231,7 +1233,7 @@ GNU Lesser General Public License for more details.
 	<format>f3.0</format>
 	<compress>int1</compress>
 </var>
-<var name="range_numval_c" field="2102">
+<var sat="j1 j2" name="range_numval_c" field="2102">
 	<long_name>number of valid C-band measurements</long_name>
 	<limits>16.5 20.5</limits>
 	<data>range_numval_c</data>
@@ -1247,7 +1249,7 @@ GNU Lesser General Public License for more details.
 </var>
 <alias name="range_numval" field="21">range_numval_ku</alias>
 
-<var name="topo_dtm2000" field="2202">
+<var sat="j1 j2 n1" name="topo_dtm2000" field="2202">
 	<long_name>DTM2000 topography</long_name>
 	<source>DTM2000</source>
 	<units>m</units>
@@ -1597,13 +1599,6 @@ GNU Lesser General Public License for more details.
 		swh_suspect backscatter_suspect tracking_preset orbit_degraded
 	</flag_masks>
 </var>
-<var sat="g1" name="flags_noaa" field="2602">
-	<long_name>NOAA flags</long_name>
-	<limits>65512 0</limits>
-	<data>flags_enh</data>
-	<format>i1,15(1x,i1)</format>
-	<compress>int2</compress>
-</var>
 <var sat="j1" name="flags_orig" field="2602">
 	<long_name>original flag word (before enhancement)</long_name>
 	<limits>65512 0</limits>
@@ -1818,7 +1813,7 @@ GNU Lesser General Public License for more details.
 		<limits>-0.05 0.05</limits>
 	</if>
 </var>
-<var name="off_nadir_angle_pf" field="3003">
+<var sat="c2 pn" name="off_nadir_angle_pf" field="3003">
 	<long_name>off-nadir pointing angle from platform</long_name>
 	<units>degrees</units>
 	<data>off_nadir_angle2_pf SQRT</data>
@@ -1921,7 +1916,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-3</compress>
 	<comment>Bias already added to backscatter coefficient</comment>
 </var>
-<var name="dsig0_atmos_ku" field="3203">
+<var sat="e1 e2 j1 j2 n1 pn tx" name="dsig0_atmos_ku" field="3203">
 	<long_name>Ku-band backscatter coefficient correction due to atmosphere/attitude</long_name>
 	<units>dB</units>
 	<data>dsig0_atmos_ku</data>
@@ -1971,7 +1966,7 @@ GNU Lesser General Public License for more details.
 </var>
 <alias sat="e1 e2 tx" name="dsig0" field="32">dsig0_ku</alias>
 
-<var name="liquid_water" field="3301 33">
+<var sat="j1 j2 n1 pn tx" name="liquid_water" field="3301 33">
 	<long_name>radiometer liquid water content</long_name>
 	<standard_name>atmosphere_cloud_liquid_water_content</standard_name>
 	<units>kg/m^2</units>
@@ -2156,7 +2151,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 </var>
 
-<var name="wave_m0" field="4001 40">
+<var sat="!e1 gs" name="wave_m0" field="4001 40">
 	<long_name>wave height variance (WaveWatch3)</long_name>
 	<source>WaveWatch3</source>
 	<units>m^2</units>
@@ -2164,7 +2159,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-3</compress>
 </var>
 
-<var name="wave_m1" field="4101 41">
+<var sat="!e1 gs" name="wave_m1" field="4101 41">
 	<long_name>first moment of wave height (WaveWatch3)</long_name>
 	<source>WaveWatch3</source>
 	<units>m^2/s</units>
@@ -2173,7 +2168,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 </var>
 
-<var name="wave_m2" field="4201 42">
+<var sat="!e1 gs" name="wave_m2" field="4201 42">
 	<long_name>wave velocity variance (WaveWatch3)</long_name>
 	<source>WaveWatch3</source>
 	<units>m^2/s^2</units>
@@ -2182,7 +2177,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-5</compress>
 </var>
 
-<var name="wave_m4" field="4301 43">
+<var sat="!e1 gs" name="wave_m4" field="4301 43">
 	<long_name>wave slope variance (WaveWatch3)</long_name>
 	<source>WaveWatch3</source>
 	<units>radian^2</units>
@@ -2191,7 +2186,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-6</compress>
 </var>
 
-<var name="wave_shs" field="4401 44">
+<var sat="!e1 gs" name="wave_shs" field="4401 44">
 	<long_name>wave swell (WaveWatch3)</long_name>
 	<source>WaveWatch3</source>
 	<units>m</units>
