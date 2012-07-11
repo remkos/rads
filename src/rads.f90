@@ -238,7 +238,7 @@ end interface rads_end
 !***********************************************************************
 !*rads_get_var -- Read variable (data) from RADS4 file
 !+
-! subroutine rads_get_var (S, P, var, data, noedit)
+! recursive subroutine rads_get_var (S, P, var, data, noedit)
 ! type(rads_sat), intent(inout) :: S
 ! type(rads_pass), intent(inout) :: P
 ! character(len=*) <or> integer(fourbyteint) <or> type(rads_var), intent(in) :: var
@@ -1244,7 +1244,7 @@ end subroutine rads_close_pass
 !***********************************************************************
 !*rads_get_var_by_number -- Read variable (data) from RADS4 file by integer
 !+
-subroutine rads_get_var_by_number (S, P, field, data, noedit)
+recursive subroutine rads_get_var_by_number (S, P, field, data, noedit)
 use rads_misc
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
@@ -1285,7 +1285,7 @@ end subroutine rads_get_var_by_number
 !***********************************************************************
 !*rads_get_var_by_var -- Read variable (data) from RADS by type(rads_var)
 !+
-subroutine rads_get_var_by_var (S, P, var, data, noedit)
+recursive subroutine rads_get_var_by_var (S, P, var, data, noedit)
 use rads_misc
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
@@ -1317,7 +1317,7 @@ end subroutine rads_get_var_by_var
 !***********************************************************************
 !*rads_get_var_by_name -- Read variable (data) from RADS by character
 !+
-subroutine rads_get_var_by_name (S, P, varname, data, noedit)
+recursive subroutine rads_get_var_by_name (S, P, varname, data, noedit)
 use rads_misc
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
@@ -1359,7 +1359,7 @@ end subroutine rads_get_var_by_name
 !***********************************************************************
 !*rads_get_var_common -- Read variable (data) from RADS database (common to all)
 !+
-subroutine rads_get_var_common (S, P, var, data, skip_edit)
+recursive subroutine rads_get_var_common (S, P, var, data, skip_edit)
 use rads_misc
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
@@ -1441,7 +1441,7 @@ call rads_update_stat	! Update statistics on variable
 
 contains
 
-subroutine rads_get_var_nc () ! Get data variable from RADS netCDF file
+recursive subroutine rads_get_var_nc () ! Get data variable from RADS netCDF file
 use netcdf
 use rads_netcdf
 integer(fourbyteint) :: start(1), e, nctype, ndims
@@ -1502,7 +1502,7 @@ if (nff(nf90_get_att(P%ncid, info%varid, 'scale_factor', scale_factor))) data = 
 if (nff(nf90_get_att(P%ncid, info%varid, 'add_offset', add_offset))) data = data + add_offset
 end subroutine rads_get_var_nc
 
-subroutine rads_get_att_nc () ! Get data attribute from RADS netCDF file
+recursive subroutine rads_get_att_nc () ! Get data attribute from RADS netCDF file
 use netcdf
 use rads_netcdf
 use rads_time
@@ -1539,7 +1539,7 @@ else
 endif
 end subroutine rads_get_att_nc
 
-subroutine rads_get_var_math () ! Get data variable from MATH statement
+recursive subroutine rads_get_var_math () ! Get data variable from MATH statement
 use rads_math
 type(math_ll), pointer :: top
 integer(fourbyteint) :: i, j, l, istat
