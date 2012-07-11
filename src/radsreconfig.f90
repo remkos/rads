@@ -112,7 +112,7 @@ enddo
 ! Set up the S structure
 call rads_init_sat_struct (S)
 allocate (S%var(rads_var_chunk))
-S%var = rads_var ('', null(), .false., rads_nofield)
+S%var = rads_var ('', null(), null(), .false., rads_nofield)
 call rads_read_xml (S, trim(radsdataroot) // '/conf/rads.xml')
 if (S%error == rads_err_xml_file) call rads_exit ('Required XML file '//trim(radsdataroot)//'/conf/rads.xml does not exist')
 call rads_read_xml (S, trim(radsuserroot) // '/.rads/rads.xml')
