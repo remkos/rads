@@ -74,7 +74,7 @@ endtype
 
 type :: rads_var
 	character(len=rads_varl) :: name                 ! Variable name (or alias thereof)
-	type(rads_varinfo), pointer :: info              ! Link to struct of type(rads_varinfo)
+	type(rads_varinfo), pointer :: info, inf1        ! Links to structs of type(rads_varinfo)
 	logical(twobyteint) :: noedit                    ! .true. if editing is suspended
 	integer(twobyteint) :: field(2)                  ! RADS3 field numbers (rads_nofield = none)
 endtype
@@ -150,8 +150,9 @@ endtype
 
 ! Some private variables to keep
 
-character(len=*), parameter, private :: default_optlist = 'S:X:vqV:C:P:A:F:R:L:' // &
-	't: h: args: sat: xml: debug: quiet var: sel: cycle: pass: alias: fmt: lat: lon: time: sla: limit: opt: mjd: sec: ymd: doy:'
+character(len=*), parameter, private :: default_optlist = 'S:X:vqV:C:P:A:F:R:L:Q: ' // &
+	't: h: args: sat: xml: debug: quiet var: sel: cycle: pass: alias: fmt: format: ' // &
+	'lat: lon: time: sla: limits: opt: mjd: sec: ymd: doy: quality_flag: region:'
 character(len=rads_strl), save, private :: rads_optlist = default_optlist
 
 ! These options can be accessed by RADS programs
@@ -448,7 +449,7 @@ if (i < 0) S%command (len(S%command)-2:) = '...'
 ! Set all values in <S> struct to default
 if (present(debug)) S%debug = debug
 allocate (S%var(rads_var_chunk))
-S%var = rads_var ('', null(), .false., rads_nofield)
+S%var = rads_var ('', null(), null(), .false., rads_nofield)
 
 ! Read the global rads.xml setup file, the one in ~/.rads and the one in the current directory
 call rads_read_xml (S, trim(S%dataroot)//'/conf/rads.xml')
@@ -824,14 +825,20 @@ case ('P', 'pass')
 	if (S%passes(2) < 0) S%passes(2) = S%passes(1)
 case ('A', 'alias')
 	call rads_set_alias (S, opt%arg(:j-1), opt%arg(j+1:))
-case ('F', 'fmt')
+case ('F', 'fmt', 'format')
 	call rads_set_format (S, opt%arg(:j-1), opt%arg(j+1:))
-case ('R')
+case ('R', 'region')
 	call rads_set_region (S, opt%arg)
 case ('lat', 'lon', 'sla')
 	call rads_set_limits (S, opt%opt, string=opt%arg)
-case ('L', 'lim')
+case ('L', 'limits')
 	call rads_set_limits (S, opt%arg(:j-1), string=opt%arg(j+1:))
+case ('Q', 'quality_flags')
+	if (j > 0) then
+		call rads_set_quality_flag (S, opt%arg(:j-1), opt%arg(j+1:))
+	else
+		call rads_set_quality_flag (S, 'sla', opt%arg)
+	endif
 
 ! The next are only for compatibility with RADS 3
 case ('h')
@@ -840,8 +847,10 @@ case ('opt')
 	if (j > 0) then
 		if (len_trim(opt%arg) == j+1) then
 			call rads_set_alias (S, opt%arg(:j-1), opt%arg(:j-1)//'0'//opt%arg(j+1:))
+			call rads_set_quality_flag (S, 'sla', opt%arg(:j-1)//'0'//opt%arg(j+1:))
 		else
 			call rads_set_alias (S, opt%arg(:j-1), opt%arg(:j-1)//opt%arg(j+1:))
+			call rads_set_quality_flag (S, 'sla', opt%arg(:j-1)//opt%arg(j+1:))
 		endif
 	else
 		k0 = 1
@@ -849,6 +858,7 @@ case ('opt')
 		do k = 1,k1
 			if (k == k1 .or. opt%arg(k+1:k+1) == ',' .or. opt%arg(k+1:k+1) == '/') then
 				call rads_set_alias (S, opt%arg(k0:k-2), opt%arg(k0:k))
+				call rads_set_quality_flag (S, 'sla', opt%arg(k0:k))
 				k0 = k + 2
 			endif
 		enddo
@@ -1372,8 +1382,6 @@ logical, intent(in) :: skip_edit
 !-----------------------------------------------------------------------
 type(rads_var), pointer :: alt
 type(rads_varinfo), pointer :: info
-integer :: i
-integer, parameter :: max_recursions = 10
 
 if (S%debug >= 4) write (*,*) 'rads_get_var_common: '//trim(var%name)
 
@@ -1386,53 +1394,41 @@ endif
 ! Set pointer to info struct
 info => var%info
 
-do i = 1,max_recursions ! This loop is here to allow processing of "backup" fields without needing recursive routines
-
-	! Load data depending on type of data source
-	select case (info%datasrc)
-	case (rads_src_nc_var)
-		call rads_get_var_nc
-	case (rads_src_nc_att)
-		call rads_get_att_nc
-		case (rads_src_math)
-		call rads_get_var_math
-	case (rads_src_grid_lininter, rads_src_grid_splinter, rads_src_grid_query)
-		call rads_get_var_grid
-	case (rads_src_constant)
-		call rads_get_var_constant (info%dataname)
-	case default
-		data = S%nan
-		return
-	end select
-
-	! Editing or error handling
-	if (S%error == rads_noerr) then ! No error, edit if requested
-		if (.not.skip_edit) call rads_edit_data
-		exit
-	else if (info%backup == '') then ! No backup alternative, print error
-		call rads_error (S, rads_err_var, 'Error loading variable "'//trim(var%name)//'"')
-		data = S%nan
-		exit
-	else if (is_number(info%backup)) then ! Numerical backup
-		call rads_get_var_constant (info%backup)
-		exit
-	else ! Go look for alternative variable
-		S%error = rads_noerr
-		alt => rads_varptr (S, info%backup)
-		if (.not.associated(alt)) then
-			data = S%nan
-			exit
-		else
-			info => alt%info ! Do loop again with new variable
-		endif
-	endif
-
-enddo ! End of "recursive" loop
-
-! Did we end loop with too many cycles?
-if (i > max_recursions) then
-	call rads_error (S, rads_err_var, 'Too many recursions while finding variable "'//trim(var%name)//'"')
+! Load data depending on type of data source
+select case (info%datasrc)
+case (rads_src_nc_var)
+	call rads_get_var_nc
+case (rads_src_nc_att)
+	call rads_get_att_nc
+case (rads_src_math)
+	call rads_get_var_math
+case (rads_src_grid_lininter, rads_src_grid_splinter, rads_src_grid_query)
+	call rads_get_var_grid
+case (rads_src_constant)
+	call rads_get_var_constant (info%dataname)
+case default
 	data = S%nan
+	return
+end select
+
+! Editing or error handling
+if (S%error == rads_noerr) then ! No error, edit if requested
+	if (.not.skip_edit) call rads_edit_data
+else if (info%backup == '') then ! No backup alternative, print error
+	call rads_error (S, rads_err_var, 'Error loading variable "'//trim(var%name)//'"')
+	data = S%nan
+else if (is_number(info%backup)) then ! Numerical backup
+	call rads_get_var_constant (info%backup)
+else ! Go look for alternative variable
+	S%error = rads_noerr
+	alt => rads_varptr (S, info%backup)
+	if (.not.associated(alt)) then
+		data = S%nan
+	else
+		call rads_get_var_by_var (S, P, alt, data, skip_edit)
+		! When this returns, editing and statistics will have been done, so we should directly return
+		return
+	endif
 endif
 
 call rads_quality_check	! Check quality flags (if provided)
@@ -1724,12 +1720,14 @@ integer :: nattr, nval, i, ios, skip, skip_lvl
 integer(twobyteint) :: field(2)
 logical :: endtag
 real(eightbytereal) :: node_rate
-type(rads_varinfo), pointer :: info => null()
-type(rads_var), pointer :: var => null()
-type(rads_phase), pointer :: phase => null()
+type(rads_varinfo), pointer :: info
+type(rads_var), pointer :: var, alt
+type(rads_phase), pointer :: phase
 
+! Initialise
 S%error = rads_noerr
 skip_lvl = 0
+nullify (info, var, alt, phase)
 
 ! Open XML file
 call xml_open (X, filename, .true.)
@@ -1920,6 +1918,10 @@ do
 
 	case ('backup')
 		info%backup = val(1)(:rads_varl)
+!		if (.not.is_number(val(1))) then
+!			alt => rads_varptr (S, val(1))
+!			if (associated(alt)) var%inf1 => alt%info
+!		endif
 
 	case ('quality_flag')
 		call assign_or_append (info%quality_flag)
@@ -2193,7 +2195,12 @@ endif
 if (i <= S%nvar) then
 	ptr => S%var(i)
 	if (.not.present(tgt)) then
-	else if (associated(tgt)) then
+		! Skip
+	else if (.not.associated(tgt)) then
+		! Skip		
+	else if (associated(ptr%info,tgt%info)) then
+		! Association is already a fact
+	else
 		if (ptr%name == ptr%info%name) then
 			if (associated(ptr%info%grid)) call grid_free(ptr%info%grid)
 			deallocate (ptr%info)
@@ -2213,7 +2220,7 @@ n = size(S%var)
 if (i > n) then
 	allocate (temp(n + rads_var_chunk))
 	temp(1:n) = S%var
-	temp(n+1:n+rads_var_chunk) = rads_var ('', null(), .false., rads_nofield)
+	temp(n+1:n+rads_var_chunk) = rads_var ('', null(), null(), .false., rads_nofield)
 	deallocate (S%var)
 	S%var => temp
 	if (S%debug >= 3) write (*,*) 'Increased S%var:',n,n+rads_var_chunk
@@ -2402,6 +2409,38 @@ type(rads_var), pointer :: var
 var => rads_varptr(S, varname)
 if (associated(var)) var%info%format = format
 end subroutine rads_set_format
+
+
+!***********************************************************************
+!*rads_set_format -- Set output format for given variable
+!+
+subroutine rads_set_quality_flag (S, varname, flag)
+type(rads_sat), intent(inout) :: S
+character(len=*), intent(in) :: varname, flag
+!
+! This routine set appends <flag> to the variables contained in the set
+! of variables to check to allow variable <varname> to pass (if <flag> is 
+! not already contained in that set).
+!
+! Arguments:
+!  S        : Satellite/mission dependent structure
+!  varname  : Variable name
+!  flag     : Name of the variable that needs to be checked to validate
+!             <varname>.
+!
+! Error code:
+!  S%error  : rads_noerr, rads_err_var
+!-----------------------------------------------------------------------
+type(rads_var), pointer :: var
+var => rads_varptr(S, varname)
+if (.not.associated(var)) then
+	return
+else if (var%info%quality_flag == '') then
+	var%info%quality_flag = flag
+else if (index(var%info%quality_flag,flag) == 0) then
+	var%info%quality_flag = trim(var%info%quality_flag) // ' ' // flag
+endif
+end subroutine rads_set_quality_flag
 
 !***********************************************************************
 !*rads_stat_0d -- Print the RADS statistics for a given satellite
@@ -2664,16 +2703,21 @@ write (iunit, 1300) trim(progname)
 '  -V, --var=VAR1,...        Select variables to be read'/ &
 '  -C, --cycle=C0[,C1[,DC]]  Specify first and last cycle and modulo'/ &
 '  -P, --pass=P0[,P1[,DP]]   Specify first and last pass and modulo'/ &
-'  -RLON0,LON1,LAT0,LAT1     Specify rectangular region (deg)'/ &
-'  -RLON0,LAT0,RADIUS        Specify circular region (deg)' / &
+'  -R, --region=LON0,LON1,LAT0,LAT1'/ &
+'                            Specify rectangular region (deg)'/ &
+'  -R, --region=LON0,LAT0,RADIUS'/ &
+'                            Specify circular region (deg)' / &
 '  --lon=LON0,LON1           Specify longitude boundaries (deg)'/ &
 '  --lat=LAT0,LAT1           Specify latitude  boundaries (deg)'/ &
 '  --time=T0,T1              Specify time selection (optionally use --ymd=, --doy=,'/ &
 '                            or --sec= for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)'/ &
 '  --sla=SLA0,SLA1           Specify range for SLA (m)'/ &
 '  -A, --alias:VAR1=VAR2     Use variable VAR2 when VAR1 is requested'/ &
-'  -L, --lim:VAR=MIN,MAX     Specify edit data range for variable VAR'/ &
-'  -F, --fmt:VAR=FMT         Specify the Fortran format used to print VAR'/ &
+'  -L, --limits:VAR=MIN,MAX  Specify edit data range for variable VAR'/ &
+'  -Q, --quality_flag:VAR=FLAG'/&
+'                            Check variable FLAG when validating variable VAR'/ &
+'  -F, --fmt, --format:VAR=FMT'/ &
+'                            Specify the Fortran format used to print VAR'/ &
 '  -X, --xml=XMLFILE         Load XMLFILE in addition to defaults'// &
 'Still working for backwards Compatibility with RADS 3 are options:'/ &
 '  --sel=VAR1,...            Select variables to read'/ &
