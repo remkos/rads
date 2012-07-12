@@ -103,7 +103,7 @@ GNU Lesser General Public License for more details.
 	<comment>East longitude relative to Greenwich meridian</comment>
 </var>
 
-<var sat="gs pn tx" name="alt_jgm3" field="401">
+<var name="alt_jgm3" field="401" sat="gs pn tx">
 	<long_name>JGM-3 orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>GSFC, JGM-3</source>
@@ -113,7 +113,7 @@ GNU Lesser General Public License for more details.
 	<compress>int4 1d-3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var sat="e1 e2" name="alt_dgme04" field="402">
+<var name="alt_dgme04" field="402" sat="e1 e2">
 	<long_name>DGM-E04 orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>DEOS, DGM-E04</source>
@@ -122,9 +122,8 @@ GNU Lesser General Public License for more details.
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
-	<backup sat="e2">alt_gfz</backup>
 </var>
-<var sat="c2 n1 pn tx" name="alt_cnes" field="404">
+<var name="alt_cnes" field="404" sat="c2 n1 pn tx">
 	<long_name>CNES orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>CNES</source>
@@ -176,18 +175,17 @@ GNU Lesser General Public License for more details.
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 -->
-<var sat="n1" name="alt_eiggc03c" field="412">
+<var name="alt_eiggc03c" field="412" sat="n1">
 	<long_name>EIGEN-GC03c orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>EIGEN-GC03c</source>
 	<units>m</units>
 	<data>alt_eiggc03c</data>
-	<backup sat="n1">alt_cnes</backup>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var sat="g1" name="alt_pgs7777" field="410">
+<var name="alt_pgs7777" field="410" sat="g1">
 	<long_name>PGS7777 orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>GSFC, PGS7777</source>
@@ -197,45 +195,40 @@ GNU Lesser General Public License for more details.
 	<compress>int4 1d-3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var sat="gs pn tx" name="alt_ggm02c_itrf2000" field="411">
+<var name="alt_ggm02c_itrf2000" field="411" sat="gs pn tx">
 	<long_name>GGM02c(ITRF2000) orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>GGM02c(ITRF2000)</source>
 	<units>m</units>
 	<data>alt_ggm02c_itrf2000</data>
-        <backup sat="gs pn tx">alt_jgm3</backup>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
 	<if sat="j1 j2">
-		<backup>alt_eiggl04s</backup>
 		<format>f12.4</format>
 		<compress>int4 1d-4 1300d3</compress>
 	</if>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var sat="pn tx" name="alt_ggm02c_itrf2005" field="413">
+<var name="alt_ggm02c_itrf2005" field="413" sat="pn tx">
 	<long_name>GGM02c(ITRF2005) orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
-	<source>GGM02c(ITRF2000)</source>
+	<source>GGM02c(ITRF2005)</source>
 	<units>m</units>
 	<data>alt_ggm02c_itrf2005</data>
-	<backup sat="pn tx">alt_jgm3</backup>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
 	<if sat="j1 j2">
-		<backup>alt_eiggl04s</backup>
 		<format>f12.4</format>
 		<compress>int4 1d-4 1300d3</compress>
 	</if>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var sat="c2 j1 j2 n1" name="alt_eiggl04s" field="414">
+<var name="alt_eiggl04s" field="414" sat="c2 j1 j2 n1">
 	<long_name>EIGEN-GL04c orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>EIGEN-GL04c</source>
 	<units>m</units>
 	<data>alt_eiggl04s</data>
-	<backup sat="n1 c2">alt_cnes</backup>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
 	<if sat="j1 j2">
@@ -244,23 +237,21 @@ GNU Lesser General Public License for more details.
 	</if>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var sat="gs g1 j1 j2 pn tx" name="alt_gdrcp" field="415">
+<var name="alt_gdrcp" field="415" sat="gs g1 j1 j2 pn tx">
 	<long_name>GDR-C' orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>GDR-C' standards</source>
 	<units>m</units>
 	<data>alt_gdrcp</data>
-        <backup sat="pn tx">alt_jgm3</backup>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
 	<if sat="j1 j2">
-		<backup>alt_eiggl04s</backup>
 		<format>f12.4</format>
 		<compress>int4 1d-4 1300d3</compress>
 	</if>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var sat="j1 j2" name="alt_gps" field="416">
+<var name="alt_gps" field="416" sat="j1 j2">
 	<long_name>GPS orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>JPL GPS orbits</source>
@@ -269,13 +260,12 @@ GNU Lesser General Public License for more details.
 	<compress>int4 1d-3</compress>
 	<format>f11.3</format>
 	<if sat="j1 j2">
-		<backup>alt_eiggl04s</backup>
 		<format>f12.4</format>
 		<compress>int4 1d-4 1300d3</compress>
 	</if>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var sat="c2 j1 j2 n1" name="alt_eig6c" field="417">
+<var name="alt_eig6c" field="417" sat="c2 j1 j2 n1">
 	<long_name>ESOC EIGEN-6C orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>ESOC, EIGEN-6C</source>
@@ -284,62 +274,72 @@ GNU Lesser General Public License for more details.
 	<compress>int4 1d-3</compress>
 	<format>f11.3</format>
 	<if sat="j1 j2">
-		<backup>alt_eiggl04s</backup>
 		<format>f12.4</format>
 		<compress>int4 1d-4 1300d3</compress>
 	</if>
-	<backup sat="c2 n1">alt_cnes</backup>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var sat="e1 e2" name="alt_reaper" field="420">
+<var name="alt_reaper" field="420" sat="e1 e2">
 	<long_name>REAPER/COMBI orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>REAPER project, combined solution</source>
 	<units>m</units>
 	<data>alt_reaper</data>
-	<backup>nan</backup>
+	<default>nan</default>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var sat="e1 e2" name="alt_reaper_deos" field="421">
+<var name="alt_reaper_deos" field="421" sat="e1 e2">
 	<long_name>REAPER/DEOS orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>REAPER project, DEOS solution</source>
 	<units>m</units>
 	<data>alt_reaper_deos</data>
-	<backup>nan</backup>
+	<default>nan</default>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var sat="e1 e2" name="alt_reaper_gfz" field="422">
+<var name="alt_reaper_gfz" field="422" sat="e1 e2">
 	<long_name>REAPER/GFZ orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>REAPER project, GFZ solution</source>
 	<units>m</units>
 	<data>alt_reaper_gfz</data>
-	<backup>nan</backup>
+	<default>nan</default>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var sat="e1 e2" name="alt_reaper_esoc" field="423">
+<var name="alt_reaper_esoc" field="423" sat="e1 e2">
 	<long_name>REAPER/ESOC orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>REAPER project, ESOC solution</source>
 	<units>m</units>
 	<data>alt_reaper_esoc</data>
-	<backup>nan</backup>
+	<default>nan</default>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<alias name="alt" field="4" sat="c2 j1 j2 n1">alt_eiggl04s</alias>
-<alias name="alt" field="4" sat="e1 e2">alt_reaper</alias>
+<!--
+	<alias name=alt_dgme04 sat="e2">,alt_gfz</alias>
+	<alias name="alt_eiggc03c" sat="n1">,alt_cnes</alias>
+	<alias name="alt_eiggl04s" sat="c2 n1">,alt_cnes</alias>
+	<alias name="alt_gps" sat="j1 j2">,alt_eiggl04s</alias>
+	<alias name="alt_gdrcp" sat="j1 j2">,alt_eiggl04s</alias>
+	<alias name="alt_gdrcp" sat="pn tx">,alt_jgm3</alias>
+	<alias name="alt_eig6c" sat="j1 j2">,alt_eiggl04s</alias>
+	<alias name="alt_eig6c" sat="c2 n1">,alt_cnes</alias>
+-->
+<alias name="alt" field="4" sat="c2 n1">alt_eiggl04s alt_cnes</alias>
+<alias name="alt" field="4" sat="j1 j2">alt_eiggl04s</alias>
+<alias name="alt" field="4" sat="e1">alt_reaper</alias>
+<alias name="alt" field="4" sat="e2">alt_reaper alt_gfz</alias>
 <alias name="alt" field="4" sat="g1">alt_pgs7777</alias>
 <alias name="alt" field="4" sat="gs">alt_gdrcp</alias>
-<alias name="alt" field="4" sat="pn tx">alt_gdrcp</alias>
+<alias name="alt" field="4" sat="pn tx">alt_gdrcp alt_jgm3</alias>
 
 <var name="alt_rate" field="501 5">
 	<long_name>orbital altitude rate</long_name>
@@ -369,7 +369,7 @@ GNU Lesser General Public License for more details.
 		<compress>int4 1d-4 1300d3</compress>
 	</if>
 </var>
-<var sat="j1 j2 tx" name="range_c" field="602">
+<var name="range_c" field="602" sat="j1 j2 tx">
 	<long_name>C-band range corrected for instr. effects</long_name>
 	<standard_name>altimeter_range</standard_name>
 	<units>m</units>
@@ -381,7 +381,7 @@ GNU Lesser General Public License for more details.
 		<compress>int4 1d-4 1300d3</compress>
 	</if>
 </var>
-<var sat="n1" name="range_s" field="602">
+<var name="range_s" field="602" sat="n1">
 	<long_name>S-band range corrected for instr. effects</long_name>
 	<standard_name>altimeter_range</standard_name>
 	<units>m</units>
@@ -389,14 +389,14 @@ GNU Lesser General Public License for more details.
 	<format>f11.3</format>
 	<compress>int3 1d-4</compress>
 </var>
-<var sat="gs" name="range_corrected" field="603">
+<var name="range_corrected" field="603" sat="gs">
 	<long_name>corrected altimeter range</long_name>
 	<standard_name>altimeter_range</standard_name>
 	<units>m</units>
 	<data>range_corrected</data>
 	<format>f11.3</format>
 </var>
-<var sat="j2" name="range_ku_mle3" field="611">
+<var name="range_ku_mle3" field="611" sat="j2">
 	<long_name>Ku-band range corrected for instr. effects (MLE3)</long_name>
 	<standard_name>altimeter_range</standard_name>
 	<units>m</units>
@@ -408,7 +408,7 @@ GNU Lesser General Public License for more details.
 </var>
 <alias name="range" field="6">range_ku</alias>
 
-<var sat="!g1 gs" name="dry_tropo_ecmwf" field="701">
+<var name="dry_tropo_ecmwf" field="701" sat="!g1 gs">
 	<long_name>ECMWF dry tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_dry_troposphere</standard_name>
 	<source>ECMWF</source>
@@ -450,29 +450,30 @@ GNU Lesser General Public License for more details.
 	<units>m</units>
 	<limits>-2.4 -2.1</limits>
 	<data>dry_tropo_era</data>
-	<backup>dry_tropo_ecmwf</backup>
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 	<comment>A dry tropospheric correction must be added to range to correct for dry troposphere delays</comment>
 </var>
+<!--
+	<alias name="dry_tropo_era">,dry_tropo_ecmwf</alias>
+-->
 <alias name="dry_tropo" field="7">dry_tropo_ecmwf</alias>
 <alias name="dry_tropo" field="7" sat="g1 gs">dry_tropo_ncep</alias>
 
-<var sat="!c2 g1 gs" name="wet_tropo_rad" field="801">
+<var name="wet_tropo_rad" field="801" sat="!c2 g1 gs">
 	<long_name>radiometer wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
 	<source>radiometer</source>
 	<units>m</units>
 	<limits>-0.6 0.0</limits>
-        <limits sat="n1">-0.6 0.05</limits> <!--Due to model bias and noise, allow positive values-->
+	<limits sat="n1">-0.6 0.05</limits> <!--Due to model bias and noise, allow positive values-->
 	<limits sat="pn tx">-0.6 -0.001</limits> <!--Need to exclude bogus 0 values from TMR measurements-->
 	<data>wet_tropo_rad</data>
-	<backup sat="e2">wet_tropo_ecmwf</backup>
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
 </var>
-<var sat="!g1 gs" name="wet_tropo_ecmwf" field="802">
+<var name="wet_tropo_ecmwf" field="802" sat="!g1 gs">
 	<long_name>ECMWF wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
 	<source>ECMWF</source>
@@ -494,7 +495,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
 </var>
-<var sat="gs" name="wet_tropo_nvap" field="804">
+<var name="wet_tropo_nvap" field="804" sat="gs">
 	<long_name>NVAP wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
 	<source>NVAP</source>
@@ -505,7 +506,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
 </var>
-<var sat="gs" name="wet_tropo_tovs_ssmi" field="805">
+<var name="wet_tropo_tovs_ssmi" field="805" sat="gs">
 	<long_name>TOVS/SSMI wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
 	<source>TOVS and SSMI</source>
@@ -516,7 +517,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
 </var>
-<var sat="gs" name="wet_tropo_tovs_ncep" field="807">
+<var name="wet_tropo_tovs_ncep" field="807" sat="gs">
 	<long_name>TOVS/NCEP wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
 	<source>TOVS and NCEP</source>
@@ -547,40 +548,41 @@ GNU Lesser General Public License for more details.
 	<units>m</units>
 	<limits>-0.6 0.0</limits>
 	<data>wet_tropo_era</data>
-	<backup>wet_tropo_ecmwf</backup>
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
 </var>
-<var name="wet_tropo_rad_enh" field="810" sat="j1 j2">
-	<long_name>enhanced radiometer wet tropospheric correction</long_name>
+<var name="wet_tropo_rad_enh" field="810" sat="j1">
+	<long_name>original radiometer wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
 	<source>radiometer with coastal correction</source>
 	<units>m</units>
 	<limits>-0.6 0.0</limits>
 	<data>wet_tropo_rad_enh</data>
-	<backup>wet_tropo_rad</backup>
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
 </var>
-<alias name="wet_tropo" field="8">wet_tropo_rad</alias>
+<!--
+	<alias name="wet_tropo_era">,wet_tropo_ecmwf</alias>
+-->
+<alias name="wet_tropo_rad" sat="e2">,wet_tropo_ecmwf</alias>
+<alias name="wet_tropo" field="8">wet_tropo_rad wet_tropo_ecmwf</alias>
 <alias name="wet_tropo" field="8" sat="c2">wet_tropo_ecmwf</alias>
 <alias name="wet_tropo" field="8" sat="gs">wet_tropo_ncep</alias>
 
-<var sat="j1 j2 n1 tx" name="iono_alt" field="901">
+<var name="iono_alt" field="901" sat="j1 j2 n1 tx">
 	<long_name>dual-frequency ionospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>dual-frequency altimeter</source>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
 	<data>iono_alt</data>
-	<backup>iono_gim</backup>
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<var sat="c2 e1 e2 pn tx" name="iono_bent" field="902">
+<var name="iono_bent" field="902" sat="c2 e1 e2 pn tx">
 	<long_name>Bent ionospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>Bent climatology</source>
@@ -591,19 +593,18 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<var sat="j1 j2 n1 tx" name="iono_alt_smooth" field="903">
+<var name="iono_alt_smooth" field="903" sat="j1 j2 n1 tx">
 	<long_name>smoothed dual-frequency ionospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>dual-frequency altimeter after smoothing</source>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
 	<data>iono_alt_smooth</data>
-	<backup>iono_gim</backup>
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<var sat="n1 pn tx" name="iono_doris" field="904">
+<var name="iono_doris" field="904" sat="n1 pn tx">
 	<long_name>DORIS ionospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>DORIS</source>
@@ -621,11 +622,11 @@ GNU Lesser General Public License for more details.
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
 	<data>iono_gim</data>
-	<backup>iono_nic09</backup>
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
+
 <var name="iono_iri2007" field="907">
 	<long_name>IRI2007 ionospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
@@ -648,33 +649,36 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<var sat="j2" name="iono_alt_mle3" field="911">
+<var name="iono_alt_mle3" field="911" sat="j2">
 	<long_name>dual-frequency ionospheric correction (MLE3)</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>dual-frequency altimeter</source>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
 	<data>iono_alt_mle3</data>
-	<backup>iono_gim</backup>
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<var sat="j2" name="iono_alt_smooth_mle3" field="913">
+<var name="iono_alt_smooth_mle3" field="913" sat="j2">
 	<long_name>smoothed dual-frequency ionospheric correction (MLE3)</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>dual-frequency altimeter after smoothing</source>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
 	<data>iono_alt_smooth_mle3</data>
-	<backup>iono_gim</backup>
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<alias name="iono" field="9">iono_nic09</alias>
-<alias name="iono" field="9" sat="c2 e2 g1">iono_gim</alias>
-<alias name="iono" field="9" sat="j1 j2 n1 tx">iono_alt_smooth</alias>
+<!--
+	<alias name="iono_gim">,iono_nic09</alias>
+	<alias name="iono_alt_smooth">,iono_gim</alias>
+	<alias name="iono_alt">,iono_gim</alias>
+-->
+<alias name="iono" field="9" sat="e1 gs pn">iono_nic09</alias>
+<alias name="iono" field="9" sat="c2 e2 g1">iono_gim iono_nic09</alias>
+<alias name="iono" field="9" sat="j1 j2 n1 tx">iono_alt_smooth iono_gim iono_nic09</alias>
 
 <var name="inv_bar_static" field="1002">
 	<long_name>static inverse barometer correction</long_name>
@@ -705,7 +709,6 @@ GNU Lesser General Public License for more details.
 	<limits>-1 1</limits>
 	<data>inv_bar_mog2d</data>
 	<format>f7.4</format>
-	<backup>inv_bar_mok2d</backup>
 	<compress>int2 1d-4</compress>
 	<comment>Combined low and high frequency effect of atmospheric pressure and wind on sea surface</comment>
 </var>
@@ -731,7 +734,10 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>Long-term temporal mean of the MOG2D dynamic atmospheric correction at measurement location</comment>
 </var>
-<alias name="inv_bar" field="10">inv_bar_mog2d</alias>
+<!--
+	<alias name="inv_bar_mog2d">,inv_bar_mok2d</alias>
+-->
+<alias name="inv_bar" field="10">inv_bar_mog2d inv_bar_mok2d</alias>
 
 <var name="tide_solid" field="1101 11">
 	<long_name>solid earth tide</long_name>
@@ -761,7 +767,7 @@ GNU Lesser General Public License for more details.
 	<units>m</units>
 	<limits>-5 5</limits>
 	<data>tide_ocean_webtide</data>
-	<backup>nan</backup>
+	<default>nan</default>
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
@@ -786,7 +792,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
 </var>
-<var sat="c2 j1 j2 pn tx" name="tide_ocean_got49" field="1221">
+<var name="tide_ocean_got49" field="1221" sat="c2 j1 j2 pn tx">
 	<long_name>GOT4.9 ocean tide</long_name>
 	<source>GOT4.9</source>
 	<units>m</units>
@@ -828,7 +834,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>Load tide variation to be added to ocean tide</comment>
 </var>
-<var sat="c2 j1 j2 pn tx" name="tide_load_got49" field="1321">
+<var name="tide_load_got49" field="1321" sat="c2 j1 j2 pn tx">
 	<long_name>GOT4.9 load tide</long_name>
 	<source>GOT4.9</source>
 	<units>m</units>
@@ -852,7 +858,7 @@ GNU Lesser General Public License for more details.
 	<comment>Variation of absolute sea level due to polar motion</comment>
 </var>
 
-<var sat="e1 e2 g1 gs pn tx" name="ssb_bm3" field="1501">
+<var name="ssb_bm3" field="1501" sat="e1 e2 g1 gs pn tx">
 	<long_name>BM3 sea state bias</long_name>
 	<long_name sat="pn tx">BM4 sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
@@ -864,7 +870,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
-<var sat="j1 j2 n1 tx" name="ssb_cls" field="1502">
+<var name="ssb_cls" field="1502" sat="j1 j2 n1 tx">
 	<long_name>CLS non-parametric sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<source>CLS</source>
@@ -875,7 +881,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
-<var sat="tx" name="ssb_csr" field="1503">
+<var name="ssb_csr" field="1503" sat="tx">
 	<long_name>CSR sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<source>CSR</source>
@@ -886,7 +892,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
-<var sat="c2 g1 gs n1 pn" name="ssb_hyb" field="1504">
+<var name="ssb_hyb" field="1504" sat="c2 g1 gs n1 pn">
 	<long_name>hybrid sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<source>NOAA hybrid model</source>
@@ -896,7 +902,7 @@ GNU Lesser General Public License for more details.
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 </var>
-<var sat="j2" name="ssb_cls_c" field="1505">
+<var name="ssb_cls_c" field="1505" sat="j2">
 	<long_name>CLS non-parametric sea state bias (C-band)</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<source>CLS</source>
@@ -906,7 +912,7 @@ GNU Lesser General Public License for more details.
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 </var>
-<var sat="j2" name="ssb_cls_mle3" field="1512">
+<var name="ssb_cls_mle3" field="1512" sat="j2">
 	<long_name>CLS non-parametric sea state bias (MLE3)</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<source>CLS</source>
@@ -927,7 +933,6 @@ GNU Lesser General Public License for more details.
 	<units>m</units>
 	<limits>-200 200</limits>
 	<data>mss_cls01</data>
-	<backup>mss_cnescls11</backup>
 	<format>f10.4</format>
 	<compress>int4 1d-4</compress>
 </var>
@@ -979,11 +984,10 @@ GNU Lesser General Public License for more details.
 	<units>m</units>
 	<limits>-200 200</limits>
 	<data>mss_dnsc08</data>
-	<backup>mss_dtu10</backup>
 	<format>f10.4</format>
 	<compress>int4 1d-4</compress>
 </var>
-<var sat="c2" name="mss_ucl04" field="1613">
+<var name="mss_ucl04" field="1613" sat="c2">
 	<long_name>UCL04 mean sea surface height</long_name>
 	<source>UCL</source>
 	<units>m</units>
@@ -1010,6 +1014,10 @@ GNU Lesser General Public License for more details.
 	<format>f10.4</format>
 	<compress>int4 1d-4</compress>
 </var>
+<!--
+	<alias name="mss_dnsc08">,mss_dtu10</alias>
+	<alias name="mss_cls01">,mss_cnescls11</alias>
+-->
 <alias name="mss" field="16">mss_dnsc08</alias>
 
 <var name="swh_ku" field="1701">
@@ -1017,12 +1025,12 @@ GNU Lesser General Public License for more details.
 	<standard_name>sea_surface_wave_significant_height</standard_name>
 	<units>m</units>
 	<limits>0 8</limits>
-        <limits sat="c2 n1">-0.5 8.0</limits> <!--Due to model bias and noise, allow negative values-->
+	<limits sat="c2 n1">-0.5 8.0</limits> <!--Due to model bias and noise, allow negative values-->
 	<data>swh_ku</data>
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var sat="j1 j2 tx" name="swh_c" field="1702">
+<var name="swh_c" field="1702" sat="j1 j2 tx">
 	<long_name>C-band significant wave height</long_name>
 	<standard_name>sea_surface_wave_significant_height</standard_name>
 	<units>m</units>
@@ -1031,7 +1039,7 @@ GNU Lesser General Public License for more details.
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var sat="n1" name="swh_s" field="1702">
+<var name="swh_s" field="1702" sat="n1">
 	<long_name>S-band significant wave height</long_name>
 	<standard_name>sea_surface_wave_significant_height</standard_name>
 	<units>m</units>
@@ -1040,7 +1048,7 @@ GNU Lesser General Public License for more details.
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var sat="j2" name="swh_ku_mle3" field="1711">
+<var name="swh_ku_mle3" field="1711" sat="j2">
 	<long_name>Ku-band significant wave height (MLE3)</long_name>
 	<standard_name>sea_surface_wave_significant_height</standard_name>
 	<units>m</units>
@@ -1060,7 +1068,7 @@ GNU Lesser General Public License for more details.
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var sat="j1 j2 tx" name="sig0_c" field="1802">
+<var name="sig0_c" field="1802" sat="j1 j2 tx">
 	<long_name>C-band backscatter coefficient</long_name>
 	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 	<units>dB</units>
@@ -1069,7 +1077,7 @@ GNU Lesser General Public License for more details.
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var sat="n1" name="sig0_s" field="1802">
+<var name="sig0_s" field="1802" sat="n1">
 	<long_name>S-band backscatter coefficient</long_name>
 	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 	<units>dB</units>
@@ -1078,7 +1086,7 @@ GNU Lesser General Public License for more details.
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var sat="gs" name="sig0_sdr" field="1803">
+<var name="sig0_sdr" field="1803" sat="gs">
 	<long_name>Ku-band backscatter coefficient (SDR)</long_name>
 	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 	<units>dB</units>
@@ -1087,7 +1095,7 @@ GNU Lesser General Public License for more details.
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var sat="c2" name="agc" field="1803">
+<var name="agc" field="1803" sat="c2">
 	<long_name>automatic gain control</long_name>
 	<units>dB</units>
 	<limits>0 70</limits>
@@ -1095,7 +1103,7 @@ GNU Lesser General Public License for more details.
 	<format>f6.3</format>
 	<compress>int4 1d-3</compress>
 </var>
-<var sat="j2" name="sig0_ku_mle3" field="1811">
+<var name="sig0_ku_mle3" field="1811" sat="j2">
 	<long_name>Ku-band backscatter coefficient (MLE3)</long_name>
 	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 	<units>dB</units>
@@ -1116,7 +1124,7 @@ GNU Lesser General Public License for more details.
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var sat="j1 j2 pn tx" name="wind_speed_rad" field="1902">
+<var name="wind_speed_rad" field="1902" sat="j1 j2 pn tx">
 	<long_name>radiometer wind speed</long_name>
 	<standard_name>wind_speed_alt</standard_name>
 	<source>radiometer</source>
@@ -1126,7 +1134,7 @@ GNU Lesser General Public License for more details.
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var sat="!e1 gs" name="wind_speed_ecmwf_u" field="1903">
+<var name="wind_speed_ecmwf_u" field="1903" sat="!e1 gs">
 	<long_name>ECMWF model wind speed (U)</long_name>
 	<standard_name>eastward_wind</standard_name>
 	<source>ECMWF</source>
@@ -1136,7 +1144,7 @@ GNU Lesser General Public License for more details.
 	<format>f7.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var sat="!e1 gs" name="wind_speed_ecmwf_v" field="1904">
+<var name="wind_speed_ecmwf_v" field="1904" sat="!e1 gs">
 	<long_name>ECMWF model wind speed (V)</long_name>
 	<standard_name>northward_wind</standard_name>
 	<source>ECMWF</source>
@@ -1146,7 +1154,7 @@ GNU Lesser General Public License for more details.
 	<format>f7.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var sat="n1" name="wind_speed_cls" field="1905">
+<var name="wind_speed_cls" field="1905" sat="n1">
 	<long_name>altimeter wind speed (CLS algo)</long_name>
 	<standard_name>wind_speed_alt</standard_name>
 	<source>altimeter, CLS algorithm</source>
@@ -1156,7 +1164,7 @@ GNU Lesser General Public License for more details.
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var sat="j2" name="wind_speed_alt_mle3" field="1911">
+<var name="wind_speed_alt_mle3" field="1911" sat="j2">
 	<long_name>altimeter wind speed (MLE3)</long_name>
 	<standard_name>wind_speed_alt</standard_name>
 	<source>altimeter</source>
@@ -1187,11 +1195,11 @@ GNU Lesser General Public License for more details.
 	<limits sat="tx">0.00 0.15</limits> <!--TOPEX a-b tracker leads to much lower std dev than other satellites-->
 	<data>range_rms_ku</data>
 	<format>f6.4</format>
-	<backup>0</backup>
+	<default>0</default>
 	<compress>int2 1d-4</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<var sat="j1 j2" name="range_rms_c" field="2004">
+<var name="range_rms_c" field="2004" sat="j1 j2">
 	<long_name>std dev of C-band range</long_name>
 	<units>m</units>
 	<limits>0.0 0.4</limits>
@@ -1201,7 +1209,7 @@ GNU Lesser General Public License for more details.
 	<comment>Based on valid high-rate measurements</comment>
 </var>
 <!--
-<var sat="n1" name="range_rms_s" field="2004">
+<var name="range_rms_s" field="2004" sat="n1">
 	<long_name>std dev of S-band range</long_name>
 	<units>m</units>
 	<limits>0.0 0.4</limits>
@@ -1211,13 +1219,13 @@ GNU Lesser General Public License for more details.
 	<comment>Based on valid high-rate measurements</comment>
 </var>
 -->
-<var sat="j2" name="range_rms_ku_mle3" field="2012">
+<var name="range_rms_ku_mle3" field="2012" sat="j2">
 	<long_name>std dev of Ku-band range (MLE3)</long_name>
 	<units>m</units>
 	<limits>0.00 0.17</limits> <!--May need adjustment-->
 	<data>range_rms_ku_mle3</data>
 	<format>f6.4</format>
-	<backup>0</backup>
+	<default>0</default>
 	<compress>int2 1d-4</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
@@ -1229,18 +1237,18 @@ GNU Lesser General Public License for more details.
 	<limits sat="j1 j2">15.5 20.5</limits>
 	<limits sat="g1 gs tx">8.5 10.5</limits> <!--GFO, Geosat, TOPEX are only 10 Hz-->
 	<data>range_numval_ku</data>
-	<backup>20</backup>
+	<default>20</default>
 	<format>f3.0</format>
 	<compress>int1</compress>
 </var>
-<var sat="j1 j2" name="range_numval_c" field="2102">
+<var name="range_numval_c" field="2102" sat="j1 j2">
 	<long_name>number of valid C-band measurements</long_name>
 	<limits>16.5 20.5</limits>
 	<data>range_numval_c</data>
 	<format>f3.0</format>
 	<compress>int1</compress>
 </var>
-<var sat="j2" name="range_numval_ku_mle3" field="2101">
+<var name="range_numval_ku_mle3" field="2101" sat="j2">
 	<long_name>number of valid Ku-band measurements (MLE3)</long_name>
 	<limits>15.5 20.5</limits>
 	<data>range_numval_ku_mle3</data>
@@ -1249,7 +1257,7 @@ GNU Lesser General Public License for more details.
 </var>
 <alias name="range_numval" field="21">range_numval_ku</alias>
 
-<var sat="j1 j2 n1" name="topo_dtm2000" field="2202">
+<var name="topo_dtm2000" field="2202" sat="j1 j2 n1">
 	<long_name>DTM2000 topography</long_name>
 	<source>DTM2000</source>
 	<units>m</units>
@@ -1262,7 +1270,6 @@ GNU Lesser General Public License for more details.
 	<source>DNSC08</source>
 	<units>m</units>
 	<data>topo_dnsc08</data>
-	<backup>topo_dtu10</backup>
 	<format>f7.0</format>
 	<compress>int2</compress>
 </var>
@@ -1284,6 +1291,9 @@ GNU Lesser General Public License for more details.
 	<format>f7.0</format>
 	<compress>int2</compress>
 </var>
+<!--
+	<alias name="topo_dnsc08">,topo_dtu10</alias>
+-->
 <alias name="topo" field="22">topo_dnsc08</alias>
 
 <if sat="pn tx">
@@ -1404,7 +1414,7 @@ GNU Lesser General Public License for more details.
 	</var>
 	<alias name="peakiness" field="24">peakiness_ku</alias>
 </if>
-<var sat="n1" name="peakiness_s" field="2402">
+<var name="peakiness_s" field="2402" sat="n1">
 	<long_name>S-band peakiness</long_name>
 	<limits>1.4 1.9</limits>
 	<data>peakiness_s</data>
@@ -1599,14 +1609,14 @@ GNU Lesser General Public License for more details.
 		swh_suspect backscatter_suspect tracking_preset orbit_degraded
 	</flag_masks>
 </var>
-<var sat="j1" name="flags_orig" field="2602">
+<var name="flags_orig" field="2602" sat="j1">
 	<long_name>original flag word (before enhancement)</long_name>
 	<limits>65512 0</limits>
 	<data>flags_orig</data>
 	<format>i1,15(1x,i1)</format>
 	<compress>int2</compress>
 </var>
-<var sat="j2" name="flags_mle3" field="2611">
+<var name="flags_mle3" field="2611" sat="j2">
 	<long_name>flag word (MLE3)</long_name>
 	<limits>65512 0</limits>
 	<data>flags_mle3</data>
@@ -1620,7 +1630,7 @@ GNU Lesser General Public License for more details.
 	</flag_masks>
 </var>
 
-<var sat="c2 e1 e2 gs n1" name="drange_ku" field="2701">
+<var name="drange_ku" field="2701" sat="c2 e1 e2 gs n1">
 	<long_name>Ku-band range bias</long_name>
 	<units>m</units>
 	<data>drange_ku</data>
@@ -1628,7 +1638,7 @@ GNU Lesser General Public License for more details.
 	<format>f6.3</format>
 	<comment>Range bias already added to range</comment>
 </var>
-<var sat="c2 gs" name="drange_cal" field="2702">
+<var name="drange_cal" field="2702" sat="c2 gs">
 	<long_name>internal calibration correction to range</long_name>
 	<units>m</units>
 	<data>drange_cal</data>
@@ -1636,7 +1646,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-3</compress>
 	<comment>Range bias already added to range</comment>
 </var>
-<var sat="e1 e2" name="drange_cal" field="2702">
+<var name="drange_cal" field="2702" sat="e1 e2">
 	<long_name>SPTR correction to range</long_name>
 	<units>m</units>
 	<data>drange_cal</data>
@@ -1644,7 +1654,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-3</compress>
 	<comment>Range bias already added to range</comment>
 </var>
-<var sat="e1 e2 gs n1" name="drange_uso" field="2703">
+<var name="drange_uso" field="2703" sat="e1 e2 gs n1">
 	<long_name>USO correction to Ku-band range</long_name>
 	<units>m</units>
 	<data>drange_uso</data>
@@ -1652,7 +1662,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-3</compress>
 	<comment>Range bias already added to range</comment>
 </var>
-<var sat="c2" name="drange_fm" field="2704">
+<var name="drange_fm" field="2704" sat="c2">
 	<long_name>Doppler correction to range</long_name>
 	<units>m</units>
 	<data>drange_fm</data>
@@ -1660,7 +1670,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-3</compress>
 	<comment>Range bias already added to range</comment>
 </var>
-<var sat="pn tx" name="drange_swh_att_ku" field="2705">
+<var name="drange_swh_att_ku" field="2705" sat="pn tx">
 	<long_name>Ku-band range correction due to SWH/attitude</long_name>
 	<units>m</units>
 	<data>drange_swh_att_ku</data>
@@ -1668,7 +1678,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-3</compress>
 	<comment>Range bias already added to range</comment>
 </var>
-<var sat="tx" name="drange_swh_att_c" field="2706">
+<var name="drange_swh_att_c" field="2706" sat="tx">
 	<long_name>C-band range correction due to SWH/attitude</long_name>
 	<units>m</units>
 	<data>drange_swh_att_c</data>
@@ -1676,7 +1686,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-3</compress>
 	<comment>Range bias already added to range</comment>
 </var>
-<var sat="pn tx" name="drange_cg" field="2707">
+<var name="drange_cg" field="2707" sat="pn tx">
 	<long_name>center-of-gravity correction to range</long_name>
 	<units>m</units>
 	<data>drange_cg</data>
@@ -1684,7 +1694,7 @@ GNU Lesser General Public License for more details.
 	<format>f6.3</format>
 	<comment>Range bias already added to range</comment>
 </var>
-<var sat="j1" name="drange_dat" field="2708">
+<var name="drange_dat" field="2708" sat="j1">
 	<long_name>datation correction to range</long_name>
 	<units>m</units>
 	<data>drange_dat</data>
@@ -1692,7 +1702,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-3</compress>
 	<comment>Range bias already added to range</comment>
 </var>
-<alias sat="c2 e1 e2 gs n1" name="drange" field="27">drange_ku</alias>
+<alias name="drange" field="27" sat="c2 e1 e2 gs n1">drange_ku</alias>
 
 <var name="swh_rms_ku_norm" field="2801">
 	<long_name>normalized std dev of Ku-band significant wave height</long_name>
@@ -1711,11 +1721,11 @@ GNU Lesser General Public License for more details.
 	<limits sat="tx">0.0 0.9</limits> <!--TOPEX a-b tracker leads to much lower std dev than other satellites-->
 	<data>swh_rms_ku</data>
 	<format>f5.3</format>
-	<backup>0</backup>
+	<default>0</default>
 	<compress>int2 1d-3</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<var sat="j1 j2 tx" name="swh_rms_c" field="2804">
+<var name="swh_rms_c" field="2804" sat="j1 j2 tx">
 	<long_name>std dev of C-band significant wave height</long_name>
 	<units>m</units>
 	<limits>0.0 2.1</limits>
@@ -1724,7 +1734,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-3</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<var sat="n1" name="swh_rms_s" field="2804">
+<var name="swh_rms_s" field="2804" sat="n1">
 	<long_name>std dev of S-band significant wave height</long_name>
 	<units>m</units>
 	<limits>0.0 2.1</limits>
@@ -1733,13 +1743,13 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-3</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<var sat="j2" name="swh_rms_ku_mle3" field="2812">
+<var name="swh_rms_ku_mle3" field="2812" sat="j2">
 	<long_name>std dev of Ku-band significant wave height (MLE3)</long_name>
 	<units>m</units>
 	<limits>0.0 1.5</limits> <!--Might need to be changed-->
 	<data>swh_rms_ku_mle3</data>
 	<format>f5.3</format>
-	<backup>0</backup>
+	<default>0</default>
 	<compress>int2 1d-3</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
@@ -1759,10 +1769,10 @@ GNU Lesser General Public License for more details.
 	<format>f5.3</format>
 	<compress>int2 1d-3</compress>
 	<limits>0.0 1.0</limits>
-	<backup>0</backup>
+	<default>0</default>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<var sat="j1 j2 tx" name="sig0_rms_c" field="2904">
+<var name="sig0_rms_c" field="2904" sat="j1 j2 tx">
 	<long_name>std dev of C-band backscatter coefficient</long_name>
 	<units>dB</units>
 	<data>sig0_rms_c</data>
@@ -1770,7 +1780,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-3</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<var sat="n1" name="sig0_rms_s" field="2904">
+<var name="sig0_rms_s" field="2904" sat="n1">
 	<long_name>std dev of S-band backscatter coefficient</long_name>
 	<units>dB</units>
 	<data>sig0_rms_s</data>
@@ -1778,19 +1788,19 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-3</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<var sat="j2" name="sig0_rms_ku_mle3" field="2912">
+<var name="sig0_rms_ku_mle3" field="2912" sat="j2">
 	<long_name>std dev of Ku-band backscatter coefficient (MLE3)</long_name>
 	<units>dB</units>
 	<data>sig0_rms_ku_mle3</data>
 	<format>f5.3</format>
 	<compress>int2 1d-3</compress>
 	<limits>0.0 1.0</limits>
-	<backup>0</backup>
+	<default>0</default>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
 <alias name="sig0_rms" field="29">sig0_rms_ku</alias>
 
-<var sat="!n1" name="off_nadir_angle_wf_ku" field="3001">
+<var name="off_nadir_angle_wf_ku" field="3001" sat="!n1">
 	<long_name>off-nadir pointing angle from waveform</long_name>
 	<units>degrees</units>
 	<data>off_nadir_angle2_wf_ku SQRT</data>
@@ -1798,13 +1808,13 @@ GNU Lesser General Public License for more details.
 	<format>f5.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var sat="!n1" name="off_nadir_angle2_wf_ku" field="3002">
+<var name="off_nadir_angle2_wf_ku" field="3002" sat="!n1">
 	<long_name>off-nadir pointing angle squared from waveform</long_name>
 	<units>degrees^2</units>
 	<data>off_nadir_angle2_wf_ku</data>
 	<data sat="gs pn tx">off_nadir_angle_wf_ku SQR</data> <!--Compute attitude^2 from attitude-->
 	<format>f7.4</format>
-	<backup>0</backup>
+	<default>0</default>
 	<compress>int2 1d-4</compress>
 	<limits sat="j1">-0.20 0.64</limits> <!--Attitude^2 on Jason-1 is pretty bad-->
 	<limits sat="j2">-0.20 0.64</limits> <!--Attitude^2 on Jason-2 is pretty bad-->
@@ -1813,7 +1823,7 @@ GNU Lesser General Public License for more details.
 		<limits>-0.05 0.05</limits>
 	</if>
 </var>
-<var sat="c2 j1 j2 pn" name="off_nadir_angle_pf" field="3003">
+<var name="off_nadir_angle_pf" field="3003" sat="c2 j1 j2 pn">
 	<long_name>off-nadir pointing angle from platform</long_name>
 	<units>degrees</units>
 	<data>off_nadir_angle2_pf SQRT</data>
@@ -1822,38 +1832,38 @@ GNU Lesser General Public License for more details.
 	<format>f5.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var sat="c2 j1 j2 pn" name="off_nadir_angle2_pf" field="3004">
+<var name="off_nadir_angle2_pf" field="3004" sat="c2 j1 j2 pn">
 	<long_name>off-nadir pointing angle squared from platform</long_name>
 	<units>degrees^2</units>
 	<data>off_nadir_angle2_pf</data>
 	<data sat="c2">attitude_pitch SQR attitude_roll SQR ADD</data>
 	<data sat="pn tx">off_nadir_angle_pf SQR</data> <!--Compute attitude^2 from attitude-->
 	<format>f7.4</format>
-	<backup>0</backup>
+	<default>0</default>
 	<compress>int2 1d-4</compress>
 </var>
-<var sat="c2" name="off_nadir_angle2_wf_rms_ku" field="3005">
+<var name="off_nadir_angle2_wf_rms_ku" field="3005" sat="c2">
 	<long_name>std dev of off-nadir pointing angle squared from waveform</long_name>
 	<units>degrees^2</units>
 	<data>off_nadir_angle2_wf_rms_ku</data>
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 </var>
-<var sat="c2" name="attitude_pitch" field="3006">
+<var name="attitude_pitch" field="3006" sat="c2">
 	<long_name>platform pitch angle</long_name>
 	<units>degrees</units>
 	<data>attitude_pitch</data>
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 </var>
-<var sat="c2" name="attitude_roll" field="3007">
+<var name="attitude_roll" field="3007" sat="c2">
 	<long_name>platform roll angle</long_name>
 	<units>degrees</units>
 	<data>attitude_roll</data>
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 </var>
-<var sat="c2" name="attitude_yaw" field="3008">
+<var name="attitude_yaw" field="3008" sat="c2">
 	<long_name>platform yaw angle</long_name>
 	<units>degrees</units>
 	<data>attitude_yaw</data>
@@ -1862,25 +1872,25 @@ GNU Lesser General Public License for more details.
 </var>
 <alias name="attitude" field="30">off_nadir_angle2_wf_ku</alias>
 
-<var sat="tx" name="dswh_ku" field="3101">
+<var name="dswh_ku" field="3101" sat="tx">
 	<long_name>Ku-band significant wave height bias</long_name>
 	<units>m</units>
 	<data>dswh_ku</data>
 	<format>f6.3</format>
-	<backup>0</backup>
+	<default>0</default>
 	<compress>int2 1d-3</compress>
 	<comment>Bias already added to significant wave height</comment>
 </var>
-<var sat="tx" name="dswh_c" field="3102">
+<var name="dswh_c" field="3102" sat="tx">
 	<long_name>C-band significant wave height bias</long_name>
 	<units>m</units>
 	<data>dswh_c</data>
 	<format>f6.3</format>
-	<backup>0</backup>
+	<default>0</default>
 	<compress>int2 1d-3</compress>
 	<comment>Bias already added to significant wave height</comment>
 </var>
-<var sat="pn tx" name="dswh_swh_att_ku" field="3103">
+<var name="dswh_swh_att_ku" field="3103" sat="pn tx">
 	<long_name>Ku-band significant wave height correction due to SWH/attitude</long_name>
 	<units>m</units>
 	<data>dswh_swh_att_ku</data>
@@ -1888,7 +1898,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-3</compress>
 	<comment>Bias already added to significant wave height</comment>
 </var>
-<var sat="tx" name="dswh_swh_att_c" field="3104">
+<var name="dswh_swh_att_c" field="3104" sat="tx">
 	<long_name>C-band significant wave height correction due to SWH/attitude</long_name>
 	<units>m</units>
 	<data>dswh_swh_att_c</data>
@@ -1896,27 +1906,27 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-3</compress>
 	<comment>Bias already added to significant wave height</comment>
 </var>
-<alias sat="tx" name="dswh" field="31">dswh_ku</alias>
+<alias name="dswh" field="31" sat="tx">dswh_ku</alias>
 
-<var sat="e1 e2 tx" name="dsig0_ku" field="3201">
+<var name="dsig0_ku" field="3201" sat="e1 e2 tx">
 	<long_name>Ku-band backscatter coefficient bias</long_name>
 	<units>dB</units>
 	<data>dsig0_ku</data>
 	<format>f6.3</format>
-	<backup>0</backup>
+	<default>0</default>
 	<compress>int2 1d-3</compress>
 	<comment>Bias already added to backscatter coefficient</comment>
 </var>
-<var sat="tx" name="dsig0_c" field="3202">
+<var name="dsig0_c" field="3202" sat="tx">
 	<long_name>C-band backscatter coefficient bias</long_name>
 	<units>dB</units>
 	<data>dsig0_c</data>
 	<format>f6.3</format>
-	<backup>0</backup>
+	<default>0</default>
 	<compress>int2 1d-3</compress>
 	<comment>Bias already added to backscatter coefficient</comment>
 </var>
-<var sat="e1 e2 j1 j2 n1 pn tx" name="dsig0_atmos_ku" field="3203">
+<var name="dsig0_atmos_ku" field="3203" sat="e1 e2 j1 j2 n1 pn tx">
 	<long_name>Ku-band backscatter coefficient correction due to atmosphere/attitude</long_name>
 	<units>dB</units>
 	<data>dsig0_atmos_ku</data>
@@ -1924,7 +1934,7 @@ GNU Lesser General Public License for more details.
 	<compress>int1 1d-2</compress>
 	<comment>Bias already added to backscatter coefficient</comment>
 </var>
-<var sat="j1 j2 tx" name="dsig0_atmos_c" field="3204">
+<var name="dsig0_atmos_c" field="3204" sat="j1 j2 tx">
 	<long_name>C-band backscatter coefficient correction due to atmosphere/attitude</long_name>
 	<units>dB</units>
 	<data>dsig0_atmos_c</data>
@@ -1932,7 +1942,7 @@ GNU Lesser General Public License for more details.
 	<compress>int1 1d-2</compress>
 	<comment>Bias already added to backscatter coefficient</comment>
 </var>
-<var sat="n1" name="dsig0_atmos_s" field="3204">
+<var name="dsig0_atmos_s" field="3204" sat="n1">
 	<long_name>S-band backscatter coefficient correction due to atmosphere/attitude</long_name>
 	<units>dB</units>
 	<data>dsig0_atmos_s</data>
@@ -1940,7 +1950,7 @@ GNU Lesser General Public License for more details.
 	<compress>int1 1d-2</compress>
 	<comment>Bias already added to backscatter coefficient</comment>
 </var>
-<var sat="c2" name="dsig0_swh_att" field="3205">
+<var name="dsig0_swh_att" field="3205" sat="c2">
 	<long_name>backscatter coefficient correction due to SWH/attitude</long_name>
 	<units>dB</units>
 	<data>dsig0_swh_att</data>
@@ -1948,7 +1958,7 @@ GNU Lesser General Public License for more details.
 	<compress>int1 1d-2</compress>
 	<comment>Bias already added to backscatter coefficient</comment>
 </var>
-<var sat="c2" name="dsig0_range" field="3206">
+<var name="dsig0_range" field="3206" sat="c2">
 	<long_name>backscatter coefficient correction due to range</long_name>
 	<units>dB</units>
 	<data>dsig0_range</data>
@@ -1956,7 +1966,7 @@ GNU Lesser General Public License for more details.
 	<compress>int1 1d-2</compress>
 	<comment>Bias already added to backscatter coefficient</comment>
 </var>
-<var sat="c2" name="dsig0_temp" field="3207">
+<var name="dsig0_temp" field="3207" sat="c2">
 	<long_name>backscatter coefficient correction due to temperature</long_name>
 	<units>dB</units>
 	<data>dsig0_temp</data>
@@ -1964,9 +1974,9 @@ GNU Lesser General Public License for more details.
 	<compress>int1 1d-2</compress>
 	<comment>Bias already added to backscatter coefficient</comment>
 </var>
-<alias sat="e1 e2 tx" name="dsig0" field="32">dsig0_ku</alias>
+<alias name="dsig0" field="32" sat="e1 e2 tx">dsig0_ku</alias>
 
-<var sat="j1 j2 n1 pn tx" name="liquid_water" field="3301 33">
+<var name="liquid_water" field="3301 33" sat="j1 j2 n1 pn tx">
 	<long_name>radiometer liquid water content</long_name>
 	<standard_name>atmosphere_cloud_liquid_water_content</standard_name>
 	<units>kg/m^2</units>
@@ -1991,13 +2001,13 @@ GNU Lesser General Public License for more details.
 	<compress>int2</compress>
 </var>
 -->
-<var sat="gs" name="flags_sdr_status" field="3402">
+<var name="flags_sdr_status" field="3402" sat="gs">
 	<long_name>SDR status flags</long_name>
 	<data>flags_sdr_status</data>
 	<format>f6.0</format>
 	<compress>int2</compress>
 </var>
-<var sat="gs" name="flags_sdr_qual" field="3403">
+<var name="flags_sdr_qual" field="3403" sat="gs">
 	<long_name>SDR quality flags</long_name>
 	<data>flags_sdr_qual</data>
 	<format>f6.0</format>
@@ -2011,7 +2021,7 @@ GNU Lesser General Public License for more details.
 	<format>f6.2</format>
 	<compress>int2 1d-2</compress>
 </var>
-<var sat="gs" name="vatt_t" field="3405">
+<var name="vatt_t" field="3405" sat="gs">
 	<long_name>Vatt_t</long_name>
 	<units>volt</units>
 	<data>vatt_t</data>
@@ -2019,70 +2029,70 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-3</compress>
 </var>
 -->
-<var sat="c2" name="flags_retrack" field="3406">
+<var name="flags_retrack" field="3406" sat="c2">
 	<long_name>retracking flags</long_name>
 	<data>flags_retrack</data>
 	<format>f6.0</format>
 	<compress>int2</compress>
 </var>
-<var sat="tx" name="gate_index_ku" field="3407">
+<var name="gate_index_ku" field="3407" sat="tx">
 	<long_name>Ku-band gate index</long_name>
 	<data>gate_index_ku</data>
 	<format>f6.0</format>
 	<compress>int2</compress>
 </var>
-<var sat="tx" name="gate_index_c" field="3408">
+<var name="gate_index_c" field="3408" sat="tx">
 	<long_name>C-band gate index</long_name>
 	<data>gate_index_c</data>
 	<format>f6.0</format>
 	<compress>int2</compress>
 </var>
-<var sat="c2" name="mqe" field="3409">
+<var name="mqe" field="3409" sat="c2">
 	<long_name>mean quadratic error of retracking</long_name>
 	<data>mqe</data>
 	<format>f6.3</format>
 	<compress>int2 1e-3</compress>
 </var>
-<var sat="c2" name="nr_iter" field="3410">
+<var name="nr_iter" field="3410" sat="c2">
 	<long_name>number of iterations of retracking</long_name>
 	<data>nr_iter</data>
 	<format>f3.0</format>
 	<compress>int1</compress>
 </var>
-<var sat="c2" name="noise_floor_ku" field="3411">
+<var name="noise_floor_ku" field="3411" sat="c2">
 	<long_name>Ku-band noise floor of waveforms</long_name>
 	<data>noise_floor_ku</data>
 	<units>dB</units>
 	<format>f7.3</format>
 	<compress>int2 1e-3</compress>
 </var>
-<var sat="c2" name="noise_floor_rms_ku" field="3412">
+<var name="noise_floor_rms_ku" field="3412" sat="c2">
 	<long_name>std dev of Ku-band noise floor of waveforms</long_name>
 	<data>noise_floor_rms_ku</data>
 	<units>dB</units>
 	<format>f7.3</format>
 	<compress>int2 1e-3</compress>
 </var>
-<var sat="c2" name="flags_star_tracker" field="3413">
+<var name="flags_star_tracker" field="3413" sat="c2">
 	<long_name>star tracker flags</long_name>
 	<data>flags_star_tracker</data>
 	<compress>int1</compress>
 	<format>f2.0</format>
 </var>
-<var sat="gs" name="track_mode" field="3415">
+<var name="track_mode" field="3415" sat="gs">
 	<long_name>tracking mode</long_name>
 	<data>track_mode</data>
 	<format>f6.0</format>
 	<compress>int2</compress>
 </var>
-<var sat="gs" name="seq_nr" field="3416">
+<var name="seq_nr" field="3416" sat="gs">
 	<long_name>10-Hz sequence number</long_name>
 	<data>seq_nr</data>
 	<format>f6.0</format>
 	<compress>int2</compress>
 </var>
 
-<var sat="n1 tx" name="rain_ice_index" field="3501 35">
+<var name="rain_ice_index" field="3501 35" sat="n1 tx">
 	<long_name>rain/ice index</long_name>
 	<limits>0 2</limits>
 	<data>rain_ice_index</data>
@@ -2119,16 +2129,16 @@ GNU Lesser General Public License for more details.
 	<limits>-1 1</limits>
 	<data>ref_frame_offset</data>
 	<format>f7.4</format>
-	<backup>0</backup>
+	<default>0</default>
 	<compress>int2 1d-4</compress>
 </var>
-<var sat="j2" name="ref_frame_offset_mle3" field="3811">
+<var name="ref_frame_offset_mle3" field="3811" sat="j2">
 	<long_name>reference frame offset (MLE3)</long_name>
 	<units>m</units>
 	<limits>-1 1</limits>
 	<data>ref_frame_offset_mle3</data>
 	<format>f7.4</format>
-	<backup>0</backup>
+	<default>0</default>
 	<compress>int2 1d-4</compress>
 </var>
 
@@ -2151,7 +2161,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 </var>
 
-<var sat="!e1 gs" name="wave_m0" field="4001 40">
+<var name="wave_m0" field="4001 40" sat="!e1 gs">
 	<long_name>wave height variance (WaveWatch3)</long_name>
 	<source>WaveWatch3</source>
 	<units>m^2</units>
@@ -2159,7 +2169,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-3</compress>
 </var>
 
-<var sat="!e1 gs" name="wave_m1" field="4101 41">
+<var name="wave_m1" field="4101 41" sat="!e1 gs">
 	<long_name>first moment of wave height (WaveWatch3)</long_name>
 	<source>WaveWatch3</source>
 	<units>m^2/s</units>
@@ -2168,7 +2178,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 </var>
 
-<var sat="!e1 gs" name="wave_m2" field="4201 42">
+<var name="wave_m2" field="4201 42" sat="!e1 gs">
 	<long_name>wave velocity variance (WaveWatch3)</long_name>
 	<source>WaveWatch3</source>
 	<units>m^2/s^2</units>
@@ -2177,7 +2187,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-5</compress>
 </var>
 
-<var sat="!e1 gs" name="wave_m4" field="4301 43">
+<var name="wave_m4" field="4301 43" sat="!e1 gs">
 	<long_name>wave slope variance (WaveWatch3)</long_name>
 	<source>WaveWatch3</source>
 	<units>radian^2</units>
@@ -2186,7 +2196,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-6</compress>
 </var>
 
-<var sat="!e1 gs" name="wave_shs" field="4401 44">
+<var name="wave_shs" field="4401 44" sat="!e1 gs">
 	<long_name>wave swell (WaveWatch3)</long_name>
 	<source>WaveWatch3</source>
 	<units>m</units>
@@ -2204,7 +2214,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2</compress>
 </var>
 
-<var sat="e1 e2 n1" name="seaice_class" field="4601 46">
+<var name="seaice_class" field="4601 46" sat="e1 e2 n1">
 	<long_name>sea ice classification</long_name>
 	<limits>-0.5 15.5</limits>
 	<data>seaice_class</data>

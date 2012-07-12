@@ -29,7 +29,7 @@ integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, rads_
 integer(fourbyteint), parameter :: rads_src_none = 0, rads_src_nc_var = 10, rads_src_nc_att = 11, rads_src_math = 20, &
 	rads_src_grid_lininter = 30, rads_src_grid_splinter = 31, rads_src_grid_query = 32, rads_src_constant = 40
 ! RADS4 warnings
-integer(fourbyteint), parameter :: rads_warn_alias_circular = -2, rads_warn_nc_file = -3
+integer(fourbyteint), parameter :: rads_warn_nc_file = -3
 ! RADS4 errors
 integer(fourbyteint), parameter :: rads_noerr = 0, &
 	rads_err_nc_file = 1, rads_err_nc_parse = 2, rads_err_nc_close = 3, rads_err_memory = 4, &
@@ -48,7 +48,7 @@ include 'config.inc'
 private :: rads_traxxing, rads_get_phase, rads_free_sat_struct
 
 type :: rads_varinfo
-	character(len=rads_varl) :: name                 ! Short name used by RADS
+	character(len=rads_varl) :: name                 ! Short name of variable used by RADS
 	character(len=rads_naml) :: long_name            ! Long name (description) of variable
 	character(len=rads_naml) :: standard_name        ! Optional pre-described CF-compliant 'standard' name ('' if not available)
 	character(len=rads_naml) :: source               ! Optional data source ('' if none)
@@ -58,9 +58,9 @@ type :: rads_varinfo
 	character(len=rads_cmdl) :: comment              ! Optional comment ('' if none)
 	character(len=rads_varl) :: units                ! Optional units of variable ('' if none)
 	character(len=rads_varl) :: format               ! Fortran format for output
-	character(len=rads_varl) :: backup               ! Optional backup RADS variable name (or value) ('' if none)
 	character(len=rads_varl) :: gridx, gridy         ! RADS variable names of the grid x and y coordinates
 	type(grid), pointer :: grid                      ! Pointer to grid for interpolation (if data source is grid)
+	real(eightbytereal) :: default                   ! Optional default value (Inf if not set)
 	real(eightbytereal) :: limits(2)                 ! Lower and upper limit for editing
 	real(eightbytereal) :: add_offset, scale_factor  ! Offset and scale factor in case of netCDF
 	integer(fourbyteint) :: ndims                    ! Number of dimensions of variable
@@ -73,8 +73,9 @@ type :: rads_varinfo
 endtype
 
 type :: rads_var
-	character(len=rads_varl) :: name                 ! Variable name (or alias thereof)
-	type(rads_varinfo), pointer :: info, inf1        ! Links to structs of type(rads_varinfo)
+	character(len=rads_varl), pointer :: name        ! Pointer to short name of variable (or alias thereof)
+	character(len=rads_naml), pointer :: long_name   ! Pointer to long name (description) of variable
+	type(rads_varinfo), pointer :: info, inf1, inf2  ! Links to structs of type(rads_varinfo)
 	logical(twobyteint) :: noedit                    ! .true. if editing is suspended
 	integer(twobyteint) :: field(2)                  ! RADS3 field numbers (rads_nofield = none)
 endtype
@@ -253,8 +254,8 @@ end interface rads_end
 !
 ! The array <data> must be at the correct size to contain the entire
 ! pass of data, i.e., it must have the dimension P%ndata.
-! If no data are available (and no backup variable) then NaN is
-! returned in the array <data>.
+! If no data are available and no default value and no secondary aliases
+! then NaN is returned in the array <data>.
 !
 ! Arguments:
 !  S        : Satellite/mission dependent structure
@@ -449,7 +450,7 @@ if (i < 0) S%command (len(S%command)-2:) = '...'
 ! Set all values in <S> struct to default
 if (present(debug)) S%debug = debug
 allocate (S%var(rads_var_chunk))
-S%var = rads_var ('', null(), null(), .false., rads_nofield)
+S%var = rads_var (null(), null(), null(), null(), null(), .false., rads_nofield)
 
 ! Read the global rads.xml setup file, the one in ~/.rads and the one in the current directory
 call rads_read_xml (S, trim(S%dataroot)//'/conf/rads.xml')
@@ -618,11 +619,15 @@ integer(fourbyteint) :: i,ios
 if (S%sat == '') return
 do i = S%nvar,1,-1
 	if (associated(S%var(i)%info)) then
-		if (S%var(i)%name == S%var(i)%info%name) then
+		if (.not.associated(S%var(i)%long_name,S%var(i)%info%long_name)) &
+			deallocate (S%var(i)%long_name, stat=ios)
+		if (associated(S%var(i)%name,S%var(i)%info%name)) then
 			if (associated(S%var(i)%info%grid)) call grid_free(S%var(i)%info%grid)
 			deallocate (S%var(i)%info, stat=ios)
+		else
+			deallocate (S%var(i)%name, stat=ios)
 		endif
-		nullify (S%var(i)%info)
+		nullify (S%var(i)%info,S%var(i)%name,S%var(i)%long_name)
 	endif
 enddo
 do i = 1,size(S%phases)
@@ -807,7 +812,7 @@ contains
 
 subroutine rads_parse_option (opt)
 type(rads_option), intent(in) :: opt
-integer :: j, k, k0, k1
+integer :: j, k0, k1
 real(eightbytereal) :: val(2)
 ! Scan a single command line argument (option)
 val = S%nan
@@ -824,7 +829,12 @@ case ('P', 'pass')
 	call read_val (opt%arg, S%passes, '/-x')
 	if (S%passes(2) < 0) S%passes(2) = S%passes(1)
 case ('A', 'alias')
-	call rads_set_alias (S, opt%arg(:j-1), opt%arg(j+1:))
+	if (opt%arg(j+1:j+1) == ',' .or. opt%arg(j+1:j+1) == '/') then
+		! -Aalias=,var is processed as -Aalias=alias,var
+		call rads_set_alias (S, opt%arg(:j-1), opt%arg(:j-1) // opt%arg(j+1:))
+	else
+		call rads_set_alias (S, opt%arg(:j-1), opt%arg(j+1:))
+	endif
 case ('F', 'fmt', 'format')
 	call rads_set_format (S, opt%arg(:j-1), opt%arg(j+1:))
 case ('R', 'region')
@@ -853,14 +863,11 @@ case ('opt')
 			call rads_set_quality_flag (S, 'sla', opt%arg(:j-1)//opt%arg(j+1:))
 		endif
 	else
-		k0 = 1
-		k1 = len_trim(opt%arg)
-		do k = 1,k1
-			if (k == k1 .or. opt%arg(k+1:k+1) == ',' .or. opt%arg(k+1:k+1) == '/') then
-				call rads_set_alias (S, opt%arg(k0:k-2), opt%arg(k0:k))
-				call rads_set_quality_flag (S, 'sla', opt%arg(k0:k))
-				k0 = k + 2
-			endif
+		k1 = 0
+		do
+			if (.not.next_word (opt%arg, k0, k1)) exit
+			call rads_set_alias (S, opt%arg(k0:k1-2), opt%arg(k0:k1))
+			call rads_set_quality_flag (S, 'sla', opt%arg(k0:k1))
 		enddo
 	endif
 ! Finally try date arguments
@@ -875,6 +882,7 @@ end subroutine rads_parse_options
 !*rads_parse_varlist_0d -- Parse a string of variables
 !+
 subroutine rads_parse_varlist_0d (S, string)
+use rads_misc
 type (rads_sat), intent(inout) :: S
 character(len=*), intent(in) :: string
 !
@@ -888,21 +896,22 @@ character(len=*), intent(in) :: string
 ! Error codes:
 !  S%error  : rads_err_var
 !-----------------------------------------------------------------------
-integer(fourbyteint) :: i0, i, l, n, noedit
+integer(fourbyteint) :: i0, i1, n, noedit
 type(rads_var), pointer :: temp(:), var
 
-! Avoid parsing empty string
-l = len_trim(string)
-if (l == 0) then
+! Count the number of words first
+i1 = 0
+n = 0
+do
+	if (.not.next_word (string, i0, i1)) exit
+	n = n + 1
+enddo
+
+! If no variables, exit
+if (n == 0) then
 	call rads_error (S, rads_err_var, 'No variables selected')
 	return
 endif
-
-! Count the number of commas or slashes first to determine number of variables
-n = 1
-do i = 1,l
-	if (string(i:i) == ',' .or. string(i:i) == '/') n = n + 1
-enddo
 
 ! (Re)allocate memory
 if (associated(S%sel)) then
@@ -915,20 +924,18 @@ else
 endif
 
 ! Parse the variable list
-i0 = 1
-do i = 1,l
-	if (i == l .or. string(i+1:i+1) == ',' .or. string(i+1:i+1) == '/') then
-		noedit = 0
-		if (string(i:i) == rads_noedit) noedit = 1
-		var => rads_varptr(S, string(i0:i-noedit))
-		if (associated(var)) then
-			S%nsel = S%nsel + 1
-			S%sel(S%nsel) = var
-			if (noedit == 1) S%sel(S%nsel)%noedit = .true.
-		else
-			call rads_error (S, rads_err_var, 'Unknown variable "'//string(i0:i)//'" removed from list of variables')
-		endif
-		i0 = i + 2
+i1 = 0
+do
+	if (.not.next_word (string, i0, i1)) exit
+	noedit = 0
+	if (string(i1:i1) == rads_noedit) noedit = 1
+	var => rads_varptr(S, string(i0:i1-noedit))
+	if (associated(var)) then
+		S%nsel = S%nsel + 1
+		S%sel(S%nsel) = var
+		if (noedit == 1) S%sel(S%nsel)%noedit = .true.
+	else
+		call rads_error (S, rads_err_var, 'Unknown variable "'//string(i0:i1)//'" removed from list of variables')
 	endif
 enddo
 end subroutine rads_parse_varlist_0d
@@ -1380,8 +1387,8 @@ logical, intent(in) :: skip_edit
 ! This routine is common to all rads_get_var_* routines. It should only
 ! be called from those routines.
 !-----------------------------------------------------------------------
-type(rads_var), pointer :: alt
 type(rads_varinfo), pointer :: info
+integer :: i
 
 if (S%debug >= 4) write (*,*) 'rads_get_var_common: '//trim(var%name)
 
@@ -1394,42 +1401,48 @@ endif
 ! Set pointer to info struct
 info => var%info
 
-! Load data depending on type of data source
-select case (info%datasrc)
-case (rads_src_nc_var)
-	call rads_get_var_nc
-case (rads_src_nc_att)
-	call rads_get_att_nc
-case (rads_src_math)
-	call rads_get_var_math
-case (rads_src_grid_lininter, rads_src_grid_splinter, rads_src_grid_query)
-	call rads_get_var_grid
-case (rads_src_constant)
-	call rads_get_var_constant (info%dataname)
-case default
-	data = S%nan
-	return
-end select
-
-! Editing or error handling
-if (S%error == rads_noerr) then ! No error, edit if requested
-	if (.not.skip_edit) call rads_edit_data
-else if (info%backup == '') then ! No backup alternative, print error
-	call rads_error (S, rads_err_var, 'Error loading variable "'//trim(var%name)//'"')
-	data = S%nan
-else if (is_number(info%backup)) then ! Numerical backup
-	call rads_get_var_constant (info%backup)
-else ! Go look for alternative variable
+do i = 1,3 ! This loop is here to allow processing of aliases
 	S%error = rads_noerr
-	alt => rads_varptr (S, info%backup)
-	if (.not.associated(alt)) then
+
+	! Load data depending on type of data source
+	select case (info%datasrc)
+	case (rads_src_nc_var)
+		call rads_get_var_nc
+	case (rads_src_nc_att)
+		call rads_get_att_nc
+		case (rads_src_math)
+		call rads_get_var_math
+	case (rads_src_grid_lininter, rads_src_grid_splinter, rads_src_grid_query)
+		call rads_get_var_grid
+	case (rads_src_constant)
+		call rads_get_var_constant (info%dataname)
+	case default
 		data = S%nan
-	else
-		call rads_get_var_by_var (S, P, alt, data, skip_edit)
-		! When this returns, editing and statistics will have been done, so we should directly return
 		return
+	end select
+
+	! Editing or error handling
+	if (S%error == rads_noerr) then ! No error, edit if requested
+		if (.not.skip_edit) call rads_edit_data
+		exit
+	else if (info%default /= huge(0d0)) then ! Default value
+		data = info%default
+		if (.not.skip_edit) call rads_edit_data
+		exit
+
+	! Look for alternative variables and run loop again
+	else if (i == 1 .and. associated(var%inf1)) then
+		info => var%inf1
+	else if (i == 2 .and. associated(var%inf2)) then
+		info => var%inf2
+
+	else ! Ran out of options
+		call rads_error (S, rads_err_var, 'Could not find any data for variable "'//trim(var%name)//'"')
+		data = S%nan
+		exit
 	endif
-endif
+
+enddo ! End alias loop
 
 call rads_quality_check	! Check quality flags (if provided)
 
@@ -1502,6 +1515,7 @@ recursive subroutine rads_get_att_nc () ! Get data attribute from RADS netCDF fi
 use netcdf
 use rads_netcdf
 use rads_time
+use rads_misc
 integer(fourbyteint) :: varid, i
 character(len=26) :: date
 
@@ -1538,24 +1552,21 @@ end subroutine rads_get_att_nc
 recursive subroutine rads_get_var_math () ! Get data variable from MATH statement
 use rads_math
 type(math_ll), pointer :: top
-integer(fourbyteint) :: i, j, l, istat
+integer(fourbyteint) :: i, i0, i1, istat
 
 ! Start with a nullified 'top'
 nullify(top)
 
 ! Process the math commands left to right
-l = len_trim(info%dataname)
-i = 0
+i1 = 0
 do
-	j = index(info%dataname(i+1:),' ')
-	istat = math_eval(info%dataname(i+1:i+j),P%ndata,top)
+	if (.not.next_word (info%dataname, i0, i1)) exit
+	istat = math_eval(info%dataname(i0:i1),P%ndata,top)
 	if (istat /= 0) then  ! No command or value, likely to be a variable
 		call math_push (P%ndata,top)
-		call rads_get_var_by_name (S, P, info%dataname(i+1:i+j), top%data)
+		call rads_get_var_by_name (S, P, info%dataname(i0:i1), top%data)
 	endif
 	if (S%error /= rads_noerr) exit
-	i = i+j
-	if (i >= l) exit
 enddo
 
 ! When no error, copy top of stack to output
@@ -1721,13 +1732,13 @@ integer(twobyteint) :: field(2)
 logical :: endtag
 real(eightbytereal) :: node_rate
 type(rads_varinfo), pointer :: info
-type(rads_var), pointer :: var, alt
+type(rads_var), pointer :: var
 type(rads_phase), pointer :: phase
 
 ! Initialise
 S%error = rads_noerr
 skip_lvl = 0
-nullify (info, var, alt, phase)
+nullify (info, var, phase)
 
 ! Open XML file
 call xml_open (X, filename, .true.)
@@ -1749,7 +1760,9 @@ do
 	if (endtag) then
 		if (tag /= tags(X%level+1)) &
 			call xmlparse_error ('Closing tag </'//trim(tag)//'> follows opening tag <'//trim(tags(X%level+1))//'>')
-		if (X%level < skip_lvl) skip_lvl = 0	! Stop skipping when descended back below the starting level
+		if (X%level < skip_lvl) skip_lvl = 0  ! Stop skipping when descended back below the starting level
+		if (tag == 'var') nullify (var, info) ! Stop processing <var> block
+		if (tag == 'phase') nullify (phase)   ! Stop processing <phase> block
 		cycle  ! Ignore all other end tags
 	endif
 	
@@ -1872,7 +1885,11 @@ do
 		read (val(:nval), *, iostat=ios) S%xover_params
 
 	case ('alias')
-		if (has_name (field)) call rads_set_alias (S, name, val(1), field)
+		if (associated(var)) then	! Within <var> block, we do not need "name" attribute
+			call rads_set_alias (S, var%name, var%name // ' ' // val(1), field)
+		else if (has_name (field)) then
+			call rads_set_alias (S, name, val(1), field)
+		endif
 
 	case ('var')
 		if (has_name (field)) then
@@ -1917,11 +1934,10 @@ do
 		call assign_or_append (info%comment)
 
 	case ('backup')
-		info%backup = val(1)(:rads_varl)
-!		if (.not.is_number(val(1))) then
-!			alt => rads_varptr (S, val(1))
-!			if (associated(alt)) var%inf1 => alt%info
-!		endif
+		call rads_message (trim(var%name)//': <backup> deprecated, use <default> for value, or <alias> for variable')
+
+	case ('default')
+		read (val(:nval), *, iostat=ios) info%default
 
 	case ('quality_flag')
 		call assign_or_append (info%quality_flag)
@@ -2170,6 +2186,7 @@ type(rads_var), pointer :: ptr
 integer(fourbyteint) :: i, n
 type(rads_var), pointer :: temp(:)
 integer(twobyteint) :: field
+character(len=rads_varl), pointer :: name
 
 S%error = rads_noerr
 field = -999
@@ -2220,27 +2237,33 @@ n = size(S%var)
 if (i > n) then
 	allocate (temp(n + rads_var_chunk))
 	temp(1:n) = S%var
-	temp(n+1:n+rads_var_chunk) = rads_var ('', null(), null(), .false., rads_nofield)
+	temp(n+1:n+rads_var_chunk) = rads_var (null(), null(), null(), null(), null(), .false., rads_nofield)
 	deallocate (S%var)
 	S%var => temp
 	if (S%debug >= 3) write (*,*) 'Increased S%var:',n,n+rads_var_chunk
 endif
 S%nvar = i
 ptr => S%var(i)
+
+! Assign the info struct to that of tgt or make a new one
+if (associated(tgt)) then
+	ptr%info => tgt%info
+	allocate (name)
+	ptr%name => name
+else
+	allocate (ptr%info)
+	ptr%info = rads_varinfo (varname, varname, '', '', '', '', '', '', '', 'f0.3', '', '', null(), &
+	huge(0d0), S%nan, 0d0, 1d0, 1, nf90_double, 0, 0, 0, 0, 0, 0, 0, S%nan, S%nan, 0d0, 0d0)
+	ptr%name => ptr%info%name
+endif
+ptr%long_name => ptr%info%long_name
+
+! Assign name and long_name
 if (field > rads_nofield) then ! Was given field number
 	write (ptr%name, '("f",i4.4)') field
 	ptr%field = field
 else
 	ptr%name = varname
-endif
-
-! Finally assign the info struct to that of tgt or make a new one
-if (associated(tgt)) then
-	ptr%info => tgt%info
-else
-	allocate (ptr%info)
-	ptr%info = rads_varinfo (varname, varname, '', '', '', '', '', '', '', 'f0.3', '', '', '', null(), &
-	S%nan, 0d0, 1d0, 1, nf90_double, 0, 0, 0, 0, 0, 0, 0, S%nan, S%nan, 0d0, 0d0)
 endif
 
 end function rads_varptr
@@ -2249,6 +2272,7 @@ end function rads_varptr
 !*rads_set_alias -- Set alias to an already defined variable
 !+
 subroutine rads_set_alias (S, alias, varname, field)
+use rads_misc
 type(rads_sat), intent(inout) :: S
 character(len=*), intent(in) :: alias, varname
 integer(twobyteint), intent(in), optional :: field(2)
@@ -2256,39 +2280,80 @@ integer(twobyteint), intent(in), optional :: field(2)
 ! This routine defines an alias to an existing variable.
 ! If alias is already defined as an alias or variable, it will be overruled.
 ! The alias will need to point to an already existing variable or alias.
-! Circular aliases are ignored.
+! Up to three variables can be specified, separated by spaces or commas.
 !
 ! Arguments:
 !  S        : Satellite/mission dependent structure
-!  alias    : New alias for an existing variable
-!  varname  : Existing variable name
+!  alias    : New alias for an existing variable(s)
+!  varname  : Existing variable name(s)
 !  field    : Optional: new field numbers to associate with alias
 !
 ! Error code:
-!  S%error  : rads_noerr, rads_err_alias, rads_err_var,
-!             rads_warn_alias_circular
+!  S%error  : rads_noerr, rads_err_alias, rads_err_var
 !-----------------------------------------------------------------------
 type(rads_var), pointer :: tgt, src
+integer :: i0, i1, n_alias, l0, l1, l2, i
+character(len=rads_naml), pointer :: long_name
+
 S%error = rads_noerr
+
+! Check that neither alias not varname is empty
 if (alias == '') then
 	call rads_error (S, rads_err_alias, 'Alias is empty')
 	return
 else if (varname == '') then
 	call rads_error (S, rads_err_var, 'Variable name is empty')
 	return
-else if (alias == varname) then
-	call rads_error (S, rads_warn_alias_circular, 'Circular alias "'//trim(varname)//'" ignored')
-	return
 endif
-tgt => rads_varptr (S, varname)
-if (.not.associated(tgt)) then
-	call rads_error (S, rads_err_var, 'Alias target "'//trim(varname)//'" of "'//trim(alias)//'" not found')
-	return
+
+! Now loop through the string <varname> to find variable names
+i1 = 0
+n_alias = 0
+nullify (src)
+do
+	if (.not.next_word (varname, i0, i1)) exit
+	tgt => rads_varptr (S, varname(i0:i1))
+	if (.not.associated(tgt)) then
+		call rads_error (S, rads_err_var, 'Alias target "'//varname(i0:i1)//'" of "'//trim(alias)//'" not found')
+		return
+	endif
+	n_alias = n_alias + 1
+	select case (n_alias)
+	case (1) ! First alias
+		src => rads_varptr (S, alias, tgt)
+		if (present(field)) then
+			if (any(field /= rads_nofield)) src%field = field
+		endif
+		nullify (src%inf1, src%inf2)
+	case (2) ! Second alias
+		src%inf1 => tgt%info
+	case (3) ! Third alias
+		src%inf2 => tgt%info
+	case default
+		call rads_error (S, rads_err_alias, 'Too many aliases for "'//trim(alias)//'"')
+		return
+	end select
+enddo
+
+! Reset long_name to a mix of long_names
+if (n_alias < 2) return
+l0 = len_trim(src%info%long_name)
+l1 = len_trim(src%inf1%long_name)
+i0 = 0
+do i = 0,min(l0,l1)-1
+	if (src%info%long_name(l0-i:l0-i) /= src%inf1%long_name(l1-i:l1-i)) exit
+	if (src%info%long_name(l0-i:l0-i) == ' ') i0 = i + 1
+enddo
+allocate (long_name)
+if (n_alias == 3) then
+	l2 = len_trim(src%inf2%long_name)
+	long_name = src%info%long_name(1:l0-i0) // ', ' // src%inf1%long_name(1:l1-i0) // &
+		', ' // src%inf2%long_name(1:l2-i0) // src%info%long_name(l0-i0+1:l0)
+else
+	long_name = src%info%long_name(1:l0-i0) // ', ' // src%inf1%long_name(1:l1-i0) // &
+		src%info%long_name(l0-i0+1:l0)
 endif
-src => rads_varptr (S, alias, tgt)
-if (present(field)) then
-	if (any(field /= rads_nofield)) src%field = field
-endif
+src%long_name => long_name
 end subroutine rads_set_alias
 
 !***********************************************************************

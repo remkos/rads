@@ -382,7 +382,7 @@ write (*,615) info(1:ncols)%cycle
 write (*,620)
 i = 1
 do j = 1,nsel
-	write (*,622) i,i+ncols-1,trim(S(nsat)%sel(j)%info%long_name),trim(S(nsat)%sel(j)%info%units)
+	write (*,622) i,i+ncols-1,trim(S(nsat)%sel(j)%long_name),trim(S(nsat)%sel(j)%info%units)
 	i = i + ncols
 enddo
 write (*,625) i,'number of measurements'

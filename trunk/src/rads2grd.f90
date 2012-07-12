@@ -215,7 +215,7 @@ write (*,600) timestamp(), trim(S(1)%command)
 do j = 1,msat
 	if (S(j)%sat /= '') write (*,610) trim(S(j)%sat),trim(S(j)%phase%name),S(j)%cycles(1:2),S(j)%passes(1:2)
 enddo
-write (*,620) (trim(S(1)%sel(j)%info%long_name),trim(S(1)%sel(j)%info%units),j=1,3)
+write (*,620) (trim(S(1)%sel(j)%long_name),trim(S(1)%sel(j)%info%units),j=1,3)
 end subroutine write_header
 
 !***********************************************************************
@@ -250,15 +250,15 @@ call nfs (nf90_put_att(ncid,nf90_global,'history',timestamp()//' UTC: '//S(1)%co
 if (all(c)) call nfs (nf90_put_att(ncid,nf90_global,'node_offset',1))
 
 do k = 1,2
-	call nf90_def_axis(ncid,S(1)%sel(k)%name,S(1)%sel(k)%info%long_name,S(1)%sel(k)%info%units,n(k), &
+	call nf90_def_axis(ncid,S(1)%sel(k)%name,S(1)%sel(k)%long_name,S(1)%sel(k)%info%units,n(k), &
 		S(1)%sel(k)%info%limits(1),S(1)%sel(k)%info%limits(2),dimid(k),varid(k))
 enddo
 
 call nfs (nf90_def_var(ncid,'mean'  ,nf90_real,dimid,varid(3)))
 call nfs (nf90_def_var(ncid,'stddev',nf90_real,dimid,varid(4)))
 call nfs (nf90_def_var(ncid,'nr'    ,nf90_int ,dimid,varid(5)))
-call nfs (nf90_put_att(ncid,varid(3),'long_name','mean of '//trim(S(1)%sel(3)%info%long_name)))
-call nfs (nf90_put_att(ncid,varid(4),'long_name','std dev of '//trim(S(1)%sel(3)%info%long_name)))
+call nfs (nf90_put_att(ncid,varid(3),'long_name','mean of '//trim(S(1)%sel(3)%long_name)))
+call nfs (nf90_put_att(ncid,varid(4),'long_name','std dev of '//trim(S(1)%sel(3)%long_name)))
 call nfs (nf90_put_att(ncid,varid(5),'long_name','number of points per cell'))
 do k = 3,4
    call nfs (nf90_put_att(ncid,varid(k),'units',trim(S(1)%sel(3)%info%units)))
