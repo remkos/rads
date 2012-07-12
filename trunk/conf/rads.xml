@@ -333,12 +333,13 @@ GNU Lesser General Public License for more details.
 	<alias name="alt_eig6c" sat="j1 j2">,alt_eiggl04s</alias>
 	<alias name="alt_eig6c" sat="c2 n1">,alt_cnes</alias>
 -->
-<alias name="alt" field="4" sat="c2 n1">alt_eiggl04s alt_cnes</alias>
-<alias name="alt" field="4" sat="j1 j2">alt_eiggl04s</alias>
+<alias name="alt" field="4" sat="c2">alt_eiggl04s alt_cnes</alias>
 <alias name="alt" field="4" sat="e1">alt_reaper</alias>
 <alias name="alt" field="4" sat="e2">alt_reaper alt_gfz</alias>
 <alias name="alt" field="4" sat="g1">alt_pgs7777</alias>
 <alias name="alt" field="4" sat="gs">alt_gdrcp</alias>
+<alias name="alt" field="4" sat="j1 j2">alt_eiggl04s</alias>
+<alias name="alt" field="4" sat="n1">alt_eig6c alt_cnes</alias>
 <alias name="alt" field="4" sat="pn tx">alt_gdrcp alt_jgm3</alias>
 
 <var name="alt_rate" field="501 5">
