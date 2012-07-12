@@ -27,7 +27,7 @@ use rads
 use rads_time
 use rads_misc
 use rads_netcdf
-integer(fourbyteint) :: lstat=2
+integer(fourbyteint) :: lstat=2, reject=-1
 character(len=*), parameter :: wtype(0:3)=(/ &
 	'box weight                  ', 'constant weight             ', &
 	'area weighted               ', 'inclination-dependent weight'/)
@@ -48,7 +48,7 @@ logical :: ascii
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('c::d::p::b::maslo:: res: output::')
+call rads_set_options ('c::d::p::b::maslo::r:: res: output::')
 call rads_init (S)
 if (S%error /= rads_noerr) call rads_exit ('Fatal error')
 
@@ -84,9 +84,21 @@ do i = 1,rads_nopt
 	case ('o', 'output')
 		filename = rads_opt(i)%arg
 		if (filename == '') filename = 'radsstat.nc'
+	case ('r')
+		if (rads_opt(i)%arg == 'n') then
+			reject = -2
+		else
+			reject = 0
+			read (rads_opt(i)%arg, *, iostat=ios) reject
+		endif
 	end select
 enddo
 ascii = (filename == '')
+
+! If SLA is among the selected variables, remember index
+do i = 1,S%nsel
+	if (reject == -1 .and. S%sel(i)%info%datatype == rads_type_sla) reject = i
+enddo
 
 ! Set up the boxes
 x0 = S%lon%info%limits(1)
@@ -150,6 +162,10 @@ call rads_synopsis ()
 write (stderr,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
+'  -r#                       Reject records if data item number # on -V specifier is NaN'/ &
+'                            (default: reject if SLA field is NaN)'/ &
+'  -r0, -r                   Do not reject records with NaN values'/ &
+'  -rn                       Reject records if any value is NaN'/ &
 '  -c[N]                     Statistics per cycle or N cycles'/ &
 '  -d[N]                     Statistics per day (default) or N days'/ &
 '  -p[N]                     Statistics per pass or N passes'/ &
@@ -184,7 +200,11 @@ do i = 1,Pin%ndata
 	! Print the statistics (if in "daily" mode)
 	day = floor(Pin%tll(i,1)/86400d0)
 	if (period == period_day .and. day >= nint(day_old+step)) call output_stat
-   	if (any(isnan(z(i,:)))) cycle ! Reject outliers
+   	if (reject > 0) then
+   		if (isnan(z(i,reject))) cycle ! Reject if selected variable is NaN
+   	else if (reject == -2) then
+   		if (any(isnan(z(i,:)))) cycle ! Reject if any variable is NaN
+   	endif
 
 	! Update the box statistics
    	kx = floor((Pin%tll(i,3)-x0)/res(1) + 1d0)
@@ -249,8 +269,25 @@ else
 	tot%sum2 = S%nan
 endif
 
+! Write out statistics in ASCII
+if (ascii) then
+	call mjd2ymd(day_old+46066,yy,mm,dd)
+	select case (period)
+	case (period_day)
+		write (*,600,advance='no') modulo(yy,100),mm,dd
+	case (period_pass)
+		write (*,601,advance='no') cycle,pass
+	case default
+		write (*,602,advance='no') cycle,modulo(yy,100),mm,dd
+	endselect
+	if (lstat == 2) then
+		write (*,format_string) nr, tot(0)%mean, (tot(j)%mean,tot(j)%sum2,j=1,S%nsel)
+	else
+		write (*,format_string) nr, tot(0)%mean, (tot(j)%mean,tot(j)%sum2,tot(j)%xmin,tot(j)%xmax,j=1,S%nsel)
+	endif
+
 ! Write output to netCDF if requested
-if (.not.ascii) then
+else
 	call nfs (nf90_put_var (ncid, varid(1), nr, start(2:2)))
 	if (period /= period_day) then
 		var => rads_varptr (S, 'cycle')
@@ -273,24 +310,6 @@ if (.not.ascii) then
 		enddo
 	endif
 	start(2) = start(2) + 1
-
-else
-
-! Print results
-	call mjd2ymd(day_old+46066,yy,mm,dd)
-	select case (period)
-	case (period_day)
-		write (*,600,advance='no') modulo(yy,100),mm,dd
-	case (period_pass)
-		write (*,601,advance='no') cycle,pass
-	case default
-		write (*,602,advance='no') cycle,modulo(yy,100),mm,dd
-	endselect
-	if (lstat == 2) then
-		write (*,format_string) nr, tot(0)%mean, (tot(j)%mean,tot(j)%sum2,j=1,S%nsel)
-	else
-		write (*,format_string) nr, tot(0)%mean, (tot(j)%mean,tot(j)%sum2,tot(j)%xmin,tot(j)%xmax,j=1,S%nsel)
-	endif
 endif
 
 ! Reset statistics
@@ -339,9 +358,9 @@ format_string = '(i9,f12.0'
 do j = 1,S%nsel
 	! Write description of variables
 	if (lstat == 2) then
-		write (*,621) 2*j+j0+1,2*j+j0+2,trim(S%sel(j)%info%long_name),trim(S%sel(j)%info%units)
+		write (*,621) 2*j+j0+1,2*j+j0+2,trim(S%sel(j)%long_name),trim(S%sel(j)%info%units)
 	else
-		write (*,622) 4*j+j0+1,4*j+j0+2,trim(S%sel(j)%info%long_name),trim(S%sel(j)%info%units)
+		write (*,622) 4*j+j0+1,4*j+j0+2,trim(S%sel(j)%long_name),trim(S%sel(j)%info%units)
 	endif
 	! Assemble format for statistics lines
 	l = len_trim(format_string)

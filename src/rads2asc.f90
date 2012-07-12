@@ -198,10 +198,10 @@ call rads_synopsis
 write (*,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
-'  -r#                       Reject lines if data item number # on sel= specifier is NaN'/ &
+'  -r#                       Reject records if data item number # on -V specifier is NaN'/ &
 '                            (default: reject if SLA field is NaN)'/ &
-'  -r0, -r                   Do not reject lines with NaN values'/ &
-'  -rn                       Reject lines if any value is NaN'/ &
+'  -r0, -r                   Do not reject records with NaN values'/ &
+'  -rn                       Reject records if any value is NaN'/ &
 '  -f                        Do not start with t,lat,lon in output'/ &
 '  -sp, -sc                  Include statistics per pass or per cycle'/ &
 '  --step=N                  Step through records with stride N (default = 1)'/ &
@@ -348,11 +348,11 @@ do j = 1,S%nsel
 		do k = 0,15
 			m = m + 1
 			var => rads_varptr (S, flagname(k))
-			write (outunit,621) m, k, trim(var%info%long_name)
+			write (outunit,621) m, k, trim(var%long_name)
 		enddo
 	else
 		m = m + 1
-		write (outunit,620) m, trim(S%sel(j)%info%long_name), trim(S%sel(j)%info%units)
+		write (outunit,620) m, trim(S%sel(j)%long_name), trim(S%sel(j)%info%units)
 	endif
 enddo
 end subroutine write_header

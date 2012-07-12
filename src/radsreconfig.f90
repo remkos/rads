@@ -112,7 +112,7 @@ enddo
 ! Set up the S structure
 call rads_init_sat_struct (S)
 allocate (S%var(rads_var_chunk))
-S%var = rads_var ('', null(), null(), .false., rads_nofield)
+S%var = rads_var (null(), null(), null(), null(), null(), .false., rads_nofield)
 call rads_read_xml (S, trim(radsdataroot) // '/conf/rads.xml')
 if (S%error == rads_err_xml_file) call rads_exit ('Required XML file '//trim(radsdataroot)//'/conf/rads.xml does not exist')
 call rads_read_xml (S, trim(radsuserroot) // '/.rads/rads.xml')
@@ -208,7 +208,7 @@ do
 			call xml_put (X, 'var', attr, 2, string, 0, 'open')
 			write (field, '(i4.4)') iy
 			var => rads_varptr (S, field, null())
-			call xml_text (var%name, 'backup')
+			call xml_text (var%name, 'alias')
 			call xml_put (X, 'var', attr, 0, string, 0, 'close')
 		else
 			attr(2,1) = 'f' // field
