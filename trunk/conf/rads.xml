@@ -461,7 +461,7 @@ GNU Lesser General Public License for more details.
 <alias name="dry_tropo" field="7">dry_tropo_ecmwf</alias>
 <alias name="dry_tropo" field="7" sat="g1 gs">dry_tropo_ncep</alias>
 
-<var name="wet_tropo_rad" field="801" sat="!c2 g1 gs">
+<var name="wet_tropo_rad" field="801" sat="!c2 gs">
 	<long_name>radiometer wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
 	<source>radiometer</source>
@@ -568,7 +568,7 @@ GNU Lesser General Public License for more details.
 	<alias name="wet_tropo_era">,wet_tropo_ecmwf</alias>
 -->
 <alias name="wet_tropo_rad" sat="e2">,wet_tropo_ecmwf</alias>
-<alias name="wet_tropo" field="8">wet_tropo_rad wet_tropo_ecmwf</alias>
+<alias name="wet_tropo" field="8" sat="!c2 gs">wet_tropo_rad wet_tropo_ecmwf</alias>
 <alias name="wet_tropo" field="8" sat="c2">wet_tropo_ecmwf</alias>
 <alias name="wet_tropo" field="8" sat="gs">wet_tropo_ncep</alias>
 
