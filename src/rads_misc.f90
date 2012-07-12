@@ -806,7 +806,7 @@ logical :: is_number
 ! 'NaN' or 'nan' is considered a number as well.
 !
 ! Arguments:
-!  string   : Inpute character string
+!  string   : Input character string
 !  is_number: Return value. True is string is a number
 !-----------------------------------------------------------------------
 integer :: ios
@@ -814,6 +814,59 @@ real(eightbytereal) :: val
 read (string,*,iostat=ios) val
 is_number = (ios == 0)
 end function is_number
+
+!***********************************************************************
+!*next_word -- Get next word from string
+!
+function next_word (string, i0, i1)
+character(len=*), intent(in) :: string
+integer, intent(inout) :: i0,i1
+logical :: next_word
+!
+! This routine scans <string> and finds the next word in <string>
+! after index <i1>. A word is considered anything between delimiters
+! space, comma, or slash. Empty strings are not returned.
+!
+! When scanning for all words in a string, initialize i0 = 0.
+!
+! If another word is found:
+!   <next_word> = .true.
+!   <i0> and <i1> are the start and end index of the word in <string>
+! Otherwise:
+!   <next_word> = .false.
+!   <i0> and <i1> are both zero
+!
+! Arguments:
+!  string   : Input character string
+!  i0       : Start of word found (zero when none)
+!  i1       : Input: end of previous word; output: end of next word
+!  next_word: .true. is word found, .false. otherwise
+!-----------------------------------------------------------------------
+integer :: l,i
+l = len(string)
+
+! Scan beyond leading ignored characters
+do i = i1+1,l
+	if (string(i:i) == ' ' .or. string(i:i) == ',' .or. string(i:i) == '/') cycle
+	exit
+enddo
+
+! End of string reached, no words found
+if (i > l) then
+	i0 = 0
+	i1 = 0
+	next_word = .false.
+	return
+endif
+
+! Find end of string
+i0 = i
+do i = i0,l
+	if (string(i:i) == ' ' .or. string(i:i) == ',' .or. string(i:i) == '/') exit
+enddo
+i1 = i - 1
+next_word = .true.
+end function next_word
 
 !***********************************************************************
 
