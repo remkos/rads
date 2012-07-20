@@ -131,8 +131,11 @@ if (id_sla == 0) then
 endif
 
 ! Get the number of xovers and number of tracks
-call nfs (nf90_inquire_dimension (ncid, 2, len=x%nr))
-call nfs (nf90_inquire_dimension (ncid, 3, len=t%nr))
+call nfs (nf90_inq_dimid (ncid, 'xover', i))
+call nfs (nf90_inquire_dimension (ncid, i, len=x%nr))
+call nfs (nf90_inq_dimid (ncid, 'track', i))
+call nfs (nf90_inquire_dimension (ncid, i, len=t%nr))
+
 if (t%nr >= maxtrk) then
 	write (*,'(a)') 'Output format does not allow track numbers exceeding 32767. We will modulo them.'
 endif
