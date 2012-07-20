@@ -1809,7 +1809,7 @@ GNU Lesser General Public License for more details.
 	<format>f5.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var name="off_nadir_angle2_wf_ku" field="3002" sat="!n1">
+<var name="off_nadir_angle2_wf_ku" field="3002">
 	<long_name>off-nadir pointing angle squared from waveform</long_name>
 	<units>degrees^2</units>
 	<data>off_nadir_angle2_wf_ku</data>
