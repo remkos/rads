@@ -2218,11 +2218,14 @@ if (i <= S%nvar) then
 	else if (associated(ptr%info,tgt%info)) then
 		! Association is already a fact
 	else
-		if (ptr%name == ptr%info%name) then
+		! Associate existing variable
+		if (.not.associated(ptr%long_name,ptr%info%long_name)) deallocate (ptr%long_name)
+		if (associated(ptr%name,ptr%info%name)) then
 			if (associated(ptr%info%grid)) call grid_free(ptr%info%grid)
 			deallocate (ptr%info)
 		endif
 		ptr%info => tgt%info
+		ptr%long_name => ptr%info%long_name
 	endif
 	return
 ! No match found, and none should be created: return null pointer and error
