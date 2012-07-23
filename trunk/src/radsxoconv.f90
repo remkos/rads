@@ -125,10 +125,7 @@ do i = 1,nvars
 enddo
 
 ! Check if we have required elements for requested format
-if (id_sla == 0) then
-	write (*,'(a)') 'Output format requires sla field. Program terminating.'
-	stop
-endif
+if (id_sla == 0) call rads_exit ('Output format requires sla field. Program terminating.')
 
 ! Get the number of xovers and number of tracks
 call nfs (nf90_inq_dimid (ncid, 'xover', i))

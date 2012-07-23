@@ -521,7 +521,7 @@ P%tll => tll
 
 ! Store track info
 nr%trk = nr%trk + 1
-if (nr%trk > mtrk) stop 'Too many tracks'
+if (nr%trk > mtrk) call rads_exit ('Too many tracks')
 trk(nr%trk) = trk_ (P%equator_lon, P%equator_time, tll(1,1), tll(P%ndata,1), &
 	int(P%ndata,twobyteint), 0_twobyteint, S%satid, int(P%cycle,twobyteint), int(P%pass,twobyteint))
 P%trkid = nr%trk
