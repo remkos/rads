@@ -45,7 +45,7 @@ integer, parameter :: stderr = 0, stdin = 5, stdout = 6
 
 include 'config.inc'
 
-private :: rads_traxxing, rads_get_phase, rads_free_sat_struct
+private :: rads_traxxing, rads_get_phase, rads_free_sat_struct, rads_free_var_struct
 
 type :: rads_varinfo
 	character(len=rads_varl) :: name                 ! Short name of variable used by RADS
@@ -610,7 +610,7 @@ elemental subroutine rads_free_sat_struct (S)
 type(rads_sat), intent(inout) :: S
 !
 ! This routine frees the <S> struct of type rads_sat and all allocated
-! memory in it.
+! memory in it. It then reinitialises a clean struct.
 !
 ! Argument:
 !  S        : Satellite/mission dependent struct or array of structs
@@ -618,17 +618,7 @@ type(rads_sat), intent(inout) :: S
 integer(fourbyteint) :: i,ios
 if (S%sat == '') return
 do i = S%nvar,1,-1
-	if (associated(S%var(i)%info)) then
-		if (.not.associated(S%var(i)%long_name,S%var(i)%info%long_name)) &
-			deallocate (S%var(i)%long_name, stat=ios)
-		if (associated(S%var(i)%name,S%var(i)%info%name)) then
-			if (associated(S%var(i)%info%grid)) call grid_free(S%var(i)%info%grid)
-			deallocate (S%var(i)%info, stat=ios)
-		else
-			deallocate (S%var(i)%name, stat=ios)
-		endif
-		nullify (S%var(i)%info,S%var(i)%name,S%var(i)%long_name)
-	endif
+	call rads_free_var_struct (S, S%var(i), .false.)
 enddo
 do i = 1,size(S%phases)
 	deallocate (S%phases(i)%subcycles, stat=ios)
@@ -636,6 +626,53 @@ enddo
 deallocate (S%var, S%sel, S%phases, S%excl_cycles, stat=ios)
 call rads_init_sat_struct (S)
 end subroutine rads_free_sat_struct
+
+!***********************************************************************
+!*rads_free_var_struct -- Free all allocated memory from rads_var struct
+!+
+pure subroutine rads_free_var_struct (S, var, alias)
+type(rads_sat), intent(inout) :: S
+type(rads_var), intent(inout) :: var
+logical, intent(in) :: alias
+!
+! This routine frees the <var> struct of type rads_var and all allocated
+! memory in it. Use alias = .true. when called from rads_set_alias, so
+! that it prevents removing info structs used elsewhere.
+!
+! Arguments:
+!  S        : Satellite/mission dependent struct or array of structs
+!  var      : Variable struct to be freed
+!  alias    : .true. if called to create alias
+!-----------------------------------------------------------------------
+integer(fourbyteint) :: i,n,ios
+if (.not.associated(var%info)) return
+if (alias .and. associated(var%name,var%info%name)) then
+	! This is an original variable. Do not alias it if it is used more than once
+	n = 0
+	do i = 1,S%nvar
+		if (associated(S%var(i)%info,var%info)) n = n + 1
+		if (associated(S%var(i)%info,var%inf1)) n = n + 1
+		if (associated(S%var(i)%info,var%inf2)) n = n + 1
+	enddo
+	if (n > 1) then
+		S%error = rads_err_alias
+		return
+	endif
+endif
+
+! Free long_name when it is not associated with the info struct
+if (.not.associated(var%long_name,var%info%long_name)) &
+	deallocate (var%long_name, stat=ios)
+
+! We can now safely free the info struct if this is an original variable
+if (associated(var%name,var%info%name)) then
+	if (associated(var%info%grid)) call grid_free(var%info%grid)
+	deallocate (var%info, stat=ios)
+endif
+
+! Clean out all of var
+nullify (var%name,var%long_name,var%info,var%inf1,var%inf2)
+end subroutine rads_free_var_struct
 
 !***********************************************************************
 !*rads_set_options -- Specify the list of command specific options
@@ -2208,45 +2245,41 @@ else
 	enddo
 endif
 
-! If match found, return pointer
 if (i <= S%nvar) then
+	! Match was found: return pointer
 	ptr => S%var(i)
 	if (.not.present(tgt)) then
-		! Skip
+		! No association requested
+		return
 	else if (.not.associated(tgt)) then
-		! Skip		
+		! No association requested
+		return
 	else if (associated(ptr%info,tgt%info)) then
 		! Association is already a fact
+		return
 	else
-		! Associate existing variable
-		if (.not.associated(ptr%long_name,ptr%info%long_name)) deallocate (ptr%long_name)
-		if (associated(ptr%name,ptr%info%name)) then
-			if (associated(ptr%info%grid)) call grid_free(ptr%info%grid)
-			deallocate (ptr%info)
-		endif
-		ptr%info => tgt%info
-		ptr%long_name => ptr%info%long_name
+		! Reassociate existing variable
+		call rads_free_var_struct (S, ptr, .true.)
 	endif
-	return
-! No match found, and none should be created: return null pointer and error
 else if (.not.present(tgt)) then
+	! No match found, and none should be created: return null pointer and error
 	nullify (ptr)
 	call rads_error (S, rads_err_var, 'Variable "'//trim(varname)//'" not found')
 	return
+else
+	! If we got here, we need to make a new variable. Do we also need to allocate more space?
+	n = size(S%var)
+	if (i > n) then
+		allocate (temp(n + rads_var_chunk))
+		temp(1:n) = S%var
+		temp(n+1:n+rads_var_chunk) = rads_var (null(), null(), null(), null(), null(), .false., rads_nofield)
+		deallocate (S%var)
+		S%var => temp
+		if (S%debug >= 3) write (*,*) 'Increased S%var:',n,n+rads_var_chunk
+	endif
+	S%nvar = i
+	ptr => S%var(i)
 endif
-
-! If we got here, we need to make a new variable. Do we also need to allocate more space?
-n = size(S%var)
-if (i > n) then
-	allocate (temp(n + rads_var_chunk))
-	temp(1:n) = S%var
-	temp(n+1:n+rads_var_chunk) = rads_var (null(), null(), null(), null(), null(), .false., rads_nofield)
-	deallocate (S%var)
-	S%var => temp
-	if (S%debug >= 3) write (*,*) 'Increased S%var:',n,n+rads_var_chunk
-endif
-S%nvar = i
-ptr => S%var(i)
 
 ! Assign the info struct to that of tgt or make a new one
 if (associated(tgt)) then
@@ -2324,6 +2357,10 @@ do
 	select case (n_alias)
 	case (1) ! First alias
 		src => rads_varptr (S, alias, tgt)
+		if (S%error == rads_err_alias) then
+			call rads_error (S, rads_err_alias, 'Cannot alias "'//trim(alias)//'"; it is used by other variables')
+			return
+		endif
 		if (present(field)) then
 			if (any(field /= rads_nofield)) src%field = field
 		endif
