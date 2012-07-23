@@ -191,7 +191,7 @@ integer(fourbyteint), save :: rads_nopt = 0
 !   $RADSDATAROOT/conf/rads.xml
 !   ~/.rads/rads.xml
 !   rads.xml
-!   <xml> (from the optional array of filenames)
+!   <xml> (from the optional array of file names)
 !
 ! If more than one -S option is given, then all further options following
 ! this argument until the next -S option, plus all options prior to the
@@ -2169,7 +2169,7 @@ enddo
 end subroutine assign_or_append
 
 subroutine xmlparse_error (string)
-! Issue error message with filename and line number
+! Issue error message with file name and line number
 character(*), intent(in) :: string
 character(rads_naml) :: text
 write (text, 1300) trim(filename), X%lineno, string
@@ -2654,7 +2654,7 @@ character(len=*), intent(in) :: string
 !  string   : Error message
 !-----------------------------------------------------------------------
 call rads_message (string)
-stop
+call exit (10)
 end subroutine rads_exit
 
 !***********************************************************************
@@ -2832,7 +2832,7 @@ write (iunit, 1300) trim(progname)
 'Common [rads_options] are:'/ &
 '  -q, --quiet               Suppress warning messages (but keeps fatal error messages)' / &
 '  -v, --debug=LEVEL         Set debug level'/ &
-'  --args=FILENAME           Get any of the above arguments from filename (one argument per line)'/ &
+'  --args=FILENAME           Get any of the above arguments from FILENAME (one argument per line)'/ &
 '  --help                    Print this syntax massage'/ &
 '  --version                 Version info')
 end subroutine rads_synopsis
@@ -3120,9 +3120,9 @@ character(len=*), intent(in), optional :: name
 ! - Left empty it specifies the current directory
 ! - Ending in '/' it specifies a named directory in which to store the pass
 !   file of the form <sat>p<pass>c<cycle>.nc
-! - Otherwise it specifies the filename in full.
-! If <name> is omitted, the default directory is used:
-! $RADSDATAROOT/<sat>/<phase>/c<cycle>/
+! - Otherwise it specifies the file name in full.
+! If <name> is omitted, the default file name is used:
+! $RADSDATAROOT/<sat>/<phase>/c<cycle>/<sat>p<pass>c<cycle>.nc
 ! Any directory that does not yet exist will be created.
 !
 ! Upon entry, the <P> structure needs to contain the relevant information on
@@ -3143,7 +3143,7 @@ logical :: exist
 character(len=26) :: date(3)
 S%error = rads_noerr
 
-! Build the filename, make directory if needed
+! Build the file name, make directory if needed
 if (.not.present(name)) then
 	write (P%filename, '(a,"/c",i3.3,"/",a2,"p",i4.4,"c",i3.3,".nc")') trim(S%phase%dataroot), S%sat, P%cycle, P%pass, P%cycle
 	l = len_trim(P%filename)-15

@@ -103,8 +103,8 @@ n = nint((hi-lo)/res+0.999d0)
 
 allocate (box(n(1),n(2)),stat=ios)
 if (ios /= 0) then
-	write (*,'("rads2grd: unable to allocate memory for ",i0,"x",i0," points")') n
-	stop
+	write (format_string, '(i0,"x",i0," points")') n, n
+	call rads_exit ('Unable to allocate memory for '//trim(format_string))
 endif
 
 ! Initialize statistics

@@ -113,7 +113,7 @@ do
 		var0 = 1
 	case ('r', 'replace')
 		nvar_replace = nvar_replace + 1
-		if (nvar_replace > 10) stop "Too many -r options"
+		if (nvar_replace > 10) call rads_exit ('Too many -r options')
 		str_replace(nvar_replace) = optarg
 	case (' ')
 		call process (optarg) ! Process each file
