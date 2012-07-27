@@ -459,7 +459,7 @@ GNU Lesser General Public License for more details.
 	<alias name="dry_tropo_era">,dry_tropo_ecmwf</alias>
 -->
 <alias name="dry_tropo" field="7">dry_tropo_ecmwf</alias>
-<alias name="dry_tropo" field="7" sat="g1 gs">dry_tropo_ncep</alias>
+<alias name="dry_tropo" field="7" sat="g1 gs">dry_tropo_era</alias>
 
 <var name="wet_tropo_rad" field="801" sat="!c2 gs">
 	<long_name>radiometer wet tropospheric correction</long_name>
@@ -570,7 +570,7 @@ GNU Lesser General Public License for more details.
 <alias name="wet_tropo_rad" sat="e2">,wet_tropo_ecmwf</alias>
 <alias name="wet_tropo" field="8" sat="!c2 gs">wet_tropo_rad wet_tropo_ecmwf</alias>
 <alias name="wet_tropo" field="8" sat="c2">wet_tropo_ecmwf</alias>
-<alias name="wet_tropo" field="8" sat="gs">wet_tropo_ncep</alias>
+<alias name="wet_tropo" field="8" sat="gs">wet_tropo_era</alias>
 
 <var name="iono_alt" field="901" sat="j1 j2 n1 tx">
 	<long_name>dual-frequency ionospheric correction</long_name>
@@ -803,7 +803,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
 </var>
-<alias name="tide_ocean" field="12">tide_ocean_got47</alias>
+<alias name="tide_ocean" field="12">tide_ocean_got48</alias>
 
 <var name="tide_load_fes04" field="1313">
 	<long_name>FES2004 load tide</long_name>
@@ -845,7 +845,7 @@ GNU Lesser General Public License for more details.
 	<compress>int2 1d-4</compress>
 	<comment>Load tide variation to be added to ocean tide</comment>
 </var>
-<alias name="tide_load" field="13">tide_load_got47</alias>
+<alias name="tide_load" field="13">tide_load_got48</alias>
 
 <var name="tide_pole" field="1401 14">
 	<long_name>pole tide</long_name>
@@ -1019,7 +1019,7 @@ GNU Lesser General Public License for more details.
 	<alias name="mss_dnsc08">,mss_dtu10</alias>
 	<alias name="mss_cls01">,mss_cnescls11</alias>
 -->
-<alias name="mss" field="16">mss_dnsc08</alias>
+<alias name="mss" field="16">mss_dtu10</alias>
 
 <var name="swh_ku" field="1701">
 	<long_name>Ku-band significant wave height</long_name>
@@ -1295,7 +1295,7 @@ GNU Lesser General Public License for more details.
 <!--
 	<alias name="topo_dnsc08">,topo_dtu10</alias>
 -->
-<alias name="topo" field="22">topo_dnsc08</alias>
+<alias name="topo" field="22">topo_dtu10</alias>
 
 <if sat="pn tx">
 	<var name="tb_180" field="2301">
