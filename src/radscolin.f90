@@ -34,7 +34,7 @@ integer(fourbyteint) :: nsel = 0, reject = 9999, cycle, pass, i, j, ios, &
 	nbins, nsat = 0, ntrx = 0, ntrx1, ntrx2, type_sla = 1, step = 1, ncols
 real(eightbytereal) :: dt = 0.97d0
 character(len=rads_naml) :: prefix = 'radscolin_p', suffix = '.nc', satlist
-logical :: ascii = .true., out_data = .true., out_mean = .false., out_sdev = .false., not_collinear = .false.
+logical :: ascii = .true., out_data = .true., out_mean = .false., out_sdev = .false., force = .false.
 real(eightbytereal), allocatable :: data(:,:,:)
 logical, allocatable :: mask(:,:)
 integer(fourbyteint), allocatable :: nr_in_bin(:), bin(:)
@@ -52,7 +52,7 @@ type(info_), allocatable :: info(:)
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('adsnNco::r:: step: dt: output:')
+call rads_set_options ('adsnNfo::r:: step: dt: output:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 
@@ -97,8 +97,8 @@ do i = 1,rads_nopt
 		out_sdev = .true.
 	case ('d')
 		out_data = .false.
-	case ('c')
-		not_collinear = .true.
+	case ('f')
+		force = .true.
 	case ('o', 'out')
 		ascii = .false.
 		if (rads_opt(i)%arg == '') cycle
@@ -147,7 +147,7 @@ write (stderr,1300)
 '  -a                        Output mean in addition to pass data'/ &
 '  -s                        Output standard deviation in addition to pass data'/ &
 '  -d                        Do not output pass data'/ &
-'  -c                        Allow comparing non-collinear data'/ &
+'  -f                        Force comparison, even when missions are not collinear'/ &
 '  -o, --out[=OUTNAME]       Create netCDF output by pass. Optionally specify filename including "#", which'/ &
 '                            is to be replaced by the psss number. Default is "radscolin_p#.nc"')
 stop
@@ -175,7 +175,7 @@ do m = 1,nsat
 	do cycle = S(m)%cycles(1), S(m)%cycles(2), S(m)%cycles(3)
 		call rads_open_pass (S(m), P, cycle, pass)
 		! Pass ranges should be the same for all satellites, otherwise we do not have collinear tracks
-		if (not_collinear) then
+		if (force) then
 		else if (S(m)%phase%passes /= S(1)%phase%passes .or. S(m)%phase%ref_lon /= S(1)%phase%ref_lon) then
 			call rads_exit ('Satellite missions '//S(m)%sat//'/'//trim(S(m)%phase%name)// &
 				' and '//S(1)%sat//'/'//trim(S(1)%phase%name)//' are not collinear')
