@@ -328,7 +328,7 @@ real(eightbytereal) :: dt_secs
 if (dt > 0d0) then
 	dt_secs = dt * 86400d0
 else
-	dt_secs = -dt * S%phase%pass_seconds * S%phase%passes(2)
+	dt_secs = -dt * S%phase%pass_seconds * S%phase%passes
 endif
 end function dt_secs
 
@@ -426,7 +426,7 @@ do cycle1 = S1%cycles(1), S1%cycles(2)
 		! Now load new passes within the time range
 		do while (.not.associated(P2))
 			pass2 = pass2 + step
-			if (pass2 > S2%passes(2) .or. pass2 > S2%phase%passes(2)) then ! Wrap to next cycle
+			if (pass2 > S2%passes(2) .or. pass2 > S2%phase%passes) then ! Wrap to next cycle
 				cycle2 = cycle2 + 1
 				if (cycle2 > S2%cycles(2)) exit
 				pass2 = S2%passes(1) - 1 + step ! Start with pass "1" or "2"
