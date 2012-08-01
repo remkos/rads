@@ -88,7 +88,7 @@ endtype
 type :: rads_phase
 	character(len=rads_varl) :: name, mission        ! Name (1-letter), and mission description
 	character(len=rads_naml) :: dataroot             ! Root directory of satellite and phase
-	integer(fourbyteint) :: cycles(2),passes(2)      ! Cycle and pass limits
+	integer(fourbyteint) :: cycles(2), passes        ! Cycle range and maximum number of passes
 	real(eightbytereal) :: start_time, end_time      ! Start time and end time of this phase
 	real(eightbytereal) :: ref_time, ref_lon         ! Time and longitude of equator crossing of "reference pass"
 	integer(fourbyteint) :: ref_cycle, ref_pass      ! Cycle and pass number of "reference pass"
@@ -481,8 +481,7 @@ if (l == 2) then
 	S%phase => S%phases(1)
 	S%cycles(1) = minval(S%phases%cycles(1))
 	S%cycles(2) = maxval(S%phases%cycles(2))
-	S%passes(1) = minval(S%phases%passes(1))
-	S%passes(2) = maxval(S%phases%passes(2))
+	S%passes(2) = maxval(S%phases%passes)
 else
 	! Phase is given, maybe separated by '/' or ':'
 	i = 3
@@ -491,7 +490,7 @@ else
 	if (.not.associated(S%phase)) call rads_exit ('No such mission phase "'//sat(i:i)//'" of satellite "'//S%sat//'"')
 	S%phase%dataroot = trim(S%dataroot)//'/'//S%sat//'/'//sat(i:)
 	S%cycles(1:2) = S%phase%cycles
-	S%passes(1:2) = S%phase%passes
+	S%passes(2) = S%phase%passes
 endif
 
 ! Link the time, lat, lon variables for later use
@@ -1098,7 +1097,7 @@ endif
 if (cycle < S%phase%cycles(1) .or. cycle > S%phase%cycles(2)) call rads_set_phase
 
 ! Do checking on pass limits (which may include new phase limits)
-if (pass < S%passes(1) .or. pass > S%passes(2) .or. pass > S%phase%passes(2)) then
+if (pass < S%passes(1) .or. pass > S%passes(2) .or. pass > S%phase%passes) then
 	S%pass_stat(2) = S%pass_stat(2) + 1
 	return
 endif
@@ -1861,9 +1860,6 @@ do
 	case ('mission')
 		phase%mission = val(1)(:rads_varl)
 
-	case ('passes')
-		read (val(:nval), *, iostat=ios) phase%passes
-
 	case ('cycles')
 		read (val(:nval), *, iostat=ios) phase%cycles
 
@@ -1883,6 +1879,7 @@ do
 		read (val(:nval), *, iostat=ios) phase%subcycles%list
 		! Turn length of subcycles in passes into number of accumulative passes before subcycle
 		phase%subcycles%n = count(phase%subcycles%list /= 0)
+		phase%passes = maxval(phase%subcycles%list)
 		do i = phase%subcycles%n, 2, -1
 			phase%subcycles%list(i) = sum(phase%subcycles%list(1:i-1))
 		enddo
@@ -1908,6 +1905,7 @@ do
 		phase%repeat_nodal = nint(phase%repeat_days * (7.292115d-5 - node_rate) / 7.272205d-5)
 		! Determine length in seconds of single pass
 		phase%pass_seconds = phase%repeat_days * 86400d0 / phase%repeat_passes
+		phase%passes = phase%repeat_passes
 
 	case ('dt1hz')
 		read (val(:nval), *, iostat=ios) S%dt1hz
@@ -2881,7 +2879,7 @@ else
 endif
 
 ! Initialize the new phase information and direct the pointer
-S%phases(n) = rads_phase (name, '', '', (/999,0/), (/9999,0/), S%nan, S%nan, S%nan, S%nan, 0, 0, S%nan, S%nan, S%nan, 0, 0, null())
+S%phases(n) = rads_phase (name, '', '', (/999,0/), 0, S%nan, S%nan, S%nan, S%nan, 0, 0, S%nan, S%nan, S%nan, 0, 0, null())
 phase => S%phases(n)
 
 end function rads_get_phase
