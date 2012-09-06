@@ -5,7 +5,7 @@
 # Version 0304.0 - Remko Scharroo
 #######################################################################
 # Object locations: Library, Manuals, Binaries
-prefix = /rads
+prefix = /Users/remko/Dropbox/rads4
 exec_prefix = ${prefix}
 datarootdir = /rads/data
 BINDIR = ${exec_prefix}/bin
