@@ -1406,7 +1406,7 @@ GNU Lesser General Public License for more details.
 	<var name="peakiness_ku" field="2401">
 		<long_name>Ku-band peakiness</long_name>
 		<limits sat="n1">1.4 1.9</limits>
-		<limits sat="c2">1.15 1.55</limits>
+		<limits sat="c2">1.1 1.6</limits>
 		<data>peakiness_ku</data>
 		<format>f6.2</format>
 		<compress>int2 1d-2</compress>
