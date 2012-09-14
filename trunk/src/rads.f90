@@ -2903,7 +2903,7 @@ integer(fourbyteint) :: rads_time_to_cycle
 !  rads_time_to_cycle : Cycle number in which <time> falls
 !-----------------------------------------------------------------------
 integer :: i, j, n
-real(eightbytereal) :: d, t0
+real(eightbytereal) :: d, t0, x
 i = 1
 S%error = rads_noerr
 do i = 1,size(S%phases)-1
@@ -2912,12 +2912,14 @@ enddo
 
 d = S%phases(i)%pass_seconds
 t0 = S%phases(i)%ref_time - (S%phases(i)%ref_pass - 0.5d0) * d ! Time of start of ref_cycle
-rads_time_to_cycle = floor((time - t0) / (S%phases(i)%repeat_days * 86400d0)) + S%phases(i)%ref_cycle
+x = time - t0
+rads_time_to_cycle = floor(x / (S%phases(i)%repeat_days * 86400d0)) + S%phases(i)%ref_cycle
 
 if (associated(S%phases(i)%subcycles)) then
 	! When there are subcycles, compute the subcycle number
+	x = x - (rads_time_to_cycle - S%phases(i)%ref_cycle) * (S%phases(i)%repeat_days * 86400d0)
 	rads_time_to_cycle = (rads_time_to_cycle - 1) * S%phases(i)%subcycles%n + S%phases(i)%subcycles%i
-	n = floor((time - t0) / d)
+	n = floor(x / d)
 	do j = 2,S%phases(i)%subcycles%n
 		if (S%phases(i)%subcycles%list(j) > n) exit
 		rads_time_to_cycle = rads_time_to_cycle + 1
