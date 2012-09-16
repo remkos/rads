@@ -279,6 +279,16 @@ GNU Lesser General Public License for more details.
 	</if>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
+<var name="alt_gdrd" field="418" sat="c2 n1">
+	<long_name>GDR-D orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>GDR-D standards</source>
+	<units>m</units>
+	<data>alt_gdrd</data>
+	<format>f12.4</format>
+	<compress>int4 1d-4 700d3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
 <var name="alt_reaper" field="420" sat="e1 e2">
 	<long_name>REAPER/COMBI orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
@@ -1424,7 +1434,7 @@ GNU Lesser General Public License for more details.
 <var name="flag_status" field="2516">
 	<long_name>not used</long_name>
 	<long_name sat="j1 pn tx">hardware/software status</long_name>
-	<data>flags 0 BTEST</data>
+	<data>flags_ 0 BTEST</data>
 	<format>f2.0</format>
 	<compress>int1</compress>
 	<flag_values>nominal bad</flag_values>
@@ -1436,12 +1446,16 @@ GNU Lesser General Public License for more details.
 		<long_name>altimeter status</long_name>
 		<flag_values>side_A side_B</flag_values>
 	</if>
+	<if sat="c2">
+		<long_name>operating mode</long_name>
+		<flag_values>LRM SAR</flag_values>
+	</if>
 </var>
 
 <var name="flag_attitude" field="2501">
 	<long_name>not used</long_name>
 	<long_name sat="e2 g1 gs j1 j2 n1 pn tx">attitude status</long_name>
-	<data>flags 1 BTEST</data>
+	<data>flags_ 1 BTEST</data>
 	<format>f2.0</format>
 	<compress>int1</compress>
 	<flag_values>ok bad</flag_values>
@@ -1454,7 +1468,7 @@ GNU Lesser General Public License for more details.
 <var name="flag_ice" field="2502">
 	<long_name>not used</long_name>
 	<long_name sat="j1 j2 n1">>continental ice</long_name>
-	<data>flags 2 BTEST</data>
+	<data>flags_ 2 BTEST</data>
 	<format>f2.0</format>
 	<compress>int1</compress>
 	<flag_values>no_ice ice</flag_values>
@@ -1470,21 +1484,21 @@ GNU Lesser General Public License for more details.
 <var name="flag_iono" field="2503">
 	<long_name>not used</long_name>
 	<long_name sat="j2 n1 tx">quality of dual-frequency ionospheric correction</long_name>
-	<data>flags 3 BTEST</data>
+	<data>flags_ 3 BTEST</data>
 	<format>f2.0</format>
 	<compress>int1</compress>
 	<flag_values>ok bad</flag_values>
 </var>
 <var name="flag_land" field="2504">
 	<long_name>water/land flag</long_name>
-	<data>flags 4 BTEST</data>
+	<data>flags_ 4 BTEST</data>
 	<format>f2.0</format>
 	<compress>int1</compress>
 	<flag_values>water land</flag_values>
 </var>
 <var name="flag_ocean" field="2505">
 	<long_name>ocean/non-ocean flag</long_name>
-	<data>flags 5 BTEST</data>
+	<data>flags_ 5 BTEST</data>
 	<format>f2.0</format>
 	<compress>int1</compress>
 	<flag_values>ocean non_ocean</flag_values>
@@ -1492,7 +1506,7 @@ GNU Lesser General Public License for more details.
 <var name="flag_land_rad" field="2506">
 	<long_name>radiometer land flag</long_name>
 	<long_name sat="c2 gs">not used</long_name>
-	<data>flags 6 BTEST</data>
+	<data>flags_ 6 BTEST</data>
 	<format>f2.0</format>
 	<compress>int1</compress>
 	<flag_values>water land</flag_values>
@@ -1500,7 +1514,7 @@ GNU Lesser General Public License for more details.
 <var name="flag_alt_rain_ice" field="2507">
 	<long_name>corruption of altimeter measurement (ice)</long_name>
 	<long_name sat="c2 e1 e2 gs">not used</long_name>
-	<data>flags 7 BTEST</data>
+	<data>flags_ 7 BTEST</data>
 	<format>f2.0</format>
 	<compress>int1</compress>
 	<flag_values>no_ice ice</flag_values>
@@ -1512,7 +1526,7 @@ GNU Lesser General Public License for more details.
 <var name="flag_rad_rain_ice" field="2508">
 	<long_name>corruption of radiometer measurement (rain or ice)</long_name>
 	<long_name sat="c2 g1">not used</long_name>
-	<data>flags 8 BTEST</data>
+	<data>flags_ 8 BTEST</data>
 	<format>f2.0</format>
 	<compress>int1</compress>
 	<flag_values>ok rain_or_ice</flag_values>
@@ -1523,7 +1537,7 @@ GNU Lesser General Public License for more details.
 	<long_name sat="gs">not used</long_name>
 	<long_name sat="j1 j2">quality of 18.7 or 23.8 GHz brightness temperatures</long_name>
 	<long_name sat="pn tx">quality of TMR (bit 0 of TMR_bad)</long_name>
-	<data>flags 9 BTEST</data>
+	<data>flags_ 9 BTEST</data>
 	<format>f2.0</format>
 	<compress>int1</compress>
 	<flag_values>ok bad</flag_values>
@@ -1534,14 +1548,14 @@ GNU Lesser General Public License for more details.
 	<long_name sat="gs">not used</long_name>
 	<long_name sat="j1 j2">quality of 34.0 GHz brightness temperature</long_name>
 	<long_name sat="pn tx">quality of TMR (bit 1 of TMR_bad)</long_name>
-	<data>flags 10 BTEST</data>
+	<data>flags_ 10 BTEST</data>
 	<format>f2.0</format>
 	<compress>int1</compress>
 	<flag_values>ok bad</flag_values>
 </var>
 <var name="flag_range_qual" field="2511">
 	<long_name>quality of the range estimate</long_name>
-	<data>flags 11 BTEST</data>
+	<data>flags_ 11 BTEST</data>
 	<format>f2.0</format>
 	<compress>int1</compress>
 	<flag_values>ok suspect</flag_values>
@@ -1551,7 +1565,7 @@ GNU Lesser General Public License for more details.
 	<long_name>quality of the wave height estimate</long_name>
 	<long_name sat="gs">quality of sea state bias</long_name>
 	<long_name sat="c2 n1">not used</long_name>
-	<data>flags 12 BTEST</data>
+	<data>flags_ 12 BTEST</data>
 	<format>f2.0</format>
 	<compress>int1</compress>
 	<flag_values>ok suspect</flag_values>
@@ -1560,7 +1574,7 @@ GNU Lesser General Public License for more details.
 	<long_name>quality of the backscatter coefficient estimate</long_name>
 	<long_name sat="gs">quality of wind speed estimate</long_name>
 	<long_name sat="c2">not used</long_name>
-	<data>flags 13 BTEST</data>
+	<data>flags_ 13 BTEST</data>
 	<format>f2.0</format>
 	<compress>int1</compress>
 	<flag_values>ok suspect</flag_values>
@@ -1568,7 +1582,7 @@ GNU Lesser General Public License for more details.
 <var name="flag_track_mode" field="2514">
 	<long_name>tracking mode</long_name>
 	<long_name sat="c2 g1 j2">not used</long_name>
-	<data>flags 14 BTEST</data>
+	<data>flags_ 14 BTEST</data>
 	<format>f2.0</format>
 	<compress>int1</compress>
 	<flag_values>nominal preset</flag_values>
@@ -1583,7 +1597,7 @@ GNU Lesser General Public License for more details.
 <var name="flag_orbit" field="2515 25">
 	<long_name>quality of the orbit</long_name>
 	<long_name sat="g1 gs j2 tx">not used</long_name>
-	<data>flags 15 BTEST</data>
+	<data>flags_ 15 BTEST</data>
 	<format>f2.0</format>
 	<compress>int1</compress>
 	<flag_values>ok degraded</flag_values>
