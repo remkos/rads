@@ -43,7 +43,7 @@ real(eightbytereal) :: dt(msat)
 type(rads_sat) :: S(msat)
 type(rads_pass) :: P
 integer(fourbyteint) :: i, j, nsat = 0, nsel = 0, reject = -1, ios, debug, ncid, dimid(3), start(2), varid(vbase)
-logical :: duals = .true., singles = .true., l
+logical :: duals = .true., singles = .true., batches = .false., l
 character(len=rads_naml) :: satlist, filename = 'radsxogen.nc'
 character(len=rads_naml) :: legs = 'undetermined - undetermined'
 character(len=1) :: interpolant = 'q'
@@ -71,7 +71,7 @@ integer(fourbyteint), allocatable :: key(:), idx(:), trkid(:,:)
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('dsi:g:r:: dt:')
+call rads_set_options ('dsbi:g:r:: dt:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 dt = S(1)%nan
@@ -108,6 +108,8 @@ do i = 1,rads_nopt
 		duals = .false.
 	case ('d', 'dual')
 		singles = .false.
+	case ('b', 'batch')
+		batches = .true.
 	case ('i', 'interpolant')
 		select case (rads_opt(i)%arg)
 		case ('a':'z')
@@ -214,6 +216,7 @@ call nfs (nf90_enddef (ncid))
 ! We are now ready to compare the different batches of passes
 do i = 1,nsat
 	do j = i,nsat
+		if (batches .and. i == j) cycle
 		call xogen_batch (S(i), S(j), dt(i), dt(j))
 	enddo
 enddo
@@ -298,6 +301,7 @@ write (stderr,1300)
 'Program specific [program_options] are:'/ &
 '  -d, --dual                Do dual satellite crossovers only'/ &
 '  -s, --single              Do single satellite crossovers only'/ &
+'  -b, --batch               Do crossovers between different batches only'/ &
 '  -i, --interpolant=[n|s|a|l|q|c][N]'/ &
 '                            Interpolate 2N along-track values to crossover by picking (n)earest neighbor,'/ &
 '                            or by cubic (s)pline, or by (a)veraging, or by (l)inear, (q)uadratic or (c)ubic'/ &
