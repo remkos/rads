@@ -28,7 +28,7 @@ use rads_misc
 use rads_netcdf
 use rads_time
 integer(fourbyteint) :: ncid, i, icol, ios, nvar, nxo_in, nxo_out, ntrk, &
-	id_satid, id_track, id_sla, id_new, id_old, id_offset, nvar_replace = 0
+	id_flag, id_satid, id_track, id_sla, id_new, id_old, id_offset, nvar_replace = 0
 real(eightbytereal), allocatable :: var(:,:,:), stat(:,:,:)
 integer(fourbyteint), allocatable :: track(:,:)
 character(len=rads_naml), allocatable :: long_name(:)
@@ -53,9 +53,9 @@ type(sat_) :: sat(msat)
 character(len=3*msat) :: satlist = ''
 type(rads_sat) :: S
 character(len=*), parameter :: optlist = &
-	'e::dslnotr: lon: lat: dt: edit:: dual single nolist both-legs order both-times time: ymd: doy: sec: replace:'
+	'e::dslnotr: lon: lat: dt: edit:: dual single nolist both-legs order both-times time: ymd: doy: sec: replace: check-flag:'
 
-integer(fourbyteint) :: var0 = 0
+integer(fourbyteint) :: var0 = 0, check_flag = -1
 logical :: diff = .true., stat_only = .false., singles = .true., duals = .true., xostat = .false.
 real(eightbytereal) :: t0 = 0d0, t1 = 0d0, lon0 = 0d0, lon1 = 0d0, lat0 = 0d0, lat1 = 0d0, dt0 = 0d0, dt1 = 0d0, edit = -1d0
 
@@ -115,6 +115,8 @@ do
 		nvar_replace = nvar_replace + 1
 		if (nvar_replace > 10) call rads_exit ('Too many -r options')
 		str_replace(nvar_replace) = optarg
+	case ('check-flag')
+		read (optarg, *, iostat=ios) check_flag
 	case (' ')
 		call process (optarg) ! Process each file
 	case default
@@ -215,6 +217,8 @@ do i = 1,nvar_replace
 		var(:,:,id_sla) = var(:,:,id_sla) - (var(:,:,id_new) - var(:,:,id_old))
 	endif
 enddo
+id_flag = 0
+if (check_flag >= 0) id_flag = get_varid('flag_status') - id_offset
 
 ! Close netCDF file
 call nfs (nf90_close (ncid))
@@ -232,6 +236,9 @@ if (.not.singles) then
 else if (.not.duals) then
 	mask = (trk(track(1,:))%satid == trk(track(2,:))%satid)
 endif
+
+! Mask out based on data flag (for use with CryoSat)
+if (id_flag > 0) where (var(1,:,id_flag) /= check_flag) mask = .false.
 
 ! If editing is requested, mask based on sigma-editing of first variable only
 ! - Compute the standard deviation of the first
