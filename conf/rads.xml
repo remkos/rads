@@ -2578,8 +2578,8 @@ GNU Lesser General Public License for more details.
 	</phase>
 </if>
 
-<if sat="ss">
-	<satellite>SEASAT</satellite>
+<if sat="sa">
+	<satellite>SEASAT-A</satellite>
 	<satid>2</satid>
 	<inclination>108.05</inclination>
 	<xover_params>0.07 0.80</xover_params>
