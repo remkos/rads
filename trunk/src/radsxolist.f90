@@ -190,7 +190,7 @@ if (nf90_get_att (ncid, get_varid('satid'), 'flag_meanings', satlist) == nf90_no
 			S%xover_params(1), S%xover_params(2), S%inclination)
 	enddo
 else
-	satlist = 'g3 ss gs e1 tx pn e2 g1 j1 n1 j2 c2'
+	satlist = 'g3 sa gs e1 tx pn e2 g1 j1 n1 j2 c2'
 	do i = 1,12
 		if (.not.any(trk%satid == i)) cycle
 		call rads_init (S, satlist(i*3-2:i*3-1))
