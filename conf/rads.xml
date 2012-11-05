@@ -996,7 +996,7 @@ GNU Lesser General Public License for more details.
 	<format>f10.4</format>
 	<compress>int4 1d-4</compress>
 </var>
-<var name="mss_ucl04" field="1613" sat="c2">
+<var name="mss_ucl04" field="1613" sat="e1 e2 c2">
 	<long_name>UCL04 mean sea surface height</long_name>
 	<source>UCL</source>
 	<units>m</units>
@@ -1143,7 +1143,7 @@ GNU Lesser General Public License for more details.
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var name="wind_speed_ecmwf_u" field="1903" sat="!e1 gs">
+<var name="wind_speed_ecmwf_u" field="1903" sat="!gs">
 	<long_name>ECMWF model wind speed (U)</long_name>
 	<standard_name>eastward_wind</standard_name>
 	<source>ECMWF</source>
@@ -1153,7 +1153,7 @@ GNU Lesser General Public License for more details.
 	<format>f7.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var name="wind_speed_ecmwf_v" field="1904" sat="!e1 gs">
+<var name="wind_speed_ecmwf_v" field="1904" sat="!gs">
 	<long_name>ECMWF model wind speed (V)</long_name>
 	<standard_name>northward_wind</standard_name>
 	<source>ECMWF</source>
@@ -1297,6 +1297,14 @@ GNU Lesser General Public License for more details.
 	<source>DTU10</source>
 	<units>m</units>
 	<data>topo_dtu10</data>
+	<format>f7.0</format>
+	<compress>int2</compress>
+</var>
+<var name="topo_macess" field="2206">
+	<long_name>MACESS topography</long_name>
+	<source>MACCESS</source>
+	<units>m</units>
+	<data>topo_macess</data>
 	<format>f7.0</format>
 	<compress>int2</compress>
 </var>
@@ -1467,7 +1475,7 @@ GNU Lesser General Public License for more details.
 </var>
 <var name="flag_ice" field="2502">
 	<long_name>not used</long_name>
-	<long_name sat="j1 j2 n1">>continental ice</long_name>
+	<long_name sat="e1 e2 j1 j2 n1">>continental ice</long_name>
 	<data>flags_ 2 BTEST</data>
 	<format>f2.0</format>
 	<compress>int1</compress>
@@ -1989,7 +1997,7 @@ GNU Lesser General Public License for more details.
 </var>
 <alias name="dsig0" field="32" sat="e1 e2 tx">dsig0_ku</alias>
 
-<var name="liquid_water" field="3301 33" sat="j1 j2 n1 pn tx">
+<var name="liquid_water" field="3301 33" sat="e1 e2 j1 j2 n1 pn tx">
 	<long_name>radiometer liquid water content</long_name>
 	<standard_name>atmosphere_cloud_liquid_water_content</standard_name>
 	<units>kg/m^2</units>
@@ -1997,8 +2005,8 @@ GNU Lesser General Public License for more details.
 	<format>f6.2</format>
 	<compress>int2 1d-2</compress>
 </var>
-<!--
-<var name="wvc" field="3302">
+
+<var name="water_vapor_content" field="3302" sat="e1 e2">
 	<long_name>radiometer water vapor content</long_name>
 	<standard_name>atmosphere_water_vapor_content</standard_name>
 	<units>kg/m^2</units>
@@ -2006,7 +2014,7 @@ GNU Lesser General Public License for more details.
 	<format>f6.2</format>
 	<compress>int2 1d-2</compress>
 </var>
-
+<!--
 <var name="frame_count" field="3401">
 	<long_name>frame count</long_name>
 	<data>frame_count</data>
