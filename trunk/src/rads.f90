@@ -1463,6 +1463,7 @@ do i = 1,3 ! This loop is here to allow processing of aliases
 		exit
 	else if (info%default /= huge(0d0)) then ! Default value
 		data = info%default
+		S%error = rads_noerr
 		if (.not.skip_edit) call rads_edit_data
 		exit
 
