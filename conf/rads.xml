@@ -867,7 +867,7 @@ GNU Lesser General Public License for more details.
 	<comment>Variation of absolute sea level due to polar motion</comment>
 </var>
 
-<var name="ssb_bm3" field="1501" sat="e1 e2 g1 gs pn tx">
+<var name="ssb_bm3" field="1501" sat="c2 e1 e2 g1 gs pn tx">
 	<long_name>BM3 sea state bias</long_name>
 	<long_name sat="pn tx">BM4 sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
@@ -996,7 +996,7 @@ GNU Lesser General Public License for more details.
 	<format>f10.4</format>
 	<compress>int4 1d-4</compress>
 </var>
-<var name="mss_ucl04" field="1613" sat="e1 e2 c2">
+<var name="mss_ucl04" field="1613" sat="c2 e1 e2">
 	<long_name>UCL04 mean sea surface height</long_name>
 	<source>UCL</source>
 	<units>m</units>
