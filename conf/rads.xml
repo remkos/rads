@@ -1200,7 +1200,7 @@ GNU Lesser General Public License for more details.
 	<limits sat="g1 gs">0.0 0.25</limits> <!--GFO and Geosat on-board a-b trackers smooth the data-->
 	<limits sat="j1">0.0 0.17</limits> <!--Retracker noise on Jason-1 is lower than others-->
 	<limits sat="j2">0.00 0.17</limits> <!--Retracker noise on Jason-2 is lower than others-->
-	<limits sat="c2">0.00 0.15</limits> <!--Retracker noise on CryoSat-2 is particularly low-->
+	<limits sat="c2">0.00 0.18</limits> <!--CryoSat-2 needs a little extra to allow PLRM-->
 	<limits sat="tx">0.00 0.15</limits> <!--TOPEX a-b tracker leads to much lower std dev than other satellites-->
 	<data>range_rms_ku</data>
 	<format>f6.4</format>
