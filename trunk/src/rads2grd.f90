@@ -38,7 +38,7 @@ type :: stat
 endtype
 type(stat), allocatable :: box(:,:)
 real(eightbytereal), allocatable :: data(:,:)
-integer(fourbyteint), parameter :: msat = 5
+integer(fourbyteint), parameter :: msat = 20
 type(rads_sat) :: S(msat)
 type(rads_pass) :: P
 

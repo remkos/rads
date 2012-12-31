@@ -28,7 +28,7 @@ use rads
 use rads_misc
 use rads_time
 
-integer(fourbyteint), parameter :: msat = 5
+integer(fourbyteint), parameter :: msat = 20
 type(rads_sat) :: S(msat)
 integer(fourbyteint) :: nsel = 0, reject = 9999, cycle, pass, i, j, ios, &
 	nbins, nsat = 0, ntrx = 0, ntrx1, ntrx2, type_sla = 1, step = 1, ncols

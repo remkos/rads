@@ -38,7 +38,7 @@ use rads_netcdf
 use rads_misc
 use rads_time
 
-integer(fourbyteint), parameter :: msat = 10, vbase = 13, mtrk = 500000
+integer(fourbyteint), parameter :: msat = 20, vbase = 13, mtrk = 500000
 real(eightbytereal) :: dt(msat)
 type(rads_sat) :: S(msat)
 type(rads_pass) :: P
