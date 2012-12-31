@@ -31,7 +31,7 @@ use rads_misc
 use rads_time
 
 ! RADS structures
-integer(fourbyteint), parameter :: msat = 5
+integer(fourbyteint), parameter :: msat = 20
 type(rads_sat), target :: Sats(msat)
 type(rads_sat), pointer :: S
 type(rads_pass) :: P
