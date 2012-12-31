@@ -1,7 +1,7 @@
 !-----------------------------------------------------------------------
 ! $Id$
 !
-! Copyright (C) 2012  Remko Scharroo (Altimetrics LLC)
+! Copyright (c) 2011-2013  Remko Scharroo (Altimetrics LLC)
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
