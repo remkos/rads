@@ -1,3 +1,22 @@
+<!--
+$Id: rads.xml 258 2012-12-02 02:25:23Z remko@altimetrics.com $
+
+Copyright (c) 2011-2013  Remko Scharroo (Altimetrics LLC)
+See LICENSE.TXT file for copying and redistribution conditions.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+** Jason-2: Use MLE3 data (instead of default MLE4)
+-->
+
 <if sat="j2">
 	<alias name="range" field="6">range_ku_mle3</alias>
 	<alias name="iono" field="9">iono_alt_smooth_mle3</alias>

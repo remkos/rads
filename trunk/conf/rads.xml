@@ -1,9 +1,8 @@
 <?xml version="1.0"?>
 <!--
 $Id$
-** Global RADS configuration file
 
-Copyright (C) 2012  Remko Scharroo (Altimetrics LLC)
+Copyright (c) 2011-2013  Remko Scharroo (Altimetrics LLC)
 See LICENSE.TXT file for copying and redistribution conditions.
 
 This program is free software: you can redistribute it and/or modify
@@ -15,6 +14,8 @@ This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Lesser General Public License for more details.
+
+** Global RADS configuration file
 -->
 
 <var name="sla" field="0">
