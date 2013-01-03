@@ -142,7 +142,7 @@ return
 contains
 
 subroutine grid_load_nc
-integer(fourbyteint) :: i,l,noff,x_id,y_id,nvars,dims(2),ndims,dims2(1),start(1)=1,stride(1)=1
+integer(fourbyteint) :: i,l,x_id,y_id,nvars,dims(2),ndims,dims2(1),start(1)=1,stride(1)=1
 real(eightbytereal) :: dummy(2),x
 
 ! Check if a suffix '?varname' is used
@@ -234,25 +234,27 @@ if (nf90_get_att(ncid,z_id,'_FillValue',info%znan) /= 0 .and. nf90_get_att(ncid,
 	info%znan = make_nan()
 
 ! Get x- and y-ranges
-if (nf90_get_att(ncid,nf90_global,'node_offset',noff) /= 0) noff = 0
-if (nf90_get_att(ncid,x_id,'actual_range',dummy) /= 0 .and. nf90_get_att(ncid,x_id,'valid_range',dummy) /= 0) then
-	stride(1) = info%nx-1
-	if (nf90_get_var(ncid,x_id,dummy,start=start,stride=stride) /= 0) return
-	noff = 0
+stride(1) = info%nx - 1
+if (nf90_get_var(ncid,x_id,dummy,start=start,stride=stride) == 0) then
+else if (nf90_get_att(ncid,x_id,'actual_range',dummy) == 0) then
+else if (nf90_get_att(ncid,x_id,'valid_range',dummy) == 0) then
+else
+	return
 endif
-info%dx = (dummy(2)-dummy(1))/(info%nx+noff-1)
-info%xmin = dummy(1)+noff*info%dx/2
-info%xmax = dummy(2)-noff*info%dx/2
+info%dx = (dummy(2)-dummy(1))/(info%nx-1)
+info%xmin = dummy(1)
+info%xmax = dummy(2)
 
-if (nf90_get_att(ncid,nf90_global,'node_offset',noff) /= 0) noff = 0
-if (nf90_get_att(ncid,y_id,'actual_range',dummy) /= 0 .and. nf90_get_att(ncid,y_id,'valid_range' ,dummy) /= 0) then
-	stride(1)=info%ny-1
-	if (nf90_get_var(ncid,y_id,dummy,start=start,stride=stride) /= 0) return
-	noff = 0
+stride(1) = info%ny - 1
+if (nf90_get_var(ncid,y_id,dummy,start=start,stride=stride) == 0) then
+else if (nf90_get_att(ncid,y_id,'actual_range',dummy) == 0) then
+else if (nf90_get_att(ncid,y_id,'valid_range',dummy) == 0) then
+else
+	return
 endif
-info%dy = (dummy(2)-dummy(1))/(info%ny+noff-1)
-info%ymin = dummy(1)+noff*info%dy/2
-info%ymax = dummy(2)-noff*info%dy/2
+info%dy = (dummy(2)-dummy(1))/(info%ny-1)
+info%ymin = dummy(1)
+info%ymax = dummy(2)
 
 ! Check if
 ! - grid is geographical
