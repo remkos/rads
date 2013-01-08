@@ -690,14 +690,16 @@ logical :: grid_inside
 ! If <x> or <y> are NaN, .false. is returned.
 ! If <x> is periodical, no boundary check is performed on <x>.
 !-----------------------------------------------------------------------
-if (y >= info%ymin .and. y <= info%ymax) then
-	if (info%nxwrap == 0) then
-		grid_inside = (x >= info%xmin .and. x <= info%xmax)
-	else
-		grid_inside = .not.isnan(x)
-	endif
+if (info%nxwrap == 0) then
+	grid_inside = (x >= info%xmin .and. x <= info%xmax)
 else
-	grid_inside = .false.
+	grid_inside = .not.isnan(x)
+endif
+if (.not.grid_inside) return
+if (info%dy > 0d0) then
+	grid_inside = (y >= info%ymin .and. y <= info%ymax)
+else
+	grid_inside = (y >= info%ymax .and. y <= info%ymin)
 endif
 end function grid_inside
 
