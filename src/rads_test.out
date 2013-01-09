@@ -1,10 +1,9 @@
  Start rads_init
-           5  command line options:
-           1 ; optopt = sat; optarg = e1/a; optid =           11
+           4  command line options:
+           1 ; optopt = S; optarg = e1/a; optid =           11
            2 ; optopt = ymd; optarg = 19910924,19910925; optid =           13
-           3 ; optopt = lat; optarg = -50,30; optid =           13
-           4 ; optopt = lon; optarg = -90,120; optid =           13
-           5 ; optopt = sel; optarg = time,lat,lon,sla,12_,tide_ocean_,pass,drange; optid =           14
+           3 ; optopt = R; optarg = -90/120/-50/30; optid =           13
+           4 ; optopt = V; optarg = time,lat,lon,sla,12_,tide_ocean_,pass,drange; optid =           14
  Parsing XML file /rads/data/conf/rads.xml
  Increased S%var:         100         200
  Eqlonlim =   -278.27906976744185       -278.27906976744185        278.27906976744185        278.27906976744185     
@@ -53,11 +52,11 @@
           43 tide_ocean_webtide                      tide_ocean_webtide                         1215     -1
           44 tide_ocean_got47                        tide_ocean_got47                           1217     -1
           45 tide_ocean_got48                        tide_ocean_got48                           1219     -1
-          46 tide_ocean                              tide_ocean_got47                             12     -1
+          46 tide_ocean                              tide_ocean_got48                             12     -1
           47 tide_load_fes04                         tide_load_fes04                            1313     -1
           48 tide_load_got47                         tide_load_got47                            1317     -1
           49 tide_load_got48                         tide_load_got48                            1319     -1
-          50 tide_load                               tide_load_got47                              13     -1
+          50 tide_load                               tide_load_got48                              13     -1
           51 tide_pole                               tide_pole                                  1401     14
           52 ssb_bm3                                 ssb_bm3                                    1501     -1
           53 ssb                                     ssb_bm3                                      15     -1
@@ -66,77 +65,84 @@
           56 geoid                                   geoid_egm2008                                -1     -1
           57 mss_egm2008                             mss_egm2008                                1611     -1
           58 mss_dnsc08                              mss_dnsc08                                 1612     -1
-          59 mss_dtu10                               mss_dtu10                                  1614     -1
-          60 mss_cnescls11                           mss_cnescls11                              1615     -1
-          61 mss                                     mss_dnsc08                                   16     -1
-          62 swh_ku                                  swh_ku                                     1701     -1
-          63 swh                                     swh_ku                                       17     -1
-          64 sig0_ku                                 sig0_ku                                    1801     -1
-          65 sig0                                    sig0_ku                                      18     -1
-          66 wind_speed_alt                          wind_speed_alt                             1901     -1
-          67 wind_speed                              wind_speed_alt                               19     -1
-          68 range_rms_norm                          range_rms_norm                             2001     -1
-          69 range_rms_ku                            range_rms_ku                               2002     -1
-          70 range_rms                               range_rms_ku                                 20     -1
-          71 range_numval_ku                         range_numval_ku                            2101     -1
-          72 range_numval                            range_numval_ku                              21     -1
-          73 topo_dnsc08                             topo_dnsc08                                2203     -1
-          74 topo_dtu10                              topo_dtu10                                 2205     -1
-          75 topo                                    topo_dnsc08                                  22     -1
-          76 tb_238                                  tb_238                                     2302     -1
-          77 tb2                                     tb_238                                       23     -1
-          78 tb_365                                  tb_365                                     2303     -1
-          79 tb3                                     tb_365                                       -1     -1
-          80 flag_status                             flag_status                                2516     -1
-          81 flag_attitude                           flag_attitude                              2501     -1
-          82 flag_ice                                flag_ice                                   2502     -1
-          83 flag_iono                               flag_iono                                  2503     -1
-          84 flag_land                               flag_land                                  2504     -1
-          85 flag_ocean                              flag_ocean                                 2505     -1
-          86 flag_land_rad                           flag_land_rad                              2506     -1
-          87 flag_alt_rain_ice                       flag_alt_rain_ice                          2507     -1
-          88 flag_rad_rain_ice                       flag_rad_rain_ice                          2508     -1
-          89 flag_rad_tb1                            flag_rad_tb1                               2509     -1
-          90 flag_rad_tb2                            flag_rad_tb2                               2510     -1
-          91 flag_range_qual                         flag_range_qual                            2511     -1
-          92 flag_swh                                flag_swh                                   2512     -1
-          93 flag_sig0                               flag_sig0                                  2513     -1
-          94 flag_track_mode                         flag_track_mode                            2514     -1
-          95 flag_orbit                              flag_orbit                                 2515     25
-          96 flags                                   flags                                      2601     26
-          97 drange_ku                               drange_ku                                  2701     -1
-          98 drange_cal                              drange_cal                                 2702     -1
-          99 drange_uso                              drange_uso                                 2703     -1
-         100 drange                                  drange_ku                                    27     -1
-         101 swh_rms_ku_norm                         swh_rms_ku_norm                            2801     -1
-         102 swh_rms_ku                              swh_rms_ku                                 2802     -1
-         103 swh_rms                                 swh_rms_ku                                   28     -1
-         104 sig0_rms_ku_norm                        sig0_rms_ku_norm                           2901     -1
-         105 sig0_rms_ku                             sig0_rms_ku                                2902     -1
-         106 sig0_rms                                sig0_rms_ku                                  29     -1
-         107 off_nadir_angle_wf_ku                   off_nadir_angle_wf_ku                      3001     -1
-         108 off_nadir_angle2_wf_ku                  off_nadir_angle2_wf_ku                     3002     -1
-         109 attitude                                off_nadir_angle2_wf_ku                       30     -1
-         110 dsig0_ku                                dsig0_ku                                   3201     -1
-         111 dsig0_atmos_ku                          dsig0_atmos_ku                             3203     -1
-         112 dsig0                                   dsig0_ku                                     32     -1
-         113 basin                                   basin                                      3601     36
-         114 ref_frame_offset                        ref_frame_offset                           3801     38
-         115 tide_equil                              tide_equil                                 3901     39
-         116 tide_non_equil                          tide_non_equil                             3902     -1
-         117 dist_coast                              dist_coast                                 4501     45
-         118 seaice_class                            seaice_class                               4601     46
-         119 seaice_conc                             seaice_conc                                4701     47
-         120 sst                                     sst                                        4801     48
-         121 sst_mean                                sst_mean                                   4802     -1
-         122 dry_tropo_airtide                       dry_tropo_airtide                          4901     49
-         123 first_meas_time                         first_meas_time                            9901     99
-         124 last_meas_time                          last_meas_time                             9902     -1
-         125 eqtime                                  eqtime                                     9903     -1
-         126 eqlon                                   eqlon                                      9904     -1
-         127 cycle                                   cycle                                      9905     -1
-         128 pass                                    pass                                       9906     -1
- Eqlonlim =   -189.09260342695319       -195.85137415828183        195.85137415828183        189.09260342695319     
+          59 mss_ucl04                               mss_ucl04                                  1613     -1
+          60 mss_dtu10                               mss_dtu10                                  1614     -1
+          61 mss_cnescls11                           mss_cnescls11                              1615     -1
+          62 mss                                     mss_dtu10                                    16     -1
+          63 swh_ku                                  swh_ku                                     1701     -1
+          64 swh                                     swh_ku                                       17     -1
+          65 sig0_ku                                 sig0_ku                                    1801     -1
+          66 sig0                                    sig0_ku                                      18     -1
+          67 wind_speed_alt                          wind_speed_alt                             1901     -1
+          68 wind_speed_ecmwf_u                      wind_speed_ecmwf_u                         1903     -1
+          69 wind_speed_ecmwf_v                      wind_speed_ecmwf_v                         1904     -1
+          70 wind_speed                              wind_speed_alt                               19     -1
+          71 range_rms_norm                          range_rms_norm                             2001     -1
+          72 range_rms_ku                            range_rms_ku                               2002     -1
+          73 range_rms                               range_rms_ku                                 20     -1
+          74 range_numval_ku                         range_numval_ku                            2101     -1
+          75 range_numval                            range_numval_ku                              21     -1
+          76 topo_dnsc08                             topo_dnsc08                                2203     -1
+          77 topo_dtu10                              topo_dtu10                                 2205     -1
+          78 topo_macess                             topo_macess                                2206     -1
+          79 topo                                    topo_dtu10                                   22     -1
+          80 tb_238                                  tb_238                                     2302     -1
+          81 tb2                                     tb_238                                       23     -1
+          82 tb_365                                  tb_365                                     2303     -1
+          83 tb3                                     tb_365                                       -1     -1
+          84 flag_status                             flag_status                                2516     -1
+          85 flag_attitude                           flag_attitude                              2501     -1
+          86 flag_ice                                flag_ice                                   2502     -1
+          87 flag_iono                               flag_iono                                  2503     -1
+          88 flag_land                               flag_land                                  2504     -1
+          89 flag_ocean                              flag_ocean                                 2505     -1
+          90 flag_land_rad                           flag_land_rad                              2506     -1
+          91 flag_alt_rain_ice                       flag_alt_rain_ice                          2507     -1
+          92 flag_rad_rain_ice                       flag_rad_rain_ice                          2508     -1
+          93 flag_rad_tb1                            flag_rad_tb1                               2509     -1
+          94 flag_rad_tb2                            flag_rad_tb2                               2510     -1
+          95 flag_range_qual                         flag_range_qual                            2511     -1
+          96 flag_swh                                flag_swh                                   2512     -1
+          97 flag_sig0                               flag_sig0                                  2513     -1
+          98 flag_track_mode                         flag_track_mode                            2514     -1
+          99 flag_orbit                              flag_orbit                                 2515     25
+         100 flags                                   flags                                      2601     26
+         101 drange_ku                               drange_ku                                  2701     -1
+         102 drange_cal                              drange_cal                                 2702     -1
+         103 drange_uso                              drange_uso                                 2703     -1
+         104 drange                                  drange_ku                                    27     -1
+         105 swh_rms_ku_norm                         swh_rms_ku_norm                            2801     -1
+         106 swh_rms_ku                              swh_rms_ku                                 2802     -1
+         107 swh_rms                                 swh_rms_ku                                   28     -1
+         108 sig0_rms_ku_norm                        sig0_rms_ku_norm                           2901     -1
+         109 sig0_rms_ku                             sig0_rms_ku                                2902     -1
+         110 sig0_rms                                sig0_rms_ku                                  29     -1
+         111 off_nadir_angle_wf_ku                   off_nadir_angle_wf_ku                      3001     -1
+         112 off_nadir_angle2_wf_ku                  off_nadir_angle2_wf_ku                     3002     -1
+         113 attitude                                off_nadir_angle2_wf_ku                       30     -1
+         114 dsig0_ku                                dsig0_ku                                   3201     -1
+         115 dsig0_atmos_ku                          dsig0_atmos_ku                             3203     -1
+         116 dsig0                                   dsig0_ku                                     32     -1
+         117 liquid_water                            liquid_water                               3301     33
+         118 water_vapor_content                     water_vapor_content                        3302     -1
+         119 basin                                   basin                                      3601     36
+         120 ref_frame_offset                        ref_frame_offset                           3801     38
+         121 tide_equil                              tide_equil                                 3901     39
+         122 tide_non_equil                          tide_non_equil                             3902     -1
+         123 dist_coast                              dist_coast                                 4501     45
+         124 seaice_class                            seaice_class                               4601     46
+         125 seaice_conc                             seaice_conc                                4701     47
+         126 sst                                     sst                                        4801     48
+         127 sst_mean                                sst_mean                                   4802     -1
+         128 dry_tropo_airtide                       dry_tropo_airtide                          4901     49
+         129 mss_annual                              mss_annual                                 5001     50
+         130 gia                                     gia                                        5101     51
+         131 first_meas_time                         first_meas_time                            9901     99
+         132 last_meas_time                          last_meas_time                             9902     -1
+         133 eqtime                                  eqtime                                     9903     -1
+         134 eqlon                                   eqlon                                      9904     -1
+         135 cycle                                   cycle                                      9905     -1
+         136 pass                                    pass                                       9906     -1
  Eqlonlim =   -99.092603426953190       -105.85137415828184        135.85137415828183        129.09260342695319     
  debug =           3
  Checking cycle/pass :           19           1
@@ -267,9 +273,9 @@
 time                                    data(1), data(ndata) =  212284800.477201 212286112.252400
 lat                                     data(1), data(ndata) =  -47.622206  29.948693
 lon                                     data(1), data(ndata) =   -13.093074  -32.882569
-sla                                     data(1), data(ndata) =    0.0627      NaN
-tide_ocean                              data(1), data(ndata) =   0.2652  0.3253
-tide_ocean                              data(1), data(ndata) =   0.2652  0.3253
+sla                                     data(1), data(ndata) =   -0.0080      NaN
+tide_ocean                              data(1), data(ndata) =   0.2620  0.3218
+tide_ocean                              data(1), data(ndata) =   0.2620  0.3218
 pass                                    data(1), data(ndata) =    61.   61.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          62
@@ -282,9 +288,9 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 time                                    data(1), data(ndata) =  212290788.191404 212292140.086470
 lat                                     data(1), data(ndata) =  -49.951446  29.946936
 lon                                     data(1), data(ndata) =   -37.232113  -57.998546
-sla                                     data(1), data(ndata) =   -0.0839  -0.1035
-tide_ocean                              data(1), data(ndata) =  -0.1891  0.1160
-tide_ocean                              data(1), data(ndata) =  -0.1891  0.1160
+sla                                     data(1), data(ndata) =   -0.1239  -0.1313
+tide_ocean                              data(1), data(ndata) =  -0.1903  0.1134
+tide_ocean                              data(1), data(ndata) =  -0.1903  0.1134
 pass                                    data(1), data(ndata) =    63.   63.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          64
@@ -295,9 +301,9 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 time                                    data(1), data(ndata) =  212294388.838828 212295492.666303
 lat                                     data(1), data(ndata) =   15.214791 -49.997988
 lon                                     data(1), data(ndata) =   119.877023  102.731559
-sla                                     data(1), data(ndata) =       NaN   0.0002
-tide_ocean                              data(1), data(ndata) =   0.2695 -0.1292
-tide_ocean                              data(1), data(ndata) =   0.2695 -0.1292
+sla                                     data(1), data(ndata) =       NaN  -0.0408
+tide_ocean                              data(1), data(ndata) =   0.2744 -0.1338
+tide_ocean                              data(1), data(ndata) =   0.2744 -0.1338
 pass                                    data(1), data(ndata) =    64.   64.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          65
@@ -308,9 +314,9 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 time                                    data(1), data(ndata) =  212296816.031833 212298154.134665
 lat                                     data(1), data(ndata) =  -49.955764  29.129536
 lon                                     data(1), data(ndata) =   -62.348502  -82.894196
-sla                                     data(1), data(ndata) =   -0.1149      NaN
-tide_ocean                              data(1), data(ndata) =   0.4784  0.0953
-tide_ocean                              data(1), data(ndata) =   0.4784  0.0953
+sla                                     data(1), data(ndata) =   -0.1759      NaN
+tide_ocean                              data(1), data(ndata) =   0.4833  0.0831
+tide_ocean                              data(1), data(ndata) =   0.4833  0.0831
 pass                                    data(1), data(ndata) =    65.   65.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          66
@@ -321,9 +327,9 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 time                                    data(1), data(ndata) =  212300409.170225 212301520.141010
 lat                                     data(1), data(ndata) =   15.664330 -49.969879
 lon                                     data(1), data(ndata) =    94.865311   77.629721
-sla                                     data(1), data(ndata) =       NaN   0.2896
-tide_ocean                              data(1), data(ndata) =   1.1632  0.0100
-tide_ocean                              data(1), data(ndata) =   1.1632  0.0100
+sla                                     data(1), data(ndata) =       NaN   0.2304
+tide_ocean                              data(1), data(ndata) =   1.1632  0.0119
+tide_ocean                              data(1), data(ndata) =   1.1632  0.0119
 pass                                    data(1), data(ndata) =    66.   66.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          67
@@ -334,9 +340,9 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 time                                    data(1), data(ndata) =  212302843.467233 212302954.252373
 lat                                     data(1), data(ndata) =  -49.989100 -43.542752
 lon                                     data(1), data(ndata) =   -87.450517  -89.994708
-sla                                     data(1), data(ndata) =    0.0692   0.1493
-tide_ocean                              data(1), data(ndata) =   0.2480  0.2157
-tide_ocean                              data(1), data(ndata) =   0.2480  0.2157
+sla                                     data(1), data(ndata) =    0.0154   0.1054
+tide_ocean                              data(1), data(ndata) =   0.2529  0.2209
+tide_ocean                              data(1), data(ndata) =   0.2529  0.2209
 pass                                    data(1), data(ndata) =    67.   67.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          68
@@ -347,9 +353,9 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 time                                    data(1), data(ndata) =  212306355.924728 212307548.317620
 lat                                     data(1), data(ndata) =   20.482001 -49.980561
 lon                                     data(1), data(ndata) =    70.883192   52.508599
-sla                                     data(1), data(ndata) =       NaN   0.1301
-tide_ocean                              data(1), data(ndata) =   0.8274  0.0722
-tide_ocean                              data(1), data(ndata) =   0.8274  0.0722
+sla                                     data(1), data(ndata) =       NaN   0.0882
+tide_ocean                              data(1), data(ndata) =   0.8244  0.0745
+tide_ocean                              data(1), data(ndata) =   0.8244  0.0745
 pass                                    data(1), data(ndata) =    68.   68.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          69
@@ -362,9 +368,9 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 time                                    data(1), data(ndata) =  212312233.505169 212313575.948333
 lat                                     data(1), data(ndata) =   29.385776 -49.961015
 lon                                     data(1), data(ndata) =    48.016033   27.398872
-sla                                     data(1), data(ndata) =       NaN   0.2208
-tide_ocean                              data(1), data(ndata) =   0.7085 -0.4729
-tide_ocean                              data(1), data(ndata) =   0.7085 -0.4729
+sla                                     data(1), data(ndata) =       NaN   0.2118
+tide_ocean                              data(1), data(ndata) =   0.7090 -0.4705
+tide_ocean                              data(1), data(ndata) =   0.7090 -0.4705
 pass                                    data(1), data(ndata) =    70.   70.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          71
@@ -377,9 +383,9 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 time                                    data(1), data(ndata) =  212318936.392131 212319604.424992
 lat                                     data(1), data(ndata) =  -10.677991 -49.994765
 lon                                     data(1), data(ndata) =    13.665313    2.266221
-sla                                     data(1), data(ndata) =       NaN  -0.0158
-tide_ocean                              data(1), data(ndata) =  -0.5485 -0.1018
-tide_ocean                              data(1), data(ndata) =  -0.5485 -0.1018
+sla                                     data(1), data(ndata) =       NaN  -0.0784
+tide_ocean                              data(1), data(ndata) =  -0.5462 -0.0998
+tide_ocean                              data(1), data(ndata) =  -0.5462 -0.0998
 pass                                    data(1), data(ndata) =    72.   72.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          73
@@ -392,9 +398,9 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 time                                    data(1), data(ndata) =  212324709.838310 212325631.423136
 lat                                     data(1), data(ndata) =    4.438303 -49.944270
 lon                                     data(1), data(ndata) =    -8.118870  -22.829080
-sla                                     data(1), data(ndata) =       NaN   0.1870
-tide_ocean                              data(1), data(ndata) =  -0.4596  0.1994
-tide_ocean                              data(1), data(ndata) =  -0.4596  0.1994
+sla                                     data(1), data(ndata) =       NaN   0.1086
+tide_ocean                              data(1), data(ndata) =  -0.4578  0.1998
+tide_ocean                              data(1), data(ndata) =  -0.4578  0.1998
 pass                                    data(1), data(ndata) =    74.   74.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          75
@@ -407,9 +413,9 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 time                                    data(1), data(ndata) =  212330307.225188 212331659.974014
 lat                                     data(1), data(ndata) =   29.971884 -49.987247
 lon                                     data(1), data(ndata) =   -27.174876  -47.963643
-sla                                     data(1), data(ndata) =    0.1075  -0.0685
-tide_ocean                              data(1), data(ndata) =   0.5373 -0.1295
-tide_ocean                              data(1), data(ndata) =   0.5373 -0.1295
+sla                                     data(1), data(ndata) =    0.0554  -0.1245
+tide_ocean                              data(1), data(ndata) =   0.5327 -0.1271
+tide_ocean                              data(1), data(ndata) =   0.5327 -0.1271
 pass                                    data(1), data(ndata) =    76.   76.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          77
@@ -422,9 +428,9 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 time                                    data(1), data(ndata) =  212336335.578068 212337682.784903
 lat                                     data(1), data(ndata) =   29.943130 -49.695255
 lon                                     data(1), data(ndata) =   -52.299778  -72.950366
-sla                                     data(1), data(ndata) =   -0.0726      NaN
-tide_ocean                              data(1), data(ndata) =   0.1677     NaN
-tide_ocean                              data(1), data(ndata) =   0.1677     NaN
+sla                                     data(1), data(ndata) =   -0.1008      NaN
+tide_ocean                              data(1), data(ndata) =   0.1638     NaN
+tide_ocean                              data(1), data(ndata) =   0.1638     NaN
 pass                                    data(1), data(ndata) =    78.   78.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          79
@@ -435,9 +441,9 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 time                                    data(1), data(ndata) =  212339089.606963 212340276.905618
 lat                                     data(1), data(ndata) =  -45.409499  24.834953
 lon                                     data(1), data(ndata) =   119.993337  102.402497
-sla                                     data(1), data(ndata) =    0.0060      NaN
-tide_ocean                              data(1), data(ndata) =   0.2114     NaN
-tide_ocean                              data(1), data(ndata) =   0.2114     NaN
+sla                                     data(1), data(ndata) =   -0.0628      NaN
+tide_ocean                              data(1), data(ndata) =   0.2148     NaN
+tide_ocean                              data(1), data(ndata) =   0.2148     NaN
 pass                                    data(1), data(ndata) =    79.   79.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          80
@@ -448,9 +454,9 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 time                                    data(1), data(ndata) =  212342363.009562 212343277.525786
 lat                                     data(1), data(ndata) =   29.975249 -24.281877
 lon                                     data(1), data(ndata) =   -77.408514  -89.999502
-sla                                     data(1), data(ndata) =    0.1070  -0.0065
-tide_ocean                              data(1), data(ndata) =  -0.1036 -0.0344
-tide_ocean                              data(1), data(ndata) =  -0.1036 -0.0344
+sla                                     data(1), data(ndata) =    0.0819  -0.0674
+tide_ocean                              data(1), data(ndata) =  -0.1110 -0.0320
+tide_ocean                              data(1), data(ndata) =  -0.1110 -0.0320
 pass                                    data(1), data(ndata) =    80.   80.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          81
@@ -461,9 +467,9 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 time                                    data(1), data(ndata) =  212345039.447648 212346097.423568
 lat                                     data(1), data(ndata) =  -49.951764  12.529642
 lon                                     data(1), data(ndata) =    96.716875   80.205538
-sla                                     data(1), data(ndata) =    0.0219      NaN
-tide_ocean                              data(1), data(ndata) =   0.1038     NaN
-tide_ocean                              data(1), data(ndata) =   0.1038     NaN
+sla                                     data(1), data(ndata) =   -0.0423      NaN
+tide_ocean                              data(1), data(ndata) =   0.1064     NaN
+tide_ocean                              data(1), data(ndata) =   0.1064     NaN
 pass                                    data(1), data(ndata) =    81.   81.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          82
@@ -477,8 +483,8 @@ time                                    data(1), data(ndata) =  212351067.401602
 lat                                     data(1), data(ndata) =  -49.954571  29.403729
 lon                                     data(1), data(ndata) =    71.601206   50.984213
 sla                                     data(1), data(ndata) =       NaN      NaN
-tide_ocean                              data(1), data(ndata) =   0.4784     NaN
-tide_ocean                              data(1), data(ndata) =   0.4784     NaN
+tide_ocean                              data(1), data(ndata) =   0.4791     NaN
+tide_ocean                              data(1), data(ndata) =   0.4791     NaN
 pass                                    data(1), data(ndata) =    83.   83.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          84
@@ -491,9 +497,9 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 time                                    data(1), data(ndata) =  212357094.678311 212357967.415488
 lat                                     data(1), data(ndata) =  -49.993388   1.481695
 lon                                     data(1), data(ndata) =    46.504197   32.423278
-sla                                     data(1), data(ndata) =   -0.0037      NaN
-tide_ocean                              data(1), data(ndata) =  -0.1424     NaN
-tide_ocean                              data(1), data(ndata) =  -0.1424     NaN
+sla                                     data(1), data(ndata) =   -0.0305      NaN
+tide_ocean                              data(1), data(ndata) =  -0.1398     NaN
+tide_ocean                              data(1), data(ndata) =  -0.1398     NaN
 pass                                    data(1), data(ndata) =    85.   85.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          86
@@ -506,9 +512,9 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 time                                    data(1), data(ndata) =  212363122.727236 212364043.322804
 lat                                     data(1), data(ndata) =  -49.982179   4.336632
 lon                                     data(1), data(ndata) =    21.385518    6.680979
-sla                                     data(1), data(ndata) =    0.0730      NaN
-tide_ocean                              data(1), data(ndata) =  -0.3287     NaN
-tide_ocean                              data(1), data(ndata) =  -0.3287     NaN
+sla                                     data(1), data(ndata) =    0.0516      NaN
+tide_ocean                              data(1), data(ndata) =  -0.3259     NaN
+tide_ocean                              data(1), data(ndata) =  -0.3259     NaN
 pass                                    data(1), data(ndata) =     1.    1.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           20           2
@@ -521,9 +527,9 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 time                                    data(1), data(ndata) =  212369151.116737 212370503.088219
 lat                                     data(1), data(ndata) =  -49.949125  29.955961
 lon                                     data(1), data(ndata) =    -3.743877  -24.512824
-sla                                     data(1), data(ndata) =    0.0457   0.0661
-tide_ocean                              data(1), data(ndata) =   0.2359  0.3324
-tide_ocean                              data(1), data(ndata) =   0.2359  0.3324
+sla                                     data(1), data(ndata) =   -0.0087   0.0229
+tide_ocean                              data(1), data(ndata) =   0.2377  0.3294
+tide_ocean                              data(1), data(ndata) =   0.2377  0.3294
 pass                                    data(1), data(ndata) =     3.    3.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           20           4
@@ -695,7 +701,7 @@ drange                                  data(1), data(ndata) =   0.409  0.409
  Start rads_end
 ######################################################################################################################################
 # Editing statistics for ERS-1 (e1)
-# Created: 2012-07-10 19:48:35 UTC: rads_test debug=3 sat=e1/a ymd=19910924,19910925 lat=-50,30 lon=-90,120 sel=time,lat,lon,sla,12_,tide_ocean_,pass,drange
+# Created: 2013-01-09 02:04:54 UTC: rads_test -vvv -Se1/a --ymd=19910924,19910925 -R-90/120/-50/30 -Vtime,lat,lon,sla,12_,tide_ocean_,pass,drange
 #
 # PASSES QUERIED                                           172
 #
@@ -716,7 +722,7 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 # MEASUREMENTS IN REQUESTED PERIOD AND REGION            16852
 #
 #                                           REJECTED  SELECTED       LOWER       UPPER         MIN         MAX        MEAN      STDDEV
-# sea level anomaly [m]                         1116     15736      -5.000       5.000      -1.011       0.757       0.003       0.119
+# sea level anomaly [m]                         1116     15736      -5.000       5.000      -1.074       0.709      -0.054       0.120
 # REAPER/COMBI orbital altitude [m]                0     16852         NaN         NaN  779576.859  798111.473  786329.774    5788.884
 # Ku-band range corrected for instr. effec         1     16851         NaN         NaN  775342.315  798110.816  786331.345    5782.575
 # ECMWF dry tropospheric correction [m]            0     16852      -2.400      -2.100      -2.352      -2.226      -2.315       0.016
@@ -725,11 +731,11 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 # static inverse barometer correction [m]          0     16852      -1.000       1.000      -0.210       0.328      -0.038       0.067
 # MOK2D inverse barometer correction [m]           0     16852      -1.000       1.000      -0.198       0.316      -0.034       0.064
 # solid earth tide [m]                             0     16852      -1.000       1.000       0.014       0.198       0.133       0.043
-# GOT4.7 ocean tide [m]                          152     16700      -5.000       5.000      -1.858       1.163      -0.166       0.451
-# GOT4.7 load tide [m]                             0     16852      -0.500       0.500      -0.032       0.069       0.014       0.022
+# GOT4.8 ocean tide [m]                          148     16704      -5.000       5.000      -1.862       1.163      -0.168       0.451
+# GOT4.8 load tide [m]                             0     16852      -0.500       0.500      -0.030       0.070       0.015       0.022
 # pole tide [m]                                    0     16852      -0.100       0.100      -0.017       0.018       0.001       0.009
 # BM3 sea state bias [m]                          30     16822      -1.000       1.000      -0.924       0.227      -0.130       0.093
-# DNSC08 mean sea surface height [m]               0     16852    -200.000     200.000    -101.786      57.194      -4.050      31.565
+# DTU10 mean sea surface height [m]                0     16852    -200.000     200.000    -101.760      57.331      -3.995      31.565
 # Ku-band significant wave height [m]             77     16775       0.000       8.000       0.000       8.000       2.067       1.398
 # Ku-band backscatter coefficient [dB]            50     16802       6.000      27.000       6.020      25.280      11.325       1.785
 # std dev of Ku-band range [m]                   339     16513       0.000       0.400       0.027       0.398       0.160       0.053
@@ -737,8 +743,8 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 # flag word [count]                              909     15943   65512.000       0.000       1.000       1.000       1.000       0.000
 # Ku-band range bias [m]                           0     16852         NaN         NaN       0.409       0.409       0.409       0.000
 # std dev of Ku-band significant wave heig       350     16502       0.000       2.100       0.010       2.100       0.980       0.264
-# reference frame offset [m]                       0     16852      -1.000       1.000       0.023       0.023       0.023       0.000
+# reference frame offset [m]                       0     16852      -1.000       1.000       0.017       0.032       0.026       0.004
 # pass number []                                   0     16852         NaN         NaN       1.000      85.000      62.645      25.165
 ######################################################################################################################################
  End of program
-CLOCK, CPU =   0.0560   0.0548
+CLOCK, CPU =   0.0890   0.0666

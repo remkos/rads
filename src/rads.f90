@@ -43,7 +43,7 @@ real(eightbytereal), parameter :: pi = 3.1415926535897932d0, rad = pi/180d0
 character(len=1), parameter :: rads_linefeed = char(10), rads_noedit = '_'
 integer, parameter :: stderr = 0, stdin = 5, stdout = 6
 
-include 'config.inc'
+include 'config.f90'
 
 private :: rads_traxxing, rads_get_phase, rads_free_sat_struct, rads_free_var_struct
 
@@ -101,6 +101,7 @@ type :: rads_phase
 endtype
 
 type :: rads_sat
+	character(len=rads_naml) :: userroot             ! Root directory of current user (i.e. $HOME)
 	character(len=rads_naml) :: dataroot             ! Root directory of RADS data directory
 	character(len=rads_cmdl) :: command              ! Command line
 	character(len=8) :: satellite                    ! Satellite name
@@ -430,7 +431,6 @@ integer(fourbyteint), intent(in), optional :: debug
 !  S%error  : rads_noerr, rads_err_xml_file, rads_err_xml_parse, rads_err_var
 !-----------------------------------------------------------------------
 integer(fourbyteint) :: i, l
-character(len=rads_naml) :: userroot
 
 call rads_init_sat_struct (S)
 
@@ -443,7 +443,7 @@ S%satellite = S%sat
 ! Set some global variables
 S%dataroot = radsdataroot
 call checkenv ('RADSDATAROOT',S%dataroot)
-call checkenv ('HOME',userroot)
+call checkenv ('HOME',S%userroot)
 call get_command (S%command, status=i)
 if (i < 0) S%command (len(S%command)-2:) = '...'
 
@@ -455,21 +455,21 @@ S%var = rads_var (null(), null(), null(), null(), null(), .false., rads_nofield)
 ! Read the global rads.xml setup file, the one in ~/.rads and the one in the current directory
 call rads_read_xml (S, trim(S%dataroot)//'/conf/rads.xml')
 if (S%error == rads_err_xml_file) call rads_exit ('Required XML file '//trim(S%dataroot)//'/conf/rads.xml does not exist')
-call rads_read_xml (S, trim(userroot)//'/.rads/rads.xml')
+call rads_read_xml (S, trim(S%userroot)//'/.rads/rads.xml')
 call rads_read_xml (S, 'rads.xml')
 
 ! Now read the xml files
-! If it is not an absolute path name, also look for it in $RADSDATAROOT/conf as well as in ~/.rads
+! If it is not an absolute path name, also look for it in $RADSDATAROOT/conf as well as in $HOME/.rads
 do i = 1,size(xml)
 	call rads_read_xml (S, xml(i))
 	if (S%error /= rads_err_xml_file) cycle
 	if (xml(i)(1:1) == '/') call rads_exit ('Requested XML file '//trim(xml(i))//' does not exist')
 	call rads_read_xml (S, trim(S%dataroot)//'/conf/'//xml(i))
 	if (S%error /= rads_err_xml_file) cycle
-	call rads_read_xml (S, trim(userroot)//'/.rads/'//xml(i))
+	call rads_read_xml (S, trim(S%userroot)//'/.rads/'//xml(i))
 	if (S%error /= rads_err_xml_file) cycle
 	call rads_message ('Requested XML file '//trim(xml(i))//' does not exist in current directory,')
-	call rads_exit ('nor in '//trim(S%dataroot)//'/conf, nor in '//trim(userroot)//'/.rads')
+	call rads_exit ('nor in '//trim(S%dataroot)//'/conf, nor in '//trim(S%userroot)//'/.rads')
 enddo
 
 ! If no phases are defined, then the satellite is not known

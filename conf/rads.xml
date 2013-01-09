@@ -2277,7 +2277,27 @@ GNU Lesser General Public License for more details.
 	<data>dry_tropo_airtide</data>
 	<format>f7.4</format>
 	<compress>int1 1d-4</compress>
-	<comment>add to dry tropospheric correction to account for missing S1 and S2 tidal signal</comment>
+	<comment>Add to dry tropospheric correction to account for missing S1 and S2 tidal signal</comment>
+</var>
+
+<var name="mss_annual" field="5001 50">
+	<long_name>annual variation of mean sea level</long_name>
+	<source>DTU10</source>
+	<units>m</units>
+	<data>mss_annual</data>
+	<format>f7.4</format>
+	<compress>int2 1d-4</compress>
+	<comment>Annual variation of sea level with respect to long-term mean sea level</comment>
+</var>
+
+<var name="gia" field="5101 51">
+	<long_name>GIA correction</long_name>
+	<source>ICE5G v1.3 VM2 L90 2012</source>
+	<units>m</units>
+	<data>gia</data>
+	<format>f7.4</format>
+	<compress>int2 1d-4</compress>
+	<comment>Change of land elevation relative to geoid due to GIA since 1 Jan 2000</comment>
 </var>
 
 <var name="first_meas_time" field="9901 99">
