@@ -28,6 +28,7 @@ MODS3	= $(OBJS1:.o=.mod)
 MODS	= $(OBJS:.o=.mod)
 
 LIB	= librads.a
+LDLIBS = $(NETCDF_LIB)
 
 PROGS_O = rads2asc.o rads2adr.o rads2nc.o rads2grd.o radsstat.o radscolin.o radsxogen.o radsxoconv.o \
 	radsxolist.o rads_test.o radsreconfig.o rads_sample.o rads3test.o radsvar.o
@@ -49,7 +50,7 @@ install:	all
 	$(INSTALL) -d $(LIBDIR)
 	$(INSTALL) -m 644 $(LIB) $(LIBDIR)
 	$(INSTALL) -d $(INCDIR)
-	$(INSTALL) -m 644 *.mod $(INCDIR)
+	$(INSTALL) -m 644 $(MODS) $(INCDIR)
 	$(INSTALL) -d $(BINDIR)
 	$(INSTALL) -m 755 $(PROGS) $(BINDIR)
 	for p in $(PROGS_L1); do ( cd $(BINDIR) ; $(LN_S) rads2adr $$p ) ; done
@@ -66,13 +67,18 @@ $(OBJS2):	$(MODS1) $(INCS)
 $(OBJS3):	$(MODS2)
 $(PROGS_O):	$(MODS)
 $(PROGS):	$(LIB)
-radsxogen.o:	spline.mod
+radsxogen:	spline.o
 
 #-----------------------------------------------------------------------
-# Create config.f90 when config.mk is updated
+# Create configuration files
 #-----------------------------------------------------------------------
+
 config.f90:	config.mk
 	printf "character(len=rads_naml) :: radsdataroot = '%s'\n" $(datarootdir) > $@
+
+radsconfig.sh:	radsconfig.sh.in
+	@echo "Error: Need to run configure in src directory first"
+	@exit 1
 
 #-----------------------------------------------------------------------
 # How to create the library
@@ -89,55 +95,9 @@ test:	rads_test
 	rads_test -vvv -Se1/a --ymd=19910924,19910925 -R-90/120/-50/30 \
 	-Vtime,lat,lon,sla,12_,tide_ocean_,pass,drange | diff rads_test.out -
 
-rads_test:	rads_test.o
-	$(FC) -o $@ rads_test.o $(LIB) $(NETCDF_LIB)
-
-rads_sample:	rads_sample.o
-	$(FC) -o $@ rads_sample.o $(LIB) $(NETCDF_LIB)
-
-radsreconfig:	radsreconfig.o
-	$(FC) -o $@ radsreconfig.o $(LIB) $(NETCDF_LIB)
-
-rads3test:	rads3test.o
-	$(FC) -o $@ rads3test.o $(LIB) $(NETCDF_LIB)
-
 #-----------------------------------------------------------------------
-#       Definition of executable generation
+# Make links to executables
 #-----------------------------------------------------------------------
-
-radsconfig.sh:	radsconfig.sh.in
-	@echo "Error: Need to run configure in src directory first"
-	@exit 1
-
-rads2asc:	rads2asc.o
-	$(FC) -o $@ rads2asc.o $(LIB) $(NETCDF_LIB)
-
-rads2adr:	rads2adr.o
-	$(FC) -o $@ rads2adr.o $(LIB) $(NETCDF_LIB)
-
-rads2nc:	rads2nc.o
-	$(FC) -o $@ rads2nc.o $(LIB) $(NETCDF_LIB)
-
-rads2grd:	rads2grd.o
-	$(FC) -o $@ rads2grd.o $(LIB) $(NETCDF_LIB)
-
-radsstat:	radsstat.o
-	$(FC) -o $@ radsstat.o $(LIB) $(NETCDF_LIB)
-
-radscolin:	radscolin.o
-	$(FC) -o $@ radscolin.o $(LIB) $(NETCDF_LIB)
-
-radsxogen:	radsxogen.o spline.o
-	$(FC) -o $@ radsxogen.o spline.o $(LIB) $(NETCDF_LIB)
-
-radsxoconv:	radsxoconv.o
-	$(FC) -o $@ radsxoconv.o $(LIB) $(NETCDF_LIB)
-
-radsxolist:	radsxolist.o
-	$(FC) -o $@ radsxolist.o $(LIB) $(NETCDF_LIB)
-
-radsvar:	radsvar.o
-	$(FC) -o $@ radsvar.o $(LIB) $(NETCDF_LIB)
 
 $(PROGS_L1):	rads2adr
 	$(LN_S) rads2adr $@
