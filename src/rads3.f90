@@ -40,7 +40,7 @@ module rads3
 !   default iono correction.
 !
 ! subroutine getraw_factors (select, fact)
-! - Not supported. Had no affect on the computation of SLA
+! - Not supported. Had no effect on the computation of SLA
 !
 ! subroutine getraw_stat (unit)
 ! - RADS4 library provides different output from RADS3
@@ -112,13 +112,13 @@ endif
 src => rads_varptr (S, name(1:2))
 sla => rads_varptr (S, 'sla')
 if (option > 0) then
-	if (.not.associated(src) .or. index(sla%info%dataname,src%name) <= 0) &
+	if (.not.associated(src) .or. index(sla%info%dataname,trim(src%name)) <= 0) &
 		call rads_error (S, rads_err_incompat, 'getraw_options('//name(1:2)//','//name(3:4)//') will not affect SLA computation')
 else
-	if (associated(src) .and. index(sla%info%dataname,src%name) > 0) &
+	if (associated(src) .and. index(sla%info%dataname,trim(src%name)) > 0) &
 		call rads_error (S, rads_err_incompat, 'getraw_options('//name(1:2)//',-'//name(3:4)//') will not affect SLA computation')
 endif
-call rads_set_alias (S, name(1:2), name)
+if (associated(src)) call rads_set_alias (S, src%name, name)
 end subroutine getraw_options
 
 subroutine getraw_limits (select, lo, hi)
