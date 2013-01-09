@@ -113,9 +113,11 @@ enddo
 call rads_init_sat_struct (S)
 allocate (S%var(rads_var_chunk))
 S%var = rads_var (null(), null(), null(), null(), null(), .false., rads_nofield)
-call rads_read_xml (S, trim(radsdataroot) // '/conf/rads.xml')
-if (S%error == rads_err_xml_file) call rads_exit ('Required XML file '//trim(radsdataroot)//'/conf/rads.xml does not exist')
-call rads_read_xml (S, trim(radsuserroot) // '/.rads/rads.xml')
+
+! Read XML file(s)
+call rads_read_xml (S, trim(S%dataroot) // '/conf/rads.xml')
+if (S%error == rads_err_xml_file) call rads_exit ('Required XML file '//trim(S%dataroot)//'/conf/rads.xml does not exist')
+call rads_read_xml (S, trim(S%userroot) // '/.rads/rads.xml')
 end subroutine rads_setup
 
 subroutine convert_rmf (filename)

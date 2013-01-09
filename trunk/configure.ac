@@ -1,0 +1,297 @@
+# -----------------------------------------------------------------------
+#  $Id: rads.f90 261 2012-12-31 16:58:22Z remko@altimetrics.com $
+# 
+#  Copyright (c) 2011-2013  Remko Scharroo (Altimetrics LLC)
+#  See LICENSE.TXT file for copying and redistribution conditions.
+# 
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 3 of the
+#  License, or (at your option) any later version.
+# 
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU Lesser General Public License for more details.
+# -----------------------------------------------------------------------
+AC_REVISION([$Id: configure.ac,v 1.12 2012/10/18 19:22:03 rads Exp $])
+#
+# Run GNU autoconf to produce a configure script from this input.
+# -----------------------------------------------------------------
+
+# -----------------------------------------------------------------
+# Define and show package version
+# -----------------------------------------------------------------
+AC_INIT(RADS, 4.0, remko@altimetrics.com)
+AC_MSG_NOTICE([RADS AC_PACKAGE_VERSION])
+
+# -----------------------------------------------------------------
+# Check for this file before proceeding
+# -----------------------------------------------------------------
+AC_CONFIG_SRCDIR(src/rads.f90)
+
+# -----------------------------------------------------------------
+# Set some defaults
+# -----------------------------------------------------------------
+AC_PREFIX_DEFAULT(`pwd`)
+AC_CANONICAL_SYSTEM
+
+# -----------------------------------------------------------------
+# Specify substitution
+# -----------------------------------------------------------------
+AC_SUBST(NETCDF_INC)
+AC_SUBST(NETCDF_LIB)
+AC_SUBST(DEVEL)
+AC_SUBST(MOD_FLAG, ${ax_f90_modflag})
+AC_SUBST(MATHLIB)
+AC_SUBST(FC_name)
+AC_SUBST(radsuser)
+
+# -----------------------------------------------------------------
+# Specify user options
+# -----------------------------------------------------------------
+AC_ARG_WITH(nf-config,  [  --with-nf-config=dir       Full path to nf-config [[auto]]])
+AC_ARG_WITH(netcdf-inc, [  --with-netcdf-inc=dir      Specify location of netCDF include file [[auto]]])
+AC_ARG_WITH(netcdf-lib, [  --with-netcdf-lib=dir:dir  Specify location of netCDF library.  Use colon-separator if Fortran library is in separate directory [[auto]]])
+AC_ARG_ENABLE(debug,    [  --enable-debug             Compile with debugging options [[off]]])
+AC_ARG_ENABLE(devel,    [  --enable-devel             Compile developer tools [[off]]])
+
+# -----------------------------------------------------------------
+# Process user options
+# -----------------------------------------------------------------
+AC_MSG_NOTICE([checking user options])
+
+# -----------------------------------------------------------------
+# Switch for debugging
+# -----------------------------------------------------------------
+AC_MSG_CHECKING([whether debugging is desired])
+if ! test "x$enable_debug" = "xyes" ; then
+	enable_debug=no
+	ac_cv_prog_cc_g=no
+	ac_cv_prog_fc_g=no
+fi
+AC_MSG_RESULT([$enable_debug])
+
+# -----------------------------------------------------------------
+# Switch for developers only
+# -----------------------------------------------------------------
+AC_MSG_CHECKING([whether developer tools are desired])
+if ! test "x$enable_devel" = "xyes" ; then
+	enable_devel=no
+fi
+AC_MSG_RESULT([$enable_devel])
+
+if test "x$enable_devel" = "xno"; then
+	DEVEL="#"
+else
+	DEVEL=
+fi
+
+# -----------------------------------------------------------------
+# Default settings come from nf-config
+# Allow user to set --with-netcdf-inc and/or --with-netcdf-dir
+# -----------------------------------------------------------------
+AC_PATH_PROG([nf_config], [nf-config], [$with_nf_config])
+AC_MSG_CHECKING(for netCDF includes)
+if ! test "x$with_netcdf_inc" = "x" ; then
+	NETCDF_INC=-I$with_netcdf_inc
+elif test -x "$nf_config" ; then
+	NETCDF_INC=-I`$nf_config --includedir`
+else
+	NETCDF_INC=-I/usr/local/inc
+fi
+AC_MSG_RESULT($NETCDF_INC)
+
+AC_MSG_CHECKING(for netCDF libraries)
+if ! test "x$with_netcdf_lib" = "x" ; then
+	doit="find "`echo $NETCDF_LIB | sed "s=:= ="`" -name libnetcdff*"
+	if test `$doit|wc -l` -eq 0; then
+		NETCDF_LIB="-L"`echo $NETCDF_LIB | sed "s=:= -L="`" -lnetcdf"
+	else
+		NETCDF_LIB="-L"`echo $NETCDF_LIB | sed "s=:= -L="`" -lnetcdff -lnetcdf"
+	fi
+elif test -x "$nf_config" ; then
+	NETCDF_LIB=`$nf_config --flibs`
+else
+	NETCDF_LIB=-L/usr/local/lib -lnetcdf -lnetcdff
+fi
+AC_MSG_RESULT($NETCDF_LIB)
+
+# -----------------------------------------------------------------
+# Find Fortran 90 compilers.
+# -----------------------------------------------------------------
+# If F90 is set, and FC isn't, then set FC to whatever F90 was set to.
+AC_MSG_CHECKING([for Fortran 90 compiler])
+if test "${F90+set}" = "set"; then
+	F90=$F90
+elif test "${FC+set}" = "set"; then
+	F90=$FC
+elif ! test "x$nf_config" = "x"; then
+	F90=`$nf_config --fc`
+	F90=`basename $F90`
+fi
+AC_MSG_RESULT($F90)
+
+# On solaris, f95 comes before gfortran.
+case "$host" in
+*solaris*) F90G="f95 f90 gfortran" ;;
+	*) F90G="gfortran f95 f90" ;;
+esac
+F90S="xlf90 fort xlf95 ifort ifc efc pgf95 lf95 $F90G xlf90 pgf90 epcf90"
+
+# Find a fortran 90 compiler, if requested.
+AC_MSG_NOTICE([finding Fortran 90 compiler])
+AC_PROG_FC($F90 $F90S)
+F90=$FC
+
+if test "${FC+set}" = set && test "x$FC" = x; then
+	AC_MSG_ERROR([Cannot find F90 compiler. Cannot continue.])
+fi
+
+# Learn more about the Fortran 90 compiler
+AC_MSG_NOTICE([setting up Fortran 90])
+
+# Some f90 compilers change the case of the mod file names. Others
+# require special flags to be set to deal with .f90 files. Find out
+# about this compiler.
+AC_LANG_PUSH(Fortran)
+AC_FC_SRCEXT(f90)
+AC_LANG_POP(Fortran)
+
+# Check the fortran 90 compiler to make sure it can compile a
+# little test file.
+AC_MSG_CHECKING([if $FC can handle Fortran 90])
+cat <<EOF >conftest.f90
+program foo
+REAL, PARAMETER :: PI = 3.141592654
+end program
+EOF
+
+doit='$FC $FCFLAGS conftest.f90 -o conftest.exe'
+if AC_TRY_EVAL(doit); then
+	AC_MSG_RESULT([yes])
+else
+	AC_MSG_ERROR([Cannot use $F90 to compile Fortran 90 code. Cannot continue.])
+fi
+rm -rf conftest.*
+
+# -----------------------------------------------------------------
+# Try to compile simple program with netCDF
+# -----------------------------------------------------------------
+AC_MSG_CHECKING([if $FC can compile a netCDF program])
+cat <<EOF > conftest.f90
+program foo
+use netcdf
+write (*,"(a)") nf90_inq_libvers()
+end program
+EOF
+doit="$FC $FCFLAGS conftest.f90 -o conftest.exe $NETCDF_INC $NETCDF_LIB"
+if AC_TRY_EVAL(doit); then
+	AC_MSG_RESULT([yes])
+	NETCDF_VERS=`./conftest.exe`
+	AC_MSG_RESULT([Succeeded to compile Fortran 90 code with NetCDF version $NETCDF_VERS])
+	rm -f ./conftest.exe
+else
+	AC_MSG_WARN([no])
+	echo $doit
+	echo "========================================================"
+	echo "Could not compile simple Fortran 90 program with netCDF."
+	echo "One or more of the next problems occurred:"
+	echo "- The directory/directories containing libnetcdf/libnetcdff"
+	echo "  library/libraries were not/wrongly identified. Use the"
+	echo "  --with-netcdf-lib=DIR[:DIR] option to specify the proper"
+	echo "  directory/directories."
+	echo "- The directory containing netcdf.mod was not/wrongly"
+	echo "  identified. Use the --with-netcdf-inc=DIR option to"
+	echo "  specify the proper directory."
+	echo "- The netCDF library pointed to was not compiled with"
+	echo "  Fortran 90 support. Recompile the netCDF library with the"
+	echo "  configuration flag --enable-f90"
+	echo "- Your compiler $FC does not properly compile Fortran 90 code."
+	echo "  Find another compiler and specify it on the command line"
+	echo "  using FC=<compilername>."
+	echo "========================================================"
+	exit 1
+fi
+
+# -----------------------------------------------------------------
+# How to specify extended (i.e. 132-byte) record length
+# -----------------------------------------------------------------
+AC_MSG_CHECKING([how to allow lines longer than 72 characters])
+opt=
+if test "x$ac_cv_f77_compiler_gnu" = "xyes" ; then
+	opt=" -ffixed-line-length-none"
+fi
+if test "x$FC" = "xifort"; then
+	opt=" -extend-source"
+fi
+if test "x$FC" = "xpgf77" || test "x$FC" = "xpgf90" ; then
+	opt=" -Mextend"
+fi
+FCFLAGS=$FCFLAGS$opt
+AC_MSG_RESULT($opt)
+
+# -----------------------------------------------------------------
+# Additional flags if GNU compilers
+# -----------------------------------------------------------------
+AC_MSG_CHECKING([for additional compiler flags])
+opt=
+if test "x$ac_cv_f77_compiler_gnu" = "xyes" ; then
+	opt=" -Wall -Wimplicit"
+fi
+if test "x$FC" = "xgfortran" ; then
+	opt=" -Wall -Wtabs -fimplicit-none"
+fi
+FCFLAGS=$FCFLAGS$opt
+AC_MSG_RESULT($opt)
+
+# -----------------------------------------------------------------
+# Where to find lapack
+# -----------------------------------------------------------------
+AC_MSG_CHECKING([for lapack library options])
+case $build_os in
+*darwin*) MATHLIB="-Wl,-framework,Accelerate" ;;
+       *) MATHLIB="-llapack -lblas" ;;
+esac
+AC_MSG_RESULT($MATHLIB)
+
+# -----------------------------------------------------------------
+# How are Fortran subroutine names translated?
+# -----------------------------------------------------------------
+AC_FC_FUNC("FC_name",FC_name)
+
+# -----------------------------------------------------------------
+# Do we have big or little endian
+# -----------------------------------------------------------------
+AC_C_BIGENDIAN
+if test "X$ac_cv_c_bigendian" = "Xyes"; then
+	BYTESEX="big-endian"
+else
+    	BYTESEX="little-endian"
+fi
+
+# -----------------------------------------------------------------
+# What is the user's home directory
+# -----------------------------------------------------------------
+AC_MSG_CHECKING([for home directory])
+if test "x${HOME:+set}" = "xset" ; then
+	radsuser=$HOME
+	AC_MSG_RESULT([$radsuser])
+else
+	radsuser=/home/radsuser
+	AC_MSG_RESULT([defaulted to $radsuser])
+fi
+
+# -----------------------------------------------------------------
+# Find other utilities
+# -----------------------------------------------------------------
+AC_MSG_NOTICE([finding other utilities])
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PROG_RANLIB
+
+# -----------------------------------------------------------------
+# Substitute in .in files
+# -----------------------------------------------------------------
+AC_OUTPUT(src/config.mk)
+#AC_OUTPUT(Makefile include/config.mk include/config.h include/config.inc lib/Makefile utils/Makefile utils/radsconfig.sh utils/findcyclepass.pl)

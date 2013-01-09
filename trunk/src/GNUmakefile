@@ -37,7 +37,7 @@ PROGS_L4 = rads2asc4 radscolin4 radsstat4 rads2grd4
 PROGS_L  = $(PROGS_L1) $(PROGS_L2) $(PROGS_L4)
 PROGS = $(PROGS_O:.o=)
 
-INCS	= config.inc
+INCS	= config.f90
 
 #-----------------------------------------------------------------------
 # What to create?
@@ -49,12 +49,12 @@ install:	all
 	$(INSTALL) -d $(LIBDIR)
 	$(INSTALL) -m 644 $(LIB) $(LIBDIR)
 	$(INSTALL) -d $(INCDIR)
-	$(INSTALL) -m 644 *.inc *.mod $(INCDIR)
+	$(INSTALL) -m 644 *.mod $(INCDIR)
 	$(INSTALL) -d $(BINDIR)
 	$(INSTALL) -m 755 $(PROGS) $(BINDIR)
-	for p in $(PROGS_L1); do ( cd $(BINDIR) ; ln -fs rads2adr $$p ) ; done
-	for p in $(PROGS_L2); do ( cd $(BINDIR) ; ln -fs radsxolist $$p ) ; done
-	for p in $(PROGS_L4); do ( cd $(BINDIR) ; ln -fs $${p/4/} $$p ) ; done
+	for p in $(PROGS_L1); do ( cd $(BINDIR) ; $(LN_S) rads2adr $$p ) ; done
+	for p in $(PROGS_L2); do ( cd $(BINDIR) ; $(LN_S) radsxolist $$p ) ; done
+	for p in $(PROGS_L4); do ( cd $(BINDIR) ; $(LN_S) $${p/4/} $$p ) ; done
 
 man:	$(MAN)
 
@@ -69,10 +69,10 @@ $(PROGS):	$(LIB)
 radsxogen.o:	spline.mod
 
 #-----------------------------------------------------------------------
-# Create config.inc when config.mk is updated
+# Create config.f90 when config.mk is updated
 #-----------------------------------------------------------------------
-config.inc:	config.mk
-	printf "character(len=rads_naml) :: radsdataroot = '%s', radsuserroot = '%s'\n" $(datarootdir) $(HOME) > $@
+config.f90:	config.mk
+	printf "character(len=rads_naml) :: radsdataroot = '%s'\n" $(datarootdir) > $@
 
 #-----------------------------------------------------------------------
 # How to create the library
@@ -86,20 +86,20 @@ $(LIB):	$(OBJS)
 # Test programs
 #-----------------------------------------------------------------------
 test:	rads_test
-	rads_test debug=3 sat=e1/a ymd=19910924,19910925 lat=-50,30 lon=-90,120 \
-	sel=time,lat,lon,sla,12_,tide_ocean_,pass,drange | diff rads_test.out -
+	rads_test -vvv -Se1/a --ymd=19910924,19910925 -R-90/120/-50/30 \
+	-Vtime,lat,lon,sla,12_,tide_ocean_,pass,drange | diff rads_test.out -
 
 rads_test:	rads_test.o
-	$(FC) -o $@ rads_test.o $(LIB) $(NETCDF)
+	$(FC) -o $@ rads_test.o $(LIB) $(NETCDF_LIB)
 
 rads_sample:	rads_sample.o
-	$(FC) -o $@ rads_sample.o $(LIB) $(NETCDF)
+	$(FC) -o $@ rads_sample.o $(LIB) $(NETCDF_LIB)
 
 radsreconfig:	radsreconfig.o
-	$(FC) -o $@ radsreconfig.o $(LIB) $(NETCDF)
+	$(FC) -o $@ radsreconfig.o $(LIB) $(NETCDF_LIB)
 
 rads3test:	rads3test.o
-	$(FC) -o $@ rads3test.o $(LIB) $(NETCDF)
+	$(FC) -o $@ rads3test.o $(LIB) $(NETCDF_LIB)
 
 #-----------------------------------------------------------------------
 #       Definition of executable generation
@@ -110,40 +110,40 @@ radsconfig.sh:	radsconfig.sh.in
 	@exit 1
 
 rads2asc:	rads2asc.o
-	$(FC) -o $@ rads2asc.o $(LIB) $(NETCDF)
+	$(FC) -o $@ rads2asc.o $(LIB) $(NETCDF_LIB)
 
 rads2adr:	rads2adr.o
-	$(FC) -o $@ rads2adr.o $(LIB) $(NETCDF)
+	$(FC) -o $@ rads2adr.o $(LIB) $(NETCDF_LIB)
 
 rads2nc:	rads2nc.o
-	$(FC) -o $@ rads2nc.o $(LIB) $(NETCDF)
+	$(FC) -o $@ rads2nc.o $(LIB) $(NETCDF_LIB)
 
 rads2grd:	rads2grd.o
-	$(FC) -o $@ rads2grd.o $(LIB) $(NETCDF)
+	$(FC) -o $@ rads2grd.o $(LIB) $(NETCDF_LIB)
 
 radsstat:	radsstat.o
-	$(FC) -o $@ radsstat.o $(LIB) $(NETCDF)
+	$(FC) -o $@ radsstat.o $(LIB) $(NETCDF_LIB)
 
 radscolin:	radscolin.o
-	$(FC) -o $@ radscolin.o $(LIB) $(NETCDF)
+	$(FC) -o $@ radscolin.o $(LIB) $(NETCDF_LIB)
 
 radsxogen:	radsxogen.o spline.o
-	$(FC) -o $@ radsxogen.o spline.o $(LIB) $(NETCDF)
+	$(FC) -o $@ radsxogen.o spline.o $(LIB) $(NETCDF_LIB)
 
 radsxoconv:	radsxoconv.o
-	$(FC) -o $@ radsxoconv.o $(LIB) $(NETCDF)
+	$(FC) -o $@ radsxoconv.o $(LIB) $(NETCDF_LIB)
 
 radsxolist:	radsxolist.o
-	$(FC) -o $@ radsxolist.o $(LIB) $(NETCDF)
+	$(FC) -o $@ radsxolist.o $(LIB) $(NETCDF_LIB)
 
 radsvar:	radsvar.o
-	$(FC) -o $@ radsvar.o $(LIB) $(NETCDF)
+	$(FC) -o $@ radsvar.o $(LIB) $(NETCDF_LIB)
 
 $(PROGS_L1):	rads2adr
-	ln -fs rads2adr $@
+	$(LN_S) rads2adr $@
 
 $(PROGS_L2):	radsxolist
-	ln -fs radsxolist $@
+	$(LN_S) radsxolist $@
 
 $(PROGS_L4):	%4:	%
-	ln -fs $* $@
+	$(LN_S) $* $@
