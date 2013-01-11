@@ -2546,14 +2546,14 @@ GNU Lesser General Public License for more details.
 	<xover_params>0.05 0.05</xover_params>
 	<phase name="b">
 		<mission>Multi-disciplinary Phase</mission>
-		<cycles>9 94</cycles>
+		<cycles>6 94</cycles>
 		<repeat>35.0 1002</repeat>
 		<ref_pass>2002-09-30T21:59:30 0.13 10 1</ref_pass>
 		<start_time>2002-09-24</start_time>
 	</phase>
 	<phase name="c">
 		<mission>Extension Phase</mission>
-		<cycles>95 200</cycles>
+		<cycles>95 113</cycles>
 		<repeat>30.0 862</repeat>
 		<ref_pass>2010-10-27T21:57:36 0.55 96 1</ref_pass>
 		<start_time>2010-10-24T07:05:26</start_time>
