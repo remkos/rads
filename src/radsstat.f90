@@ -33,24 +33,25 @@ character(len=*), parameter :: wtype(0:3)=(/ &
 	'area weighted               ', 'inclination-dependent weight'/)
 character(len=640) :: format_string
 character(len=rads_naml) :: filename = ''
-integer(fourbyteint), parameter :: period_day=0, period_pass=1, period_cycle=2, day_init=-999999
-integer(fourbyteint) :: nr=0, day=day_init, day_old=day_init, cycle, pass, i, l, &
+integer(fourbyteint), parameter :: period_day=0, period_pass=1, period_cycle=2
+integer(fourbyteint) :: nr=0, minnr=2, cycle, pass, i, l, &
 	period=period_day, wmode=0, nx, ny, kx, ky, ios, sizes(2), ncid, varid(2)
 real(eightbytereal), allocatable :: z(:,:), lat_w(:)
-real(eightbytereal) :: sini, step=1d0, x0, y0, res(2)=(/3d0,1d0/)
+real(eightbytereal) :: sini, step=1d0, x0, y0, res(2)=(/3d0,1d0/), day_next
 type :: stat
 	real(eightbytereal) :: wgt, mean, sum2, xmin, xmax
 end type
 type(stat), allocatable :: box(:,:,:), tot(:)
 type(rads_sat) :: S
 type(rads_pass) :: Pin, Pout
-logical :: ascii
+logical :: ascii = .true.
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('c::d::p::b::maslo::r:: res: output::')
+call rads_set_options ('c::d::p::b::maslo::r:: min: res: output::')
 call rads_init (S)
 if (S%error /= rads_noerr) call rads_exit ('Fatal error')
+day_next = S%nan
 
 ! If no sel= is given, use sla
 if (S%nsel == 0)  call rads_parse_varlist (S, 'sla')
@@ -61,6 +62,7 @@ do i = 1,rads_nopt
 	case ('d')
 		period = period_day
 		read (rads_opt(i)%arg, *, iostat=ios) step
+		step = step * 86400d0
 	case ('p')
 		period = period_pass
 		read (rads_opt(i)%arg, *, iostat=ios) step
@@ -79,6 +81,8 @@ do i = 1,rads_nopt
 		wmode = 3
 	case ('l')
 		lstat = 4
+	case ('min')
+		read (rads_opt(i)%arg, *, iostat=ios) minnr
 	case ('res')
 		call read_val (rads_opt(i)%arg, res, '/-+x')
 	case ('o', 'output')
@@ -130,10 +134,16 @@ do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
 	! Process passes one-by-one
 	do pass = S%passes(1), S%passes(2), S%passes(3)
 		call rads_open_pass (S, Pin, cycle, pass)
+		! After very first call, initialise the day counter
+		if (isnan(day_next)) day_next = floor(Pin%start_time/86400d0)*86400d0+step
+
+		! Process the pass data
 		if (Pin%ndata > 0) call process_pass
 
 		! Print the statistics at the end of the data pass (if requested)
 		if (period == period_pass .and. nint(modulo(dble(pass),step)) == 0) call output_stat
+		! Print the statistics for the past day(s) (if requested)
+		if (period == period_day .and. Pin%end_time >= day_next) call output_stat
 		call rads_close_pass (S, Pin)
 	enddo
 
@@ -164,8 +174,8 @@ write (stderr,1300)
 'Program specific [program_options] are:'/ &
 '  -r#                       Reject records if data item number # on -V specifier is NaN'/ &
 '                            (default: reject if SLA field is NaN)'/ &
-'  -r0, -r                   Do not reject records with NaN values'/ &
-'  -rn                       Reject records if any value is NaN'/ &
+'  -r0, -r                   Do not reject measurement records with NaN values'/ &
+'  -rn                       Reject measurement records if any value is NaN'/ &
 '  -c[N]                     Statistics per cycle or N cycles'/ &
 '  -d[N]                     Statistics per day (default) or N days'/ &
 '  -p[N]                     Statistics per pass or N passes'/ &
@@ -174,8 +184,9 @@ write (stderr,1300)
 '  -a                        Weight measurements by cosine of latitude'/ &
 '  -s                        Use inclination-dependent weight'/ &
 '  -l                        Print min and max in addition to mean and stddev'/ &
+'  --min=MINNR               Minimum number of measurements per statistics record (default = 2)'/ &
 '  --res=DX,DY               Size of averaging boxes (default = 3x1 degrees)'/ &
-'  -o, --out[=OUTNAME]       Create netCDF output (default filename is "radsstat.nc")')
+'  -o, --out[=OUTNAME]       Create netCDF output instead of ASCII (default filename is "radsstat.nc")')
 stop
 end subroutine synopsis
 
@@ -192,14 +203,10 @@ do j = 1,S%nsel
 	call rads_get_var (S, Pin, S%sel(j), z(:,j))
 enddo
 
-! Initialise day_old if not done before
-if (day_old == day_init) day_old = floor(Pin%tll(1,1)/86400d0)
-
 ! Update the statistics with data in this pass
 do i = 1,Pin%ndata
 	! Print the statistics (if in "daily" mode)
-	day = floor(Pin%tll(i,1)/86400d0)
-	if (period == period_day .and. day >= nint(day_old+step)) call output_stat
+	if (period == period_day .and. Pin%tll(i,1) >= day_next) call output_stat
    	if (reject > 0) then
    		if (isnan(z(i,reject))) cycle ! Reject if selected variable is NaN
    	else if (reject == -2) then
@@ -217,7 +224,6 @@ do i = 1,Pin%ndata
    	box(:,kx,ky)%xmin = min(box(:,kx,ky)%xmin, z(i,:))
    	box(:,kx,ky)%xmax = max(box(:,kx,ky)%xmax, z(i,:))
    	nr = nr + 1
-   	if (nr == 1) day_old = day
 enddo
 
 deallocate (z)
@@ -231,8 +237,8 @@ integer(fourbyteint) :: j, yy, mm, dd, start(2) = 1
 real(eightbytereal) :: w
 type(rads_var), pointer :: var
 
-if (nr == 0) then
-	day_old = day
+if (nr < minnr) then
+	day_next = day_next + step
 	return
 endif
 
@@ -259,7 +265,7 @@ do ky=1,ny
 		tot(:)%xmax = max(tot(:)%xmax, box(:,kx,ky)%xmax)
 	enddo
 enddo
-	
+
 ! Divide by total weight to compute overall weighted mean and standard deviation
 
 tot%mean = tot%mean / tot%wgt
@@ -271,7 +277,7 @@ endif
 
 ! Write out statistics in ASCII
 if (ascii) then
-	call mjd2ymd(day_old+46066,yy,mm,dd)
+	call mjd2ymd(floor((day_next-step)/86400d0)+46066,yy,mm,dd)
 	select case (period)
 	case (period_day)
 		write (*,600,advance='no') modulo(yy,100),mm,dd
@@ -315,7 +321,7 @@ endif
 ! Reset statistics
 box = stat(0d0, 0d0, 0d0, S%nan, S%nan)
 nr  = 0
-day_old = day
+day_next = day_next + step
 
 600 format (3i2.2)
 601 format (i3,i5)
