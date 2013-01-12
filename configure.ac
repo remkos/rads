@@ -37,17 +37,6 @@ AC_PREFIX_DEFAULT(`pwd`)
 AC_CANONICAL_SYSTEM
 
 # -----------------------------------------------------------------
-# Specify substitution
-# -----------------------------------------------------------------
-AC_SUBST(NETCDF_INC)
-AC_SUBST(NETCDF_LIB)
-AC_SUBST(DEVEL)
-AC_SUBST(MOD_FLAG, ${ax_f90_modflag})
-AC_SUBST(MATHLIB)
-AC_SUBST(FC_name)
-AC_SUBST(radsuser)
-
-# -----------------------------------------------------------------
 # Specify user options
 # -----------------------------------------------------------------
 AC_ARG_WITH(nf-config,  [  --with-nf-config=dir       Full path to nf-config [[auto]]])
@@ -291,7 +280,19 @@ AC_PROG_LN_S
 AC_PROG_RANLIB
 
 # -----------------------------------------------------------------
+# Specify substitution
+# -----------------------------------------------------------------
+AC_SUBST(NETCDF_INC)
+AC_SUBST(NETCDF_LIB)
+AC_SUBST(DEVEL)
+AC_SUBST(MATHLIB)
+AC_SUBST(FC_name)
+AC_SUBST(radsuser)
+AC_SUBST(MOD_FLAG, $ax_f90_modflag)
+configure_options="`$as_echo "$ac_configure_args" | sed "s/^ //; s/\'//g"`" #'
+AC_SUBST(CONFIGURE_OPTIONS, $configure_options)
+
+# -----------------------------------------------------------------
 # Substitute in .in files
 # -----------------------------------------------------------------
-AC_OUTPUT(src/config.mk)
-#AC_OUTPUT(Makefile include/config.mk include/config.h include/config.inc lib/Makefile utils/Makefile utils/radsconfig.sh utils/findcyclepass.pl)
+AC_OUTPUT(src/config.mk src/rads-config)
