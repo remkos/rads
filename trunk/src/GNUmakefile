@@ -17,45 +17,49 @@
 
 include config.mk
 
-OBJS1	= rads_netcdf.o rads_time.o rads_math.o rads_misc.o rads_grid.o rads_geo.o xmlparse.o
-OBJS2	= rads.o
-OBJS3	= rads3.o
-OBJS	= $(OBJS1) $(OBJS2) $(OBJS3)
+# Include file
+INCLUDES= config.f90
 
-MODS1	= $(OBJS1:.o=.mod)
-MODS2	= $(OBJS1:.o=.mod)
-MODS3	= $(OBJS1:.o=.mod)
-MODS	= $(OBJS:.o=.mod)
+# Objects
+OBJS	= rads.o rads3.o rads_netcdf.o rads_time.o rads_math.o rads_misc.o rads_grid.o rads_geo.o xmlparse.o
 
-LIB	= librads.a
-LDLIBS = $(NETCDF_LIB)
+# .mod files created by the objects
+MODS     = $(OBJS:.o=.mod)
 
-PROGS_O = rads2asc.o rads2adr.o rads2nc.o rads2grd.o radsstat.o radscolin.o radsxogen.o radsxoconv.o \
+# RADS library and linked libraries
+LIB      = librads.a
+LDLIBS   = $(NETCDF_LIB)
+
+# Programs created by objects
+PROGS_O  = rads2asc.o rads2adr.o rads2nc.o rads2grd.o radsstat.o radscolin.o radsxogen.o radsxoconv.o \
 	radsxolist.o rads_test.o radsreconfig.o rads_sample.o rads3test.o radsvar.o
+PROGS    = $(PROGS_O:.o=)
+
+# Shell scripts
+SCRIPTS  = rads-config
+
+# Programs created by linking to other programs
 PROGS_L1 = rads2xadr rads2xgf
 PROGS_L2 = radsxostat
 PROGS_L4 = rads2asc4 radscolin4 radsstat4 rads2grd4
-PROGS_L  = $(PROGS_L1) $(PROGS_L2) $(PROGS_L4)
-PROGS = $(PROGS_O:.o=)
 
-INCS	= config.f90
 
 #-----------------------------------------------------------------------
 # What to create?
 #-----------------------------------------------------------------------
 
-all:	$(LIB) $(PROGS) $(PROGS_L)
+all:	$(LIB) $(PROGS) $(PROGS_L1) $(PROGS_L2) $(PROGS_L4)
 
 install:	all
-	$(INSTALL) -d $(LIBDIR)
-	$(INSTALL) -m 644 $(LIB) $(LIBDIR)
-	$(INSTALL) -d $(INCDIR)
-	$(INSTALL) -m 644 $(MODS) $(INCDIR)
-	$(INSTALL) -d $(BINDIR)
-	$(INSTALL) -m 755 $(PROGS) $(BINDIR)
-	for p in $(PROGS_L1); do ( cd $(BINDIR) ; $(LN_S) rads2adr $$p ) ; done
-	for p in $(PROGS_L2); do ( cd $(BINDIR) ; $(LN_S) radsxolist $$p ) ; done
-	for p in $(PROGS_L4); do ( cd $(BINDIR) ; $(LN_S) $${p/4/} $$p ) ; done
+	$(INSTALL) -d $(libdir)
+	$(INSTALL) -m 644 $(LIB) $(libdir)
+	$(INSTALL) -d $(includedir)
+	$(INSTALL) -m 644 $(MODS) $(includedir)
+	$(INSTALL) -d $(bindir)
+	$(INSTALL) -m 755 $(PROGS) $(SCRIPTS) $(bindir)
+	for p in $(PROGS_L1); do ( cd $(bindir) ; $(LN_S) rads2adr $$p ) ; done
+	for p in $(PROGS_L2); do ( cd $(bindir) ; $(LN_S) radsxolist $$p ) ; done
+	for p in $(PROGS_L4); do ( cd $(bindir) ; $(LN_S) $${p/4/} $$p ) ; done
 
 man:	$(MAN)
 
@@ -63,9 +67,10 @@ man:	$(MAN)
 # Object dependencies
 #-----------------------------------------------------------------------
 
-$(OBJS2):	$(MODS1) $(INCS)
-$(OBJS3):	$(MODS2)
-$(PROGS_O):	$(MODS)
+rads_math.o:	rads_time.o
+rads3.o:	rads.o
+rads.o:		$(INCLUDES)
+$(PROGS_O):	$(OBJS)
 $(PROGS):	$(LIB)
 radsxogen:	spline.o
 
@@ -74,10 +79,10 @@ radsxogen:	spline.o
 #-----------------------------------------------------------------------
 
 config.f90:	config.mk
-	printf "character(len=rads_naml) :: radsdataroot = '%s'\n" $(datarootdir) > $@
+	printf "character(len=rads_naml) :: radsdataroot = '%s'\n" $(datadir) > $@
 
-radsconfig.sh:	radsconfig.sh.in
-	@echo "Error: Need to run configure in src directory first"
+rads-config:	rads-config.in
+	@echo "Error: Need to run configure in main directory first"
 	@exit 1
 
 #-----------------------------------------------------------------------
@@ -107,3 +112,9 @@ $(PROGS_L2):	radsxolist
 
 $(PROGS_L4):	%4:	%
 	$(LN_S) $* $@
+
+#-----------------------------------------------------------------------
+# How to cleanup
+#-----------------------------------------------------------------------
+clean spotless:
+	$(RM) $(INCLUDES) $(LIB) *.o *.mod

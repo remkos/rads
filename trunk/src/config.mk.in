@@ -8,14 +8,13 @@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
 datarootdir = @datarootdir@
-BINDIR = @bindir@
-DOCDIR = @docdir@
-INCDIR = @includedir@
-LIBDIR = @libdir@
-RADSROOT = $(prefix)
-RADSDATAROOT = $(datarootdir)
-RADS_LIB = -L$(LIBDIR) -lrads
-RADS_INC = -I$(INCDIR)
+datadir = @datadir@
+bindir = @bindir@
+docdir = @docdir@
+includedir = @includedir@
+libdir = @libdir@
+RADS_LIB = -L$(libdir) -lrads
+RADS_INC = -I$(includedir)
 INSTALL = @INSTALL@
 
 # Include and load option for NetCDF
