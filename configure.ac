@@ -71,9 +71,9 @@ fi
 AC_MSG_RESULT([$enable_devel])
 
 if test "x$enable_devel" = "xno"; then
-	DEVEL="#"
-else
 	DEVEL=
+else
+	DEVEL=devel
 fi
 
 # -----------------------------------------------------------------
@@ -295,4 +295,4 @@ AC_SUBST(CONFIGURE_OPTIONS, $configure_options)
 # -----------------------------------------------------------------
 # Substitute in .in files
 # -----------------------------------------------------------------
-AC_OUTPUT(src/config.mk src/rads-config)
+AC_OUTPUT(config.mk src/rads-config)

@@ -1,0 +1,70 @@
+#-----------------------------------------------------------------------
+# @configure_input@
+# $Id$
+#
+# Copyright (c) 2011-2013  Remko Scharroo (Altimetrics LLC)
+# See LICENSE.TXT file for copying and redistribution conditions.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#-----------------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+# Object locations: Library, Manuals, Binaries
+#-----------------------------------------------------------------------
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+datarootdir = @datarootdir@
+datadir = @datadir@
+bindir = @bindir@
+docdir = @docdir@
+includedir = @includedir@
+libdir = @libdir@
+RADS_LIB = -L$(libdir) -lrads
+RADS_INC = -I$(includedir)
+INSTALL = @INSTALL@
+
+#-----------------------------------------------------------------------
+# Include and load option for NetCDF
+#-----------------------------------------------------------------------
+NETCDF_INC = @NETCDF_INC@
+NETCDF_LIB = @NETCDF_LIB@
+
+#-----------------------------------------------------------------------
+# Special rules
+#-----------------------------------------------------------------------
+# .tex and .pdf rules
+.SUFFIXES:	.tex
+%.pdf:	%.tex
+	pdflatex $<
+
+# .f90 rules
+.SUFFIXES:	.f90
+%.o:	%.f90
+	$(COMPILE.f) $(OUTPUT_OPTION) $<
+%:	%.f90
+	$(LINK.f) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+# Cancel default .mod rules
+%:	%.mod
+%.o:	%.mod
+
+# Create new .mod rule
+# Do not add %.f90 dependency because %.mod retain timestamp when not altered
+%.mod:
+	$(COMPILE.f) -o $*.o $*.f90
+
+#-----------------------------------------------------------------------
+# Additional tools
+#-----------------------------------------------------------------------
+LN_S	= @LN_S@ -f
+RANLIB	= @RANLIB@
+FC	= @FC@
+FFLAGS  = @FCFLAGS@ $(NETCDF_INC)
