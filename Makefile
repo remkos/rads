@@ -1,5 +1,4 @@
 #-----------------------------------------------------------------------
-# @configure_input@
 # $Id$
 #
 # Copyright (c) 2011-2013  Remko Scharroo (Altimetrics LLC)
@@ -16,57 +15,44 @@
 # GNU Lesser General Public License for more details.
 #-----------------------------------------------------------------------
 
-#-----------------------------------------------------------------------
-# Object locations: Library, Manuals, Binaries
-#-----------------------------------------------------------------------
-prefix = @prefix@
-exec_prefix = @exec_prefix@
-datarootdir = @datarootdir@
-datadir = @datadir@
-bindir = @bindir@
-docdir = @docdir@
-includedir = @includedir@
-libdir = @libdir@
-RADS_LIB = -L$(libdir) -lrads
-RADS_INC = -I$(includedir)
-INSTALL = @INSTALL@
-INSTALL_PROGRAM = @INSTALL_PROGRAM@
-INSTALL_SCRIPT = @INSTALL_SCRIPT@
-INSTALL_DATA = @INSTALL_DATA@
-INSTALL_DIR = @INSTALL_DIR@
+include config.mk
+
+CONFIG_IN	= config.mk.in src/rads-config.in
+CONFIG		= $(CONFIG_IN:.in=)
+MAKE_IN_DIRS	= src $(DEVEL)
 
 #-----------------------------------------------------------------------
-# Include and load option for NetCDF
+# Rules for making and installing
 #-----------------------------------------------------------------------
-NETCDF_INC = @NETCDF_INC@
-NETCDF_LIB = @NETCDF_LIB@
+
+all install clean spotless::	$(CONFIG)
+	@for dir in $(MAKE_IN_DIRS); do (cd src; $(MAKE) $@); done
+
+install::
+	$(INSTALL_DIR) $(datadir)/conf
+	$(INSTALL_DATA) conf/*.xml $(datadir)/conf
+
+clean::
+	$(RM) $(CONFIG)
 
 #-----------------------------------------------------------------------
-# Additional tools
+# To make configuration files
 #-----------------------------------------------------------------------
-LN_S = @LN_S@ -f
-RANLIB = @RANLIB@
-FC = @FC@
-FFLAGS = @FCFLAGS@ $(NETCDF_INC)
+
+config:	$(CONFIG)
+$(CONFIG):	configure $(CONFIG_IN)
+	@if test -f config.log ; then \
+		cmd=`grep '^  \\$$' config.log | grep configure | cut -c5-` ; \
+		echo "Running ... $$cmd" ; $$cmd ; \
+	else \
+		echo "Run configure first" ; \
+	fi
+
+configure:	configure.ac
+	autoconf
 
 #-----------------------------------------------------------------------
-# Special rules
+# To make tarballs
 #-----------------------------------------------------------------------
-# .tex and .pdf rules
-%.pdf:	%.tex
-	pdflatex $<
 
-# .f90 rules
-%.o:	%.f90
-	$(COMPILE.f) $(OUTPUT_OPTION) $<
-%:	%.f90
-	$(LINK.f) $^ $(LOADLIBES) $(LDLIBS) -o $@
-
-# Cancel default .mod rules
-%:	%.mod
-%.o:	%.mod
-
-# Create new .mod rule
-# Do not add %.f90 dependency because %.mod retain timestamp when not altered
-%.mod:
-	$(COMPILE.f) -o $*.o $*.f90
+tar:

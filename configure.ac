@@ -1,14 +1,14 @@
 # -----------------------------------------------------------------------
 #  $Id: rads.f90 261 2012-12-31 16:58:22Z remko@altimetrics.com $
-# 
+#
 #  Copyright (c) 2011-2013  Remko Scharroo (Altimetrics LLC)
 #  See LICENSE.TXT file for copying and redistribution conditions.
-# 
+#
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Lesser General Public License as
 #  published by the Free Software Foundation, either version 3 of the
 #  License, or (at your option) any later version.
-# 
+#
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -49,6 +49,8 @@ AC_ARG_ENABLE(devel,    [  --enable-devel             Compile developer tools [[
 # Process user options
 # -----------------------------------------------------------------
 AC_MSG_NOTICE([checking user options])
+configure_options="`$as_echo "$ac_configure_args" | sed "s/^ //; s/\'//g"`" #'
+AC_SUBST(CONFIGURE_OPTIONS, $configure_options)
 
 # -----------------------------------------------------------------
 # Switch for debugging
@@ -75,6 +77,7 @@ if test "x$enable_devel" = "xno"; then
 else
 	DEVEL=devel
 fi
+AC_SUBST(DEVEL)
 
 # -----------------------------------------------------------------
 # Default settings come from nf-config
@@ -90,6 +93,7 @@ else
 	NETCDF_INC=-I/usr/local/inc
 fi
 AC_MSG_RESULT($NETCDF_INC)
+AC_SUBST(NETCDF_INC)
 
 AC_MSG_CHECKING(for netCDF libraries)
 if ! test "x$with_netcdf_lib" = "x" ; then
@@ -105,6 +109,7 @@ else
 	NETCDF_LIB=-L/usr/local/lib -lnetcdf -lnetcdff
 fi
 AC_MSG_RESULT($NETCDF_LIB)
+AC_SUBST(NETCDF_LIB)
 
 # -----------------------------------------------------------------
 # Find Fortran 90 compilers.
@@ -235,41 +240,33 @@ FCFLAGS=$FCFLAGS$opt
 AC_MSG_RESULT($opt)
 
 # -----------------------------------------------------------------
+# How are Fortran subroutine names translated?
+# -----------------------------------------------------------------
+AC_FC_FUNC("FC_name",FC_name)
+AC_SUBST(FC_name)
+AC_SUBST(MOD_FLAG, $ax_f90_modflag)
+
+# -----------------------------------------------------------------
 # Where to find lapack
 # -----------------------------------------------------------------
 AC_MSG_CHECKING([for lapack library options])
 case $build_os in
-*darwin*) MATHLIB="-Wl,-framework,Accelerate" ;;
-       *) MATHLIB="-llapack -lblas" ;;
+*darwin*) LAPACK_LIB="-Wl,-framework,Accelerate" ;;
+       *) LAPACK_LIB="-llapack -lblas" ;;
 esac
-AC_MSG_RESULT($MATHLIB)
-
-# -----------------------------------------------------------------
-# How are Fortran subroutine names translated?
-# -----------------------------------------------------------------
-AC_FC_FUNC("FC_name",FC_name)
+AC_MSG_RESULT($LAPACK_LIB)
+AC_SUBST(LAPACK_LIB)
 
 # -----------------------------------------------------------------
 # Do we have big or little endian
 # -----------------------------------------------------------------
 AC_C_BIGENDIAN
 if test "X$ac_cv_c_bigendian" = "Xyes"; then
-	BYTESEX="big-endian"
+	BYTE_ORDER="big-endian"
 else
-    	BYTESEX="little-endian"
+    	BYTE_ORDER="little-endian"
 fi
-
-# -----------------------------------------------------------------
-# What is the user's home directory
-# -----------------------------------------------------------------
-AC_MSG_CHECKING([for home directory])
-if test "x${HOME:+set}" = "xset" ; then
-	radsuser=$HOME
-	AC_MSG_RESULT([$radsuser])
-else
-	radsuser=/home/radsuser
-	AC_MSG_RESULT([defaulted to $radsuser])
-fi
+AC_SUBST(BYTE_ORDER)
 
 # -----------------------------------------------------------------
 # Find other utilities
@@ -280,17 +277,16 @@ AC_PROG_LN_S
 AC_PROG_RANLIB
 
 # -----------------------------------------------------------------
-# Specify substitution
+# Does install allow -C?
 # -----------------------------------------------------------------
-AC_SUBST(NETCDF_INC)
-AC_SUBST(NETCDF_LIB)
-AC_SUBST(DEVEL)
-AC_SUBST(MATHLIB)
-AC_SUBST(FC_name)
-AC_SUBST(radsuser)
-AC_SUBST(MOD_FLAG, $ax_f90_modflag)
-configure_options="`$as_echo "$ac_configure_args" | sed "s/^ //; s/\'//g"`" #'
-AC_SUBST(CONFIGURE_OPTIONS, $configure_options)
+${INSTALL} --version 2>&1|egrep "GNU|bCcp" > /dev/null
+if test $?; then
+	INSTALL_DATA="${INSTALL_DATA} -C"
+	INSTALL_PROGRAM="${INSTALL_PROGRAM} -C"
+	INSTALL_SCRIPT="${INSTALL_SCRIPT} -C"
+fi
+INSTALL_DIR='${INSTALL} -d'
+AC_SUBST(INSTALL_DIR)
 
 # -----------------------------------------------------------------
 # Substitute in .in files
