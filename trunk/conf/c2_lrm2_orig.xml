@@ -14,7 +14,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Lesser General Public License for more details.
 
-** CryoSat-2: Use original tide, SSB and MSS from LRM L2 products
+** Description **
+CryoSat-2: Use original tide, SSB and MSS from LRM L2 products
 -->
 
 <alias name="tide_ocean">tide_ocean_fes04</alias>
