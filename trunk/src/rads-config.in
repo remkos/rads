@@ -1,5 +1,6 @@
 #!/bin/sh
 #-----------------------------------------------------------------------
+# @configure_input@
 # $Id: GNUmakefile 266 2013-01-09 03:36:52Z remko@altimetrics.com $
 #
 # Copyright (c) 2011-2013  Remko Scharroo (Altimetrics LLC)

@@ -15,40 +15,45 @@
 # GNU Lesser General Public License for more details.
 #-----------------------------------------------------------------------
 
-include config.mk
+include ../config.mk
 
 # Include file
 INCLUDES= config.f90
 
 # Objects
-OBJS	= rads.o rads3.o rads_netcdf.o rads_time.o rads_math.o rads_misc.o rads_grid.o rads_geo.o xmlparse.o
+OBJS1   = rads_netcdf.o rads_time.o rads_math.o rads_misc.o rads_grid.o rads_geo.o xmlparse.o
+OBJS2   = rads.o
+OBJS3   = rads3.o
+OBJS    = $(OBJS1) $(OBJS2) $(OBJS3)
 
 # .mod files created by the objects
-MODS     = $(OBJS:.o=.mod)
+MODS1   = $(OBJS1:.o=.mod)
+MODS2   = $(OBJS1:.o=.mod)
+MODS3   = $(OBJS1:.o=.mod)
+MODS    = $(OBJS:.o=.mod)
 
 # RADS library and linked libraries
-LIB      = librads.a
-LDLIBS   = $(NETCDF_LIB)
+LIB     = librads.a
+LDLIBS  = $(NETCDF_LIB)
 
 # Programs created by objects
-PROGS_O  = rads2asc.o rads2adr.o rads2nc.o rads2grd.o radsstat.o radscolin.o radsxogen.o radsxoconv.o \
+PROGS_O = rads2asc.o rads2adr.o rads2nc.o rads2grd.o radsstat.o radscolin.o radsxogen.o radsxoconv.o \
 	radsxolist.o rads_test.o radsreconfig.o rads_sample.o rads3test.o radsvar.o
-PROGS    = $(PROGS_O:.o=)
-
-# Shell scripts
-SCRIPTS  = rads-config
+PROGS   = $(PROGS_O:.o=)
 
 # Programs created by linking to other programs
-PROGS_L1 = rads2xadr rads2xgf
-PROGS_L2 = radsxostat
-PROGS_L4 = rads2asc4 radscolin4 radsstat4 rads2grd4
+PROGS_L1= rads2xadr rads2xgf
+PROGS_L2= radsxostat
+PROGS_L4= rads2asc4 radscolin4 radsstat4 rads2grd4
 
+# Shell scripts
+SCRIPTS = rads-config
 
 #-----------------------------------------------------------------------
 # What to create?
 #-----------------------------------------------------------------------
 
-all:	$(LIB) $(PROGS) $(PROGS_L1) $(PROGS_L2) $(PROGS_L4)
+all:	$(PROGS) $(PROGS_L1) $(PROGS_L2) $(PROGS_L4)
 
 install:	all
 	$(INSTALL) -d $(libdir)
@@ -67,10 +72,10 @@ man:	$(MAN)
 # Object dependencies
 #-----------------------------------------------------------------------
 
-rads_math.o:	rads_time.o
-rads3.o:	rads.o
-rads.o:		$(INCLUDES)
-$(PROGS_O):	$(OBJS)
+$(OBJS2):	$(INCLUDES)
+$(OBJS2):	$(MODS1)
+$(OBJS3):	$(MODS2)
+$(PROGS_O):	$(MODS)
 $(PROGS):	$(LIB)
 radsxogen:	spline.o
 
@@ -78,7 +83,7 @@ radsxogen:	spline.o
 # Create configuration files
 #-----------------------------------------------------------------------
 
-config.f90:	config.mk
+config.f90:	../config.mk
 	printf "character(len=rads_naml) :: radsdataroot = '%s'\n" $(datadir) > $@
 
 rads-config:	rads-config.in
