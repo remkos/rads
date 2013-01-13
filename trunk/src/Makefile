@@ -56,12 +56,11 @@ SCRIPTS = rads-config
 all:	$(PROGS) $(PROGS_L1) $(PROGS_L2) $(PROGS_L4)
 
 install:	all
-	$(INSTALL) -d $(libdir)
-	$(INSTALL) -m 644 $(LIB) $(libdir)
-	$(INSTALL) -d $(includedir)
-	$(INSTALL) -m 644 $(MODS) $(includedir)
-	$(INSTALL) -d $(bindir)
-	$(INSTALL) -m 755 $(PROGS) $(SCRIPTS) $(bindir)
+	$(INSTALL_DIR) $(libdir) $(includedir) $(bindir)
+	$(INSTALL_DATA) $(LIB) $(libdir)
+	$(INSTALL_DATA) $(MODS) $(includedir)
+	$(INSTALL_PROGRAM) $(PROGS) $(bindir)
+	$(INSTALL_SCRIPT) $(SCRIPTS) $(bindir)
 	for p in $(PROGS_L1); do ( cd $(bindir) ; $(LN_S) rads2adr $$p ) ; done
 	for p in $(PROGS_L2); do ( cd $(bindir) ; $(LN_S) radsxolist $$p ) ; done
 	for p in $(PROGS_L4); do ( cd $(bindir) ; $(LN_S) $${p/4/} $$p ) ; done
