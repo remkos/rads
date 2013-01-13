@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------
-#  $Id: rads.f90 261 2012-12-31 16:58:22Z remko@altimetrics.com $
+#  $Id$
 #
 #  Copyright (c) 2011-2013  Remko Scharroo (Altimetrics LLC)
 #  See LICENSE.TXT file for copying and redistribution conditions.
@@ -14,7 +14,7 @@
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU Lesser General Public License for more details.
 # -----------------------------------------------------------------------
-AC_REVISION([$Id: configure.ac,v 1.12 2012/10/18 19:22:03 rads Exp $])
+AC_REVISION([$Id$])
 #
 # Run GNU autoconf to produce a configure script from this input.
 # -----------------------------------------------------------------
