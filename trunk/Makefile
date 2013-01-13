@@ -17,9 +17,9 @@
 
 include config.mk
 
-CONFIG_IN	= config.mk.in src/rads-config.in
-CONFIG		= $(CONFIG_IN:.in=)
-MAKE_IN_DIRS	= src $(DEVEL)
+CONFIG_IN   = config.mk.in src/rads-config.in
+CONFIG      = $(CONFIG_IN:.in=)
+MAKE_IN_DIRS= src $(DEVEL)
 
 #-----------------------------------------------------------------------
 # Rules for making and installing
@@ -32,7 +32,7 @@ install::
 	$(INSTALL_DIR) $(datadir)/conf
 	$(INSTALL_DATA) conf/*.xml $(datadir)/conf
 
-clean::
+clean spotless::
 	$(RM) $(CONFIG)
 
 #-----------------------------------------------------------------------

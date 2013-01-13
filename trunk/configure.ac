@@ -264,7 +264,7 @@ AC_C_BIGENDIAN
 if test "X$ac_cv_c_bigendian" = "Xyes"; then
 	BYTE_ORDER="big-endian"
 else
-    	BYTE_ORDER="little-endian"
+	BYTE_ORDER="little-endian"
 fi
 AC_SUBST(BYTE_ORDER)
 
@@ -272,18 +272,22 @@ AC_SUBST(BYTE_ORDER)
 # Find other utilities
 # -----------------------------------------------------------------
 AC_MSG_NOTICE([finding other utilities])
-AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_RANLIB
+AC_PROG_INSTALL
 
 # -----------------------------------------------------------------
-# Does install allow -C?
+# Does install allow -C option?
 # -----------------------------------------------------------------
+AC_MSG_CHECKING([if install allows -C option])
 ${INSTALL} --version 2>&1|egrep "GNU|bCcp" > /dev/null
 if test $?; then
 	INSTALL_DATA="${INSTALL_DATA} -C"
 	INSTALL_PROGRAM="${INSTALL_PROGRAM} -C"
 	INSTALL_SCRIPT="${INSTALL_SCRIPT} -C"
+	AC_MSG_RESULT([yes])
+else
+	AC_MSG_RESULT([no])
 fi
 INSTALL_DIR='${INSTALL} -d'
 AC_SUBST(INSTALL_DIR)
