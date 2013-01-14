@@ -117,9 +117,13 @@ case ('SUB')
 	call math_check (2)
 	top%prev%data = top%prev%data - top%data
 	call math_pop (top)
-case ('OR')
+case ('ADD')
 	call math_check (2)
-	where (isnan(top%data)) top%prev%data = nan
+	top%prev%data = top%prev%data + top%data
+	call math_pop (top)
+case ('MUL')
+	call math_check (2)
+	top%prev%data = top%prev%data * top%data
 	call math_pop (top)
 
 ! - MATH x (0 arguments to 1)
@@ -239,7 +243,7 @@ case ('R2D')
 case ('YMDHMS')
 	call math_check (1)
 	top%data = ymdhms_(top%data)
-	
+
 ! x MATH x y (1 argument to 2)
 case ('DUP')
 	call math_check (1)
@@ -247,14 +251,6 @@ case ('DUP')
 	top%data = top%prev%data
 
 ! x y MATH x (2 arguments to 1)
-case ('ADD')
-	call math_check (2)
-	top%prev%data = top%prev%data + top%data
-	call math_pop (top)
-case ('MUL')
-	call math_check (2)
-	top%prev%data = top%prev%data * top%data
-	call math_pop (top)
 case ('DIV')
 	call math_check (2)
 	top%prev%data = top%prev%data / top%data
@@ -342,6 +338,10 @@ case ('NAN')
 case ('AND')
 	call math_check (2)
 	where (isnan(top%prev%data)) top%prev%data = top%data
+	call math_pop (top)
+case ('OR')
+	call math_check (2)
+	where (isnan(top%data)) top%prev%data = nan
 	call math_pop (top)
 case ('BTEST')
 	call math_check (2)
