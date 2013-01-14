@@ -25,7 +25,7 @@ MAKE_IN_DIRS= src $(DEVEL)
 # Rules for making and installing
 #-----------------------------------------------------------------------
 
-all install clean spotless::	$(CONFIG)
+all install clean spotless test::	$(CONFIG)
 	@for dir in $(MAKE_IN_DIRS); do (cd src; $(MAKE) $@); done
 
 install::
