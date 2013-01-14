@@ -54,7 +54,7 @@ type :: rads_varinfo
 	character(len=rads_naml) :: source               ! Optional data source ('' if none)
 	character(len=rads_strl) :: dataname             ! Name associated with data (e.g. netCDF var name, math string)
 	character(len=rads_cmdl) :: flag_meanings        ! Optional meaning of flag values ('' if none)
-	character(len=rads_cmdl) :: quality_flag         ! Quality flag associated with this variable ('' if none)
+	character(len=rads_cmdl) :: quality_flag         ! Quality flag(s) associated with this variable ('' if none)
 	character(len=rads_cmdl) :: comment              ! Optional comment ('' if none)
 	character(len=rads_varl) :: units                ! Optional units of variable ('' if none)
 	character(len=rads_varl) :: format               ! Fortran format for output
@@ -66,7 +66,8 @@ type :: rads_varinfo
 	integer(fourbyteint) :: ndims                    ! Number of dimensions of variable
 	integer(fourbyteint) :: nctype, varid            ! netCDF data type (nf90_int, etc.) and variable ID
 	integer(fourbyteint) :: datatype                 ! Type of data (rads_type_other|flagmasks|flagvalues|time|lat|lon)
-	integer(fourbyteint) :: datasrc                  ! Retrieval source (rads_src_nc_var|nc_att|math|grid_lininter|grid_splinter|grid_query)
+	integer(fourbyteint) :: datasrc                  ! Retrieval source (rads_src_nc_var|nc_att|math|grid_lininter|grid_splinter|grid_query|constant)
+	integer(fourbyteint) :: bits(2)                  ! Bit selection: starting bit, number of bits (0,0 = none)
 	integer(fourbyteint) :: cycle, pass              ! Last processed cycle and pass
 	integer(fourbyteint) :: selected, rejected       ! Number of selected or rejected measurements
 	real(eightbytereal) :: xmin, xmax, mean, sum2    ! Minimum, maximum, mean, sum squared deviation
@@ -458,7 +459,7 @@ if (S%error == rads_err_xml_file) call rads_exit ('Required XML file '//trim(S%d
 call rads_read_xml (S, trim(S%userroot)//'/.rads/rads.xml')
 call rads_read_xml (S, 'rads.xml')
 
-! Now read the xml files
+! Now read the xml files specified on the command line
 ! If it is not an absolute path name, also look for it in $RADSDATAROOT/conf as well as in $HOME/.rads
 do i = 1,size(xml)
 	call rads_read_xml (S, xml(i))
@@ -492,6 +493,16 @@ else
 	S%cycles(1:2) = S%phase%cycles
 	S%passes(2) = S%phase%passes
 endif
+
+! Check if variables include the required <data> identifier
+do i = 1,S%nvar
+	if (S%var(i)%info%dataname(:1) == ' ') then
+		call rads_message ('Variable "'//trim(S%var(i)%name)// &
+			'" has no data source specified; assuming netCDF variable "'//trim(S%var(i)%name)//'"')
+		S%var(i)%info%dataname = S%var(i)%name
+		S%var(i)%info%datasrc = rads_src_nc_var
+	endif
+enddo
 
 ! Link the time, lat, lon variables for later use
 S%time => rads_varptr (S, 'time')
@@ -785,7 +796,7 @@ do
 
 	select case (opt(nopt)%opt)
 	! End of argument list
-	case ('!') 
+	case ('!')
 		if (iunit == 0) then
 			nopt = nopt - 1 ! Because we count always one ahead
 			exit ! Done with command line
@@ -1468,7 +1479,7 @@ do i = 1,3 ! This loop is here to allow processing of aliases
 		call rads_get_var_nc
 	case (rads_src_nc_att)
 		call rads_get_att_nc
-		case (rads_src_math)
+	case (rads_src_math)
 		call rads_get_var_math
 	case (rads_src_grid_lininter, rads_src_grid_splinter, rads_src_grid_query)
 		call rads_get_var_grid
@@ -1481,6 +1492,7 @@ do i = 1,3 ! This loop is here to allow processing of aliases
 
 	! Editing or error handling
 	if (S%error == rads_noerr) then ! No error, edit if requested
+		if (info%bits(2) > 0) data = ibits(nint(data),info%bits(1),info%bits(2))
 		if (.not.skip_edit) call rads_edit_data
 		exit
 	else if (info%default /= huge(0d0)) then ! Default value
@@ -1633,7 +1645,7 @@ if (S%error == rads_noerr) data = top%data
 
 ! See if we have leftovers on the stack
 i = -1
-do while (associated(top)) 
+do while (associated(top))
 	i = i + 1
 	call math_pop(top)
 enddo
@@ -1824,7 +1836,7 @@ do
 		if (tag == 'phase') nullify (phase)   ! Stop processing <phase> block
 		cycle  ! Ignore all other end tags
 	endif
-	
+
 	! Process opening tags
 	tags(X%level) = tag
 	if (skip_lvl > 0 .and. X%level >= skip_lvl) cycle	! Skip all data at level equal or larger than skip level
@@ -1938,7 +1950,7 @@ do
 
 	case ('frequency')
 		read (val(:nval), *, iostat=ios) S%frequency
-	
+
 	case ('xover_params')
 		read (val(:nval), *, iostat=ios) S%xover_params
 
@@ -1987,6 +1999,10 @@ do
 	case ('flag_values')
 		call assign_or_append (info%flag_meanings)
 		info%datatype = rads_type_flagvalues
+
+	case ('bits')
+		info%bits = (/0,1/)
+		read (val(:nval), *, iostat=ios) info%bits
 
 	case ('comment')
 		call assign_or_append (info%comment)
@@ -2040,7 +2056,7 @@ do
 			info%datasrc = rads_src_grid_query
 		case ('math')
 			info%datasrc = rads_src_math
-		case ('netcdf', 'nc_var', 'nc_att')
+		case ('netcdf', 'nc_var', 'nc_att', 'nc')
 			info%datasrc = rads_src_nc_var
 			if (index(info%dataname,':') > 0) info%datasrc = rads_src_nc_att
 		case default
@@ -2218,7 +2234,7 @@ type(rads_var), pointer :: ptr
 ! depending on whether the optional argument <tgt> is given.
 !
 ! The presence of <tgt> determines how the routine deals with
-! non-existent variables. 
+! non-existent variables.
 ! 1. When no <tgt> argument is given:
 !    - When <varname> exists: Return pointer to its structure
 !    - Otherwise: Return a NULL pointer
@@ -2310,7 +2326,7 @@ if (associated(tgt)) then
 else
 	allocate (ptr%info)
 	ptr%info = rads_varinfo (varname, varname, '', '', '', '', '', '', '', 'f0.3', '', '', null(), &
-	huge(0d0), S%nan, 0d0, 1d0, 1, nf90_double, 0, 0, 0, 0, 0, 0, 0, S%nan, S%nan, 0d0, 0d0)
+	huge(0d0), S%nan, 0d0, 1d0, 1, nf90_double, 0, 0, 0, 0, 0, 0, 0, 0, S%nan, S%nan, 0d0, 0d0)
 	ptr%name => ptr%info%name
 endif
 ptr%long_name => ptr%info%long_name
@@ -2478,7 +2494,7 @@ character(len=*), intent(in) :: string
 ! accordingly for a rectangular box surrounding the circle. However, when
 ! reading pass data, the distance to the centroid is used as well to
 ! edit out data.
-! 
+!
 ! Arguments:
 !  S        : Satellite/mission dependent structure
 !  string   : String of three or four values with separating whitespace.
@@ -2545,7 +2561,7 @@ type(rads_sat), intent(inout) :: S
 character(len=*), intent(in) :: varname, flag
 !
 ! This routine set appends <flag> to the variables contained in the set
-! of variables to check to allow variable <varname> to pass (if <flag> is 
+! of variables to check to allow variable <varname> to pass (if <flag> is
 ! not already contained in that set).
 !
 ! Arguments:
@@ -3250,7 +3266,7 @@ if (present(add_offset)) info%add_offset = add_offset
 do n = 1,info%ndims
 	dimid(n) = info%ndims - n + 1
 enddo
-	
+
 if (nft(nf90_def_var(P%ncid, var%name, info%nctype, dimid(1:info%ndims), info%varid))) then
 	call rads_error (S, rads_err_nc_var, 'Error creating variable '//trim(var%name)//' in '//trim(P%filename))
 	return
