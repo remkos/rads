@@ -84,10 +84,10 @@ AC_SUBST(DEVEL)
 # Allow user to set --with-netcdf-inc and/or --with-netcdf-dir
 # -----------------------------------------------------------------
 AC_PATH_PROG([nf_config], [nf-config], [$with_nf_config])
-AC_MSG_CHECKING(for netCDF includes)
+AC_MSG_CHECKING([for netCDF includes])
 if ! test "x$with_netcdf_inc" = "x" ; then
 	NETCDF_INC=-I$with_netcdf_inc
-else if test -x "$nf_config" ; then
+elif test -x "$nf_config" ; then
 	NETCDF_INC=-I`$nf_config --includedir`
 else
 	NETCDF_INC=-I/usr/local/inc
@@ -95,14 +95,14 @@ fi
 AC_MSG_RESULT($NETCDF_INC)
 AC_SUBST(NETCDF_INC)
 
-AC_MSG_CHECKING(for netCDF libraries)
+AC_MSG_CHECKING([for netCDF libraries])
 if ! test "x$with_netcdf_lib" = "x" ; then
 	NETCDF_LIB="-L"`echo $with_netcdf_lib | sed "s=:= -L="`" -lnetcdf"
 	doit="find "`echo $with_netcdf_lib | sed "s=:= ="`" -name libnetcdff*"
 	if test `$doit|wc -l` -ne 0; then
 		NETCDF_LIB="${NETCDF_LIB}f -lnetcdf"
 	fi
-else if test -x "$nf_config" ; then
+elif test -x "$nf_config" ; then
 	NETCDF_LIB=`$nf_config --flibs`
 else
 	NETCDF_LIB=-L/usr/local/lib -lnetcdf -lnetcdff
@@ -117,9 +117,9 @@ AC_SUBST(NETCDF_LIB)
 AC_MSG_CHECKING([for Fortran 90 compiler])
 if test "${F90+set}" = "set"; then
 	F90=$F90
-else if test "${FC+set}" = "set"; then
+elif test "${FC+set}" = "set"; then
 	F90=$FC
-else if ! test "x$nf_config" = "x"; then
+elif ! test "x$nf_config" = "x"; then
 	F90=`$nf_config --fc`
 	F90=`basename $F90`
 fi
