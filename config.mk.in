@@ -34,6 +34,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_DIR = @INSTALL_DIR@
+DEVEL = @DEVEL@
 
 #-----------------------------------------------------------------------
 # Include and load option for NetCDF
@@ -47,7 +48,7 @@ NETCDF_LIB = @NETCDF_LIB@
 LN_S = @LN_S@ -f
 RANLIB = @RANLIB@
 FC = @FC@
-FFLAGS = @FCFLAGS@ $(NETCDF_INC)
+FFLAGS = @FCFLAGS@ $(NETCDF_INC) -I../src
 
 #-----------------------------------------------------------------------
 # Special rules
