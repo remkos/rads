@@ -26,8 +26,9 @@ integer(fourbyteint), parameter :: rads_var_chunk = 100, rads_varl = 40, rads_na
 integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, rads_type_flagmasks = 2, rads_type_flagvalues = 3, &
 	rads_type_time = 11, rads_type_lat = 12, rads_type_lon = 13
 ! RADS4 data sources
-integer(fourbyteint), parameter :: rads_src_none = 0, rads_src_nc_var = 10, rads_src_nc_att = 11, rads_src_math = 20, &
-	rads_src_grid_lininter = 30, rads_src_grid_splinter = 31, rads_src_grid_query = 32, rads_src_constant = 40
+integer(fourbyteint), parameter :: rads_src_none = 0, rads_src_nc_var = 10, rads_src_nc_att = 11, rads_src_nc_bits = 12, &
+	rads_src_math = 20, rads_src_grid_lininter = 30, rads_src_grid_splinter = 31, rads_src_grid_query = 32, &
+	rads_src_constant = 40
 ! RADS4 warnings
 integer(fourbyteint), parameter :: rads_warn_nc_file = -3
 ! RADS4 errors
@@ -66,7 +67,7 @@ type :: rads_varinfo
 	integer(fourbyteint) :: ndims                    ! Number of dimensions of variable
 	integer(fourbyteint) :: nctype, varid            ! netCDF data type (nf90_int, etc.) and variable ID
 	integer(fourbyteint) :: datatype                 ! Type of data (rads_type_other|flagmasks|flagvalues|time|lat|lon)
-	integer(fourbyteint) :: datasrc                  ! Retrieval source (rads_src_nc_var|nc_att|math|grid_lininter|grid_splinter|grid_query|constant)
+	integer(fourbyteint) :: datasrc                  ! Retrieval source (rads_src_nc_var|nc_att|nc_bits|math|grid_lininter|grid_splinter|grid_query|constant)
 	integer(fourbyteint) :: bits(2)                  ! Bit selection: starting bit, number of bits (0,0 = none)
 	integer(fourbyteint) :: cycle, pass              ! Last processed cycle and pass
 	integer(fourbyteint) :: selected, rejected       ! Number of selected or rejected measurements
@@ -135,6 +136,7 @@ type :: rads_pass
 	real(eightbytereal) :: equator_time, equator_lon ! Equator time and longitude
 	real(eightbytereal) :: start_time, end_time      ! Start and end time of pass
 	real(eightbytereal), pointer :: tll(:,:)         ! Time, lat, lon matrix
+	integer(twobyteint), pointer :: flags(:)         ! Array of engineering flags
 	integer(fourbyteint) :: cycle, pass              ! Cycle and pass number
 	integer(fourbyteint) :: ncid, ndims              ! NetCDF ID of pass file and number of dimensions
 	integer(fourbyteint) :: ndata                    ! Number of data points
@@ -1107,7 +1109,7 @@ real(eightbytereal), allocatable :: tll(:,:)
 
 ! Initialise
 S%error = rads_warn_nc_file
-P = rads_pass ('', '', null(), S%nan, S%nan, S%nan, S%nan, null(), cycle, pass, 0, 1, 0, 0, 0, 0, S%sat, S%satid, null())
+P = rads_pass ('', '', null(), S%nan, S%nan, S%nan, S%nan, null(), null(), cycle, pass, 0, 1, 0, 0, 0, 0, S%sat, S%satid, null())
 ascdes = modulo(pass,2)	! 1 if ascending, 0 if descending
 
 if (S%debug >= 2) write (*,*) 'Checking cycle/pass : ',cycle,pass
@@ -1207,6 +1209,7 @@ S%total_read = S%total_read + P%ndata
 if (nff(nf90_inquire_attribute(P%ncid,nf90_global,'history',attnum=k))) then
 	allocate (P%history)
 	call nfs(nf90_get_att(P%ncid,nf90_global,'history',P%history))
+	if (nft(nf90_get_att(P%ncid,nf90_global,'original',P%original))) P%original = ''
 else if (nff(nf90_inquire_attribute(P%ncid,nf90_global,'log01',attnum=k))) then ! Read logs
 	allocate (P%history)
 	i = 0
@@ -1315,16 +1318,16 @@ logical, intent(in), optional :: keep
 !-----------------------------------------------------------------------
 integer :: ios
 logical :: clear
-S%error = rads_noerr
-if (P%ncid > 0 .and. nft(nf90_close(P%ncid))) S%error = rads_err_nc_close
-P%ncid = 0
-deallocate (P%history, stat=ios)
 if (present(keep)) then
 	clear = .not.keep
 else
 	clear = .true.
 endif
-if (clear) deallocate (P%tll, stat=ios)
+S%error = rads_noerr
+if (P%ncid > 0 .and. nft(nf90_close(P%ncid))) S%error = rads_err_nc_close
+P%ncid = 0
+deallocate (P%history, stat=ios)
+if (clear) deallocate (P%tll, P%flags, stat=ios)
 end subroutine rads_close_pass
 
 !***********************************************************************
@@ -1478,7 +1481,9 @@ do i = 1,3 ! This loop is here to allow processing of aliases
 	case (rads_src_nc_var)
 		call rads_get_var_nc
 	case (rads_src_nc_att)
-		call rads_get_att_nc
+		call rads_get_var_nc_att
+	case (rads_src_nc_bits)
+		call rads_get_var_nc_bits
 	case (rads_src_math)
 		call rads_get_var_math
 	case (rads_src_grid_lininter, rads_src_grid_splinter, rads_src_grid_query)
@@ -1492,7 +1497,6 @@ do i = 1,3 ! This loop is here to allow processing of aliases
 
 	! Editing or error handling
 	if (S%error == rads_noerr) then ! No error, edit if requested
-		if (info%bits(2) > 0) data = ibits(nint(data),info%bits(1),info%bits(2))
 		if (.not.skip_edit) call rads_edit_data
 		exit
 	else if (info%default /= huge(0d0)) then ! Default value
@@ -1582,7 +1586,7 @@ if (nff(nf90_get_att(P%ncid, info%varid, 'scale_factor', scale_factor))) data = 
 if (nff(nf90_get_att(P%ncid, info%varid, 'add_offset', add_offset))) data = data + add_offset
 end subroutine rads_get_var_nc
 
-recursive subroutine rads_get_att_nc () ! Get data attribute from RADS netCDF file
+recursive subroutine rads_get_var_nc_att () ! Get data attribute from RADS netCDF file
 use netcdf
 use rads_netcdf
 use rads_time
@@ -1618,7 +1622,30 @@ else
 	endif
 	data = data(1)
 endif
-end subroutine rads_get_att_nc
+end subroutine rads_get_var_nc_att
+
+subroutine rads_get_var_nc_bits () ! Get bits from flag word
+use netcdf
+use rads_netcdf
+integer(fourbyteint) :: start(1)
+if (.not.associated(P%flags)) then
+	! Flags need to be loaded first
+	if (nft(nf90_inq_varid (P%ncid, 'flags', info%varid))) then
+		! Failed to find variable
+		S%error = rads_err_nc_var
+		return
+	endif
+	start = max(1,P%first_meas)
+	if (nft(nf90_get_var(P%ncid, info%varid, data(1:P%ndata), start))) then
+		call rads_error (S, rads_err_nc_get, 'Error reading netCDF array "flags"')
+		return
+	endif
+	allocate (P%flags(P%ndata))
+	P%flags = nint(data(1:P%ndata), twobyteint)
+endif
+! Now get the bits
+data(1:P%ndata) = ibits(P%flags,info%bits(1),info%bits(2))
+end subroutine rads_get_var_nc_bits
 
 recursive subroutine rads_get_var_math () ! Get data variable from MATH statement
 use rads_math
@@ -2806,10 +2833,9 @@ if (arg == '--version') then
 	stop
 else if (.not.present(description)) then
 	write (iunit, 1300) trim(progname), max(rads_rev(),rads_rev(revision))
-else if (arg == '--help' .or. arg == '-?' .or. arg == '') then
+else if (arg == '--help' .or. arg == '-?') then
 	write (iunit, 1310) trim(progname), max(rads_rev(),rads_rev(revision)), trim(description)
 	rads_version = .false.
-else
 endif
 1300 format (a,' (r',i0,')')
 1310 format (a,' (r',i0,'): ',a)
@@ -3230,7 +3256,7 @@ if (ndata > 0) then
 	nf90_put_att (P%ncid, nf90_global, 'first_meas_time', date(2)) + &
 	nf90_put_att (P%ncid, nf90_global, 'last_meas_time', date(3))
 endif
-e = e + nf90_put_att (P%ncid, nf90_global, 'original', P%original)
+if (P%original /= '') e = e + nf90_put_att (P%ncid, nf90_global, 'original', P%original)
 
 if (associated(P%history)) then
 	e = e + nf90_put_att (P%ncid, nf90_global, 'history', datestamp()//': '//trim(S%command)//rads_linefeed//trim(P%history))
