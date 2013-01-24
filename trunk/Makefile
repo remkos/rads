@@ -17,18 +17,19 @@
 
 include config.mk
 
-CONFIG_IN   = config.mk.in src/rads-config.in
-CONFIG      = $(CONFIG_IN:.in=)
-MAKE_IN_DIRS= src $(DEVEL)
+CONFIG_IN = config.mk.in src/rads-config.in
+CONFIG    = $(CONFIG_IN:.in=)
+SUBDIRS   = src $(DEVEL)
 
 #-----------------------------------------------------------------------
 # Rules for making and installing
 #-----------------------------------------------------------------------
 
 all install clean spotless test::	$(CONFIG)
-	@for dir in $(MAKE_IN_DIRS); do (cd src; $(MAKE) $@); done
+	@for subdir in $(SUBDIRS); do (echo "Making $@ in $$subdir ..." && cd $$subdir && $(MAKE) $@); done
 
 install::
+	@echo "Installing configuration files ..."
 	$(INSTALL_DIR) $(datadir)/conf
 	$(INSTALL_DATA) conf/*.xml $(datadir)/conf
 
