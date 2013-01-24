@@ -37,9 +37,8 @@ LIB     = librads.a
 LDLIBS  = $(NETCDF_LIB)
 
 # Programs created by objects
-PROGS_O = rads2asc.o rads2adr.o rads2nc.o rads2grd.o radsstat.o radscolin.o radsxogen.o radsxoconv.o \
-	radsxolist.o rads_test.o radsreconfig.o rads_sample.o rads3test.o radsvar.o
-PROGS   = $(PROGS_O:.o=)
+PROGS   = rads2asc rads2adr rads2nc rads2grd radsstat radscolin radsxogen radsxoconv \
+	radsxolist rads_test radsreconfig rads_sample rads3test radsvar
 
 # Programs created by linking to other programs
 PROGS_L1= rads2xadr rads2xgf
@@ -74,7 +73,6 @@ man:	$(MAN)
 $(OBJS2):	$(INCLUDES)
 $(OBJS2):	$(MODS1)
 $(OBJS3):	$(MODS2)
-$(PROGS_O):	$(MODS)
 $(PROGS):	$(LIB)
 radsxogen:	spline.o
 
@@ -120,5 +118,7 @@ $(PROGS_L4):	%4:	%
 #-----------------------------------------------------------------------
 # How to cleanup
 #-----------------------------------------------------------------------
-clean spotless:
-	$(RM) $(INCLUDES) $(LIB) *.o *.mod
+clean:
+	$(RM) $(LIB) $(PROGS) *.o *.mod
+spotless:	clean
+	$(RM) $(INCLUDES)
