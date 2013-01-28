@@ -37,7 +37,7 @@ Global RADS configuration file
 </var>
 <alias name="ssha">sla</alias>
 
-<var name="time_1985" field="101">
+<var name="time" field="101 1">
 	<long_name>time</long_name>
 	<standard_name>time</standard_name>
 	<units>seconds since 1985-01-01</units>
@@ -71,7 +71,7 @@ Global RADS configuration file
 	<long_name>Modified Julian Days</long_name>
 	<units>days since 1858-11-17</units>
 	<data>time 86400 DIV 46066 ADD</data>
-	<comment>UTC time of measurement expressed in modified julian days</comment>
+	<comment>UTC time of measurement expressed in Modified Julian Days</comment>
 	<format>f12.6</format>
 </var>
 <var name="time_2000" field="106">
@@ -125,7 +125,7 @@ Global RADS configuration file
 	<compress>int4 1d-3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_cnes" field="404" sat="c2 n1 pn tx">
+<var name="alt_cnes" field="404" sat="e1 e2 c2 n1 pn tx">
 	<long_name>CNES orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>CNES</source>
@@ -135,48 +135,6 @@ Global RADS configuration file
 	<compress>int4 1d-3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<!-- OBSOLETE SOLUTIONS
-<var name="alt_pgs7727" field="405">
-	<long_name>PGS7727 orbital altitude</long_name>
-	<standard_name>height_above_reference_ellipsoid</standard_name>
-	<source>GSFC, PGS7727</source>
-	<units>m</units>
-	<data>alt_pgs7727</data>
-	<format>f11.3</format>
-	<compress>int4 1d-3</compress>
-	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
-</var>
-<var name="alt_grim5" field="406">
-	<long_name>GRIM5 orbital altitude</long_name>
-	<standard_name>height_above_reference_ellipsoid</standard_name>
-	<source>CNES, GRIM5</source>
-	<units>m</units>
-	<data>alt_grim5</data>
-	<format>f11.3</format>
-	<compress>int4 1d-3</compress>
-	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
-</var>
-<var name="alt_ggm01c" field="407">
-	<long_name>GGM01c orbital altitude</long_name>
-	<standard_name>height_above_reference_ellipsoid</standard_name>
-	<source>GGM01c</source>
-	<units>m</units>
-	<data>alt_ggm01c</data>
-	<format>f11.3</format>
-	<compress>int4 1d-3</compress>
-	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
-</var>
-<var name="alt_ggm01s" field="408">
-	<long_name>GGM01s orbital altitude</long_name>
-	<standard_name>height_above_reference_ellipsoid</standard_name>
-	<source>GGM01s</source>
-	<units>m</units>
-	<data>alt_ggm01s</data>
-	<format>f11.3</format>
-	<compress>int4 1d-3</compress>
-	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
-</var>
--->
 <var name="alt_eiggc03c" field="412" sat="n1">
 	<long_name>EIGEN-GC03c orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
@@ -299,7 +257,7 @@ Global RADS configuration file
 	<data>alt_reaper</data>
 	<default>nan</default>
 	<format>f11.3</format>
-	<compress>int4 1d-3</compress>
+	<compress>int4 1d-4 700d3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_reaper_deos" field="421" sat="e1 e2">
@@ -310,7 +268,7 @@ Global RADS configuration file
 	<data>alt_reaper_deos</data>
 	<default>nan</default>
 	<format>f11.3</format>
-	<compress>int4 1d-3</compress>
+	<compress>int4 1d-4 700d3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_reaper_gfz" field="422" sat="e1 e2">
@@ -321,7 +279,7 @@ Global RADS configuration file
 	<data>alt_reaper_gfz</data>
 	<default>nan</default>
 	<format>f11.3</format>
-	<compress>int4 1d-3</compress>
+	<compress>int4 1d-4 700d3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_reaper_esoc" field="423" sat="e1 e2">
@@ -332,7 +290,7 @@ Global RADS configuration file
 	<data>alt_reaper_esoc</data>
 	<default>nan</default>
 	<format>f11.3</format>
-	<compress>int4 1d-3</compress>
+	<compress>int4 1d-4 700d3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <!--
@@ -374,7 +332,7 @@ Global RADS configuration file
 	<units>m</units>
 	<format>f11.3</format>
 	<data>range_ku</data>
-	<compress>int3 1d-4</compress>
+	<compress>int4 1d-4 700d3</compress>
 	<if sat="j1 j2">
 		<format>f12.4</format>
 		<compress>int4 1d-4 1300d3</compress>
@@ -413,7 +371,6 @@ Global RADS configuration file
 	<units>m</units>
 	<format>f11.3</format>
 	<data>range_ku_mle3</data>
-	<compress>int3 1d-4</compress>
 	<format>f12.4</format>
 	<compress>int4 1d-4 1300d3</compress>
 </var>
@@ -682,11 +639,6 @@ Global RADS configuration file
 	<compress>int2 1d-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<!--
-	<alias name="iono_gim">,iono_nic09</alias>
-	<alias name="iono_alt_smooth">,iono_gim</alias>
-	<alias name="iono_alt">,iono_gim</alias>
--->
 <alias name="iono" field="9" sat="e1 gs pn">iono_nic09</alias>
 <alias name="iono" field="9" sat="c2 e2 g1">iono_gim iono_nic09</alias>
 <alias name="iono" field="9" sat="j1 j2 n1 tx">iono_alt_smooth iono_gim iono_nic09</alias>
@@ -745,9 +697,6 @@ Global RADS configuration file
 	<compress>int2 1d-4</compress>
 	<comment>Long-term temporal mean of the MOG2D dynamic atmospheric correction at measurement location</comment>
 </var>
-<!--
-	<alias name="inv_bar_mog2d">,inv_bar_mok2d</alias>
--->
 <alias name="inv_bar" field="10">inv_bar_mog2d inv_bar_mok2d</alias>
 
 <var name="tide_solid" field="1101 11">
@@ -1025,10 +974,6 @@ Global RADS configuration file
 	<format>f10.4</format>
 	<compress>int4 1d-4</compress>
 </var>
-<!--
-	<alias name="mss_dnsc08">,mss_dtu10</alias>
-	<alias name="mss_cls01">,mss_cnescls11</alias>
--->
 <alias name="mss" field="16">mss_dtu10</alias>
 
 <var name="swh_ku" field="1701">
@@ -1219,7 +1164,6 @@ Global RADS configuration file
 	<compress>int2 1d-4</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<!--
 <var name="range_rms_s" field="2004" sat="n1">
 	<long_name>std dev of S-band range</long_name>
 	<units>m</units>
@@ -1229,7 +1173,6 @@ Global RADS configuration file
 	<compress>int2 1d-4</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
--->
 <var name="range_rms_ku_mle3" field="2012" sat="j2">
 	<long_name>std dev of Ku-band range (MLE3)</long_name>
 	<units>m</units>
@@ -1310,9 +1253,6 @@ Global RADS configuration file
 	<format>f7.0</format>
 	<compress>int2</compress>
 </var>
-<!--
-	<alias name="topo_dnsc08">,topo_dtu10</alias>
--->
 <alias name="topo" field="22">topo_dtu10</alias>
 
 <if sat="pn tx">
@@ -1422,7 +1362,7 @@ Global RADS configuration file
 	<alias name="tb3">tb_370</alias>
 </if>
 
-<if sat="c2 n1">
+<if sat="c2 e1 e2 n1">
 	<var name="peakiness_ku" field="2401">
 		<long_name>Ku-band peakiness</long_name>
 		<limits sat="n1">1.4 1.9</limits>
@@ -1685,7 +1625,7 @@ Global RADS configuration file
 	<compress>int2 1d-3</compress>
 	<comment>Range bias already added to range</comment>
 </var>
-<var name="drange_fm" field="2704" sat="c2">
+<var name="drange_fm" field="2704" sat="e1 e2 c2">
 	<long_name>Doppler correction to range</long_name>
 	<units>m</units>
 	<data>drange_fm</data>
@@ -2070,7 +2010,7 @@ Global RADS configuration file
 	<format>f6.0</format>
 	<compress>int2</compress>
 </var>
-<var name="mqe" field="3409" sat="c2">
+<var name="mqe" field="3409" sat="e1 e2 c2">
 	<long_name>mean quadratic error of retracking</long_name>
 	<data>mqe</data>
 	<format>f6.3</format>
