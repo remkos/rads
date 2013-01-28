@@ -15,12 +15,15 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
+module rads_devel
+use typesizes
+
+contains
+
 !*erspass - Determine orbit nr, phase, cycle nr and pass nr for ERS-1/2
 !+
-function erspass (ers, utc, orbitnr, phasenm, cyclenr, passnr, tnode, lnode)
-use typesizes
+logical function erspass (ers, utc, orbitnr, phasenm, cyclenr, passnr, tnode, lnode)
 use rads
-logical :: erspass
 real(eightbytereal), intent(in) :: utc
 integer(fourbyteint), intent(in) :: ers
 integer(fourbytereal), intent(out) :: orbitnr, cyclenr, passnr
@@ -112,3 +115,5 @@ lnode = q(pnt)%lnode
 erspass = new
 
 end function erspass
+
+end module rads_devel

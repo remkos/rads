@@ -40,7 +40,8 @@ man:	$(MAN)
 # Object dependencies
 #-----------------------------------------------------------------------
 
-$(PROGS):	$(LIB) erspass.o
+$(PROGS):	rads_devel.o $(LIB)
+rads_devel.o:	$(LIB)
 
 #-----------------------------------------------------------------------
 # How to cleanup
