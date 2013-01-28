@@ -37,10 +37,11 @@ INSTALL_DIR = @INSTALL_DIR@
 DEVEL = @DEVEL@
 
 #-----------------------------------------------------------------------
-# Include and load option for NetCDF
+# Include and load option for NetCDF (and LAPACK, for developers only)
 #-----------------------------------------------------------------------
 NETCDF_INC = @NETCDF_INC@
 NETCDF_LIB = @NETCDF_LIB@
+LAPACK_LIB = @LAPACK_LIB@
 
 #-----------------------------------------------------------------------
 # Additional tools
