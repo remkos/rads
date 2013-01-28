@@ -131,7 +131,7 @@ endtype
 
 type :: rads_pass
 	character(len=rads_naml) :: filename             ! Name of the netCDF pass file
-	character(len=rads_naml) :: original             ! Name of the original (GDR) pass file
+	character(len=rads_cmdl) :: original             ! Name of the original (GDR) pass file(s)
 	character(len=rads_hstl), pointer :: history     ! File creation history
 	real(eightbytereal) :: equator_time, equator_lon ! Equator time and longitude
 	real(eightbytereal) :: start_time, end_time      ! Start and end time of pass
@@ -662,6 +662,23 @@ call rads_init_sat_struct (S)
 end subroutine rads_free_sat_struct
 
 !***********************************************************************
+!*rads_init_pass_struct -- Initialize empty rads_pass struct
+!+
+elemental subroutine rads_init_pass_struct (S, P)
+type(rads_sat), intent(in) :: S
+type(rads_pass), intent(inout) :: P
+!
+! This routine initializes the <P> struct with the bare minimum.
+! This is only really necessary prior to calling rads_create_pass.
+!
+! Arguments:
+!  S        : Satellite/mission dependent structure
+!  P        : Pass dependent structure
+!-----------------------------------------------------------------------
+P = rads_pass ('', '', null(), S%nan, S%nan, S%nan, S%nan, null(), null(), 0, 0, 0, 1, 0, 0, 0, 0, S%sat, S%satid, null())
+end subroutine rads_init_pass_struct
+
+!***********************************************************************
 !*rads_free_var_struct -- Free all allocated memory from rads_var struct
 !+
 pure subroutine rads_free_var_struct (S, var, alias)
@@ -1109,7 +1126,9 @@ real(eightbytereal), allocatable :: tll(:,:)
 
 ! Initialise
 S%error = rads_warn_nc_file
-P = rads_pass ('', '', null(), S%nan, S%nan, S%nan, S%nan, null(), null(), cycle, pass, 0, 1, 0, 0, 0, 0, S%sat, S%satid, null())
+call rads_init_pass_struct (S, P)
+P%cycle = cycle
+P%pass = pass
 ascdes = modulo(pass,2)	! 1 if ascending, 0 if descending
 
 if (S%debug >= 2) write (*,*) 'Checking cycle/pass : ',cycle,pass
@@ -1302,7 +1321,7 @@ logical, intent(in), optional :: keep
 ! This routine closes a netCDF file previously opened by rads_open_pass.
 ! The routine will reset the ncid element of the <P> structure to
 ! indicate that the passfile is closed.
-! If <keep> is set to .true., then the time, lat and lon elements of
+! If <keep> is set to .true., then the time, lat, lon and flags elements of
 ! the <P> structure are kept. Otherwise, they are deallocated along with
 ! the log entries.
 ! A second call to rads_close_pass without the keep argment can subsequently
@@ -1311,23 +1330,20 @@ logical, intent(in), optional :: keep
 ! Arguments:
 !  S        : Satellite/mission dependent structure
 !  P        : Pass structure
-!  keep     : Keep the P%tll matrix (destroy by default)
+!  keep     : Keep the P%tll and P%flags matrices (destroy by default)
 !
 ! Error code:
 !  S%error  : rads_noerr, rads_err_nc_close
 !-----------------------------------------------------------------------
 integer :: ios
-logical :: clear
-if (present(keep)) then
-	clear = .not.keep
-else
-	clear = .true.
-endif
 S%error = rads_noerr
 if (P%ncid > 0 .and. nft(nf90_close(P%ncid))) S%error = rads_err_nc_close
 P%ncid = 0
 deallocate (P%history, stat=ios)
-if (clear) deallocate (P%tll, P%flags, stat=ios)
+if (present(keep)) then
+	if (keep) return
+endif
+deallocate (P%tll, P%flags, stat=ios)
 end subroutine rads_close_pass
 
 !***********************************************************************
@@ -2377,14 +2393,16 @@ type(rads_sat), intent(inout) :: S
 character(len=*), intent(in) :: alias, varname
 integer(twobyteint), intent(in), optional :: field(2)
 !
-! This routine defines an alias to an existing variable.
+! This routine defines an alias to an existing variable, or up to three
+! variables. When more than one variable is given as target, they will
+! be addressed one after the other.
 ! If alias is already defined as an alias or variable, it will be overruled.
 ! The alias will need to point to an already existing variable or alias.
 ! Up to three variables can be specified, separated by spaces or commas.
 !
 ! Arguments:
 !  S        : Satellite/mission dependent structure
-!  alias    : New alias for an existing variable(s)
+!  alias    : New alias for (an) existing variable(s)
 !  varname  : Existing variable name(s)
 !  field    : Optional: new field numbers to associate with alias
 !
@@ -2777,7 +2795,7 @@ integer(fourbyteint) :: rads_rev
 ! Return value:
 !  rads_rev : Revision number of SVN revision tag, or of library
 !-----------------------------------------------------------------------
-character(len=20) :: libversion = '$Revision$'
+character(len=20) :: libversion = '$Revision$' ! Cannot be a parameter, otherwise the read() does not work
 integer :: l, ios
 save libversion
 ios = 1
@@ -3206,11 +3224,14 @@ character(len=*), intent(in), optional :: name
 integer(fourbyteint) :: l, e
 logical :: exist
 character(len=26) :: date(3)
+
+! Initialise
 S%error = rads_noerr
+if (present(ndata)) P%ndata = ndata
 
 ! Build the file name, make directory if needed
 if (.not.present(name)) then
-	write (P%filename, '(a,"/c",i3.3,"/",a2,"p",i4.4,"c",i3.3,".nc")') trim(S%phase%dataroot), S%sat, P%cycle, P%pass, P%cycle
+	write (P%filename, '(a,"/c",i3.3,"/",a2,"p",i4.4,"c",i3.3,".nc")') trim(S%phase%dataroot), P%cycle, S%sat, P%pass, P%cycle
 	l = len_trim(P%filename)-15
 	inquire (file = P%filename(:l), exist = exist)
 	if (.not.exist) call system ('mkdir -p ' // P%filename(len_trim(P%filename)-13:))
@@ -3225,7 +3246,6 @@ else
 endif
 
 ! Create the (new) data file
-if (present(ndata)) P%ndata = ndata
 if (S%debug >= 2) write (*,*) 'Creating ',trim(P%filename),P%ndata
 if (nft(nf90_create(P%filename, nf90_write+nf90_nofill, P%ncid))) then
 	call rads_error (S, rads_err_nc_create, 'Error creating ' // trim(P%filename))
@@ -3239,7 +3259,7 @@ if (nft(nf90_def_dim (P%ncid, 'time', P%ndata, l))) then
 endif
 
 ! Specify the global attributes
-e = nf90_put_att (P%ncid, nf90_global, 'Conventions', 'CF-1.5') + &
+e = nf90_put_att (P%ncid, nf90_global, 'Conventions', 'CF-1.6') + &
 	nf90_put_att (P%ncid, nf90_global, 'title', 'RADS 4.0 pass file') + &
 	nf90_put_att (P%ncid, nf90_global, 'institution', 'Altimetrics / NOAA / TU Delft') + &
 	nf90_put_att (P%ncid, nf90_global, 'source', 'radar altimeter') + &
@@ -3283,7 +3303,7 @@ real(eightbytereal), intent(in), optional :: scale_factor, add_offset
 type(rads_varinfo), pointer :: info
 integer(fourbyteint) :: e, n
 integer :: dimid(1:4) = 1
-integer(onebyteint), parameter :: flag_values(0:9) = int((/ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 /), onebyteint)
+integer(onebyteint), parameter :: flag_values(0:15) = int((/0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15/), onebyteint)
 S%error = rads_noerr
 info => var%info
 if (present(nctype)) info%nctype = nctype
