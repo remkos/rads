@@ -32,52 +32,52 @@ program rads_gen_reaper
 !-----------------------------------------------------------------------
 !
 !  Variables array fields to be filled are:
-!  101 - Time since 1 Jan 85
-!  201 - Latitude
-!  301 - Longitude
-!  404 - Orbit altitude
-!  501 - Orbit altitude rate
-!  601 - Ocean range (retracked)
-!  701 - ECMWF dry tropospheric correction
-!  801 - Radiometer wet tropo correction
-!  802 - ECMWF wet tropo correction
-!  906 - GIM ionosphetic correction
-!  908 - NIC09 ionospheric correction
-! 1002 - Inverse barometer
-! 1004 - MOG2D
-! 1101 - Solid earth tide
-! 1213 - FES2008 ocean tide
-! 1217 - GOT4.7 ocean tide
-! 1313 - FES2008 load tide
-! 1317 - GOT4.7 load tide
-! 1401 - Pole tide
-! 1501 - SSB
-! 1605 - CLS01 MSS
-! 1610 - EGM2008 geoid
-! 1613 - UCL04 MSS
-! 1701 - Significant wave height
-! 1801 - Sigma0
-! 1901 - Altimeter wind speed
-! 1903 - ECMWF wind speed (U)
-! 1904 - ECMWF wind speed (V)
-! 2002 - Std dev of range
-! 2101 - Nr of averaged range measurements
-! 2206 - MACESS topography
-! 2302 - Brightness temperature (23.8 GHz)
-! 2303 - Brightness temperature (36.5 GHz)
-! 2401 - Peakiness (ALT_2M only)
-! 2601 - Engineering flags
-! 2702 - Internal calibration correction to range (appied) ((S)GDR only)
-! 2704 - Doppler correction (applied) (ALT_2_/ALT_2S only)
-! 2802 - Std dev of SWH
-! 2902 - Std dev of sigma0
-! 3002 - Mispointing from waveform squared
-! 3203 - Sigma0 attenuation
-! 3301 - Liquid water content
-! 3302 - Water vapor content
-! 3409 - Mean quadratic error of waveform fit (ALT_2_/ALT_2S only)
-! 3901 - Long-period equilibrium tide
-! 3902 - Long-period non-equilibrium tide
+! time - Time since 1 Jan 85
+! lat - Latitude
+! lon - Longitude
+! alt_reaper - Orbit altitude
+! alt_rate - Orbit altitude rate
+! range_ku - Ocean range (retracked)
+! dry_tropo_ecmwf - ECMWF dry tropospheric correction
+! wet_tropo_rad - Radiometer wet tropo correction
+! wet_tropo_ecmwf - ECMWF wet tropo correction
+! iono_gim - GIM ionosphetic correction
+! iono_nic09 - NIC09 ionospheric correction
+! inv_bar_static - Inverse barometer
+! inv_bar_mog2d - MOG2D
+! tide_solid - Solid earth tide
+! tide_ocean_fes04 - FES2008 ocean tide
+! tide_ocean_got47 - GOT4.7 ocean tide
+! tide_load_fes04 - FES2008 load tide
+! tide_load_got47 - GOT4.7 load tide
+! tide_pole - Pole tide
+! ssb_bm3 - SSB
+! mss_cls01 - CLS01 MSS
+! geoid_egm2008 - EGM2008 geoid
+! mss_ucl04 - UCL04 MSS
+! swh_ku - Significant wave height
+! sig0_ku - Sigma0
+! wind_speed_alt - Altimeter wind speed
+! wind_speed_ecmwf_u - ECMWF wind speed (U)
+! wind_speed_ecmwf_v - ECMWF wind speed (V)
+! range_rms_ku - Std dev of range
+! range_numval_ku - Nr of averaged range measurements
+! topo_macess - MACESS topography
+! tb_238 - Brightness temperature (23.8 GHz)
+! tb_365 - Brightness temperature (36.5 GHz)
+! peakiness_ku - Peakiness (ALT_2M only)
+! flags - Engineering flags
+! drange_cal - Internal calibration correction to range (appied) ((S)GDR only)
+! drange_fm - Doppler correction (applied) (ALT_2_/ALT_2S only)
+! swh_rms_ku - Std dev of SWH
+! sig0_rms_ku - Std dev of sigma0
+! off_nadir_angle2_wf_ku - Mispointing from waveform squared
+! dsig0_atmos_ku - Sigma0 attenuation
+! liquid_water - Liquid water content
+! water_vapor_content - Water vapor content
+! mqe - Mean quadratic error of waveform fit (ALT_2_/ALT_2S only)
+! tide_equil - Long-period equilibrium tide
+! tide_non_equil - Long-period non-equilibrium tide
 !-----------------------------------------------------------------------
 use typesizes
 use netcdf
@@ -85,6 +85,7 @@ use rads
 use rads_misc
 use rads_time
 use rads_netcdf
+use rads_devel
 
 ! Command line arguments
 
@@ -106,14 +107,19 @@ integer(fourbyteint) :: datanr=0,nrec,ncid,varid,orbitnr(2),cyclenr(2),passnr(2)
 ! Data variables
 
 integer(fourbyteint), parameter :: mrec = 9000
-real(eightbytereal) :: f0101(mrec), f0201(mrec), f0301(mrec), f0404(mrec), f0501(mrec), f0601(mrec), &
-	f0701(mrec), f0801(mrec), f0802(mrec), f0906(mrec), f0908(mrec), f1002(mrec), f1004(mrec), &
-	f1101(mrec), f1213(mrec), f1217(mrec), f1313(mrec), f1317(mrec), f1401(mrec), f1501(mrec), &
-	f1605(mrec), f1610(mrec), f1613(mrec), f1701(mrec), f1801(mrec), f1901(mrec), f1903(mrec), &
-	f1904(mrec), f2002(mrec), f2101(mrec), f2206(mrec), f2302(mrec), f2303(mrec), f2401(mrec), &
-	f2702(mrec), f2704(mrec), f2802(mrec), f2902(mrec), f3002(mrec), f3203(mrec), &
-	f3301(mrec), f3302(mrec), f3409(mrec), f3901(mrec), f3902(mrec)
-integer(twobyteint) :: f2601(mrec)
+real(eightbytereal) :: time(mrec), lat(mrec), lon(mrec), alt_reaper(mrec), alt_rate(mrec), range_ku(mrec), &
+	dry_tropo_ecmwf(mrec), wet_tropo_rad(mrec), wet_tropo_ecmwf(mrec), iono_gim(mrec), iono_nic09(mrec), &
+	inv_bar_static(mrec), inv_bar_mog2d(mrec), tide_solid(mrec), tide_ocean_fes04(mrec), tide_ocean_got47(mrec), &
+	tide_load_fes04(mrec), tide_load_got47(mrec), tide_pole(mrec), ssb_bm3(mrec), &
+	mss_cls01(mrec), geoid_egm2008(mrec), mss_ucl04(mrec), swh_ku(mrec), sig0_ku(mrec), wind_speed_alt(mrec), &
+	wind_speed_ecmwf_u(mrec), wind_speed_ecmwf_v(mrec), range_rms_ku(mrec), range_numval_ku(mrec), &
+	topo_macess(mrec), tb_238(mrec), tb_365(mrec), peakiness_ku(mrec), drange_cal(mrec), drange_fm(mrec), &
+	swh_rms_ku(mrec), sig0_rms_ku(mrec), off_nadir_angle2_wf_ku(mrec), dsig0_atmos_ku(mrec), &
+	liquid_water(mrec), water_vapor_content(mrec), mqe(mrec), tide_equil(mrec), tide_non_equil(mrec)
+integer(twobyteint) :: flags(mrec)
+type(rads_sat) :: S
+type(rads_pass) :: P
+character(640) :: original = ''
 
 ! Other local variables
 
@@ -122,7 +128,7 @@ real(eightbytereal) :: nan, sum_d_applied
 real(eightbytereal), allocatable :: a(:),b(:),c(:),d(:,:),sum_c_applied(:)
 logical, allocatable :: valid(:,:)
 integer(fourbyteint) :: i,k,i0,i1,flag
-logical :: new, erspass
+logical :: new
 
 ! Initialise
 
@@ -184,15 +190,23 @@ files: do
 		cycle files
 	endif
 
+! Reduce file name to basename only
+
+	i = index(arg,'/',.true.)
+	arg = arg(i+1:)
+
 ! Check for ERS-1 or -2
 ! Do not trust 'mission' attribute. It is always 'E1'.
 
-	if (index(arg,'E1_') > 0) then
+	if (arg(:2) == 'E1') then
 		ers = 1
 		mission = 'e1'
-	else
+	else if (arg(:2) == 'E2') then
 		ers = 2
 		mission = 'e2'
+	else
+		write (*,550) 'Error: Unknown file type'
+		cycle files
 	endif
 
 ! Read header records
@@ -222,22 +236,26 @@ files: do
 	call get_var_1d ('time_day_1hz',a)
 	call get_var_1d ('time_milsec_1hz',b)
 	call get_var_1d ('time_micsec_1hz',c)
-	f0101(i0:i1) = a * 86400d0 + b * 1d-3 + c * 1d-6 + sec1990
-	call get_var_1d ('latitude_1hz', f0201(i0:i1))
-	call get_var_1d ('longitude_1hz', f0301(i0:i1))
-	call get_var_1d ('altitude_1hz', f0404(i0:i1))
-	call get_var_1d ('altitude_rate_1hz', f0501(i0:i1))
+	time(i0:i1) = a * 86400d0 + b * 1d-3 + c * 1d-6 + sec1990
+	call get_var_1d ('latitude_1hz', lat(i0:i1))
+	call get_var_1d ('longitude_1hz', lon(i0:i1))
+	call get_var_1d ('altitude_1hz', alt_reaper(i0:i1))
+	call get_var_1d ('altitude_rate_1hz', alt_rate(i0:i1))
 	call get_var_1d ('wf_attitude_1hz', a)
-	f3002(i0:i1) = a * a
+	off_nadir_angle2_wf_ku(i0:i1) = a * a
 
 ! Range data: Low rate
 
-	call get_var_1d ('ocean_range_1hz', f0601(i0:i1))
-	call get_var_1d ('ocean_stdev_1hz', f2002(i0:i1))
-	call get_var_1d ('ocean_valid_num_1hz', f2101(i0:i1))
-	call invalidate (f2101(i0:i1) == 0, f0601(i0:i1))
-	call invalidate (f2101(i0:i1) <= 1, f2002(i0:i1))
-	call get_var_1d ('f_ocean_valid_bitmap_1hz', a)
+	call get_var_1d ('ocean_range_1hz', range_ku(i0:i1))
+	call get_var_1d ('ocean_stdev_1hz', range_rms_ku(i0:i1))
+	call get_var_1d ('ocean_valid_num_1hz', range_numval_ku(i0:i1))
+	call invalidate (range_numval_ku(i0:i1) == 0, range_ku(i0:i1))
+	call invalidate (range_numval_ku(i0:i1) <= 1, range_rms_ku(i0:i1))
+	if (alt_2m) then ! Different name in ALT_2M
+		call get_var_1d ('ocean_valid_bitmap_1hz', a)
+	else
+		call get_var_1d ('f_ocean_valid_bitmap_1hz', a)
+	endif
 	do i = 1,nrec
 		flag = nint(a(i))
 		do k = 1,20
@@ -247,22 +265,22 @@ files: do
 	! For some reason ALT_2M has 1-Hz peakiness (not documented)
 	! where ALT_2S and ALT_2_ have ocean_wind_1hz
 	if (alt_2m) then
-		call get_var_1d ('wf_pk_1hz', f2401(i0:i1))
+		call get_var_1d ('wf_pk_1hz', peakiness_ku(i0:i1))
 	else
-		call get_var_1d ('ocean_wind_1hz', f1901(i0:i1))
+		call get_var_1d ('ocean_wind_1hz', wind_speed_alt(i0:i1))
 	endif
 
 ! Range data: High rate
 
 	if (.not.alt_2m) then
 		call get_var_2d ('ocean_mean_quadratic_error', d)
-		call mean_1hz (d,f3409(i0:i1),a)
+		call mean_1hz (d,mqe(i0:i1),a)
 		call get_var_2d ('wf_pk', d)
-		call mean_1hz (d,f2401(i0:i1),a)
+		call mean_1hz (d,peakiness_ku(i0:i1),a)
 		call get_var_2d ('inst_range_c', d)
-		call mean_1hz (d,f2702(i0:i1),a)
+		call mean_1hz (d,drange_cal(i0:i1),a)
 		call get_var_2d ('dop_c+delta_dop_c', d)
-		call mean_1hz (d,f2704(i0:i1),a)
+		call mean_1hz (d,drange_fm(i0:i1),a)
 		call get_var_2d ('sum_c_applied', d)
 		sum_c_applied = d(1,:)
 		do i = 1,nrec
@@ -274,106 +292,110 @@ files: do
 
 ! Sigma zero: Low rate
 
-	call get_var_1d ('ocean_sig0_1hz', f1801(i0:i1))
-	call get_var_1d ('ocean_sig0_stdev_1hz', f2902(i0:i1))
+	call get_var_1d ('ocean_sig0_1hz', sig0_ku(i0:i1))
+	call get_var_1d ('ocean_sig0_stdev_1hz', swh_rms_ku(i0:i1))
 	call get_var_1d ('ocean_sig0_valid_num_1hz', a)
-	call invalidate (a(1:nrec) == 0, f1801(i0:i1))
-	call invalidate (a(1:nrec) == 0, f1901(i0:i1))
-	call invalidate (a(1:nrec) == 0, f2401(i0:i1))
-	call invalidate (a(1:nrec) <= 1, f2902(i0:i1))
+	call invalidate (a(1:nrec) == 0, sig0_ku(i0:i1))
+	call invalidate (a(1:nrec) == 0, wind_speed_alt(i0:i1))
+	call invalidate (a(1:nrec) == 0, peakiness_ku(i0:i1))
+	call invalidate (a(1:nrec) <= 1, sig0_rms_ku(i0:i1))
 
 ! SWH: Low rate
 
-	call get_var_1d ('swh_signed_1hz', f1701(i0:i1))
-	call get_var_1d ('swh_stdev_1hz', f2802(i0:i1))
+	call get_var_1d ('swh_signed_1hz', swh_ku(i0:i1))
+	call get_var_1d ('swh_stdev_1hz', swh_rms_ku(i0:i1))
 	call get_var_1d ('swh_valid_num_1hz', a)
-	call invalidate (a(1:nrec) == 0, f1701(i0:i1))
-	call invalidate (a(1:nrec) <= 1, f2802(i0:i1))
-	call get_var_1d ('em_bias_1hz', f1501(i0:i1))
+	call invalidate (a(1:nrec) == 0, swh_ku(i0:i1))
+	call invalidate (a(1:nrec) <= 1, swh_rms_ku(i0:i1))
+	call get_var_1d ('em_bias_1hz', ssb_bm3(i0:i1))
 
 ! MWR Flags: Low rate
 
 	call get_var_1d ('f_sea_ice_flag_1hz', a)
-	f2601(i0:i1) = 0
-	call flag_set (a(1:nrec) == 1, f2601(i0:i1), 8)
+	flags(i0:i1) = 0
+	call flag_set (a(1:nrec) == 1, flags(i0:i1), 8)
 
 ! MWR: Low rate
 
-	call get_var_1d ('tb_23_8_1hz', f2302(i0:i1))
-	call get_var_1d ('tb_36_5_1hz', f2303(i0:i1))
+	call get_var_1d ('tb_23_8_1hz', tb_238(i0:i1))
+	call get_var_1d ('tb_36_5_1hz', tb_365(i0:i1))
 	call get_var_1d ('f_mwr_srf_typ_1hz', a)
-	call flag_set (a(1:nrec) == 1, f2601(i0:i1), 5)
+	call flag_set (a(1:nrec) == 1, flags(i0:i1), 5)
 	call get_var_1d ('f_mwr_interp_qual_1hz', a)
-	call invalidate (a(1:nrec) == 3, f2302(i0:i1))
-	call invalidate (a(1:nrec) == 3, f2303(i0:i1))
-	call get_var_1d ('f_MWR_valid_1hz', a)
-	call invalidate (a(1:nrec) == 1, f2302(i0:i1))
-	call invalidate (a(1:nrec) == 1, f2303(i0:i1))
+	call invalidate (a(1:nrec) == 3, tb_238(i0:i1))
+	call invalidate (a(1:nrec) == 3, tb_365(i0:i1))
+	if (alt_2m) then ! Different name in ALT_2M
+		call get_var_1d ('f_mwr_valid_1hz', a)
+	else
+		call get_var_1d ('f_MWR_valid_1hz', a)
+	endif
+	call invalidate (a(1:nrec) == 1, tb_238(i0:i1))
+	call invalidate (a(1:nrec) == 1, tb_365(i0:i1))
 
 ! Atmospheric and geophysical: Low rate
 
-	call get_var_1d ('dry_c_1hz', f0701(i0:i1))
-	call get_var_1d ('ib_c_1hz', f1002(i0:i1))
-	call get_var_1d ('mog2d_c_1hz', f1004(i0:i1))
-	call get_var_1d ('wet_c_mod_1hz', f0802(i0:i1))
-	call get_var_1d ('wet_c_mwr_1hz', f0801(i0:i1))
-	call get_var_1d ('water_vapor_content_1hz', f3302(i0:i1))
-	call get_var_1d ('liquid_water_content_1hz', f3301(i0:i1))
-	call get_var_1d ('u_wind_1hz', f1903(i0:i1))
-	call get_var_1d ('v_wind_1hz', f1904(i0:i1))
-	call get_var_1d ('iono_c_mod_1hz', f0908(i0:i1))
-	call get_var_1d ('iono_c_gps_1hz', f0906(i0:i1))
-	call get_var_1d ('h_mss_cls01_1hz', f1605(i0:i1))
-	call get_var_1d ('h_mss_ucl04_1hz', f1613(i0:i1))
-	call get_var_1d ('h_geo_1hz', f1610(i0:i1))
-	call get_var_1d ('h_ot_1hz', f1217(i0:i1))
-	call get_var_1d ('h_ot2_1hz', f1213(i0:i1))
-	call get_var_1d ('h_olt_1hz', f1317(i0:i1))
-	call get_var_1d ('h_olt2_1hz', f1313(i0:i1))
-	call get_var_1d ('h_lpt_1hz', f3901(i0:i1))
-	call get_var_1d ('h_lptne_1hz', f3902(i0:i1))
-	call get_var_1d ('h_set_1hz', f1101(i0:i1))
-	call get_var_1d ('h_pol_1hz', f1401(i0:i1))
+	call get_var_1d ('dry_c_1hz', dry_tropo_ecmwf(i0:i1))
+	call get_var_1d ('ib_c_1hz', inv_bar_static(i0:i1))
+	call get_var_1d ('mog2d_c_1hz', inv_bar_mog2d(i0:i1))
+	call get_var_1d ('wet_c_mod_1hz', wet_tropo_ecmwf(i0:i1))
+	call get_var_1d ('wet_c_mwr_1hz', wet_tropo_rad(i0:i1))
+	call get_var_1d ('water_vapor_content_1hz', water_vapor_content(i0:i1))
+	call get_var_1d ('liquid_water_content_1hz', liquid_water(i0:i1))
+	call get_var_1d ('u_wind_1hz', wind_speed_ecmwf_u(i0:i1))
+	call get_var_1d ('v_wind_1hz', wind_speed_ecmwf_v(i0:i1))
+	call get_var_1d ('iono_c_mod_1hz', iono_nic09(i0:i1))
+	call get_var_1d ('iono_c_gps_1hz', iono_gim(i0:i1))
+	call get_var_1d ('h_mss_cls01_1hz', mss_cls01(i0:i1))
+	call get_var_1d ('h_mss_ucl04_1hz', mss_ucl04(i0:i1))
+	call get_var_1d ('h_geo_1hz', geoid_egm2008(i0:i1))
+	call get_var_1d ('h_ot_1hz', tide_ocean_got47(i0:i1))
+	call get_var_1d ('h_ot2_1hz', tide_ocean_fes04(i0:i1))
+	call get_var_1d ('h_olt_1hz', tide_load_got47(i0:i1))
+	call get_var_1d ('h_olt2_1hz', tide_load_fes04(i0:i1))
+	call get_var_1d ('h_lpt_1hz', tide_equil(i0:i1))
+	call get_var_1d ('h_lptne_1hz', tide_non_equil(i0:i1))
+	call get_var_1d ('h_set_1hz', tide_solid(i0:i1))
+	call get_var_1d ('h_pol_1hz', tide_pole(i0:i1))
 
 	call get_var_1d ('f_srf_typ_1hz', a)
-	call flag_set (a(1:nrec) >= 3, f2601(i0:i1), 2)
-	call flag_set (a(1:nrec) >= 2, f2601(i0:i1), 4)
-	call flag_set (a(1:nrec) >= 1, f2601(i0:i1), 5)
+	call flag_set (a(1:nrec) >= 3, flags(i0:i1), 2)
+	call flag_set (a(1:nrec) >= 2, flags(i0:i1), 4)
+	call flag_set (a(1:nrec) >= 1, flags(i0:i1), 5)
 
-	call get_var_1d ('h_odle_1hz', f2206(i0:i1))
-	if (.not.alt_2m) call get_var_1d ('sig0_attn_c_1hz', f3203(i0:i1))
+	call get_var_1d ('h_odle_1hz', topo_macess(i0:i1))
+	if (.not.alt_2m) call get_var_1d ('sig0_attn_c_1hz', dsig0_atmos_ku(i0:i1))
 
 	call get_var_1d ('f_corr_error_1hz', a)
 	do i = 1,nrec
 		k = datanr + i
 		flag = nint(a(i))
-		if (btest(flag, 1)) f0701(k) = nan
-		if (btest(flag, 2)) f1002(k) = nan
-		if (btest(flag, 3)) f1004(k) = nan
-		if (btest(flag, 5)) f0802(k) = nan
+		if (btest(flag, 1)) dry_tropo_ecmwf(k) = nan
+		if (btest(flag, 2)) inv_bar_static(k) = nan
+		if (btest(flag, 3)) inv_bar_mog2d(k) = nan
+		if (btest(flag, 5)) wet_tropo_ecmwf(k) = nan
 		if (btest(flag, 6)) then
-			f0801(k) = nan
-			f3301(k) = nan
-			f3302(k) = nan
+			wet_tropo_rad(k) = nan
+			liquid_water(k) = nan
+			water_vapor_content(k) = nan
 		endif
-		if (btest(flag, 7)) f1903(k) = nan
-		if (btest(flag, 8)) f1904(k) = nan
-		if (btest(flag, 9)) f0908(k) = nan
-		if (btest(flag,10)) f0906(k) = nan
-		if (btest(flag,11)) f1605(k) = nan
-		if (btest(flag,12)) f1610(k) = nan
-		if (btest(flag,13)) f1217(k) = nan
-		if (btest(flag,14)) f1213(k) = nan
-		if (btest(flag,15)) f1317(k) = nan
-		if (btest(flag,16)) f1313(k) = nan
-		if (btest(flag,17)) f3901(k) = nan
-		if (btest(flag,18)) f3902(k) = nan
-		if (btest(flag,19)) f1101(k) = nan
-		if (btest(flag,20)) f1401(k) = nan
-		if (btest(flag,22)) f2206(k) = nan
-		if (btest(flag,23)) f1501(k) = nan
-		if (btest(flag,27)) f1613(k) = nan
-		if (btest(flag,28)) f3203(k) = nan
+		if (btest(flag, 7)) wind_speed_ecmwf_u(k) = nan
+		if (btest(flag, 8)) wind_speed_ecmwf_v(k) = nan
+		if (btest(flag, 9)) iono_nic09(k) = nan
+		if (btest(flag,10)) iono_gim(k) = nan
+		if (btest(flag,11)) mss_cls01(k) = nan
+		if (btest(flag,12)) geoid_egm2008(k) = nan
+		if (btest(flag,13)) tide_ocean_got47(k) = nan
+		if (btest(flag,14)) tide_ocean_fes04(k) = nan
+		if (btest(flag,15)) tide_load_got47(k) = nan
+		if (btest(flag,16)) tide_load_fes04(k) = nan
+		if (btest(flag,17)) tide_equil(k) = nan
+		if (btest(flag,18)) tide_non_equil(k) = nan
+		if (btest(flag,19)) tide_solid(k) = nan
+		if (btest(flag,20)) tide_pole(k) = nan
+		if (btest(flag,22)) topo_macess(k) = nan
+		if (btest(flag,23)) ssb_bm3(k) = nan
+		if (btest(flag,27)) mss_ucl04(k) = nan
+		if (btest(flag,28)) dsig0_atmos_ku(k) = nan
 	enddo
 
 ! Remove applied corrections from range
@@ -383,47 +405,51 @@ files: do
 		k = datanr + i
 		flag = nint(a(i))
 		sum_d_applied = 0d0
-		if (btest(flag, 1)) sum_d_applied = sum_d_applied + f0701(k)
-		if (btest(flag, 2)) sum_d_applied = sum_d_applied + f1002(k)
-		if (btest(flag, 3)) sum_d_applied = sum_d_applied + f1004(k)
-		if (btest(flag, 5)) sum_d_applied = sum_d_applied + f0802(k)
-		if (btest(flag, 6)) sum_d_applied = sum_d_applied + f0801(k)
-		if (btest(flag, 7)) sum_d_applied = sum_d_applied + f1903(k)
-		if (btest(flag, 8)) sum_d_applied = sum_d_applied + f1904(k)
-		if (btest(flag, 9)) sum_d_applied = sum_d_applied + f0908(k)
-		if (btest(flag,10)) sum_d_applied = sum_d_applied + f0906(k)
-		if (btest(flag,11)) sum_d_applied = sum_d_applied + f1605(k)
-		if (btest(flag,12)) sum_d_applied = sum_d_applied + f1610(k)
-		if (btest(flag,13)) sum_d_applied = sum_d_applied + f1217(k)
-		if (btest(flag,14)) sum_d_applied = sum_d_applied + f1213(k)
-		if (btest(flag,15)) sum_d_applied = sum_d_applied + f1317(k)
-		if (btest(flag,16)) sum_d_applied = sum_d_applied + f1313(k)
-		if (btest(flag,17)) sum_d_applied = sum_d_applied + f3901(k)
-		if (btest(flag,18)) sum_d_applied = sum_d_applied + f3902(k)
-		if (btest(flag,19)) sum_d_applied = sum_d_applied + f1101(k)
-		if (btest(flag,20)) sum_d_applied = sum_d_applied + f1401(k)
-		if (btest(flag,22)) sum_d_applied = sum_d_applied + f2206(k)
-		if (btest(flag,23)) sum_d_applied = sum_d_applied + f1501(k)
-		if (btest(flag,27)) sum_d_applied = sum_d_applied + f1613(k)
-		f0601(k) = f0601(k) - sum_d_applied
+		if (btest(flag, 1)) sum_d_applied = sum_d_applied + dry_tropo_ecmwf(k)
+		if (btest(flag, 2)) sum_d_applied = sum_d_applied + inv_bar_static(k)
+		if (btest(flag, 3)) sum_d_applied = sum_d_applied + inv_bar_mog2d(k)
+		if (btest(flag, 5)) sum_d_applied = sum_d_applied + wet_tropo_ecmwf(k)
+		if (btest(flag, 6)) sum_d_applied = sum_d_applied + wet_tropo_rad(k)
+		if (btest(flag, 7)) sum_d_applied = sum_d_applied + wind_speed_ecmwf_u(k)
+		if (btest(flag, 8)) sum_d_applied = sum_d_applied + wind_speed_ecmwf_v(k)
+		if (btest(flag, 9)) sum_d_applied = sum_d_applied + iono_nic09(k)
+		if (btest(flag,10)) sum_d_applied = sum_d_applied + iono_gim(k)
+		if (btest(flag,11)) sum_d_applied = sum_d_applied + mss_cls01(k)
+		if (btest(flag,12)) sum_d_applied = sum_d_applied + geoid_egm2008(k)
+		if (btest(flag,13)) sum_d_applied = sum_d_applied + tide_ocean_got47(k)
+		if (btest(flag,14)) sum_d_applied = sum_d_applied + tide_ocean_fes04(k)
+		if (btest(flag,15)) sum_d_applied = sum_d_applied + tide_load_got47(k)
+		if (btest(flag,16)) sum_d_applied = sum_d_applied + tide_load_fes04(k)
+		if (btest(flag,17)) sum_d_applied = sum_d_applied + tide_equil(k)
+		if (btest(flag,18)) sum_d_applied = sum_d_applied + tide_non_equil(k)
+		if (btest(flag,19)) sum_d_applied = sum_d_applied + tide_solid(k)
+		if (btest(flag,20)) sum_d_applied = sum_d_applied + tide_pole(k)
+		if (btest(flag,22)) sum_d_applied = sum_d_applied + topo_macess(k)
+		if (btest(flag,23)) sum_d_applied = sum_d_applied + ssb_bm3(k)
+		if (btest(flag,27)) sum_d_applied = sum_d_applied + mss_ucl04(k)
+		range_ku(k) = range_ku(k) - sum_d_applied
 		if (.not.alt_2m .and. .not.(sum_d_applied == sum_c_applied(i))) &
 			write (*,*) "Error: sum_c_applied wrong: ",i,sum_d_applied,sum_c_applied(i)
 	enddo
 
 ! Close this input file
 
-	deallocate (a,b,c,d,valid)
+	deallocate (a,b,c,d,valid,sum_c_applied)
 
 	call nfs(nf90_close(ncid))
 
 	datanr = i1
 
+! Add input file name to "original" string
+
+	original = trim(original) // rads_linefeed // arg
+
 ! Dump whatever data we can
 
 	do
-		new = erspass (ers, f0101(1), orbitnr(1), phasenm(1), cyclenr(1), passnr(1), tnode(1), lnode(1))
+		new = erspass (ers, time(1), orbitnr(1), phasenm(1), cyclenr(1), passnr(1), tnode(1), lnode(1))
 		do i = 2,datanr
-			if (erspass (ers, f0101(i), orbitnr(2), phasenm(2), cyclenr(2), passnr(2), tnode(2), lnode(2))) exit
+			if (erspass (ers, time(i), orbitnr(2), phasenm(2), cyclenr(2), passnr(2), tnode(2), lnode(2))) exit
 		enddo
 		if (i > datanr) exit
 		nrec = i - 1
@@ -432,12 +458,22 @@ files: do
 		call move_data (nrec, datanr)
 	enddo
 
+! If we have data left, keep last filename in "original" string, otherwise clear it
+
+	if (datanr == 0) then
+		original = ''
+	else
+		original = rads_linefeed // arg
+	endif
+
 enddo files ! Each file
 
 ! Dump whatever remains
 
-new = erspass (ers, f0101(1), orbitnr(1), phasenm(1), cyclenr(1), passnr(1), tnode(1), lnode(1))
+new = erspass (ers, time(1), orbitnr(1), phasenm(1), cyclenr(1), passnr(1), tnode(1), lnode(1))
 call write_data (datanr)
+
+call rads_end (S)
 
 contains
 
@@ -455,62 +491,61 @@ end subroutine synopsis
 subroutine move_data (bottom, n)
 integer(fourbyteint), intent(in) :: bottom, n
 integer(fourbyteint) :: i0, i1
+if (n == 0) return
 i0 = bottom + 1
 i1 = bottom + n
-f0101(1:n) = f0101(i0:i1)
-f0201(1:n) = f0201(i0:i1)
-f0301(1:n) = f0301(i0:i1)
-f0404(1:n) = f0404(i0:i1)
-f0501(1:n) = f0501(i0:i1)
-f0601(1:n) = f0601(i0:i1)
-f0701(1:n) = f0701(i0:i1)
-f0801(1:n) = f0801(i0:i1)
-f0802(1:n) = f0802(i0:i1)
-f0906(1:n) = f0906(i0:i1)
-f0908(1:n) = f0908(i0:i1)
-f1002(1:n) = f1002(i0:i1)
-f1004(1:n) = f1004(i0:i1)
-f1101(1:n) = f1101(i0:i1)
-f1213(1:n) = f1213(i0:i1)
-f1217(1:n) = f1217(i0:i1)
-f1313(1:n) = f1313(i0:i1)
-f1317(1:n) = f1317(i0:i1)
-f1401(1:n) = f1401(i0:i1)
-f1501(1:n) = f1501(i0:i1)
-f1605(1:n) = f1605(i0:i1)
-f1610(1:n) = f1610(i0:i1)
-f1613(1:n) = f1613(i0:i1)
-f1701(1:n) = f1701(i0:i1)
-f1801(1:n) = f1801(i0:i1)
-f1901(1:n) = f1901(i0:i1)
-f1903(1:n) = f1903(i0:i1)
-f1904(1:n) = f1904(i0:i1)
-f2002(1:n) = f2002(i0:i1)
-f2101(1:n) = f2101(i0:i1)
-f2206(1:n) = f2206(i0:i1)
-f2302(1:n) = f2302(i0:i1)
-f2303(1:n) = f2303(i0:i1)
-f2401(1:n) = f2401(i0:i1)
-f2601(1:n) = f2601(i0:i1)
-f2702(1:n) = f2702(i0:i1)
-f2704(1:n) = f2704(i0:i1)
-f2802(1:n) = f2802(i0:i1)
-f2902(1:n) = f2902(i0:i1)
-f3002(1:n) = f3002(i0:i1)
-f3203(1:n) = f3203(i0:i1)
-f3301(1:n) = f3301(i0:i1)
-f3302(1:n) = f3302(i0:i1)
-f3409(1:n) = f3409(i0:i1)
-f3901(1:n) = f3901(i0:i1)
-f3902(1:n) = f3902(i0:i1)
+time(1:n) = time(i0:i1)
+lat(1:n) = lat(i0:i1)
+lon(1:n) = lon(i0:i1)
+alt_reaper(1:n) = alt_reaper(i0:i1)
+alt_rate(1:n) = alt_rate(i0:i1)
+range_ku(1:n) = range_ku(i0:i1)
+dry_tropo_ecmwf(1:n) = dry_tropo_ecmwf(i0:i1)
+wet_tropo_rad(1:n) = wet_tropo_rad(i0:i1)
+wet_tropo_ecmwf(1:n) = wet_tropo_ecmwf(i0:i1)
+iono_gim(1:n) = iono_gim(i0:i1)
+iono_nic09(1:n) = iono_nic09(i0:i1)
+inv_bar_static(1:n) = inv_bar_static(i0:i1)
+inv_bar_mog2d(1:n) = inv_bar_mog2d(i0:i1)
+tide_solid(1:n) = tide_solid(i0:i1)
+tide_ocean_fes04(1:n) = tide_ocean_fes04(i0:i1)
+tide_ocean_got47(1:n) = tide_ocean_got47(i0:i1)
+tide_load_fes04(1:n) = tide_load_fes04(i0:i1)
+tide_load_got47(1:n) = tide_load_got47(i0:i1)
+tide_pole(1:n) = tide_pole(i0:i1)
+ssb_bm3(1:n) = ssb_bm3(i0:i1)
+mss_cls01(1:n) = mss_cls01(i0:i1)
+geoid_egm2008(1:n) = geoid_egm2008(i0:i1)
+mss_ucl04(1:n) = mss_ucl04(i0:i1)
+swh_ku(1:n) = swh_ku(i0:i1)
+sig0_ku(1:n) = sig0_ku(i0:i1)
+wind_speed_ecmwf_u(1:n) = wind_speed_ecmwf_u(i0:i1)
+wind_speed_ecmwf_v(1:n) = wind_speed_ecmwf_v(i0:i1)
+range_rms_ku(1:n) = range_rms_ku(i0:i1)
+range_numval_ku(1:n) = range_numval_ku(i0:i1)
+topo_macess(1:n) = topo_macess(i0:i1)
+tb_238(1:n) = tb_238(i0:i1)
+tb_365(1:n) = tb_365(i0:i1)
+flags(1:n) = flags(i0:i1)
+drange_cal(1:n) = drange_cal(i0:i1)
+swh_rms_ku(1:n) = swh_rms_ku(i0:i1)
+sig0_rms_ku(1:n) = sig0_rms_ku(i0:i1)
+off_nadir_angle2_wf_ku(1:n) = off_nadir_angle2_wf_ku(i0:i1)
+liquid_water(1:n) = liquid_water(i0:i1)
+water_vapor_content(1:n) = water_vapor_content(i0:i1)
+tide_equil(1:n) = tide_equil(i0:i1)
+tide_non_equil(1:n) = tide_non_equil(i0:i1)
+peakiness_ku(1:n) = peakiness_ku(i0:i1)
+wind_speed_alt(1:n) = wind_speed_alt(i0:i1)
+drange_fm(1:n) = drange_fm(i0:i1)
+dsig0_atmos_ku(1:n) = dsig0_atmos_ku(i0:i1)
+mqe(1:n) = mqe(i0:i1)
 end subroutine move_data
 
-subroutine write_data (datanr)
-integer(fourbyteint), intent(in) :: datanr
+subroutine write_data (n)
+integer(fourbyteint), intent(in) :: n
 integer(fourbyteint) :: i
-real(eightbytereal) :: dhellips
-type(rads_sat) :: S
-type(rads_pass) :: P
+real(eightbytereal) :: dhellips, dh
 
 if (datanr == 0) return	! Skip empty data sets
 if (cyclenr(1) < c0 .or. cyclenr(1) > c1) return	! Skip chunks that are not of the selected cycle
@@ -524,108 +559,127 @@ if (sat /= '') then
 else
 	newsat = mission(1:2)//'/'//strtolower(phasenm(1))//'.r'
 endif
+
+! Initialise settings for current mission.
+! Set the list of variables to be considered.
+
 if (newsat /= oldsat) then
 	oldsat = newsat
-	call rads_init (S, newsat,verbose)
+	call rads_init (S, newsat, verbose)
+	call rads_parse_varlist (S, &
+		'time,lat,lon,alt_reaper,alt_rate,range_ku,dry_tropo_ecmwf,wet_tropo_rad,wet_tropo_ecmwf,' // &
+		'iono_gim,iono_nic09,inv_bar_static,inv_bar_mog2d,tide_solid,tide_ocean_fes04,tide_ocean_got47,' // &
+		'tide_load_fes04,tide_load_got47,tide_pole,ssb_bm3,mss_cls01,geoid_egm2008,mss_ucl04,swh_ku,sig0_ku,' // &
+		'wind_speed_ecmwf_u,wind_speed_ecmwf_v,range_rms_ku,range_numval_ku,topo_macess,tb_238,tb_365,' // &
+		'flags,drange_cal,swh_rms_ku,sig0_rms_ku,off_nadir_angle2_wf_ku,liquid_water,water_vapor_content,' // &
+		'tide_equil,tide_non_equil')
+	if (alt_2m) then
+		call rads_parse_varlist (S, 'peakiness_ku')
+	else
+		call rads_parse_varlist (S, 'wind_speed_alt,drange_fm,dsig0_atmos_ku,mqe')
+	endif
 endif
 
 ! Store relevant info
 
-P%cycle=cyclenr(1)
-P%pass=passnr(1)
-P%start_time = f0101(1)
-P%end_time = f0101(datanr)
+call rads_init_pass_struct (S, P)
+
+P%cycle = cyclenr(1)
+P%pass = passnr(1)
+P%start_time = time(1)
+P%end_time = time(n)
 P%equator_time = tnode(1)
 P%equator_lon = lnode(1)
-P%original = 'REAPER '//trim(l2_version)//' data of '//trim(l2_proc_time)
+P%original = 'REAPER '//trim(l2_version)//' data of '//trim(l2_proc_time)//trim(original)
 
 ! Open output file
 
-call rads_create_pass (S, P)
+call rads_create_pass (S, P, n)
 
-! Correct altitude WGS84 to TOPEX ellipsoid
+! Change reference of altitude, MSS and geoid from WGS84 to TOPEX ellipsoid
 
-do i = 1,datanr
-	f0404(i) = f0404(i) + dhellips(1,f0201(i)*1d-6)*1d3
+do i = 1,n
+	dh = dhellips(1,lat(i)*1d-6)*1d3
+	alt_reaper(i) = alt_reaper(i) + dh
+	mss_cls01(i) = mss_cls01(i) + dh
+	geoid_egm2008(i) = geoid_egm2008(i) + dh
+	mss_ucl04(i) = mss_ucl04(i) + dh
 enddo
 
-! Fill all the data fields
+! Define the output variables
 
-call put_var (S, P,  101, f0101 * 1d0 )
-call put_var (S, P,  201, f0201 * 1d-6)
-call put_var (S, P,  301, f0301 * 1d-6)
-call put_var (S, P,  404, f0404 * 1d-3)
-call put_var (S, P,  501, f0501 * 1d-3)
-call put_var (S, P,  601, f0601 * 1d-3)
-call put_var (S, P,  701, f0701 * 1d-3)
-call put_var (S, P,  801, f0801 * 1d-3)
-call put_var (S, P,  802, f0802 * 1d-3)
-call put_var (S, P,  906, f0906 * 1d-3)
-call put_var (S, P,  908, f0908 * 1d-3)
-call put_var (S, P, 1002, f1002 * 1d-3)
-call put_var (S, P, 1004, f1004 * 1d-3)
-call put_var (S, P, 1101, f1101 * 1d-3)
-call put_var (S, P, 1213, f1213 * 1d-3)
-call put_var (S, P, 1217, f1217 * 1d-3)
-call put_var (S, P, 1313, f1313 * 1d-3)
-call put_var (S, P, 1317, f1317 * 1d-3)
-call put_var (S, P, 1401, f1401 * 1d-3)
-call put_var (S, P, 1501, f1501 * 1d-3)
-call put_var (S, P, 1605, f1605 * 1d-3)
-call put_var (S, P, 1610, f1610 * 1d-3)
-call put_var (S, P, 1613, f1613 * 1d-3)
-call put_var (S, P, 1701, f1701 * 1d-3)
-call put_var (S, P, 1801, f1801 * 1d-2)
-call put_var (S, P, 1903, f1903 * 1d-3)
-call put_var (S, P, 1904, f1904 * 1d-3)
-call put_var (S, P, 2002, f2002 * 1d-3)
-call put_var (S, P, 2101, f2101 * 1d0 )
-call put_var (S, P, 2206, f2206 * 1d-3)
-call put_var (S, P, 2302, f2302 * 1d-2)
-call put_var (S, P, 2303, f2303 * 1d-2)
-call put_var (S, P, 2601, f2601 * 1d0 )
-call put_var (S, P, 2702, f2702 * 1d-3)
-call put_var (S, P, 2802, f2802 * 1d-3)
-call put_var (S, P, 2902, f2902 * 1d-2)
-call put_var (S, P, 3002, f3002 * 1d-4)
-call put_var (S, P, 3301, f3301 * 1d-2)
-call put_var (S, P, 3302, f3302 * 1d-2)
-call put_var (S, P, 3901, f3901 * 1d-3)
-call put_var (S, P, 3902, f3902 * 1d-3)
+call rads_def_var (S, P, S%sel)
+
+! Fill all the data fields in order as specified above.
+
+call put_var (time(1:n) * 1d0 ,.true.)
+call put_var (lat(1:n) * 1d-6)
+call put_var (lon(1:n) * 1d-6)
+call put_var (alt_reaper(1:n) * 1d-3)
+call put_var (alt_rate(1:n) * 1d-3)
+call put_var (range_ku(1:n) * 1d-3)
+call put_var (dry_tropo_ecmwf(1:n) * 1d-3)
+call put_var (wet_tropo_rad(1:n) * 1d-3)
+call put_var (wet_tropo_ecmwf(1:n) * 1d-3)
+call put_var (iono_gim(1:n) * 1d-3)
+call put_var (iono_nic09(1:n) * 1d-3)
+call put_var (inv_bar_static(1:n) * 1d-3)
+call put_var (inv_bar_mog2d(1:n) * 1d-3)
+call put_var (tide_solid(1:n) * 1d-3)
+call put_var (tide_ocean_fes04(1:n) * 1d-3)
+call put_var (tide_ocean_got47(1:n) * 1d-3)
+call put_var (tide_load_fes04(1:n) * 1d-3)
+call put_var (tide_load_got47(1:n) * 1d-3)
+call put_var (tide_pole(1:n) * 1d-3)
+call put_var (ssb_bm3(1:n) * 1d-3)
+call put_var (mss_cls01(1:n) * 1d-3)
+call put_var (geoid_egm2008(1:n) * 1d-3)
+call put_var (mss_ucl04(1:n) * 1d-3)
+call put_var (swh_ku(1:n) * 1d-3)
+call put_var (sig0_ku(1:n) * 1d-2)
+call put_var (wind_speed_ecmwf_u(1:n) * 1d-3)
+call put_var (wind_speed_ecmwf_v(1:n) * 1d-3)
+call put_var (range_rms_ku(1:n) * 1d-3)
+call put_var (range_numval_ku(1:n) * 1d0 )
+call put_var (topo_macess(1:n) * 1d-3)
+call put_var (tb_238(1:n) * 1d-2)
+call put_var (tb_365(1:n) * 1d-2)
+call put_var (flags(1:n) * 1d0 )
+call put_var (drange_cal(1:n) * 1d-3)
+call put_var (swh_rms_ku(1:n) * 1d-3)
+call put_var (sig0_rms_ku(1:n) * 1d-2)
+call put_var (off_nadir_angle2_wf_ku(1:n) * 1d-4)
+call put_var (liquid_water(1:n) * 1d-2)
+call put_var (water_vapor_content(1:n) * 1d-2)
+call put_var (tide_equil(1:n) * 1d-3)
+call put_var (tide_non_equil(1:n) * 1d-3)
 if (alt_2m) then
-	call put_var (S, P, 2401, f2401 * 1d-3)
+	call put_var (peakiness_ku(1:n) * 1d-3)
 else
-	call put_var (S, P, 1901, f1901 * 1d-3)
-	call put_var (S, P, 3203, f3203 * 1d-2)
-	call put_var (S, P, 2702, f2702 * 1d-3)
-	call put_var (S, P, 2704, f2704 * 1d-3)
-	call put_var (S, P, 3409, f3409 * 1d-4)
+	call put_var (wind_speed_alt(1:n) * 1d-3)
+	call put_var (drange_fm(1:n) * 1d-3)
+	call put_var (dsig0_atmos_ku(1:n) * 1d-2)
+	call put_var (mqe(1:n) * 1d-4)
 endif
 
 ! Write to the data file
 
 552 format ('...',i5,' records written to ',a)
-write (*,552) datanr,trim(P%filename)
+write (*,552) n,trim(P%filename(len_trim(S%dataroot)+2:))
 call rads_close_pass (S, P)
 
 end subroutine write_data
 
-subroutine put_var (S, P, field, data)
-type(rads_sat), intent(inout) :: S
-type(rads_pass), intent(inout) :: P
-integer(fourbyteint), intent(in) :: field
+subroutine put_var (data, first)
 real(eightbytereal), intent(in) :: data(:)
-character(len=4) :: name
-integer :: i, start(1) = (/ 1 /)
-! Look for field number in variable list
-do i = 1,S%nvar
-	if (any(S%var(i)%field == field)) then
-		call rads_put_var (S, P, S%var(i), data(:P%ndata), start)
-		return
-	endif
-enddo
-write (name,'(i0)') field
-call rads_error (S, rads_err_var, 'Variable with field number '//name//' not found')
+logical, optional, intent(in) :: first
+integer :: start(1) = (/ 1 /), i
+save i
+if (present(first)) then
+	if (first) i = 0
+endif
+i = i + 1
+call rads_put_var (S, P, S%sel(i), data, start)
 end subroutine put_var
 
 subroutine get_var_1d (varnm, array)
