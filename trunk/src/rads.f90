@@ -3234,7 +3234,7 @@ if (.not.present(name)) then
 	write (P%filename, '(a,"/c",i3.3,"/",a2,"p",i4.4,"c",i3.3,".nc")') trim(S%phase%dataroot), P%cycle, S%sat, P%pass, P%cycle
 	l = len_trim(P%filename)-15
 	inquire (file = P%filename(:l), exist = exist)
-	if (.not.exist) call system ('mkdir -p ' // P%filename(len_trim(P%filename)-13:))
+	if (.not.exist) call system ('mkdir -p ' // P%filename(:l))
 else if (name == '') then
 	write (P%filename, '(a2,"p",i4.4,"c",i3.3,".nc")') S%sat, P%pass, P%cycle
 else if (name(len_trim(name):) == '/') then
@@ -3305,6 +3305,11 @@ integer(fourbyteint) :: e, n
 integer :: dimid(1:4) = 1
 integer(onebyteint), parameter :: flag_values(0:15) = int((/0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15/), onebyteint)
 S%error = rads_noerr
+
+! Skip variables with noedit set
+if (var%noedit) return
+
+! Get some information on dimensions and scale factors
 info => var%info
 if (present(nctype)) info%nctype = nctype
 if (present(scale_factor)) info%scale_factor = scale_factor
@@ -3313,6 +3318,7 @@ do n = 1,info%ndims
 	dimid(n) = info%ndims - n + 1
 enddo
 
+! Define the the variable and its attributes
 if (nft(nf90_def_var(P%ncid, var%name, info%nctype, dimid(1:info%ndims), info%varid))) then
 	call rads_error (S, rads_err_nc_var, 'Error creating variable '//trim(var%name)//' in '//trim(P%filename))
 	return
@@ -3441,7 +3447,9 @@ type(rads_var), intent(inout) :: var
 integer(fourbyteint) :: e
 S%error = rads_noerr
 e = nf90_enddef(P%ncid) ! Make sure to get out of define mode
-if (P%cycle == var%info%cycle .and. P%pass == var%info%pass) then
+if (var%noedit) then
+	rads_put_var_helper = .true. ! Do not write anything
+else if (P%cycle == var%info%cycle .and. P%pass == var%info%pass) then
 	rads_put_var_helper = .false. ! Keep old varid
 else if (nft(nf90_inq_varid (P%ncid, var%name, var%info%varid))) then
 	call rads_error (S, rads_err_nc_var, 'No variable '//trim(var%name)//' in '//trim(P%filename))
