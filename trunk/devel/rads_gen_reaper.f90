@@ -57,7 +57,6 @@ program rads_gen_reaper
 ! mss_ucl04 - UCL04 MSS
 ! swh_ku - Significant wave height
 ! sig0_ku - Sigma0
-! wind_speed_alt - Altimeter wind speed
 ! wind_speed_ecmwf_u - ECMWF wind speed (U)
 ! wind_speed_ecmwf_v - ECMWF wind speed (V)
 ! range_rms_ku - Std dev of range
@@ -65,19 +64,22 @@ program rads_gen_reaper
 ! topo_macess - MACESS topography
 ! tb_238 - Brightness temperature (23.8 GHz)
 ! tb_365 - Brightness temperature (36.5 GHz)
-! peakiness_ku - Peakiness (ALT_2M only)
+! peakiness_ku - Peakiness
 ! flags - Engineering flags
-! drange_cal - Internal calibration correction to range (appied) ((S)GDR only)
-! drange_fm - Doppler correction (applied) (ALT_2_/ALT_2S only)
 ! swh_rms_ku - Std dev of SWH
 ! sig0_rms_ku - Std dev of sigma0
 ! off_nadir_angle2_wf_ku - Mispointing from waveform squared
-! dsig0_atmos_ku - Sigma0 attenuation
 ! liquid_water - Liquid water content
 ! water_vapor_content - Water vapor content
-! mqe - Mean quadratic error of waveform fit (ALT_2_/ALT_2S only)
 ! tide_equil - Long-period equilibrium tide
 ! tide_non_equil - Long-period non-equilibrium tide
+!
+! On ALT_2_ and ALT_2S only:
+! wind_speed_alt - Altimeter wind speed
+! drange_cal - Internal calibration correction to range (appied)
+! drange_fm - Doppler correction (applied)
+! dsig0_atmos_ku - Sigma0 attenuation
+! mqe - Mean quadratic error of waveform fit
 !-----------------------------------------------------------------------
 use typesizes
 use netcdf
@@ -106,7 +108,7 @@ integer(fourbyteint) :: datanr=0,nrec,ncid,varid,orbitnr(2),cyclenr(2),passnr(2)
 
 ! Data variables
 
-integer(fourbyteint), parameter :: mrec = 9000
+integer(fourbyteint), parameter :: mrec = 10000
 real(eightbytereal) :: time(mrec), lat(mrec), lon(mrec), alt_reaper(mrec), alt_rate(mrec), range_ku(mrec), &
 	dry_tropo_ecmwf(mrec), wet_tropo_rad(mrec), wet_tropo_ecmwf(mrec), iono_gim(mrec), iono_nic09(mrec), &
 	inv_bar_static(mrec), inv_bar_mog2d(mrec), tide_solid(mrec), tide_ocean_fes04(mrec), tide_ocean_got47(mrec), &
@@ -123,10 +125,10 @@ character(640) :: original = ''
 
 ! Other local variables
 
-real(eightbytereal), parameter :: sec1990=157766400d0
+real(eightbytereal), parameter :: sec1990=157766400d0	! UTC seconds from 1 Jan 1985 to 1 Jan 1990
+real(eightbytereal), parameter :: picosec_to_mm=0.5d-12*299792458d3	! picoseconds of 2-way range to mm 1-way
 real(eightbytereal) :: nan, sum_d_applied
 real(eightbytereal), allocatable :: a(:),b(:),c(:),d(:,:),sum_c_applied(:)
-logical, allocatable :: valid(:,:)
 integer(fourbyteint) :: i,k,i0,i1,flag
 logical :: new
 
@@ -170,7 +172,7 @@ enddo
 !----------------------------------------------------------------------
 
 files: do
-	read (*,'(a)',iostat=ios) arg
+	read (*,550,iostat=ios) arg
 	if (ios /= 0) exit files
 
 ! Check input file name
@@ -229,7 +231,7 @@ files: do
 
 ! Allocate arrays
 
-	allocate (a(nrec),b(nrec),c(nrec),d(20,nrec),valid(20,nrec),sum_c_applied(nrec))
+	allocate (a(nrec),b(nrec),c(nrec),d(20,nrec),sum_c_applied(nrec))
 
 ! Time and orbit: Low rate
 
@@ -256,13 +258,7 @@ files: do
 	else
 		call get_var_1d ('f_ocean_valid_bitmap_1hz', a)
 	endif
-	do i = 1,nrec
-		flag = nint(a(i))
-		do k = 1,20
-			valid (k,i) = btest(flag,k-1)
-		enddo
-	enddo
-	! For some reason ALT_2M has 1-Hz peakiness (not documented)
+	! For some reason ALT_2M has 1-Hz peakiness
 	! where ALT_2S and ALT_2_ have ocean_wind_1hz
 	if (alt_2m) then
 		call get_var_1d ('wf_pk_1hz', peakiness_ku(i0:i1))
@@ -277,10 +273,10 @@ files: do
 		call mean_1hz (d,mqe(i0:i1),a)
 		call get_var_2d ('wf_pk', d)
 		call mean_1hz (d,peakiness_ku(i0:i1),a)
-		call get_var_2d ('inst_range_c', d)
-		call mean_1hz (d,drange_cal(i0:i1),a)
 		call get_var_2d ('dop_c+delta_dop_c', d)
 		call mean_1hz (d,drange_fm(i0:i1),a)
+		call get_var_2d ('sptr_jumps_c', d)
+		drange_cal(i0:i1) = d(1,:) * picosec_to_mm
 		call get_var_2d ('sum_c_applied', d)
 		sum_c_applied = d(1,:)
 		do i = 1,nrec
@@ -434,7 +430,7 @@ files: do
 
 ! Close this input file
 
-	deallocate (a,b,c,d,valid,sum_c_applied)
+	deallocate (a,b,c,d,sum_c_applied)
 
 	call nfs(nf90_close(ncid))
 
@@ -547,6 +543,8 @@ integer(fourbyteint), intent(in) :: n
 integer(fourbyteint) :: i
 real(eightbytereal) :: dhellips, dh
 
+550 format (a)
+
 if (datanr == 0) return	! Skip empty data sets
 if (cyclenr(1) < c0 .or. cyclenr(1) > c1) return	! Skip chunks that are not of the selected cycle
 if (tnode(1) < t0 .or. tnode(1) > t1) return	! Skip equator times that are not of selected range
@@ -571,13 +569,9 @@ if (newsat /= oldsat) then
 		'iono_gim,iono_nic09,inv_bar_static,inv_bar_mog2d,tide_solid,tide_ocean_fes04,tide_ocean_got47,' // &
 		'tide_load_fes04,tide_load_got47,tide_pole,ssb_bm3,mss_cls01,geoid_egm2008,mss_ucl04,swh_ku,sig0_ku,' // &
 		'wind_speed_ecmwf_u,wind_speed_ecmwf_v,range_rms_ku,range_numval_ku,topo_macess,tb_238,tb_365,' // &
-		'flags,drange_cal,swh_rms_ku,sig0_rms_ku,off_nadir_angle2_wf_ku,liquid_water,water_vapor_content,' // &
+		'peakiness_ku,flags,swh_rms_ku,sig0_rms_ku,off_nadir_angle2_wf_ku,liquid_water,water_vapor_content,' // &
 		'tide_equil,tide_non_equil')
-	if (alt_2m) then
-		call rads_parse_varlist (S, 'peakiness_ku')
-	else
-		call rads_parse_varlist (S, 'wind_speed_alt,drange_fm,dsig0_atmos_ku,mqe')
-	endif
+	if (.not.alt_2m) call rads_parse_varlist (S, 'wind_speed_alt,drange_cal,drange_fm,dsig0_atmos_ku,mqe')
 endif
 
 ! Store relevant info
@@ -605,6 +599,22 @@ do i = 1,n
 	geoid_egm2008(i) = geoid_egm2008(i) + dh
 	mss_ucl04(i) = mss_ucl04(i) + dh
 enddo
+
+! Switch off (for output) iono_gim, and MWR variables when all NaN
+
+S%sel%noedit = .false.
+if (all(isnan(iono_gim(1:n)))) then
+	write (*,550,advance='no') 'No iono_gim '
+	call switch_off (S, 'iono_gim')
+endif
+if (all(isnan(wet_tropo_rad(1:n)))) then
+	write (*,550,advance='no') 'No wet_tropo_rad '
+	call switch_off (S, 'wet_tropo_rad')
+	call switch_off (S, 'tb_238')
+	call switch_off (S, 'tb_365')
+	call switch_off (S, 'water_vapor_content')
+	call switch_off (S, 'liquid_water')
+endif
 
 ! Define the output variables
 
@@ -644,8 +654,8 @@ call put_var (range_numval_ku(1:n) * 1d0 )
 call put_var (topo_macess(1:n) * 1d-3)
 call put_var (tb_238(1:n) * 1d-2)
 call put_var (tb_365(1:n) * 1d-2)
+call put_var (peakiness_ku(1:n) * 1d-3)
 call put_var (flags(1:n) * 1d0 )
-call put_var (drange_cal(1:n) * 1d-3)
 call put_var (swh_rms_ku(1:n) * 1d-3)
 call put_var (sig0_rms_ku(1:n) * 1d-2)
 call put_var (off_nadir_angle2_wf_ku(1:n) * 1d-4)
@@ -653,10 +663,9 @@ call put_var (liquid_water(1:n) * 1d-2)
 call put_var (water_vapor_content(1:n) * 1d-2)
 call put_var (tide_equil(1:n) * 1d-3)
 call put_var (tide_non_equil(1:n) * 1d-3)
-if (alt_2m) then
-	call put_var (peakiness_ku(1:n) * 1d-3)
-else
+if (.not.alt_2m) then
 	call put_var (wind_speed_alt(1:n) * 1d-3)
+	call put_var (drange_cal(1:n) * 1d-3)
 	call put_var (drange_fm(1:n) * 1d-3)
 	call put_var (dsig0_atmos_ku(1:n) * 1d-2)
 	call put_var (mqe(1:n) * 1d-4)
@@ -670,7 +679,21 @@ call rads_close_pass (S, P)
 
 end subroutine write_data
 
+subroutine switch_off (S, name)
+! Set variable name to 'noedit'
+type(rads_sat), intent(inout) :: S
+character(len=*), intent(in) :: name
+integer :: i
+do i = 1, S%nsel
+	if (S%sel(i)%name == name) then
+		S%sel(i)%noedit = .true.
+		exit
+	endif
+enddo
+end subroutine switch_off
+
 subroutine put_var (data, first)
+! Write variables one after the other to the output file
 real(eightbytereal), intent(in) :: data(:)
 logical, optional, intent(in) :: first
 integer :: start(1) = (/ 1 /), i
@@ -745,24 +768,13 @@ integer(fourbyteint) :: i, j, n
 do j = 1,nrec
 	mean(j) = 0d0
 	rms(j) = 0d0
-	n = 0
-	do i = 1,20
-		if (valid(i,j)) then
-			n = n + 1
-			mean(j) = mean(j) + y(i,j)
-			rms(j) = rms(j) + y(i,j)**2
-		endif
+	n = 20
+	do i = 1,n
+		mean(j) = mean(j) + y(i,j)
+		rms(j) = rms(j) + y(i,j)**2
 	enddo
-	if (n < 1) then
-		mean(j) = nan
-	else
-		mean(j) = mean(j) / n
-	endif
-	if (n < 2) then
-		rms(j) = nan
-	else
-		rms(j) = sqrt ((rms(j) - n * mean(j)**2) / (n - 1))
-	endif
+	mean(j) = mean(j) / n
+	rms(j) = sqrt ((rms(j) - n * mean(j)**2) / (n - 1))
 enddo
 end subroutine mean_1hz
 
