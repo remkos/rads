@@ -46,7 +46,7 @@ integer, parameter :: stderr = 0, stdin = 5, stdout = 6
 
 include 'config.f90'
 
-private :: rads_traxxing, rads_get_phase, rads_free_sat_struct, rads_free_var_struct
+private :: rads_traxxing, rads_free_sat_struct, rads_free_var_struct
 
 type :: rads_varinfo
 	character(len=rads_varl) :: name                 ! Short name of variable used by RADS
@@ -489,9 +489,8 @@ else
 	! Phase is given, maybe separated by '/' or ':'
 	i = 3
 	if (l > 3 .and. (sat(3:3) == '/' .or. sat(3:3) == ':')) i = 4
-	S%phase => rads_get_phase(S, sat(i:i))
+	S%phase => rads_get_phase(S, sat(i:))
 	if (.not.associated(S%phase)) call rads_exit ('No such mission phase "'//sat(i:i)//'" of satellite "'//S%sat//'"')
-	S%phase%dataroot = trim(S%dataroot)//'/'//S%sat//'/'//sat(i:)
 	S%cycles(1:2) = S%phase%cycles
 	S%passes(2) = S%phase%passes
 endif
@@ -1932,7 +1931,6 @@ do
 		if (has_name()) then
 			phase => rads_get_phase (S, name, .true.)
 			phase%name = attr(2,1)
-			phase%dataroot = trim(S%dataroot) // '/' // S%sat // '/' // trim(name)
 		endif
 
 	case ('mission')
@@ -2926,28 +2924,38 @@ type(rads_sat), intent(inout) :: S
 character(len=*), intent(in) :: name
 logical, intent(in), optional :: allow_new
 type(rads_phase), pointer :: phase
+!
+! Create pointer to the proper phase definitions for phase <name>.
+! This routine can also create new phase definitions when <allow_new> is
+! set to .true.
+!
+! In matching the phase name with the database, only the first letter is
+! used. However the path to the directory with netCDF files will use the
+! entire phase name.
+!
+! Arguments:
+!  S        : Satellite/mission dependent structure
+!  name     : Name of phase
+!  allow_new: Allow the creation of a new phase
 !-----------------------------------------------------------------------
 integer(fourbyteint) :: i, n
-logical :: new
 type(rads_phase), pointer :: temp(:)
 nullify (phase)
-new = .false.
-if (present(allow_new)) new = allow_new
 n = 0
 if (associated(S%phases)) n = size(S%phases)
 
 ! Search for the correct phase name
 do i = 1,n
-	if (S%phases(i)%name(1:1) /= name(1:1)) then
-		cycle
-	else if (S%phases(i)%name == name) then
+	if (S%phases(i)%name(1:1) == name(1:1)) then
 		phase => S%phases(i)
+		phase%dataroot = trim(S%dataroot)//'/'//S%sat//'/'//trim(name)
 		return
 	endif
 enddo
 
-! No matching name found. Only continue when new = .true.
-if (.not.new) return
+! No matching name found. Only continue when allow_new = .true.
+if (.not.present(allow_new)) return
+if (.not.allow_new) return
 
 ! Allocate S%phases for the first time, or reallocate more space
 if (n == 0) then
@@ -2962,9 +2970,9 @@ else
 endif
 
 ! Initialize the new phase information and direct the pointer
-S%phases(n) = rads_phase (name, '', '', (/999,0/), 0, S%nan, S%nan, S%nan, S%nan, 0, 0, S%nan, S%nan, S%nan, 0, 0, null())
+S%phases(n) = rads_phase (name(1:1), '', '', (/999,0/), 0, S%nan, S%nan, S%nan, S%nan, 0, 0, S%nan, S%nan, S%nan, 0, 0, null())
 phase => S%phases(n)
-
+phase%dataroot = trim(S%dataroot)//'/'//S%sat//'/'//trim(name)
 end function rads_get_phase
 
 !***********************************************************************
@@ -3306,9 +3314,6 @@ integer :: dimid(1:4) = 1
 integer(onebyteint), parameter :: flag_values(0:15) = int((/0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15/), onebyteint)
 S%error = rads_noerr
 
-! Skip variables with noedit set
-if (var%noedit) return
-
 ! Get some information on dimensions and scale factors
 info => var%info
 if (present(nctype)) info%nctype = nctype
@@ -3447,9 +3452,7 @@ type(rads_var), intent(inout) :: var
 integer(fourbyteint) :: e
 S%error = rads_noerr
 e = nf90_enddef(P%ncid) ! Make sure to get out of define mode
-if (var%noedit) then
-	rads_put_var_helper = .true. ! Do not write anything
-else if (P%cycle == var%info%cycle .and. P%pass == var%info%pass) then
+if (P%cycle == var%info%cycle .and. P%pass == var%info%pass) then
 	rads_put_var_helper = .false. ! Keep old varid
 else if (nft(nf90_inq_varid (P%ncid, var%name, var%info%varid))) then
 	call rads_error (S, rads_err_nc_var, 'No variable '//trim(var%name)//' in '//trim(P%filename))
