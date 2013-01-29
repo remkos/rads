@@ -81,7 +81,6 @@ Global RADS configuration file
 	<comment>UTC time of measurement</comment>
 	<format>f16.6</format>
 </var>
-<alias name="time" field="1">time_1985</alias>
 
 <var name="lat" field="201 2">
 	<long_name>latitude</long_name>
@@ -1614,7 +1613,7 @@ Global RADS configuration file
 	<units>m</units>
 	<data>drange_cal</data>
 	<format>f6.3</format>
-	<compress>int2 1d-3</compress>
+	<compress>int2 1d-4</compress>
 	<comment>Range bias already added to range</comment>
 </var>
 <var name="drange_uso" field="2703" sat="e1 e2 gs n1">
