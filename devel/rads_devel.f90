@@ -23,7 +23,6 @@ contains
 !*erspass - Determine orbit nr, phase, cycle nr and pass nr for ERS-1/2
 !+
 logical function erspass (ers, utc, orbitnr, phasenm, cyclenr, passnr, tnode, lnode)
-use rads
 real(eightbytereal), intent(in) :: utc
 integer(fourbyteint), intent(in) :: ers
 integer(fourbytereal), intent(out) :: orbitnr, cyclenr, passnr
@@ -69,7 +68,8 @@ save pnt,npass,olders,q
 if (ers == olders) then
 	new = .false.
 else
-	write (line,610) trim(radsdataroot),ers,ers
+	call getenv ('ALTIM',line)
+	write (line,610) trim(line),ers
 	unit = freeunit()
 	npass=0
 	open (unit,file=line,status='old')
@@ -87,7 +87,7 @@ else
 	pnt = 1
 endif
 600 format (i6,1x,a1,i4,i5,2f14.3,f11.6)
-610 format (a,'/../ext/e',i1,'/ers',i1,'passes.tab')
+610 format (a,'/data/tables/ers',i1,'passes.tab')
 
 ! Look for the table entry based on the utc time
 
