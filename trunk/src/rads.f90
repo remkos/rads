@@ -331,7 +331,7 @@ end interface rads_def_var
 ! type(rads_pass), intent(inout) :: P
 ! type(rads_var), intent(in) :: var
 ! real(eightbytereal), intent(in) :: data(:) <or> data(:,:)
-! integer(fourbyteint), intent(in) :: start(:)
+! integer(fourbyteint), optional, intent(in) :: start(:)
 !
 ! This routine writes the data array <data> for the variable <var>
 ! (referenced by the structure of type(rads_var)) to the netCDF file
@@ -355,10 +355,13 @@ end interface rads_def_var
 ! Error codes:
 !  S%error  : rads_noerr, rads_err_nc_put
 !-----------------------------------------------------------------------
-private :: rads_put_var_1d, rads_put_var_2d, rads_put_var_helper
+private :: rads_put_var_1d, rads_put_var_1d_start, &
+	rads_put_var_2d, rads_put_var_2d_start, rads_put_var_helper
 interface rads_put_var
 	module procedure rads_put_var_1d
+	module procedure rads_put_var_1d_start
 	module procedure rads_put_var_2d
+	module procedure rads_put_var_2d_start
 end interface rads_put_var
 
 !***********************************************************************
@@ -2809,9 +2812,9 @@ end function rads_rev
 !***********************************************************************
 !*rads_version -- Print message about current program and version
 !+
-function rads_version (revision, description, unit)
+function rads_version (revision, description, unit, flag)
 character(len=*), intent(in) :: revision
-character(len=*), intent(in), optional :: description
+character(len=*), intent(in), optional :: description, flag
 integer(fourbyteint), intent(in), optional :: unit
 logical :: rads_version
 !
@@ -2830,6 +2833,7 @@ logical :: rads_version
 !  revision    : SVN revision tag
 !  description : One-line description of program
 !  unit        : Fortran output unit (6 = stdout (default), 0 = stderr)
+!  flag        : Use string in replacement of first command line argument
 !
 ! Return value:
 !  rads_version: .false. if output is of type 1, otherwise .true.
@@ -2837,7 +2841,11 @@ logical :: rads_version
 integer :: iunit
 character(len=rads_naml) :: progname,arg
 call getarg (0, progname)
-call getarg (1, arg)
+if (present(flag)) then
+	arg = flag
+else
+	call getarg (1, arg)
+endif
 rads_version = .true.
 if (present(unit)) then
 	iunit = unit
@@ -3395,7 +3403,15 @@ do i = 1,size(var)
 enddo
 end subroutine rads_def_var_1d
 
-subroutine rads_put_var_1d (S, P, var, data, start)
+subroutine rads_put_var_1d (S, P, var, data)
+type(rads_sat), intent(inout) :: S
+type(rads_pass), intent(inout) :: P
+type(rads_var), intent(inout) :: var
+real(eightbytereal), intent(in) :: data(:)
+call rads_put_var_1d_start (S, P, var, data, (/1/))
+end subroutine rads_put_var_1d
+
+subroutine rads_put_var_1d_start (S, P, var, data, start)
 use netcdf
 use rads_netcdf
 use rads_misc
@@ -3417,9 +3433,17 @@ case default
 	e = nf90_put_var (P%ncid, var%info%varid, (data - var%info%add_offset) / var%info%scale_factor, start)
 end select
 if (e > 0) call rads_error (S, rads_err_nc_put, 'Error writing data for variable '//trim(var%name)//' to '//trim(P%filename))
-end subroutine rads_put_var_1d
+end subroutine rads_put_var_1d_start
 
-subroutine rads_put_var_2d (S, P, var, data, start)
+subroutine rads_put_var_2d (S, P, var, data)
+type(rads_sat), intent(inout) :: S
+type(rads_pass), intent(inout) :: P
+type(rads_var), intent(inout) :: var
+real(eightbytereal), intent(in) :: data(:,:)
+call rads_put_var_2d_start (S, P, var, data, (/1,1/))
+end subroutine rads_put_var_2d
+
+subroutine rads_put_var_2d_start (S, P, var, data, start)
 use netcdf
 use rads_netcdf
 use rads_misc
@@ -3441,7 +3465,7 @@ case default
 	e = nf90_put_var (P%ncid, var%info%varid, (data - var%info%add_offset) / var%info%scale_factor, start)
 end select
 if (e > 0) call rads_error (S, rads_err_nc_put, 'Error writing data for variable '//trim(var%name)//' to '//trim(P%filename))
-end subroutine rads_put_var_2d
+end subroutine rads_put_var_2d_start
 
 logical function rads_put_var_helper (S, P, var)
 use netcdf
