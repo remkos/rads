@@ -108,7 +108,7 @@ integer(fourbyteint) :: orbitnr(2),cyclenr(2),passnr(2),varid
 ! Data variables
 
 integer(fourbyteint), parameter :: mrec = 15000, mvar = 50
-integer(fourbyteint) :: nvar,ndata=0,nrec,ncid,ers=0
+integer(fourbyteint) :: nvar,ndata=0,nrec=0,nout=0,ncid,ers=0
 real(eightbytereal) :: start_time
 real(eightbytereal), allocatable :: a(:),b(:),c(:),d(:,:),dh(:),sum_c_applied(:),sum_d_applied(:)
 integer(twobyteint), allocatable :: flags(:)
@@ -130,7 +130,6 @@ real(eightbytereal), parameter :: picosec_to_m=0.5d-12*299792458d0	! picoseconds
 real(eightbytereal) :: nan
 integer :: i
 logical :: new
-
 
 ! Initialise
 
@@ -176,7 +175,10 @@ call get_reaper ()
 
 do
 	! If the start time is within the last file, get another file first
-	if (ios == 0 .and. var(1)%d(1) >= start_time) then
+	if (ios /= 0) then
+		if (ndata == 0) exit ! No more data left in memory and no more new files
+	else if (ndata == 0 .or. var(1)%d(1) >= start_time) then
+		! Read the next file
 		old_infile = infile
 		read (*,550,iostat=ios) infile
 		if (ios == 0) call get_reaper ()
@@ -187,20 +189,19 @@ do
 	do i = 2,ndata
 		if (erspass (ers, var(1)%d(i), orbitnr(2), phasenm(2), cyclenr(2), passnr(2), tnode(2), lnode(2))) exit
 	enddo
-	if (i > ndata) then ! This means we did not find a new pass: we must be out of data
-		if (ios == 0) write (*,*) 'Ran out of data prematurely'
-		call put_rads (ndata)
-		exit
-	endif
+	! It is OK to exit this loop with i = ndata + 1. This means we dump all of the memory.
 
 	! Write out the data
-	nrec = i - 1 ! Number of measurements to be written out
-	call put_rads (nrec)
+	nout = i - 1 ! Number of measurements to be written out
+	call put_rads (nout)
+
+	! Number of measurements remaining
+	ndata = ndata - nout
+	if (ios /= 0 .and. ndata == 0) exit ! We are out of data
 
 	! Move the data to be beginning
-	ndata = ndata - nrec ! Number of measurements remaining
 	do i = 1,nvar
-		var(i)%d(1:ndata) = var(i)%d(nrec+1:nrec+ndata)
+		var(i)%d(1:ndata) = var(i)%d(nout+1:nout+ndata)
 	enddo
 enddo
 
@@ -234,10 +235,11 @@ integer(fourbyteint) :: i,k,flag
 
 550 format (a)
 551 format (a,' ...')
+552 format (i5,' records ...')
 
 ! Check input file name
 
-write (*,551) trim(infile)
+write (*,551,advance='no') trim(infile)
 i = index(infile,'ERS_ALT_2')
 if (i <= 0) then
 	write (*,550) 'Error: Wrong input file'
@@ -275,6 +277,7 @@ endif
 
 call nfs(nf90_inq_dimid(ncid,'Record',varid))
 call nfs(nf90_inquire_dimension(ncid,varid,len=nrec))
+write (*,552) nrec
 if (nrec > mrec) then
 	write (*,'("Error: Too many measurements:",i5)') nrec
 	return
@@ -598,6 +601,7 @@ subroutine new_var (varnm, data, bit)
 character(len=*), intent(in) :: varnm
 real(eightbytereal), intent(in) :: data(:)
 integer, optional, intent(in) :: bit
+integer :: i
 nvar = nvar + 1
 if (nvar > mvar) stop 'Too many variables'
 var(nvar)%v => rads_varptr (S, varnm)
