@@ -933,7 +933,7 @@ case ('lat', 'lon', 'sla')
 	call rads_set_limits (S, opt%opt, string=opt%arg)
 case ('L', 'limits')
 	call rads_set_limits (S, opt%arg(:j-1), string=opt%arg(j+1:))
-case ('Q', 'quality_flags')
+case ('Q', 'quality_flag')
 	if (j > 0) then
 		call rads_set_quality_flag (S, opt%arg(:j-1), opt%arg(j+1:))
 	else
