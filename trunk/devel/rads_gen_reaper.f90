@@ -109,7 +109,7 @@ integer(fourbyteint) :: orbitnr(2), cyclenr(2), passnr(2), varid
 
 integer(fourbyteint), parameter :: mrec=15000, mvar=50
 integer(fourbyteint) :: nvar, ndata=0, nrec=0, nout=0, ncid, ers=0
-real(eightbytereal) :: start_time, end_time
+real(eightbytereal) :: start_time
 real(eightbytereal), allocatable :: a(:), b(:), c(:), d(:,:), dh(:), sum_c_applied(:), sum_d_applied(:)
 integer(twobyteint), allocatable :: flags(:)
 integer(fourbyteint), allocatable :: f_error(:), f_applied(:)
@@ -234,7 +234,7 @@ end subroutine synopsis
 !-----------------------------------------------------------------------
 
 subroutine get_reaper ()
-real(eightbytereal) :: dhellips, t(3), t_last
+real(eightbytereal) :: dhellips, t(3), last_time
 integer(fourbyteint) :: i, k, flag
 
 550 format (a)
@@ -308,7 +308,7 @@ call get_var_1d ('time_milsec_1hz',b)
 call get_var_1d ('time_micsec_1hz',c)
 a = a * 86400d0 + b * 1d-3 + c * 1d-6 + sec1990
 start_time = a(1)
-end_time = a(nrec)
+! Discard measurements at the end of the stack that are newer than the beginning of this file
 do while (ndata > 0 .and. var(1)%d(ndata) > start_time - 0.5d0)
 	ndata = ndata - 1
 enddo
@@ -528,17 +528,15 @@ enddo
 
 k = 0
 valid(1,:) = .true.
-t_last = var(1)%d(1)
-do i = 2,nrec-1
+last_time = var(1)%d(ndata+1)
+do i = 2,nrec
 	t = var(1)%d(ndata+i-1:ndata+i+1)
-	if (t(2) < start_time .or. t(2) > end_time) then
-		write (*,553) 'Warning: Removed measurement outside time range  :', i, t
-	else if (t(2) > max(t(1),t(3))+1d0) then
+	if (i < nrec .and. t(2) > max(t(1),t(3))+1d0) then
 		write (*,553) 'Warning: Removed measurement out of time sequence:', i, t
-	else if (t(2) < t_last+0.1d0) then
+	else if (t(2) < last_time+0.5d0) then
 		write (*,553) 'Warning: Removed measurement with time reversal  :', i, t
 	else
-		t_last = t(2)
+		last_time = t(2)
 		cycle
 	endif
 	valid(1,i) = .false.
@@ -548,7 +546,7 @@ if (k > 0) then
 	do i = 1,nvar
 		var(i)%d(ndata+1:ndata+nrec-k) = pack(var(i)%d(ndata+1:ndata+nrec),valid(1,:))
 	enddo
-	ndata = ndata - k
+	nrec = nrec - k
 endif
 
 ! Close this input file
