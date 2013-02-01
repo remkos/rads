@@ -157,7 +157,7 @@ do
 		if (c1 < c0) c1 = c0
 	case default
 		if (.not.dateopt (optopt, optarg, t0, t1)) then
-			call synopsis ('-?')
+			call synopsis ('--help')
 			stop
 		endif
 	end select
@@ -170,7 +170,11 @@ enddo
 ! Start reading with at least first file
 
 read (*,550,iostat=ios) infile
-if (ios /= 0) call synopsis ('-?')
+if (ios /= 0) then
+	call synopsis ('--help')
+else
+	call synopsis ('--head')
+endif
 call get_reaper
 
 do
@@ -279,17 +283,15 @@ endif
 call nfs(nf90_inq_dimid(ncid,'Record',varid))
 call nfs(nf90_inquire_dimension(ncid,varid,len=nrec))
 write (*,552) nrec
-if (nrec > mrec) then
-	write (*,'("Error: Too many measurements:",i5)') nrec
+if (nrec == 0) then	! Skip empty input files
+	call nfs(nf90_close(ncid))
 	return
+else if (ndata+nrec > mrec) then
+	write (*,553) 'Error: Too many input measurements: ', ndata+nrec
+	stop
 endif
 call nfs(nf90_get_att(ncid,nf90_global,'l2_proc_time',l2_proc_time))
 call nfs(nf90_get_att(ncid,nf90_global,'l2_software_ver',l2_version))
-
-if (ndata+nrec > mrec) then
-	write (*,'("Error: Too many accumulated measurements:",i5)') ndata+nrec
-	return
-endif
 
 ! Allocate arrays
 
@@ -530,11 +532,11 @@ t_last = var(1)%d(1)
 do i = 2,nrec-1
 	t = var(1)%d(ndata+i-1:ndata+i+1)
 	if (t(2) < start_time .or. t(2) > end_time) then
-		write (*,553) 'Warning: measurement outside time range removed  :', i, t
-	else if (t(2) > max(t(1),t(3))+1) then
-		write (*,553) 'Warning: measurement out of time sequence removed:', i, t
-	else if (t(2) < t_last) then
-		write (*,553) 'Warning: measurement with time reversal removed  :', i, t
+		write (*,553) 'Warning: Removed measurement outside time range  :', i, t
+	else if (t(2) > max(t(1),t(3))+1d0) then
+		write (*,553) 'Warning: Removed measurement out of time sequence:', i, t
+	else if (t(2) < t_last+0.1d0) then
+		write (*,553) 'Warning: Removed measurement with time reversal  :', i, t
 	else
 		t_last = t(2)
 		cycle
