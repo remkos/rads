@@ -1400,7 +1400,7 @@ Global RADS configuration file
 </var>
 <var name="flag_ice" field="2502">
 	<long_name>not used</long_name>
-	<long_name sat="e1 e2 j1 j2 n1">>continental ice</long_name>
+	<long_name sat="e1 e2 j1 j2 n1">continental ice</long_name>
 	<data>flags_ 2 BTEST</data>
 	<format>f2.0</format>
 	<compress>int1</compress>
@@ -1546,7 +1546,7 @@ Global RADS configuration file
 	<limits sat="pn">448 0</limits>
 	<limits sat="tx">49640 0</limits>
 	<data>flags</data>
-	<format>i1,15(1x,i1)</format>
+	<format>b16.16</format>
 	<compress>int2</compress>
 	<flag_masks>
 		hardware_bad attitude_bad not_used not_used

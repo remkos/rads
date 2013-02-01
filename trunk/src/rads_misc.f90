@@ -198,7 +198,7 @@ if (getopt_arg(1:2) == '--') then
 		if (optopt(2:2) == ' ') optopt(2:2) = ':' ! Distinguish 1-letter option by adding ':'
 		return ! No argument to this option
 	endif
-	k = k + n - 2	
+	k = k + n - 2
 	optopt = optlist(n:k)
 	if (optopt(2:2) == ' ') optopt(2:2) = ':' ! Distinguish 1-letter option by adding ':'
 	if (optlist(k+1:k+1) /= ':') return ! No argument to this option
@@ -498,7 +498,7 @@ end function outofrange
 !***********************************************************************
 !*nint1 -- Round 8-byte real to 1-byte integer
 !+
-elemental function nint1(x)
+elemental function nint1 (x)
 integer(onebyteint) :: nint1
 real(eightbytereal), intent(in) :: x
 !
@@ -518,7 +518,7 @@ end function nint1
 !***********************************************************************
 !*nint2 -- Round 8-byte real to 2-byte integer
 !+
-elemental function nint2(x)
+elemental function nint2 (x)
 integer(twobyteint) :: nint2
 real(eightbytereal), intent(in) :: x
 !
@@ -538,7 +538,7 @@ end function nint2
 !***********************************************************************
 !*nint4 -- Round 8-byte real to 4-byte integer
 !+
-elemental function nint4(x)
+elemental function nint4 (x)
 integer(fourbyteint) :: nint4
 real(eightbytereal), intent(in) :: x
 !
@@ -556,28 +556,24 @@ endif
 end function nint4
 
 !***********************************************************************
-!*to16bits - Convert to individual 16 bits
+!*nint4 -- Round 8-byte real to 8-byte integer
 !+
-pure function to16bits (x)
+elemental function nint8 (x)
+integer(eightbyteint) :: nint8
 real(eightbytereal), intent(in) :: x
-integer :: to16bits(0:15)
 !
-! Convert a double float first to integer and then to individual 16 bits.
-! Takes into account NaN and out of bounds numbers.
+! This elemental function rounds an 8-byte real to a 8-byte interger.
+! If the real is out of range, or NaN, the returned value is huge.
+! Since this function is elemental, it can be applied to arrays as well.
 !-----------------------------------------------------------------------
-integer(twobyteint), parameter :: imax = huge(0_twobyteint)
+integer(eightbyteint), parameter :: imax = huge(0_eightbyteint)
 real(eightbytereal), parameter :: xmin = -imax-1.5d0, xmax = imax+0.5d0
-integer(twobyteint) :: i, j
 if (x > xmin .and. x < xmax) then
-	i = nint(x, twobyteint)
-	to16bits = 0
-	do j = 0,15
-		if (btest(i,j)) to16bits(j) = 1
-	enddo
-else
-	to16bits = -1
+	nint8 = nint(x,eightbyteint)
+else ! Out of range or NaN
+	nint8 = imax
 endif
-end function to16bits
+end function nint8
 
 !***********************************************************************
 !*make_nan -- Create a NaN value
