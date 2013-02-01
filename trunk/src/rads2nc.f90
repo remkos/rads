@@ -36,7 +36,6 @@ type(rads_sat) :: S
 type(rads_pass) :: P, Pout
 
 ! Local declarations, etc.
-integer(fourbyteint) :: logunit = 6
 character(len=rads_naml) :: outname = ''
 integer(fourbyteint) :: i, ios, cycle, pass, step = 1, nseltot = 0, nselmax = huge(0_fourbyteint)
 integer(fourbyteint) :: reject = -1
@@ -80,7 +79,7 @@ enddo
 do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
 	! Stop processing after too many output lines
 	if (nseltot >= nselmax) then
-		write (logunit,760) nseltot,nselmax
+		write (*,760) nseltot,nselmax
 		exit
 	endif
 
@@ -88,20 +87,20 @@ do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
 	do pass = S%passes(1), S%passes(2), S%passes(3)
 		call rads_open_pass (S, P, cycle, pass)
 		if (P%ndata > 0) call process_pass
-		if (S%debug >= 1) call rads_progress_bar (S, P, nselpass, logunit)
+		if (S%debug >= 1) call rads_progress_bar (S, P, nselpass)
 		call rads_close_pass (S, P)
 	enddo
 enddo
 760 format(/'Maximum number of output records reached (',i0,' >= ',i0,')')
 
 ! Finish progress bar
-if (S%debug >= 1) write (logunit,*)
+if (S%debug >= 1) write (*,*)
 
 ! Close data file before exit
 if (outname /= '') call rads_close_pass (S, Pout)
 
 ! Print overall statistics and close RADS
-call rads_stat (S, logunit)
+call rads_stat (S)
 call rads_end (S)
 
 contains
