@@ -292,15 +292,6 @@ Global RADS configuration file
 	<compress>int4 1d-4 700d3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<!--
-	<alias name="alt_eiggc03c" sat="n1">,alt_cnes</alias>
-	<alias name="alt_eiggl04s" sat="c2 n1">,alt_cnes</alias>
-	<alias name="alt_gps" sat="j1 j2">,alt_eiggl04s</alias>
-	<alias name="alt_gdrcp" sat="j1 j2">,alt_eiggl04s</alias>
-	<alias name="alt_gdrcp" sat="pn tx">,alt_jgm3</alias>
-	<alias name="alt_eig6c" sat="j1 j2">,alt_eiggl04s</alias>
-	<alias name="alt_eig6c" sat="c2 n1">,alt_cnes</alias>
--->
 <alias name="alt" field="4" sat="c2">alt_eiggl04s alt_cnes</alias>
 <alias name="alt" field="4" sat="e1 e2">alt_reaper</alias>
 <alias name="alt" field="4" sat="g1">alt_pgs7777</alias>
@@ -421,9 +412,6 @@ Global RADS configuration file
 	<compress>int2 1d-4</compress>
 	<comment>A dry tropospheric correction must be added to range to correct for dry troposphere delays</comment>
 </var>
-<!--
-	<alias name="dry_tropo_era">,dry_tropo_ecmwf</alias>
--->
 <alias name="dry_tropo" field="7">dry_tropo_ecmwf</alias>
 <alias name="dry_tropo" field="7" sat="g1 gs">dry_tropo_era</alias>
 
@@ -530,10 +518,6 @@ Global RADS configuration file
 	<compress>int2 1d-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
 </var>
-<!--
-	<alias name="wet_tropo_era">,wet_tropo_ecmwf</alias>
--->
-<alias name="wet_tropo_rad" sat="e2">,wet_tropo_ecmwf</alias>
 <alias name="wet_tropo" field="8" sat="!c2 gs">wet_tropo_rad wet_tropo_ecmwf</alias>
 <alias name="wet_tropo" field="8" sat="c2">wet_tropo_ecmwf</alias>
 <alias name="wet_tropo" field="8" sat="gs">wet_tropo_era</alias>
