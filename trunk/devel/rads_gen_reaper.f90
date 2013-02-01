@@ -91,10 +91,10 @@ use rads_devel
 
 ! Command line arguments
 
-integer(fourbyteint) :: verbose=0,c0=0,c1=999,ios
+integer(fourbyteint) :: verbose=0, c0=0, c1=999, ios
 real(eightbytereal) :: t0, t1
 character(160) :: infile, old_infile
-character(20) :: optopt,optarg
+character(20) :: optopt, optarg
 character(80), parameter :: optlist='v debug: sat: cycle: t: mjd: sec: ymd: doy:'
 
 ! Header variables
@@ -103,16 +103,16 @@ character(1) :: phasenm(2)
 character(80) :: l2_proc_time, l2_version
 logical :: meteo
 real(eightbytereal) :: tnode(2), lnode(2)
-integer(fourbyteint) :: orbitnr(2),cyclenr(2),passnr(2),varid
+integer(fourbyteint) :: orbitnr(2), cyclenr(2), passnr(2), varid
 
 ! Data variables
 
-integer(fourbyteint), parameter :: mrec = 15000, mvar = 50
-integer(fourbyteint) :: nvar,ndata=0,nrec=0,nout=0,ncid,ers=0
-real(eightbytereal) :: start_time
-real(eightbytereal), allocatable :: a(:),b(:),c(:),d(:,:),dh(:),sum_c_applied(:),sum_d_applied(:)
+integer(fourbyteint), parameter :: mrec=15000, mvar=50
+integer(fourbyteint) :: nvar, ndata=0, nrec=0, nout=0, ncid, ers=0
+real(eightbytereal) :: start_time, end_time
+real(eightbytereal), allocatable :: a(:), b(:), c(:), d(:,:), dh(:), sum_c_applied(:), sum_d_applied(:)
 integer(twobyteint), allocatable :: flags(:)
-integer(fourbyteint), allocatable :: f_error(:),f_applied(:)
+integer(fourbyteint), allocatable :: f_error(:), f_applied(:)
 logical, allocatable :: valid(:,:)
 type(rads_sat) :: S
 type(rads_pass) :: P
@@ -230,12 +230,13 @@ end subroutine synopsis
 !-----------------------------------------------------------------------
 
 subroutine get_reaper ()
-real(eightbytereal) :: dhellips
-integer(fourbyteint) :: i,k,flag
+real(eightbytereal) :: dhellips, t(3), t_last
+integer(fourbyteint) :: i, k, flag
 
 550 format (a)
 551 format (a,' ...')
 552 format (i5,' records ...')
+553 format (a,i5,3f18.3)
 
 ! Check input file name
 
@@ -305,6 +306,7 @@ call get_var_1d ('time_milsec_1hz',b)
 call get_var_1d ('time_micsec_1hz',c)
 a = a * 86400d0 + b * 1d-3 + c * 1d-6 + sec1990
 start_time = a(1)
+end_time = a(nrec)
 do while (ndata > 0 .and. var(1)%d(ndata) > start_time - 0.5d0)
 	ndata = ndata - 1
 enddo
@@ -466,8 +468,10 @@ call get_var_1d ('v_wind_1hz', a)
 call new_var ('wind_speed_ecmwf_v', a*1d-3, 8)
 call get_var_1d ('iono_c_mod_1hz', a)
 call new_var ('iono_nic09', a*1d-3, 9)
-call get_var_1d ('iono_c_gps_1hz', a)
-call new_var ('iono_gim', a*1d-3, 10)
+if (start_time >= 430880400d0) then	! After 1998-08-28 01:00:00 get GIM iono
+	call get_var_1d ('iono_c_gps_1hz', a)
+	call new_var ('iono_gim', a*1d-3, 10)
+endif
 call get_var_1d ('h_mss_cls01_1hz', a)
 call new_var ('mss_cls01', a*1d-3, 11)
 var(nvar)%d = var(nvar)%d + dh
@@ -514,8 +518,36 @@ do i = 1,nrec
 	k = ndata + i
 	var(7)%d(k) = var(7)%d(k) - sum_d_applied(i)
 	if (.not.meteo .and. abs(sum_d_applied(i) - sum_c_applied(i)) > 1d-4) &
-		write (*,*) "Error: sum_c_applied wrong: ",i,sum_d_applied(i),sum_c_applied(i),sum_d_applied(i)-sum_c_applied(i)
+		write (*,553) 'Warning: sum_c_applied wrong: ',i,sum_d_applied(i),sum_c_applied(i),sum_d_applied(i)-sum_c_applied(i)
 enddo
+
+! There may be measurements with invalid times
+! If so, weed them out
+
+k = 0
+valid(1,:) = .true.
+t_last = var(1)%d(1)
+do i = 2,nrec-1
+	t = var(1)%d(ndata+i-1:ndata+i+1)
+	if (t(2) < start_time .or. t(2) > end_time) then
+		write (*,553) 'Warning: measurement outside time range removed  :', i, t
+	else if (t(2) > max(t(1),t(3))+1) then
+		write (*,553) 'Warning: measurement out of time sequence removed:', i, t
+	else if (t(2) < t_last) then
+		write (*,553) 'Warning: measurement with time reversal removed  :', i, t
+	else
+		t_last = t(2)
+		cycle
+	endif
+	valid(1,i) = .false.
+	k = k + 1
+enddo
+if (k > 0) then
+	do i = 1,nvar
+		var(i)%d(ndata+1:ndata+nrec-k) = pack(var(i)%d(ndata+1:ndata+nrec),valid(1,:))
+	enddo
+	ndata = ndata - k
+endif
 
 ! Close this input file
 
