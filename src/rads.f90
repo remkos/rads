@@ -2641,7 +2641,7 @@ integer(fourbyteint), intent(in), optional :: unit
 ! This is the scalar version of rads_stat.
 !-----------------------------------------------------------------------
 integer(fourbyteint) :: iunit, i
-iunit = 6
+iunit = stdout
 if (present(unit)) iunit = unit
 write (iunit, 700)
 write (iunit, 710) trim(S%satellite), S%sat, timestamp(), trim(S%command)
@@ -3170,7 +3170,7 @@ integer :: pos_old = 50, lin_old = -1, cycle_old = -1, pos, lin, logunit, i
 720 format(/2i5,'  ')
 750 format(a)
 
-logunit = 6
+logunit = stdout
 if (present(unit)) logunit = unit
 if (cycle_old < 0) write (logunit,700) trim(S%satellite),trim(S%phase%name)
 pos = mod(P%pass-1,100)+1
@@ -3183,9 +3183,9 @@ endif
 if (pos_old == 100 .or. lin_old /= lin) then
 	write (logunit,720,advance='no') P%cycle,int((P%pass-1)/100)*100+1
 	! Start new line, print cycle nr and pass nr
-	pos_old=0
+	pos_old = 0
 endif
-do i=pos_old+1,pos-1
+do i = pos_old+1,pos-1
 	write (logunit,750,advance='no') ' ' ! Fill up to current pass with ' '
 enddo
 if (S%error /= rads_noerr) then
@@ -3197,8 +3197,8 @@ else if (nselpass == 0) then
 else
 	write (logunit,750,advance='no') '#' ! Print # when data available
 endif
-pos_old=pos
-lin_old=lin
+pos_old = pos
+lin_old = lin
 
 end subroutine rads_progress_bar
 

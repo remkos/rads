@@ -38,12 +38,12 @@ type(rads_pass) :: P
 type(rads_var), pointer :: var, temp(:)
 
 ! Local declarations, etc.
-integer(fourbyteint) :: outunit, listunit = -1, logunit = 6
+integer(fourbyteint) :: outunit, listunit = -1, logunit = stdout
 character(len=rads_naml) :: outname = ''
 character(len=640) :: format_string
 integer(fourbyteint) :: i, j, l, ios, cycle, pass, step = 1, nseltot = 0, nselmax = huge(0_fourbyteint)
-logical :: freeform = .false.
-integer(fourbyteint) :: isflags = 0, reject = -1
+logical :: freeform = .false., has_flags = .false.
+integer(fourbyteint) :: reject = -1
 
 ! For statistics
 integer, parameter :: no_stat = 0, pass_stat = 1, cycle_stat = 2
@@ -122,7 +122,7 @@ do j = 1,msat
 	! If flags or SLA are among the results, remember which they are
 	do i = 1,S%nsel
 		if (S%sel(i)%info%datatype == rads_type_flagmasks) then
-			isflags = i
+			has_flags = .true.
 		else if (S%sel(i)%info%datatype == rads_type_sla) then
 			if (reject == -1) reject = i
 		endif
@@ -130,8 +130,8 @@ do j = 1,msat
 
 	! Open single output file, if requested
 	if (outname == '-') then
-		outunit = 6
-		logunit = 0
+		outunit = stdout
+		logunit = stderr
 	else if (outname /= '') then
 		outunit = getlun()
 		open (outunit, file=outname, status='replace')
@@ -176,7 +176,7 @@ do j = 1,msat
 	if (S%debug >= 1) write (logunit,*)
 
 	! Close file before exit
-	if (outunit /= 6) close (outunit)
+	if (outunit /= stdout) close (outunit)
 
 	! Deallocate temporary arrays
 	deallocate (stat, r, q)
@@ -214,7 +214,7 @@ end subroutine synopsis
 !***********************************************************************
 ! Process data for a single pass
 
-subroutine process_pass
+subroutine process_pass ()
 character(len=80) :: passname
 real(eightbytereal), allocatable :: data(:,:)
 integer(fourbyteint) :: i
@@ -260,12 +260,8 @@ do i = 1,P%ndata,step
 	! are actual measurements passing the editing criteria.
 	if (nselpass == 1) call write_header
 
-	! Write out the data point, and take care of the flag words
-	if (isflags > 0) then
-		write (outunit,format_string) data(i,:isflags-1),to16bits(data(i,isflags)),data(i,isflags+1:)
-	else if (S%nsel > 0) then
-		write (outunit,format_string) data(i,:)
-	endif
+	! Write out the data point
+	call print_data (data(i,:))
 enddo
 
 nseltot = nseltot + nselpass
@@ -287,9 +283,23 @@ endif
 end subroutine process_pass
 
 !***********************************************************************
+! Print a single line of data (take care of flags)
+
+subroutine print_data (x)
+real(eightbytereal) :: x(:)
+integer :: j
+if (has_flags) then
+	do j = 1,S%nsel
+		if (S%sel(j)%info%datatype == rads_type_flagmasks) x(j) = transfer(nint8(x(j)),0d0)
+	enddo
+endif
+write (outunit,format_string) x(:)
+end subroutine print_data
+
+!***********************************************************************
 ! Print statistics for one batch of data
 
-subroutine print_stat
+subroutine print_stat ()
 if (stat(1)%nr == 0) return
 call stat_line ('min ', stat%xmin)
 call stat_line ('max ', stat%xmax)
@@ -300,26 +310,20 @@ end subroutine print_stat
 
 !***********************************************************************
 
-subroutine stat_line (string,x)
+subroutine stat_line (string, x)
 character(len=*) :: string
 real(eightbytereal) :: x(:)
 write (outunit, 690, advance='no') string, cycle, pass, stat(1)%nr
-if (isflags > 0) then
-	write (outunit, format_string) x(:isflags-1),to16bits(0d0),x(isflags+1:)
-else
-	write (outunit, format_string) x
-endif
+call print_data (x)
 690 format('# ',a,t7,': ',i3.3,1x,i4.4,i9,' ')
 end subroutine stat_line
 
 !***********************************************************************
 
-subroutine write_header
+subroutine write_header ()
 logical :: continued = .false.
-integer :: j, k, m
-character(len=4), parameter :: flagname(0:15) = (/'2516','2501','2502','2503','2504','2505','2506','2507', &
-	'2508','2509','2510','2511','2512','2513','2514','2515'/)
-type(rads_var), pointer :: var
+integer :: j
+save continued
 
 ! Format of ASCII header
 600 format( &
@@ -333,7 +337,6 @@ type(rads_var), pointer :: var
 '# Equ_lon   = ',f11.6/ &
 '# Original  = ',a)
 620 format('# Col ',i2,'    = ',a,' [',a,']')
-621 format('# Col ',i2,'    = flag ',i2,': ',a)
 
 ! Print the top of the header (skip a line first if this is a continuation)
 if (continued) write (outunit,*)
@@ -342,17 +345,11 @@ write (outunit,600) timestamp(), trim(S%command), trim(S%satellite), trim(S%phas
 
 ! Write column info
 if (outname /= '') continued = .true.
-m = 0
 do j = 1,S%nsel
 	if (S%sel(j)%info%datatype == rads_type_flagmasks) then
-		do k = 0,15
-			m = m + 1
-			var => rads_varptr (S, flagname(k))
-			write (outunit,621) m, k, trim(var%long_name)
-		enddo
+		write (outunit,620) j, trim(S%sel(j)%long_name), trim(S%sel(j)%info%flag_meanings)
 	else
-		m = m + 1
-		write (outunit,620) m, trim(S%sel(j)%long_name), trim(S%sel(j)%info%units)
+		write (outunit,620) j, trim(S%sel(j)%long_name), trim(S%sel(j)%info%units)
 	endif
 enddo
 end subroutine write_header
