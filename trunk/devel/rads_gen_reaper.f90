@@ -171,7 +171,7 @@ enddo
 
 read (*,550,iostat=ios) infile
 if (ios /= 0) call synopsis ('-?')
-call get_reaper ()
+call get_reaper
 
 do
 	! If the start time is within the last file, get another file first
@@ -181,7 +181,7 @@ do
 		! Read the next file
 		old_infile = infile
 		read (*,550,iostat=ios) infile
-		if (ios == 0) call get_reaper ()
+		if (ios == 0) call get_reaper
 	endif
 
 	! Look where to split this chunk of data
@@ -193,7 +193,7 @@ do
 
 	! Write out the data
 	nout = i - 1 ! Number of measurements to be written out
-	call put_rads (nout)
+	call put_rads
 
 	! Number of measurements remaining
 	ndata = ndata - nout
@@ -562,12 +562,11 @@ end subroutine get_reaper
 ! Write content of memory to a single pass of RADS data
 !-----------------------------------------------------------------------
 
-subroutine put_rads (n)
-integer(fourbyteint), intent(in) :: n
+subroutine put_rads ()
 integer(fourbyteint) :: i
 character(160) :: original
 
-if (n == 0) return	! Skip empty data sets
+if (nout == 0) return	! Skip empty data sets
 if (cyclenr(1) < c0 .or. cyclenr(1) > c1) return	! Skip chunks that are not of the selected cycle
 if (tnode(1) < t0 .or. tnode(1) > t1) return	! Skip equator times that are not of selected range
 
@@ -580,7 +579,7 @@ call rads_init_pass_struct (S, P)
 P%cycle = cyclenr(1)
 P%pass = passnr(1)
 P%start_time = var(1)%d(1)
-P%end_time = var(1)%d(n)
+P%end_time = var(1)%d(nout)
 P%equator_time = tnode(1)
 P%equator_lon = lnode(1)
 
@@ -594,13 +593,9 @@ else
 endif
 P%original = 'REAPER '//trim(l2_version)//' data of '//l2_proc_time(:11)//': '//trim(original)
 
-! Open output file
-call rads_create_pass (S, P, n)
-
-! Define all variables
+! Check which variables are empty
 do i = 1,nvar
-	var(i)%empty = all(isnan(var(i)%d(1:n)))
-	call rads_def_var (S, P, var(i)%v)
+	var(i)%empty = all(isnan(var(i)%d(1:nout)))
 enddo
 if (any(var(1:nvar)%empty)) then
 	write (*,550,advance='no') '... No'
@@ -609,13 +604,21 @@ if (any(var(1:nvar)%empty)) then
 	enddo
 endif
 
-! Fill all the data fields
+! Open output file
+call rads_create_pass (S, P, nout)
+
+! Define all variables
 do i = 1,nvar
-	call rads_put_var (S, P, var(i)%v, var(i)%d(1:n))
+	call rads_def_var (S, P, var(i)%v)
 enddo
 
-! Write to the data file
-write (*,552) n,trim(P%filename(len_trim(S%dataroot)+2:))
+! Fill all the data fields
+do i = 1,nvar
+	call rads_put_var (S, P, var(i)%v, var(i)%d(1:nout))
+enddo
+
+! Close the data file
+write (*,552) nout,trim(P%filename(len_trim(S%dataroot)+2:))
 call rads_close_pass (S, P)
 
 ! Formats
