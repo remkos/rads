@@ -2818,16 +2818,23 @@ character(len=*), intent(in), optional :: description, flag
 integer(fourbyteint), intent(in), optional :: unit
 logical :: rads_version
 !
-! This routine prints out a message in one of the following forms:
-! 1) When first command line argument is empty or -? or --help:
-!    "rads_program (r<number>): <description>"
-! 2) When the first command line argument is --version:
+! This routine prints out a message in one of the following forms,
+! depending on flag (or the first argument on the command line):
+! 1) When flag is --version:
 !    "rads_program: revision <number>, library revision <number>"
 !    The program then terminates here.
-! 3) When no <description> is given:
+! 2) When no <description> is given:
 !    "rads_program (r<number>)"
-! 4) Otherwise:
+!    Return value is .true.
+! 3) When flag is empty or -? or --help:
+!    "rads_program (r<number>): <description>"
+!    Return value is .false.
+! 4) When flag is --head
+!    "rads_program (r<number>): <description>"
+!    Return value is .true.
+! 5) Otherwise:
 !    No output
+!    Return value is .true.
 !
 ! Arguments:
 !  revision    : SVN revision tag
@@ -2836,7 +2843,7 @@ logical :: rads_version
 !  flag        : Use string in replacement of first command line argument
 !
 ! Return value:
-!  rads_version: .false. if output is of type 1, otherwise .true.
+!  rads_version: .false. if output is of type 3, otherwise .true.
 !-----------------------------------------------------------------------
 integer :: iunit
 character(len=rads_naml) :: progname,arg
@@ -2860,6 +2867,8 @@ else if (.not.present(description)) then
 else if (arg == '--help' .or. arg == '-?') then
 	write (iunit, 1310) trim(progname), max(rads_rev(),rads_rev(revision)), trim(description)
 	rads_version = .false.
+else if (arg == '--head') then
+	write (iunit, 1310) trim(progname), max(rads_rev(),rads_rev(revision)), trim(description)
 endif
 1300 format (a,' (r',i0,')')
 1310 format (a,' (r',i0,'): ',a)
