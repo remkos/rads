@@ -37,21 +37,22 @@ integer(fourbyteint), parameter :: period_day=0, period_pass=1, period_cycle=2
 integer(fourbyteint) :: nr=0, minnr=2, cycle, pass, i, l, &
 	period=period_day, wmode=0, nx, ny, kx, ky, ios, sizes(2), ncid, varid(2)
 real(eightbytereal), allocatable :: z(:,:), lat_w(:)
-real(eightbytereal) :: sini, step=1d0, x0, y0, res(2)=(/3d0,1d0/), day_next
+real(eightbytereal) :: sini, step=1d0, x0, y0, res(2)=(/3d0,1d0/), start_time, end_time
 type :: stat
 	real(eightbytereal) :: wgt, mean, sum2, xmin, xmax
 end type
 type(stat), allocatable :: box(:,:,:), tot(:)
 type(rads_sat) :: S
 type(rads_pass) :: Pin, Pout
-logical :: ascii = .true.
+logical :: ascii = .true., fullyear = .false.
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('c::d::p::b::maslo::r:: min: res: output::')
+call rads_set_options ('c::d::p::b::maslo::r:: full-year min: res: output::')
 call rads_init (S)
 if (S%error /= rads_noerr) call rads_exit ('Fatal error')
-day_next = S%nan
+start_time = S%nan
+end_time = S%nan
 
 ! If no sel= is given, use sla
 if (S%nsel == 0)  call rads_parse_varlist (S, 'sla')
@@ -81,6 +82,8 @@ do i = 1,rads_nopt
 		wmode = 3
 	case ('l')
 		lstat = 4
+	case ('full-year')
+		fullyear = .true.
 	case ('min')
 		read (rads_opt(i)%arg, *, iostat=ios) minnr
 	case ('res')
@@ -135,7 +138,8 @@ do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
 	do pass = S%passes(1), S%passes(2), S%passes(3)
 		call rads_open_pass (S, Pin, cycle, pass)
 		! After very first call, initialise the day counter
-		if (isnan(day_next)) day_next = floor(Pin%start_time/86400d0)*86400d0+step
+		if (isnan(end_time)) end_time = floor(Pin%start_time/86400d0)*86400d0+step
+		if (isnan(start_time)) start_time = Pin%start_time
 
 		! Process the pass data
 		if (Pin%ndata > 0) call process_pass
@@ -143,7 +147,7 @@ do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
 		! Print the statistics at the end of the data pass (if requested)
 		if (period == period_pass .and. nint(modulo(dble(pass),step)) == 0) call output_stat
 		! Print the statistics for the past day(s) (if requested)
-		if (period == period_day .and. Pin%end_time >= day_next) call output_stat
+		if (period == period_day .and. Pin%end_time >= end_time) call output_stat
 		call rads_close_pass (S, Pin)
 	enddo
 
@@ -184,6 +188,7 @@ write (stderr,1300)
 '  -a                        Weight measurements by cosine of latitude'/ &
 '  -s                        Use inclination-dependent weight'/ &
 '  -l                        Print min and max in addition to mean and stddev'/ &
+'  --full-year               Write date as YYYYMMDD instead of the default YYMMDD'/ &
 '  --min=MINNR               Minimum number of measurements per statistics record (default = 2)'/ &
 '  --res=DX,DY               Size of averaging boxes (default = 3x1 degrees)'/ &
 '  -o, --out[=OUTNAME]       Create netCDF output instead of ASCII (default filename is "radsstat.nc")')
@@ -206,7 +211,10 @@ enddo
 ! Update the statistics with data in this pass
 do i = 1,Pin%ndata
 	! Print the statistics (if in "daily" mode)
-	if (period == period_day .and. Pin%tll(i,1) >= day_next) call output_stat
+	if (period == period_day .and. Pin%tll(i,1) >= end_time) then
+		call output_stat
+		start_time = Pin%tll(i,1)
+   	endif
    	if (reject > 0) then
    		if (isnan(z(i,reject))) cycle ! Reject if selected variable is NaN
    	else if (reject == -2) then
@@ -238,7 +246,7 @@ real(eightbytereal) :: w
 type(rads_var), pointer :: var
 
 if (nr < minnr) then
-	day_next = day_next + step
+	end_time = end_time + step
 	return
 endif
 
@@ -277,14 +285,15 @@ endif
 
 ! Write out statistics in ASCII
 if (ascii) then
-	call mjd2ymd(floor((day_next-step)/86400d0)+46066,yy,mm,dd)
+	call mjd2ymd(floor(start_time/86400d0)+46066,yy,mm,dd)
+	if (.not.fullyear) yy = modulo(yy,100)
 	select case (period)
 	case (period_day)
-		write (*,600,advance='no') modulo(yy,100),mm,dd
+		write (*,600,advance='no') yy,mm,dd
 	case (period_pass)
 		write (*,601,advance='no') cycle,pass
 	case default
-		write (*,602,advance='no') cycle,modulo(yy,100),mm,dd
+		write (*,602,advance='no') cycle,yy,mm,dd
 	endselect
 	if (lstat == 2) then
 		write (*,format_string) nr, tot(0)%mean, (tot(j)%mean,tot(j)%sum2,j=1,S%nsel)
@@ -321,11 +330,12 @@ endif
 ! Reset statistics
 box = stat(0d0, 0d0, 0d0, S%nan, S%nan)
 nr  = 0
-day_next = day_next + step
+start_time = S%nan
+end_time = end_time + step
 
-600 format (3i2.2)
+600 format (3i0.2)
 601 format (i3,i5)
-602 format (i3,1x,3i2.2)
+602 format (i3,1x,3i0.2)
 end subroutine output_stat
 
 !***********************************************************************
