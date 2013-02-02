@@ -18,6 +18,16 @@
 module rads_misc
 use typesizes
 
+! These are used by getopt
+integer, save :: getopt_ind = 1, getopt_chr = 2
+logical, save :: getopt_err = .true.
+character(len=160), private, save :: getopt_arg
+logical, private, save :: getopt_new = .true.
+
+! Provide a NaN parameter
+real(eightbytereal), parameter :: nan = transfer ((/not(0_fourbyteint),not(0_fourbyteint)/),0d0)
+logical, parameter :: little_endian = btest(1,0), big_endian = .not.little_endian
+
 !***********************************************************************
 !*d_int -- Convert integer to double while accounting for NaNs
 !+
@@ -67,15 +77,6 @@ interface read_val
 	module procedure read_val_int
 	module procedure read_val_dble
 end interface read_val
-
-! These are used by getopt
-integer, save :: getopt_ind = 1, getopt_chr = 2
-logical, save :: getopt_err = .true.
-character(len=160), private, save :: getopt_arg
-logical, private, save :: getopt_new = .true.
-
-! Provide a NaN parameter
-real(eightbytereal), parameter :: nan = transfer ((/not(0_fourbyteint),not(0_fourbyteint)/),0d0)
 
 contains
 
@@ -505,7 +506,7 @@ elemental function nint1 (x)
 integer(onebyteint) :: nint1
 real(eightbytereal), intent(in) :: x
 !
-! This elemental function rounds an 8-byte real to a 1-byte interger.
+! This elemental function rounds an 8-byte real to a 1-byte integer.
 ! If the real is out of range, or NaN, the returned value is 127.
 ! Since this function is elemental, it can be applied to arrays as well.
 !-----------------------------------------------------------------------
@@ -525,7 +526,7 @@ elemental function nint2 (x)
 integer(twobyteint) :: nint2
 real(eightbytereal), intent(in) :: x
 !
-! This elemental function rounds an 8-byte real to a 2-byte interger.
+! This elemental function rounds an 8-byte real to a 2-byte integer.
 ! If the real is out of range, or NaN, the returned value is 32767.
 ! Since this function is elemental, it can be applied to arrays as well.
 !-----------------------------------------------------------------------
@@ -545,7 +546,7 @@ elemental function nint4 (x)
 integer(fourbyteint) :: nint4
 real(eightbytereal), intent(in) :: x
 !
-! This elemental function rounds an 8-byte real to a 4-byte interger.
+! This elemental function rounds an 8-byte real to a 4-byte integer.
 ! If the real is out of range, or NaN, the returned value is 2147483647.
 ! Since this function is elemental, it can be applied to arrays as well.
 !-----------------------------------------------------------------------
@@ -557,26 +558,6 @@ else ! Out of range or NaN
 	nint4 = imax
 endif
 end function nint4
-
-!***********************************************************************
-!*nint4 -- Round 8-byte real to 8-byte integer
-!+
-elemental function nint8 (x)
-integer(eightbyteint) :: nint8
-real(eightbytereal), intent(in) :: x
-!
-! This elemental function rounds an 8-byte real to a 8-byte interger.
-! If the real is out of range, or NaN, the returned value is huge.
-! Since this function is elemental, it can be applied to arrays as well.
-!-----------------------------------------------------------------------
-integer(eightbyteint), parameter :: imax = huge(0_eightbyteint)
-real(eightbytereal), parameter :: xmin = -imax-1.5d0, xmax = imax+0.5d0
-if (x > xmin .and. x < xmax) then
-	nint8 = nint(x,eightbyteint)
-else ! Out of range or NaN
-	nint8 = imax
-endif
-end function nint8
 
 !***********************************************************************
 !*isnan -- Check if double precision number is a NaN

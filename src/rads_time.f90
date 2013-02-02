@@ -380,6 +380,7 @@ real(eightbytereal), intent(out), optional :: t1, dt
 integer :: i,mode
 real(eightbytereal) :: tt0,tt1
 character(len=len(optarg)) :: arg
+real(eightbytereal), parameter :: nan = transfer ((/not(0_fourbyteint),not(0_fourbyteint)/),0d0)
 
 ! Check the options
 select case (optopt)
@@ -399,9 +400,8 @@ case default
 end select
 
 ! Initialize the values to NaN
-tt0 = 0d0
-tt0 = tt0 / tt0
-tt1 = tt0
+tt0 = nan
+tt1 = nan
 
 ! Replace any slashes with commas
 arg = optarg
