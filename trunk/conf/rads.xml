@@ -1559,7 +1559,7 @@ Global RADS configuration file
 	<long_name>original flag word (before enhancement)</long_name>
 	<limits>65512 0</limits>
 	<data>flags_orig</data>
-	<format>i1,15(1x,i1)</format>
+	<format>b16.16</format>
 	<compress>int2</compress>
 </var>
 <var name="flags_mle3" field="2611" sat="j2">

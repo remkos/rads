@@ -21,6 +21,7 @@ Compatibility issues between RADS3 and RADS4
 - rads2asc
   . Rms-about-mean replaced by standard deviation (West 1979 method)
   . Different layout of output of rads_stat
+  . Flags words are now displayed by a single string
 
 - rads2adr / rads2xadr / rads2xgf
   . Now separate program from rads2asc
