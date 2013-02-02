@@ -288,9 +288,18 @@ end subroutine process_pass
 subroutine print_data (x)
 real(eightbytereal) :: x(:)
 integer :: j
-if (has_flags) then
+! In the following we would have liked to use nint8 in the transfer
+! function, but an 8-byte integer is not guaranteed to work, so we use
+! padded 4-byte integers instead
+if (.not.has_flags) then
+	! Do nothing
+else if (little_endian) then
 	do j = 1,S%nsel
-		if (S%sel(j)%info%datatype == rads_type_flagmasks) x(j) = transfer(nint8(x(j)),0d0)
+		if (S%sel(j)%info%datatype == rads_type_flagmasks) x(j) = transfer((/nint4(x(j)),0_fourbyteint/),0d0)
+	enddo
+else
+	do j = 1,S%nsel
+		if (S%sel(j)%info%datatype == rads_type_flagmasks) x(j) = transfer((/0_fourbyteint,nint4(x(j))/),0d0)
 	enddo
 endif
 write (outunit,format_string) x(:)

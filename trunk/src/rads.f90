@@ -1639,6 +1639,7 @@ data(1:P%ndata) = ibits(P%flags,info%bits(1),info%bits(2))
 end subroutine rads_get_var_nc_bits
 
 recursive subroutine rads_get_var_math () ! Get data variable from MATH statement
+use rads_misc
 use rads_math
 type(math_ll), pointer :: top
 integer(fourbyteint) :: i, i0, i1, istat

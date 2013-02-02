@@ -127,14 +127,11 @@ type(var_) :: var(mvar)
 
 real(eightbytereal), parameter :: sec1990=157766400d0	! UTC seconds from 1 Jan 1985 to 1 Jan 1990
 real(eightbytereal), parameter :: picosec_to_m=0.5d-12*299792458d0	! picoseconds of 2-way range to mm 1-way
-real(eightbytereal) :: nan
 integer :: i
 logical :: new
 
 ! Initialise
 
-nan = 0d0
-nan = nan / nan
 t0 = nan
 t1 = nan
 550 format (a)
