@@ -236,7 +236,7 @@ character(len=rads_strl) :: qual, math(1)
 
 ! Init some variables
 formts=''
-limits = make_nan()
+limits = nan
 factors = 0d0
 factors(4) = 1d0
 factors(6:16) = -1d0
@@ -258,17 +258,17 @@ if (S%sat /= '??') call xml_put (X, 'if', attr, 1, string, 0, 'open')
 ! Parsing the variables
 attr(1,1) = 'name'
 do i = 0,99
-	if (all(isnan(limits(:,i))) .and. formts(i) == '') cycle
-	if (limits(1,i) < -1d19) limits(1,i) = make_nan()
-	if (limits(2,i) >  1d19) limits(2,i) = make_nan()
+	if (all(isnan_(limits(:,i))) .and. formts(i) == '') cycle
+	if (limits(1,i) < -1d19) limits(1,i) = nan
+	if (limits(2,i) >  1d19) limits(2,i) = nan
 
 	write (field, '(i2.2)') i
 	var => rads_varptr (S, field)
 	attr(2,1) = var%info%name
 
 	call xml_put (X, 'var', attr, 1, string, 0, 'open')
-	if (.not.all(isnan(limits(:,i)))) then
-		where (isnan(limits(:,i))) limits(:,i) = var%info%limits(:)
+	if (.not.all(isnan_(limits(:,i)))) then
+		where (isnan_(limits(:,i))) limits(:,i) = var%info%limits(:)
 		call xml_dble (limits(:,i), 'limits', 'f0.3')
 	endif
 	if (formts(i) /= '') call xml_text (formts(i), 'format')

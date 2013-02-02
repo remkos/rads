@@ -149,7 +149,7 @@ do j = 1,msat
 
 	! Initialise statistics
 	allocate (stat(S%nsel), r(S%nsel), q(S%nsel))
-	stat = stat_type (0, 0d0, 0d0, S%nan, S%nan)
+	stat = stat_type (0, 0d0, 0d0, nan, nan)
 
 	! Now loop through all cycles and passes
 	do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
@@ -238,9 +238,9 @@ nselpass = 0
 do i = 1,P%ndata,step
 	! See if we have to reject this record
 	if (reject > 0) then
-		if (isnan(data(i,reject))) cycle
+		if (isnan_(data(i,reject))) cycle
 	else if (reject == -2) then
-		if (any(isnan(data(i,:)))) cycle
+		if (any(isnan_(data(i,:)))) cycle
 	endif
 	nselpass = nselpass + 1
 
@@ -305,7 +305,7 @@ call stat_line ('min ', stat%xmin)
 call stat_line ('max ', stat%xmax)
 call stat_line ('mean', stat%mean)
 call stat_line ('std ', sqrt(stat%sum2/stat(1)%nr))
-stat = stat_type (0, 0d0, 0d0, S%nan, S%nan)
+stat = stat_type (0, 0d0, 0d0, nan, nan)
 end subroutine print_stat
 
 !***********************************************************************

@@ -142,9 +142,9 @@ enddo
 do i = 1,P%ndata,step
 	! See if we have to reject this record
 	if (reject > 0) then
-		if (isnan(data(i,reject))) cycle
+		if (isnan_(data(i,reject))) cycle
 	else if (reject == -2) then
-		if (any(isnan(data(i,:)))) cycle
+		if (any(isnan_(data(i,:)))) cycle
 	endif
 	nselpass = nselpass + 1
 	accept(i) = .true.

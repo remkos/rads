@@ -412,16 +412,16 @@ enddo
 ! Read the values, and convert when specified
 if (present(t1) .and. present(dt)) then
 	read (arg, *, iostat=i) tt0, tt1, dt
-	if (.not.isnan(tt1)) t1 = sec85 (mode, tt1)
+	if (tt1 == tt1) t1 = sec85 (mode, tt1)
 else if (present(t1)) then
 	read (arg, *, iostat=i) tt0, tt1
-	if (.not.isnan(tt1)) t1 = sec85 (mode, tt1)
+	if (tt1 == tt1) t1 = sec85 (mode, tt1)
 else if (present(dt)) then
 	read (arg, *, iostat=i) tt0, dt
 else
 	read (arg, *, iostat=i) tt0
 endif
-if (.not.isnan(tt0)) t0 = sec85 (mode, tt0)
+if (tt0 == tt0) t0 = sec85 (mode, tt0)
 
 ! Successful return
 dateopt = .true.

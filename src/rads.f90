@@ -41,6 +41,7 @@ integer(fourbyteint), parameter :: rads_noerr = 0, &
 integer(fourbyteint) :: rads_err_incompat = 101, rads_err_noinit = 102
 integer(twobyteint), parameter :: rads_nofield = -1
 real(eightbytereal), parameter :: pi = 3.1415926535897932d0, rad = pi/180d0
+real(eightbytereal), parameter, private :: nan = transfer ((/not(0_fourbyteint),not(0_fourbyteint)/),0d0)
 character(len=1), parameter :: rads_linefeed = char(10), rads_noedit = '_'
 integer, parameter :: stderr = 0, stdin = 5, stdout = 6
 
@@ -107,7 +108,6 @@ type :: rads_sat
 	character(len=rads_naml) :: dataroot             ! Root directory of RADS data directory
 	character(len=rads_cmdl) :: command              ! Command line
 	character(len=8) :: satellite                    ! Satellite name
-	real(eightbytereal) :: nan                       ! NaN value
 	real(eightbytereal) :: dt1hz                     ! "1 Hz" sampling interval
 	real(eightbytereal) :: frequency(2)              ! Frequency (GHz) of primary and secondary channel
 	real(eightbytereal) :: inclination               ! Satellite inclination (deg)
@@ -514,7 +514,7 @@ S%lat => rads_varptr (S, 'lat')
 S%lon => rads_varptr (S, 'lon')
 
 ! Now limit cycles based on time limits (if any)
-if (.not.any(isnan(S%time%info%limits))) then
+if (.not.any(isnan_(S%time%info%limits))) then
 	S%cycles(1) = max(S%cycles(1), rads_time_to_cycle (S, S%time%info%limits(1)))
 	S%cycles(2) = min(S%cycles(2), rads_time_to_cycle (S, S%time%info%limits(2)))
 endif
@@ -611,32 +611,8 @@ type(rads_sat), intent(inout) :: S
 ! Arguments:
 !  S        : Satellite/mission dependent structure
 !-----------------------------------------------------------------------
-!real(eightbytereal) :: nan
-!nan = make_nan()
-!S = rads_sat ('', '', '', nan, 1d0, (/13.8d0, nan/), 90d0, nan, nan, nan, 1, 1, rads_noerr, &
-!	0, 0, 0, 0, 0, 0, '', 0, null(), null(), null(), null(), null(), null(), null(), null())
-S%dataroot = ''
-S%command = ''
-S%satellite = ''
-S%nan = make_nan ()
-S%dt1hz = 1d0
-S%frequency = (/13.8d0, S%nan/)
-S%inclination = 90d0
-S%eqlonlim = S%nan
-S%centroid = S%nan
-S%xover_params = S%nan
-S%cycles = 1
-S%passes = 1
-S%error = rads_noerr
-S%debug = 0
-S%pass_stat = 0
-S%total_read = 0
-S%total_inside = 0
-S%nvar = 0
-S%nsel = 0
-S%sat = ''
-S%satid = 0
-nullify (S%excl_cycles, S%var, S%sel, S%time, S%lat, S%lon, S%phases, S%phase)
+S = rads_sat ('', '', '', '', 1d0, (/13.8d0, nan/), 90d0, nan, nan, nan, 1, 1, rads_noerr, &
+	0, 0, 0, 0, 0, 0, '', 0, null(), null(), null(), null(), null(), null(), null(), null())
 end subroutine rads_init_sat_struct
 
 !***********************************************************************
@@ -677,7 +653,7 @@ type(rads_pass), intent(inout) :: P
 !  S        : Satellite/mission dependent structure
 !  P        : Pass dependent structure
 !-----------------------------------------------------------------------
-P = rads_pass ('', '', null(), S%nan, S%nan, S%nan, S%nan, null(), null(), 0, 0, 0, 1, 0, 0, 0, 0, S%sat, S%satid, null())
+P = rads_pass ('', '', null(), nan, nan, nan, nan, null(), null(), 0, 0, 0, 1, 0, 0, 0, 0, S%sat, S%satid, null())
 end subroutine rads_init_pass_struct
 
 !***********************************************************************
@@ -905,7 +881,7 @@ type(rads_option), intent(in) :: opt
 integer :: j, k0, k1
 real(eightbytereal) :: val(2)
 ! Scan a single command line argument (option)
-val = S%nan
+val = nan
 j = index(opt%arg, '=')
 select case (opt%opt)
 case ('C', 'cycle')
@@ -1178,7 +1154,7 @@ if (S%debug >= 4) write (*,*) 'Estimated start/end/equator time/longitude = ', &
 	P%start_time, P%end_time, P%equator_time, P%equator_lon
 
 ! Do checking of pass ends on the time criteria (only when such are given)
-if (.not.all(isnan(S%time%info%limits))) then
+if (.not.all(isnan_(S%time%info%limits))) then
 	if (P%end_time + 300d0 < S%time%info%limits(1) .or. P%start_time - 300d0 > S%time%info%limits(2)) then ! Allow 5 minute slop
 		if (S%debug >= 2) write (*,*) 'Bail out on estimated time:', S%time%info%limits, P%start_time, P%end_time
 		S%pass_stat(3) = S%pass_stat(3) + 1
@@ -1263,14 +1239,14 @@ call rads_get_var_common (S, P, S%lon, tll(:,3), .false.)
 ! If requested, check for distance to centroid
 if (S%centroid(3) > 0d0) then
 	do i = 1,P%ndata
-		if (any(isnan(tll(i,2:3)))) cycle
-		if (sfdist(tll(i,2)*rad, tll(i,3)*rad, S%centroid(2), S%centroid(1)) > S%centroid(3)) tll(i,2:3) = S%nan
+		if (any(isnan_(tll(i,2:3)))) cycle
+		if (sfdist(tll(i,2)*rad, tll(i,3)*rad, S%centroid(2), S%centroid(1)) > S%centroid(3)) tll(i,2:3) = nan
 	enddo
 endif
 
 ! Look for first non-NaN measurement
 do i = 1,P%ndata
-	if (.not.any(isnan(tll(i,:)))) exit
+	if (.not.any(isnan_(tll(i,:)))) exit
 enddo
 if (i > P%ndata) then ! Got no non-NaNs
 	P%ndata = 0
@@ -1281,7 +1257,7 @@ P%first_meas = i
 
 ! Now look for last non-NaN measurement
 do i = P%ndata, P%first_meas, -1
-	if (.not.any(isnan(tll(i,:)))) exit
+	if (.not.any(isnan_(tll(i,:)))) exit
 enddo
 P%last_meas = i
 
@@ -1352,7 +1328,6 @@ end subroutine rads_close_pass
 !*rads_get_var_by_number -- Read variable (data) from RADS4 file by integer
 !+
 recursive subroutine rads_get_var_by_number (S, P, field, data, noedit)
-use rads_misc
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 integer(fourbyteint), intent(in) :: field
@@ -1386,7 +1361,7 @@ do i = 1,S%nvar
 enddo
 write (name,'(i0)') field
 call rads_error (S, rads_err_var, 'Variable with field number '//name//' not found')
-data(:P%ndata) = S%nan
+data(:P%ndata) = nan
 end subroutine rads_get_var_by_number
 
 !***********************************************************************
@@ -1425,7 +1400,6 @@ end subroutine rads_get_var_by_var
 !*rads_get_var_by_name -- Read variable (data) from RADS by character
 !+
 recursive subroutine rads_get_var_by_name (S, P, varname, data, noedit)
-use rads_misc
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 character(len=*), intent(in) :: varname
@@ -1457,7 +1431,7 @@ endif
 
 var => rads_varptr (S, varname(:l))
 if (.not.associated(var)) then
-	data(:P%ndata) = S%nan
+	data(:P%ndata) = nan
 	return
 endif
 call rads_get_var_common (S, P, var, data(:P%ndata), skip_edit)
@@ -1467,7 +1441,6 @@ end subroutine rads_get_var_by_name
 !*rads_get_var_common -- Read variable (data) from RADS database (common to all)
 !+
 recursive subroutine rads_get_var_common (S, P, var, data, skip_edit)
-use rads_misc
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 type(rads_var), intent(inout) :: var
@@ -1509,7 +1482,7 @@ do i = 1,3 ! This loop is here to allow processing of aliases
 	case (rads_src_constant)
 		call rads_get_var_constant (info%dataname)
 	case default
-		data = S%nan
+		data = nan
 		return
 	end select
 
@@ -1531,7 +1504,7 @@ do i = 1,3 ! This loop is here to allow processing of aliases
 
 	else ! Ran out of options
 		call rads_error (S, rads_err_var, 'Could not find any data for variable "'//trim(var%name)//'"')
-		data = S%nan
+		data = nan
 		exit
 	endif
 
@@ -1599,7 +1572,7 @@ case default
 end select
 
 ! Set NaN values and apply optional scale_factor and add_offset
-if (nff(nf90_get_att(P%ncid, info%varid, '_FillValue', fillvalue))) where (data == fillvalue) data = S%nan
+if (nff(nf90_get_att(P%ncid, info%varid, '_FillValue', fillvalue))) where (data == fillvalue) data = nan
 if (nff(nf90_get_att(P%ncid, info%varid, 'scale_factor', scale_factor))) data = data * scale_factor
 if (nff(nf90_get_att(P%ncid, info%varid, 'add_offset', add_offset))) data = data + add_offset
 end subroutine rads_get_var_nc
@@ -1736,35 +1709,37 @@ if (ios == 0) then
 	data = data(1)
 else
 	S%error = rads_err_var
-	data = S%nan
+	data = nan
 endif
 end subroutine rads_get_var_constant
 
 subroutine rads_edit_data () ! Edit the data base on limits
+use rads_misc
 integer(fourbyteint) :: mask(2)
 
-if (all(isnan(info%limits))) then
+if (all(isnan_(info%limits))) then
 	! Skip editing when both limits are NaN
 	return
 else if (info%datatype == rads_type_lon) then
 	! When longitude, shift the data first above the lower (west) limit
 	data = info%limits(1) + modulo (data - info%limits(1), 360d0)
 	! Then only check the upper (east) limit
-	where (data > info%limits(2)) data = S%nan
+	where (data > info%limits(2)) data = nan
 else if (info%datatype == rads_type_flagmasks) then
 	! Do editing of flag based on mask
 	mask = nint(info%limits)
 	! Reject when any of the set bits of the lower limit are set in the data
-	if (mask(1) /= 0) where (iand(nint(data),mask(1)) /= 0) data = S%nan
+	if (mask(1) /= 0) where (iand(nint(data),mask(1)) /= 0) data = nan
 	! Reject when any of the set bits of the upper limit are not set in the data
-	if (mask(2) /= 0) where (iand(nint(data),mask(2)) /= mask(2)) data = S%nan
+	if (mask(2) /= 0) where (iand(nint(data),mask(2)) /= mask(2)) data = nan
 else
 	! Do editing of any other variable
-	where (data < info%limits(1) .or. data > info%limits(2)) data = S%nan
+	where (data < info%limits(1) .or. data > info%limits(2)) data = nan
 endif
 end subroutine rads_edit_data
 
 subroutine rads_quality_check ()
+use rads_misc
 real(eightbytereal) :: qual(P%ndata)
 integer(fourbyteint) :: i, j, l
 if (info%quality_flag == '') return
@@ -1777,7 +1752,7 @@ do
 	if (info%quality_flag(i+1:i+j) /= 'and') then	! Skip 'and' string
 		call rads_get_var_by_name (S, P, info%quality_flag(i+1:i+j), qual)
 		if (S%error /= rads_noerr) exit
-		where (isnan(qual)) data = qual
+		where (isnan_(qual)) data = qual
 	endif
 	i = i+j
 	if (i >= l) exit
@@ -1785,6 +1760,7 @@ enddo
 end subroutine rads_quality_check
 
 subroutine rads_update_stat	() ! Update the statistics for given var
+use rads_misc
 real(eightbytereal) :: q, r
 integer(fourbyteint) :: i
 
@@ -1796,7 +1772,7 @@ info%pass = P%pass
 ! Count selected and rejected measurements and update pass statistics
 ! Use method of West (1979)
 do i = 1,P%ndata
-	if (isnan(data(i))) then
+	if (isnan_(data(i))) then
 		info%rejected = info%rejected + 1
 	else
 		info%selected = info%selected + 1
@@ -2370,7 +2346,7 @@ if (associated(tgt)) then
 else
 	allocate (ptr%info)
 	ptr%info = rads_varinfo (varname, varname, '', '', '', '', '', '', '', 'f0.3', '', '', null(), &
-	huge(0d0), S%nan, 0d0, 1d0, 1, nf90_double, 0, 0, 0, 0, 0, 0, 0, 0, S%nan, S%nan, 0d0, 0d0)
+		huge(0d0), nan, 0d0, 1d0, 1, nf90_double, 0, 0, 0, 0, 0, 0, 0, 0, nan, nan, 0d0, 0d0)
 	ptr%name => ptr%info%name
 endif
 ptr%long_name => ptr%info%long_name
@@ -2551,9 +2527,9 @@ character(len=*), intent(in) :: string
 !  S%error  : rads_noerr, rads_err_var
 !-----------------------------------------------------------------------
 real(eightbytereal) :: r(4), x
-r = S%nan
+r = nan
 call read_val (string, r, '/')
-if (isnan(r(4))) then ! Circular region
+if (isnan_(r(4))) then ! Circular region
 	r(3) = abs(r(3))
 	! For longitude limits, do some trigonometry to determine furthest meridians
 	x = sin(r(3)*rad) / cos(r(2)*rad)
@@ -2706,7 +2682,7 @@ real(eightbytereal), intent(in) :: sec
 character(len=12) :: datestring
 integer(fourbyteint) :: yy, mm, dd, hh, mn
 real(eightbytereal) :: ss
-if (isnan(sec)) then
+if (sec /= sec) then
 	datestring = '         NaN'
 else
 	call sec85ymdhms(sec, yy, mm, dd, hh, mn, ss)
@@ -2987,7 +2963,7 @@ else
 endif
 
 ! Initialize the new phase information and direct the pointer
-S%phases(n) = rads_phase (name(1:1), '', '', (/999,0/), 0, S%nan, S%nan, S%nan, S%nan, 0, 0, S%nan, S%nan, S%nan, 0, 0, null())
+S%phases(n) = rads_phase (name(1:1), '', '', (/999,0/), 0, nan, nan, nan, nan, 0, 0, nan, nan, nan, 0, 0, null())
 phase => S%phases(n)
 phase%dataroot = trim(S%dataroot)//'/'//S%sat//'/'//trim(name)
 end function rads_get_phase

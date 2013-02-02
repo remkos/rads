@@ -51,8 +51,8 @@ call synopsis
 call rads_set_options ('c::d::p::b::maslo::r:: full-year min: res: output::')
 call rads_init (S)
 if (S%error /= rads_noerr) call rads_exit ('Fatal error')
-start_time = S%nan
-end_time = S%nan
+start_time = nan
+end_time = nan
 
 ! If no sel= is given, use sla
 if (S%nsel == 0)  call rads_parse_varlist (S, 'sla')
@@ -125,7 +125,7 @@ else
 endif
 
 ! Initialize statistics
-box = stat(0d0, 0d0, 0d0, S%nan, S%nan)
+box = stat(0d0, 0d0, 0d0, nan, nan)
 if (ascii) then
 	call ascii_header
 else
@@ -138,8 +138,8 @@ do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
 	do pass = S%passes(1), S%passes(2), S%passes(3)
 		call rads_open_pass (S, Pin, cycle, pass)
 		! After very first call, initialise the day counter
-		if (isnan(end_time)) end_time = floor(Pin%start_time/86400d0)*86400d0+step
-		if (isnan(start_time)) start_time = Pin%start_time
+		if (isnan_(end_time)) end_time = floor(Pin%start_time/86400d0)*86400d0+step
+		if (isnan_(start_time)) start_time = Pin%start_time
 
 		! Process the pass data
 		if (Pin%ndata > 0) call process_pass
@@ -216,9 +216,9 @@ do i = 1,Pin%ndata
 		start_time = Pin%tll(i,1)
    	endif
    	if (reject > 0) then
-   		if (isnan(z(i,reject))) cycle ! Reject if selected variable is NaN
+   		if (isnan_(z(i,reject))) cycle ! Reject if selected variable is NaN
    	else if (reject == -2) then
-   		if (any(isnan(z(i,:)))) cycle ! Reject if any variable is NaN
+   		if (any(isnan_(z(i,:)))) cycle ! Reject if any variable is NaN
    	endif
 
 	! Update the box statistics
@@ -251,7 +251,7 @@ if (nr < minnr) then
 endif
 
 ! Init global stats
-tot = stat(0d0, 0d0, 0d0, S%nan, S%nan)
+tot = stat(0d0, 0d0, 0d0, nan, nan)
 
 ! Cycle trough all boxes and determine overall weighted mean
 do ky=1,ny
@@ -280,7 +280,7 @@ tot%mean = tot%mean / tot%wgt
 if (nr > 1) then
 	tot%sum2 = sqrt((tot%sum2 / tot%wgt - tot%mean*tot%mean) * nr / (nr - 1d0))
 else
-	tot%sum2 = S%nan
+	tot%sum2 = nan
 endif
 
 ! Write out statistics in ASCII
@@ -328,9 +328,9 @@ else
 endif
 
 ! Reset statistics
-box = stat(0d0, 0d0, 0d0, S%nan, S%nan)
+box = stat(0d0, 0d0, 0d0, nan, nan)
 nr  = 0
-start_time = S%nan
+start_time = nan
 end_time = end_time + step
 
 600 format (3i0.2)

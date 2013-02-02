@@ -74,6 +74,9 @@ logical, save :: getopt_err = .true.
 character(len=160), private, save :: getopt_arg
 logical, private, save :: getopt_new = .true.
 
+! Provide a NaN parameter
+real(eightbytereal), parameter :: nan = transfer ((/not(0_fourbyteint),not(0_fourbyteint)/),0d0)
+
 contains
 
 !***********************************************************************
@@ -372,7 +375,7 @@ end function strtoupper
 !***********************************************************************
 !*getlun -- Get free logical unit number
 !+
-function getlun()
+function getlun ()
 integer :: getlun
 !
 ! This function returns a logical unit number that is not currently
@@ -576,16 +579,19 @@ endif
 end function nint8
 
 !***********************************************************************
-!*make_nan -- Create a NaN value
+!*isnan -- Check if double precision number is a NaN
 !+
-pure function make_nan ()
-real(eightbytereal) :: make_nan
+elemental function isnan_ (x)
+real(eightbytereal), intent(in) :: x
+logical :: isnan_
 !
-! This function returns a double float NaN scalar
+! This elemental function checks if a 8-byte real is a NaN.
+! It is added here, since it is not standard Fortran 90, though GNU
+! has it.
+! Since this function is elemental, it can be applied to arrays as well.
 !-----------------------------------------------------------------------
-make_nan = 0d0
-make_nan = make_nan / make_nan
-end function make_nan
+isnan_ = (x /= x)
+end function isnan_
 
 !***********************************************************************
 !*cross_product -- Compute cross product of two 3-D vectors
@@ -770,12 +776,12 @@ real(eightbytereal) :: q, r, sum2
 integer(fourbyteint) :: i, n
 n = size(x)
 if (n == 0) then
-	mean = make_nan()
+	mean = nan
 	variance = mean
 	return
 else if (n == 1) then
 	mean = x(1)
-	variance = make_nan()
+	variance = nan
 	return
 endif
 mean = 0d0
@@ -870,7 +876,7 @@ elemental function d_int1 (i)
 integer(onebyteint), intent(in) :: i
 real(eightbytereal) :: d_int1
 if (i == huge(0_onebyteint)) then
-	d_int1 = make_nan()
+	d_int1 = nan
 else
 	d_int1 = i
 endif
@@ -880,7 +886,7 @@ elemental function d_int2 (i)
 integer(twobyteint), intent(in) :: i
 real(eightbytereal) :: d_int2
 if (i == huge(0_twobyteint)) then
-	d_int2 = make_nan()
+	d_int2 = nan
 else
 	d_int2 = i
 endif
@@ -890,7 +896,7 @@ elemental function d_int4 (i)
 integer(fourbyteint), intent(in) :: i
 real(eightbytereal) :: d_int4
 if (i == huge(0_fourbyteint)) then
-	d_int4 = make_nan()
+	d_int4 = nan
 else
 	d_int4 = i
 endif

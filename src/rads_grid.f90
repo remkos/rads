@@ -47,7 +47,7 @@ end type
 ! Use the module 'rads_grid' to define the structure.
 !-----------------------------------------------------------------------
 integer, parameter, private :: stderr = 0
-private :: make_nan
+real(eightbytereal), parameter, private :: nan = transfer ((/not(0_fourbyteint),not(0_fourbyteint)/),0d0)
 
 contains
 
@@ -231,7 +231,7 @@ info%zmin = dummy(1)
 info%zmax = dummy(2)
 
 if (nf90_get_att(ncid,z_id,'_FillValue',info%znan) /= 0 .and. nf90_get_att(ncid,z_id,'missing_value',info%znan) /= 0) &
-	info%znan = make_nan()
+	info%znan = nan
 
 ! Get x- and y-ranges
 stride(1) = info%nx - 1
@@ -338,7 +338,7 @@ integer(fourbyteint) :: jx,jy
 
 ! If x or y are NaN or beyond allowed range, return NaN
 if (.not.grid_inside (info, x, y)) then
-	grid_query = make_nan()
+	grid_query = nan
 	return
 endif
 
@@ -369,9 +369,8 @@ end select
 
 ! Check against missing value and scale
 if (z == info%znan) then
-	z = make_nan()
-else if (isnan(z)) then
-else
+	z = nan
+else if (z == z) then
 	z = z * info%dz + info%z0
 endif
 grid_query = z
@@ -411,12 +410,12 @@ real(eightbytereal) :: grid_lininter
 ! Output argument:
 !  grid_lininter : Interpolated value at the location (x, y)
 !-----------------------------------------------------------------------
-real(eightbytereal) :: xj,yj,z(2,2),weight(2,2),wtot,vtot
+real(eightbytereal) :: xj,yj,z(2,2),weight(2,2),wtot,vtot,zz
 integer(fourbyteint) :: jx,jy,jx1,jy1
 
 ! If x or y are NaN or beyond allowed range, return NaN
 if (.not.grid_inside (info, x, y)) then
-	grid_lininter = make_nan()
+	grid_lininter = nan
 	return
 endif
 
@@ -471,11 +470,10 @@ wtot = 0d0
 vtot = 0d0
 do jy = 1,2
 	do jx = 1,2
-		if (z(jx,jy) == info%znan .or. isnan(z(jx,jy))) then
-		else
-			wtot = wtot+weight(jx,jy)
-			vtot = vtot+weight(jx,jy)*z(jx,jy)
-		endif
+		zz = z(jx,jy)
+		if (zz == info%znan .or. zz /= zz) cycle
+		wtot = wtot+weight(jx,jy)
+		vtot = vtot+weight(jx,jy)*zz
 	enddo
 enddo
 grid_lininter = vtot / wtot * info%dz + info%z0
@@ -524,7 +522,7 @@ real(eightbytereal) :: xj,yj,z(6,6),zy(6),w(6),u(6)
 
 ! If x or y are NaN or beyond allowed range, return NaN
 if (.not.grid_inside (info, x, y)) then
-	grid_splinter = make_nan()
+	grid_splinter = nan
 	return
 endif
 
@@ -540,14 +538,14 @@ jy = jy - 2
 
 ! Check if spline window is completely within y-range
 if (jy < 0 .or. jy+5 >= info%ny) then
-	grid_splinter = make_nan()
+	grid_splinter = nan
 	return
 endif
 
 if (info%nxwrap == 0) then
 	! Check if spline window is completely within x-range
 	if (jx < 0 .or. jx+5 >= info%nx) then
-		grid_splinter = make_nan()
+		grid_splinter = nan
 		return
 	endif
 
@@ -641,7 +639,7 @@ real(eightbytereal) :: grid_x
 !  grid_x : x-coordinate of the grid pixel
 !-----------------------------------------------------------------------
 if (i < 1 .or. i > info%nx) then
-	grid_x = make_nan()
+	grid_x = nan
 else if (i == info%nx) then
 	grid_x = info%xmax
 else
@@ -669,7 +667,7 @@ real(eightbytereal) :: grid_y
 !  grid_y : y-coordinate of the grid pixel
 !-----------------------------------------------------------------------
 if (i < 1 .or. i > info%ny) then
-	grid_y = make_nan()
+	grid_y = nan
 else if (i == info%ny) then
 	grid_y = info%ymax
 else
@@ -693,7 +691,7 @@ logical :: grid_inside
 if (info%nxwrap == 0) then
 	grid_inside = (x >= info%xmin .and. x <= info%xmax)
 else
-	grid_inside = .not.isnan(x)
+	grid_inside = (x == x)
 endif
 if (.not.grid_inside) return
 if (info%dy > 0d0) then
@@ -702,17 +700,5 @@ else
 	grid_inside = (y >= info%ymax .and. y <= info%ymin)
 endif
 end function grid_inside
-
-!***********************************************************************
-!*make_nan -- Create a NaN value
-!+
-pure function make_nan ()
-real(eightbytereal) :: make_nan
-!
-! This function returns a double float NaN scalar
-!-----------------------------------------------------------------------
-make_nan = 0d0
-make_nan = make_nan / make_nan
-end function make_nan
 
 end module rads_grid

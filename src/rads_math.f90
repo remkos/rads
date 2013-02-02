@@ -24,6 +24,7 @@ type :: math_ll
 	type(math_ll), pointer :: prev
 end type
 integer, parameter, private :: stderr = 0
+real(eightbytereal), parameter, private :: nan = transfer ((/not(0_fourbyteint),not(0_fourbyteint)/),0d0)
 
 contains
 
@@ -72,6 +73,7 @@ end subroutine math_pop
 !*math_eval -- Evaluate math command or value
 !+
 function math_eval (string, n, top)
+use rads_misc
 character(len=*), intent(in) :: string
 integer(fourbyteint), intent(in) :: n
 type(math_ll), pointer, intent(inout) :: top
@@ -86,7 +88,7 @@ integer(fourbyteint) :: math_eval
 !  math_eval : 0 = no error, -1 = no matching command
 !-----------------------------------------------------------------------
 type(math_ll), pointer :: temp
-real(eightbytereal) :: value, nan
+real(eightbytereal) :: value
 real(eightbytereal), parameter :: pi = 4d0*atan(1d0), d2r = pi/180d0, r2d = 180d0/pi
 integer(fourbyteint) :: ios
 
@@ -94,10 +96,6 @@ math_eval = 0
 
 ! Skip empty strings
 if (string == '') return
-
-! Init nan
-nan = 0d0
-nan = nan / nan
 
 ! Check if string could be a value
 if ((string(:1) >= '0' .and. string(:1) <= '9') .or. string(:1) == '-' .or. &
@@ -220,7 +218,7 @@ case ('ATANH')
 	top%data = atanh_(top%data)
 case ('ISNAN')
 	call math_check (1)
-	where (isnan(top%data))
+	where (isnan_(top%data))
 		top%data = 1d0
 	elsewhere
 		top%data = 0d0
@@ -337,15 +335,15 @@ case ('NAN')
 	call math_pop (top)
 case ('AND')
 	call math_check (2)
-	where (isnan(top%prev%data)) top%prev%data = top%data
+	where (isnan_(top%prev%data)) top%prev%data = top%data
 	call math_pop (top)
 case ('OR')
 	call math_check (2)
-	where (isnan(top%data)) top%prev%data = nan
+	where (isnan_(top%data)) top%prev%data = nan
 	call math_pop (top)
 case ('BTEST')
 	call math_check (2)
-	where (isnan(top%prev%data) .or. isnan(top%data))
+	where (isnan_(top%prev%data) .or. isnan_(top%data))
 		top%prev%data = nan
 	elsewhere (btest(nint(top%prev%data),nint(top%data)))
 		top%prev%data = 1d0
@@ -355,9 +353,9 @@ case ('BTEST')
 	call math_pop (top)
 case ('AVG')
 	call math_check (2)
-	where (isnan(top%prev%data))
+	where (isnan_(top%prev%data))
 		top%prev%data = top%data
-	elsewhere (.not.isnan(top%data))
+	elsewhere (.not.isnan_(top%data))
 		top%prev%data = 0.5d0 * (top%prev%data + top%data)
 	endwhere
 	call math_pop (top)
