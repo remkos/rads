@@ -21,15 +21,11 @@ include ../config.mk
 INCLUDES= config.f90
 
 # Objects
-OBJS1   = rads_netcdf.o rads_time.o rads_math.o rads_misc.o rads_grid.o rads_geo.o xmlparse.o
-OBJS2   = rads.o
-OBJS3   = rads3.o
-OBJS    = $(OBJS1) $(OBJS2) $(OBJS3)
+OBJS1   = rads_netcdf.o rads_time.o rads_misc.o rads_grid.o rads_geo.o rads_math.o xmlparse.o
+OBJS    = $(OBJS1) rads.o rads3.o
 
 # .mod files created by the objects
 MODS1   = $(OBJS1:.o=.mod)
-MODS2   = $(OBJS1:.o=.mod)
-MODS3   = $(OBJS1:.o=.mod)
 MODS    = $(OBJS:.o=.mod)
 
 # RADS library and linked libraries
@@ -70,11 +66,11 @@ man:	$(MAN)
 # Object dependencies
 #-----------------------------------------------------------------------
 
-$(OBJS2):	$(INCLUDES)
-$(OBJS2):	$(MODS1)
-$(OBJS3):	$(MODS2)
-$(PROGS):	$(LIB)
-radsxogen:	spline.o
+rads_math.o:	rads_misc.mod rads_time.mod
+rads.o:			$(MODS1) $(INCLUDES)
+rads3.o:		rads.mod
+$(PROGS):		$(LIB)
+radsxogen:		spline.o
 
 #-----------------------------------------------------------------------
 # Create configuration files

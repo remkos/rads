@@ -595,7 +595,7 @@ P%original = 'REAPER '//trim(l2_version)//' data of '//l2_proc_time(:11)//': '//
 
 ! Check which variables are empty
 do i = 1,nvar
-	var(i)%empty = all(isnan(var(i)%d(1:nout)))
+	var(i)%empty = all(isnan_(var(i)%d(1:nout)))
 enddo
 if (any(var(1:nvar)%empty)) then
 	write (*,550,advance='no') '... No'

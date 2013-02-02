@@ -41,7 +41,7 @@ logical :: checklon
 !  lon        : longitude (degrees)
 !  checklon   : .true. if lon is outside limits, .false. otherwise.
 !-----------------------------------------------------------------------
-if (any(isnan(lon_bounds))) then
+if (any(lon_bounds /= lon_bounds)) then
 	checklon = .false.
 	return
 endif

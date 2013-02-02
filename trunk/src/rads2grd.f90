@@ -72,9 +72,9 @@ do i = 1,rads_nopt
 	case ('y', 'y:')
 		call read_val (rads_opt(i)%arg, limits(:,2), '/')
 	case ('res')
-		limits(3,2) = S(1)%nan
+		limits(3,2) = nan
 		call read_val (rads_opt(i)%arg, limits(3,:), '/')
-		if (isnan(limits(3,2))) limits(3,2) = limits(3,1)
+		if (isnan_(limits(3,2))) limits(3,2) = limits(3,1)
 	case ('c')
 		if (rads_opt(i)%arg == '' .or. rads_opt(i)%arg == 'a') then
 			c = .true.
@@ -123,7 +123,7 @@ do j = 1,msat
 					call rads_get_var (S(j), P, S(j)%sel(l), data(:,l))
 				enddo
 				do i = 1,P%ndata
-					if (any(isnan(data(i,:)))) cycle
+					if (any(isnan_(data(i,:)))) cycle
 					k = nint((data(i,1:2) - lo)/res)+1
 					k = max(1,min(k,n))
 					call update_stat (box(k(1),k(2)), data(i,3))
@@ -138,10 +138,10 @@ enddo
 ! Post-process grid values
 
 where (box%nr < minnr)
-	box%mean = S(1)%nan
-	box%sum2 = S(1)%nan
+	box%mean = nan
+	box%sum2 = nan
 elsewhere (box%nr == 1)
-	box%sum2 = S(1)%nan
+	box%sum2 = nan
 elsewhere
 	box%sum2 = sqrt(box%sum2/(box%nr - 1))
 endwhere
@@ -242,6 +242,7 @@ use netcdf
 use rads_netcdf
 use rads_time
 integer(fourbyteint) :: ncid,varid(5),dimid(2),k
+real(fourbytereal), parameter :: nan = transfer (not(0_fourbyteint),0_fourbytereal)
 
 call nfs (nf90_create(grid_name,nf90_write+nf90_nofill,ncid))
 call nfs (nf90_put_att (ncid, nf90_global, 'Conventions', 'CF-1.5'))
@@ -262,7 +263,7 @@ call nfs (nf90_put_att(ncid,varid(4),'long_name','std dev of '//trim(S(1)%sel(3)
 call nfs (nf90_put_att(ncid,varid(5),'long_name','number of points per cell'))
 do k = 3,4
    call nfs (nf90_put_att(ncid,varid(k),'units',trim(S(1)%sel(3)%info%units)))
-   call nfs (nf90_put_att(ncid,varid(k),'_FillValue',real(S(1)%nan)))
+   call nfs (nf90_put_att(ncid,varid(k),'_FillValue',nan))
 enddo
 call nfs (nf90_enddef(ncid))
 

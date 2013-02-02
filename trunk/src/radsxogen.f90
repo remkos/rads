@@ -74,7 +74,7 @@ call synopsis
 call rads_set_options ('dsbi:g:r:: dt:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
-dt = S(1)%nan
+dt = nan
 dt(1) = -0.5d0
 
 ! Start with this-is message
@@ -139,7 +139,7 @@ end select
 ! Set all unspecified dt equal to the previous and create a string of sat names
 satlist = S(1)%sat
 do i = 2,nsat
-	if (isnan(dt(i))) dt(i) = dt(i-1)
+	if (isnan_(dt(i))) dt(i) = dt(i-1)
 	satlist = trim(satlist) // ' ' // S(i)%sat
 enddo
 
@@ -496,10 +496,10 @@ enddo
 ! Determine which records are kept
 if (reject < 0) then	! Reject if any is NaN
 	forall (i=1:P%ndata)
-		keep(i) = .not.any(isnan(data(i,:)))
+		keep(i) = .not.any(isnan_(data(i,:)))
 	end forall
 else if (reject > 0) then
-	keep = .not.isnan(data(:,reject))
+	keep = .not.isnan_(data(:,reject))
 else
 	keep = .true.
 endif

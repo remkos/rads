@@ -163,7 +163,7 @@ integer :: i, j, k, m
 type(rads_pass) :: P
 
 ! Initialize
-data = S(1)%nan
+data = nan
 i = 0
 ntrx = 0
 nr_in_bin = 0
@@ -208,9 +208,9 @@ info(ntrx2) = info_ ('stddev', 0, 9002, 9999)
 ! In both cases, set mask to non-NaN SLA measurements only
 if (reject == 0) then
 	forall (k=-nbins:nbins) nr_in_bin(k) = count(mask(1:ntrx,k))
-	mask = .not.isnan(data(:,type_sla,:))
+	mask = .not.isnan_(data(:,type_sla,:))
 else
-	mask = .not.isnan(data(:,type_sla,:))
+	mask = .not.isnan_(data(:,type_sla,:))
 	forall (k=-nbins:nbins) nr_in_bin(k) = count(mask(1:ntrx,k))
 	! Set to zero the bins that not reach the threshold number
 	where (nr_in_bin < min(ntrx,reject)) nr_in_bin = 0
@@ -232,7 +232,7 @@ do k = -nbins,nbins
 enddo
 data(ntrx2,:,:) = sqrt(data(ntrx2,:,:)) ! Variance to std dev
 ! Mask out NaN statistics
-mask(ntrx1:ntrx2,:) = .not.isnan(data(ntrx1:ntrx2,type_sla,:))
+mask(ntrx1:ntrx2,:) = .not.isnan_(data(ntrx1:ntrx2,type_sla,:))
 
 ! Compute per-track statistics (vertically)
 do i = 1,ntrx2
