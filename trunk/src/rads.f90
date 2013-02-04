@@ -65,6 +65,8 @@ type :: rads_varinfo
 	real(eightbytereal) :: default                   ! Optional default value (Inf if not set)
 	real(eightbytereal) :: limits(2)                 ! Lower and upper limit for editing
 	real(eightbytereal) :: add_offset, scale_factor  ! Offset and scale factor in case of netCDF
+	real(eightbytereal) :: xmin, xmax, mean, sum2    ! Minimum, maximum, mean, sum squared deviation
+	logical :: boz_format                            ! Format starts with B, O or Z.
 	integer(fourbyteint) :: ndims                    ! Number of dimensions of variable
 	integer(fourbyteint) :: nctype, varid            ! netCDF data type (nf90_int, etc.) and variable ID
 	integer(fourbyteint) :: datatype                 ! Type of data (rads_type_other|flagmasks|flagvalues|time|lat|lon)
@@ -72,7 +74,6 @@ type :: rads_varinfo
 	integer(fourbyteint) :: bits(2)                  ! Bit selection: starting bit, number of bits (0,0 = none)
 	integer(fourbyteint) :: cycle, pass              ! Last processed cycle and pass
 	integer(fourbyteint) :: selected, rejected       ! Number of selected or rejected measurements
-	real(eightbytereal) :: xmin, xmax, mean, sum2    ! Minimum, maximum, mean, sum squared deviation
 endtype
 
 type :: rads_var
@@ -2039,6 +2040,7 @@ do
 
 	case ('format')
 		info%format = val(1)(:rads_varl)
+		info%boz_format = (index('bozBOZ',info%format(:1)) > 0)
 
 	case ('compress')
 		i = index(val(1), ' ')
@@ -2347,7 +2349,7 @@ if (associated(tgt)) then
 else
 	allocate (ptr%info)
 	ptr%info = rads_varinfo (varname, varname, '', '', '', '', '', '', '', 'f0.3', '', '', null(), &
-		huge(0d0), nan, 0d0, 1d0, 1, nf90_double, 0, 0, 0, 0, 0, 0, 0, 0, nan, nan, 0d0, 0d0)
+		huge(0d0), nan, 0d0, 1d0, nan, nan, 0d0, 0d0, .false., 1, nf90_double, 0, 0, 0, 0, 0, 0, 0, 0)
 	ptr%name => ptr%info%name
 endif
 ptr%long_name => ptr%info%long_name
@@ -2572,7 +2574,9 @@ character(len=*), intent(in) :: varname, format
 !-----------------------------------------------------------------------
 type(rads_var), pointer :: var
 var => rads_varptr(S, varname)
-if (associated(var)) var%info%format = format
+if (.not.associated(var)) return
+var%info%format = format
+var%info%boz_format = (index('bozBOZ',var%info%format(:1)) > 0)
 end subroutine rads_set_format
 
 
@@ -3355,7 +3359,10 @@ if (info%scale_factor /= 1d0) e = e + nf90_put_att (P%ncid, info%varid, 'scale_f
 if (info%add_offset /= 0d0)  e = e + nf90_put_att (P%ncid, info%varid, 'add_offset', info%add_offset)
 if (info%datatype < rads_type_time .and. info%dataname(:1) /= ':') &
 	e = e + nf90_put_att (P%ncid, info%varid, 'coordinates', 'lon lat')
-if (info%format /= '') e = e + nf90_put_att (P%ncid, info%varid, 'format', trim(info%format))
+if (info%format /= '') then
+	e = e + nf90_put_att (P%ncid, info%varid, 'format', trim(info%format))
+	info%boz_format = (index('bozBOZ',info%format(:1)) > 0)
+endif
 if (var%field(1) /= rads_nofield) e = e + nf90_put_att (P%ncid, info%varid, 'field', var%field(1))
 if (info%comment /= '') e = e + nf90_put_att (P%ncid, info%varid, 'comment', info%comment)
 if (e > 0) call rads_error (S, rads_err_nc_var, &

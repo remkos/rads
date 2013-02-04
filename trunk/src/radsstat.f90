@@ -44,7 +44,7 @@ end type
 type(stat), allocatable :: box(:,:,:), tot(:)
 type(rads_sat) :: S
 type(rads_pass) :: Pin, Pout
-logical :: ascii = .true., fullyear = .false.
+logical :: ascii = .true., fullyear = .false., boz_format = .false.
 
 ! Initialize RADS or issue help
 call synopsis
@@ -103,8 +103,10 @@ enddo
 ascii = (filename == '')
 
 ! If SLA is among the selected variables, remember index
+! Also check if we have boz-formats
 do i = 1,S%nsel
 	if (reject == -1 .and. S%sel(i)%info%datatype == rads_type_sla) reject = i
+	if (S%sel(i)%info%boz_format) boz_format = .true.
 enddo
 
 ! Set up the boxes
@@ -295,6 +297,15 @@ if (ascii) then
 	case default
 		write (*,602,advance='no') cycle,yy,mm,dd
 	endselect
+	if (boz_format) then
+		do j=1,S%nsel
+			if (.not.S%sel(j)%info%boz_format) cycle
+			call bit_transfer (tot(j)%mean)
+			call bit_transfer (tot(j)%sum2)
+			call bit_transfer (tot(j)%xmin)
+			call bit_transfer (tot(j)%xmax)
+		enddo
+	endif
 	if (lstat == 2) then
 		write (*,format_string) nr, tot(0)%mean, (tot(j)%mean,tot(j)%sum2,j=1,S%nsel)
 	else
@@ -380,9 +391,13 @@ do j = 1,S%nsel
 	endif
 	! Assemble format for statistics lines
 	l = len_trim(format_string)
-	! Add one decimal to the format
-	call read_val (S%sel(j)%info%format(2:), sizes, '.')
-	write (format_string(l+1:),'(",",i0,"(1x,f",i0,".",i0,")")') lstat,sizes+1
+	! Add one decimal to an f-format, or copy boz-format
+	if (S%sel(j)%info%boz_format) then
+		write (format_string(l+1:),'(",",i0,"(1x,",a,")")') lstat,trim(S%sel(j)%info%format)
+	else
+		call read_val (S%sel(j)%info%format(2:), sizes, '.')
+		write (format_string(l+1:),'(",",i0,"(1x,f",i0,".",i0,")")') lstat,sizes+1
+	endif 
 enddo
 
 l = len_trim(format_string)

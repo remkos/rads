@@ -34,7 +34,7 @@ integer(fourbyteint) :: nsel = 0, reject = 9999, cycle, pass, i, j, ios, &
 	nbins, nsat = 0, ntrx = 0, ntrx1, ntrx2, type_sla = 1, step = 1, ncols
 real(eightbytereal) :: dt = 0.97d0
 character(len=rads_naml) :: prefix = 'radscolin_p', suffix = '.nc', satlist
-logical :: ascii = .true., out_data = .true., out_mean = .false., out_sdev = .false., force = .false.
+logical :: ascii = .true., out_data = .true., out_mean = .false., out_sdev = .false., force = .false., boz_format = .false.
 real(eightbytereal), allocatable :: data(:,:,:)
 logical, allocatable :: mask(:,:)
 integer(fourbyteint), allocatable :: nr_in_bin(:), bin(:)
@@ -75,7 +75,9 @@ do i = 2,nsat
 enddo
 
 ! Determine which column to check for NaN (default: 1st)
+! Also check for boz_format
 do j = 1,nsel
+	if (S(nsat)%sel(j)%info%boz_format) boz_format = .true.
 	if (S(nsat)%sel(j)%info%datatype == rads_type_sla) type_sla = j
 enddo
 
@@ -410,6 +412,16 @@ do i = 2,nsel
 		ncols,trim(S(nsat)%sel(i)%info%format)
 enddo
 format_string(len_trim(format_string):) = ')'
+
+! Do a transfer of bit patterns if needed
+if (boz_format) then
+	do i = 1,nsel
+		if (.not.S(nsat)%sel(i)%info%boz_format) cycle
+		call bit_transfer (data(:,i,:))
+		call bit_transfer (stat(:,i)%mean)
+		call bit_transfer (stat(:,i)%sum2)
+	enddo
+endif
 
 ! Print out data that are common to some passes
 do k = -nbins,nbins,step

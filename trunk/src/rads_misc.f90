@@ -560,6 +560,18 @@ endif
 end function nint4
 
 !***********************************************************************
+!*bit_transfer -- Transfer the bit pattern of integer part of double
+!+
+elemental subroutine bit_transfer (x)
+real(eightbytereal), intent(inout) :: x
+if (little_endian) then
+	x = transfer((/nint4(x),0_fourbyteint/),0d0)
+else
+	x = transfer((/0_fourbyteint,nint4(x)/),0d0)
+endif   
+end subroutine bit_transfer
+
+!***********************************************************************
 !*isnan -- Check if double precision number is a NaN
 !+
 elemental function isnan_ (x)

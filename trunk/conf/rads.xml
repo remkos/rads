@@ -1368,7 +1368,7 @@ Global RADS configuration file
 	<long_name>not used</long_name>
 	<long_name sat="j1 pn tx">hardware/software status</long_name>
 	<data>flags_ 0 BTEST</data>
-	<format>f2.0</format>
+	<format>z1</format>
 	<compress>int1</compress>
 	<flag_values>nominal bad</flag_values>
 	<if sat="e1">
@@ -1389,7 +1389,7 @@ Global RADS configuration file
 	<long_name>not used</long_name>
 	<long_name sat="e2 g1 gs j1 j2 n1 pn tx">attitude status</long_name>
 	<data>flags_ 1 BTEST</data>
-	<format>f2.0</format>
+	<format>z1</format>
 	<compress>int1</compress>
 	<flag_values>ok bad</flag_values>
 	<flag_values sat="pn">ok questionable</flag_values>
@@ -1402,7 +1402,7 @@ Global RADS configuration file
 	<long_name>not used</long_name>
 	<long_name sat="e1 e2 j1 j2 n1">continental ice</long_name>
 	<data>flags_ 2 BTEST</data>
-	<format>f2.0</format>
+	<format>z1</format>
 	<compress>int1</compress>
 	<flag_values>no_ice ice</flag_values>
 	<if sat="gs">
@@ -1418,21 +1418,21 @@ Global RADS configuration file
 	<long_name>not used</long_name>
 	<long_name sat="j2 n1 tx">quality of dual-frequency ionospheric correction</long_name>
 	<data>flags_ 3 BTEST</data>
-	<format>f2.0</format>
+	<format>z1</format>
 	<compress>int1</compress>
 	<flag_values>ok bad</flag_values>
 </var>
 <var name="flag_land" field="2504">
 	<long_name>water/land flag</long_name>
 	<data>flags_ 4 BTEST</data>
-	<format>f2.0</format>
+	<format>z1</format>
 	<compress>int1</compress>
 	<flag_values>water land</flag_values>
 </var>
 <var name="flag_ocean" field="2505">
 	<long_name>ocean/non-ocean flag</long_name>
 	<data>flags_ 5 BTEST</data>
-	<format>f2.0</format>
+	<format>z1</format>
 	<compress>int1</compress>
 	<flag_values>ocean non_ocean</flag_values>
 </var>
@@ -1440,7 +1440,7 @@ Global RADS configuration file
 	<long_name>radiometer land flag</long_name>
 	<long_name sat="c2 gs">not used</long_name>
 	<data>flags_ 6 BTEST</data>
-	<format>f2.0</format>
+	<format>z1</format>
 	<compress>int1</compress>
 	<flag_values>water land</flag_values>
 </var>
@@ -1448,7 +1448,7 @@ Global RADS configuration file
 	<long_name>corruption of altimeter measurement (ice)</long_name>
 	<long_name sat="c2 e1 e2 gs">not used</long_name>
 	<data>flags_ 7 BTEST</data>
-	<format>f2.0</format>
+	<format>z1</format>
 	<compress>int1</compress>
 	<flag_values>no_ice ice</flag_values>
 	<if sat="n1">
@@ -1460,7 +1460,7 @@ Global RADS configuration file
 	<long_name>corruption of radiometer measurement (rain or ice)</long_name>
 	<long_name sat="c2 g1">not used</long_name>
 	<data>flags_ 8 BTEST</data>
-	<format>f2.0</format>
+	<format>z1</format>
 	<compress>int1</compress>
 	<flag_values>ok rain_or_ice</flag_values>
 </var>
@@ -1471,7 +1471,7 @@ Global RADS configuration file
 	<long_name sat="j1 j2">quality of 18.7 or 23.8 GHz brightness temperatures</long_name>
 	<long_name sat="pn tx">quality of TMR (bit 0 of TMR_bad)</long_name>
 	<data>flags_ 9 BTEST</data>
-	<format>f2.0</format>
+	<format>z1</format>
 	<compress>int1</compress>
 	<flag_values>ok bad</flag_values>
 </var>
@@ -1482,14 +1482,14 @@ Global RADS configuration file
 	<long_name sat="j1 j2">quality of 34.0 GHz brightness temperature</long_name>
 	<long_name sat="pn tx">quality of TMR (bit 1 of TMR_bad)</long_name>
 	<data>flags_ 10 BTEST</data>
-	<format>f2.0</format>
+	<format>z1</format>
 	<compress>int1</compress>
 	<flag_values>ok bad</flag_values>
 </var>
 <var name="flag_range_qual" field="2511">
 	<long_name>quality of the range estimate</long_name>
 	<data>flags_ 11 BTEST</data>
-	<format>f2.0</format>
+	<format>z1</format>
 	<compress>int1</compress>
 	<flag_values>ok suspect</flag_values>
 	<flag_values sat="gs">ok some_10Hz_measurements_invalid</flag_values>
@@ -1499,7 +1499,7 @@ Global RADS configuration file
 	<long_name sat="gs">quality of sea state bias</long_name>
 	<long_name sat="c2 n1">not used</long_name>
 	<data>flags_ 12 BTEST</data>
-	<format>f2.0</format>
+	<format>z1</format>
 	<compress>int1</compress>
 	<flag_values>ok suspect</flag_values>
 </var>
@@ -1508,7 +1508,7 @@ Global RADS configuration file
 	<long_name sat="gs">quality of wind speed estimate</long_name>
 	<long_name sat="c2">not used</long_name>
 	<data>flags_ 13 BTEST</data>
-	<format>f2.0</format>
+	<format>z1</format>
 	<compress>int1</compress>
 	<flag_values>ok suspect</flag_values>
 </var>
@@ -1516,7 +1516,7 @@ Global RADS configuration file
 	<long_name>tracking mode</long_name>
 	<long_name sat="c2 g1 j2">not used</long_name>
 	<data>flags_ 14 BTEST</data>
-	<format>f2.0</format>
+	<format>z1</format>
 	<compress>int1</compress>
 	<flag_values>nominal preset</flag_values>
 	<flag_values sat="gs tx">nominal coarse_or_acquisition</flag_values>
@@ -1531,7 +1531,7 @@ Global RADS configuration file
 	<long_name>quality of the orbit</long_name>
 	<long_name sat="g1 gs j2 tx">not used</long_name>
 	<data>flags_ 15 BTEST</data>
-	<format>f2.0</format>
+	<format>z1</format>
 	<compress>int1</compress>
 	<flag_values>ok degraded</flag_values>
 </var>
@@ -2023,7 +2023,7 @@ Global RADS configuration file
 	<long_name>star tracker flags</long_name>
 	<data>flags_star_tracker</data>
 	<compress>int1</compress>
-	<format>f2.0</format>
+	<format>z1</format>
 </var>
 <var name="track_mode" field="3415" sat="gs">
 	<long_name>tracking mode</long_name>

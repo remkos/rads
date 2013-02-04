@@ -19,6 +19,7 @@ program rads_test
 
 use typesizes
 use rads
+use rads_misc
 
 type(rads_sat) :: S
 type(rads_pass) :: P
@@ -42,6 +43,7 @@ do cycle = S%cycles(1),S%cycles(2)
 			write (*,*) 'Start rads_get_var'
 			do i = 1,S%nsel
 				call rads_get_var (S, P, S%sel(i), data)
+				if (S%sel(i)%info%boz_format) call bit_transfer (data)
 				write (*,'(a,2(1x,'//S%sel(i)%info%format//'))' ) S%sel(i)%name//'data(1), data(ndata) = ',data(1),data(P%ndata)
 			enddo
 			deallocate (data)
