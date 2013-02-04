@@ -42,7 +42,7 @@ integer(fourbyteint) :: outunit, listunit = -1, logunit = stdout
 character(len=rads_naml) :: outname = ''
 character(len=640) :: format_string
 integer(fourbyteint) :: i, j, l, ios, cycle, pass, step = 1, nseltot = 0, nselmax = huge(0_fourbyteint)
-logical :: freeform = .false., has_flags = .false.
+logical :: freeform = .false., boz_format = .false.
 integer(fourbyteint) :: reject = -1
 
 ! For statistics
@@ -119,13 +119,11 @@ do j = 1,msat
 		stat_mode = no_stat
 	endif
 
-	! If flags or SLA are among the results, remember which they are
+	! If SLA is among the selected variables, remember index
+	! Also check if we have boz-formats
 	do i = 1,S%nsel
-		if (S%sel(i)%info%datatype == rads_type_flagmasks) then
-			has_flags = .true.
-		else if (S%sel(i)%info%datatype == rads_type_sla) then
-			if (reject == -1) reject = i
-		endif
+		if (reject == -1 .and. S%sel(i)%info%datatype == rads_type_sla) reject = i
+		if (S%sel(i)%info%boz_format) boz_format = .true.
 	enddo
 
 	! Open single output file, if requested
@@ -291,15 +289,9 @@ integer :: j
 ! In the following we would have liked to use nint8 in the transfer
 ! function, but an 8-byte integer is not guaranteed to work, so we use
 ! padded 4-byte integers instead
-if (.not.has_flags) then
-	! Do nothing
-else if (little_endian) then
+if (boz_format) then
 	do j = 1,S%nsel
-		if (S%sel(j)%info%datatype == rads_type_flagmasks) x(j) = transfer((/nint4(x(j)),0_fourbyteint/),0d0)
-	enddo
-else
-	do j = 1,S%nsel
-		if (S%sel(j)%info%datatype == rads_type_flagmasks) x(j) = transfer((/0_fourbyteint,nint4(x(j))/),0d0)
+		if (S%sel(j)%info%boz_format) call bit_transfer (x(j))
 	enddo
 endif
 write (outunit,format_string) x(:)

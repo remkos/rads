@@ -96,7 +96,7 @@ $(LIB):	$(OBJS)
 #-----------------------------------------------------------------------
 test:	rads_test
 	rads_test -vvv -Se1/a --ymd=19910924,19910925 -R-90/120/-50/30 \
-	-Vtime,lat,lon,sla,12_,tide_ocean_,pass,drange | diff rads_test.out -
+	-Vtime,lat,lon,sla,12_,tide_ocean_,flags_,pass,drange | diff rads_test.out -
 
 #-----------------------------------------------------------------------
 # Make links to executables

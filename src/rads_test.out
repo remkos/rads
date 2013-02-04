@@ -3,7 +3,7 @@
            1 ; optopt = S; optarg = e1/a; optid =           11
            2 ; optopt = ymd; optarg = 19910924,19910925; optid =           13
            3 ; optopt = R; optarg = -90/120/-50/30; optid =           13
-           4 ; optopt = V; optarg = time,lat,lon,sla,12_,tide_ocean_,pass,drange; optid =           14
+           4 ; optopt = V; optarg = time,lat,lon,sla,12_,tide_ocean_,flags_,pass,drange; optid =           14
  Parsing XML file /rads/data/conf/rads.xml
  Increased S%var:         100         200
  Eqlonlim =   -278.27906976744185       -278.27906976744185        278.27906976744185        278.27906976744185     
@@ -280,6 +280,7 @@ lon                                     data(1), data(ndata) =   -13.093074  -32
 sla                                     data(1), data(ndata) =   -0.0080      NaN
 tide_ocean                              data(1), data(ndata) =   0.2620  0.3218
 tide_ocean                              data(1), data(ndata) =   0.2620  0.3218
+flags                                   data(1), data(ndata) =  0000000000000001 0010100000000001
 pass                                    data(1), data(ndata) =    61.   61.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          62
@@ -295,6 +296,7 @@ lon                                     data(1), data(ndata) =   -37.232113  -57
 sla                                     data(1), data(ndata) =   -0.1239  -0.1313
 tide_ocean                              data(1), data(ndata) =  -0.1903  0.1134
 tide_ocean                              data(1), data(ndata) =  -0.1903  0.1134
+flags                                   data(1), data(ndata) =  0000000000000001 0000000000000001
 pass                                    data(1), data(ndata) =    63.   63.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          64
@@ -308,6 +310,7 @@ lon                                     data(1), data(ndata) =   119.877023  102
 sla                                     data(1), data(ndata) =       NaN  -0.0408
 tide_ocean                              data(1), data(ndata) =   0.2744 -0.1338
 tide_ocean                              data(1), data(ndata) =   0.2744 -0.1338
+flags                                   data(1), data(ndata) =  0010000001000001 0000000000000001
 pass                                    data(1), data(ndata) =    64.   64.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          65
@@ -321,6 +324,7 @@ lon                                     data(1), data(ndata) =   -62.348502  -82
 sla                                     data(1), data(ndata) =   -0.1759      NaN
 tide_ocean                              data(1), data(ndata) =   0.4833  0.0831
 tide_ocean                              data(1), data(ndata) =   0.4833  0.0831
+flags                                   data(1), data(ndata) =  0000000000000001 0000000001000001
 pass                                    data(1), data(ndata) =    65.   65.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          66
@@ -334,6 +338,7 @@ lon                                     data(1), data(ndata) =    94.865311   77
 sla                                     data(1), data(ndata) =       NaN   0.2304
 tide_ocean                              data(1), data(ndata) =   1.1632  0.0119
 tide_ocean                              data(1), data(ndata) =   1.1632  0.0119
+flags                                   data(1), data(ndata) =  0010000001000001 0000000000000001
 pass                                    data(1), data(ndata) =    66.   66.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          67
@@ -347,6 +352,7 @@ lon                                     data(1), data(ndata) =   -87.450517  -89
 sla                                     data(1), data(ndata) =    0.0154   0.1054
 tide_ocean                              data(1), data(ndata) =   0.2529  0.2209
 tide_ocean                              data(1), data(ndata) =   0.2529  0.2209
+flags                                   data(1), data(ndata) =  0000000000000001 0000000000000001
 pass                                    data(1), data(ndata) =    67.   67.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          68
@@ -360,6 +366,7 @@ lon                                     data(1), data(ndata) =    70.883192   52
 sla                                     data(1), data(ndata) =       NaN   0.0882
 tide_ocean                              data(1), data(ndata) =   0.8244  0.0745
 tide_ocean                              data(1), data(ndata) =   0.8244  0.0745
+flags                                   data(1), data(ndata) =  0011000001000001 0000000000000001
 pass                                    data(1), data(ndata) =    68.   68.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          69
@@ -375,6 +382,7 @@ lon                                     data(1), data(ndata) =    48.016033   27
 sla                                     data(1), data(ndata) =       NaN   0.2118
 tide_ocean                              data(1), data(ndata) =   0.7090 -0.4705
 tide_ocean                              data(1), data(ndata) =   0.7090 -0.4705
+flags                                   data(1), data(ndata) =  0000000001000001 0000000000000001
 pass                                    data(1), data(ndata) =    70.   70.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          71
@@ -390,6 +398,7 @@ lon                                     data(1), data(ndata) =    13.665313    2
 sla                                     data(1), data(ndata) =       NaN  -0.0784
 tide_ocean                              data(1), data(ndata) =  -0.5462 -0.0998
 tide_ocean                              data(1), data(ndata) =  -0.5462 -0.0998
+flags                                   data(1), data(ndata) =  0010000001000001 0000000000000001
 pass                                    data(1), data(ndata) =    72.   72.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          73
@@ -405,6 +414,7 @@ lon                                     data(1), data(ndata) =    -8.118870  -22
 sla                                     data(1), data(ndata) =       NaN   0.1086
 tide_ocean                              data(1), data(ndata) =  -0.4578  0.1998
 tide_ocean                              data(1), data(ndata) =  -0.4578  0.1998
+flags                                   data(1), data(ndata) =  0010000001000001 0000000000000001
 pass                                    data(1), data(ndata) =    74.   74.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          75
@@ -420,6 +430,7 @@ lon                                     data(1), data(ndata) =   -27.174876  -47
 sla                                     data(1), data(ndata) =    0.0554  -0.1245
 tide_ocean                              data(1), data(ndata) =   0.5327 -0.1271
 tide_ocean                              data(1), data(ndata) =   0.5327 -0.1271
+flags                                   data(1), data(ndata) =  0000000000000001 0000000000000001
 pass                                    data(1), data(ndata) =    76.   76.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          77
@@ -435,6 +446,7 @@ lon                                     data(1), data(ndata) =   -52.299778  -72
 sla                                     data(1), data(ndata) =   -0.1008      NaN
 tide_ocean                              data(1), data(ndata) =   0.1638     NaN
 tide_ocean                              data(1), data(ndata) =   0.1638     NaN
+flags                                   data(1), data(ndata) =  0000000000000001 0010000001110001
 pass                                    data(1), data(ndata) =    78.   78.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          79
@@ -448,6 +460,7 @@ lon                                     data(1), data(ndata) =   119.993337  102
 sla                                     data(1), data(ndata) =   -0.0628      NaN
 tide_ocean                              data(1), data(ndata) =   0.2148     NaN
 tide_ocean                              data(1), data(ndata) =   0.2148     NaN
+flags                                   data(1), data(ndata) =  0000000000000001 0000000001110001
 pass                                    data(1), data(ndata) =    79.   79.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          80
@@ -461,6 +474,7 @@ lon                                     data(1), data(ndata) =   -77.408514  -89
 sla                                     data(1), data(ndata) =    0.0819  -0.0674
 tide_ocean                              data(1), data(ndata) =  -0.1110 -0.0320
 tide_ocean                              data(1), data(ndata) =  -0.1110 -0.0320
+flags                                   data(1), data(ndata) =  0000000000000001 0000000000000001
 pass                                    data(1), data(ndata) =    80.   80.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          81
@@ -474,6 +488,7 @@ lon                                     data(1), data(ndata) =    96.716875   80
 sla                                     data(1), data(ndata) =   -0.0423      NaN
 tide_ocean                              data(1), data(ndata) =   0.1064     NaN
 tide_ocean                              data(1), data(ndata) =   0.1064     NaN
+flags                                   data(1), data(ndata) =  0000000000000001 0000000001000001
 pass                                    data(1), data(ndata) =    81.   81.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          82
@@ -489,6 +504,7 @@ lon                                     data(1), data(ndata) =    71.601206   50
 sla                                     data(1), data(ndata) =       NaN      NaN
 tide_ocean                              data(1), data(ndata) =   0.4791     NaN
 tide_ocean                              data(1), data(ndata) =   0.4791     NaN
+flags                                   data(1), data(ndata) =  0000000000000001 0000011001110001
 pass                                    data(1), data(ndata) =    83.   83.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          84
@@ -504,6 +520,7 @@ lon                                     data(1), data(ndata) =    46.504197   32
 sla                                     data(1), data(ndata) =   -0.0305      NaN
 tide_ocean                              data(1), data(ndata) =  -0.1398     NaN
 tide_ocean                              data(1), data(ndata) =  -0.1398     NaN
+flags                                   data(1), data(ndata) =  0000000000000001 0010000001110001
 pass                                    data(1), data(ndata) =    85.   85.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          86
@@ -519,6 +536,7 @@ lon                                     data(1), data(ndata) =    21.385518    6
 sla                                     data(1), data(ndata) =    0.0516      NaN
 tide_ocean                              data(1), data(ndata) =  -0.3259     NaN
 tide_ocean                              data(1), data(ndata) =  -0.3259     NaN
+flags                                   data(1), data(ndata) =  0000000000000001 0000000001110001
 pass                                    data(1), data(ndata) =     1.    1.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           20           2
@@ -534,6 +552,7 @@ lon                                     data(1), data(ndata) =    -3.743877  -24
 sla                                     data(1), data(ndata) =   -0.0087   0.0229
 tide_ocean                              data(1), data(ndata) =   0.2377  0.3294
 tide_ocean                              data(1), data(ndata) =   0.2377  0.3294
+flags                                   data(1), data(ndata) =  0000000000000001 0000000000000001
 pass                                    data(1), data(ndata) =     3.    3.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           20           4
@@ -705,7 +724,7 @@ drange                                  data(1), data(ndata) =   0.409  0.409
  Start rads_end
 ######################################################################################################################################
 # Editing statistics for ERS-1 (e1)
-# Created: 2013-02-02 15:00:37 UTC: rads_test -vvv -Se1/a --ymd=19910924,19910925 -R-90/120/-50/30 -Vtime,lat,lon,sla,12_,tide_ocean_,pass,drange
+# Created: 2013-02-03 22:24:32 UTC: rads_test -vvv -Se1/a --ymd=19910924,19910925 -R-90/120/-50/30 -Vtime,lat,lon,sla,12_,tide_ocean_,flags_,pass,drange
 #
 # PASSES QUERIED                                           172
 #
@@ -751,4 +770,4 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 # pass number []                                   0     16852         NaN         NaN       1.000      85.000      62.645      25.165
 ######################################################################################################################################
  End of program
-CLOCK, CPU =   0.0830   0.0648
+CLOCK, CPU =   0.0830   0.0663
