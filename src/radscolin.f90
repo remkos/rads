@@ -134,9 +134,9 @@ contains
 
 !***********************************************************************
 
-subroutine synopsis ()
+subroutine synopsis
 if (rads_version ('$Revision$','Make collinear data sets from RADS')) return
-call rads_synopsis ()
+call rads_synopsis
 write (stderr,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
@@ -372,7 +372,7 @@ character(len=640) :: format_string
 610 format('#'/'# Pass      = ',i4.4/'# Satellite =',999(1x,a6))
 615 format('# Cycles    =',999(4x,i3.3))
 620 format('#'/'# Column ranges for each variable:')
-622 format('# ',i4,' -',i4,' : ',a,' [',a,']')
+622 format('# ',i4,' -',i4,' : ')
 625 format('# ',i4,7x,': ',a)
 630 format('#')
 635 format(2(1x,i5))
@@ -392,7 +392,8 @@ write (*,615) info(1:ncols)%cycle
 write (*,620)
 i = 1
 do j = 1,nsel
-	write (*,622) i,i+ncols-1,trim(S(nsat)%sel(j)%long_name),trim(S(nsat)%sel(j)%info%units)
+	write (*,622,advance='no') i,i+ncols-1
+	call rads_long_name_and_units(S(nsat)%sel(j))
 	i = i + ncols
 enddo
 write (*,625) i,'number of measurements'
