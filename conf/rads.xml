@@ -1364,186 +1364,174 @@ Global RADS configuration file
 	<compress>int2 1d-2</compress>
 </var>
 
-<var name="flag_status" field="2516">
-	<long_name>not used</long_name>
-	<long_name sat="j1 pn tx">hardware/software status</long_name>
-	<data>flags_ 0 BTEST</data>
+<var name="flag_alt_oper_mode" field="2516" sat="c2 j1 j2 n1 pn tx">
+	<long_name>altimeter operating mode</long_name>
+	<flag_values>nominal bad</flag_values>
+	<flag_values sat="c2">LRM SAR</flag_values>
+	<flag_values sat="j1 j2 n1">side_A side_B</flag_values>
+	<data source="flags">0</data>
 	<format>z1</format>
 	<compress>int1</compress>
-	<flag_values>nominal bad</flag_values>
-	<if sat="e1">
-		<long_name>SPTR availability</long_name>
-		<flag_values>yes no</flag_values>
-	</if>
-	<if sat="j2 n1">
-		<long_name>altimeter status</long_name>
-		<flag_values>side_A side_B</flag_values>
-	</if>
-	<if sat="c2">
-		<long_name>operating mode</long_name>
-		<flag_values>LRM SAR</flag_values>
-	</if>
+</var>
+<var name="qual_sptr" field="2516" sat="e1 e2">
+	<long_name>SPTR availability</long_name>
+	<flag_values>yes no</flag_values>
+	<data source="flags">0</data>
+	<format>z1</format>
+	<compress>int1</compress>
 </var>
 
-<var name="flag_attitude" field="2501">
-	<long_name>not used</long_name>
-	<long_name sat="e2 g1 gs j1 j2 n1 pn tx">attitude status</long_name>
-	<data>flags_ 1 BTEST</data>
-	<format>z1</format>
-	<compress>int1</compress>
+<var name="qual_attitude" field="2501" sat="g1 gs j1 j2 n1 pn tx">
+	<long_name>quality of attitude</long_name>
 	<flag_values>ok bad</flag_values>
-	<flag_values sat="pn">ok questionable</flag_values>
-	<if sat="e1">
-		<long_name>satellite ground track</long_name>
-		<flag_values>nominal outside_deadband</flag_values>
-	</if>
-</var>
-<var name="flag_ice" field="2502">
-	<long_name>not used</long_name>
-	<long_name sat="e1 e2 j1 j2 n1">continental ice</long_name>
-	<data>flags_ 2 BTEST</data>
+	<flag_values sat="g1 gs pn">ok suspect</flag_values>
+	<data source="flags">1</data>
 	<format>z1</format>
 	<compress>int1</compress>
+</var>
+
+<var name="flag_ice" field="2502" sat="c2 e1 e2 j1 j2 n1">
+	<long_name>continental ice</long_name>
 	<flag_values>no_ice ice</flag_values>
-	<if sat="gs">
-		<long_name>dH status</long_name>
-		<flag_values>ok suspect</flag_values>
-	</if>
-	<if sat="pn tx">
-		<long_name>TMR 21 GHz Channel status</long_name>
-		<flag_values>A B</flag_values>
-	</if>
-</var>
-<var name="flag_iono" field="2503">
-	<long_name>not used</long_name>
-	<long_name sat="j2 n1 tx">quality of dual-frequency ionospheric correction</long_name>
-	<data>flags_ 3 BTEST</data>
+	<data source="flags">2</data>
 	<format>z1</format>
 	<compress>int1</compress>
+</var>
+<var name="qual_dh" field="2502" sat="gs">
+	<long_name>quality dH</long_name>
+	<flag_values>ok suspect</flag_values>
+	<data source="flags">2</data>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+<var name="flag_rad_oper_mode" field="2502" sat="pn tx">
+	<long_name>TMR 21 GHz Channel status</long_name>
+	<flag_values>A B</flag_values>
+	<data source="flags">2</data>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+
+<var name="qual_iono_alt" field="2503" sat="j1 j2 n1 tx">
+	<long_name>quality of dual-frequency ionospheric correction</long_name>
 	<flag_values>ok bad</flag_values>
-</var>
-<var name="flag_land" field="2504">
-	<long_name>water/land flag</long_name>
-	<data>flags_ 4 BTEST</data>
+	<limits>0 0</limits>
+	<data source="flags">3</data>
 	<format>z1</format>
 	<compress>int1</compress>
-	<flag_values>water land</flag_values>
 </var>
-<var name="flag_ocean" field="2505">
-	<long_name>ocean/non-ocean flag</long_name>
-	<data>flags_ 5 BTEST</data>
+
+<var name="surface_type">
+	<long_name>surface type</long_name>
+	<flag_values>open_ocean unused enclosed_sea_or_lake ice land</flag_values>
+	<limits>0 1</limits>
+	<data source="flags">surface_type</data>
 	<format>z1</format>
 	<compress>int1</compress>
-	<flag_values>ocean non_ocean</flag_values>
 </var>
-<var name="flag_land_rad" field="2506">
+
+<var name="surface_type_rad" field="2506" sat="!c2 gs">
 	<long_name>radiometer land flag</long_name>
-	<long_name sat="c2 gs">not used</long_name>
-	<data>flags_ 6 BTEST</data>
-	<format>z1</format>
-	<compress>int1</compress>
 	<flag_values>water land</flag_values>
-</var>
-<var name="flag_alt_rain_ice" field="2507">
-	<long_name>corruption of altimeter measurement (ice)</long_name>
-	<long_name sat="c2 e1 e2 gs">not used</long_name>
-	<data>flags_ 7 BTEST</data>
+	<limits>0 0</limits>
+	<data source="flags">6</data>
 	<format>z1</format>
 	<compress>int1</compress>
+</var>
+
+<var name="qual_alt_rain_ice" field="2507" sat="g1 j1 j2 n1 pn tx">
+	<long_name>corruption of altimeter measurement (ice)</long_name>
 	<flag_values>no_ice ice</flag_values>
+	<limits>0 0</limits>
+	<data source="flags">7</data>
+	<format>z1</format>
+	<compress>int1</compress>
 	<if sat="n1">
 		<long_name>corruption of altimeter measurement (rain/ice)</long_name>
 		<flag_values>no_rain_ice rain_ice</flag_values>
 	</if>
 </var>
-<var name="flag_rad_rain_ice" field="2508">
+
+<var name="qual_rad_rain_ice" field="2508" sat="e1 e2 j1 j2 n1 pn tx">
 	<long_name>corruption of radiometer measurement (rain or ice)</long_name>
-	<long_name sat="c2 g1">not used</long_name>
-	<data>flags_ 8 BTEST</data>
-	<format>z1</format>
-	<compress>int1</compress>
 	<flag_values>ok rain_or_ice</flag_values>
-</var>
-<var name="flag_rad_tb1" field="2509">
-	<long_name>quality of 23.8 GHz brightness temperature</long_name>
-	<long_name sat="g1">quality of 22 GHz brightness temperatures</long_name>
-	<long_name sat="gs">not used</long_name>
-	<long_name sat="j1 j2">quality of 18.7 or 23.8 GHz brightness temperatures</long_name>
-	<long_name sat="pn tx">quality of TMR (bit 0 of TMR_bad)</long_name>
-	<data>flags_ 9 BTEST</data>
+	<limits>0 0</limits>
+	<data source="flags">8</data>
 	<format>z1</format>
 	<compress>int1</compress>
-	<flag_values>ok bad</flag_values>
 </var>
-<var name="flag_rad_tb2" field="2510">
-	<long_name>quality of 36.5 GHz brightness temperature</long_name>
-	<long_name sat="g1">quality of 37 GHz brightness temperature</long_name>
-	<long_name sat="gs">not used</long_name>
-	<long_name sat="j1 j2">quality of 34.0 GHz brightness temperature</long_name>
-	<long_name sat="pn tx">quality of TMR (bit 1 of TMR_bad)</long_name>
-	<data>flags_ 10 BTEST</data>
+
+<var name="qual_rad_tb" sat="!c2 gs">
+	<long_name>quality of radiometer brightness temperatures</long_name>
+	<flag_masks sat="e1 e2 n1">bad_tb_238 bad_tb_365</flag_masks>
+	<flag_masks sat="g1">bad_tb_220 bad_tb_370</flag_masks>
+	<flag_masks sat="j1 j2">bad_tb_187_or_238 bad_tb_340</flag_masks>
+	<limits sat="e1 e2 g1 j1 j2 n1">3 0</limits>
+	<flag_values sat="pn tx">ok interpolation_near_land extrapolation interpolation_failed</flag_values>
+	<data source="flags">9 2</data>
 	<format>z1</format>
 	<compress>int1</compress>
-	<flag_values>ok bad</flag_values>
 </var>
-<var name="flag_range_qual" field="2511">
+
+<var name="qual_range_ku" field="2511">
 	<long_name>quality of the range estimate</long_name>
-	<data>flags_ 11 BTEST</data>
-	<format>z1</format>
-	<compress>int1</compress>
 	<flag_values>ok suspect</flag_values>
 	<flag_values sat="gs">ok some_10Hz_measurements_invalid</flag_values>
+	<limits>0 0</limits>
+	<data source="flags">11</data>
+	<format>z1</format>
+	<compress>int1</compress>
 </var>
-<var name="flag_swh" field="2512">
+
+<var name="qual_swh_ku" field="2512" sat="!n1">
 	<long_name>quality of the wave height estimate</long_name>
 	<long_name sat="gs">quality of sea state bias</long_name>
-	<long_name sat="c2 n1">not used</long_name>
-	<data>flags_ 12 BTEST</data>
+	<flag_values>ok suspect</flag_values>
+	<limits>0 0</limits>
+	<data source="flags">12</data>
 	<format>z1</format>
 	<compress>int1</compress>
-	<flag_values>ok suspect</flag_values>
 </var>
-<var name="flag_sig0" field="2513">
+
+<var name="qual_sig0_ku" field="2513">
 	<long_name>quality of the backscatter coefficient estimate</long_name>
 	<long_name sat="gs">quality of wind speed estimate</long_name>
-	<long_name sat="c2">not used</long_name>
-	<data>flags_ 13 BTEST</data>
-	<format>z1</format>
-	<compress>int1</compress>
 	<flag_values>ok suspect</flag_values>
-</var>
-<var name="flag_track_mode" field="2514">
-	<long_name>tracking mode</long_name>
-	<long_name sat="c2 g1 j2">not used</long_name>
-	<data>flags_ 14 BTEST</data>
+	<limits>0 0</limits>
+	<data source="flags">13</data>
 	<format>z1</format>
 	<compress>int1</compress>
+</var>
+
+<var name="flag_alt_track_mode" field="2514" sat="e1 e2 pn tx">
+	<long_name>altimeter tracking mode</long_name>
 	<flag_values>nominal preset</flag_values>
 	<flag_values sat="gs tx">nominal coarse_or_acquisition</flag_values>
 	<flag_values sat="j1">nominal c_band_coarse</flag_values>
 	<flag_values sat="pn">nominal acquisition</flag_values>
-	<if sat="n1">
-		<long_name>USO status</long_name>
-		<flag_values>nominal biased</flag_values>
-	</if>
-</var>
-<var name="flag_orbit" field="2515 25">
-	<long_name>quality of the orbit</long_name>
-	<long_name sat="g1 gs j2 tx">not used</long_name>
-	<data>flags_ 15 BTEST</data>
+	<limits>0 0</limits>
+	<data source="flags">14</data>
 	<format>z1</format>
 	<compress>int1</compress>
+</var>
+
+<var name="qual_orbit" field="2515 25" sat="c2 e1 e2 j1 pn">
+	<long_name>quality of the orbit determination</long_name>
 	<flag_values>ok degraded</flag_values>
+	<data source="flags">15</data>
+	<limits>0 0</limits>
+	<format>z1</format>
+	<compress>int1</compress>
 </var>
 
 <var name="flags" field="2601 26">
 	<long_name>flag word</long_name>
 	<limits>65512 0</limits>
-	<limits sat="c2">48 0</limits>
+	<limits sat="c2">32 0</limits>
 	<limits sat="g1">65384 0</limits>
 	<limits sat="gs">51176 0</limits>
 	<limits sat="n1">36712 0</limits>
-	<limits sat="pn">448 0</limits>
+	<limits sat="pn">480 0</limits>
 	<limits sat="tx">49640 0</limits>
 	<data>flags</data>
 	<format>b16.16</format>
@@ -1566,7 +1554,7 @@ Global RADS configuration file
 	<long_name>flag word (MLE3)</long_name>
 	<limits>65512 0</limits>
 	<data>flags_mle3</data>
-	<format>i1,15(1x,i1)</format>
+	<format>b16.16</format>
 	<compress>int2</compress>
 	<flag_masks>
 		hardware_bad attitude_bad not_used not_used
