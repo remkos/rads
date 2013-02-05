@@ -92,61 +92,56 @@
           83 tb3                                     tb_365                                       -1     -1
           84 peakiness_ku                            peakiness_ku                               2401     -1
           85 peakiness                               peakiness_ku                                 24     -1
-          86 flag_status                             flag_status                                2516     -1
-          87 flag_attitude                           flag_attitude                              2501     -1
-          88 flag_ice                                flag_ice                                   2502     -1
-          89 flag_iono                               flag_iono                                  2503     -1
-          90 flag_land                               flag_land                                  2504     -1
-          91 flag_ocean                              flag_ocean                                 2505     -1
-          92 flag_land_rad                           flag_land_rad                              2506     -1
-          93 flag_alt_rain_ice                       flag_alt_rain_ice                          2507     -1
-          94 flag_rad_rain_ice                       flag_rad_rain_ice                          2508     -1
-          95 flag_rad_tb1                            flag_rad_tb1                               2509     -1
-          96 flag_rad_tb2                            flag_rad_tb2                               2510     -1
-          97 flag_range_qual                         flag_range_qual                            2511     -1
-          98 flag_swh                                flag_swh                                   2512     -1
-          99 flag_sig0                               flag_sig0                                  2513     -1
-         100 flag_track_mode                         flag_track_mode                            2514     -1
-         101 flag_orbit                              flag_orbit                                 2515     25
-         102 flags                                   flags                                      2601     26
-         103 drange_ku                               drange_ku                                  2701     -1
-         104 drange_cal                              drange_cal                                 2702     -1
-         105 drange_uso                              drange_uso                                 2703     -1
-         106 drange_fm                               drange_fm                                  2704     -1
-         107 drange                                  drange_ku                                    27     -1
-         108 swh_rms_ku_norm                         swh_rms_ku_norm                            2801     -1
-         109 swh_rms_ku                              swh_rms_ku                                 2802     -1
-         110 swh_rms                                 swh_rms_ku                                   28     -1
-         111 sig0_rms_ku_norm                        sig0_rms_ku_norm                           2901     -1
-         112 sig0_rms_ku                             sig0_rms_ku                                2902     -1
-         113 sig0_rms                                sig0_rms_ku                                  29     -1
-         114 off_nadir_angle_wf_ku                   off_nadir_angle_wf_ku                      3001     -1
-         115 off_nadir_angle2_wf_ku                  off_nadir_angle2_wf_ku                     3002     -1
-         116 attitude                                off_nadir_angle2_wf_ku                       30     -1
-         117 dsig0_ku                                dsig0_ku                                   3201     -1
-         118 dsig0_atmos_ku                          dsig0_atmos_ku                             3203     -1
-         119 dsig0                                   dsig0_ku                                     32     -1
-         120 liquid_water                            liquid_water                               3301     33
-         121 water_vapor_content                     water_vapor_content                        3302     -1
-         122 mqe                                     mqe                                        3409     -1
-         123 basin                                   basin                                      3601     36
-         124 ref_frame_offset                        ref_frame_offset                           3801     38
-         125 tide_equil                              tide_equil                                 3901     39
-         126 tide_non_equil                          tide_non_equil                             3902     -1
-         127 dist_coast                              dist_coast                                 4501     45
-         128 seaice_class                            seaice_class                               4601     46
-         129 seaice_conc                             seaice_conc                                4701     47
-         130 sst                                     sst                                        4801     48
-         131 sst_mean                                sst_mean                                   4802     -1
-         132 dry_tropo_airtide                       dry_tropo_airtide                          4901     49
-         133 mss_annual                              mss_annual                                 5001     50
-         134 gia                                     gia                                        5101     51
-         135 first_meas_time                         first_meas_time                            9901     99
-         136 last_meas_time                          last_meas_time                             9902     -1
-         137 eqtime                                  eqtime                                     9903     -1
-         138 eqlon                                   eqlon                                      9904     -1
-         139 cycle                                   cycle                                      9905     -1
-         140 pass                                    pass                                       9906     -1
+          86 qual_sptr                               qual_sptr                                  2516     -1
+          87 flag_ice                                flag_ice                                   2502     -1
+          88 surface_type                            surface_type                                 -1     -1
+          89 surface_type_rad                        surface_type_rad                           2506     -1
+          90 qual_rad_rain_ice                       qual_rad_rain_ice                          2508     -1
+          91 qual_rad_tb                             qual_rad_tb                                  -1     -1
+          92 qual_range_ku                           qual_range_ku                              2511     -1
+          93 qual_swh_ku                             qual_swh_ku                                2512     -1
+          94 qual_sig0_ku                            qual_sig0_ku                               2513     -1
+          95 flag_alt_track_mode                     flag_alt_track_mode                        2514     -1
+          96 qual_orbit                              qual_orbit                                 2515     25
+          97 flags                                   flags                                      2601     26
+          98 drange_ku                               drange_ku                                  2701     -1
+          99 drange_cal                              drange_cal                                 2702     -1
+         100 drange_uso                              drange_uso                                 2703     -1
+         101 drange_fm                               drange_fm                                  2704     -1
+         102 drange                                  drange_ku                                    27     -1
+         103 swh_rms_ku_norm                         swh_rms_ku_norm                            2801     -1
+         104 swh_rms_ku                              swh_rms_ku                                 2802     -1
+         105 swh_rms                                 swh_rms_ku                                   28     -1
+         106 sig0_rms_ku_norm                        sig0_rms_ku_norm                           2901     -1
+         107 sig0_rms_ku                             sig0_rms_ku                                2902     -1
+         108 sig0_rms                                sig0_rms_ku                                  29     -1
+         109 off_nadir_angle_wf_ku                   off_nadir_angle_wf_ku                      3001     -1
+         110 off_nadir_angle2_wf_ku                  off_nadir_angle2_wf_ku                     3002     -1
+         111 attitude                                off_nadir_angle2_wf_ku                       30     -1
+         112 dsig0_ku                                dsig0_ku                                   3201     -1
+         113 dsig0_atmos_ku                          dsig0_atmos_ku                             3203     -1
+         114 dsig0                                   dsig0_ku                                     32     -1
+         115 liquid_water                            liquid_water                               3301     33
+         116 water_vapor_content                     water_vapor_content                        3302     -1
+         117 mqe                                     mqe                                        3409     -1
+         118 basin                                   basin                                      3601     36
+         119 ref_frame_offset                        ref_frame_offset                           3801     38
+         120 tide_equil                              tide_equil                                 3901     39
+         121 tide_non_equil                          tide_non_equil                             3902     -1
+         122 dist_coast                              dist_coast                                 4501     45
+         123 seaice_class                            seaice_class                               4601     46
+         124 seaice_conc                             seaice_conc                                4701     47
+         125 sst                                     sst                                        4801     48
+         126 sst_mean                                sst_mean                                   4802     -1
+         127 dry_tropo_airtide                       dry_tropo_airtide                          4901     49
+         128 mss_annual                              mss_annual                                 5001     50
+         129 gia                                     gia                                        5101     51
+         130 first_meas_time                         first_meas_time                            9901     99
+         131 last_meas_time                          last_meas_time                             9902     -1
+         132 eqtime                                  eqtime                                     9903     -1
+         133 eqlon                                   eqlon                                      9904     -1
+         134 cycle                                   cycle                                      9905     -1
+         135 pass                                    pass                                       9906     -1
  Eqlonlim =   -99.092603426953190       -105.85137415828184        135.85137415828183        129.09260342695319     
  debug =           3
  Checking cycle/pass :           19           1
@@ -724,7 +719,7 @@ drange                                  data(1), data(ndata) =   0.409  0.409
  Start rads_end
 ######################################################################################################################################
 # Editing statistics for ERS-1 (e1)
-# Created: 2013-02-03 22:24:32 UTC: rads_test -vvv -Se1/a --ymd=19910924,19910925 -R-90/120/-50/30 -Vtime,lat,lon,sla,12_,tide_ocean_,flags_,pass,drange
+# Created: 2013-02-05 02:57:23 UTC: rads_test -vvv -Se1/a --ymd=19910924,19910925 -R-90/120/-50/30 -Vtime,lat,lon,sla,12_,tide_ocean_,flags_,pass,drange
 #
 # PASSES QUERIED                                           172
 #
@@ -770,4 +765,4 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 # pass number []                                   0     16852         NaN         NaN       1.000      85.000      62.645      25.165
 ######################################################################################################################################
  End of program
-CLOCK, CPU =   0.0830   0.0663
+CLOCK, CPU =   0.0690   0.0643
