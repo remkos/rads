@@ -568,7 +568,7 @@ if (little_endian) then
 	x = transfer((/nint4(x),0_fourbyteint/),0d0)
 else
 	x = transfer((/0_fourbyteint,nint4(x)/),0d0)
-endif   
+endif
 end subroutine bit_transfer
 
 !***********************************************************************
@@ -822,7 +822,7 @@ logical :: next_word
 ! after index <i1>. A word is considered anything between delimiters
 ! space, comma, or slash. Empty strings are not returned.
 !
-! When scanning for all words in a string, initialize i0 = 0.
+! When scanning for all words in a string, initialize i1 = 0.
 !
 ! If another word is found:
 !   <next_word> = .true.
