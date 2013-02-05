@@ -190,7 +190,7 @@ contains
 
 !***********************************************************************
 
-subroutine synopsis ()
+subroutine synopsis
 if (rads_version ('$Revision$','Select RADS altimeter data and output to ASCII')) return
 call rads_synopsis
 write (*,1300)
@@ -212,7 +212,7 @@ end subroutine synopsis
 !***********************************************************************
 ! Process data for a single pass
 
-subroutine process_pass ()
+subroutine process_pass
 character(len=80) :: passname
 real(eightbytereal), allocatable :: data(:,:)
 integer(fourbyteint) :: i
@@ -300,7 +300,7 @@ end subroutine print_data
 !***********************************************************************
 ! Print statistics for one batch of data
 
-subroutine print_stat ()
+subroutine print_stat
 if (stat(1)%nr == 0) return
 call stat_line ('min ', stat%xmin)
 call stat_line ('max ', stat%xmax)
@@ -321,7 +321,7 @@ end subroutine stat_line
 
 !***********************************************************************
 
-subroutine write_header ()
+subroutine write_header
 logical :: continued = .false.
 integer :: j
 save continued
@@ -337,7 +337,7 @@ save continued
 '# Equ_time  = ',f17.6,1x,'(',a,')'/ &
 '# Equ_lon   = ',f11.6/ &
 '# Original  = ',a)
-620 format('# Col ',i2,'    = ',a,' [',a,']')
+620 format('# Col ',i2,'    = ')
 
 ! Print the top of the header (skip a line first if this is a continuation)
 if (continued) write (outunit,*)
@@ -347,11 +347,8 @@ write (outunit,600) timestamp(), trim(S%command), trim(S%satellite), trim(S%phas
 ! Write column info
 if (outname /= '') continued = .true.
 do j = 1,S%nsel
-	if (S%sel(j)%info%datatype == rads_type_flagmasks) then
-		write (outunit,620) j, trim(S%sel(j)%long_name), trim(S%sel(j)%info%flag_meanings)
-	else
-		write (outunit,620) j, trim(S%sel(j)%long_name), trim(S%sel(j)%info%units)
-	endif
+	write (outunit,620,advance='no') j
+	call rads_long_name_and_units(S%sel(j), outunit)
 enddo
 end subroutine write_header
 

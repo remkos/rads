@@ -26,9 +26,9 @@ integer(fourbyteint), parameter :: rads_var_chunk = 100, rads_varl = 40, rads_na
 integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, rads_type_flagmasks = 2, rads_type_flagvalues = 3, &
 	rads_type_time = 11, rads_type_lat = 12, rads_type_lon = 13
 ! RADS4 data sources
-integer(fourbyteint), parameter :: rads_src_none = 0, rads_src_nc_var = 10, rads_src_nc_att = 11, rads_src_nc_bits = 12, &
+integer(fourbyteint), parameter :: rads_src_none = 0, rads_src_nc_var = 10, rads_src_nc_att = 11, &
 	rads_src_math = 20, rads_src_grid_lininter = 30, rads_src_grid_splinter = 31, rads_src_grid_query = 32, &
-	rads_src_constant = 40
+	rads_src_constant = 40, rads_src_flags = 50
 ! RADS4 warnings
 integer(fourbyteint), parameter :: rads_warn_nc_file = -3
 ! RADS4 errors
@@ -70,8 +70,7 @@ type :: rads_varinfo
 	integer(fourbyteint) :: ndims                    ! Number of dimensions of variable
 	integer(fourbyteint) :: nctype, varid            ! netCDF data type (nf90_int, etc.) and variable ID
 	integer(fourbyteint) :: datatype                 ! Type of data (rads_type_other|flagmasks|flagvalues|time|lat|lon)
-	integer(fourbyteint) :: datasrc                  ! Retrieval source (rads_src_nc_var|nc_att|nc_bits|math|grid_lininter|grid_splinter|grid_query|constant)
-	integer(fourbyteint) :: bits(2)                  ! Bit selection: starting bit, number of bits (0,0 = none)
+	integer(fourbyteint) :: datasrc                  ! Retrieval source (rads_src_nc_var|nc_att|math|grid_lininter|grid_splinter|grid_query|constant|flags)
 	integer(fourbyteint) :: cycle, pass              ! Last processed cycle and pass
 	integer(fourbyteint) :: selected, rejected       ! Number of selected or rejected measurements
 endtype
@@ -270,8 +269,8 @@ end interface rads_end
 !             (integer) Field number.
 !             (type(rads_var)) Variable struct (e.g. S%sel(i))
 !  data     : Data returned by this routine
-!  noedit   : Optional: set to .true. to skip editing;
-!             set to .false. to allow editing (default)
+!  noedit   : Optional: set to .true. to skip editing on limits and/or
+!             quality flags; set to .false. to allow editing (default)
 !
 ! Error code:
 !  S%error  : rads_noerr, rads_err_var, rads_err_memory, rads_err_source
@@ -776,7 +775,7 @@ iunit = 0
 allocate (rads_opt(rads_optl))
 opt => rads_opt
 opt = rads_option ('!', '', 9999)
-call getopt_reset ()
+call getopt_reset
 
 ! If any option is 'args=' then load the options from file
 ! Otherwise load the options from the command line
@@ -1274,7 +1273,7 @@ S%total_inside = S%total_inside + P%ndata
 
 contains
 
-subroutine rads_set_phase ()
+subroutine rads_set_phase
 integer :: i
 do i = 1,size(S%phases)
 	if (cycle >= S%phases(i)%cycles(1) .and. cycle <= S%phases(i)%cycles(2)) then
@@ -1309,7 +1308,7 @@ logical, intent(in), optional :: keep
 ! Arguments:
 !  S        : Satellite/mission dependent structure
 !  P        : Pass structure
-!  keep     : Keep the P%tll and P%flags matrices (destroy by default)
+!  keep     : Keep the P%tll matrix (destroy by default)
 !
 ! Error code:
 !  S%error  : rads_noerr, rads_err_nc_close
@@ -1318,11 +1317,11 @@ integer :: ios
 S%error = rads_noerr
 if (P%ncid > 0 .and. nft(nf90_close(P%ncid))) S%error = rads_err_nc_close
 P%ncid = 0
-deallocate (P%history, stat=ios)
+deallocate (P%history, P%flags, stat=ios)
 if (present(keep)) then
 	if (keep) return
 endif
-deallocate (P%tll, P%flags, stat=ios)
+deallocate (P%tll, stat=ios)
 end subroutine rads_close_pass
 
 !***********************************************************************
@@ -1474,14 +1473,14 @@ do i = 1,3 ! This loop is here to allow processing of aliases
 		call rads_get_var_nc
 	case (rads_src_nc_att)
 		call rads_get_var_nc_att
-	case (rads_src_nc_bits)
-		call rads_get_var_nc_bits
 	case (rads_src_math)
 		call rads_get_var_math
 	case (rads_src_grid_lininter, rads_src_grid_splinter, rads_src_grid_query)
 		call rads_get_var_grid
 	case (rads_src_constant)
 		call rads_get_var_constant (info%dataname)
+	case (rads_src_flags)
+		call rads_get_var_flags
 	case default
 		data = nan
 		return
@@ -1489,12 +1488,16 @@ do i = 1,3 ! This loop is here to allow processing of aliases
 
 	! Editing or error handling
 	if (S%error == rads_noerr) then ! No error, edit if requested
-		if (.not.skip_edit) call rads_edit_data
+		if (skip_edit) exit
+		call rads_limits_check
+		call rads_quality_check
 		exit
 	else if (info%default /= huge(0d0)) then ! Default value
 		data = info%default
 		S%error = rads_noerr
-		if (.not.skip_edit) call rads_edit_data
+		if (skip_edit) exit
+		call rads_limits_check
+		call rads_quality_check
 		exit
 
 	! Look for alternative variables and run loop again
@@ -1511,13 +1514,11 @@ do i = 1,3 ! This loop is here to allow processing of aliases
 
 enddo ! End alias loop
 
-call rads_quality_check	! Check quality flags (if provided)
-
 call rads_update_stat	! Update statistics on variable
 
 contains
 
-recursive subroutine rads_get_var_nc () ! Get data variable from RADS netCDF file
+recursive subroutine rads_get_var_nc ! Get data variable from RADS netCDF file
 use netcdf
 use rads_netcdf
 integer(fourbyteint) :: start(1), e, nctype, ndims
@@ -1578,7 +1579,7 @@ if (nff(nf90_get_att(P%ncid, info%varid, 'scale_factor', scale_factor))) data = 
 if (nff(nf90_get_att(P%ncid, info%varid, 'add_offset', add_offset))) data = data + add_offset
 end subroutine rads_get_var_nc
 
-recursive subroutine rads_get_var_nc_att () ! Get data attribute from RADS netCDF file
+recursive subroutine rads_get_var_nc_att ! Get data attribute from RADS netCDF file
 use netcdf
 use rads_netcdf
 use rads_time
@@ -1616,10 +1617,10 @@ else
 endif
 end subroutine rads_get_var_nc_att
 
-subroutine rads_get_var_nc_bits () ! Get bits from flag word
+subroutine rads_get_var_flags ! Get value from flag word
 use netcdf
 use rads_netcdf
-integer(fourbyteint) :: start(1)
+integer(fourbyteint) :: start(1), i, bits(2)
 if (.not.associated(P%flags)) then
 	! Flags need to be loaded first
 	if (nft(nf90_inq_varid (P%ncid, 'flags', info%varid))) then
@@ -1635,11 +1636,31 @@ if (.not.associated(P%flags)) then
 	allocate (P%flags(P%ndata))
 	P%flags = nint(data(1:P%ndata), twobyteint)
 endif
-! Now get the bits
-data(1:P%ndata) = ibits(P%flags,info%bits(1),info%bits(2))
-end subroutine rads_get_var_nc_bits
 
-recursive subroutine rads_get_var_math () ! Get data variable from MATH statement
+select case (info%dataname)
+case ('surface_type')
+	! Special setting to get surface type from bits 2, 4, 5
+	! I am keeping 1 for coastal in future
+	do i = 1,P%ndata
+		if (btest(P%flags(i),2)) then
+			data(i) = 3 ! continental ice
+		else if (btest(P%flags(i),4)) then
+			data(i) = 4 ! land
+		else if (btest(P%flags(i),5)) then
+			data(i) = 2 ! enclosed sea or lake
+		else
+			data(i) = 0 ! open ocean
+		endif
+	enddo
+case default
+	! Just get one or more bits
+	bits = (/0,1/)
+	read (info%dataname, *, iostat=i) bits
+	data(1:P%ndata) = ibits(P%flags,bits(1),bits(2))
+end select
+end subroutine rads_get_var_flags
+
+recursive subroutine rads_get_var_math ! Get data variable from MATH statement
 use rads_misc
 use rads_math
 type(math_ll), pointer :: top
@@ -1675,7 +1696,7 @@ if (i > 0) then
 endif
 end subroutine rads_get_var_math
 
-subroutine rads_get_var_grid () ! Get data by interpolating a grid
+subroutine rads_get_var_grid ! Get data by interpolating a grid
 real (eightbytereal) :: x(P%ndata), y(P%ndata)
 integer(fourbyteint) :: i
 
@@ -1715,7 +1736,7 @@ else
 endif
 end subroutine rads_get_var_constant
 
-subroutine rads_edit_data () ! Edit the data base on limits
+subroutine rads_limits_check ! Edit the data based on limits
 use rads_misc
 integer(fourbyteint) :: mask(2)
 
@@ -1738,30 +1759,25 @@ else
 	! Do editing of any other variable
 	where (data < info%limits(1) .or. data > info%limits(2)) data = nan
 endif
-end subroutine rads_edit_data
+end subroutine rads_limits_check
 
-subroutine rads_quality_check ()
+subroutine rads_quality_check
 use rads_misc
 real(eightbytereal) :: qual(P%ndata)
-integer(fourbyteint) :: i, j, l
+integer(fourbyteint) :: i0, i1
 if (info%quality_flag == '') return
 
 ! Process all quality checks left to right
-l = len_trim(info%quality_flag)
-i = 0
+i1 = 0
 do
-	j = index(info%quality_flag(i+1:),' ')
-	if (info%quality_flag(i+1:i+j) /= 'and') then	! Skip 'and' string
-		call rads_get_var_by_name (S, P, info%quality_flag(i+1:i+j), qual)
-		if (S%error /= rads_noerr) exit
-		where (isnan_(qual)) data = qual
-	endif
-	i = i+j
-	if (i >= l) exit
+	if (.not.next_word(info%quality_flag,i0,i1)) exit
+	call rads_get_var_by_name (S, P, info%quality_flag(i0:i1), qual)
+	if (S%error /= rads_noerr) exit
+	where (isnan_(qual)) data = nan
 enddo
 end subroutine rads_quality_check
 
-subroutine rads_update_stat	() ! Update the statistics for given var
+subroutine rads_update_stat ! Update the statistics for given var
 use rads_misc
 real(eightbytereal) :: q, r
 integer(fourbyteint) :: i
@@ -2022,10 +2038,6 @@ do
 		call assign_or_append (info%flag_meanings)
 		info%datatype = rads_type_flagvalues
 
-	case ('bits')
-		info%bits = (/0,1/)
-		read (val(:nval), *, iostat=ios) info%bits
-
 	case ('comment')
 		call assign_or_append (info%comment)
 
@@ -2033,6 +2045,7 @@ do
 		call rads_message (trim(var%name)//': <backup> deprecated, use <default> for value, or <alias> for variable')
 
 	case ('default')
+		info%default = huge(0d0) ! Set to default first
 		read (val(:nval), *, iostat=ios) info%default
 
 	case ('quality_flag')
@@ -2059,6 +2072,7 @@ do
 		read (val(1)(i+1:), *, iostat=ios) info%scale_factor, info%add_offset
 
 	case ('limits') ! Do not use routine rads_set_limits here!
+		info%limits = nan ! Set to default first
 		read (val(:nval), *, iostat=ios) info%limits
 
 	case ('data')
@@ -2082,6 +2096,8 @@ do
 		case ('netcdf', 'nc_var', 'nc_att', 'nc')
 			info%datasrc = rads_src_nc_var
 			if (index(info%dataname,':') > 0) info%datasrc = rads_src_nc_att
+		case ('flags')
+			info%datasrc = rads_src_flags
 		case default
 			! Make "educated guess" of data source
 			if (index(info%dataname,'.nc') > 0) then
@@ -2349,7 +2365,7 @@ if (associated(tgt)) then
 else
 	allocate (ptr%info)
 	ptr%info = rads_varinfo (varname, varname, '', '', '', '', '', '', '', 'f0.3', '', '', null(), &
-		huge(0d0), nan, 0d0, 1d0, nan, nan, 0d0, 0d0, .false., 1, nf90_double, 0, 0, 0, 0, 0, 0, 0, 0)
+		huge(0d0), nan, 0d0, 1d0, nan, nan, 0d0, 0d0, .false., 1, nf90_double, 0, 0, 0, 0, 0, 0, 0)
 	ptr%name => ptr%info%name
 endif
 ptr%long_name => ptr%info%long_name
@@ -2489,6 +2505,7 @@ character(len=*), intent(in), optional :: string
 type(rads_var), pointer :: var
 var => rads_varptr (S, varname)
 if (.not.associated(var)) return
+var%info%limits = nan	! Set to default first
 if (present(lo)) var%info%limits(1) = lo
 if (present(hi)) var%info%limits(2) = hi
 if (present(string)) call read_val (string, var%info%limits, '/')
@@ -2579,7 +2596,6 @@ var%info%format = format
 var%info%boz_format = (index('bozBOZ',var%info%format(:1)) > 0)
 end subroutine rads_set_format
 
-
 !***********************************************************************
 !*rads_set_format -- Set output format for given variable
 !+
@@ -2610,6 +2626,48 @@ else if (index(var%info%quality_flag,flag) == 0) then
 	var%info%quality_flag = trim(var%info%quality_flag) // ' ' // flag
 endif
 end subroutine rads_set_quality_flag
+
+!***********************************************************************
+!*rads_long_name_and_units -- Get string of long_name and units (or flag_meanings)
+!+
+subroutine rads_long_name_and_units (var, unit)
+use rads_misc
+type(rads_var), intent(in) :: var
+integer(fourbyteint), optional, intent(in) :: unit
+!
+! This writes to the output file attached to <unit> the long_name and units (or
+! flag_meanings) of a variable. The output can be one of the following:
+!  long_name [units]
+!  long_name [bits: flag_meanings]
+!  long_name [flag_meanings]
+!
+! Arguments:
+!  var      : Pointer to variable
+!  unit     : Fortran output unit (6 = stdout (default), 0 = stderr)
+!-----------------------------------------------------------------------
+integer :: iunit, i, i0, i1
+iunit = stdout
+if (present(unit)) iunit = unit
+write (iunit,550,advance='no') trim(var%long_name) // ' ['
+if (var%info%datatype == rads_type_flagmasks) then
+	write (iunit,550,advance='no') 'bits:'
+else if (var%info%datatype == rads_type_flagvalues) then
+	write (iunit,550,advance='no') 'values:'
+else
+	write (iunit,550) trim(var%info%units) // ']'
+	return
+endif
+i1 = 0
+i = 0
+do
+	if (.not.next_word(var%info%flag_meanings,i0,i1)) exit
+	write (iunit,551,advance='no') i,var%info%flag_meanings(i0:i1)
+	i = i + 1
+enddo
+write (iunit,550) ']'
+550 format (a)
+551 format (1x,i0,'=',a)
+end subroutine rads_long_name_and_units
 
 !***********************************************************************
 !*rads_stat_0d -- Print the RADS statistics for a given satellite
@@ -3355,14 +3413,11 @@ else if (info%nctype == nf90_int2) then
 else if (info%nctype == nf90_int4) then
 	e = e + nf90_put_att (P%ncid, info%varid, '_FillValue', huge(0_fourbyteint))
 endif
+if (info%quality_flag /= '') e = e + nf90_put_att (P%ncid, info%varid, 'quality_flag', info%quality_flag)
 if (info%scale_factor /= 1d0) e = e + nf90_put_att (P%ncid, info%varid, 'scale_factor', info%scale_factor)
 if (info%add_offset /= 0d0)  e = e + nf90_put_att (P%ncid, info%varid, 'add_offset', info%add_offset)
 if (info%datatype < rads_type_time .and. info%dataname(:1) /= ':') &
 	e = e + nf90_put_att (P%ncid, info%varid, 'coordinates', 'lon lat')
-if (info%format /= '') then
-	e = e + nf90_put_att (P%ncid, info%varid, 'format', trim(info%format))
-	info%boz_format = (index('bozBOZ',info%format(:1)) > 0)
-endif
 if (var%field(1) /= rads_nofield) e = e + nf90_put_att (P%ncid, info%varid, 'field', var%field(1))
 if (info%comment /= '') e = e + nf90_put_att (P%ncid, info%varid, 'comment', info%comment)
 if (e > 0) call rads_error (S, rads_err_nc_var, &

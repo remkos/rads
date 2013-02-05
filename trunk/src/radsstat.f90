@@ -172,9 +172,9 @@ contains
 
 !***********************************************************************
 
-subroutine synopsis ()
+subroutine synopsis
 if (rads_version ('$Revision$','Print RADS statistics per cycle, pass or day(s)')) return
-call rads_synopsis ()
+call rads_synopsis
 write (stderr,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
@@ -363,8 +363,8 @@ integer :: j0, j
 611 format ('# ( 1, 2) cycle and pass')
 612 format ('#    ( 1) cycle'/'#    ( 2) date at beginning of cycle [YYMMDD]')
 620 format ('#    (',i2,') nr of measurements'/'#    (',i2,') mean time [',a,']')
-621 format ('# (',i2,'-',i2,') mean and stddev of ',a,' [',a,']')
-622 format ('# (',i2,'-',i2,') mean, stddev, min and max of ',a,' [',a,']')
+621 format ('# (',i2,'-',i2,') mean and stddev of ')
+622 format ('# (',i2,'-',i2,') mean, stddev, min and max of ')
 
 write (*,600) trim(wtype(wmode)), timestamp(), trim(S%command), &
 	trim(S%sat), trim(S%phase%name), S%cycles(1:2), S%passes(1:2)
@@ -385,10 +385,11 @@ format_string = '(i9,f12.0'
 do j = 1,S%nsel
 	! Write description of variables
 	if (lstat == 2) then
-		write (*,621) 2*j+j0+1,2*j+j0+2,trim(S%sel(j)%long_name),trim(S%sel(j)%info%units)
+		write (*,621,advance='no') 2*j+j0+1,2*j+j0+2
 	else
-		write (*,622) 4*j+j0+1,4*j+j0+2,trim(S%sel(j)%long_name),trim(S%sel(j)%info%units)
+		write (*,622,advance='no') 4*j+j0+1,4*j+j0+2
 	endif
+	call rads_long_name_and_units(S%sel(j))
 	! Assemble format for statistics lines
 	l = len_trim(format_string)
 	! Add one decimal to an f-format, or copy boz-format
@@ -397,7 +398,7 @@ do j = 1,S%nsel
 	else
 		call read_val (S%sel(j)%info%format(2:), sizes, '.')
 		write (format_string(l+1:),'(",",i0,"(1x,f",i0,".",i0,")")') lstat,sizes+1
-	endif 
+	endif
 enddo
 
 l = len_trim(format_string)
