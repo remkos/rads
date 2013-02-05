@@ -164,9 +164,9 @@ contains
 
 !***********************************************************************
 
-subroutine synopsis ()
+subroutine synopsis
 if (rads_version ('$Revision$','Quickly grid RADS data to xyz or netCDF grid')) return
-call rads_synopsis ()
+call rads_synopsis
 write (*,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
@@ -200,7 +200,7 @@ end subroutine update_stat
 !***********************************************************************
 ! Write out the header
 
-subroutine write_header ()
+subroutine write_header
 integer :: j
 
 600 format ('# Grid of RADS variables'/'# Created: ',a,' UTC: ',a)
@@ -221,7 +221,7 @@ end subroutine write_header
 !***********************************************************************
 ! Write out xyz grid
 
-subroutine write_xyz_grid ()
+subroutine write_xyz_grid
 integer :: kx, ky
 if (format_string == '') format_string = '(' // trim(S(1)%sel(1)%info%format) // ',1x,' // &
 	trim(S(1)%sel(2)%info%format) // ',2(1x,' // trim(S(1)%sel(3)%info%format) // '),1x,i0)'
@@ -237,7 +237,7 @@ end subroutine write_xyz_grid
 !***********************************************************************
 ! Write out netCDF grid
 
-subroutine write_nc_grid ()
+subroutine write_nc_grid
 use netcdf
 use rads_netcdf
 use rads_time

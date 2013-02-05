@@ -193,7 +193,7 @@ end subroutine process
 
 !***********************************************************************
 
-subroutine synopsis ()
+subroutine synopsis
 if (rads_version ('$Revision$','RADS crossover file converter')) return
 write (stderr,1300)
 1300 format (/ &

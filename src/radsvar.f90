@@ -120,9 +120,9 @@ contains
 
 !***********************************************************************
 
-subroutine synopsis ()
+subroutine synopsis
 if (rads_version ('$Revision$','Make list of RADS variables')) return
-call rads_synopsis ()
+call rads_synopsis
 write (stderr,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &

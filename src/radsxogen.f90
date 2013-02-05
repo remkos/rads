@@ -293,9 +293,9 @@ contains
 
 !***********************************************************************
 
-subroutine synopsis ()
+subroutine synopsis
 if (rads_version ('$Revision$','Generate altimeter crossovers from RADS')) return
-call rads_synopsis()
+call rads_synopsis
 write (stderr,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &

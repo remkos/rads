@@ -153,13 +153,13 @@ integer(fourbyteint), intent(out) :: debug
 logical :: radsargs1
 radsargs1 = .false.
 if (usage == 3) then
-	call rads_synopsis ()
+	call rads_synopsis
     return
 endif
 if (.not.rads_init_done) call rads_init (S)
 rads_init_done = .true.
 radsargs1 = (S%error /= rads_noerr)
-if ((radsargs1 .and. usage == 1) .or. usage == 2) call rads_synopsis ()
+if ((radsargs1 .and. usage == 1) .or. usage == 2) call rads_synopsis
 sat = S%sat//'/'//trim(S%phase%name)
 debug = S%debug
 end function radsargs1
@@ -171,15 +171,15 @@ integer(fourbyteint), intent(inout) :: nsel
 logical :: radsargs2
 radsargs2 = .false.
 if (usage == 3) then
-	call rads_synopsis ()
+	call rads_synopsis
     return
 endif
 if (S%nsel > nsel) then
 	call rads_error (S, rads_err_memory, 'Too many data selectors on sel= argument')
 	radsargs2 = .true.
-	if (usage == 1) call rads_synopsis ()
+	if (usage == 1) call rads_synopsis
 endif
-if (usage == 2) call rads_synopsis ()
+if (usage == 2) call rads_synopsis
 cyc0 = S%cycles(1)
 cyc1 = S%cycles(1)
 pass0 = S%passes(1)
