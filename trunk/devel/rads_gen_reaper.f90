@@ -138,7 +138,7 @@ t1 = nan
 
 ! Scan command line for options
 
-call synopsis ()
+call synopsis
 do
 	call getopt (optlist, optopt, optarg)
 	select case (optopt)
@@ -230,7 +230,7 @@ end subroutine synopsis
 ! Store the content of a REAPER file into memory
 !-----------------------------------------------------------------------
 
-subroutine get_reaper ()
+subroutine get_reaper
 real(eightbytereal) :: dhellips, t(3), last_time
 integer(fourbyteint) :: i, k, flag
 
@@ -559,7 +559,7 @@ end subroutine get_reaper
 ! Write content of memory to a single pass of RADS data
 !-----------------------------------------------------------------------
 
-subroutine put_rads ()
+subroutine put_rads
 integer(fourbyteint) :: i
 character(160) :: original
 

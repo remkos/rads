@@ -148,9 +148,9 @@ contains
 
 !***********************************************************************
 
-subroutine synopsis ()
+subroutine synopsis
 if (rads_version ('$Revision$','Select RADS altimeter data and output to ADR or XGF')) return
-call rads_synopsis ()
+call rads_synopsis
 write (*,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
