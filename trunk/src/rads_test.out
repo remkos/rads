@@ -6,6 +6,7 @@
            4 ; optopt = V; optarg = time,lat,lon,sla,12_,tide_ocean_,flags_,pass,drange; optid =           14
  Parsing XML file /rads/data/conf/rads.xml
  Increased S%var:         100         200
+ Eqlonlim =   -278.27906976744185       -278.27906976744185        278.27906976744185        278.27906976744185     
            1 sla                                     sla                                           0     -1  -5.0000000000000000        5.0000000000000000     
            2 ssha                                    sla                                          -1     -1  -5.0000000000000000        5.0000000000000000     
            3 time                                    time                                        101      1                       NaN                       NaN
@@ -24,8 +25,8 @@
           16 alt_reaper_esoc                         alt_reaper_esoc                             423     -1                       NaN                       NaN
           17 alt                                     alt_reaper                                    4     -1                       NaN                       NaN
           18 alt_rate                                alt_rate                                    501      5  -30.000000000000000        30.000000000000000     
-          19 range_ku                                range_ku                                    601     -1                       NaN                       NaN
-          20 range                                   range_ku                                      6     -1                       NaN                       NaN
+          19 range_ku                                range_ku                                    601     -1   750000.00000000000        850000.00000000000     
+          20 range                                   range_ku                                      6     -1   750000.00000000000        850000.00000000000     
           21 dry_tropo_ecmwf                         dry_tropo_ecmwf                             701     -1  -2.3999999999999999       -2.1000000000000001     
           22 dry_tropo_ncep                          dry_tropo_ncep                              702     -1  -2.3999999999999999       -2.1000000000000001     
           23 dry_tropo_era                           dry_tropo_era                               709     -1  -2.3999999999999999       -2.1000000000000001     
@@ -122,15 +123,15 @@
          114 liquid_water                            liquid_water                               3301     33                       NaN                       NaN
          115 water_vapor_content                     water_vapor_content                        3302     -1                       NaN                       NaN
          116 mqe                                     mqe                                        3409     -1                       NaN                       NaN
-         117 basin                                   basin                                      3601     36 -0.50000000000000000        255.50000000000000     
-         118 ref_frame_offset                        ref_frame_offset                           3801     38  -1.0000000000000000        1.0000000000000000     
-         119 tide_equil                              tide_equil                                 3901     39  -1.0000000000000000        1.0000000000000000     
-         120 tide_non_equil                          tide_non_equil                             3902     -1  -1.0000000000000000        1.0000000000000000     
-         121 dist_coast                              dist_coast                                 4501     45  -10000.000000000000        10000.000000000000     
-         122 seaice_class                            seaice_class                               4601     46 -0.50000000000000000        15.500000000000000     
-         123 seaice_conc                             seaice_conc                                4701     47 -0.50000000000000000        100.50000000000000     
-         124 sst                                     sst                                        4801     48  -2.0000000000000000        40.000000000000000     
-         125 sst_mean                                sst_mean                                   4802     -1  -2.0000000000000000        40.000000000000000     
+         117 basin                                   basin                                      3601     36                       NaN                       NaN
+         118 ref_frame_offset                        ref_frame_offset                           3801     38                       NaN                       NaN
+         119 tide_equil                              tide_equil                                 3901     39                       NaN                       NaN
+         120 tide_non_equil                          tide_non_equil                             3902     -1                       NaN                       NaN
+         121 dist_coast                              dist_coast                                 4501     45                       NaN                       NaN
+         122 seaice_class                            seaice_class                               4601     46                       NaN                       NaN
+         123 seaice_conc                             seaice_conc                                4701     47                       NaN                       NaN
+         124 sst                                     sst                                        4801     48                       NaN                       NaN
+         125 sst_mean                                sst_mean                                   4802     -1                       NaN                       NaN
          126 dry_tropo_airtide                       dry_tropo_airtide                          4901     49                       NaN                       NaN
          127 mss_annual                              mss_annual                                 5001     50                       NaN                       NaN
          128 gia                                     gia                                        5101     51                       NaN                       NaN
@@ -140,6 +141,7 @@
          132 eqlon                                   eqlon                                      9904     -1                       NaN                       NaN
          133 cycle                                   cycle                                      9905     -1                       NaN                       NaN
          134 pass                                    pass                                       9906     -1                       NaN                       NaN
+ Eqlonlim =   -99.092603426953190       -105.85137415828184        135.85137415828183        129.09260342695319     
  debug =           3
  Checking cycle/pass :           19           1
  Bail out on estimated time:   212284800.00000000        212371200.00000000        212103263.02325583        212106276.97674417     
@@ -716,7 +718,7 @@ drange                                  data(1), data(ndata) =   0.409  0.409
  Start rads_end
 ######################################################################################################################################
 # Editing statistics for ERS-1 (e1)
-# Created: 2013-02-06 01:19:30 UTC: rads_test -vvv -Se1/a --ymd=19910924,19910925 -R-90/120/-50/30 -Vtime,lat,lon,sla,12_,tide_ocean_,flags_,pass,drange
+# Created: 2013-02-06 03:47:43 UTC: rads_test -vvv -Se1/a --ymd=19910924,19910925 -R-90/120/-50/30 -Vtime,lat,lon,sla,12_,tide_ocean_,flags_,pass,drange
 #
 # PASSES QUERIED                                           172
 #
@@ -739,7 +741,7 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 #                                           REJECTED  SELECTED       LOWER       UPPER         MIN         MAX        MEAN      STDDEV
 # sea level anomaly [m]                         1116     15736      -5.000       5.000      -1.074       0.709      -0.054       0.120
 # REAPER/COMBI orbital altitude [m]                0     16852         NaN         NaN  779576.859  798111.473  786329.774    5788.884
-# Ku-band range corrected for instr. effec         1     16851         NaN         NaN  775342.315  798110.816  786331.345    5782.575
+# Ku-band range corrected for instr. effec         1     16851  750000.000  850000.000  775342.315  798110.816  786331.345    5782.575
 # ECMWF dry tropospheric correction [m]            0     16852      -2.400      -2.100      -2.352      -2.226      -2.315       0.016
 # radiometer wet tropospheric correction [        80     16772      -0.600       0.000      -0.598      -0.005      -0.172       0.095
 # NIC09 ionospheric correction [m]                 0     16852      -0.400       0.040      -0.177      -0.016      -0.097       0.044
@@ -758,8 +760,8 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 # flag word [count]                              909     15943   65512.000       0.000       1.000       1.000       1.000       0.000
 # Ku-band range bias [m]                           0     16852         NaN         NaN       0.409       0.409       0.409       0.000
 # std dev of Ku-band significant wave heig       350     16502       0.000       2.100       0.010       2.100       0.980       0.264
-# reference frame offset [m]                       0     16852      -1.000       1.000       0.017       0.032       0.026       0.004
+# reference frame offset [m]                       0     16852         NaN         NaN       0.017       0.032       0.026       0.004
 # pass number []                                   0     16852         NaN         NaN       1.000      85.000      62.645      25.165
 ######################################################################################################################################
  End of program
-CLOCK, CPU =   0.0690   0.0657
+CLOCK, CPU =   0.0820   0.0657

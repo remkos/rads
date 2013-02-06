@@ -3213,6 +3213,8 @@ S%eqlonlim(1,2) = S%lon%info%limits(2) - min(l(1),l(2)) + 2d0
 S%eqlonlim(0,1) = S%lon%info%limits(1) + min(l(1),l(2)) - 2d0
 S%eqlonlim(0,2) = S%lon%info%limits(2) + max(l(1),l(2)) + 2d0
 
+if (S%debug >= 3) write (*,*) "Eqlonlim = ",S%eqlonlim
+
 end subroutine rads_traxxing
 
 !***********************************************************************
