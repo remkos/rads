@@ -171,7 +171,7 @@ do j = 1,msat
 760 format(/'Maximum number of output records reached (',i0,' >= ',i0,')')
 
 	! Finish progress bar
-	if (S%debug >= 1) write (logunit,*)
+	if (S%debug >= 1 .and. outunit /= logunit) write (logunit,*)
 
 	! Close file before exit
 	if (outunit /= stdout) close (outunit)
