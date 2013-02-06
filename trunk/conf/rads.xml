@@ -320,6 +320,9 @@ Global RADS configuration file
 	<long_name>Ku-band range corrected for instr. effects</long_name>
 	<standard_name>altimeter_range</standard_name>
 	<units>m</units>
+	<limits>750d3 850d3</limits>
+	<limits sat="c2">700d3 800d3</limits>
+	<limits sat="j1 j2 pn tx">1300d3 1400d3</limits>
 	<format>f11.3</format>
 	<data>range_ku</data>
 	<compress>int4 1d-4 700d3</compress>
@@ -332,6 +335,7 @@ Global RADS configuration file
 	<long_name>C-band range corrected for instr. effects</long_name>
 	<standard_name>altimeter_range</standard_name>
 	<units>m</units>
+	<limits>1300d3 1400d3</limits>
 	<data>range_c</data>
 	<format>f11.3</format>
 	<compress>int3 1d-4</compress>
@@ -344,6 +348,7 @@ Global RADS configuration file
 	<long_name>S-band range corrected for instr. effects</long_name>
 	<standard_name>altimeter_range</standard_name>
 	<units>m</units>
+	<limits>750d3 850d3</limits>
 	<data>range_s</data>
 	<format>f11.3</format>
 	<compress>int3 1d-4</compress>
@@ -874,7 +879,6 @@ Global RADS configuration file
 	<long_name>CLS01 mean sea surface height</long_name>
 	<source>CLS01</source>
 	<units>m</units>
-	<limits>-200 200</limits>
 	<data>mss_cls01</data>
 	<format>f10.4</format>
 	<compress>int4 1d-4</compress>
@@ -885,7 +889,6 @@ Global RADS configuration file
 	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
 	<source>GGM02c gravity field</source>
 	<units>m</units>
-	<limits>-200 200</limits>
 	<data>geoid_ggm02c</data>
 	<format>f10.4</format>
 	<compress>int4 1d-4</compress>
@@ -895,7 +898,6 @@ Global RADS configuration file
 	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
 	<source>ArcGICE gravity field</source>
 	<units>m</units>
-	<limits>-200 200</limits>
 	<data>mss_arcgice</data>
 	<format>f10.4</format>
 	<compress>int4 1d-4</compress>
@@ -906,7 +908,6 @@ Global RADS configuration file
 	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
 	<source>EGM2008</source>
 	<units>m</units>
-	<limits>-200 200</limits>
 	<data>geoid_egm2008</data>
 	<format>f10.4</format>
 	<compress>int4 1d-4</compress>
@@ -916,7 +917,6 @@ Global RADS configuration file
 	<long_name>EGM2008 mean sea surface height</long_name>
 	<source>EGM2008</source>
 	<units>m</units>
-	<limits>-200 200</limits>
 	<data>mss_egm2008</data>
 	<format>f10.4</format>
 	<compress>int4 1d-4</compress>
@@ -925,7 +925,6 @@ Global RADS configuration file
 	<long_name>DNSC08 mean sea surface height</long_name>
 	<source>DNSC08</source>
 	<units>m</units>
-	<limits>-200 200</limits>
 	<data>mss_dnsc08</data>
 	<format>f10.4</format>
 	<compress>int4 1d-4</compress>
@@ -934,7 +933,6 @@ Global RADS configuration file
 	<long_name>UCL04 mean sea surface height</long_name>
 	<source>UCL</source>
 	<units>m</units>
-	<limits>-200 200</limits>
 	<data>mss_ucl04</data>
 	<format>f10.4</format>
 	<compress>int4 1d-4</compress>
@@ -943,7 +941,6 @@ Global RADS configuration file
 	<long_name>DTU10 mean sea surface height</long_name>
 	<source>DTU10</source>
 	<units>m</units>
-	<limits>-200 200</limits>
 	<data>mss_dtu10</data>
 	<format>f10.4</format>
 	<compress>int4 1d-4</compress>
@@ -952,7 +949,6 @@ Global RADS configuration file
 	<long_name>CNES-CLS11 mean sea surface height</long_name>
 	<source>CNES-CLS11</source>
 	<units>m</units>
-	<limits>-200 200</limits>
 	<data>mss_cnescls11</data>
 	<format>f10.4</format>
 	<compress>int4 1d-4</compress>
@@ -1390,13 +1386,6 @@ Global RADS configuration file
 	<compress>int1</compress>
 </var>
 
-<var name="flag_ice" field="2502" sat="c2 e1 e2 j1 j2 n1">
-	<long_name>continental ice</long_name>
-	<flag_values>no_ice ice</flag_values>
-	<data source="flags">2</data>
-	<format>z1</format>
-	<compress>int1</compress>
-</var>
 <var name="qual_dh" field="2502" sat="gs">
 	<long_name>quality dH</long_name>
 	<flag_values>ok suspect</flag_values>
@@ -1415,16 +1404,14 @@ Global RADS configuration file
 <var name="qual_iono_alt" field="2503" sat="j1 j2 n1 tx">
 	<long_name>quality of dual-frequency ionospheric correction</long_name>
 	<flag_values>ok bad</flag_values>
-	<limits>0 0</limits>
 	<data source="flags">3</data>
 	<format>z1</format>
 	<compress>int1</compress>
 </var>
 
-<var name="surface_type">
+<var name="surface_type" field="2504">
 	<long_name>surface type</long_name>
-	<flag_values>open_ocean unused enclosed_sea_or_lake ice land</flag_values>
-	<limits>0 1</limits>
+	<flag_values>open_ocean unused enclosed_sea_or_lake land continental_ice</flag_values>
 	<data source="flags">surface_type</data>
 	<format>z1</format>
 	<compress>int1</compress>
@@ -1433,7 +1420,6 @@ Global RADS configuration file
 <var name="surface_type_rad" field="2506" sat="!c2 gs">
 	<long_name>radiometer land flag</long_name>
 	<flag_values>water land</flag_values>
-	<limits>0 0</limits>
 	<data source="flags">6</data>
 	<format>z1</format>
 	<compress>int1</compress>
@@ -1442,7 +1428,6 @@ Global RADS configuration file
 <var name="qual_alt_rain_ice" field="2507" sat="g1 j1 j2 n1 pn tx">
 	<long_name>corruption of altimeter measurement (ice)</long_name>
 	<flag_values>no_ice ice</flag_values>
-	<limits>0 0</limits>
 	<data source="flags">7</data>
 	<format>z1</format>
 	<compress>int1</compress>
@@ -1455,18 +1440,16 @@ Global RADS configuration file
 <var name="qual_rad_rain_ice" field="2508" sat="e1 e2 j1 j2 n1 pn tx">
 	<long_name>corruption of radiometer measurement (rain or ice)</long_name>
 	<flag_values>ok rain_or_ice</flag_values>
-	<limits>0 0</limits>
 	<data source="flags">8</data>
 	<format>z1</format>
 	<compress>int1</compress>
 </var>
 
-<var name="qual_rad_tb" sat="!c2 gs">
+<var name="qual_rad_tb" field="2509" sat="!c2 gs">
 	<long_name>quality of radiometer brightness temperatures</long_name>
 	<flag_masks sat="e1 e2 n1">bad_tb_238 bad_tb_365</flag_masks>
 	<flag_masks sat="g1">bad_tb_220 bad_tb_370</flag_masks>
 	<flag_masks sat="j1 j2">bad_tb_187_or_238 bad_tb_340</flag_masks>
-	<limits sat="e1 e2 g1 j1 j2 n1">3 0</limits>
 	<flag_values sat="pn tx">ok interpolation_near_land extrapolation interpolation_failed</flag_values>
 	<data source="flags">9 2</data>
 	<format>z1</format>
@@ -1477,7 +1460,6 @@ Global RADS configuration file
 	<long_name>quality of the range estimate</long_name>
 	<flag_values>ok suspect</flag_values>
 	<flag_values sat="gs">ok some_10Hz_measurements_invalid</flag_values>
-	<limits>0 0</limits>
 	<data source="flags">11</data>
 	<format>z1</format>
 	<compress>int1</compress>
@@ -1487,7 +1469,6 @@ Global RADS configuration file
 	<long_name>quality of the wave height estimate</long_name>
 	<long_name sat="gs">quality of sea state bias</long_name>
 	<flag_values>ok suspect</flag_values>
-	<limits>0 0</limits>
 	<data source="flags">12</data>
 	<format>z1</format>
 	<compress>int1</compress>
@@ -1497,7 +1478,6 @@ Global RADS configuration file
 	<long_name>quality of the backscatter coefficient estimate</long_name>
 	<long_name sat="gs">quality of wind speed estimate</long_name>
 	<flag_values>ok suspect</flag_values>
-	<limits>0 0</limits>
 	<data source="flags">13</data>
 	<format>z1</format>
 	<compress>int1</compress>
@@ -1509,7 +1489,6 @@ Global RADS configuration file
 	<flag_values sat="gs tx">nominal coarse_or_acquisition</flag_values>
 	<flag_values sat="j1">nominal c_band_coarse</flag_values>
 	<flag_values sat="pn">nominal acquisition</flag_values>
-	<limits>0 0</limits>
 	<data source="flags">14</data>
 	<format>z1</format>
 	<compress>int1</compress>
@@ -1519,7 +1498,6 @@ Global RADS configuration file
 	<long_name>quality of the orbit determination</long_name>
 	<flag_values>ok degraded</flag_values>
 	<data source="flags">15</data>
-	<limits>0 0</limits>
 	<format>z1</format>
 	<compress>int1</compress>
 </var>
@@ -2028,7 +2006,6 @@ Global RADS configuration file
 
 <var name="rain_ice_index" field="3501 35" sat="n1 tx">
 	<long_name>rain/ice index</long_name>
-	<limits>0 2</limits>
 	<data>rain_ice_index</data>
 	<format>f4.2</format>
 	<compress>int2 1d-2</compress>
@@ -2036,7 +2013,6 @@ Global RADS configuration file
 
 <var name="basin" field="3601 36">
 	<long_name>basin code</long_name>
-	<limits>-0.5 255.5</limits>
 	<data>basin</data>
 	<format>f3.0</format>
 	<compress>int1</compress>
@@ -2060,7 +2036,6 @@ Global RADS configuration file
 <var name="ref_frame_offset" field="3801 38">
 	<long_name>reference frame offset</long_name>
 	<units>m</units>
-	<limits>-1 1</limits>
 	<data>ref_frame_offset</data>
 	<format>f7.4</format>
 	<default>0</default>
@@ -2069,7 +2044,6 @@ Global RADS configuration file
 <var name="ref_frame_offset_mle3" field="3811" sat="j2">
 	<long_name>reference frame offset (MLE3)</long_name>
 	<units>m</units>
-	<limits>-1 1</limits>
 	<data>ref_frame_offset_mle3</data>
 	<format>f7.4</format>
 	<default>0</default>
@@ -2080,7 +2054,6 @@ Global RADS configuration file
 	<long_name>long-period equilibrium tide</long_name>
 	<standard_name>sea_surface_height_amplitude_due_to_equilibrium_ocean_tide</standard_name>
 	<units>m</units>
-	<limits>-1 1</limits>
 	<data>tide_equil</data>
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
@@ -2089,7 +2062,6 @@ Global RADS configuration file
 	<long_name>long-period non-equilibrium tide</long_name>
 	<standard_name>sea_surface_height_amplitude_due_to_non_equilibrium_ocean_tide</standard_name>
 	<units>m</units>
-	<limits>-1 1</limits>
 	<data>tide_non_equil</data>
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
@@ -2142,7 +2114,6 @@ Global RADS configuration file
 <var name="dist_coast" field="4501 45">
 	<long_name>distance to coast</long_name>
 	<units>km</units>
-	<limits>-10000 10000</limits>
 	<data>dist_coast</data>
 	<format>f6.0</format>
 	<compress>int2</compress>
@@ -2150,7 +2121,6 @@ Global RADS configuration file
 
 <var name="seaice_class" field="4601 46" sat="e1 e2 n1">
 	<long_name>sea ice classification</long_name>
-	<limits>-0.5 15.5</limits>
 	<data>seaice_class</data>
 	<format>f3.0</format>
 	<compress>int1</compress>
@@ -2159,7 +2129,6 @@ Global RADS configuration file
 <var name="seaice_conc" field="4701 47">
 	<long_name>sea ice concentration</long_name>
 	<units>%</units>
-	<limits>-0.5 100.5</limits>
 	<data>seaice_conc</data>
 	<format>f3.0</format>
 	<compress>int1</compress>
@@ -2169,7 +2138,6 @@ Global RADS configuration file
 	<long_name>sea surface temperature</long_name>
 	<source>Reynolds SST</source>
 	<units>degC</units>
-	<limits>-2 40</limits>
 	<data>sst</data>
 	<format>f5.2</format>
 	<compress>int2 1d-2</compress>
@@ -2177,7 +2145,6 @@ Global RADS configuration file
 <var name="sst_mean" field="4802">
 	<long_name>local mean sea surface temperature</long_name>
 	<units>degC</units>
-	<limits>-2 40</limits>
 	<data>sst_mean</data>
 	<format>f5.2</format>
 	<compress>int2 1d-2</compress>
