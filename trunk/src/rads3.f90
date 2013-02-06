@@ -20,7 +20,7 @@ module rads3
 ! This module provides backward compatibility of RADS3 code with the RADS4 library.
 !
 ! The following RADS3 routines are implemented herein:
-! 
+!
 ! subroutine getraw_init (mission, verbose)
 ! - Fully supported
 !
@@ -57,9 +57,9 @@ module rads3
 ! of the line 'use rads3' before the first executable line.
 !-----------------------------------------------------------------------
 use rads
-type(rads_sat), save :: S
-type(rads_pass), save :: P
-logical, save :: rads_init_done = .false.
+type(rads_sat), save, private :: S
+type(rads_pass), save, private :: P
+logical, save, private :: rads_init_done = .false.
 
 contains
 
