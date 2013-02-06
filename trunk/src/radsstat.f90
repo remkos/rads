@@ -63,7 +63,6 @@ do i = 1,rads_nopt
 	case ('d')
 		period = period_day
 		read (rads_opt(i)%arg, *, iostat=ios) step
-		step = step * 86400d0
 	case ('p')
 		period = period_pass
 		read (rads_opt(i)%arg, *, iostat=ios) step
@@ -140,7 +139,7 @@ do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
 	do pass = S%passes(1), S%passes(2), S%passes(3)
 		call rads_open_pass (S, Pin, cycle, pass)
 		! After very first call, initialise the day counter
-		if (isnan_(end_time)) end_time = floor(Pin%start_time/86400d0)*86400d0+step
+		if (isnan_(end_time)) end_time = floor(Pin%start_time/86400d0+step)*86400d0
 		if (isnan_(start_time)) start_time = Pin%start_time
 
 		! Process the pass data
@@ -248,7 +247,7 @@ real(eightbytereal) :: w
 type(rads_var), pointer :: var
 
 if (nr < minnr) then
-	end_time = end_time + step
+	end_time = end_time + step * 86400d0
 	return
 endif
 
@@ -342,7 +341,7 @@ endif
 box = stat(0d0, 0d0, 0d0, nan, nan)
 nr  = 0
 start_time = nan
-end_time = end_time + step
+end_time = end_time + step * 86400d0
 
 600 format (3i0.2)
 601 format (i3,i5)
