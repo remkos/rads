@@ -47,7 +47,7 @@ integer, parameter :: stderr = 0, stdin = 5, stdout = 6
 
 include 'config.f90'
 
-private :: rads_traxxing, rads_free_sat_struct, rads_free_var_struct
+private :: rads_traxxing, rads_free_sat_struct, rads_free_var_struct, rads_convert_flagmask
 
 type :: rads_varinfo
 	character(len=rads_varl) :: name                 ! Short name of variable used by RADS
@@ -513,11 +513,9 @@ S%time => rads_varptr (S, 'time')
 S%lat => rads_varptr (S, 'lat')
 S%lon => rads_varptr (S, 'lon')
 
-! Now limit cycles based on time limits (if any)
-if (.not.any(isnan_(S%time%info%limits))) then
-	S%cycles(1) = max(S%cycles(1), rads_time_to_cycle (S, S%time%info%limits(1)))
-	S%cycles(2) = min(S%cycles(2), rads_time_to_cycle (S, S%time%info%limits(2)))
-endif
+! Limit cycles based on time range and compute equator longitude limits
+call rads_set_limits (S, 'time')
+call rads_set_limits (S, 'lon')
 
 ! Compute equator longitude limits
 call rads_traxxing (S)
@@ -525,7 +523,7 @@ call rads_traxxing (S)
 ! List the variables
 if (S%debug >= 3) then
 	do i = 1,S%nvar
-		write (*,*) i,S%var(i)%name,S%var(i)%info%name,S%var(i)%field
+		write (*,*) i,S%var(i)%name,S%var(i)%info%name,S%var(i)%field,S%var(i)%info%limits
 	enddo
 endif
 end subroutine rads_init_sat_0d_xml
@@ -1441,6 +1439,7 @@ end subroutine rads_get_var_by_name
 !*rads_get_var_common -- Read variable (data) from RADS database (common to all)
 !+
 recursive subroutine rads_get_var_common (S, P, var, data, skip_edit)
+use rads_misc
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 type(rads_var), intent(inout) :: var
@@ -1486,18 +1485,12 @@ do i = 1,3 ! This loop is here to allow processing of aliases
 		return
 	end select
 
-	! Editing or error handling
-	if (S%error == rads_noerr) then ! No error, edit if requested
-		if (skip_edit) exit
-		call rads_limits_check
-		call rads_quality_check
+	! Error handling
+	if (S%error == rads_noerr) then ! No error, go to editing stage
 		exit
 	else if (info%default /= huge(0d0)) then ! Default value
 		data = info%default
 		S%error = rads_noerr
-		if (skip_edit) exit
-		call rads_limits_check
-		call rads_quality_check
 		exit
 
 	! Look for alternative variables and run loop again
@@ -1514,6 +1507,11 @@ do i = 1,3 ! This loop is here to allow processing of aliases
 
 enddo ! End alias loop
 
+! Edit this data if required and no error occurred
+if (.not.skip_edit .and. S%error == rads_noerr) then
+	if (any(info%limits == info%limits)) call rads_limits_check
+	if (info%quality_flag(:1) /= ' ') call rads_quality_check
+endif
 call rads_update_stat	! Update statistics on variable
 
 contains
@@ -1579,7 +1577,7 @@ if (nff(nf90_get_att(P%ncid, info%varid, 'scale_factor', scale_factor))) data = 
 if (nff(nf90_get_att(P%ncid, info%varid, 'add_offset', add_offset))) data = data + add_offset
 end subroutine rads_get_var_nc
 
-recursive subroutine rads_get_var_nc_att ! Get data attribute from RADS netCDF file
+subroutine rads_get_var_nc_att ! Get data attribute from RADS netCDF file
 use netcdf
 use rads_netcdf
 use rads_time
@@ -1629,27 +1627,23 @@ if (.not.associated(P%flags)) then
 		return
 	endif
 	start = max(1,P%first_meas)
-	if (nft(nf90_get_var(P%ncid, info%varid, data(1:P%ndata), start))) then
+	allocate (P%flags(P%ndata))
+	if (nft(nf90_get_var(P%ncid, info%varid, P%flags, start))) then
 		call rads_error (S, rads_err_nc_get, 'Error reading netCDF array "flags"')
 		return
 	endif
-	allocate (P%flags(P%ndata))
-	P%flags = nint(data(1:P%ndata), twobyteint)
 endif
 
 select case (info%dataname)
 case ('surface_type')
 	! Special setting to get surface type from bits 2, 4, 5
+	! 0=ocean, 2=enclosed seas and lakes, 3=land, 4=continental ice
 	! I am keeping 1 for coastal in future
 	do i = 1,P%ndata
 		if (btest(P%flags(i),2)) then
-			data(i) = 3 ! continental ice
-		else if (btest(P%flags(i),4)) then
-			data(i) = 4 ! land
-		else if (btest(P%flags(i),5)) then
-			data(i) = 2 ! enclosed sea or lake
+			data(i) = 4 ! continental ice
 		else
-			data(i) = 0 ! open ocean
+			data(i) = ibits(P%flags(i),4,2)
 		endif
 	enddo
 case default
@@ -1737,13 +1731,9 @@ endif
 end subroutine rads_get_var_constant
 
 subroutine rads_limits_check ! Edit the data based on limits
-use rads_misc
 integer(fourbyteint) :: mask(2)
 
-if (all(isnan_(info%limits))) then
-	! Skip editing when both limits are NaN
-	return
-else if (info%datatype == rads_type_lon) then
+if (info%datatype == rads_type_lon) then
 	! When longitude, shift the data first above the lower (west) limit
 	data = info%limits(1) + modulo (data - info%limits(1), 360d0)
 	! Then only check the upper (east) limit
@@ -1751,6 +1741,7 @@ else if (info%datatype == rads_type_lon) then
 else if (info%datatype == rads_type_flagmasks) then
 	! Do editing of flag based on mask
 	mask = nint(info%limits)
+	where (info%limits /= info%limits) mask = 0 ! Because it is not guaranteed for every compiler that nint(nan) = 0
 	! Reject when any of the set bits of the lower limit are set in the data
 	if (mask(1) /= 0) where (iand(nint(data),mask(1)) /= 0) data = nan
 	! Reject when any of the set bits of the upper limit are not set in the data
@@ -1761,11 +1752,10 @@ else
 endif
 end subroutine rads_limits_check
 
-subroutine rads_quality_check
+recursive subroutine rads_quality_check
 use rads_misc
 real(eightbytereal) :: qual(P%ndata)
 integer(fourbyteint) :: i0, i1
-if (info%quality_flag == '') return
 
 ! Process all quality checks left to right
 i1 = 0
@@ -2072,8 +2062,10 @@ do
 		read (val(1)(i+1:), *, iostat=ios) info%scale_factor, info%add_offset
 
 	case ('limits') ! Do not use routine rads_set_limits here!
-		info%limits = nan ! Set to default first
+		if (all(val == '')) info%limits = nan ! Reset limits to none if none given
 		read (val(:nval), *, iostat=ios) info%limits
+		! If we have an old-fashioned flagword, convert it to limits of single flags
+		if (var%name == 'flags') call rads_convert_flagmask (S, info%limits)
 
 	case ('data')
 		call assign_or_append (info%dataname)
@@ -2489,8 +2481,8 @@ character(len=*), intent(in), optional :: string
 ! The limits can either be set by giving the lower and upper limits
 ! as double floats <lo> and <hi> or as a character string <string> which
 ! contains the two numbers separated by whitespace, a comma or a slash.
-! In case only one number is given, only <lo> or <hi> (following the
-! separator) is set.
+! In case only one number is given, only the lower or higher bound
+! (following the separator) is set, the other value is left unchanged.
 !
 ! Arguments:
 !  S        : Satellite/mission dependent structure
@@ -2505,24 +2497,70 @@ character(len=*), intent(in), optional :: string
 type(rads_var), pointer :: var
 var => rads_varptr (S, varname)
 if (.not.associated(var)) return
-var%info%limits = nan	! Set to default first
 if (present(lo)) var%info%limits(1) = lo
 if (present(hi)) var%info%limits(2) = hi
-if (present(string)) call read_val (string, var%info%limits, '/')
+if (.not.present(string)) then
+else if (string == '') then	! Reset limits to none
+	var%info%limits = nan
+else ! Read limits (only change the ones given)
+	call read_val (string, var%info%limits, '/')
+endif
 if (var%info%datatype == rads_type_lat .or. var%info%datatype == rads_type_lon) then
 	! If latitude or longitude limits are changed, recompute equator longitude limits
 	call rads_traxxing (S)
 else if (var%info%datatype == rads_type_time) then
 	! If time limits are changed, also limit the cycles
-	S%cycles(1) = max(S%cycles(1), rads_time_to_cycle (S, var%info%limits(1)))
-	S%cycles(2) = min(S%cycles(2), rads_time_to_cycle (S, var%info%limits(2)))
+	if (.not.isnan_(var%info%limits(1))) S%cycles(1) = max(S%cycles(1), rads_time_to_cycle (S, var%info%limits(1)))
+	if (.not.isnan_(var%info%limits(2))) S%cycles(2) = min(S%cycles(2), rads_time_to_cycle (S, var%info%limits(2)))
+else if (var%name == 'flags') then
+	call rads_convert_flagmask (S, var%info%limits)
 endif
 end subroutine rads_set_limits
+
+subroutine rads_convert_flagmask (S, limits)
+type(rads_sat), intent(inout) :: S
+real(eightbytereal), intent(inout) :: limits(2)
+integer :: i, j, k, mask(2)
+mask = nint(limits)
+where (limits /= limits) mask = 0 ! Because it is not guaranteed for every compiler that nint(nan)=0
+do j = 1, 16 ! Check 16 bits
+	k = 2500 + j
+	do i = 1,S%nvar
+		if (any(S%var(i)%field == k)) exit ! Look for field info
+	enddo
+	if (i > S%nvar) cycle ! Skip unknown fields
+	S%var(i)%info%limits = nan ! Set to default
+	k = mod (j,16) ! Bit number (j = 16 becomes k = 0)
+	select case (k)
+	case (4) ! Convert flags 2, 4 and 5 (surface_type)
+		if (btest(mask(1),4)) then
+			S%var(i)%info%limits(2) = 1 ! ocean only
+		else if (btest(mask(1),5)) then
+			S%var(i)%info%limits(2) = 2 ! water only
+		else if (btest(mask(1),2)) then
+			S%var(i)%info%limits(2) = 3 ! anything but ice
+		endif
+		if (btest(mask(2),2)) then
+			S%var(i)%info%limits(1) = 4 ! ice only
+		else if (btest(mask(2),5)) then
+			S%var(i)%info%limits(1) = 3 ! land or ice
+		else if (btest(mask(2),4)) then
+			S%var(i)%info%limits(1) = 2 ! non-ocean
+		endif
+	case (9) ! Combine bits 9 and 10 (qual_rad_tb)
+		if (ibits(mask(1),9,2) /= 0) S%var(i)%info%limits(2) = 3 - ibits(mask(1),9,2)
+		if (ibits(mask(2),9,2) /= 0) S%var(i)%info%limits(1) = ibits(mask(2),9,2)
+	case default ! All the "normal" bits
+		if (btest(mask(1),k)) S%var(i)%info%limits(2) = 0
+		if (btest(mask(2),k)) S%var(i)%info%limits(1) = 1
+	end select
+enddo
+end subroutine rads_convert_flagmask
 
 !***********************************************************************
 !*rads_set_region -- Set latitude/longitude limits or distance to point
 !+
-subroutine rads_set_region (S, string)
+pure subroutine rads_set_region (S, string)
 use rads_misc
 type(rads_sat), intent(inout) :: S
 character(len=*), intent(in) :: string
@@ -2597,7 +2635,7 @@ var%info%boz_format = (index('bozBOZ',var%info%format(:1)) > 0)
 end subroutine rads_set_format
 
 !***********************************************************************
-!*rads_set_format -- Set output format for given variable
+!*rads_set_quality_flag -- Set quality flag(s) for given variable
 !+
 subroutine rads_set_quality_flag (S, varname, flag)
 type(rads_sat), intent(inout) :: S
@@ -3051,19 +3089,22 @@ integer(fourbyteint) :: rads_time_to_cycle
 !-----------------------------------------------------------------------
 integer :: i, j, n
 real(eightbytereal) :: d, t0, x
+
+! Look for the appropriate phase
 i = 1
 S%error = rads_noerr
 do i = 1,size(S%phases)-1
 	if (time < S%phases(i+1)%start_time) exit
 enddo
 
+! Estimate the cycle from the time
 d = S%phases(i)%pass_seconds
 t0 = S%phases(i)%ref_time - (S%phases(i)%ref_pass - 0.5d0) * d ! Time of start of ref_cycle
 x = time - t0
 rads_time_to_cycle = floor(x / (S%phases(i)%repeat_days * 86400d0)) + S%phases(i)%ref_cycle
 
+! When there are subcycles, compute the subcycle number
 if (associated(S%phases(i)%subcycles)) then
-	! When there are subcycles, compute the subcycle number
 	x = x - (rads_time_to_cycle - S%phases(i)%ref_cycle) * (S%phases(i)%repeat_days * 86400d0)
 	rads_time_to_cycle = (rads_time_to_cycle - 1) * S%phases(i)%subcycles%n + S%phases(i)%subcycles%i
 	n = floor(x / d)
@@ -3116,7 +3157,8 @@ end function rads_cycle_to_time
 !***********************************************************************
 !*rads_traxxing -- Determine which tracks cross an area
 !+
-subroutine rads_traxxing (S)
+pure subroutine rads_traxxing (S)
+use rads_misc
 type(rads_sat), intent(inout) :: S
 !
 ! Given an area and a certain satellite in a low circular orbit with
@@ -3139,22 +3181,25 @@ type(rads_sat), intent(inout) :: S
 real(eightbytereal) :: u(2),l(2),latmax
 integer(fourbyteint) :: i
 
+! If either longitude limit is NaN, set eqlonlin to NaN
+if (any(isnan_(S%lon%info%limits))) then
+	S%eqlonlim = nan
+	return
+endif
+
 ! Initialize
-latmax = min(S%inclination,180d0-S%inclination)
+latmax = min(S%inclination, 180d0-S%inclination)
 
 do i = 1,2
 	! Compute argument of latitude for lower and upper latitude boundary
-	if (S%lat%info%limits(i) < -latmax) then
-		u(i) = -90d0
-		l(i) = -90d0
-		if (S%inclination > 90d0) l(i) = -l(i)
-	else if (S%lat%info%limits(i) > latmax) then
-		u(i) = 90d0
-		l(i) = 90d0
-		if (S%inclination > 90d0) l(i) = -l(i)
+	! This also accounts for NaNs
+	if (abs(S%lat%info%limits(i)) <= latmax) then
+		u(i) = asin(sin(S%lat%info%limits(i)*rad) / sin(S%inclination*rad)) / rad
+		l(i) = asin(tan(S%lat%info%limits(i)*rad) / tan(S%inclination*rad)) / rad
 	else
-		u(i) = asin(sin(S%lat%info%limits(i)*rad)/sin(S%inclination*rad))/rad
-		l(i) = asin(tan(S%lat%info%limits(i)*rad)/tan(S%inclination*rad))/rad
+		u(i) = (2*i-3)*90d0
+		l(i) = u(i)
+		if (S%inclination > 90d0) l(i) = -l(i)
 	endif
 enddo
 
@@ -3427,7 +3472,7 @@ info%pass = P%pass
 
 contains
 
-function count_spaces (string)
+pure function count_spaces (string)
 character(len=*), intent(in) :: string
 integer(fourbyteint) :: count_spaces, i
 count_spaces = 0
