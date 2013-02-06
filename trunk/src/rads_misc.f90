@@ -580,7 +580,7 @@ logical :: isnan_
 !
 ! This elemental function checks if a 8-byte real is a NaN.
 ! It is added here, since it is not standard Fortran 90, though GNU
-! has it.
+! Fortran and HP Fortran have it.
 ! Since this function is elemental, it can be applied to arrays as well.
 !-----------------------------------------------------------------------
 isnan_ = (x /= x)

@@ -25,7 +25,7 @@
 ! and writes out a single file rads.xml.
 !
 ! When called with one of more filenames as arguments, the program combines
-! those and provides output to stdout. 
+! those and provides output to stdout.
 !-----------------------------------------------------------------------
 program radsreconfig
 use rads
@@ -126,7 +126,7 @@ integer :: i, j, ix, iy, type
 type(rads_var), pointer :: var
 character(len=5) :: field
 character(len=rads_strl) :: line, math(1), long_name, gridnm(1)
-logical :: dummy 
+logical :: dummy
 
 ! Open RMF file
 open (10, file=filename, status='old', iostat=i)
@@ -151,8 +151,7 @@ do
 		attr(1,2) = 'field'
 		attr(2,2) = field
 		call xml_put (X, 'var', attr, 2, string, 0, 'open')
-		call xml_long_name (long_name)		
-
+		call xml_long_name (long_name)
 
 		! Add math string
 		call replace_string (math(1))
@@ -278,7 +277,6 @@ enddo
 ! Aliases
 do i = 0,99
 	if (options(i) == 0 .or. options(i) == 100) cycle
-
 	write (field, '(i2.2)') i
 	var => rads_varptr (S, field)
 	attr(2,1) = var%name
@@ -298,6 +296,7 @@ attr(1,1) = 'name'
 attr(2,1) = 'sla'
 attr(1,2) = 'action'
 
+! Write out the XML file
 do i = 6,99
 	if (options(i) == 100) cycle
 	write (field, '(i2.2)') i
@@ -333,7 +332,7 @@ if (newqual.or.newmath) call xml_put (X, 'var', attr, 0, string, 0, 'close')
 if (S%sat /= '??') call xml_put (X, 'if', attr, 0, string, 0, 'close')
 end subroutine convert_nml
 
-
+! Split variable description from RMF file into long_name and units
 subroutine xml_long_name (long_name)
 character(len=*) :: long_name
 integer :: k1, k2
@@ -348,6 +347,7 @@ else
 endif
 end subroutine xml_long_name
 
+! Write float element of variable to XML
 subroutine xml_dble (var, name, format)
 real(eightbytereal) :: var(:)
 character(len=*) :: name, format
@@ -357,7 +357,7 @@ character(len=rads_strl) :: string(size(var))
 n = size(var)
 do i = 1,n
 	if (abs(var(i)-nint(var(i))) < 1d-10) then
-		write (string(i), '(i20)') nint(var(i))
+		write (string(i), '(i0)') nint(var(i))
 	else
 		write (string(i), '('//format//')') var(i)
 	endif
@@ -365,6 +365,7 @@ enddo
 call xml_put (X, name, attr, 0, string, n, 'elem')
 end subroutine xml_dble
 
+! Write text element of variable to XML
 subroutine xml_text (var, name)
 character(len=*) :: var, name
 character(len=rads_varl) :: attr(2,1)
