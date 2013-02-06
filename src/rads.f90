@@ -517,9 +517,6 @@ S%lon => rads_varptr (S, 'lon')
 call rads_set_limits (S, 'time')
 call rads_set_limits (S, 'lon')
 
-! Compute equator longitude limits
-call rads_traxxing (S)
-
 ! List the variables
 if (S%debug >= 3) then
 	do i = 1,S%nvar
@@ -2560,7 +2557,7 @@ end subroutine rads_convert_flagmask
 !***********************************************************************
 !*rads_set_region -- Set latitude/longitude limits or distance to point
 !+
-pure subroutine rads_set_region (S, string)
+subroutine rads_set_region (S, string)
 use rads_misc
 type(rads_sat), intent(inout) :: S
 character(len=*), intent(in) :: string
@@ -3157,7 +3154,7 @@ end function rads_cycle_to_time
 !***********************************************************************
 !*rads_traxxing -- Determine which tracks cross an area
 !+
-pure subroutine rads_traxxing (S)
+subroutine rads_traxxing (S)
 use rads_misc
 type(rads_sat), intent(inout) :: S
 !
@@ -3215,8 +3212,6 @@ S%eqlonlim(1,2) = S%lon%info%limits(2) - min(l(1),l(2)) + 2d0
 ! Add 2-degree margin
 S%eqlonlim(0,1) = S%lon%info%limits(1) + min(l(1),l(2)) - 2d0
 S%eqlonlim(0,2) = S%lon%info%limits(2) + max(l(1),l(2)) + 2d0
-
-if (S%debug >= 3) write (*,*) "Eqlonlim = ",S%eqlonlim
 
 end subroutine rads_traxxing
 
