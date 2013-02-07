@@ -51,7 +51,7 @@ SCRIPTS = rads-config
 all:	$(PROGS) $(PROGS_L1) $(PROGS_L2) $(PROGS_L4)
 
 install:	all
-	$(INSTALL_DIR) $(libdir) $(includedir) $(bindir)
+	$(INSTALL_DIR) $(libdir) $(includedir) $(bindir) $(datadir)/conf
 	$(INSTALL_DATA) $(LIB) $(libdir)
 	$(INSTALL_DATA) $(MODS) $(includedir)
 	$(INSTALL_PROGRAM) $(PROGS) $(bindir)
