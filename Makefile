@@ -28,11 +28,6 @@ SUBDIRS   = src $(DEVEL)
 all install clean spotless test::	$(CONFIG)
 	@for subdir in $(SUBDIRS); do (echo "Making $@ in $$subdir ..." && cd $$subdir && $(MAKE) $@); done
 
-install::
-	@echo "Installing configuration files ..."
-	$(INSTALL_DIR) $(datadir)/conf
-	$(INSTALL_DATA) conf/*.xml $(datadir)/conf
-
 clean spotless::
 	$(RM) $(CONFIG)
 

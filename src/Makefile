@@ -59,6 +59,7 @@ install:	all
 	for p in $(PROGS_L1); do ( cd $(bindir) ; $(LN_S) rads2adr $$p ) ; done
 	for p in $(PROGS_L2); do ( cd $(bindir) ; $(LN_S) radsxolist $$p ) ; done
 	for p in $(PROGS_L4); do ( cd $(bindir) ; $(LN_S) $${p/4/} $$p ) ; done
+	$(INSTALL_DATA) *.xml $(datadir)/conf
 
 man:	$(MAN)
 
