@@ -31,7 +31,7 @@ LDLIBS  = $(NETCDF_LIB)
 all:	$(PROGS)
 
 install:	all
-	$(INSTALL_DIR) $(bindir)
+	$(INSTALL_DIR) $(bindir) $(datadir)/conf
 	$(INSTALL_PROGRAM) $(PROGS) $(bindir)
 	$(INSTALL_DATA) *.xml $(datadir)/conf
 
