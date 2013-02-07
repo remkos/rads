@@ -33,6 +33,7 @@ all:	$(PROGS)
 install:	all
 	$(INSTALL_DIR) $(bindir)
 	$(INSTALL_PROGRAM) $(PROGS) $(bindir)
+	$(INSTALL_DATA) *.xml $(datadir)/conf
 
 man:	$(MAN)
 
