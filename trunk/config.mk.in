@@ -35,6 +35,7 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_DIR = @INSTALL_DIR@
 DEVEL = @DEVEL@
+DEVEL_OBJS = @DEVEL_OBJS@
 
 #-----------------------------------------------------------------------
 # Include and load option for NetCDF (and LAPACK, for developers only)
@@ -49,7 +50,7 @@ LAPACK_LIB = @LAPACK_LIB@
 LN_S = @LN_S@ -f
 RANLIB = @RANLIB@
 FC = @FC@
-FFLAGS = @FCFLAGS@ $(NETCDF_INC) -I../src
+FFLAGS = @FCFLAGS@ -I../src $(NETCDF_INC)
 
 #-----------------------------------------------------------------------
 # Special rules
