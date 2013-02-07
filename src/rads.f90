@@ -28,7 +28,7 @@ integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, rads_
 ! RADS4 data sources
 integer(fourbyteint), parameter :: rads_src_none = 0, rads_src_nc_var = 10, rads_src_nc_att = 11, &
 	rads_src_math = 20, rads_src_grid_lininter = 30, rads_src_grid_splinter = 31, rads_src_grid_query = 32, &
-	rads_src_constant = 40, rads_src_flags = 50
+	rads_src_constant = 40, rads_src_flags = 50, rads_src_tpj = 60
 ! RADS4 warnings
 integer(fourbyteint), parameter :: rads_warn_nc_file = -3
 ! RADS4 errors
@@ -1474,9 +1474,11 @@ do i = 1,3 ! This loop is here to allow processing of aliases
 	case (rads_src_grid_lininter, rads_src_grid_splinter, rads_src_grid_query)
 		call rads_get_var_grid
 	case (rads_src_constant)
-		call rads_get_var_constant (info%dataname)
+		call rads_get_var_constant
 	case (rads_src_flags)
 		call rads_get_var_flags
+	case (rads_src_tpj)
+	    call rads_get_var_tpj
 	case default
 		data = nan
 		return
@@ -1512,6 +1514,8 @@ endif
 call rads_update_stat	! Update statistics on variable
 
 contains
+
+include "rads_tpj.f90"
 
 recursive subroutine rads_get_var_nc ! Get data variable from RADS netCDF file
 use netcdf
@@ -1714,10 +1718,9 @@ else
 endif
 end subroutine rads_get_var_grid
 
-subroutine rads_get_var_constant (string)
-character(len=*) :: string
+subroutine rads_get_var_constant
 integer :: ios
-read (string, *, iostat=ios) data(1)
+read (info%dataname, *, iostat=ios) data(1)
 if (ios == 0) then
 	S%error = rads_noerr
 	data = data(1)
@@ -2087,6 +2090,8 @@ do
 			if (index(info%dataname,':') > 0) info%datasrc = rads_src_nc_att
 		case ('flags')
 			info%datasrc = rads_src_flags
+		case ('tpj')
+			info%datasrc = rads_src_tpj
 		case default
 			! Make "educated guess" of data source
 			if (index(info%dataname,'.nc') > 0) then

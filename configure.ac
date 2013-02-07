@@ -74,10 +74,13 @@ AC_MSG_RESULT([$enable_devel])
 
 if test "x$enable_devel" = "xno"; then
 	DEVEL=
+	DEVEL_OBJS=
 else
 	DEVEL=devel
+	DEVEL_OBJS='$(ALTIM)/src/rssubs/tpj_subs.o $(ALTIM)/src/rssubs/solar_subs.o'
 fi
 AC_SUBST(DEVEL)
+AC_SUBST(DEVEL_OBJS)
 
 # -----------------------------------------------------------------
 # Default settings come from nf-config
@@ -234,6 +237,11 @@ if test "x$ac_cv_f77_compiler_gnu" = "xyes" ; then
 fi
 if test "x$FC" = "xgfortran" ; then
 	opt=" -Wall -Wtabs -fimplicit-none"
+fi
+if test "x$enable_devel" = "xno"; then
+	opt="$opt -I../dummy"
+else
+	opt="$opt -I../devel "'-I$(ALTIM)/include'
 fi
 FCFLAGS=$FCFLAGS$opt
 AC_MSG_RESULT($opt)

@@ -67,7 +67,7 @@ man:	$(MAN)
 #-----------------------------------------------------------------------
 
 rads_math.o:	rads_misc.mod rads_time.mod
-rads.o:			$(MODS1) $(INCLUDES)
+rads.o:			$(MODS1) $(INCLUDES) ../dummy/rads_tpj.f90 ../devel/rads_tpj.f90
 rads3.o:		rads.mod
 $(PROGS):		$(LIB)
 radsxogen:		spline.o
@@ -87,8 +87,8 @@ rads-config:	rads-config.in
 # How to create the library
 #-----------------------------------------------------------------------
 
-$(LIB):	$(OBJS)
-	$(AR) $(ARFLAGS) $@ $(OBJS)
+$(LIB):	$(OBJS) $(DEVEL_OBJS)
+	$(AR) $(ARFLAGS) $@ $(OBJS) $(DEVEL_OBJS)
 	$(RANLIB) $@
 
 #-----------------------------------------------------------------------
