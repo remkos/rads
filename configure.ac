@@ -238,9 +238,7 @@ fi
 if test "x$FC" = "xgfortran" ; then
 	opt=" -Wall -Wtabs -fimplicit-none"
 fi
-if test "x$enable_devel" = "xno"; then
-	opt="$opt -I../dummy"
-else
+if test "x$enable_devel" = "xyes"; then
 	opt="$opt -I../devel "'-I$(ALTIM)/include'
 fi
 FCFLAGS=$FCFLAGS$opt
