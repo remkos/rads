@@ -19,7 +19,7 @@ include config.mk
 
 CONFIG_IN = config.mk.in src/rads-config.in
 CONFIG    = $(CONFIG_IN:.in=)
-SUBDIRS   = src $(DEVEL)
+SUBDIRS   = src conf $(DEVEL)
 
 #-----------------------------------------------------------------------
 # Rules for making and installing

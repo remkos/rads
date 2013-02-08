@@ -51,7 +51,7 @@ SCRIPTS = rads-config
 all:	$(PROGS) $(PROGS_L1) $(PROGS_L2) $(PROGS_L4)
 
 install:	all
-	$(INSTALL_DIR) $(libdir) $(includedir) $(bindir) $(datadir)/conf
+	$(INSTALL_DIR) $(libdir) $(includedir) $(bindir)
 	$(INSTALL_DATA) $(LIB) $(libdir)
 	$(INSTALL_DATA) $(MODS) $(includedir)
 	$(INSTALL_PROGRAM) $(PROGS) $(bindir)
@@ -59,7 +59,6 @@ install:	all
 	for p in $(PROGS_L1); do ( cd $(bindir) ; $(LN_S) rads2adr $$p ) ; done
 	for p in $(PROGS_L2); do ( cd $(bindir) ; $(LN_S) radsxolist $$p ) ; done
 	for p in $(PROGS_L4); do ( cd $(bindir) ; $(LN_S) $${p/4/} $$p ) ; done
-	$(INSTALL_DATA) *.xml $(datadir)/conf
 
 man:	$(MAN)
 
@@ -68,7 +67,7 @@ man:	$(MAN)
 #-----------------------------------------------------------------------
 
 rads_math.o:	rads_misc.mod rads_time.mod
-rads.o:			$(MODS1) $(INCLUDES) ../dummy/rads_tpj.f90 ../devel/rads_tpj.f90
+rads.o:			$(MODS1) $(INCLUDES) ../include/rads_tpj.f90 ../devel/rads_tpj.f90
 rads3.o:		rads.mod
 $(PROGS):		$(LIB)
 radsxogen:		spline.o
