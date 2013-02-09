@@ -87,7 +87,7 @@ Special variables for TOPEX/Poseidon and Jason (for developers only)
 		<long_name>TPJ yaw angle</long_name>
 		<units>degrees</units>
 		<data source="tpj">tpj_yaw_angle</data>
-		<format>f7.3</format>
+		<format>f8.3</format>
 		<compress>int4 1d-3</compress>
 	</var>
 </if>
