@@ -820,13 +820,18 @@ logical :: next_word
 !
 ! This routine scans <string> and finds the next word in <string>
 ! after index <i1>. A word is considered anything between delimiters
-! space, comma, or slash. Empty strings are not returned.
+! space, comma, or slash. Multiple spaces are seen as one delimeter,
+! but not multiple commas or slashes.
+! Upon return <i0> returns the start of the next word, and <i1> returns
+! the end of the next word PLUS 1. Hence, and empy next word will have
+! i0 == i1.
 !
 ! When scanning for all words in a string, initialize i1 = 0.
 !
 ! If another word is found:
 !   <next_word> = .true.
-!   <i0> and <i1> are the start and end index of the word in <string>
+!   <i0> is the start index of the next word in <string>
+!   <i1> is the end index + 1 of the next word in <string>
 ! Otherwise:
 !   <next_word> = .false.
 !   <i0> and <i1> are both zero
@@ -834,16 +839,16 @@ logical :: next_word
 ! Arguments:
 !  string   : Input character string
 !  i0       : Start of word found (zero when none)
-!  i1       : Input: end of previous word; output: end of next word
+!  i1       : Input: position of last delimeter
+!             output: position of the next delimeter
 !  next_word: .true. is word found, .false. otherwise
 !-----------------------------------------------------------------------
 integer :: l,i
 l = len(string)
 
-! Scan beyond leading ignored characters
+! Scan beyond leading ignored whitespace
 do i = i1+1,l
-	if (string(i:i) == ' ' .or. string(i:i) == ',' .or. string(i:i) == '/') cycle
-	exit
+	if (string(i:i) /= ' ') exit
 enddo
 
 ! End of string reached, no words found
@@ -854,12 +859,12 @@ if (i > l) then
 	return
 endif
 
-! Find end of string
+! Find end of next word
 i0 = i
 do i = i0,l
 	if (string(i:i) == ' ' .or. string(i:i) == ',' .or. string(i:i) == '/') exit
 enddo
-i1 = i - 1
+i1 = i
 next_word = .true.
 end function next_word
 
