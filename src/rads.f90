@@ -47,7 +47,7 @@ integer, parameter :: stderr = 0, stdin = 5, stdout = 6
 
 include 'config.f90'
 
-private :: rads_traxxing, rads_free_sat_struct, rads_free_var_struct, rads_convert_flagmask
+private :: rads_traxxing, rads_free_sat_struct, rads_free_var_struct, rads_set_limits_by_flagmask
 
 type :: rads_varinfo
 	character(len=rads_varl) :: name                 ! Short name of variable used by RADS
@@ -1878,10 +1878,11 @@ do
 	endif
 
 	! Check if we need to skip this level
-	! This level well be skipped when both of the following are true
+	! This level well be skipped when all three of the following are true
 	! a) Tag contains attribute "sat="
 	! b) The attribute value contains the satellite abbreviaton,
 	!    or the attribute value starts with "!" and does not contain the satellite abbreviation
+	! c) The satellite abbreviation is not set to "??"
 	! Examples: for Envisat (n1)
 	! sat="n1" => pass
 	! sat="j1" => skip
@@ -2065,7 +2066,7 @@ do
 		if (all(val == '')) info%limits = nan ! Reset limits to none if none given
 		read (val(:nval), *, iostat=ios) info%limits
 		! If we have an old-fashioned flagword, convert it to limits of single flags
-		if (var%name == 'flags') call rads_convert_flagmask (S, info%limits)
+		if (var%name == 'flags') call rads_set_limits_by_flagmask (S, info%limits)
 
 	case ('data')
 		call assign_or_append (info%dataname)
@@ -2515,26 +2516,29 @@ else if (var%info%datatype == rads_type_time) then
 	if (.not.isnan_(var%info%limits(1))) S%cycles(1) = max(S%cycles(1), rads_time_to_cycle (S, var%info%limits(1)))
 	if (.not.isnan_(var%info%limits(2))) S%cycles(2) = min(S%cycles(2), rads_time_to_cycle (S, var%info%limits(2)))
 else if (var%name == 'flags') then
-	call rads_convert_flagmask (S, var%info%limits)
+	call rads_set_limits_by_flagmask (S, var%info%limits)
 endif
 end subroutine rads_set_limits
 
-subroutine rads_convert_flagmask (S, limits)
+!***********************************************************************
+!*rads_set_limits_by_flagmask -- Set limits based on flagmask
+!+
+subroutine rads_set_limits_by_flagmask (S, limits)
 type(rads_sat), intent(inout) :: S
 real(eightbytereal), intent(inout) :: limits(2)
-integer :: i, j, k, mask(2)
+!-----------------------------------------------------------------------
+integer :: i, ios, mask(2), bits(2)
 mask = nint(limits)
 where (limits /= limits) mask = 0 ! Because it is not guaranteed for every compiler that nint(nan)=0
-do j = 1, 16 ! Check 16 bits
-	k = 2500 + j
-	do i = 1,S%nvar
-		if (any(S%var(i)%field == k)) exit ! Look for field info
-	enddo
-	if (i > S%nvar) cycle ! Skip unknown fields
-	S%var(i)%info%limits = nan ! Set to default
-	k = mod (j,16) ! Bit number (j = 16 becomes k = 0)
-	select case (k)
-	case (4) ! Convert flags 2, 4 and 5 (surface_type)
+! Loop through all variables to find those with field between 2501 and 2516
+do i = 1,S%nvar
+	if (.not.any(S%var(i)%field >= 2501 .and. S%var(i)%field <= 2516)) cycle
+	bits = (/0,1/) ! Default values
+	read (S%var(i)%info%dataname, *, iostat = ios) bits
+	if (S%var(i)%info%dataname == 'surface_type') then
+		! Special setting to get surface type from bits 2, 4, 5
+		! 0=ocean, 2=enclosed seas and lakes, 3=land, 4=continental ice
+		! I am keeping 1 for coastal in future
 		if (btest(mask(1),4)) then
 			S%var(i)%info%limits(2) = 1 ! ocean only
 		else if (btest(mask(1),5)) then
@@ -2549,15 +2553,15 @@ do j = 1, 16 ! Check 16 bits
 		else if (btest(mask(2),4)) then
 			S%var(i)%info%limits(1) = 2 ! non-ocean
 		endif
-	case (9) ! Combine bits 9 and 10 (qual_rad_tb)
-		if (ibits(mask(1),9,2) /= 0) S%var(i)%info%limits(2) = 3 - ibits(mask(1),9,2)
-		if (ibits(mask(2),9,2) /= 0) S%var(i)%info%limits(1) = ibits(mask(2),9,2)
-	case default ! All the "normal" bits
-		if (btest(mask(1),k)) S%var(i)%info%limits(2) = 0
-		if (btest(mask(2),k)) S%var(i)%info%limits(1) = 1
-	end select
+	else if (S%var(i)%info%datatype == rads_type_flagmasks) then
+		if (ibits(mask(1),bits(1),bits(2)) /= 0) S%var(i)%info%limits(1) = ibits(mask(1),bits(1),bits(2))
+		if (ibits(mask(2),bits(1),bits(2)) /= 0) S%var(i)%info%limits(2) = ibits(mask(2),bits(1),bits(2))
+	else ! rads_type_flagvalues
+		if (ibits(mask(1),bits(1),bits(2)) /= 0) S%var(i)%info%limits(2) = ibits(not(mask(1)),bits(1),bits(2))
+		if (ibits(mask(2),bits(1),bits(2)) /= 0) S%var(i)%info%limits(1) = ibits(mask(2),bits(1),bits(2))
+	endif
 enddo
-end subroutine rads_convert_flagmask
+end subroutine rads_set_limits_by_flagmask
 
 !***********************************************************************
 !*rads_set_region -- Set latitude/longitude limits or distance to point

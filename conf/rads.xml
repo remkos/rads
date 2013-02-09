@@ -417,7 +417,7 @@ Global RADS configuration file
 	<compress>int2 1d-4</compress>
 	<comment>A dry tropospheric correction must be added to range to correct for dry troposphere delays</comment>
 </var>
-<alias name="dry_tropo" field="7">dry_tropo_ecmwf</alias>
+<alias name="dry_tropo" field="7" sat="!g1 gs">dry_tropo_ecmwf</alias>
 <alias name="dry_tropo" field="7" sat="g1 gs">dry_tropo_era</alias>
 
 <var name="wet_tropo_rad" field="801" sat="!c2 gs">
@@ -523,8 +523,9 @@ Global RADS configuration file
 	<compress>int2 1d-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
 </var>
-<alias name="wet_tropo" field="8" sat="!c2 gs">wet_tropo_rad wet_tropo_ecmwf</alias>
+<alias name="wet_tropo" field="8" sat="!c2 g1 gs">wet_tropo_rad wet_tropo_ecmwf</alias>
 <alias name="wet_tropo" field="8" sat="c2">wet_tropo_ecmwf</alias>
+<alias name="wet_tropo" field="8" sat="g1">wet_tropo_rad wet_tropo_era</alias>
 <alias name="wet_tropo" field="8" sat="gs">wet_tropo_era</alias>
 
 <var name="iono_alt" field="901" sat="j1 j2 n1 tx">
