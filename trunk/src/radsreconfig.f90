@@ -37,7 +37,7 @@ type(rads_sat) :: S
 type(xml_parse) :: X
 character(len=80) :: arg
 integer, parameter :: nsat = 10
-character(len=2) :: satnm(nsat) = (/ 'c2', 'e1', 'e2', 'g1', 'gs', 'j1', 'j2', 'n1', 'pn', 'tx' /)
+character(len=2) :: satnm(nsat+1) = (/ 'c2', 'e1', 'e2', 'g1', 'gs', 'j1', 'j2', 'n1', 'pn', 'tx', '??' /)
 
 integer :: passes(2),cycles(2)=0,i,j
 character(len=4) :: radsfmt
@@ -74,12 +74,12 @@ if (arg == '--help' .or. arg == '-?') then
 else if (arg == '') then
 	call xml_open (X, 'rads.xml', .false.)
 	call xml_options (X, ignore_whitespace=.true.)
-	call rads_setup ('??')
+	call rads_init (S, '??')
 	call convert_rmf ('getraw.rmf')
 	call convert_nml ('getraw.nml')
 	call rads_end (S)
 	do j = 1,nsat
-		call rads_setup (satnm(j))
+		call rads_init (S, satnm(j))
 		call convert_rmf ('getraw_'//satnm(j)//'.rmf')
 		call convert_nml ('getraw_'//satnm(j)//'.nml')
 		call rads_end (S)
@@ -89,7 +89,10 @@ else
 	call xml_options (X, ignore_whitespace=.true.)
 	do i = 1,iargc()
 		call getarg (i, arg)
-		call rads_setup (arg)
+		do j = 1,nsat
+			if (index(arg,satnm(j)) > 0) exit
+		enddo
+		call rads_init (S, satnm(j))
 		if (index(arg,'.rmf') > 0) call convert_rmf (arg)
 		if (index(arg,'.nml') > 0) call convert_nml (arg)
 		call rads_end (S)
@@ -99,29 +102,6 @@ endif
 call xml_close (X)
 
 contains
-
-subroutine rads_setup (sat)
-character(len=2) :: sat
-integer :: i
-
-! Set up the S structure
-call rads_init_sat_struct (S)
-allocate (S%var(rads_var_chunk))
-S%var = rads_var (null(), null(), null(), null(), null(), .false., rads_nofield)
-S%sat = sat
-
-! Set some global variables
-S%dataroot = radsdataroot
-call checkenv ('RADSDATAROOT',S%dataroot)
-call checkenv ('HOME',S%userroot)
-call get_command (S%command, status=i)
-if (i < 0) S%command (len(S%command)-2:) = '...'
-
-! Read XML file(s)
-call rads_read_xml (S, trim(S%dataroot) // '/conf/rads.xml')
-if (S%error == rads_err_xml_file) call rads_exit ('Required XML file '//trim(S%dataroot)//'/conf/rads.xml does not exist')
-call rads_read_xml (S, trim(S%userroot) // '/.rads/rads.xml')
-end subroutine rads_setup
 
 subroutine convert_rmf (filename)
 character(len=*) :: filename
@@ -199,7 +179,6 @@ do
 
 	else if (line(:5) == 'ALIAS') then
 		read (line(6:), *) ix, iy, long_name
-
 		! Create new variable
 		j = S%nvar
 		write (field, '(i4.4)') ix
@@ -209,11 +188,10 @@ do
 		attr(2,2) = field
 		if (S%nvar == j) then	! Variable already existed
 			attr(2,1) = var%name
-			call xml_put (X, 'var', attr, 2, string, 0, 'open')
 			write (field, '(i4.4)') iy
 			var => rads_varptr (S, field, null())
-			call xml_text (var%name, 'alias')
-			call xml_put (X, 'var', attr, 0, string, 0, 'close')
+			string(1) = ',' // var%name
+			call xml_put (X, 'alias', attr, 2, string, 1, 'elem')
 		else
 			attr(2,1) = 'f' // field
 			write (field, '(i4.4)') iy

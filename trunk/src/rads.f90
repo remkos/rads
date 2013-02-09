@@ -462,6 +462,7 @@ S%var = rads_var (null(), null(), null(), null(), null(), .false., rads_nofield)
 call rads_read_xml (S, trim(S%dataroot)//'/conf/rads.xml')
 if (S%error == rads_err_xml_file) call rads_exit ('Required XML file '//trim(S%dataroot)//'/conf/rads.xml does not exist')
 call rads_read_xml (S, trim(S%userroot)//'/.rads/rads.xml')
+if (index(S%command, 'radsreconfig') > 0) return ! Premature bailing from here in radsreconfig
 call rads_read_xml (S, 'rads.xml')
 
 ! Now read the xml files specified on the command line
@@ -927,8 +928,9 @@ case ('opt')
 		k1 = 0
 		do
 			if (.not.next_word (opt%arg, k0, k1)) exit
-			call rads_set_alias (S, opt%arg(k0:k1-2), opt%arg(k0:k1))
-			call rads_set_quality_flag (S, 'sla', opt%arg(k0:k1))
+			if (k1 == k0) cycle
+			call rads_set_alias (S, opt%arg(k0:k1-3), opt%arg(k0:k1-1))
+			call rads_set_quality_flag (S, 'sla', opt%arg(k0:k1-1))
 		enddo
 	endif
 ! Finally try date arguments
@@ -965,6 +967,7 @@ i1 = 0
 n = 0
 do
 	if (.not.next_word (string, i0, i1)) exit
+	if (i1 == i0) cycle
 	n = n + 1
 enddo
 
@@ -988,13 +991,14 @@ endif
 i1 = 0
 do
 	if (.not.next_word (string, i0, i1)) exit
-	noedit = 0
-	if (string(i1:i1) == rads_noedit) noedit = 1
+	if (i1 == i0) cycle
+	noedit = 1
+	if (string(i1-1:i1-1) == rads_noedit) noedit = 2
 	var => rads_varptr(S, string(i0:i1-noedit))
 	if (associated(var)) then
 		S%nsel = S%nsel + 1
 		S%sel(S%nsel) = var
-		if (noedit == 1) S%sel(S%nsel)%noedit = .true.
+		if (noedit == 2) S%sel(S%nsel)%noedit = .true.
 	else
 		call rads_error (S, rads_err_var, 'Unknown variable "'//string(i0:i1)//'" removed from list of variables')
 	endif
@@ -1668,10 +1672,11 @@ nullify(top)
 i1 = 0
 do
 	if (.not.next_word (info%dataname, i0, i1)) exit
-	istat = math_eval(info%dataname(i0:i1),P%ndata,top)
+	if (i1 == i0) cycle
+	istat = math_eval (info%dataname(i0:i1-1), P%ndata, top)
 	if (istat /= 0) then  ! No command or value, likely to be a variable
 		call math_push (P%ndata,top)
-		call rads_get_var_by_name (S, P, info%dataname(i0:i1), top%data)
+		call rads_get_var_by_name (S, P, info%dataname(i0:i1-1), top%data)
 	endif
 	if (S%error /= rads_noerr) exit
 enddo
@@ -1760,8 +1765,9 @@ integer(fourbyteint) :: i0, i1
 ! Process all quality checks left to right
 i1 = 0
 do
-	if (.not.next_word(info%quality_flag,i0,i1)) exit
-	call rads_get_var_by_name (S, P, info%quality_flag(i0:i1), qual)
+	if (.not.next_word (info%quality_flag, i0, i1)) exit
+	if (i1 == i0) cycle
+	call rads_get_var_by_name (S, P, info%quality_flag(i0:i1-1), qual)
 	if (S%error /= rads_noerr) exit
 	where (isnan_(qual)) data = nan
 enddo
@@ -2421,15 +2427,16 @@ n_alias = 0
 nullify (src)
 do
 	if (.not.next_word (varname, i0, i1)) exit
-	tgt => rads_varptr (S, varname(i0:i1))
+	n_alias = n_alias + 1
+	if (i1 == i0) cycle
+	tgt => rads_varptr (S, varname(i0:i1-1))
 	if (.not.associated(tgt)) then
-		call rads_error (S, rads_err_var, 'Alias target "'//varname(i0:i1)//'" of "'//trim(alias)//'" not found')
+		call rads_error (S, rads_err_var, 'Alias target "'//varname(i0:i1-1)//'" of "'//trim(alias)//'" not found')
 		return
 	endif
-	n_alias = n_alias + 1
+	if (.not.associated(src)) src => rads_varptr (S, alias, tgt)
 	select case (n_alias)
 	case (1) ! First alias
-		src => rads_varptr (S, alias, tgt)
 		if (S%error == rads_err_alias) then
 			call rads_error (S, rads_err_alias, 'Cannot alias "'//trim(alias)//'"; it is used by other variables')
 			return
@@ -2704,8 +2711,9 @@ endif
 i1 = 0
 i = 0
 do
-	if (.not.next_word(var%info%flag_meanings,i0,i1)) exit
-	write (iunit,551,advance='no') i,var%info%flag_meanings(i0:i1)
+	if (.not.next_word (var%info%flag_meanings, i0, i1)) exit
+	if (i1 == i0) cycle
+	write (iunit,551,advance='no') i,var%info%flag_meanings(i0:i1-1)
 	i = i + 1
 enddo
 write (iunit,550) ']'
