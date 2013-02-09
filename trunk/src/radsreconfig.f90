@@ -37,7 +37,7 @@ type(rads_sat) :: S
 type(xml_parse) :: X
 character(len=80) :: arg
 integer, parameter :: nsat = 10
-character(len=2) :: satnm(nsat+1) = (/ 'c2', 'e1', 'e2', 'g1', 'gs', 'j1', 'j2', 'n1', 'pn', 'tx', '??' /)
+character(len=2) :: satnm(nsat) = (/ 'c2', 'e1', 'e2', 'g1', 'gs', 'j1', 'j2', 'n1', 'pn', 'tx' /)
 
 integer :: passes(2),cycles(2)=0,i,j
 character(len=4) :: radsfmt
@@ -74,12 +74,12 @@ if (arg == '--help' .or. arg == '-?') then
 else if (arg == '') then
 	call xml_open (X, 'rads.xml', .false.)
 	call xml_options (X, ignore_whitespace=.true.)
-	call rads_setup ('')
+	call rads_setup ('??')
 	call convert_rmf ('getraw.rmf')
 	call convert_nml ('getraw.nml')
 	call rads_end (S)
 	do j = 1,nsat
-		call rads_setup ('getraw_'//satnm(j))
+		call rads_setup (satnm(j))
 		call convert_rmf ('getraw_'//satnm(j)//'.rmf')
 		call convert_nml ('getraw_'//satnm(j)//'.nml')
 		call rads_end (S)
@@ -100,19 +100,22 @@ call xml_close (X)
 
 contains
 
-subroutine rads_setup (filename)
-character(len=*) :: filename
-integer :: j
-
-! Check if this file is satellite-specific
-do j = 1,nsat
-	if (index(filename, 'getraw_'//satnm(j)) > 0) exit
-enddo
+subroutine rads_setup (sat)
+character(len=2) :: sat
+integer :: i
 
 ! Set up the S structure
 call rads_init_sat_struct (S)
 allocate (S%var(rads_var_chunk))
 S%var = rads_var (null(), null(), null(), null(), null(), .false., rads_nofield)
+S%sat = sat
+
+! Set some global variables
+S%dataroot = radsdataroot
+call checkenv ('RADSDATAROOT',S%dataroot)
+call checkenv ('HOME',S%userroot)
+call get_command (S%command, status=i)
+if (i < 0) S%command (len(S%command)-2:) = '...'
 
 ! Read XML file(s)
 call rads_read_xml (S, trim(S%dataroot) // '/conf/rads.xml')
@@ -231,6 +234,7 @@ integer :: i
 logical :: newmath, newqual
 type(rads_var), pointer :: var
 character(len=5) :: field
+character(len=rads_varl) :: alias
 character(len=rads_strl) :: qual, math(1)
 
 ! Init some variables
@@ -254,19 +258,35 @@ attr(1,1) = 'sat'
 attr(2,1) = S%sat
 if (S%sat /= '??') call xml_put (X, 'if', attr, 1, string, 0, 'open')
 
-! Parsing the variables
+! Create aliases
+do i = 0,99
+	if (options(i) == 0 .or. options(i) == 100) cycle
+	write (field, '(i2.2)') i
+	write (alias, '(i4.4)') i*100+abs(options(i))
+	call rads_set_alias (S, field, alias)
+	var => rads_varptr (S, field)
+	attr(2,1) = var%name
+	string(1) = var%info%name
+	call xml_put (X, 'alias', attr, 1, string, 1, 'elem')
+enddo
+
+! Parse limits and formats
 attr(1,1) = 'name'
 do i = 0,99
 	if (all(isnan_(limits(:,i))) .and. formts(i) == '') cycle
-	if (limits(1,i) < -1d19) limits(1,i) = nan
-	if (limits(2,i) >  1d19) limits(2,i) = nan
 
+	! Find the associated variable
 	write (field, '(i2.2)') i
 	var => rads_varptr (S, field)
+	if (.not.associated(var)) cycle
 	attr(2,1) = var%info%name
 
+	! Set the limits
+	where (isnan_(limits(:,i))) limits(:,i) = var%info%limits(:)
 	call xml_put (X, 'var', attr, 1, string, 0, 'open')
-	if (.not.all(isnan_(limits(:,i)))) then
+	if (any(limits(:,i) == limits(:,i))) then
+		if (limits(1,i) < -1d19) limits(1,i) = nan
+		if (limits(2,i) >  1d19) limits(2,i) = nan
 		where (isnan_(limits(:,i))) limits(:,i) = var%info%limits(:)
 		call xml_dble (limits(:,i), 'limits', 'f0.3')
 	endif
@@ -274,15 +294,17 @@ do i = 0,99
 	call xml_put (X, 'var', attr, 0, string, 0, 'close')
 enddo
 
-! Aliases
-do i = 0,99
-	if (options(i) == 0 .or. options(i) == 100) cycle
-	write (field, '(i2.2)') i
-	var => rads_varptr (S, field)
-	attr(2,1) = var%name
-	string(1) = var%info%name
-	call xml_put (X, 'alias', attr, 1, string, 1, 'elem')
-enddo
+! Convert flagmask to single flag limits
+if (any(limits(:,26) == limits(:,26))) then
+	call rads_set_limits (S, 'flags', limits(1,26), limits(2,26))
+	do i = 1,S%nvar
+		if (.not.any(S%var(i)%field >= 2501 .and. S%var(i)%field <= 2516)) cycle
+		attr(2,1) = S%var(i)%info%name
+		call xml_put (X, 'var', attr, 1, string, 0, 'open')
+		call xml_dble (limits(:,i), 'limits', 'f0.3')
+		call xml_put (X, 'var', attr, 0, string, 0, 'close')
+	enddo
+endif
 
 ! Load math and quality strings
 var => rads_varptr (S, 'sla')
