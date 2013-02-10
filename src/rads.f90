@@ -1647,8 +1647,12 @@ case ('surface_type')
 	do i = 1,P%ndata
 		if (btest(P%flags(i),2)) then
 			data(i) = 4 ! continental ice
+		else if (btest(P%flags(i),4)) then
+			data(i) = 3 ! land
+		else if (btest(P%flags(i),5)) then
+			data(i) = 2 ! enclosed sea or lake
 		else
-			data(i) = ibits(P%flags(i),4,2)
+			data(i) = 0 ! ocean
 		endif
 	enddo
 case default
@@ -1833,9 +1837,9 @@ integer, parameter :: max_lvl = 20
 character(len=rads_varl) :: tag, attr(2,max_lvl), name, tags(max_lvl)
 character(len=rads_naml) :: val(max_lvl)
 character(len=6) :: src
-integer :: nattr, nval, i, ios, skip, skip_lvl
+integer :: nattr, nval, i, ios, skip, skip_level
 integer(twobyteint) :: field(2)
-logical :: endtag
+logical :: endtag, endskip
 real(eightbytereal) :: node_rate
 type(rads_varinfo), pointer :: info
 type(rads_var), pointer :: var
@@ -1843,7 +1847,8 @@ type(rads_phase), pointer :: phase
 
 ! Initialise
 S%error = rads_noerr
-skip_lvl = 0
+endskip = .true.
+skip_level = 0
 nullify (info, var, phase)
 
 ! Open XML file
@@ -1866,15 +1871,24 @@ do
 	if (endtag) then
 		if (tag /= tags(X%level+1)) &
 			call xmlparse_error ('Closing tag </'//trim(tag)//'> follows opening tag <'//trim(tags(X%level+1))//'>')
-		if (X%level < skip_lvl) skip_lvl = 0  ! Stop skipping when descended back below the starting level
+		endskip = (X%level < skip_level)
+		if (endskip) skip_level = 0  ! Stop skipping when descended back below the starting level
 		if (tag == 'var') nullify (var, info) ! Stop processing <var> block
 		if (tag == 'phase') nullify (phase)   ! Stop processing <phase> block
 		cycle  ! Ignore all other end tags
 	endif
 
+	! Special actions for <else> and <elseif>
+	! These will issue a 'skip' when previous <if> was not skipped
+	if (tag == 'else' .or. tag == 'elseif') then
+		if (tags(X%level) /= 'if' .and. tags(X%level) /= 'elseif') &
+			call xmlparse_error ('Opening tag <'//trim(tag)//'> follows closing tag </'//trim(tags(X%level))//'>')
+		if (.not.endskip) skip_level = X%level
+	endif
+
 	! Process opening tags
 	tags(X%level) = tag
-	if (skip_lvl > 0 .and. X%level >= skip_lvl) cycle	! Skip all data at level equal or larger than skip level
+	if (skip_level > 0 .and. X%level >= skip_level) cycle	! Skip all data at level equal or larger than skip level
 
 	! Error maybe?
 	if (X%error) then
@@ -1886,8 +1900,8 @@ do
 	! Check if we need to skip this level
 	! This level well be skipped when all three of the following are true
 	! a) Tag contains attribute "sat="
-	! b) The attribute value contains the satellite abbreviaton,
-	!    or the attribute value starts with "!" and does not contain the satellite abbreviation
+	! b) The attribute value contains the satellite abbreviaton, or
+	!    the attribute value starts with "!" and does not contain the satellite abbreviation
 	! c) The satellite abbreviation is not set to "??"
 	! Examples: for Envisat (n1)
 	! sat="n1" => pass
@@ -1896,7 +1910,7 @@ do
 	! sat="!j1" => pass
 	! sat="!j1 n1" => skip
 	skip = 0
-	skip_lvl = 0
+	skip_level = 0
 	do i = 1,nattr
 		if (attr(1,i) == 'sat') then
 			if (skip == 0) skip = 1
@@ -1910,7 +1924,7 @@ do
 		endif
 	enddo
 	if (skip == 1) then
-		skip_lvl = X%level
+		skip_level = X%level
 		cycle
 	endif
 
@@ -2130,7 +2144,7 @@ do
 			info%grid%ntype = 0	! This signals that the grid was not loaded yet
 		endif
 
-	case ('if', '!--')
+	case ('if', 'elseif', 'else', '!--')
 		! Dummy and comment tags
 
 	! FOR BACKWARD COMPATIBILITY, here are tags <netcdf>, <math> and <grid>
@@ -2251,7 +2265,7 @@ character(*), intent(in) :: string
 character(rads_naml) :: text
 write (text, 1300) trim(filename), X%lineno, string
 call rads_error (S, rads_err_xml_parse, text)
-1300 format ('Error parsing file ',a,' at line ',i0,': ',a)
+1300 format ('Error parsing file ',a,' at or near line ',i0,': ',a)
 end subroutine xmlparse_error
 
 end subroutine rads_read_xml
@@ -2535,8 +2549,8 @@ type(rads_sat), intent(inout) :: S
 real(eightbytereal), intent(inout) :: limits(2)
 !-----------------------------------------------------------------------
 integer :: i, ios, mask(2), bits(2)
-mask = nint(limits)
-where (limits /= limits) mask = 0 ! Because it is not guaranteed for every compiler that nint(nan)=0
+mask = 0
+where (limits == limits) mask = nint(limits) ! Because it is not guaranteed for every compiler that nint(nan)=0
 ! Loop through all variables to find those with field between 2501 and 2516
 do i = 1,S%nvar
 	if (.not.any(S%var(i)%field >= 2501 .and. S%var(i)%field <= 2516)) cycle
@@ -2546,26 +2560,29 @@ do i = 1,S%nvar
 		! Special setting to get surface type from bits 2, 4, 5
 		! 0=ocean, 2=enclosed seas and lakes, 3=land, 4=continental ice
 		! I am keeping 1 for coastal in future
-		if (btest(mask(1),4)) then
+		S%var(i)%info%limits = 0
+		if (btest(mask(1),5)) then
 			S%var(i)%info%limits(2) = 1 ! ocean only
-		else if (btest(mask(1),5)) then
+		else if (btest(mask(1),4)) then
 			S%var(i)%info%limits(2) = 2 ! water only
 		else if (btest(mask(1),2)) then
 			S%var(i)%info%limits(2) = 3 ! anything but ice
 		endif
 		if (btest(mask(2),2)) then
 			S%var(i)%info%limits(1) = 4 ! ice only
-		else if (btest(mask(2),5)) then
-			S%var(i)%info%limits(1) = 3 ! land or ice
 		else if (btest(mask(2),4)) then
+			S%var(i)%info%limits(1) = 3 ! land or ice
+		else if (btest(mask(2),5)) then
 			S%var(i)%info%limits(1) = 2 ! non-ocean
 		endif
 	else if (S%var(i)%info%datatype == rads_type_flagmasks) then
-		if (ibits(mask(1),bits(1),bits(2)) /= 0) S%var(i)%info%limits(1) = ibits(mask(1),bits(1),bits(2))
-		if (ibits(mask(2),bits(1),bits(2)) /= 0) S%var(i)%info%limits(2) = ibits(mask(2),bits(1),bits(2))
+		if (all(ibits(mask,bits(1),bits(2)) == 0)) cycle
+		S%var(i)%info%limits(1) = ibits(mask(1),bits(1),bits(2))
+		S%var(i)%info%limits(2) = ibits(mask(2),bits(1),bits(2))
 	else ! rads_type_flagvalues
-		if (ibits(mask(1),bits(1),bits(2)) /= 0) S%var(i)%info%limits(2) = ibits(not(mask(1)),bits(1),bits(2))
-		if (ibits(mask(2),bits(1),bits(2)) /= 0) S%var(i)%info%limits(1) = ibits(mask(2),bits(1),bits(2))
+		if (all(ibits(mask,bits(1),bits(2)) == 0)) cycle
+		S%var(i)%info%limits(2) = ibits(not(mask(1)),bits(1),bits(2))
+		S%var(i)%info%limits(1) = ibits(mask(2),bits(1),bits(2))
 	endif
 enddo
 end subroutine rads_set_limits_by_flagmask
