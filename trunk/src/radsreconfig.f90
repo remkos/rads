@@ -53,6 +53,7 @@ real(eightbytereal) :: limits(2,0:99),factors(0:99)=0,scales(0:99)=0,offsets(0:9
 character(len=80) :: pass_fmt,cycle_fmt
 character(len=1) :: phase_def=''
 character(len=6) :: grid_type(3) = (/'grid  ','grid_c','grid_q'/)
+logical :: exist_rmf, exist_nml
 
 namelist /getraw_nml/ texts,limits,factors,options,scales,offsets, &
 	satname,satpref,satnams,incl,period,freq,dt1hz,pass_fmt,cycle_fmt, &
@@ -79,10 +80,17 @@ else if (arg == '') then
 	call convert_nml ('getraw.nml')
 	call rads_end (S)
 	do j = 1,nsat
+		inquire (file='getraw_'//satnm(j)//'.rmf', exist=exist_rmf)
+		inquire (file='getraw_'//satnm(j)//'.nml', exist=exist_nml)
+		if (.not.exist_rmf .and. .not.exist_nml) cycle
+		attr(1,1) = 'sat'
+		attr(2,1) = satnm(j)
+		call xml_put (X, 'if', attr, 1, string, 0, 'open')
 		call rads_init (S, satnm(j))
-		call convert_rmf ('getraw_'//satnm(j)//'.rmf')
-		call convert_nml ('getraw_'//satnm(j)//'.nml')
+		if (exist_rmf) call convert_rmf ('getraw_'//satnm(j)//'.rmf')
+		if (exist_nml) call convert_nml ('getraw_'//satnm(j)//'.nml')
 		call rads_end (S)
+		if (S%sat /= '??') call xml_put (X, 'if', attr, 0, string, 0, 'close')
 	enddo
 else
 	call xml_open (X, '-', .false.)
@@ -93,9 +101,13 @@ else
 			if (index(arg,satnm(j)) > 0) exit
 		enddo
 		call rads_init (S, satnm(j))
+		attr(1,1) = 'sat'
+		attr(2,1) = satnm(j)
+		if (j < nsat) call xml_put (X, 'if', attr, 1, string, 0, 'open')
 		if (index(arg,'.rmf') > 0) call convert_rmf (arg)
 		if (index(arg,'.nml') > 0) call convert_nml (arg)
 		call rads_end (S)
+		if (j < nsat) call xml_put (X, 'if', attr, 0, string, 0, 'close')
 	enddo
 endif
 
@@ -116,10 +128,6 @@ open (10, file=filename, status='old', iostat=i)
 if (i /= 0) return
 
 ! Output XML
-attr(1,1) = 'sat'
-attr(2,1) = S%sat
-if (S%sat /= '??') call xml_put (X, 'if', attr, 1, string, 0, 'open')
-
 do
 	read (10, '(a)', iostat=i) line
 	if (i /= 0) exit
@@ -201,19 +209,18 @@ do
 		endif
 	endif
 enddo
-
-if (S%sat /= '??') call xml_put (X, 'if', attr, 0, string, 0, 'close')
 close (10)
 end subroutine convert_rmf
 
 subroutine convert_nml (filename)
 character(len=*) :: filename
-integer :: i
+integer :: i, k
 logical :: newmath, newqual
 type(rads_var), pointer :: var
 character(len=5) :: field
 character(len=rads_varl) :: alias
 character(len=rads_strl) :: qual, math(1)
+real(eightbytereal) :: varlimits(2,2501:2516)
 
 ! Init some variables
 formts=''
@@ -230,11 +237,6 @@ if (i /= 0) return
 read (10, nml=getraw_nml, iostat=i)
 close (10)
 if (i /= 0) return
-
-! Output XML
-attr(1,1) = 'sat'
-attr(2,1) = S%sat
-if (S%sat /= '??') call xml_put (X, 'if', attr, 1, string, 0, 'open')
 
 ! Create aliases
 do i = 0,99
@@ -274,12 +276,20 @@ enddo
 
 ! Convert flagmask to single flag limits
 if (any(limits(:,26) == limits(:,26))) then
+	do i = 1,S%nvar
+		k = S%var(i)%field(1)
+		if (k < 2501 .or. k > 2516) cycle
+		varlimits(:,k) = S%var(i)%info%limits
+	enddo
 	call rads_set_limits (S, 'flags', limits(1,26), limits(2,26))
 	do i = 1,S%nvar
-		if (.not.any(S%var(i)%field >= 2501 .and. S%var(i)%field <= 2516)) cycle
+		k = S%var(i)%field(1)
+		if (k < 2501 .or. k > 2516) cycle
+		if (all(S%var(i)%info%limits == varlimits(:,k) .or. &
+			(isnan_(S%var(i)%info%limits) .and. isnan_(varlimits(:,k))))) cycle ! Skip when nothing changed
 		attr(2,1) = S%var(i)%info%name
 		call xml_put (X, 'var', attr, 1, string, 0, 'open')
-		call xml_dble (limits(:,i), 'limits', 'f0.3')
+		call xml_dble (S%var(i)%info%limits, 'limits', 'f0.3')
 		call xml_put (X, 'var', attr, 0, string, 0, 'close')
 	enddo
 endif
@@ -328,8 +338,6 @@ if (newmath) then
 	call xml_put (X, 'data', attr, 1, math, 1, 'elem')
 endif
 if (newqual.or.newmath) call xml_put (X, 'var', attr, 0, string, 0, 'close')
-
-if (S%sat /= '??') call xml_put (X, 'if', attr, 0, string, 0, 'close')
 end subroutine convert_nml
 
 ! Split variable description from RMF file into long_name and units
