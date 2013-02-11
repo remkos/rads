@@ -1513,6 +1513,9 @@ Global RADS configuration file
 	<limits sat="pn">480 0</limits>
 	<limits sat="tx">49640 0</limits>
 	<data>flags</data>
+	<!-- In future releases without netCDF variable "flags", use this:
+	<data source="flags">flags</data>
+	-->
 	<format>b16.16</format>
 	<compress>int2</compress>
 	<flag_masks>
