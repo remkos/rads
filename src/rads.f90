@@ -1620,10 +1620,40 @@ else
 endif
 end subroutine rads_get_var_nc_att
 
-subroutine rads_get_var_flags ! Get value from flag word
+subroutine rads_get_var_flags ! Get value from flag word or vv
 use netcdf
 use rads_netcdf
-integer(fourbyteint) :: start(1), i, bits(2)
+integer(fourbyteint) :: start(1), i, j, k, bits(2)
+integer(twobyteint), parameter :: pow2 (0:15) = &
+	int((/1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,-32768/),twobyteint)
+
+! Reconstrunct flagword from different flags
+if (info%dataname == 'flags') then
+	do j = 1,S%nvar
+		k = S%var(j)%field(1)
+		if (k < 2501 .or. k > 2516) cycle
+		k = modulo (k - 2500, 16)
+		call rads_get_var_by_var (S, P, S%var(j), data, noedit=.true.)
+		if (k == 4) then ! Surface type
+			do i = 1,P%ndata
+				select case (nint2(data(i)))
+				case (4)
+					P%flags(i) = P%flags(i) + pow2(2) + pow2(4) + pow2(5)
+				case (3)
+					P%flags(i) = P%flags(i) + pow2(4) + pow2(5)
+				case (2)
+					P%flags(i) = P%flags(i) + pow2(5)
+				end select
+			enddo
+		else
+			P%flags = P%flags + nint2(data) * pow2(k)
+		endif
+	enddo
+	data = P%flags
+	return
+endif
+
+! Extract single flags from flagword
 if (.not.associated(P%flags)) then
 	! Flags need to be loaded first
 	if (nft(nf90_inq_varid (P%ncid, 'flags', info%varid))) then

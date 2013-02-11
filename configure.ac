@@ -79,6 +79,7 @@ else
 	DEVEL=devel
 	DEVEL_OBJS='$(ALTIM)/src/rssubs/tpj_subs.o $(ALTIM)/src/rssubs/solar_subs.o'
 fi
+AC_SUBST(ALTIM)
 AC_SUBST(DEVEL)
 AC_SUBST(DEVEL_OBJS)
 
