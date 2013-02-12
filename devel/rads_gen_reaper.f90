@@ -109,7 +109,7 @@ integer(fourbyteint) :: orbitnr(2), cyclenr(2), passnr(2), varid
 
 integer(fourbyteint), parameter :: mrec=15000, mvar=50
 integer(fourbyteint) :: nvar, ndata=0, nrec=0, nout=0, ncid, ers=0
-real(eightbytereal) :: start_time
+real(eightbytereal) :: start_time, end_time
 real(eightbytereal), allocatable :: a(:), b(:), c(:), d(:,:), dh(:), sum_c_applied(:), sum_d_applied(:)
 integer(twobyteint), allocatable :: flags(:)
 integer(fourbyteint), allocatable :: f_error(:), f_applied(:)
@@ -289,6 +289,8 @@ else if (ndata+nrec > mrec) then
 endif
 call nfs(nf90_get_att(ncid,nf90_global,'l2_proc_time',l2_proc_time))
 call nfs(nf90_get_att(ncid,nf90_global,'l2_software_ver',l2_version))
+! The products of FEB-2013 are wrongly marked with version 01.02, whereas they should be 01.03.
+if (index(l2_proc_time, '-FEB-2013') > 0) l2_version = 'REAPER v 01.03'
 
 ! Allocate arrays
 
@@ -304,7 +306,11 @@ call get_var_1d ('time_day_1hz',a)
 call get_var_1d ('time_milsec_1hz',b)
 call get_var_1d ('time_micsec_1hz',c)
 a = a * 86400d0 + b * 1d-3 + c * 1d-6 + sec1990
-start_time = a(1)
+k = min(3,nrec)
+! Because first and last time can be wrong, we use the minimum of the first 3 and
+! last 3 measurements as boundaries.
+start_time = minval(a(1:k))
+end_time = maxval(a(nrec-k+1:nrec))
 ! Discard measurements at the end of the stack that are newer than the beginning of this file
 do while (ndata > 0 .and. var(1)%d(ndata) > start_time - 0.5d0)
 	ndata = ndata - 1
@@ -520,15 +526,17 @@ do i = 1,nrec
 		write (*,553) 'Warning: sum_c_applied wrong: ',i,sum_d_applied(i),sum_c_applied(i),sum_d_applied(i)-sum_c_applied(i)
 enddo
 
-! There may be measurements with invalid times
-! If so, weed them out
+! There may be measurements with invalid times.
+! If so, weed them out.
 
 k = 0
 valid(1,:) = .true.
 last_time = var(1)%d(ndata+1)
 do i = 2,nrec
 	t = var(1)%d(ndata+i-1:ndata+i+1)
-	if (i < nrec .and. t(2) > max(t(1),t(3))+1d0) then
+	if (t(2) < start_time .or. t(2) > end_time) then
+		write (*,553) 'Warning: Removed measurement out of time range   :', i, t
+	else if (i < nrec .and. t(2) > max(t(1),t(3))+1d0) then
 		write (*,553) 'Warning: Removed measurement out of time sequence:', i, t
 	else if (t(2) < last_time+0.5d0) then
 		write (*,553) 'Warning: Removed measurement with time reversal  :', i, t
