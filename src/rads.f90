@@ -42,6 +42,10 @@ integer(fourbyteint) :: rads_err_incompat = 101, rads_err_noinit = 102
 integer(twobyteint), parameter :: rads_nofield = -1
 real(eightbytereal), parameter :: pi = 3.1415926535897932d0, rad = pi/180d0
 real(eightbytereal), parameter, private :: nan = transfer ((/not(0_fourbyteint),not(0_fourbyteint)/),0d0)
+integer(onebyteint), parameter, private :: flag_values(0:15) = &
+	int((/0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15/), onebyteint)
+integer(twobyteint), parameter, private :: flag_masks (0:15) = &
+	int((/1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,-32768/),twobyteint)
 character(len=1), parameter :: rads_linefeed = char(10), rads_noedit = '_'
 integer, parameter :: stderr = 0, stdin = 5, stdout = 6
 
@@ -107,6 +111,7 @@ type :: rads_sat
 	character(len=rads_naml) :: userroot             ! Root directory of current user (i.e. $HOME)
 	character(len=rads_naml) :: dataroot             ! Root directory of RADS data directory
 	character(len=rads_cmdl) :: command              ! Command line
+	character(len=rads_naml), pointer :: glob_att(:) ! Global attributes
 	character(len=8) :: satellite                    ! Satellite name
 	real(eightbytereal) :: dt1hz                     ! "1 Hz" sampling interval
 	real(eightbytereal) :: frequency(2)              ! Frequency (GHz) of primary and secondary channel
@@ -607,7 +612,7 @@ type(rads_sat), intent(inout) :: S
 ! Arguments:
 !  S        : Satellite/mission dependent structure
 !-----------------------------------------------------------------------
-S = rads_sat ('', '', '', '', 1d0, (/13.8d0, nan/), 90d0, nan, nan, nan, 1, 1, rads_noerr, &
+S = rads_sat ('', '', '', null(), '', 1d0, (/13.8d0, nan/), 90d0, nan, nan, nan, 1, 1, rads_noerr, &
 	0, 0, 0, 0, 0, 0, '', 0, null(), null(), null(), null(), null(), null(), null(), null())
 end subroutine rads_init_sat_struct
 
@@ -631,7 +636,7 @@ enddo
 do i = 1,size(S%phases)
 	deallocate (S%phases(i)%subcycles, stat=ios)
 enddo
-deallocate (S%var, S%sel, S%phases, S%excl_cycles, stat=ios)
+deallocate (S%glob_att, S%var, S%sel, S%phases, S%excl_cycles, stat=ios)
 call rads_init_sat_struct (S)
 end subroutine rads_free_sat_struct
 
@@ -1316,11 +1321,10 @@ integer :: ios
 S%error = rads_noerr
 if (P%ncid > 0 .and. nft(nf90_close(P%ncid))) S%error = rads_err_nc_close
 P%ncid = 0
-deallocate (P%history, P%flags, stat=ios)
 if (present(keep)) then
 	if (keep) return
 endif
-deallocate (P%tll, stat=ios)
+deallocate (P%history, P%flags, P%tll, stat=ios)
 end subroutine rads_close_pass
 
 !***********************************************************************
@@ -1624,8 +1628,6 @@ subroutine rads_get_var_flags ! Get value from flag word or vice versa
 use netcdf
 use rads_netcdf
 integer(fourbyteint) :: start(1), i, j, k, bits(2)
-integer(twobyteint), parameter :: pow2 (0:15) = &
-	int((/1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,-32768/),twobyteint)
 
 if (info%dataname /= 'flags') then
 	! Extract single flags from flagword
@@ -1683,15 +1685,15 @@ else
 			do i = 1,P%ndata
 				select case (nint2(data(i)))
 				case (4) ! ice = land = non-ocean
-					P%flags(i) = P%flags(i) + pow2(2) + pow2(4) + pow2(5)
+					P%flags(i) = P%flags(i) + flag_masks(2) + flag_masks(4) + flag_masks(5)
 				case (3) ! land = non-ocean
-					P%flags(i) = P%flags(i) + pow2(4) + pow2(5)
+					P%flags(i) = P%flags(i) + flag_masks(4) + flag_masks(5)
 				case (2) ! enclosed seas or lakes = non-ocean
-					P%flags(i) = P%flags(i) + pow2(5)
+					P%flags(i) = P%flags(i) + flag_masks(5)
 				end select
 			enddo
 		else
-			P%flags = P%flags + nint2(data) * pow2(k)
+			P%flags = P%flags + nint2(data) * flag_masks(k)
 		endif
 	enddo
 	data = P%flags
@@ -1965,6 +1967,10 @@ do
 	endif
 
 	select case (tag)
+	case ('global_attributes')
+		allocate (S%glob_att(nval))
+		S%glob_att = val(1:nval)
+
 	case ('satellite')
 		S%satellite = val(1)(:8)
 
@@ -3397,7 +3403,7 @@ character(len=*), intent(in), optional :: name
 ! Error codes:
 !  S%error  : rads_noerr, rads_err_nc_create
 !-----------------------------------------------------------------------
-integer(fourbyteint) :: l, e
+integer(fourbyteint) :: i, l, e
 logical :: exist
 character(len=26) :: date(3)
 
@@ -3418,6 +3424,7 @@ else if (name(len_trim(name):) == '/') then
 	inquire (file = name, exist = exist)
 	if (.not.exist) call system ('mkdir -p ' // name)
 else
+	call rads_init_pass_struct (S, P)
 	P%filename = name
 endif
 
@@ -3435,12 +3442,12 @@ if (nft(nf90_def_dim (P%ncid, 'time', P%ndata, l))) then
 endif
 
 ! Specify the global attributes
-e = nf90_put_att (P%ncid, nf90_global, 'Conventions', 'CF-1.6') + &
-	nf90_put_att (P%ncid, nf90_global, 'title', 'RADS 4.0 pass file') + &
-	nf90_put_att (P%ncid, nf90_global, 'institution', 'Altimetrics / NOAA / TU Delft') + &
-	nf90_put_att (P%ncid, nf90_global, 'source', 'radar altimeter') + &
-	nf90_put_att (P%ncid, nf90_global, 'references', 'RADS Data Manual, Issue 4.0') + &
-	nf90_put_att (P%ncid, nf90_global, 'mission_name', trim(S%satellite)) + &
+e = 0
+do i = 1,size(S%glob_att)
+	l = index(S%glob_att(i),' ')
+	e = e + nf90_put_att (P%ncid, nf90_global, S%glob_att(i)(:l-1), S%glob_att(i)(l+1:))
+enddo
+e = e +	nf90_put_att (P%ncid, nf90_global, 'mission_name', trim(S%satellite)) + &
 	nf90_put_att (P%ncid, nf90_global, 'mission_phase', S%phase%name(:1))
 if (ndata > 0) then
 	date = strf1985f ((/P%equator_time,P%start_time,P%end_time/))
@@ -3479,7 +3486,6 @@ real(eightbytereal), intent(in), optional :: scale_factor, add_offset
 type(rads_varinfo), pointer :: info
 integer(fourbyteint) :: e, n
 integer :: dimid(1:4) = 1
-integer(onebyteint), parameter :: flag_values(0:15) = int((/0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15/), onebyteint)
 S%error = rads_noerr
 
 ! Get some information on dimensions and scale factors
@@ -3500,20 +3506,18 @@ e = nf90_put_att (P%ncid, info%varid, 'long_name', trim(info%long_name))
 if (info%standard_name /= '') e = e + nf90_put_att (P%ncid, info%varid, 'standard_name', trim(info%standard_name))
 if (info%source /= '') e = e + nf90_put_att (P%ncid, info%varid, 'source', trim(info%source))
 if (info%units /= '') e = e + nf90_put_att (P%ncid, info%varid, 'units', trim(info%units))
-!if (info%datatype >= rads_type_time) then
-	! No _FillValue, flag_values or flag_masks XXX removed
 if (info%datatype == rads_type_flagmasks) then
 	n = count_spaces (info%flag_meanings)
 	if (info%nctype == nf90_int1) then
-		e = e + nf90_put_att (P%ncid, info%varid, 'flag_masks', int(2**flag_values(0:n),onebyteint))
+		e = e + nf90_put_att (P%ncid, info%varid, 'flag_masks', int(flag_masks(0:n),onebyteint))
 	else
-		e = e + nf90_put_att (P%ncid, info%varid, 'flag_masks', int(2**flag_values(0:n),twobyteint))
+		e = e + nf90_put_att (P%ncid, info%varid, 'flag_masks', flag_masks(0:n))
 	endif
 	e = e + nf90_put_att (P%ncid, info%varid, 'flag_meanings', info%flag_meanings)
 else if (info%datatype == rads_type_flagvalues) then
 	n = count_spaces (info%flag_meanings)
 	if (info%nctype == nf90_int1) then
-		e = e + nf90_put_att (P%ncid, info%varid, 'flag_values', int(flag_values(0:n),onebyteint))
+		e = e + nf90_put_att (P%ncid, info%varid, 'flag_values', flag_values(0:n))
 	else
 		e = e + nf90_put_att (P%ncid, info%varid, 'flag_values', int(flag_values(0:n),twobyteint))
 	endif
