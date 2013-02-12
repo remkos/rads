@@ -19,6 +19,14 @@ GNU Lesser General Public License for more details.
 Global RADS configuration file
 -->
 
+<global_attributes>
+	Conventions CF-1.6
+	title RADS 4.0 pass file
+	institution Altimetrics / NOAA / TU Delft
+	source radar altimeter
+	references RADS Data Manual, Issue 4.0
+</global_attributes>
+
 <var name="sla" field="0">
 	<long_name>sea level anomaly</long_name>
 	<standard_name>sea_surface_height_above_sea_level</standard_name>
@@ -40,7 +48,7 @@ Global RADS configuration file
 <var name="time" field="101 1">
 	<long_name>time</long_name>
 	<standard_name>time</standard_name>
-	<units>seconds since 1985-01-01</units>
+	<units>seconds since 1985-01-01 00:00:00 UTC</units>
 	<data>time</data>
 	<comment>UTC time of measurement. Attribute leap_second gives time of leap second if any occurs
 	during the data set</comment>

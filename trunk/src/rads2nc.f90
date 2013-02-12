@@ -173,7 +173,9 @@ nseltot = nseltot + nselpass
 deallocate (data, accept)
 
 ! Close per-pass output file
-if (outname == '') call rads_close_pass (S, Pout)
+! We need to keep the history, etc, since rads_close_pass (S, P) in the main program
+! is going to deallocate those
+if (outname == '') call rads_close_pass (S, Pout, .true.)
 
 end subroutine process_pass
 
