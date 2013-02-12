@@ -1620,15 +1620,60 @@ else
 endif
 end subroutine rads_get_var_nc_att
 
-subroutine rads_get_var_flags ! Get value from flag word or vv
+subroutine rads_get_var_flags ! Get value from flag word or vice versa
 use netcdf
 use rads_netcdf
 integer(fourbyteint) :: start(1), i, j, k, bits(2)
 integer(twobyteint), parameter :: pow2 (0:15) = &
 	int((/1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,-32768/),twobyteint)
 
-! Reconstrunct flagword from different flags
-if (info%dataname == 'flags') then
+if (info%dataname /= 'flags') then
+	! Extract single flags from flagword
+	if (.not.associated(P%flags)) then
+		! Flags need to be loaded first
+		if (nft(nf90_inq_varid (P%ncid, 'flags', info%varid))) then
+			! Failed to find variable
+			S%error = rads_err_nc_var
+			return
+		endif
+		start = max(1,P%first_meas)
+		allocate (P%flags(P%ndata))
+		if (nft(nf90_get_var(P%ncid, info%varid, P%flags, start))) then
+			call rads_error (S, rads_err_nc_get, 'Error reading netCDF array "flags"')
+			return
+		endif
+	endif
+
+	if (info%dataname == 'surface_type') then
+		! Special setting to get surface type from bits 2, 4, 5
+		! 0=ocean, 2=enclosed seas and lakes, 3=land, 4=continental ice
+		! I am keeping 1 for coastal in future
+		do i = 1,P%ndata
+			if (btest(P%flags(i),2)) then
+				data(i) = 4 ! continental ice
+			else if (btest(P%flags(i),4)) then
+				data(i) = 3 ! land
+			else if (btest(P%flags(i),5)) then
+				data(i) = 2 ! enclosed sea or lake
+			else
+				data(i) = 0 ! ocean
+			endif
+		enddo
+	else
+		! Just get one or more bits
+		bits = (/0,1/)
+		read (info%dataname, *, iostat=i) bits
+		data = ibits(P%flags,bits(1),bits(2))
+	endif
+
+else if (associated(P%flags)) then
+	! We already have the flagswords, so just copy
+	data = P%flags
+
+else
+	! Reconstrunct flagword from various flags
+	allocate (P%flags(P%ndata))
+	P%flags = 0
 	do j = 1,S%nvar
 		k = S%var(j)%field(1)
 		if (k < 2501 .or. k > 2516) cycle
@@ -1637,11 +1682,11 @@ if (info%dataname == 'flags') then
 		if (k == 4) then ! Surface type
 			do i = 1,P%ndata
 				select case (nint2(data(i)))
-				case (4)
+				case (4) ! ice = land = non-ocean
 					P%flags(i) = P%flags(i) + pow2(2) + pow2(4) + pow2(5)
-				case (3)
+				case (3) ! land = non-ocean
 					P%flags(i) = P%flags(i) + pow2(4) + pow2(5)
-				case (2)
+				case (2) ! enclosed seas or lakes = non-ocean
 					P%flags(i) = P%flags(i) + pow2(5)
 				end select
 			enddo
@@ -1650,47 +1695,8 @@ if (info%dataname == 'flags') then
 		endif
 	enddo
 	data = P%flags
-	return
 endif
 
-! Extract single flags from flagword
-if (.not.associated(P%flags)) then
-	! Flags need to be loaded first
-	if (nft(nf90_inq_varid (P%ncid, 'flags', info%varid))) then
-		! Failed to find variable
-		S%error = rads_err_nc_var
-		return
-	endif
-	start = max(1,P%first_meas)
-	allocate (P%flags(P%ndata))
-	if (nft(nf90_get_var(P%ncid, info%varid, P%flags, start))) then
-		call rads_error (S, rads_err_nc_get, 'Error reading netCDF array "flags"')
-		return
-	endif
-endif
-
-select case (info%dataname)
-case ('surface_type')
-	! Special setting to get surface type from bits 2, 4, 5
-	! 0=ocean, 2=enclosed seas and lakes, 3=land, 4=continental ice
-	! I am keeping 1 for coastal in future
-	do i = 1,P%ndata
-		if (btest(P%flags(i),2)) then
-			data(i) = 4 ! continental ice
-		else if (btest(P%flags(i),4)) then
-			data(i) = 3 ! land
-		else if (btest(P%flags(i),5)) then
-			data(i) = 2 ! enclosed sea or lake
-		else
-			data(i) = 0 ! ocean
-		endif
-	enddo
-case default
-	! Just get one or more bits
-	bits = (/0,1/)
-	read (info%dataname, *, iostat=i) bits
-	data(1:P%ndata) = ibits(P%flags,bits(1),bits(2))
-end select
 end subroutine rads_get_var_flags
 
 recursive subroutine rads_get_var_math ! Get data variable from MATH statement
@@ -2737,7 +2743,7 @@ integer(fourbyteint), optional, intent(in) :: unit
 ! flag_meanings) of a variable. The output can be one of the following:
 !  long_name [units]
 !  long_name [bits: flag_meanings]
-!  long_name [flag_meanings]
+!  long_name [values: flag_meanings]
 !
 ! Arguments:
 !  var      : Pointer to variable
