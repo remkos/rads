@@ -53,7 +53,7 @@ end interface d_int
 !***********************************************************************
 !*real_val -- Read array of values from string with optional substitution
 !+
-! pure subroutine read_val_int (string, val, translate)
+! pure subroutine read_val (string, val, translate)
 ! character(len=*), intent(in) :: string
 ! integer(fourbyteint) <or> real(eightbytereal), intent(out) :: val(:)
 ! character(len=*), intent(in), optional :: translate

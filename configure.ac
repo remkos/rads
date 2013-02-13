@@ -77,7 +77,7 @@ if test "x$enable_devel" = "xno"; then
 	DEVEL_OBJS=
 else
 	DEVEL=devel
-	DEVEL_OBJS='$(ALTIM)/src/rssubs/tpj_subs.o $(ALTIM)/src/rssubs/solar_subs.o'
+	DEVEL_OBJS='${ALTIM}/src/rssubs/tpj_subs.o ${ALTIM}/src/rssubs/solar_subs.o'
 fi
 AC_SUBST(ALTIM)
 AC_SUBST(DEVEL)
@@ -240,10 +240,11 @@ if test "x$FC" = "xgfortran" ; then
 	opt=" -Wall -Wtabs -fimplicit-none"
 fi
 if test "x$enable_devel" = "xyes"; then
-	opt="$opt -I../devel "'-I$(ALTIM)/include'
+	DEVEL_FLAGS=" -I../devel "'-I${ALTIM}/include'
 fi
 FCFLAGS=$FCFLAGS$opt
-AC_MSG_RESULT($opt)
+AC_MSG_RESULT($opt$DEVEL_FLAGS)
+AC_SUBST(DEVEL_FLAGS)
 
 # -----------------------------------------------------------------
 # How are Fortran subroutine names translated?

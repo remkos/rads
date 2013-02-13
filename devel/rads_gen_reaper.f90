@@ -596,7 +596,7 @@ else if (P%end_time < start_time) then
 else
 	original = trim(old_infile) //' '// infile
 endif
-P%original = 'REAPER '//trim(l2_version)//' data of '//l2_proc_time(:11)//': '//trim(original)
+P%original = trim(l2_version)//' data of '//l2_proc_time(:11)//': '//trim(original)
 
 ! Check which variables are empty
 do i = 1,nvar
