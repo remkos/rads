@@ -55,7 +55,7 @@ LAPACK_LIB = @LAPACK_LIB@
 LN_S = @LN_S@ -f
 RANLIB = @RANLIB@
 FC = @FC@
-FFLAGS = @FCFLAGS@ -I../include -I../src $(NETCDF_INC)
+FFLAGS = @FCFLAGS@@DEVEL_FLAGS@ -I../include -I../src $(NETCDF_INC)
 
 #-----------------------------------------------------------------------
 # Special rules
