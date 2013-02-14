@@ -132,6 +132,16 @@ Global RADS configuration file
 	<compress>int4 1d-3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
+<var name="alt_gfz" field="403" sat="e1 e2">
+	<long_name>GFZ orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>GFZ/D-PAF</source>
+	<units>m</units>
+	<data>alt_gfz</data>
+	<format>f11.3</format>
+	<compress>int4 1d-3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
 <var name="alt_cnes" field="404" sat="e1 e2 c2 n1 pn tx">
 	<long_name>CNES orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
@@ -262,7 +272,6 @@ Global RADS configuration file
 	<source>REAPER project, combined solution</source>
 	<units>m</units>
 	<data>alt_reaper</data>
-	<default>nan</default>
 	<format>f11.3</format>
 	<compress>int4 1d-4 700d3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
@@ -273,7 +282,6 @@ Global RADS configuration file
 	<source>REAPER project, DEOS solution</source>
 	<units>m</units>
 	<data>alt_reaper_deos</data>
-	<default>nan</default>
 	<format>f11.3</format>
 	<compress>int4 1d-4 700d3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
@@ -284,7 +292,6 @@ Global RADS configuration file
 	<source>REAPER project, GFZ solution</source>
 	<units>m</units>
 	<data>alt_reaper_gfz</data>
-	<default>nan</default>
 	<format>f11.3</format>
 	<compress>int4 1d-4 700d3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
@@ -295,13 +302,12 @@ Global RADS configuration file
 	<source>REAPER project, ESOC solution</source>
 	<units>m</units>
 	<data>alt_reaper_esoc</data>
-	<default>nan</default>
 	<format>f11.3</format>
 	<compress>int4 1d-4 700d3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <alias name="alt" field="4" sat="c2">alt_eiggl04s alt_cnes</alias>
-<alias name="alt" field="4" sat="e1 e2">alt_reaper</alias>
+<alias name="alt" field="4" sat="e1 e2">alt_reaper alt_gfz</alias>
 <alias name="alt" field="4" sat="g1">alt_pgs7777</alias>
 <alias name="alt" field="4" sat="gs">alt_gdrcp</alias>
 <alias name="alt" field="4" sat="j1 j2">alt_eiggl04s</alias>
