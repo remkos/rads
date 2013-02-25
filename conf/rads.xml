@@ -200,7 +200,7 @@ Global RADS configuration file
 	</if>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_eiggl04s" field="414" sat="c2 j1 j2 n1">
+<var name="alt_eiggl04s" field="414" sat="j1 n1">
 	<long_name>EIGEN-GL04c orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>EIGEN-GL04c</source>
@@ -208,7 +208,7 @@ Global RADS configuration file
 	<data>alt_eiggl04s</data>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
-	<if sat="j1 j2">
+	<if sat="j1">
 		<format>f12.4</format>
 		<compress>int4 1d-4 1300d3</compress>
 	</if>
@@ -256,7 +256,7 @@ Global RADS configuration file
 	</if>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_gdrd" field="418" sat="c2 n1">
+<var name="alt_gdrd" field="418" sat="c2 j1 j2 n1">
 	<long_name>GDR-D orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>GDR-D standards</source>
@@ -264,6 +264,7 @@ Global RADS configuration file
 	<data>alt_gdrd</data>
 	<format>f12.4</format>
 	<compress>int4 1d-4 700d3</compress>
+	<compress sat="j1 j2">int4 1d-4 1300d3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_reaper" field="420" sat="e1 e2">
@@ -306,11 +307,12 @@ Global RADS configuration file
 	<compress>int4 1d-4 700d3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<alias name="alt" field="4" sat="c2">alt_eiggl04s alt_cnes</alias>
+<alias name="alt" field="4" sat="c2">alt_gdrd alt_cnes</alias>
 <alias name="alt" field="4" sat="e1 e2">alt_reaper alt_gfz</alias>
 <alias name="alt" field="4" sat="g1">alt_pgs7777</alias>
 <alias name="alt" field="4" sat="gs">alt_gdrcp</alias>
-<alias name="alt" field="4" sat="j1 j2">alt_eiggl04s</alias>
+<alias name="alt" field="4" sat="j1">alt_gdrd alt_eiggl04s</alias>
+<alias name="alt" field="4" sat="j2">alt_gdrd</alias>
 <alias name="alt" field="4" sat="n1">alt_eig6c alt_cnes</alias>
 <alias name="alt" field="4" sat="pn tx">alt_gdrcp alt_jgm3</alias>
 
