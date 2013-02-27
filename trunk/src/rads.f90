@@ -1558,10 +1558,10 @@ if (P%cycle == info%cycle .and. P%pass == info%pass) then
 else if (nff(nf90_inq_varid(P%ncid, info%dataname, info%varid))) then
 	! Read variable attributes if not yet set
 	if (info%nctype == 0) info%nctype = nctype
-	if (info%long_name(:1) == ' ') e =nf90_get_att(P%ncid, info%varid, 'long_name', info%long_name)
-	if (info%units(:1) == ' ') e =nf90_get_att(P%ncid, info%varid, 'units', info%units)
-	if (info%standard_name(:1) == ' ') e =nf90_get_att(P%ncid, info%varid, 'standard_name', info%standard_name)
-	if (info%comment(:1) == ' ') e =nf90_get_att(P%ncid, info%varid, 'comment', info%comment)
+	if (info%long_name(:1) == ' ') e = nf90_get_att(P%ncid, info%varid, 'long_name', info%long_name)
+	if (info%units(:1) == ' ') e = nf90_get_att(P%ncid, info%varid, 'units', info%units)
+	if (info%standard_name(:1) == ' ') e = nf90_get_att(P%ncid, info%varid, 'standard_name', info%standard_name)
+	if (info%comment(:1) == ' ') e = nf90_get_att(P%ncid, info%varid, 'comment', info%comment)
 else
 	! Failed to find variable
 	S%error = rads_err_nc_var

@@ -65,7 +65,7 @@ Global RADS configuration file
 	<long_name>local solar time of day</long_name>
 	<units>s</units>
 	<data>time lon 240 MUL ADD 86400 FMOD</data>
-	<comment>Local solar time since start of the day</comment>
+	<comment>Local solar time (in seconds) since start of the solar day</comment>
 	<format>f12.6</format>
 </var>
 <var name="time_ymdhms" field="104">
@@ -77,17 +77,24 @@ Global RADS configuration file
 </var>
 <var name="time_mjd" field="105">
 	<long_name>Modified Julian Days</long_name>
-	<units>days since 1858-11-17</units>
+	<units>days since 1858-11-17 00:00:00 UTC</units>
 	<data>time 86400 DIV 46066 ADD</data>
 	<comment>UTC time of measurement expressed in Modified Julian Days</comment>
 	<format>f12.6</format>
 </var>
 <var name="time_2000" field="106">
 	<long_name>time</long_name>
-	<units>seconds since 2000-01-01</units>
+	<units>seconds since 2000-01-01 00:00:00 UTC</units>
 	<data>time 473299200 SUB</data>
 	<comment>UTC time of measurement</comment>
 	<format>f16.6</format>
+</var>
+<var name="time_1950">
+	<long_name>time</long_name>
+	<units>days since 1950-01-01 00:00:00 UTC</units>
+	<data>time 86400 DIV 12784 ADD</data>
+	<comment>UTC time of measurement</comment>
+	<format>f12.6</format>
 </var>
 
 <var name="lat" field="201 2">
