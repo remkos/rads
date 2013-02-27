@@ -612,8 +612,32 @@ type(rads_sat), intent(inout) :: S
 ! Arguments:
 !  S        : Satellite/mission dependent structure
 !-----------------------------------------------------------------------
-S = rads_sat ('', '', '', null(), '', 1d0, (/13.8d0, nan/), 90d0, nan, nan, nan, 1, 1, rads_noerr, &
-	0, 0, 0, 0, 0, 0, '', 0, null(), null(), null(), null(), null(), null(), null(), null())
+! gfortran 4.4.1 segfaults on the next line, so we split it out
+!S = rads_sat ('', '', '', null(), '', 1d0, (/13.8d0, nan/), 90d0, nan, nan, nan, 1, 1, rads_noerr, &
+!	0, 0, 0, 0, 0, 0, '', 0, null(), null(), null(), null(), null(), null(), null(), null())
+S%userroot = ''
+S%dataroot = ''
+S%command = ''
+S%satellite = ''
+S%dt1hz = 1d0
+S%frequency = (/13.8d0, nan/)
+S%inclination = 90d0
+S%eqlonlim = nan
+S%centroid = nan
+S%xover_params = nan
+S%cycles = 1
+S%passes = 1
+S%error = rads_noerr
+S%debug = 0
+S%pass_stat = 0
+S%total_read = 0
+S%total_inside = 0
+S%nvar = 0
+S%nsel = 0
+S%sat = ''
+S%satid = 0
+nullify (S%glob_att, S%excl_cycles, S%var, S%sel, S%time, S%lat, S%lon, S%phases, S%phase)
+
 end subroutine rads_init_sat_struct
 
 !***********************************************************************
