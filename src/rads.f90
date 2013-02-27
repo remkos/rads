@@ -596,13 +596,15 @@ do i = 1,nsat
 enddo
 !
 ! Blank out the rest
-call rads_init_sat_struct (S(nsat+1:))
+do i = nsat+1,size(S)
+	call rads_init_sat_struct (S(i))
+enddo
 end subroutine rads_init_cmd_1d
 
 !***********************************************************************
 !*rads_init_sat_struct -- Initialize empty rads_sat struct
 !+
-elemental subroutine rads_init_sat_struct (S)
+subroutine rads_init_sat_struct (S)
 use rads_misc
 type(rads_sat), intent(inout) :: S
 !
@@ -612,38 +614,16 @@ type(rads_sat), intent(inout) :: S
 ! Arguments:
 !  S        : Satellite/mission dependent structure
 !-----------------------------------------------------------------------
-! gfortran 4.4.1 segfaults on the next line, so we split it out
-!S = rads_sat ('', '', '', null(), '', 1d0, (/13.8d0, nan/), 90d0, nan, nan, nan, 1, 1, rads_noerr, &
-!	0, 0, 0, 0, 0, 0, '', 0, null(), null(), null(), null(), null(), null(), null(), null())
-S%userroot = ''
-S%dataroot = ''
-S%command = ''
-S%satellite = ''
-S%dt1hz = 1d0
-S%frequency = (/13.8d0, nan/)
-S%inclination = 90d0
-S%eqlonlim = nan
-S%centroid = nan
-S%xover_params = nan
-S%cycles = 1
-S%passes = 1
-S%error = rads_noerr
-S%debug = 0
-S%pass_stat = 0
-S%total_read = 0
-S%total_inside = 0
-S%nvar = 0
-S%nsel = 0
-S%sat = ''
-S%satid = 0
-nullify (S%glob_att, S%excl_cycles, S%var, S%sel, S%time, S%lat, S%lon, S%phases, S%phase)
-
+! gfortran 4.4.1 segfaults on the next line if this routine is made pure or elemental,
+! so please leave it as a normal routine.
+S = rads_sat ('', '', '', null(), '', 1d0, (/13.8d0, nan/), 90d0, nan, nan, nan, 1, 1, rads_noerr, &
+	0, 0, 0, 0, 0, 0, '', 0, null(), null(), null(), null(), null(), null(), null(), null())
 end subroutine rads_init_sat_struct
 
 !***********************************************************************
 !*rads_free_sat_struct -- Free all allocated memory from rads_sat struct
 !+
-elemental subroutine rads_free_sat_struct (S)
+subroutine rads_free_sat_struct (S)
 type(rads_sat), intent(inout) :: S
 !
 ! This routine frees the <S> struct of type rads_sat and all allocated
@@ -667,7 +647,7 @@ end subroutine rads_free_sat_struct
 !***********************************************************************
 !*rads_init_pass_struct -- Initialize empty rads_pass struct
 !+
-elemental subroutine rads_init_pass_struct (S, P)
+subroutine rads_init_pass_struct (S, P)
 type(rads_sat), intent(in) :: S
 type(rads_pass), intent(inout) :: P
 !
@@ -678,6 +658,8 @@ type(rads_pass), intent(inout) :: P
 !  S        : Satellite/mission dependent structure
 !  P        : Pass dependent structure
 !-----------------------------------------------------------------------
+! gfortran 4.4.1 segfaults on the next line if this routine is made pure or elemental,
+! so please leave it as a normal routine.
 P = rads_pass ('', '', null(), nan, nan, nan, nan, null(), null(), 0, 0, 0, 1, 0, 0, 0, 0, S%sat, S%satid, null())
 end subroutine rads_init_pass_struct
 
@@ -1076,9 +1058,11 @@ end subroutine rads_end_0d
 
 subroutine rads_end_1d (S)
 type(rads_sat), intent(inout) :: S(:)
-integer :: ios
+integer :: ios, i
 deallocate (rads_opt, stat=ios)
-call rads_free_sat_struct (S)
+do i = 1,size(S)
+	call rads_free_sat_struct (S(i))
+enddo
 end subroutine rads_end_1d
 
 !***********************************************************************
