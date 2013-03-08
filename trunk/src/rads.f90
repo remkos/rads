@@ -1011,7 +1011,7 @@ do
 		S%sel(S%nsel) = var
 		if (noedit == 2) S%sel(S%nsel)%noedit = .true.
 	else
-		call rads_error (S, rads_err_var, 'Unknown variable "'//string(i0:i1)//'" removed from list of variables')
+		call rads_error (S, rads_err_var, 'Unknown variable "'//string(i0:i1-noedit)//'" removed from list of variables')
 	endif
 enddo
 end subroutine rads_parse_varlist_0d
