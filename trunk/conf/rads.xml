@@ -1771,7 +1771,6 @@ Global RADS configuration file
 	<long_name>off-nadir pointing angle squared from platform</long_name>
 	<units>degrees^2</units>
 	<data>off_nadir_angle2_pf</data>
-	<data sat="c2">attitude_pitch SQR attitude_roll SQR ADD</data>
 	<data sat="pn tx">off_nadir_angle_pf SQR</data> <!--Compute attitude^2 from attitude-->
 	<format>f7.4</format>
 	<default>0</default>
