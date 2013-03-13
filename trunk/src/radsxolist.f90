@@ -218,7 +218,7 @@ do i = 1,nvar_replace
 	endif
 enddo
 id_flag = 0
-if (check_flag >= 0) id_flag = get_varid('flag_status') - id_offset
+if (check_flag >= 0) id_flag = get_varid('flag_alt_oper_mode') - id_offset
 
 ! Close netCDF file
 call nfs (nf90_close (ncid))
