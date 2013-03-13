@@ -308,7 +308,7 @@ write (stderr,1300)
 '                            polynomial fit; optionally add number of points N required on BOTH sides of the'/ &
 '                            crossover for interpolation. Default: q3'/ &
 '  -g, --gap=GAP             Specify the maximum gap between two nearest points to crossover, in 1-Hz intervals;' / &
-'                            also sets maximum gaps between 1st and last point of interpolation window to (N+1)*GAP' / &
+'                            also sets maximum gaps between 1st and last point of interpolation window to (2N+1)*GAP' / &
 '  -rITEM                    Reject xovers if data item number ITEM on --var= specifier is NaN'/ &
 '                            (default: reject if SLA field is NaN)'/ &
 '  -r0, -r                   Do not reject xovers with NaN values'/ &
