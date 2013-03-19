@@ -26,12 +26,12 @@ program rads_gen_reaper
 !  PPPP = relative pass number
 !   CCC = cycle number
 !
-! syntax: reaperraw [options] < list_of_REAPER_file_names
+! syntax: rads_gen_reaper [options] < list_of_REAPER_file_names
 !
 ! This program handles only the REAPER ERS_ALT_2 files in netCDF format.
 !-----------------------------------------------------------------------
 !
-!  Variables array fields to be filled are:
+! Variables array fields to be filled are:
 ! time - Time since 1 Jan 85
 ! lat - Latitude
 ! lon - Longitude
@@ -95,7 +95,7 @@ integer(fourbyteint) :: verbose=0, c0=0, c1=999, ios
 real(eightbytereal) :: t0, t1
 character(160) :: infile, old_infile
 character(20) :: optopt, optarg
-character(80), parameter :: optlist='v debug: sat: cycle: t: mjd: sec: ymd: doy:'
+character(80), parameter :: optlist='vC: debug: sat: cycle: t: mjd: sec: ymd: doy:'
 
 ! Header variables
 
@@ -148,7 +148,7 @@ do
 		verbose = 1
 	case ('debug')
 		read (optarg,*) verbose
-	case ('cycle')
+	case ('C', 'cycle')
 		c1 = -1
 		read (optarg,*,iostat=ios) c0,c1
 		if (c1 < c0) c1 = c0
@@ -161,7 +161,7 @@ do
 enddo
 
 !----------------------------------------------------------------------
-! Read all file names for standard input
+! Read all file names from standard input
 !----------------------------------------------------------------------
 
 ! Start reading with at least first file
@@ -219,7 +219,7 @@ character(len=*), optional :: flag
 if (rads_version ('$Revision$', 'Write REAPER data to RADS', flag=flag)) return
 write (*,1310)
 1310 format (/ &
-'syntax: reaperraw [options] < list_of_REAPER_file_names'// &
+'syntax: rads_gen_reaper [options] < list_of_REAPER_file_names'// &
 'This program converts REAPER ERS_ALT_2 files to RADS data'/ &
 'files with the name $RADSDATAROOT/data/eE/F.r/pPPPP/eEpPPPPcCCC.nc.'/ &
 'The directory is created automatically and old files are overwritten.')
@@ -575,7 +575,7 @@ if (nout == 0) return	! Skip empty data sets
 if (cyclenr(1) < c0 .or. cyclenr(1) > c1) return	! Skip chunks that are not of the selected cycle
 if (tnode(1) < t0 .or. tnode(1) > t1) return	! Skip equator times that are not of selected range
 
-! Update phase name is required
+! Update phase name if required
 phasenm(1) = strtolower(phasenm(1))
 if (S%phase%name /= phasenm(1)) S%phase => rads_get_phase (S, phasenm(1)//'.r')
 
