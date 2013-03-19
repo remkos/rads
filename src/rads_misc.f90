@@ -744,7 +744,7 @@ end subroutine iqsort
 
 !***********************************************************************
 !*mean_variance -- Compute mean and standard deviation of a series
-!
+!+
 pure subroutine mean_variance (x, mean, variance)
 real(eightbytereal), intent(in) :: x(:)
 real(eightbytereal), intent(out) :: mean, variance
@@ -790,7 +790,7 @@ end subroutine mean_variance
 
 !***********************************************************************
 !*is_number -- Is string a number?
-!
+!+
 pure function is_number (string)
 character(len=*), intent(in) :: string
 logical :: is_number
@@ -812,7 +812,7 @@ end function is_number
 
 !***********************************************************************
 !*next_word -- Get next word from string
-!
+!+
 function next_word (string, i0, i1)
 character(len=*), intent(in) :: string
 integer, intent(inout) :: i0,i1
@@ -867,6 +867,119 @@ enddo
 i1 = i
 next_word = .true.
 end function next_word
+
+
+!***********************************************************************
+!*mean_1hz -- Compute mean and rms of multi-Hz array
+!+
+subroutine mean_1hz (y, valid, mean, rms)
+real(eightbytereal), intent(in) :: y(:,:)
+logical, intent(in) :: valid(:,:)
+real(eightbytereal), intent(out) :: mean(:), rms(:)
+!
+! Compute mean and stddev values from multi-Hz array <y(m,n)> where <m> is
+! the number of measurements per "second" (usually 20) and <n> is the
+! number of 1-Hz measurements in the array. Output are the mean values,
+! stored in <mean(n)> and the standard deviations stored in <rms(n)>.
+!
+! Only the values of <y> for which the corresponding value of <valid> is
+! true are used.
+!
+! Arguments:
+!  y     : Input array of dimension (m,n)
+!  valid : Indicates which values of y to use
+!  mean  : Average of y per 1-Hz, dimension n
+!  rms   : Standard deviation of 1-Hz, dimension n
+!-
+integer(fourbyteint) :: i, j, n
+do j = 1,size(y,2)
+	mean(j) = 0d0
+	rms(j) = 0d0
+	n = 0
+	do i = 1,size(y,1)
+		if (valid(i,j)) then
+			n = n + 1
+			mean(j) = mean(j) + y(i,j)
+			rms(j) = rms(j) + y(i,j)**2
+		endif
+	enddo
+	if (n < 1) then
+		mean(j) = nan
+	else
+		mean(j) = mean(j) / n
+	endif
+	if (n < 2) then
+		rms(j) = nan
+	else
+		rms(j) = sqrt ((rms(j) - n * mean(j)**2) / (n - 1))
+	endif
+enddo
+end subroutine mean_1hz
+
+!***********************************************************************
+!*trend_1hz -- Compute mean and rms of multi-Hz array with trend removal
+!+
+subroutine trend_1hz (x, x0, y, valid, mean, rms)
+real(eightbytereal), intent(in) :: x(:,:), x0(:), y(:,:)
+logical, intent(in) :: valid(:,:)
+real(eightbytereal), intent(out) :: mean(:), rms(:)
+!
+! Compute mean and stddev values from multi-Hz array <y(m,n)> where <m> is
+! the number of measurements per "second" (usually 20) and <n> is the
+! number of 1-Hz measurements in the array. Output are the mean values,
+! stored in <mean(n)> and the standard deviations stored in <rms(n)>.
+!
+! A trend is removed while computing the mean at x-coordinate <x0>. <x>
+! indicates the x-coordinate corresponding to the array <y>.
+!
+! Only the values of <y> for which the corresponding value of <valid> is
+! true are used.
+!
+! Arguments:
+!  x     : x-coordinate belonging to the values y
+!  x0    : x-coordinate to compute mean
+!  y     : Input array of dimension (m,n)
+!  valid : Indicates which values of y to use
+!  mean  : Average of y per 1-Hz, dimension n
+!  rms   : Standard deviation of 1-Hz, dimension n
+!-
+real(eightbytereal) :: sumx,sumy,sumxx,sumxy,sumyy,uxx,uxy,uyy,a,b,xx
+integer(fourbyteint) :: i, j, n
+do j = 1,size(y,2)
+	n = 0
+	sumx = 0d0
+	sumy = 0d0
+	sumxx = 0d0
+	sumxy = 0d0
+	sumyy = 0d0
+	do i = 1,size(y,1)
+		if (valid(i,j)) then
+			xx = x(i,j) - x0(j)
+			sumx = sumx + xx
+			sumy = sumy + y(i,j)
+			sumxx = sumxx + xx*xx
+			sumxy = sumxy + xx*y(i,j)
+			sumyy = sumyy + y(i,j)*y(i,j)
+			n = n + 1
+		endif
+	enddo
+	if (n < 1) then
+		mean(j) = nan
+	else
+		uxx = n * sumxx - sumx * sumx
+		uxy = n * sumxy - sumx * sumy
+		uyy = n * sumyy - sumy * sumy
+		b = uxy / uxx
+		a = (sumy - b*sumx) / n
+		mean(j) = a
+	endif
+	if (n < 3) then
+		rms(j) = nan
+	else
+		rms(j) = sqrt ((sumyy - a * sumy - b * sumxy) / (n-2))
+	endif
+enddo
+end subroutine trend_1hz
 
 !***********************************************************************
 
