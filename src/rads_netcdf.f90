@@ -24,7 +24,9 @@
 ! To access the interface, add 'use rads_netcdf' to your Fortran 90 program
 !-----------------------------------------------------------------------
 module rads_netcdf
+use typesizes
 integer, parameter, private :: stderr = 0
+real(eightbytereal), parameter, private :: nan = transfer ((/not(0_fourbyteint),not(0_fourbyteint)/),0d0)
 private get_var_1d, get_var_2d
 
 !-----------------------------------------------------------------------
@@ -37,11 +39,13 @@ private get_var_1d, get_var_2d
 !
 ! This routine looks for a variable named <varnm> in the file associated with
 ! <ncid> and loads it into the 1- or 2-dimensional array <array>.
-! This routine DOES NOT take into account scale factors and offsets.
+! This routine takes into account the attributes scale_factor, add_offset, and
+! _FillValue.
 !
 ! One can also add or subtract a number of fields directly. For example:
 ! 'alt-range'
 !
+! Arguments:
 !  ncid  : NetCDF ID
 !  varnm : Variable name
 !  array : Array of data values
@@ -57,7 +61,6 @@ contains
 !*nf90_def_axis -- Define dimension as a coordinate axis
 !+
 subroutine nf90_def_axis (ncid, varnm, longname, units, nx, x0, x1, dimid, varid, xtype)
-use typesizes
 use netcdf
 character(len=*), intent(in) :: varnm,longname,units
 integer, intent(in) :: ncid,nx
@@ -118,7 +121,6 @@ end subroutine nf90_def_axis
 !*nf90_put_axis -- Fill an coordinate array
 !+
 subroutine nf90_put_axis (ncid, varid, len)
-use typesizes
 use netcdf
 integer, intent(in) :: ncid, varid
 integer, intent(in), optional :: len
@@ -222,13 +224,13 @@ call exit (ios)
 end subroutine nfs
 
 subroutine get_var_1d (ncid, varnm, array)
-use typesizes
 use netcdf
 integer(fourbyteint), intent(in) :: ncid
 character(len=*), intent(in) :: varnm
 real(eightbytereal), intent(out) :: array(:)
-real(eightbytereal) :: array1(size(array))
-integer(fourbyteint) :: i0,i1,l,varid,constant
+real(eightbytereal) :: temp(size(array)), scale_factor, add_offset, fillvalue
+integer(fourbyteint) :: i0, i1, l, varid, constant
+logical :: with_fillvalue
 i1 = 0
 l = len_trim(varnm)
 do
@@ -240,26 +242,32 @@ do
 		write (*,'("No such variable: ",a)') varnm(i0+1:i1-1)
 		return
 	endif
+	if (nf90_get_att(ncid,varid,'scale_factor',scale_factor) /= nf90_noerr) scale_factor = 1d0
+	if (nf90_get_att(ncid,varid,'add_offset',add_offset) /= nf90_noerr) add_offset = 0d0
+	with_fillvalue = (nf90_get_att(ncid,varid,'_FillValue',fillvalue) /= nf90_noerr)
+	constant = 0
 	if (i0 == 0) then
 		call nfs(nf90_get_var(ncid,varid,array))
+		if (with_fillvalue) where (array == fillvalue) array = nan
+		array = array * scale_factor + add_offset
 	else
-		call nfs(nf90_get_var(ncid,varid,array1))
-		constant = 0
+		call nfs(nf90_get_var(ncid,varid,temp))
+		if (with_fillvalue) where (temp == fillvalue) temp = nan
 		if (varnm(i0:i0) == '-') constant = -1
 		if (varnm(i0:i0) == '+') constant = 1
-		array = array + constant * array1
+		array = array + constant * (temp * scale_factor + add_offset)
 	endif
 enddo
 end subroutine get_var_1d
 
 subroutine get_var_2d (ncid, varnm, array)
-use typesizes
 use netcdf
 integer(fourbyteint), intent(in) :: ncid
 character(len=*), intent(in) :: varnm
 real(eightbytereal), intent(out) :: array(:,:)
-real(eightbytereal) :: array2(size(array,1),size(array,2))
-integer(fourbyteint) :: i0,i1,l,varid,constant
+real(eightbytereal) :: temp(size(array,1),size(array,2)), scale_factor, add_offset, fillvalue
+integer(fourbyteint) :: i0, i1, l, varid, constant
+logical :: with_fillvalue
 i1 = 0
 l = len_trim(varnm)
 do
@@ -271,14 +279,20 @@ do
 		write (*,'("No such variable: ",a)') varnm(i0+1:i1-1)
 		return
 	endif
+	if (nf90_get_att(ncid,varid,'scale_factor',scale_factor) /= nf90_noerr) scale_factor = 1d0
+	if (nf90_get_att(ncid,varid,'add_offset',add_offset) /= nf90_noerr) add_offset = 0d0
+	with_fillvalue = (nf90_get_att(ncid,varid,'_FillValue',fillvalue) /= nf90_noerr)
+	constant = 0
 	if (i0 == 0) then
 		call nfs(nf90_get_var(ncid,varid,array))
+		if (with_fillvalue) where (array == fillvalue) array = nan
+		array = array * scale_factor + add_offset
 	else
-		call nfs(nf90_get_var(ncid,varid,array2))
-		constant = 0
+		call nfs(nf90_get_var(ncid,varid,temp))
+		if (with_fillvalue) where (temp == fillvalue) temp = nan
 		if (varnm(i0:i0) == '-') constant = -1
 		if (varnm(i0:i0) == '+') constant = 1
-		array = array + constant * array2
+		array = array + constant * (temp * scale_factor + add_offset)
 	endif
 enddo
 end subroutine get_var_2d
