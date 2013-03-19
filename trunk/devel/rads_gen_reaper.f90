@@ -302,9 +302,9 @@ nvar = 0
 
 ! Time and orbit: Low rate
 
-call get_var_1d ('time_day_1hz',a)
-call get_var_1d ('time_milsec_1hz',b)
-call get_var_1d ('time_micsec_1hz',c)
+call get_var (ncid, 'time_day_1hz',a)
+call get_var (ncid, 'time_milsec_1hz',b)
+call get_var (ncid, 'time_micsec_1hz',c)
 a = a * 86400d0 + b * 1d-3 + c * 1d-6 + sec1990
 k = min(3,nrec)
 ! Because first and last time can be wrong, we use the minimum of the first 3 and
@@ -316,36 +316,36 @@ do while (ndata > 0 .and. var(1)%d(ndata) > start_time - 0.5d0)
 	ndata = ndata - 1
 enddo
 call new_var ('time', a)
-call get_var_1d ('latitude_1hz', a)
+call get_var (ncid, 'latitude_1hz', a)
 a = a*1d-6
 call new_var ('lat', a)
 ! Compute ellipsoid corrections
 do i = 1,nrec
 	dh(i) = dhellips(1,a(i))
 enddo
-call get_var_1d ('longitude_1hz', a)
+call get_var (ncid, 'longitude_1hz', a)
 call new_var ('lon', a*1d-6)
-call get_var_1d ('altitude_1hz', a)
+call get_var (ncid, 'altitude_1hz', a)
 call new_var ('alt_reaper', a*1d-3+dh)
-call get_var_1d ('altitude_rate_1hz', a)
+call get_var (ncid, 'altitude_rate_1hz', a)
 call new_var ('alt_rate', a*1d-3)
-call get_var_1d ('wf_attitude_1hz', a)
+call get_var (ncid, 'wf_attitude_1hz', a)
 call new_var ('off_nadir_angle2_wf_ku', a*a*1d-4)
 
 ! Range data: Low rate
 
-call get_var_1d ('ocean_range_1hz', a)
-call get_var_1d ('ocean_stdev_1hz', b)
-call get_var_1d ('ocean_valid_num_1hz', c)
+call get_var (ncid, 'ocean_range_1hz', a)
+call get_var (ncid, 'ocean_stdev_1hz', b)
+call get_var (ncid, 'ocean_valid_num_1hz', c)
 call invalidate (c == 0, a)
 call invalidate (c <= 1, b)
 call new_var ('range_ku', a*1d-3)
 call new_var ('range_rms_ku', b*1d-3)
 call new_var ('range_numval_ku', c)
 if (meteo) then ! Different name in Meteo product
-	call get_var_1d ('ocean_valid_bitmap_1hz', a)
+	call get_var (ncid, 'ocean_valid_bitmap_1hz', a)
 else
-	call get_var_1d ('f_ocean_valid_bitmap_1hz', a)
+	call get_var (ncid, 'f_ocean_valid_bitmap_1hz', a)
 endif
 
 ! Set "valid" array based on bitmap
@@ -367,11 +367,11 @@ enddo
 ! For some reason Meteo product has 1-Hz peakiness
 ! where (S)GDR have ocean_wind_1hz
 if (meteo) then
-	call get_var_1d ('wf_pk_1hz', a)
+	call get_var (ncid, 'wf_pk_1hz', a)
 	call invalidate (c == 0, a)
 	call new_var ('peakiness_ku', a*1d-3)
 else
-	call get_var_1d ('ocean_wind_1hz', a)
+	call get_var (ncid, 'ocean_wind_1hz', a)
 	call invalidate (c == 0, a)
 	call new_var ('wind_speed_alt', a*1d-3)
 endif
@@ -379,19 +379,19 @@ endif
 ! Range data: High rate
 
 if (.not.meteo) then
-	call get_var_2d ('ocean_mean_quadratic_error', d)
-	call mean_1hz (d, a, b)
+	call get_var (ncid, 'ocean_mean_quadratic_error', d)
+	call mean_1hz (d, valid, a, b)
 	call new_var ('mqe', a*1d-4)
-	call get_var_2d ('wf_pk', d)
-	call mean_1hz (d, a, b)
+	call get_var (ncid, 'wf_pk', d)
+	call mean_1hz (d, valid, a, b)
 	call new_var ('peakiness_ku', a*1d-3)
-	call get_var_2d ('dop_c+delta_dop_c', d)
+	call get_var (ncid, 'dop_c+delta_dop_c', d)
 	valid = .true.	! For Doppler, we use all
-	call mean_1hz (d, a, b)
+	call mean_1hz (d, valid, a, b)
 	call new_var ('drange_fm', a*1d-3)
-	call get_var_2d ('sptr_jumps_c', d)
+	call get_var (ncid, 'sptr_jumps_c', d)
 	call new_var ('drange_cal', d(1,:) * picosec_to_m)
-	call get_var_2d ('sum_c_applied', d)
+	call get_var (ncid, 'sum_c_applied', d)
 	sum_c_applied = d(1,:)*1d-3
 	do i = 1,nrec
 		do k = 2,19
@@ -402,16 +402,16 @@ endif
 
 ! Get error and and correction flags first
 
-call get_var_1d ('f_corr_error_1hz', a)
+call get_var (ncid, 'f_corr_error_1hz', a)
 f_error = nint(a)
-call get_var_1d ('f_corr_applied_1hz', a)
+call get_var (ncid, 'f_corr_applied_1hz', a)
 f_applied = nint(a)
 
 ! Sigma zero: Low rate
 
-call get_var_1d ('ocean_sig0_1hz', a)
-call get_var_1d ('ocean_sig0_stdev_1hz', b)
-call get_var_1d ('ocean_sig0_valid_num_1hz', c)
+call get_var (ncid, 'ocean_sig0_1hz', a)
+call get_var (ncid, 'ocean_sig0_stdev_1hz', b)
+call get_var (ncid, 'ocean_sig0_valid_num_1hz', c)
 call invalidate (c == 0, a)
 call invalidate (c <= 1, b)
 call new_var ('sig0_ku', a*1d-2)
@@ -419,9 +419,9 @@ call new_var ('sig0_rms_ku', b*1d-2)
 
 ! SWH: Low rate
 
-call get_var_1d ('swh_signed_1hz', a)
-call get_var_1d ('swh_stdev_1hz', b)
-call get_var_1d ('swh_valid_num_1hz', c)
+call get_var (ncid, 'swh_signed_1hz', a)
+call get_var (ncid, 'swh_stdev_1hz', b)
+call get_var (ncid, 'swh_valid_num_1hz', c)
 call invalidate (c == 0, a)
 call invalidate (c <= 1, b)
 call new_var ('swh_ku', a*1d-3)
@@ -429,22 +429,22 @@ call new_var ('swh_rms_ku', b*1d-3)
 
 ! MWR Flags: Low rate
 
-call get_var_1d ('f_sea_ice_flag_1hz', a)
+call get_var (ncid, 'f_sea_ice_flag_1hz', a)
 call flag_set (a == 1, 8)
 
 ! MWR: Low rate
 
-call get_var_1d ('tb_23_8_1hz', a)
-call get_var_1d ('tb_36_5_1hz', b)
-call get_var_1d ('f_mwr_srf_typ_1hz', c)
+call get_var (ncid, 'tb_23_8_1hz', a)
+call get_var (ncid, 'tb_36_5_1hz', b)
+call get_var (ncid, 'f_mwr_srf_typ_1hz', c)
 call flag_set (c == 1, 5)
-call get_var_1d ('f_mwr_interp_qual_1hz', c)
+call get_var (ncid, 'f_mwr_interp_qual_1hz', c)
 call invalidate (c == 3, a)
 call invalidate (c == 3, b)
 if (meteo) then
-	call get_var_1d ('f_mwr_valid_1hz', c)
+	call get_var (ncid, 'f_mwr_valid_1hz', c)
 else ! Wrong name in (S)GDR
-	call get_var_1d ('f_MWR_valid_1hz', c)
+	call get_var (ncid, 'f_MWR_valid_1hz', c)
 endif
 call invalidate (c == 1, a)
 call invalidate (c == 1, b)
@@ -453,66 +453,66 @@ call new_var ('tb_365', b*1d-2)
 
 ! Atmospheric and geophysical: Low rate
 
-call get_var_1d ('dry_c_1hz', a)
+call get_var (ncid, 'dry_c_1hz', a)
 call new_var ('dry_tropo_ecmwf', a*1d-3, 1)
-call get_var_1d ('ib_c_1hz', a)
+call get_var (ncid, 'ib_c_1hz', a)
 call new_var ('inv_bar_static', a*1d-3, 2)
-call get_var_1d ('mog2d_c_1hz', a)
+call get_var (ncid, 'mog2d_c_1hz', a)
 call new_var ('inv_bar_mog2d', a*1d-3, 3)
-call get_var_1d ('wet_c_mod_1hz', a)
+call get_var (ncid, 'wet_c_mod_1hz', a)
 call new_var ('wet_tropo_ecmwf', a*1d-3, 5)
-call get_var_1d ('wet_c_mwr_1hz', a)
+call get_var (ncid, 'wet_c_mwr_1hz', a)
 call new_var ('wet_tropo_rad', a*1d-3, 6)
-call get_var_1d ('water_vapor_content_1hz', a)
+call get_var (ncid, 'water_vapor_content_1hz', a)
 call new_var ('water_vapor_content', a*1d-2, -6)
-call get_var_1d ('liquid_water_content_1hz', a)
+call get_var (ncid, 'liquid_water_content_1hz', a)
 call new_var ('liquid_water', a*1d-2, -6)
-call get_var_1d ('u_wind_1hz', a)
+call get_var (ncid, 'u_wind_1hz', a)
 call new_var ('wind_speed_ecmwf_u', a*1d-3, 7)
-call get_var_1d ('v_wind_1hz', a)
+call get_var (ncid, 'v_wind_1hz', a)
 call new_var ('wind_speed_ecmwf_v', a*1d-3, 8)
-call get_var_1d ('iono_c_mod_1hz', a)
+call get_var (ncid, 'iono_c_mod_1hz', a)
 call new_var ('iono_nic09', a*1d-3, 9)
 if (start_time >= 430880400d0) then	! After 1998-08-28 01:00:00 get GIM iono
-	call get_var_1d ('iono_c_gps_1hz', a)
+	call get_var (ncid, 'iono_c_gps_1hz', a)
 	call new_var ('iono_gim', a*1d-3, 10)
 endif
-call get_var_1d ('h_mss_cls01_1hz', a)
+call get_var (ncid, 'h_mss_cls01_1hz', a)
 call new_var ('mss_cls01', a*1d-3, 11)
 var(nvar)%d = var(nvar)%d + dh
-call get_var_1d ('h_geo_1hz', a)
+call get_var (ncid, 'h_geo_1hz', a)
 call new_var ('geoid_egm2008', a*1d-3, 12)
 var(nvar)%d = var(nvar)%d + dh
-call get_var_1d ('h_ot_1hz', a)
+call get_var (ncid, 'h_ot_1hz', a)
 call new_var ('tide_ocean_got47', a*1d-3, 13)
-call get_var_1d ('h_ot2_1hz', a)
+call get_var (ncid, 'h_ot2_1hz', a)
 call new_var ('tide_ocean_fes04', a*1d-3, 14)
-call get_var_1d ('h_olt_1hz', a)
+call get_var (ncid, 'h_olt_1hz', a)
 call new_var ('tide_load_got47', a*1d-3, 15)
-call get_var_1d ('h_olt2_1hz', a)
+call get_var (ncid, 'h_olt2_1hz', a)
 call new_var ('tide_load_fes04', a*1d-3, 16)
-call get_var_1d ('h_lpt_1hz', a)
+call get_var (ncid, 'h_lpt_1hz', a)
 call new_var ('tide_equil', a*1d-3, 17)
-call get_var_1d ('h_lptne_1hz', a)
+call get_var (ncid, 'h_lptne_1hz', a)
 call new_var ('tide_non_equil', a*1d-3, 18)
-call get_var_1d ('h_set_1hz', a)
+call get_var (ncid, 'h_set_1hz', a)
 call new_var ('tide_solid', a*1d-3, 19)
-call get_var_1d ('h_pol_1hz', a)
+call get_var (ncid, 'h_pol_1hz', a)
 call new_var ('tide_pole', a*1d-3, 20)
 
-call get_var_1d ('f_srf_typ_1hz', a)
+call get_var (ncid, 'f_srf_typ_1hz', a)
 call flag_set (a >= 3, 2)
 call flag_set (a >= 2, 4)
 call flag_set (a >= 1, 5)
 
-call get_var_1d ('h_odle_1hz', a)
+call get_var (ncid, 'h_odle_1hz', a)
 call new_var ('topo_macess', a*1d-3, 22)
-call get_var_1d ('em_bias_1hz', a)
+call get_var (ncid, 'em_bias_1hz', a)
 call new_var ('ssb_bm3', a*1d-3, 23)
-call get_var_1d ('h_mss_ucl04_1hz', a)
+call get_var (ncid, 'h_mss_ucl04_1hz', a)
 call new_var ('mss_ucl04', a*1d-3+dh, 27)
 if (.not.meteo) then ! Only on (S)GDR
-	call get_var_1d ('sig0_attn_c_1hz', a)
+	call get_var (ncid, 'sig0_attn_c_1hz', a)
 	call new_var ('dsig0_atmos_ku', a*1d-2)
 endif
 call new_var ('flags', flags*1d0)
@@ -658,98 +658,6 @@ else
 	enddo
 endif
 end subroutine new_var
-
-!-----------------------------------------------------------------------
-! Get a variable for a REAPER file
-!-----------------------------------------------------------------------
-
-subroutine get_var_1d (varnm, array)
-character(len=*), intent(in) :: varnm
-real(eightbytereal), intent(out) :: array(:)
-real(eightbytereal) :: array2(mrec)
-integer(fourbyteint) :: i0,i1,l,varid,constant
-i1 = 0
-l = len_trim(varnm)
-do
-	if (i1 > l) exit
-	i0 = i1
-	i1 = scan(varnm(i0+1:), '+-') + i0
-	if (i1 == i0) i1 = l + 1
-	if (nf90_inq_varid(ncid,varnm(i0+1:i1-1),varid) /= nf90_noerr) then
-		write (*,'("No such variable: ",a)') varnm(i0+1:i1-1)
-		return
-	endif
-	if (i0 == 0) then
-		call nfs(nf90_get_var(ncid,varid,array(1:nrec)))
-	else
-		call nfs(nf90_get_var(ncid,varid,array2(1:nrec)))
-		constant = 0
-		if (varnm(i0:i0) == '-') constant = -1
-		if (varnm(i0:i0) == '+') constant = 1
-		array(1:nrec) = array(1:nrec) + constant * array2(1:nrec)
-	endif
-enddo
-end subroutine get_var_1d
-
-subroutine get_var_2d (varnm, array)
-character(*), intent(in) :: varnm
-real(eightbytereal), intent(out) :: array(:,:)
-real(eightbytereal) :: array2(20,mrec)
-integer(fourbyteint) :: i0,i1,l,varid,constant
-i1 = 0
-l = len_trim(varnm)
-do
-	if (i1 > l) exit
-	i0 = i1
-	i1 = scan(varnm(i0+1:), '+-') + i0
-	if (i1 == i0) i1 = l + 1
-	if (nf90_inq_varid(ncid,varnm(i0+1:i1-1),varid) /= nf90_noerr) then
-		write (*,'("No such variable: ",a)') varnm(i0+1:i1-1)
-		return
-	endif
-	if (i0 == 0) then
-		call nfs(nf90_get_var(ncid,varid,array(:,1:nrec)))
-	else
-		call nfs(nf90_get_var(ncid,varid,array2(:,1:nrec)))
-		constant = 0
-		if (varnm(i0:i0) == '-') constant = -1
-		if (varnm(i0:i0) == '+') constant = 1
-		array(:,1:nrec) = array(:,1:nrec) + constant * array2(:,1:nrec)
-	endif
-enddo
-end subroutine get_var_2d
-
-!-----------------------------------------------------------------------
-! Compute 1-Hz mean and RMS
-!-----------------------------------------------------------------------
-
-subroutine mean_1hz (y, mean, rms)
-real(eightbytereal), intent(in) :: y(:,:)
-real(eightbytereal), intent(out) :: mean(:), rms(:)
-integer(fourbyteint) :: i, j, n
-do j = 1,nrec
-	mean(j) = 0d0
-	rms(j) = 0d0
-	n = 0
-	do i = 1,20
-		if (valid(i,j)) then
-			n = n + 1
-			mean(j) = mean(j) + y(i,j)
-			rms(j) = rms(j) + y(i,j)**2
-		endif
-	enddo
-	if (n < 1) then
-		mean(j) = nan
-	else
-		mean(j) = mean(j) / n
-	endif
-	if (n < 2) then
-		rms(j) = nan
-	else
-		rms(j) = sqrt ((rms(j) - n * mean(j)**2) / (n - 1))
-	endif
-enddo
-end subroutine mean_1hz
 
 !-----------------------------------------------------------------------
 ! Set a bit in an array of flags
