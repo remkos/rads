@@ -25,13 +25,38 @@
 !-----------------------------------------------------------------------
 module rads_netcdf
 integer, parameter, private :: stderr = 0
+private get_var_1d, get_var_2d
+
+!-----------------------------------------------------------------------
+!*get_var -- Load variable from netCDF file into memory
+!+
+!subroutine get_var (ncid, varnm, array)
+!integer(fourbyteint), intent(in) :: ncid
+!character(len=*), intent(in) :: varnm
+!real(eightbytereal), intent(out) :: array(:) <or> array(:,:)
+!
+! This routine looks for a variable named <varnm> in the file associated with
+! <ncid> and loads it into the 1- or 2-dimensional array <array>.
+! This routine DOES NOT take into account scale factors and offsets.
+!
+! One can also add or subtract a number of fields directly. For example:
+! 'alt-range'
+!
+!  ncid  : NetCDF ID
+!  varnm : Variable name
+!  array : Array of data values
+!-
+interface get_var
+	procedure get_var_1d
+	procedure get_var_2d
+end interface
 
 contains
 
 !-----------------------------------------------------------------------
 !*nf90_def_axis -- Define dimension as a coordinate axis
 !+
-subroutine nf90_def_axis (ncid,varnm,longname,units,nx,x0,x1,dimid,varid,xtype)
+subroutine nf90_def_axis (ncid, varnm, longname, units, nx, x0, x1, dimid, varid, xtype)
 use typesizes
 use netcdf
 character(len=*), intent(in) :: varnm,longname,units
@@ -195,6 +220,68 @@ call getarg (0, prognm)
 write (stderr, '(a,": ",a)') trim(prognm),trim(nf90_strerror(ios))
 call exit (ios)
 end subroutine nfs
+
+subroutine get_var_1d (ncid, varnm, array)
+use typesizes
+use netcdf
+integer(fourbyteint), intent(in) :: ncid
+character(len=*), intent(in) :: varnm
+real(eightbytereal), intent(out) :: array(:)
+real(eightbytereal) :: array1(size(array))
+integer(fourbyteint) :: i0,i1,l,varid,constant
+i1 = 0
+l = len_trim(varnm)
+do
+	if (i1 > l) exit
+	i0 = i1
+	i1 = scan(varnm(i0+1:), '+-') + i0
+	if (i1 == i0) i1 = l + 1
+	if (nf90_inq_varid(ncid,varnm(i0+1:i1-1),varid) /= nf90_noerr) then
+		write (*,'("No such variable: ",a)') varnm(i0+1:i1-1)
+		return
+	endif
+	if (i0 == 0) then
+		call nfs(nf90_get_var(ncid,varid,array))
+	else
+		call nfs(nf90_get_var(ncid,varid,array1))
+		constant = 0
+		if (varnm(i0:i0) == '-') constant = -1
+		if (varnm(i0:i0) == '+') constant = 1
+		array = array + constant * array1
+	endif
+enddo
+end subroutine get_var_1d
+
+subroutine get_var_2d (ncid, varnm, array)
+use typesizes
+use netcdf
+integer(fourbyteint), intent(in) :: ncid
+character(len=*), intent(in) :: varnm
+real(eightbytereal), intent(out) :: array(:,:)
+real(eightbytereal) :: array2(size(array,1),size(array,2))
+integer(fourbyteint) :: i0,i1,l,varid,constant
+i1 = 0
+l = len_trim(varnm)
+do
+	if (i1 > l) exit
+	i0 = i1
+	i1 = scan(varnm(i0+1:), '+-') + i0
+	if (i1 == i0) i1 = l + 1
+	if (nf90_inq_varid(ncid,varnm(i0+1:i1-1),varid) /= nf90_noerr) then
+		write (*,'("No such variable: ",a)') varnm(i0+1:i1-1)
+		return
+	endif
+	if (i0 == 0) then
+		call nfs(nf90_get_var(ncid,varid,array))
+	else
+		call nfs(nf90_get_var(ncid,varid,array2))
+		constant = 0
+		if (varnm(i0:i0) == '-') constant = -1
+		if (varnm(i0:i0) == '+') constant = 1
+		array = array + constant * array2
+	endif
+enddo
+end subroutine get_var_2d
 
 !-----------------------------------------------------------------------
 end module rads_netcdf
