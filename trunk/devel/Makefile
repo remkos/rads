@@ -18,7 +18,7 @@
 include ../config.mk
 
 # Programs to create
-PROGS	= rads_gen_reaper
+PROGS	= rads_gen_reaper rads_gen_saral
 
 # RADS library and linked libraries
 LIB     = ../src/librads.a $(ALTIM)/lib/rssubs.a
