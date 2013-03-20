@@ -375,9 +375,7 @@ character(len=640) :: format_string
 622 format('# ',i4,' -',i4,' : ')
 625 format('# ',i4,7x,': ',a)
 630 format('#')
-635 format(2(1x,i5))
 640 format('# ',a,': ')
-645 format(i4,i5)
 650 format('# nr : ',999i6)
 
 if (.not.first) write (*,*) ! Skip line between passes
@@ -385,24 +383,33 @@ first = .false.
 
 ! Describe data set per variable
 write (*,600) timestamp(), trim(S(1)%command)
-write (*,610) pass, info(1:ncols)%sat
-write (*,615) info(1:ncols)%cycle
+if (out_data .or. out_mean .or. out_sdev) then
+	write (*,610) pass, info(1:ncols)%sat
+	write (*,615) info(1:ncols)%cycle
+else
+	write (*,610) pass, info(1:ntrx)%sat
+	write (*,615) info(1:ntrx)%cycle
+endif
 
 ! Describe variables
 write (*,620)
 i = 1
-do j = 1,nsel
-	write (*,622,advance='no') i,i+ncols-1
-	call rads_long_name_and_units(S(nsat)%sel(j))
-	i = i + ncols
-enddo
+if (ncols > 0) then
+	do j = 1,nsel
+		write (*,622,advance='no') i,i+ncols-1
+		call rads_long_name_and_units(S(nsat)%sel(j))
+		i = i + ncols
+	enddo
+endif
 write (*,625) i,'number of measurements'
 i = i + 1
 write (*,625) i,'record number'
 write (*,630)
 
 ! Build format string
-if (ncols == 1) then
+if (ncols == 0) then
+	format_string = '('
+else if (ncols == 1) then
 	write (format_string,'("(",a,",")') trim(S(nsat)%sel(1)%info%format)
 else
 	write (format_string,'("(",a,",",i3,"(1x,",a,"),")') &
@@ -412,7 +419,7 @@ do i = 2,nsel
 	write (format_string(len_trim(format_string)+1:),'(i3,"(1x,",a,"),")') &
 		ncols,trim(S(nsat)%sel(i)%info%format)
 enddo
-format_string(len_trim(format_string):) = ')'
+format_string(len_trim(format_string)+1:) = '2(1x,i5))'
 
 ! Do a transfer of bit patterns if needed
 if (boz_format) then
@@ -427,19 +434,15 @@ endif
 ! Print out data that are common to some passes
 do k = -nbins,nbins,step
 	if (nr_in_bin(k) == 0) cycle
-	write (*,format_string,advance='no') data(1:ncols,:,k)
-	write (*,635,advance='no') nr_in_bin(k), k
-	write (*,*)
+	write (*,format_string) data(1:ncols,:,k), nr_in_bin(k), k
 enddo
 
 ! Write per-pass stats
 write (*,640,advance='no') 'avg'
-write (*,format_string,advance='no') stat(1:ncols,:)%mean
-write (*,645) S(1)%cycles(1),pass
+write (*,format_string) stat(1:ncols,:)%mean, S(1)%cycles(1), pass
 write (*,640,advance='no') 'std'
-write (*,format_string,advance='no') stat(1:ncols,:)%sum2
-write (*,645) S(1)%cycles(1),pass
-write (*,650) stat(1:ncols,:)%nr,S(1)%cycles(1),pass
+write (*,format_string) stat(1:ncols,:)%sum2, S(1)%cycles(1), pass
+write (*,650) stat(1:ncols,:)%nr, S(1)%cycles(1), pass
 
 end subroutine write_pass_ascii
 
