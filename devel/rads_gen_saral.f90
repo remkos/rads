@@ -213,7 +213,7 @@ files: do
 
 	flags = 0
 	call nc2f ('alt_state_flag_oper',0)			! bit  0: Altimeter Side A/B
-	call nc2f('qual_alt_1hz_off_nadir_angle_wf_ku',1)	! bit  1: Quality off-nadir pointing
+	call nc2f ('qual_alt_1hz_off_nadir_angle_wf_ku',1)	! bit  1: Quality off-nadir pointing
 	call nc2f ('surface_type',2,val=2)			! bit  2: Continental ice
 	call nc2f ('qual_alt_1hz_range_c',3)		! bit  3: Quality dual-frequency iono
 	call nc2f ('surface_type',4,lim=2)			! bit  4: Water/land
@@ -244,13 +244,13 @@ files: do
 	call cpy_var ('swh', 'swh_ka')
 	call cpy_var ('swh_rms', 'swh_rms_ka')
 	call cpy_var ('sig0', 'sig0_ka')
-	call cpy_var ('atmos_corr_sig0', 'dsig0_atten')
+	call cpy_var ('atmos_corr_sig0', 'dsig0_atten_ka')
 	call cpy_var ('off_nadir_angle_wf', 'off_nadir_angle2_wf_ka')
-	call cpy_var ('tb_k', 'tb_k')
-	call cpy_var ('tb_ka', 'tb_ka')
+	call cpy_var ('tb_k', 'tb_238')
+	call cpy_var ('tb_ka', 'tb_370')
 	call cpy_var ('mean_sea_surface', 'mss_cnescls11')
 	call cpy_var ('geoid', 'geoid_egm96')
-	call cpy_var ('bathymetry', 'bathy_dmt2000')
+	call cpy_var ('bathymetry', 'bathy_dtm2000')
 	call cpy_var ('inv_bar_corr', 'inv_bar_static')
 	call cpy_var ('inv_bar_corr+hf_fluctuations_corr', 'inv_bar_mog2d')
 	call cpy_var ('ocean_tide_sol1-load_tide_sol1', 'tide_ocean_got48')
@@ -268,7 +268,7 @@ files: do
 	valid = (d == 0d0)
 	call get_var (ncid, 'peakiness_40hz', d)
 	call mean_1hz (d, valid, a, b)
-	call new_var ('peakiness', a)
+	call new_var ('peakiness_ka', a)
 	a = flags
 	call new_var ('flags', a)
 

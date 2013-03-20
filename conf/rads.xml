@@ -335,21 +335,37 @@ Global RADS configuration file
 	<comment>The reference surface for the orbital altitude rate is MSS</comment>
 </var>
 
-<var name="range_ku" field="601">
-	<long_name>Ku-band range corrected for instr. effects</long_name>
-	<standard_name>altimeter_range</standard_name>
-	<units>m</units>
-	<limits>750d3 850d3</limits>
-	<limits sat="c2">700d3 800d3</limits>
-	<limits sat="j1 j2 pn tx">1300d3 1400d3</limits>
-	<format>f11.3</format>
-	<data>range_ku</data>
-	<compress>int4 1d-4 700d3</compress>
-	<if sat="j1 j2">
-		<format>f12.4</format>
-		<compress>int4 1d-4 1300d3</compress>
-	</if>
-</var>
+<if sat="sa">
+	<var name="range_ka" field="601">
+		<long_name>Ka-band range corrected for instr. effects</long_name>
+		<standard_name>altimeter_range</standard_name>
+		<units>m</units>
+		<limits>750d3 850d3</limits>
+		<format>f11.4</format>
+		<data>range_ka</data>
+		<compress>int4 1d-4 700d3</compress>
+	</var>
+	<alias name="range" field="6">range_ka</alias>
+</if>
+<else>
+	<var name="range_ku" field="601">
+		<long_name>Ku-band range corrected for instr. effects</long_name>
+		<standard_name>altimeter_range</standard_name>
+		<units>m</units>
+		<limits>750d3 850d3</limits>
+		<limits sat="c2">700d3 800d3</limits>
+		<limits sat="j1 j2 pn tx">1300d3 1400d3</limits>
+		<format>f11.3</format>
+		<data>range_ku</data>
+		<compress>int4 1d-4 700d3</compress>
+		<if sat="j1 j2">
+			<format>f12.4</format>
+			<compress>int4 1d-4 1300d3</compress>
+		</if>
+	</var>
+	<alias name="range" field="6">range_ku</alias>
+</else>
+
 <var name="range_c" field="602" sat="j1 j2 tx">
 	<long_name>C-band range corrected for instr. effects</long_name>
 	<standard_name>altimeter_range</standard_name>
@@ -388,7 +404,6 @@ Global RADS configuration file
 	<format>f12.4</format>
 	<compress>int4 1d-4 1300d3</compress>
 </var>
-<alias name="range" field="6">range_ku</alias>
 
 <var name="dry_tropo_ecmwf" field="701" sat="!g1 gs">
 	<long_name>ECMWF dry tropospheric correction</long_name>
@@ -975,16 +990,31 @@ Global RADS configuration file
 </var>
 <alias name="mss" field="16">mss_dtu10</alias>
 
-<var name="swh_ku" field="1701">
-	<long_name>Ku-band significant wave height</long_name>
-	<standard_name>sea_surface_wave_significant_height</standard_name>
-	<units>m</units>
-	<limits>0 8</limits>
-	<limits sat="c2 n1">-0.5 8.0</limits> <!--Due to model bias and noise, allow negative values-->
-	<data>swh_ku</data>
-	<format>f6.3</format>
-	<compress>int2 1d-3</compress>
-</var>
+<if sat="sa">
+	<var name="swh_ka" field="1701">
+		<long_name>Ka-band significant wave height</long_name>
+		<standard_name>sea_surface_wave_significant_height</standard_name>
+		<units>m</units>
+		<limits>0 8</limits>
+		<data>swh_ka</data>
+		<format>f6.3</format>
+		<compress>int2 1d-3</compress>
+	</var>
+	<alias name="swh" field="17">swh_ka</alias>
+</if>
+<else>
+	<var name="swh_ku" field="1701">
+		<long_name>Ku-band significant wave height</long_name>
+		<standard_name>sea_surface_wave_significant_height</standard_name>
+		<units>m</units>
+		<limits>0 8</limits>
+		<limits sat="c2 n1">-0.5 8.0</limits> <!--Due to model bias and noise, allow negative values-->
+		<data>swh_ku</data>
+		<format>f6.3</format>
+		<compress>int2 1d-3</compress>
+	</var>
+	<alias name="swh" field="17">swh_ku</alias>
+</else>
 <var name="swh_c" field="1702" sat="j1 j2 tx">
 	<long_name>C-band significant wave height</long_name>
 	<standard_name>sea_surface_wave_significant_height</standard_name>
@@ -1012,17 +1042,31 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<alias name="swh" field="17">swh_ku</alias>
 
-<var name="sig0_ku" field="1801">
-	<long_name>Ku-band backscatter coefficient</long_name>
-	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
-	<units>dB</units>
-	<limits>6 27</limits>
-	<data>sig0_ku</data>
-	<format>f6.3</format>
-	<compress>int2 1d-3</compress>
-</var>
+<if sat="sa">
+	<var name="sig0_ka" field="1801">
+		<long_name>Ka-band backscatter coefficient</long_name>
+		<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
+		<units>dB</units>
+		<limits>6 27</limits>
+		<data>sig0_ka</data>
+		<format>f6.3</format>
+		<compress>int2 1d-3</compress>
+	</var>
+	<alias name="sig0" field="18">sig0_ka</alias>
+</if>
+<else>
+	<var name="sig0_ku" field="1801">
+		<long_name>Ku-band backscatter coefficient</long_name>
+		<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
+		<units>dB</units>
+		<limits>6 27</limits>
+		<data>sig0_ku</data>
+		<format>f6.3</format>
+		<compress>int2 1d-3</compress>
+	</var>
+	<alias name="sig0" field="18">sig0_ku</alias>
+</else>
 <var name="sig0_c" field="1802" sat="j1 j2 tx">
 	<long_name>C-band backscatter coefficient</long_name>
 	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
@@ -1067,7 +1111,6 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<alias name="sig0" field="18">sig0_ku</alias>
 
 <var name="wind_speed_alt" field="1901">
 	<long_name>altimeter wind speed</long_name>
@@ -1132,28 +1175,44 @@ Global RADS configuration file
 <alias name="wind_speed" field="19">wind_speed_alt</alias>
 
 <var name="range_rms_norm" field="2001">
-	<long_name>normalized std dev of Ku-band range</long_name>
+	<long_name>normalized std dev of range</long_name>
 	<units>m</units>
 	<limits>0.0 0.4</limits>
-	<data>range_rms_ku range_numval_ku 2 SUB SQRT DIV</data>
+	<data>range_rms range_numval 2 SUB SQRT DIV</data>
 	<format>f6.4</format>
 	<compress>int2 1d-4</compress>
 </var>
-<var name="range_rms_ku" field="2002">
-	<long_name>std dev of Ku-band range</long_name>
-	<units>m</units>
-	<limits>0.0 0.4</limits>
-	<limits sat="g1 gs">0.0 0.25</limits> <!--GFO and Geosat on-board a-b trackers smooth the data-->
-	<limits sat="j1">0.0 0.17</limits> <!--Retracker noise on Jason-1 is lower than others-->
-	<limits sat="j2">0.00 0.17</limits> <!--Retracker noise on Jason-2 is lower than others-->
-	<limits sat="c2">0.00 0.18</limits> <!--CryoSat-2 needs a little extra to allow PLRM-->
-	<limits sat="tx">0.00 0.15</limits> <!--TOPEX a-b tracker leads to much lower std dev than other satellites-->
-	<data>range_rms_ku</data>
-	<format>f6.4</format>
-	<default>0</default>
-	<compress>int2 1d-4</compress>
-	<comment>Based on valid high-rate measurements</comment>
-</var>
+<if sat="sa">
+	<var name="range_rms_ka" field="2002">
+		<long_name>std dev of Ka-band range</long_name>
+		<units>m</units>
+		<limits>0.0 0.4</limits>
+		<data>range_rms_ka</data>
+		<format>f6.4</format>
+		<default>0</default>
+		<compress>int2 1d-4</compress>
+		<comment>Based on valid high-rate measurements</comment>
+	</var>
+	<alias name="range_rms" field="20">range_rms_ka</alias>
+</if>
+<else>
+	<var name="range_rms_ku" field="2002">
+		<long_name>std dev of Ku-band range</long_name>
+		<units>m</units>
+		<limits>0.0 0.4</limits>
+		<limits sat="g1 gs">0.0 0.25</limits> <!--GFO and Geosat on-board a-b trackers smooth the data-->
+		<limits sat="j1">0.0 0.17</limits> <!--Retracker noise on Jason-1 is lower than others-->
+		<limits sat="j2">0.00 0.17</limits> <!--Retracker noise on Jason-2 is lower than others-->
+		<limits sat="c2">0.00 0.18</limits> <!--CryoSat-2 needs a little extra to allow PLRM-->
+		<limits sat="tx">0.00 0.15</limits> <!--TOPEX a-b tracker leads to much lower std dev than other satellites-->
+		<data>range_rms_ku</data>
+		<format>f6.4</format>
+		<default>0</default>
+		<compress>int2 1d-4</compress>
+		<comment>Based on valid high-rate measurements</comment>
+	</var>
+	<alias name="range_rms" field="20">range_rms_ku</alias>
+</else>
 <var name="range_rms_c" field="2004" sat="j1 j2">
 	<long_name>std dev of C-band range</long_name>
 	<units>m</units>
@@ -1182,18 +1241,32 @@ Global RADS configuration file
 	<compress>int2 1d-4</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<alias name="range_rms" field="20">range_rms_ku</alias>
 
-<var name="range_numval_ku" field="2101">
-	<long_name>number of valid Ku-band measurements</long_name>
-	<limits>16.5 20.5</limits>
-	<limits sat="j1 j2">15.5 20.5</limits>
-	<limits sat="g1 gs tx">8.5 10.5</limits> <!--GFO, Geosat, TOPEX are only 10 Hz-->
-	<data>range_numval_ku</data>
-	<default>20</default>
-	<format>f3.0</format>
-	<compress>int1</compress>
-</var>
+<if sat="sa">
+	<var name="range_numval_ka" field="2101">
+		<long_name>number of valid Ka-band measurements</long_name>
+		<limits>32.5 40.5</limits>
+		<data>range_numval_ka</data>
+		<default>40</default>
+		<format>f3.0</format>
+		<compress>int1</compress>
+	</var>
+	<alias name="range_numval" field="21">range_numval_ka</alias>
+</if>
+<else>
+	<var name="range_numval_ku" field="2101">
+		<long_name>number of valid Ku-band measurements</long_name>
+		<limits>16.5 20.5</limits>
+		<limits sat="j1 j2">15.5 20.5</limits>
+		<limits sat="g1 gs tx">8.5 10.5</limits> <!--GFO, Geosat, TOPEX are only 10 Hz-->
+		<data>range_numval_ku</data>
+		<default>20</default>
+		<format>f3.0</format>
+		<compress>int1</compress>
+	</var>
+	<alias name="range_numval" field="21">range_numval_ku</alias>
+</else>
+
 <var name="range_numval_c" field="2102" sat="j1 j2">
 	<long_name>number of valid C-band measurements</long_name>
 	<limits>16.5 20.5</limits>
@@ -1208,7 +1281,6 @@ Global RADS configuration file
 	<format>f3.0</format>
 	<compress>int1</compress>
 </var>
-<alias name="range_numval" field="21">range_numval_ku</alias>
 
 <var name="topo_dtm2000" field="2202" sat="j1 j2 n1">
 	<long_name>DTM2000 topography</long_name>
@@ -1307,7 +1379,7 @@ Global RADS configuration file
 	</var>
 	<alias name="tb2" field="23">tb_222</alias>
 </if>
-<if sat="e1 e2 j1 j2 n1">
+<if sat="e1 e2 j1 j2 n1 sa">
 	<var name="tb_238" field="2302">
 		<long_name>radiometer brightness temperature (23.8 GHz)</long_name>
 		<standard_name>surface_brightness_temperature</standard_name>
@@ -1347,7 +1419,7 @@ Global RADS configuration file
 	</var>
 	<alias name="tb3">tb_365</alias>
 </if>
-<if sat="g1 pn tx">
+<if sat="g1 pn tx sa">
 	<var name="tb_370" field="2303">
 		<long_name>radiometer brightness temperature (37.0 GHz)</long_name>
 		<standard_name>surface_brightness_temperature</standard_name>
@@ -1372,6 +1444,15 @@ Global RADS configuration file
 	</var>
 	<alias name="peakiness" field="24">peakiness_ku</alias>
 </if>
+<elseif sat="sa">
+	<var name="peakiness_ka" field="2401">
+		<long_name>Ka-band peakiness</long_name>
+		<data>peakiness_ka</data>
+		<format>f6.2</format>
+		<compress>int2 1d-2</compress>
+	</var>
+	<alias name="peakiness" field="24">peakiness_ka</alias>
+</elseif>
 <var name="peakiness_s" field="2402" sat="n1">
 	<long_name>S-band peakiness</long_name>
 	<limits>1.4 1.9</limits>
@@ -1476,7 +1557,7 @@ Global RADS configuration file
 	<compress>int1</compress>
 </var>
 
-<var name="qual_range_ku" field="2511">
+<var name="qual_range" field="2511">
 	<long_name>quality of the range estimate</long_name>
 	<flag_values>ok suspect</flag_values>
 	<flag_values sat="gs">ok some_10Hz_measurements_invalid</flag_values>
@@ -1485,7 +1566,7 @@ Global RADS configuration file
 	<compress>int1</compress>
 </var>
 
-<var name="qual_swh_ku" field="2512" sat="!n1">
+<var name="qual_swh" field="2512" sat="!n1">
 	<long_name>quality of the wave height estimate</long_name>
 	<long_name sat="gs">quality of sea state bias</long_name>
 	<flag_values>ok suspect</flag_values>
@@ -1494,7 +1575,7 @@ Global RADS configuration file
 	<compress>int1</compress>
 </var>
 
-<var name="qual_sig0_ku" field="2513">
+<var name="qual_sig0" field="2513">
 	<long_name>quality of the backscatter coefficient estimate</long_name>
 	<long_name sat="gs">quality of wind speed estimate</long_name>
 	<flag_values>ok suspect</flag_values>
@@ -1639,27 +1720,43 @@ Global RADS configuration file
 </var>
 <alias name="drange" field="27" sat="c2 e1 e2 gs n1">drange_ku</alias>
 
-<var name="swh_rms_ku_norm" field="2801">
-	<long_name>normalized std dev of Ku-band significant wave height</long_name>
+<var name="swh_rms_norm" field="2801">
+	<long_name>normalized std dev of significant wave height</long_name>
 	<units>m</units>
 	<limits>0.0 2.1</limits>
-	<data>swh_rms_ku range_numval_ku 1 SUB SQRT DIV</data>
+	<data>swh_rms range_numval 1 SUB SQRT DIV</data>
 	<format>f5.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var name="swh_rms_ku" field="2802">
-	<long_name>std dev of Ku-band significant wave height</long_name>
-	<units>m</units>
-	<limits>0.0 2.1</limits>
-	<limits sat="g1">0.0 0.5</limits> <!--GFO on-board a-b tracker smoothes the data-->
-	<limits sat="j1 j2">0.0 1.5</limits> <!--Retracker noise on Jason-1 is lower than others-->
-	<limits sat="tx">0.0 0.9</limits> <!--TOPEX a-b tracker leads to much lower std dev than other satellites-->
-	<data>swh_rms_ku</data>
-	<format>f5.3</format>
-	<default>0</default>
-	<compress>int2 1d-3</compress>
-	<comment>Based on valid high-rate measurements</comment>
-</var>
+<if sat="sa">
+	<var name="swh_rms_ka" field="2802">
+		<long_name>std dev of Ka-band significant wave height</long_name>
+		<units>m</units>
+		<limits>0.0 2.1</limits>
+		<data>swh_rms_ka</data>
+		<format>f5.3</format>
+		<default>0</default>
+		<compress>int2 1d-3</compress>
+		<comment>Based on valid high-rate measurements</comment>
+	</var>
+	<alias name="swh_rms" field="28">swh_rms_ka</alias>
+</if>
+<else>
+	<var name="swh_rms_ku" field="2802">
+		<long_name>std dev of Ku-band significant wave height</long_name>
+		<units>m</units>
+		<limits>0.0 2.1</limits>
+		<limits sat="g1">0.0 0.5</limits> <!--GFO on-board a-b tracker smoothes the data-->
+		<limits sat="j1 j2">0.0 1.5</limits> <!--Retracker noise on Jason-1 is lower than others-->
+		<limits sat="tx">0.0 0.9</limits> <!--TOPEX a-b tracker leads to much lower std dev than other satellites-->
+		<data>swh_rms_ku</data>
+		<format>f5.3</format>
+		<default>0</default>
+		<compress>int2 1d-3</compress>
+		<comment>Based on valid high-rate measurements</comment>
+	</var>
+	<alias name="swh_rms" field="28">swh_rms_ku</alias>
+</else>
 <var name="swh_rms_c" field="2804" sat="j1 j2 tx">
 	<long_name>std dev of C-band significant wave height</long_name>
 	<units>m</units>
@@ -1688,25 +1785,40 @@ Global RADS configuration file
 	<compress>int2 1d-3</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<alias name="swh_rms" field="28">swh_rms_ku</alias>
 
-<var name="sig0_rms_ku_norm" field="2901">
-	<long_name>normalized std dev of Ku-band backscatter coefficient</long_name>
+<var name="sig0_rms_norm" field="2901">
+	<long_name>normalized std dev of backscatter coefficient</long_name>
 	<units>dB</units>
-	<data>sig0_rms_ku range_numval_ku 1 SUB SQRT DIV</data>
+	<data>sig0_rms range_numval 1 SUB SQRT DIV</data>
 	<format>f5.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var name="sig0_rms_ku" field="2902">
-	<long_name>std dev of Ku-band backscatter coefficient</long_name>
-	<units>dB</units>
-	<data>sig0_rms_ku</data>
-	<format>f5.3</format>
-	<compress>int2 1d-3</compress>
-	<limits>0.0 1.0</limits>
-	<default>0</default>
-	<comment>Based on valid high-rate measurements</comment>
-</var>
+<if sat="sa">
+	<var name="sig0_rms_ka" field="2902">
+		<long_name>std dev of Ka-band backscatter coefficient</long_name>
+		<units>dB</units>
+		<data>sig0_rms_ka</data>
+		<format>f5.3</format>
+		<compress>int2 1d-3</compress>
+		<limits>0.0 1.0</limits>
+		<default>0</default>
+		<comment>Based on valid high-rate measurements</comment>
+	</var>
+	<alias name="sig0_rms" field="29">sig0_rms_ka</alias>
+</if>
+<else>
+	<var name="sig0_rms_ku" field="2902">
+		<long_name>std dev of Ku-band backscatter coefficient</long_name>
+		<units>dB</units>
+		<data>sig0_rms_ku</data>
+		<format>f5.3</format>
+		<compress>int2 1d-3</compress>
+		<limits>0.0 1.0</limits>
+		<default>0</default>
+		<comment>Based on valid high-rate measurements</comment>
+	</var>
+	<alias name="sig0_rms" field="29">sig0_rms_ku</alias>
+</else>
 <var name="sig0_rms_c" field="2904" sat="j1 j2 tx">
 	<long_name>std dev of C-band backscatter coefficient</long_name>
 	<units>dB</units>
@@ -1733,9 +1845,8 @@ Global RADS configuration file
 	<default>0</default>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<alias name="sig0_rms" field="29">sig0_rms_ku</alias>
 
-<var name="off_nadir_angle_wf_ku" field="3001" sat="!n1">
+<var name="off_nadir_angle_wf_ku" field="3001" sat="!n1 sa">
 	<long_name>off-nadir pointing angle from waveform</long_name>
 	<units>degrees</units>
 	<data>off_nadir_angle2_wf_ku SQRT</data>
@@ -1743,21 +1854,35 @@ Global RADS configuration file
 	<format>f5.3</format>
 	<compress>int2 1d-3</compress>
 </var>
-<var name="off_nadir_angle2_wf_ku" field="3002">
-	<long_name>off-nadir pointing angle squared from waveform</long_name>
-	<units>degrees^2</units>
-	<data>off_nadir_angle2_wf_ku</data>
-	<data sat="gs pn tx">off_nadir_angle_wf_ku SQR</data> <!--Compute attitude^2 from attitude-->
-	<format>f7.4</format>
-	<default>0</default>
-	<compress>int2 1d-4</compress>
-	<limits sat="j1">-0.20 0.64</limits> <!--Attitude^2 on Jason-1 is pretty bad-->
-	<limits sat="j2">-0.20 0.64</limits> <!--Attitude^2 on Jason-2 is pretty bad-->
-	<if sat="e2">
-		<long_name>off-nadir angle squared from waveform (smoothed)</long_name>
-		<limits>-0.05 0.05</limits>
-	</if>
-</var>
+<if sat="sa">
+	<var name="off_nadir_angle2_wf_ka" field="3002">
+		<long_name>off-nadir pointing angle squared from waveform</long_name>
+		<units>degrees^2</units>
+		<data>off_nadir_angle2_wf_ka</data>
+		<format>f7.4</format>
+		<default>0</default>
+		<compress>int2 1d-4</compress>
+	</var>
+	<alias name="attitude" field="30">off_nadir_angle2_wf_ka</alias>
+</if>
+<else>
+	<var name="off_nadir_angle2_wf_ku" field="3002">
+		<long_name>off-nadir pointing angle squared from waveform</long_name>
+		<units>degrees^2</units>
+		<data>off_nadir_angle2_wf_ku</data>
+		<data sat="gs pn tx">off_nadir_angle_wf_ku SQR</data> <!--Compute attitude^2 from attitude-->
+		<format>f7.4</format>
+		<default>0</default>
+		<compress>int2 1d-4</compress>
+		<limits sat="j1">-0.20 0.64</limits> <!--Attitude^2 on Jason-1 is pretty bad-->
+		<limits sat="j2">-0.20 0.64</limits> <!--Attitude^2 on Jason-2 is pretty bad-->
+		<if sat="e2">
+			<long_name>off-nadir angle squared from waveform (smoothed)</long_name>
+			<limits>-0.05 0.05</limits>
+		</if>
+	</var>
+	<alias name="attitude" field="30">off_nadir_angle2_wf_ku</alias>
+</else>
 <var name="off_nadir_angle_pf" field="3003" sat="c2 j1 j2 pn">
 	<long_name>off-nadir pointing angle from platform</long_name>
 	<units>degrees</units>
@@ -1804,7 +1929,6 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 </var>
-<alias name="attitude" field="30">off_nadir_angle2_wf_ku</alias>
 
 <var name="dswh_ku" field="3101" sat="tx">
 	<long_name>Ku-band significant wave height bias</long_name>
@@ -1858,6 +1982,14 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<default>0</default>
 	<compress>int2 1d-3</compress>
+	<comment>Bias already added to backscatter coefficient</comment>
+</var>
+<var name="dsig0_atmos_ka" field="3203" sat="sa">
+	<long_name>Ka-band backscatter coefficient correction due to atmosphere/attitude</long_name>
+	<units>dB</units>
+	<data>dsig0_atmos_ka</data>
+	<format>f6.2</format>
+	<compress>int1 1d-2</compress>
 	<comment>Bias already added to backscatter coefficient</comment>
 </var>
 <var name="dsig0_atmos_ku" field="3203" sat="e1 e2 j1 j2 n1 pn tx">
@@ -2503,7 +2635,6 @@ Global RADS configuration file
 		<cycles>369 481</cycles>
 		<repeat>9.915642 254</repeat>
 		<ref_pass>2002-09-20T03:08:57 98.50 369 1</ref_pass>
-		<start_time>1992-09-25</start_time>
 		<start_time>2002-09-20T02:40:50</start_time>
 	</phase>
 </if>
