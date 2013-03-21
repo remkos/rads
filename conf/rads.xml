@@ -259,7 +259,7 @@ Global RADS configuration file
 	</if>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_gdrd" field="418" sat="c2 j1 j2 n1">
+<var name="alt_gdrd" field="418" sat="c2 j1 j2 n1 sa">
 	<long_name>GDR-D orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>GDR-D standards</source>
@@ -315,7 +315,7 @@ Global RADS configuration file
 <alias name="alt" field="4" sat="g1">alt_pgs7777</alias>
 <alias name="alt" field="4" sat="gs">alt_gdrcp</alias>
 <alias name="alt" field="4" sat="j1">alt_gdrd alt_eiggl04s</alias>
-<alias name="alt" field="4" sat="j2">alt_gdrd</alias>
+<alias name="alt" field="4" sat="j2 sa">alt_gdrd</alias>
 <alias name="alt" field="4" sat="n1">alt_gdrd alt_gdrcp</alias>
 <alias name="alt" field="4" sat="pn tx">alt_gdrcp alt_jgm3</alias>
 
@@ -663,7 +663,7 @@ Global RADS configuration file
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
 <alias name="iono" field="9" sat="e1 gs pn">iono_nic09</alias>
-<alias name="iono" field="9" sat="c2 e2 g1">iono_gim iono_nic09</alias>
+<alias name="iono" field="9" sat="c2 e2 g1 sa">iono_gim iono_nic09</alias>
 <alias name="iono" field="9" sat="j1 j2 n1 tx">iono_alt_smooth iono_gim iono_nic09</alias>
 
 <var name="inv_bar_static" field="1002">
@@ -841,7 +841,7 @@ Global RADS configuration file
 	<comment>Variation of absolute sea level due to polar motion</comment>
 </var>
 
-<var name="ssb_bm3" field="1501" sat="c2 e1 e2 g1 gs pn tx">
+<var name="ssb_bm3" field="1501" sat="c2 e1 e2 g1 gs pn sa tx">
 	<long_name>BM3 sea state bias</long_name>
 	<long_name sat="pn tx">BM4 sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
@@ -906,7 +906,7 @@ Global RADS configuration file
 	<compress>int2 1d-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
-<alias name="ssb" field="15" sat="e1 e2 pn">ssb_bm3</alias>
+<alias name="ssb" field="15" sat="e1 e2 pn sa">ssb_bm3</alias>
 <alias name="ssb" field="15" sat="c2 g1 gs">ssb_hyb</alias>
 <alias name="ssb" field="15" sat="j1 j2 n1 tx">ssb_cls</alias>
 
@@ -938,16 +938,30 @@ Global RADS configuration file
 	<compress>int4 1d-4</compress>
 </var>
 -->
-<var name="geoid_egm2008" field="1610">
-	<long_name>EGM2008 geoid height</long_name>
-	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
-	<source>EGM2008</source>
-	<units>m</units>
-	<data>geoid_egm2008</data>
-	<format>f10.4</format>
-	<compress>int4 1d-4</compress>
-</var>
-<alias name="geoid">geoid_egm2008</alias>
+<if sat="sa">
+	<var name="geoid_egm96" field="1610">
+		<long_name>EGM96 geoid height</long_name>
+		<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
+		<source>EGM96</source>
+		<units>m</units>
+		<data>geoid_egm96</data>
+		<format>f10.4</format>
+		<compress>int4 1d-4</compress>
+	</var>
+	<alias name="geoid">geoid_egm96</alias>
+</if>
+<else>
+	<var name="geoid_egm2008" field="1610">
+		<long_name>EGM2008 geoid height</long_name>
+		<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
+		<source>EGM2008</source>
+		<units>m</units>
+		<data>geoid_egm2008</data>
+		<format>f10.4</format>
+		<compress>int4 1d-4</compress>
+	</var>
+	<alias name="geoid">geoid_egm2008</alias>
+</else>
 <var name="mss_egm2008" field="1611">
 	<long_name>EGM2008 mean sea surface height</long_name>
 	<source>EGM2008</source>
@@ -989,6 +1003,7 @@ Global RADS configuration file
 	<compress>int4 1d-4</compress>
 </var>
 <alias name="mss" field="16">mss_dtu10</alias>
+<alias name="mss" field="16" sat="sa">mss_cnescls11</alias>
 
 <if sat="sa">
 	<var name="swh_ka" field="1701">
@@ -1282,7 +1297,7 @@ Global RADS configuration file
 	<compress>int1</compress>
 </var>
 
-<var name="topo_dtm2000" field="2202" sat="j1 j2 n1">
+<var name="topo_dtm2000" field="2202" sat="j1 j2 n1 sa">
 	<long_name>DTM2000 topography</long_name>
 	<source>DTM2000</source>
 	<units>m</units>
@@ -1419,7 +1434,7 @@ Global RADS configuration file
 	</var>
 	<alias name="tb3">tb_365</alias>
 </if>
-<if sat="g1 pn tx sa">
+<if sat="g1 pn sa tx">
 	<var name="tb_370" field="2303">
 		<long_name>radiometer brightness temperature (37.0 GHz)</long_name>
 		<standard_name>surface_brightness_temperature</standard_name>
@@ -2042,7 +2057,7 @@ Global RADS configuration file
 </var>
 <alias name="dsig0" field="32" sat="e1 e2 tx">dsig0_ku</alias>
 
-<var name="liquid_water" field="3301 33" sat="e1 e2 j1 j2 n1 pn tx">
+<var name="liquid_water" field="3301 33" sat="e1 e2 j1 j2 n1 pn sa tx">
 	<long_name>radiometer liquid water content</long_name>
 	<standard_name>atmosphere_cloud_liquid_water_content</standard_name>
 	<units>kg/m^2</units>
@@ -2051,7 +2066,7 @@ Global RADS configuration file
 	<compress>int2 1d-2</compress>
 </var>
 
-<var name="water_vapor_content" field="3302" sat="e1 e2">
+<var name="water_vapor_content" field="3302" sat="e1 e2 sa">
 	<long_name>radiometer water vapor content</long_name>
 	<standard_name>atmosphere_water_vapor_content</standard_name>
 	<units>kg/m^2</units>
@@ -2650,7 +2665,7 @@ Global RADS configuration file
 		<mission>Multi-disciplinary Phase</mission>
 		<cycles>1 99</cycles>
 		<repeat>35.0 1002</repeat>
-		<ref_pass>XXXXXXXXXXXXXXXXXXXXXXXXXXXXX</ref_pass>
+		<ref_pass>2013-03-17 16:14:00 207.8 1 99</ref_pass>
 		<start_time>2012-02-25</start_time>
 	</phase>
 </if>
