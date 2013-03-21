@@ -140,18 +140,14 @@ do
 	end select
 enddo
 
+! Initialise
+
+call synopsis ('--head')
+call rads_init (S, 'sa', verbose)
+
 !----------------------------------------------------------------------
 ! Read all file names from standard input
 !----------------------------------------------------------------------
-
-! Start reading with at least first file
-
-read (*,550,iostat=ios) infile
-if (ios /= 0) then
-	call synopsis ('--help')
-else
-	call synopsis ('--head')
-endif
 
 files: do
 	read (*,550,iostat=ios) infile
@@ -208,22 +204,19 @@ files: do
 ! Allocate variables
 
 	allocate (a(nrec),b(nrec),d(40,nrec),valid(40,nrec),flags(nrec))
+	nvar = 0
 
 ! Compile flag bits
 
 	flags = 0
-	call nc2f ('alt_state_flag_oper',0)			! bit  0: Altimeter Side A/B
-	call nc2f ('qual_alt_1hz_off_nadir_angle_wf_ku',1)	! bit  1: Quality off-nadir pointing
+	call nc2f ('qual_alt_1hz_off_nadir_angle_wf',1)	! bit  1: Quality off-nadir pointing
 	call nc2f ('surface_type',2,val=2)			! bit  2: Continental ice
-	call nc2f ('qual_alt_1hz_range_c',3)		! bit  3: Quality dual-frequency iono
 	call nc2f ('surface_type',4,lim=2)			! bit  4: Water/land
 	call nc2f ('surface_type',5,lim=1)			! bit  5: Ocean/other
 	call nc2f ('rad_surf_type',6,lim=2)			! bit  6: Radiometer land flag
 	call nc2f ('ice_flag',7)					! bit  7: Ice flag
-	call nc2f ('rain_flag',8)					! bit  8: Rain flag
-	call nc2f ('qual_rad_1hz_tb187',9)			! bit  9: Quality 18.7 and 23.8 GHz channel
-	call nc2f ('qual_rad_1hz_tb238',9)
-	call nc2f ('qual_rad_1hz_tb340',10)			! bit 10: Quality 34.0 GHz channel
+	call nc2f ('qual_rad_1hz_tb_k',9)			! bit  9: Quality 23.8 GHz channel
+	call nc2f ('qual_rad_1hz_tb_ka',10)			! bit 10: Quality 37.0 GHz channel
 
 ! Convert all the necessary fields to RADS
 
@@ -244,17 +237,17 @@ files: do
 	call cpy_var ('swh', 'swh_ka')
 	call cpy_var ('swh_rms', 'swh_rms_ka')
 	call cpy_var ('sig0', 'sig0_ka')
-	call cpy_var ('atmos_corr_sig0', 'dsig0_atten_ka')
+	call cpy_var ('atmos_corr_sig0', 'dsig0_atmos_ka')
 	call cpy_var ('off_nadir_angle_wf', 'off_nadir_angle2_wf_ka')
 	call cpy_var ('tb_k', 'tb_238')
 	call cpy_var ('tb_ka', 'tb_370')
 	call cpy_var ('mean_sea_surface', 'mss_cnescls11')
 	call cpy_var ('geoid', 'geoid_egm96')
-	call cpy_var ('bathymetry', 'bathy_dtm2000')
+	call cpy_var ('bathymetry', 'topo_dtm2000')
 	call cpy_var ('inv_bar_corr', 'inv_bar_static')
 	call cpy_var ('inv_bar_corr+hf_fluctuations_corr', 'inv_bar_mog2d')
 	call cpy_var ('ocean_tide_sol1-load_tide_sol1', 'tide_ocean_got48')
-	call cpy_var ('ocean_tide_sol2-load_tide_sol2', 'tide_ocean_fes2004')
+	call cpy_var ('ocean_tide_sol2-load_tide_sol2', 'tide_ocean_fes04')
 	call cpy_var ('load_tide_sol1', 'tide_load_got48')
 	call cpy_var ('load_tide_sol2', 'tide_load_fes04')
 	call cpy_var ('solid_earth_tide', 'tide_solid')
@@ -380,7 +373,7 @@ integer(twobyteint) :: flag(mrec),flag2d(1:1,1:nrec)
 integer(fourbyteint) :: i,ival,ndims
 
 if (nf90_inq_varid(ncid,varnm,varid) /= nf90_noerr) then
-	write (*,'("No such variable :",a)') trim(varnm)
+	write (*,'("No such variable: ",a)') trim(varnm)
 	return
 endif
 call nfs(nf90_inquire_variable(ncid,varid,ndims=ndims))
