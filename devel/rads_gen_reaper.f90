@@ -164,7 +164,7 @@ enddo
 ! Read all file names from standard input
 !----------------------------------------------------------------------
 
-! Start reading with at least first file
+! Start reading at least first file
 
 read (*,550,iostat=ios) infile
 if (ios /= 0) then
