@@ -79,7 +79,7 @@ use rads_devel
 
 ! Command line arguments
 
-integer(fourbyteint) :: verbose=0, c0=0, c1=999, ios
+integer(fourbyteint) :: verbose=0, c0=0, c1=999, ios, i
 real(eightbytereal) :: t0, t1
 character(160) :: infile, arg
 character(20) :: optopt, optarg
@@ -199,7 +199,8 @@ files: do
 	P%start_time = strp1985f(arg)
 	call nfs(nf90_get_att(ncid,nf90_global,'last_meas_time',arg))
 	P%end_time = strp1985f(arg)
-	P%original = infile
+	i = index(infile, '/', .true.)
+	P%original = infile(i+1:)
 
 ! Allocate variables
 
@@ -217,6 +218,10 @@ files: do
 	call nc2f ('ice_flag',7)					! bit  7: Ice flag
 	call nc2f ('qual_rad_1hz_tb_k',9)			! bit  9: Quality 23.8 GHz channel
 	call nc2f ('qual_rad_1hz_tb_ka',10)			! bit 10: Quality 37.0 GHz channel
+	call nc2f ('qual_alt_1hz_range',11)			! bit 11: Quality of range
+	call nc2f ('qual_alt_1hz_swh',12)			! bit 12: Quality of SWH
+	call nc2f ('qual_alt_1hz_sig0',13)			! bit 13: Quality of sigma0
+!	call nc2f ('orb_state_flag_diode',15,lim=3)	! bit 15: Quality of DIODE tracking
 
 ! Convert all the necessary fields to RADS
 

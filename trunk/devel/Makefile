@@ -18,11 +18,14 @@
 include ../config.mk
 
 # Programs to create
-PROGS	= rads_gen_reaper rads_gen_saral
+PROGS	= rads_gen_reaper rads_gen_saral ogdrsplit
 
 # RADS library and linked libraries
 LIB     = ../src/librads.a $(ALTIM)/lib/rssubs.a
 LDLIBS  = $(NETCDF_LIB)
+
+# Shell scripts
+SCRIPTS = rads_gen_saral_new.sh
 
 #-----------------------------------------------------------------------
 # What to create?
@@ -33,6 +36,7 @@ all:	$(PROGS)
 install:	all
 	$(INSTALL_DIR) $(bindir) $(datadir)/conf
 	$(INSTALL_PROGRAM) $(PROGS) $(bindir)
+	$(INSTALL_SCRIPT) $(SCRIPTS) $(bindir)
 	$(INSTALL_DATA) *.xml $(datadir)/conf
 
 man:	$(MAN)
