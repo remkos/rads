@@ -939,7 +939,7 @@ Global RADS configuration file
 </var>
 -->
 <if sat="sa">
-	<var name="geoid_egm96" field="1610">
+	<var name="geoid_egm96" field="1601">
 		<long_name>EGM96 geoid height</long_name>
 		<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
 		<source>EGM96</source>
@@ -1610,7 +1610,7 @@ Global RADS configuration file
 	<compress>int1</compress>
 </var>
 
-<var name="qual_orbit" field="2515 25" sat="c2 e1 e2 j1 pn">
+<var name="qual_orbit" field="2515 25" sat="c2 e1 e2 j1 pn sa">
 	<long_name>quality of the orbit determination</long_name>
 	<flag_values>ok degraded</flag_values>
 	<data source="flags">15</data>
@@ -1626,6 +1626,7 @@ Global RADS configuration file
 	<limits sat="gs">51176 0</limits>
 	<limits sat="n1">36712 0</limits>
 	<limits sat="pn">480 0</limits>
+	<limits sat="sa">160 0</limits>
 	<limits sat="tx">49640 0</limits>
 	<data>flags</data>
 	<!-- In future releases without netCDF variable "flags", use this:
