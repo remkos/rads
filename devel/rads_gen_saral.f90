@@ -89,6 +89,7 @@ character(80), parameter :: optlist='vC: debug: sat: cycle: t: mjd: sec: ymd: do
 
 integer(fourbyteint) :: cyclenr, passnr, varid
 real(eightbytereal) :: equator_time
+logical :: ogdr
 
 ! Data variables
 
@@ -175,7 +176,8 @@ files: do
 		cycle files
 	endif
 
-	call nfs(nf90_get_att(ncid,nf90_global,'history',arg))
+	call nfs(nf90_get_att(ncid,nf90_global,'title',arg))
+	ogdr = (arg(:4) == 'OGDR')
 	call nfs(nf90_get_att(ncid,nf90_global,'cycle_number',cyclenr))
 	call nfs(nf90_get_att(ncid,nf90_global,'pass_number',passnr))
 	call nfs(nf90_get_att(ncid,nf90_global,'equator_time',arg))
@@ -221,7 +223,11 @@ files: do
 	call nc2f ('qual_alt_1hz_range',11)			! bit 11: Quality of range
 	call nc2f ('qual_alt_1hz_swh',12)			! bit 12: Quality of SWH
 	call nc2f ('qual_alt_1hz_sig0',13)			! bit 13: Quality of sigma0
-	call nc2f ('orb_state_flag_diode',15,lim=2)	! bit 15: Quality of DIODE tracking
+	if (ogdr) then
+		call nc2f ('orb_state_flag_diode',15,lim=2)	! bit 15: Quality of DIODE orbit
+	else
+		call nc2f ('orb_state_flag_rest',15,neq=3)	! bit 15: Quality of restituted orbit
+	endif
 
 ! Convert all the necessary fields to RADS
 
@@ -250,7 +256,11 @@ files: do
 	call cpy_var ('geoid', 'geoid_egm96')
 	call cpy_var ('bathymetry', 'topo_dtm2000')
 	call cpy_var ('inv_bar_corr', 'inv_bar_static')
-	call cpy_var ('inv_bar_corr+hf_fluctuations_corr', 'inv_bar_mog2d')
+	if (ogdr) then
+		call cpy_var ('inv_bar_corr', 'inv_bar_mog2d')
+	else
+		call cpy_var ('inv_bar_corr+hf_fluctuations_corr', 'inv_bar_mog2d')
+	endif
 	call cpy_var ('ocean_tide_sol1-load_tide_sol1', 'tide_ocean_got48')
 	call cpy_var ('ocean_tide_sol2-load_tide_sol2', 'tide_ocean_fes04')
 	call cpy_var ('load_tide_sol1', 'tide_load_got48')
