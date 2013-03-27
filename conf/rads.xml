@@ -1457,6 +1457,7 @@ Global RADS configuration file
 	<var name="peakiness_ka" field="2401">
 		<long_name>Ka-band peakiness</long_name>
 		<data>peakiness_ka</data>
+		<limits>3.2 6.0</limits>
 		<format>f6.2</format>
 		<compress>int2 1d-2</compress>
 	</var>
