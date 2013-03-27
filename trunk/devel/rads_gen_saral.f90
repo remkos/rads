@@ -282,6 +282,7 @@ files: do
 
 ! Dump the data
 
+	call nfs(nf90_close(ncid))
 	call put_rads
 	deallocate (a, b, d, valid, flags)
 
