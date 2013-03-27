@@ -221,7 +221,7 @@ files: do
 	call nc2f ('qual_alt_1hz_range',11)			! bit 11: Quality of range
 	call nc2f ('qual_alt_1hz_swh',12)			! bit 12: Quality of SWH
 	call nc2f ('qual_alt_1hz_sig0',13)			! bit 13: Quality of sigma0
-!	call nc2f ('orb_state_flag_diode',15,lim=3)	! bit 15: Quality of DIODE tracking
+	call nc2f ('orb_state_flag_diode',15,lim=2)	! bit 15: Quality of DIODE tracking
 
 ! Convert all the necessary fields to RADS
 
