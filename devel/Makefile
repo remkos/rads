@@ -25,7 +25,7 @@ LIB     = ../src/librads.a $(ALTIM)/lib/rssubs.a
 LDLIBS  = $(NETCDF_LIB)
 
 # Shell scripts
-SCRIPTS = rads_gen_saral_new.sh
+SCRIPTS = rads_gen_saral.sh rads_gen_saral_new.sh
 
 #-----------------------------------------------------------------------
 # What to create?
