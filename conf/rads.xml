@@ -938,30 +938,25 @@ Global RADS configuration file
 	<compress>int4 1d-4</compress>
 </var>
 -->
-<if sat="sa">
-	<var name="geoid_egm96" field="1601">
-		<long_name>EGM96 geoid height</long_name>
-		<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
-		<source>EGM96</source>
-		<units>m</units>
-		<data>geoid_egm96</data>
-		<format>f10.4</format>
-		<compress>int4 1d-4</compress>
-	</var>
-	<alias name="geoid">geoid_egm96</alias>
-</if>
-<else>
-	<var name="geoid_egm2008" field="1610">
-		<long_name>EGM2008 geoid height</long_name>
-		<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
-		<source>EGM2008</source>
-		<units>m</units>
-		<data>geoid_egm2008</data>
-		<format>f10.4</format>
-		<compress>int4 1d-4</compress>
-	</var>
-	<alias name="geoid">geoid_egm2008</alias>
-</else>
+<var name="geoid_egm96" field="1601" sat="sa">
+	<long_name>EGM96 geoid height</long_name>
+	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
+	<source>EGM96</source>
+	<units>m</units>
+	<data>geoid_egm96</data>
+	<format>f10.4</format>
+	<compress>int4 1d-4</compress>
+</var>
+<var name="geoid_egm2008" field="1610">
+	<long_name>EGM2008 geoid height</long_name>
+	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
+	<source>EGM2008</source>
+	<units>m</units>
+	<data>geoid_egm2008</data>
+	<format>f10.4</format>
+	<compress>int4 1d-4</compress>
+</var>
+<alias name="geoid">geoid_egm2008</alias>
 <var name="mss_egm2008" field="1611">
 	<long_name>EGM2008 mean sea surface height</long_name>
 	<source>EGM2008</source>
@@ -1003,7 +998,6 @@ Global RADS configuration file
 	<compress>int4 1d-4</compress>
 </var>
 <alias name="mss" field="16">mss_dtu10</alias>
-<alias name="mss" field="16" sat="sa">mss_cnescls11</alias>
 
 <if sat="sa">
 	<var name="swh_ka" field="1701">
@@ -1493,7 +1487,7 @@ Global RADS configuration file
 	<compress>int1</compress>
 </var>
 
-<var name="qual_attitude" field="2501" sat="g1 gs j1 j2 n1 pn tx">
+<var name="qual_attitude" field="2501" sat="g1 gs j1 j2 n1 pn sa tx">
 	<long_name>quality of attitude</long_name>
 	<flag_values>ok bad</flag_values>
 	<flag_values sat="g1 gs pn">ok suspect</flag_values>
@@ -1541,7 +1535,7 @@ Global RADS configuration file
 	<compress>int1</compress>
 </var>
 
-<var name="qual_alt_rain_ice" field="2507" sat="g1 j1 j2 n1 pn tx">
+<var name="qual_alt_rain_ice" field="2507" sat="g1 j1 j2 n1 pn sa tx">
 	<long_name>corruption of altimeter measurement (ice)</long_name>
 	<flag_values>no_ice ice</flag_values>
 	<data source="flags">7</data>
@@ -1566,6 +1560,7 @@ Global RADS configuration file
 	<flag_masks sat="e1 e2 n1">bad_tb_238 bad_tb_365</flag_masks>
 	<flag_masks sat="g1">bad_tb_220 bad_tb_370</flag_masks>
 	<flag_masks sat="j1 j2">bad_tb_187_or_238 bad_tb_340</flag_masks>
+	<flag_masks sat="sa">bad_tb_238 bad_tb_370</flag_masks>
 	<flag_values sat="pn tx">ok interpolation_near_land extrapolation interpolation_failed</flag_values>
 	<data source="flags">9 2</data>
 	<format>z1</format>
@@ -1626,7 +1621,6 @@ Global RADS configuration file
 	<limits sat="gs">51176 0</limits>
 	<limits sat="n1">36712 0</limits>
 	<limits sat="pn">480 0</limits>
-	<limits sat="sa">160 0</limits>
 	<limits sat="tx">49640 0</limits>
 	<data>flags</data>
 	<!-- In future releases without netCDF variable "flags", use this:
@@ -1635,8 +1629,8 @@ Global RADS configuration file
 	<format>b16.16</format>
 	<compress>int2</compress>
 	<flag_masks>
-		hardware_bad attitude_bad not_used not_used
-		alt_land alt_non_ocean rad_land not_used
+		hardware_bad attitude_bad flag_rad_oper_mode alt_iono_bad
+		alt_land alt_non_ocean rad_land alt_rain_or_ice
 		rad_rain_or_ice tb1_bad tb2_bad range_suspect
 		swh_suspect backscatter_suspect tracking_preset orbit_degraded
 	</flag_masks>
@@ -1655,8 +1649,8 @@ Global RADS configuration file
 	<format>b16.16</format>
 	<compress>int2</compress>
 	<flag_masks>
-		hardware_bad attitude_bad not_used not_used
-		alt_land alt_non_ocean rad_land not_used
+		hardware_bad attitude_bad flag_rad_oper_mode alt_iono_bad
+		alt_land alt_non_ocean rad_land alt_rain_or_ice
 		rad_rain_or_ice tb1_bad tb2_bad range_suspect
 		swh_suspect backscatter_suspect tracking_preset orbit_degraded
 	</flag_masks>
