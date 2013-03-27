@@ -123,8 +123,12 @@ do
 
 	call nfs(nf90_inquire_dimension(ncid1,1,dimnm,nrec))
 	if (dimnm /= 'time') stop 'Error reading time dimension'
-	call nfs(nf90_inquire_dimension(ncid1,2,dimnm,nhz))
-	if (dimnm /= 'meas_ind') stop 'Error reading meas_ind dimension'
+	if (nft(nf90_inquire_dimension(ncid1,2,dimnm,nhz))) then
+		! No second dimension in OGDR-GPS or OGDR-SSH files
+		nhz = 1
+	else
+		if (dimnm /= 'meas_ind') stop 'Error reading meas_ind dimension'
+	endif
 	allocate (time(nrec))
 	call nfs(nf90_inq_varid(ncid1,'time',varid))
 	call nfs(nf90_get_var(ncid1,varid,time))
@@ -215,7 +219,7 @@ else
 ! Create the dimensions
 
 	call nfs(nf90_def_dim(ncid2,'time',nf90_unlimited,i))
-	call nfs(nf90_def_dim(ncid2,'meas_ind',nhz,i))
+	if (nhz > 1) call nfs(nf90_def_dim(ncid2,'meas_ind',nhz,i)) ! Create only if there is a 2nd dimension
 	time2(1)=time(rec0)
 
 ! Copy all the variable definitions and attributes
