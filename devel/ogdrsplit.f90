@@ -20,8 +20,8 @@
 ! Read OSDR_SSHA or OGDR or OGDR_SSHA files from Jason-1, Jason-2 or SARAL and
 ! split them into separate pass files. The OGDR file names are read from
 ! standard input. The individual pass files will be named
-! <destdir>/cCCC/???_*_2P?PCCC_PPP.nc, where CCC is the cycle number and
-! PPP the pass number. The directory <destdir>/cCCC will be created if needed.
+! <destdir>/cCCC/???_*_2P?PCCC_[P]PPP.nc, where CCC is the cycle number and
+! [P]PPP the pass number. The directory <destdir>/cCCC will be created if needed.
 !
 ! This program needs an up-to-date files $RADSROOT/ext/??/???_ORF.txt with
 ! equator crossing information.
@@ -182,13 +182,18 @@ call nfs(nf90_inquire(ncid1,nvariables=nvars,nattributes=natts))
 ! Open the output file. Make directory if needed.
 
 605 format (a,'/c',i3.3)
-610 format (a,'/c',i3.3,'/',a,'P',i3.3,'_',i3.3,'.nc')
+610 format (a,'/c',i3.3,'/',a,'P',i3.3,'_',i3.3,'.nc') ! JA1/JA2 format
+611 format (a,'/c',i3.3,'/',a,'P',i3.3,'_',i4.4,'.nc') ! SRL format
 620 format ('... Records : ',3i6,' : ',a,1x,a,' - ',a)
 
 write (outnm,605) trim(destdir),cycle(ipass)
 inquire (file=outnm,exist=exist)
 if (.not.exist) call system('mkdir -p '//outnm)
-write (outnm,610) trim(destdir),cycle(ipass),trim(filetype),cycle(ipass),pass(ipass)
+if (filetype(:3) == 'SRL') then
+	write (outnm,611) trim(destdir),cycle(ipass),trim(filetype),cycle(ipass),pass(ipass)
+else
+	write (outnm,610) trim(destdir),cycle(ipass),trim(filetype),cycle(ipass),pass(ipass)
+endif
 inquire (file=outnm,exist=exist)
 
 if (exist) then
