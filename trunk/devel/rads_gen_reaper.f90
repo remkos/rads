@@ -302,9 +302,9 @@ nvar = 0
 
 ! Time and orbit: Low rate
 
-call get_var (ncid, 'time_day_1hz',a)
-call get_var (ncid, 'time_milsec_1hz',b)
-call get_var (ncid, 'time_micsec_1hz',c)
+call get_var (ncid, 'time_day_1hz', a)
+call get_var (ncid, 'time_milsec_1hz', b)
+call get_var (ncid, 'time_micsec_1hz', c)
 a = a * 86400d0 + b * 1d-3 + c * 1d-6 + sec1990
 k = min(3,nrec)
 ! Because first and last time can be wrong, we use the minimum of the first 3 and
@@ -633,7 +633,7 @@ call rads_close_pass (S, P)
 end subroutine put_rads
 
 !-----------------------------------------------------------------------
-! Store a new variable
+! Create new RADS variable
 !-----------------------------------------------------------------------
 
 subroutine new_var (varnm, data, bit)

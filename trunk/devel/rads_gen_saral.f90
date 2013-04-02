@@ -61,8 +61,8 @@ program rads_gen_saral
 ! wind_speed_ecmwf_u - ECMWF wind speed (U)
 ! wind_speed_ecmwf_v - ECMWF wind speed (V)
 ! wind_speed_alt - Altimeter wind speed
-! tb_k - Brightness temperature (K-band)
-! tb_ka - Brightness temperature (Ka-band)
+! tb_238 - Brightness temperature (K-band)
+! tb_370 - Brightness temperature (Ka-band)
 ! peakiness_ka - Peakiness
 ! flags - Engineering flags
 ! off_nadir_angle2_wf_ka - Mispointing from waveform squared
