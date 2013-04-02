@@ -15,7 +15,7 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*rads_gen_c2l1r -- Converts CryoSat Retracked Level 1 data to RADS
+!*rads_gen_c2_l1r -- Converts CryoSat Retracked Level 1 data to RADS
 !
 ! This program reads CryoSat-2 L1R pass files and converts it to the RADS format,
 ! written into files $RADSDATAROOT/data/c2/F/c2pPPPPcCCC.nc.
@@ -23,7 +23,7 @@
 !  PPPP = relative pass number
 !   CCC = cycle number
 !
-! syntax: rads_gen_c2l1r [options] < list_of_L1R_file_names
+! syntax: rads_gen_c2_l1r [options] < list_of_L1R_file_names
 !
 ! This program handles only the CryoSat-2 L1Rs in netCDF format.
 !-----------------------------------------------------------------------
@@ -33,41 +33,41 @@
 ! lat - Latitude
 ! lon - Longitude
 ! alt_gdrd - Orbit altitude
-!  501 - Orbit altitude rate
-!  601 - Ocean range (retracked)
-!  701 - Dry tropospheric correction
-!  802 - Wet tropo correction
-!  902 - Ionospheric correction (assumed Bent, but not sure)
-!  906 - GIM ionosphetic correction
-! 1002 - Inverse barometer
-! 1004 - MOG2D
-! 1101 - Solid earth tide
-! 1207 - Ocean tide
-! 1307 - Load tide
-! 1401 - Pole tide
-! 1701 - Significant wave height (retracked)
-! 1801 - Sigma0 (retracked)
-! 1803 - AGC
-! 2002 - Std dev of range
-! 2101 - Nr of averaged range measurements
-! 2401 - Peakiness
-! 2601 - Engineering flags
-! 2701 - Retracker range correction (appied)
-! 2702 - Internal calibration correction to range (appied)
-! 2704 - Doppler correction (applied)
-! 2802 - Std dev of sigma0
-! 3002 - Mispointing from waveform squared
-! 3005 - Std dev of mispointing from waveform squared
-! 3006 - Platform pitch angle
-! 3007 - Platform roll angle
-! 3008 - Platform yaw angle
-! 3409 - Mean quadratic error of waveform fit
-! 3411 - Noise floor
-! 3412 - Std dev of noise floor
-! 3413 - Star tracker flags
-! 3901 - Long-period tide
+! alt_rate - Orbit altitude rate
+! range_ku - Ocean range (retracked)
+! dry_tropo_ecmwf - Dry tropospheric correction
+! wet_tropo_ecmwf - Wet tropo correction
+! iono_bent - Bent ionospheric correction
+! iono_gim - GIM ionosphetic correction
+! inv_bar_static - Inverse barometer
+! inv_bar_mog2d - MOG2D
+! tide_solid - Solid earth tide
+! tide_ocean_got00 - GOT00.1 ocean tide
+! tide_load_got00 - GOT00.1 load tide
+! tide_pole - Pole tide
+! swh_ku - Significant wave height (retracked)
+! sig0_ku - Sigma0 (retracked)
+! agc_ku - AGC
+! range_rms_ku - Std dev of range
+! range_numval_ku - Nr of averaged range measurements
+! peakiness_ku - Peakiness
+! flags - Engineering flags
+! drange_ku - Retracker range correction (applied)
+! drange_cal - Internal calibration correction to range (applied)
+! drange_fm - Doppler correction (applied)
+! sig0_rms_ku - Std dev of sigma0
+! off_nadir_angle2_wf_ku - Mispointing from waveform squared
+! off_nadir_angle2_wf_rms_ku - Std dev of mispointing from waveform squared
+! attitude_pitch - Platform pitch angle
+! attitude_roll - Platform roll angle
+! attitude_yaw - Platform yaw angle
+! mqe - Mean quadratic error of waveform fit
+! noise_floor_ku - Noise floor
+! noise_floor_rms_ku - Std dev of noise floor
+! flags_star_tracker - Star tracker flags
+! tide_equil - Long-period tide
 !-----------------------------------------------------------------------
-program rads_gen_c2l1r
+program rads_gen_c2_l1r
 
 use typesizes
 use netcdf
@@ -220,7 +220,7 @@ files: do
 ! Allocate arrays
 
 	allocate (a(nrec),b(nrec),c(nrec),d(20,nrec), &
-		t_1hz(nrec),t_20hz(20,nrec),alt(nrec),dh(nrec),valid(20,nrec))
+		t_1hz(nrec),t_20hz(20,nrec),alt(nrec),dh(nrec),valid(20,nrec),flags(nrec))
 
 ! Load time and location records
 
@@ -339,14 +339,14 @@ files: do
 	call cpy_var ('wet_tropo', 'wet_tropo_ecmwf')
 	call cpy_var ('iono_model', 'iono_bent')
 	call cpy_var ('iono_gim', 'iono_gim')
-	call cpy_var ('inv_baro', 'inv_baro_static')
+	call cpy_var ('inv_baro', 'inv_bar_static')
 
 	! Version A: DAC already includes inv_baro, which is not the intent
 	! In L1R version 1.23 and later inv_baro is already taken out in the L1R file
 	if (version_a .and. l1r_version < '1.23') then
-		call cpy_var ('dac', 'inv_baro_mog2d')
+		call cpy_var ('dac', 'inv_bar_mog2d')
 	else
-		call cpy_var ('inv_baro+dac',' inv_baro_mog2d')
+		call cpy_var ('inv_baro+dac','inv_bar_mog2d')
 	endif
 	call cpy_var ('tide_solid', 'tide_solid')
 	call cpy_var ('tide_ocean', 'tide_ocean_got00')
@@ -376,7 +376,7 @@ files: do
 	oldcyc = cycnr(2)
 	oldpass = passnr(2)
 
-	deallocate (a,b,c,d,t_1hz,t_20hz,alt,valid,flags)
+	deallocate (a,b,c,d,t_1hz,t_20hz,alt,dh,valid,flags)
 
 	call nfs(nf90_close(ncid))
 
@@ -397,7 +397,7 @@ character(len=*), optional :: flag
 if (rads_version ('$Revision$', 'Write CryoSat-2 L1R data to RADS', flag=flag)) return
 write (*,1310)
 1310 format (/ &
-'syntax: rads_gen_c2l1r [options] < list_of_L1R_file_names'// &
+'syntax: rads_gen_c2_l1r [options] < list_of_L1R_file_names'// &
 'This program converts CryoSat-2 L1R files to RADS data'/ &
 'files with the name $RADSDATAROOT/data/c2/F/pPPPP/c2pPPPPcCCC.nc.'/ &
 'The directory is created automatically and old files are overwritten.')
@@ -456,6 +456,8 @@ P%start_time = var(1)%d(1)
 P%end_time = var(1)%d(ndata)
 P%equator_time = eq_time
 P%equator_lon = eq_long
+P%original = 'L1R ('//trim(l1r_version)//') from L1B ('// &
+	trim(l1b_version)//') data of '//l1b_proc_time
 
 ! Open output file
 call rads_create_pass (S, P, ndata)
@@ -495,4 +497,4 @@ do i = 1,size(a)
 enddo
 end subroutine flag_set
 
-end program rads_gen_c2l1r
+end program rads_gen_c2_l1r
