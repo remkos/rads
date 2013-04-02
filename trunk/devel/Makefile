@@ -18,7 +18,7 @@
 include ../config.mk
 
 # Programs to create
-PROGS	= rads_gen_reaper rads_gen_saral ogdrsplit
+PROGS	= rads_gen_c2l1r rads_gen_reaper rads_gen_saral ogdrsplit
 
 # RADS library and linked libraries
 LIB     = ../src/librads.a $(ALTIM)/lib/rssubs.a
