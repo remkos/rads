@@ -28,7 +28,7 @@
 ! This program handles only the CryoSat-2 L1Rs in netCDF format.
 !-----------------------------------------------------------------------
 !
-!  Variables array fields to be filled are:
+! Variables to be written to RADS are:
 ! time - Time since 1 Jan 85
 ! lat - Latitude
 ! lon - Longitude
@@ -85,7 +85,6 @@ character(1024) :: filenames = ''
 character(20) :: optopt, optarg
 character(80), parameter :: optlist='vC: debug: sat: cycle: t: mjd: sec: ymd: doy:'
 
-
 ! Header variables
 
 character(19) :: l1b_proc_time
@@ -110,7 +109,6 @@ type :: var_
 	logical :: empty ! .true. if all NaN
 endtype
 type(var_) :: var(mvar)
-
 
 ! Other local variables
 
