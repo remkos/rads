@@ -232,17 +232,13 @@ files: do
 
 ! Compile flag bits; needs to be done BEFORE any averaging
 
-!	write (*,*) "t_20hz",t_20hz(:,1)/=0d0
-!	write (*,*) "mqe=",d(:,1)<=20d0
 	call get_var (ncid, 'mqe_20hz', d)
 	valid = (t_20hz /= 0d0 .and. d <= 20d0)
 	call get_var (ncid, 'retrack_flag_20hz', d)
-!	write (*,*) "flag=",d(:,1) == 0
 	valid = (valid .and. d == 0)
 	do i = 1,nrec
 		nvalid(i) = count(valid(:,i))
 	enddo
-	write (*,*) "valid=",valid(:,1)
 
 	call get_var (ncid, 'surface_type', a)
 	if (l1r_version <= '1.26') a = a * 1d3 ! Error in scale_factor
