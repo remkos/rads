@@ -750,7 +750,7 @@ Global RADS configuration file
 	<limits>-5 5</limits>
 	<data>tide_ocean_got00</data>
 	<format>f7.4</format>
-	<compress>int2 1d-4</compress>
+	<compress>int4 1d-4</compress>
 	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
 </var>
 <var name="tide_ocean_fes04" field="1213">
@@ -760,7 +760,7 @@ Global RADS configuration file
 	<limits>-5 5</limits>
 	<data>tide_ocean_fes04</data>
 	<format>f7.4</format>
-	<compress>int2 1d-4</compress>
+	<compress>int4 1d-4</compress>
 	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
 </var>
 <var name="tide_ocean_webtide" field="1215">
@@ -771,7 +771,7 @@ Global RADS configuration file
 	<data>tide_ocean_webtide</data>
 	<default>nan</default>
 	<format>f7.4</format>
-	<compress>int2 1d-4</compress>
+	<compress>int4 1d-4</compress>
 	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
 </var>
 <var name="tide_ocean_got47" field="1217">
@@ -781,7 +781,7 @@ Global RADS configuration file
 	<limits>-5 5</limits>
 	<data>tide_ocean_got47</data>
 	<format>f7.4</format>
-	<compress>int2 1d-4</compress>
+	<compress>int4 1d-4</compress>
 	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
 </var>
 <var name="tide_ocean_got48" field="1219">
@@ -791,7 +791,7 @@ Global RADS configuration file
 	<limits>-5 5</limits>
 	<data>tide_ocean_got48</data>
 	<format>f7.4</format>
-	<compress>int2 1d-4</compress>
+	<compress>int4 1d-4</compress>
 	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
 </var>
 <var name="tide_ocean_got49" field="1221" sat="c2 j1 j2 pn tx">
@@ -801,7 +801,7 @@ Global RADS configuration file
 	<limits>-5 5</limits>
 	<data>tide_ocean_got49</data>
 	<format>f7.4</format>
-	<compress>int2 1d-4</compress>
+	<compress>int4 1d-4</compress>
 	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
 </var>
 <alias name="tide_ocean" field="12">tide_ocean_got48</alias>
