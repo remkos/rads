@@ -294,7 +294,8 @@ end interface rads_get_var
 !
 ! type(rads_sat), intent(inout) :: S
 ! type(rads_pass), intent(inout) :: P
-! type(rads_var), intent(in) :: var <or> var(:)
+! type(rads_var), intent(in) :: var <or> var(:) <or>
+!     character(len=*), intent(in) :: var
 ! integer(fourbyteint), intent(in), optional :: nctype
 ! real(eightbytereal), intent(in), optional :: scale_factor, add_offset
 !
@@ -310,7 +311,7 @@ end interface rads_get_var
 ! Arguments:
 !  S        : Satellite/mission dependent structure
 !  P        : Pass structure
-!  var      : Structure(s) of variable(s) of type(rads_var)
+!  var      : Structure(s) of variable(s) of type(rads_var) or name of variable
 !  nctype   : (Optional) Data type in netCDF file
 !  scale_factor : (Optional) Value of the scale_factor attribute
 !  add_offset : (Optional) Value of the add_offset attribute
@@ -319,10 +320,11 @@ end interface rads_get_var
 ! Error codes:
 !  S%error  : rads_noerr, rads_err_nc_var
 !-----------------------------------------------------------------------
-private :: rads_def_var_0d, rads_def_var_1d
+private :: rads_def_var_by_var_0d, rads_def_var_by_var_1d, rads_def_var_by_name
 interface rads_def_var
-	module procedure rads_def_var_0d
-	module procedure rads_def_var_1d
+	module procedure rads_def_var_by_var_0d
+	module procedure rads_def_var_by_var_1d
+	module procedure rads_def_var_by_name
 end interface rads_def_var
 
 !***********************************************************************
@@ -360,13 +362,16 @@ end interface rads_def_var
 ! Error codes:
 !  S%error  : rads_noerr, rads_err_nc_put
 !-----------------------------------------------------------------------
-private :: rads_put_var_1d, rads_put_var_1d_start, &
-	rads_put_var_2d, rads_put_var_2d_start, rads_put_var_helper
+private :: rads_put_var_by_var_1d, rads_put_var_by_var_1d_start, rads_put_var_by_name_1d, &
+	rads_put_var_by_var_2d, rads_put_var_by_var_2d_start, rads_put_var_by_name_2d, &
+	rads_put_var_helper
 interface rads_put_var
-	module procedure rads_put_var_1d
-	module procedure rads_put_var_1d_start
-	module procedure rads_put_var_2d
-	module procedure rads_put_var_2d_start
+	module procedure rads_put_var_by_var_1d
+	module procedure rads_put_var_by_var_1d_start
+	module procedure rads_put_var_by_name_1d
+	module procedure rads_put_var_by_var_2d
+	module procedure rads_put_var_by_var_2d_start
+	module procedure rads_put_var_by_name_2d
 end interface rads_put_var
 
 !***********************************************************************
@@ -3513,9 +3518,9 @@ if (e > 0) call rads_error (S, rads_err_nc_create, 'Error writing history attrib
 end subroutine rads_put_history
 
 !***********************************************************************
-!*rads_def_var_0d -- Define variable to be written to RADS data file
+!*rads_def_var_by_var_0d -- Define variable to be written to RADS data file
 !
-subroutine rads_def_var_0d (S, P, var, nctype, scale_factor, add_offset)
+subroutine rads_def_var_by_var_0d (S, P, var, nctype, scale_factor, add_offset)
 use netcdf
 use rads_netcdf
 type(rads_sat), intent(inout) :: S
@@ -3597,9 +3602,9 @@ do i = 2,len_trim(string)-1
 enddo
 end function count_spaces
 
-end subroutine rads_def_var_0d
+end subroutine rads_def_var_by_var_0d
 
-subroutine rads_def_var_1d (S, P, var, nctype, scale_factor, add_offset)
+subroutine rads_def_var_by_var_1d (S, P, var, nctype, scale_factor, add_offset)
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 type(rads_var), intent(in) :: var(:)
@@ -3607,20 +3612,44 @@ integer(fourbyteint), intent(in), optional :: nctype
 real(eightbytereal), intent(in), optional :: scale_factor, add_offset
 integer :: i
 do i = 1,size(var)
-	call rads_def_var_0d (S, P, var(i), nctype, scale_factor, add_offset)
+	call rads_def_var_by_var_0d (S, P, var(i), nctype, scale_factor, add_offset)
 	if (S%error /= rads_noerr) return
 enddo
-end subroutine rads_def_var_1d
+end subroutine rads_def_var_by_var_1d
 
-subroutine rads_put_var_1d (S, P, var, data)
+subroutine rads_def_var_by_name (S, P, varname, nctype, scale_factor, add_offset)
+type(rads_sat), intent(inout) :: S
+type(rads_pass), intent(inout) :: P
+character(len=*), intent(in) :: varname
+integer(fourbyteint), intent(in), optional :: nctype
+real(eightbytereal), intent(in), optional :: scale_factor, add_offset
+type(rads_var), pointer :: var
+var => rads_varptr(S, varname)
+if (S%error /= rads_noerr) return
+call rads_def_var_by_var_0d (S, P, var, nctype, scale_factor, add_offset)
+if (S%error /= rads_noerr) return
+end subroutine rads_def_var_by_name
+
+subroutine rads_put_var_by_var_1d (S, P, var, data)
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 type(rads_var), intent(inout) :: var
 real(eightbytereal), intent(in) :: data(:)
-call rads_put_var_1d_start (S, P, var, data, (/1/))
-end subroutine rads_put_var_1d
+call rads_put_var_by_var_1d_start (S, P, var, data, (/1/))
+end subroutine rads_put_var_by_var_1d
 
-subroutine rads_put_var_1d_start (S, P, var, data, start)
+subroutine rads_put_var_by_name_1d (S, P, varname, data)
+type(rads_sat), intent(inout) :: S
+type(rads_pass), intent(inout) :: P
+character(len=*), intent(in) :: varname
+real(eightbytereal), intent(in) :: data(:)
+type(rads_var), pointer :: var
+var => rads_varptr (S, varname)
+if (S%error /= rads_noerr) return
+call rads_put_var_by_var_1d_start (S, P, var, data, (/1/))
+end subroutine rads_put_var_by_name_1d
+
+subroutine rads_put_var_by_var_1d_start (S, P, var, data, start)
 use netcdf
 use rads_netcdf
 use rads_misc
@@ -3642,17 +3671,28 @@ case default
 	e = nf90_put_var (P%ncid, var%info%varid, (data - var%info%add_offset) / var%info%scale_factor, start)
 end select
 if (e > 0) call rads_error (S, rads_err_nc_put, 'Error writing data for variable '//trim(var%name)//' to '//trim(P%filename))
-end subroutine rads_put_var_1d_start
+end subroutine rads_put_var_by_var_1d_start
 
-subroutine rads_put_var_2d (S, P, var, data)
+subroutine rads_put_var_by_var_2d (S, P, var, data)
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 type(rads_var), intent(inout) :: var
 real(eightbytereal), intent(in) :: data(:,:)
-call rads_put_var_2d_start (S, P, var, data, (/1,1/))
-end subroutine rads_put_var_2d
+call rads_put_var_by_var_2d_start (S, P, var, data, (/1,1/))
+end subroutine rads_put_var_by_var_2d
 
-subroutine rads_put_var_2d_start (S, P, var, data, start)
+subroutine rads_put_var_by_name_2d (S, P, varname, data)
+type(rads_sat), intent(inout) :: S
+type(rads_pass), intent(inout) :: P
+character(len=*), intent(in) :: varname
+real(eightbytereal), intent(in) :: data(:,:)
+type(rads_var), pointer :: var
+var => rads_varptr (S, varname)
+if (S%error /= rads_noerr) return
+call rads_put_var_by_var_2d_start (S, P, var, data, (/1,1/))
+end subroutine rads_put_var_by_name_2d
+
+subroutine rads_put_var_by_var_2d_start (S, P, var, data, start)
 use netcdf
 use rads_netcdf
 use rads_misc
@@ -3674,7 +3714,7 @@ case default
 	e = nf90_put_var (P%ncid, var%info%varid, (data - var%info%add_offset) / var%info%scale_factor, start)
 end select
 if (e > 0) call rads_error (S, rads_err_nc_put, 'Error writing data for variable '//trim(var%name)//' to '//trim(P%filename))
-end subroutine rads_put_var_2d_start
+end subroutine rads_put_var_by_var_2d_start
 
 logical function rads_put_var_helper (S, P, var)
 use netcdf
