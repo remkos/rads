@@ -21,7 +21,7 @@ use rads_grid
 
 ! Dimensions
 integer(fourbyteint), parameter :: rads_var_chunk = 100, rads_varl = 40, rads_naml = 160, rads_cmdl = 320, &
-	rads_strl = 800, rads_hstl = 3200, rads_cyclistl = 50, rads_optl = 50
+	rads_strl = 640, rads_hstl = 3200, rads_cyclistl = 50, rads_optl = 50
 ! RADS4 data types
 integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, rads_type_flagmasks = 2, rads_type_flagvalues = 3, &
 	rads_type_time = 11, rads_type_lat = 12, rads_type_lon = 13
@@ -136,7 +136,7 @@ endtype
 
 type :: rads_pass
 	character(len=rads_naml) :: filename             ! Name of the netCDF pass file
-	character(len=rads_cmdl) :: original             ! Name of the original (GDR) pass file(s)
+	character(len=rads_strl) :: original             ! Name of the original (GDR) pass file(s)
 	character(len=rads_hstl), pointer :: history     ! File creation history
 	real(eightbytereal) :: equator_time, equator_lon ! Equator time and longitude
 	real(eightbytereal) :: start_time, end_time      ! Start and end time of pass
@@ -3455,6 +3455,8 @@ do i = 1,size(S%glob_att)
 	l = index(S%glob_att(i),' ')
 	e = e + nf90_put_att (P%ncid, nf90_global, S%glob_att(i)(:l-1), S%glob_att(i)(l+1:))
 enddo
+l = index(P%filename, '/', .true.) + 1
+e = e + nf90_put_att (P%ncid, nf90_global, 'filename', trim(P%filename(l:)))
 e = e +	nf90_put_att (P%ncid, nf90_global, 'mission_name', trim(S%satellite)) + &
 	nf90_put_att (P%ncid, nf90_global, 'mission_phase', S%phase%name(:1))
 if (ndata > 0) then
@@ -3468,14 +3470,47 @@ if (ndata > 0) then
 	nf90_put_att (P%ncid, nf90_global, 'last_meas_time', date(3))
 endif
 if (P%original /= '') e = e + nf90_put_att (P%ncid, nf90_global, 'original', P%original)
+! Temporarily also create a 'log01' record, to support RADS3
+l = index(P%original, rads_linefeed) - 1
+if (l < 0) l = len_trim(P%original)
+e = e + nf90_put_att (P%ncid, nf90_global, 'log01', datestamp()//' | '//trim(S%command)//': RAW data from '//P%original(:l))
 
-if (associated(P%history)) then
-	e = e + nf90_put_att (P%ncid, nf90_global, 'history', datestamp()//': '//trim(S%command)//rads_linefeed//trim(P%history))
-else
-	e = e + nf90_put_att (P%ncid, nf90_global, 'history', datestamp()//': '//trim(S%command))
-endif
 if (e > 0) call rads_error (S, rads_err_nc_create, 'Error writing global attributes to '//trim(P%filename))
+
+call rads_put_history (S, P)
 end subroutine rads_create_pass
+
+!***********************************************************************
+!*rads_put_history -- Update and write history to RADS data file
+!
+subroutine rads_put_history (S, P)
+use netcdf
+use rads_time
+type(rads_sat), intent(inout) :: S
+type(rads_pass), intent(inout) :: P
+!
+! This routine writes a datestamp and the command line to the global
+! attribute 'history', followed by any possible previous history.
+!
+! This command is called from rads_create_pass, so it is not required to
+! call this command following rads_create_pass. However, when updating a
+! file after rads_open_pass, it is necessary to call this routine to update
+! the history.
+!
+! Note that P%history will not be updated.
+!
+! Arguments:
+!  S        : Satellite/mission dependent structure
+!  P        : Pass structure
+!-----------------------------------------------------------------------
+integer :: e
+if (associated(P%history)) then
+	e = nf90_put_att (P%ncid, nf90_global, 'history', datestamp()//': '//trim(S%command)//rads_linefeed//trim(P%history))
+else
+	e = nf90_put_att (P%ncid, nf90_global, 'history', datestamp()//': '//trim(S%command))
+endif
+if (e > 0) call rads_error (S, rads_err_nc_create, 'Error writing history attribute to '//trim(P%filename))
+end subroutine rads_put_history
 
 !***********************************************************************
 !*rads_def_var_0d -- Define variable to be written to RADS data file
@@ -3510,7 +3545,15 @@ if (nft(nf90_def_var(P%ncid, var%name, info%nctype, dimid(1:info%ndims), info%va
 	call rads_error (S, rads_err_nc_var, 'Error creating variable '//trim(var%name)//' in '//trim(P%filename))
 	return
 endif
-e = nf90_put_att (P%ncid, info%varid, 'long_name', trim(info%long_name))
+e = 0
+if (info%nctype == nf90_int1) then
+	e = e + nf90_put_att (P%ncid, info%varid, '_FillValue', huge(0_onebyteint))
+else if (info%nctype == nf90_int2) then
+	e = e + nf90_put_att (P%ncid, info%varid, '_FillValue', huge(0_twobyteint))
+else if (info%nctype == nf90_int4) then
+	e = e + nf90_put_att (P%ncid, info%varid, '_FillValue', huge(0_fourbyteint))
+endif
+e = e + nf90_put_att (P%ncid, info%varid, 'long_name', trim(info%long_name))
 if (info%standard_name /= '') e = e + nf90_put_att (P%ncid, info%varid, 'standard_name', trim(info%standard_name))
 if (info%source /= '') e = e + nf90_put_att (P%ncid, info%varid, 'source', trim(info%source))
 if (info%units /= '') e = e + nf90_put_att (P%ncid, info%varid, 'units', trim(info%units))
@@ -3530,12 +3573,6 @@ else if (info%datatype == rads_type_flagvalues) then
 		e = e + nf90_put_att (P%ncid, info%varid, 'flag_values', int(flag_values(0:n),twobyteint))
 	endif
 	e = e + nf90_put_att (P%ncid, info%varid, 'flag_meanings', info%flag_meanings)
-else if (info%nctype == nf90_int1) then
-	e = e + nf90_put_att (P%ncid, info%varid, '_FillValue', huge(0_onebyteint))
-else if (info%nctype == nf90_int2) then
-	e = e + nf90_put_att (P%ncid, info%varid, '_FillValue', huge(0_twobyteint))
-else if (info%nctype == nf90_int4) then
-	e = e + nf90_put_att (P%ncid, info%varid, '_FillValue', huge(0_fourbyteint))
 endif
 if (info%quality_flag /= '') e = e + nf90_put_att (P%ncid, info%varid, 'quality_flag', info%quality_flag)
 if (info%scale_factor /= 1d0) e = e + nf90_put_att (P%ncid, info%varid, 'scale_factor', info%scale_factor)
