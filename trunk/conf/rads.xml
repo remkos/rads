@@ -103,9 +103,10 @@ Global RADS configuration file
 	<units>degrees_north</units>
 	<limits>-90 90</limits>
 	<data>lat</data>
-	<comment>Positive latitude is North latitude, negative latitude is South latitude</comment>
 	<format>f10.6</format>
 	<compress>int4 1d-6</compress>
+	<compress sat="c2">int4 1d-7</compress>
+	<comment>Positive latitude is North latitude, negative latitude is South latitude</comment>
 </var>
 
 <var name="lon" field="301 3">
@@ -116,6 +117,7 @@ Global RADS configuration file
 	<data>lon</data>
 	<format>f11.6</format>
 	<compress>int4 1d-6</compress>
+	<compress sat="c2">int4 1d-7</compress>
 	<comment>East longitude relative to Greenwich meridian</comment>
 </var>
 
@@ -157,6 +159,7 @@ Global RADS configuration file
 	<data>alt_cnes</data>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
+	<compress sat="c2">int4 1d-4 700d3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_eiggc03c" field="412" sat="n1">
@@ -326,12 +329,18 @@ Global RADS configuration file
 	<limits sat="c2">-40 40</limits>
 	<limits sat="gs">-60 60</limits>
 	<data>alt_rate</data>
-	<format>f7.3</format>
-	<compress>int2 1d-3</compress>
 	<if sat="j1 j2">
 		<format>f8.2</format>
 		<compress>int4 1d-2</compress>
 	</if>
+	<elseif sat="c2 gs">
+		<format>f7.3</format>
+		<compress>int2 2d-3</compress>
+	</elseif>
+	<else>
+		<format>f7.3</format>
+		<compress>int2 1d-3</compress>
+	</else>
 	<comment>The reference surface for the orbital altitude rate is MSS</comment>
 </var>
 
@@ -1128,8 +1137,8 @@ Global RADS configuration file
 	<units>dB</units>
 	<limits>0 70</limits>
 	<data>sig0_sdr</data>
-	<format>f6.3</format>
-	<compress>int4 1d-3</compress>
+	<format>f6.2</format>
+	<compress>int2 1d-2</compress>
 </var>
 <var name="sig0_ku_mle3" field="1811" sat="j2">
 	<long_name>Ku-band backscatter coefficient (MLE3)</long_name>
@@ -1683,7 +1692,7 @@ Global RADS configuration file
 	<data>drange_ku</data>
 	<compress>int2 1d-3</compress>
 	<format>f6.3</format>
-	<comment>Range bias already added to range</comment>
+	<comment>Range correction already added to range</comment>
 </var>
 <var name="drange_cal" field="2702" sat="c2 gs">
 	<long_name>internal calibration correction to range</long_name>
@@ -1691,7 +1700,7 @@ Global RADS configuration file
 	<data>drange_cal</data>
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
-	<comment>Range bias already added to range</comment>
+	<comment>Range correction already added to range</comment>
 </var>
 <var name="drange_cal" field="2702" sat="e1 e2">
 	<long_name>SPTR correction to range</long_name>
@@ -1699,7 +1708,7 @@ Global RADS configuration file
 	<data>drange_cal</data>
 	<format>f6.3</format>
 	<compress>int2 1d-4</compress>
-	<comment>Range bias already added to range</comment>
+	<comment>Range correction already added to range</comment>
 </var>
 <var name="drange_uso" field="2703" sat="e1 e2 gs n1">
 	<long_name>USO correction to Ku-band range</long_name>
@@ -1707,7 +1716,7 @@ Global RADS configuration file
 	<data>drange_uso</data>
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
-	<comment>Range bias already added to range</comment>
+	<comment>Range correction already added to range</comment>
 </var>
 <var name="drange_fm" field="2704" sat="e1 e2 c2">
 	<long_name>Doppler correction to range</long_name>
@@ -1715,7 +1724,7 @@ Global RADS configuration file
 	<data>drange_fm</data>
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
-	<comment>Range bias already added to range</comment>
+	<comment>Range correction already added to range</comment>
 </var>
 <var name="drange_swh_att_ku" field="2705" sat="pn tx">
 	<long_name>Ku-band range correction due to SWH/attitude</long_name>
@@ -1723,7 +1732,7 @@ Global RADS configuration file
 	<data>drange_swh_att_ku</data>
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
-	<comment>Range bias already added to range</comment>
+	<comment>Range correction already added to range</comment>
 </var>
 <var name="drange_swh_att_c" field="2706" sat="tx">
 	<long_name>C-band range correction due to SWH/attitude</long_name>
@@ -1731,7 +1740,7 @@ Global RADS configuration file
 	<data>drange_swh_att_c</data>
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
-	<comment>Range bias already added to range</comment>
+	<comment>Range correction already added to range</comment>
 </var>
 <var name="drange_cg" field="2707" sat="pn tx">
 	<long_name>center-of-gravity correction to range</long_name>
@@ -1739,7 +1748,7 @@ Global RADS configuration file
 	<data>drange_cg</data>
 	<compress>int2 1d-3</compress>
 	<format>f6.3</format>
-	<comment>Range bias already added to range</comment>
+	<comment>Range correction already added to range</comment>
 </var>
 <var name="drange_dat" field="2708" sat="j1">
 	<long_name>datation correction to range</long_name>
@@ -1747,7 +1756,7 @@ Global RADS configuration file
 	<data>drange_dat</data>
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
-	<comment>Range bias already added to range</comment>
+	<comment>Range correction already added to range</comment>
 </var>
 <alias name="drange" field="27" sat="c2 e1 e2 gs n1">drange_ku</alias>
 
@@ -1968,7 +1977,7 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<default>0</default>
 	<compress>int2 1d-3</compress>
-	<comment>Bias already added to significant wave height</comment>
+	<comment>Correction already added to significant wave height</comment>
 </var>
 <var name="dswh_c" field="3102" sat="tx">
 	<long_name>C-band significant wave height bias</long_name>
@@ -1977,7 +1986,7 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<default>0</default>
 	<compress>int2 1d-3</compress>
-	<comment>Bias already added to significant wave height</comment>
+	<comment>Correction already added to significant wave height</comment>
 </var>
 <var name="dswh_swh_att_ku" field="3103" sat="pn tx">
 	<long_name>Ku-band significant wave height correction due to SWH/attitude</long_name>
@@ -1985,7 +1994,7 @@ Global RADS configuration file
 	<data>dswh_swh_att_ku</data>
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
-	<comment>Bias already added to significant wave height</comment>
+	<comment>Correction already added to significant wave height</comment>
 </var>
 <var name="dswh_swh_att_c" field="3104" sat="tx">
 	<long_name>C-band significant wave height correction due to SWH/attitude</long_name>
@@ -1993,7 +2002,7 @@ Global RADS configuration file
 	<data>dswh_swh_att_c</data>
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
-	<comment>Bias already added to significant wave height</comment>
+	<comment>Correction already added to significant wave height</comment>
 </var>
 <alias name="dswh" field="31" sat="tx">dswh_ku</alias>
 
@@ -2004,7 +2013,7 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<default>0</default>
 	<compress>int2 1d-3</compress>
-	<comment>Bias already added to backscatter coefficient</comment>
+	<comment>Correction already added to backscatter coefficient</comment>
 </var>
 <var name="dsig0_c" field="3202" sat="tx">
 	<long_name>C-band backscatter coefficient bias</long_name>
@@ -2013,7 +2022,7 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<default>0</default>
 	<compress>int2 1d-3</compress>
-	<comment>Bias already added to backscatter coefficient</comment>
+	<comment>Correction already added to backscatter coefficient</comment>
 </var>
 <var name="dsig0_atmos_ka" field="3203" sat="sa">
 	<long_name>Ka-band backscatter coefficient correction due to atmosphere/attitude</long_name>
@@ -2021,7 +2030,7 @@ Global RADS configuration file
 	<data>dsig0_atmos_ka</data>
 	<format>f6.2</format>
 	<compress>int1 1d-2</compress>
-	<comment>Bias already added to backscatter coefficient</comment>
+	<comment>Correction already added to backscatter coefficient</comment>
 </var>
 <var name="dsig0_atmos_ku" field="3203" sat="e1 e2 j1 j2 n1 pn tx">
 	<long_name>Ku-band backscatter coefficient correction due to atmosphere/attitude</long_name>
@@ -2029,7 +2038,7 @@ Global RADS configuration file
 	<data>dsig0_atmos_ku</data>
 	<format>f6.2</format>
 	<compress>int1 1d-2</compress>
-	<comment>Bias already added to backscatter coefficient</comment>
+	<comment>Correction already added to backscatter coefficient</comment>
 </var>
 <var name="dsig0_atmos_c" field="3204" sat="j1 j2 tx">
 	<long_name>C-band backscatter coefficient correction due to atmosphere/attitude</long_name>
@@ -2037,7 +2046,7 @@ Global RADS configuration file
 	<data>dsig0_atmos_c</data>
 	<format>f6.2</format>
 	<compress>int1 1d-2</compress>
-	<comment>Bias already added to backscatter coefficient</comment>
+	<comment>Correction already added to backscatter coefficient</comment>
 </var>
 <var name="dsig0_atmos_s" field="3204" sat="n1">
 	<long_name>S-band backscatter coefficient correction due to atmosphere/attitude</long_name>
@@ -2045,7 +2054,7 @@ Global RADS configuration file
 	<data>dsig0_atmos_s</data>
 	<format>f6.2</format>
 	<compress>int1 1d-2</compress>
-	<comment>Bias already added to backscatter coefficient</comment>
+	<comment>Correction already added to backscatter coefficient</comment>
 </var>
 <var name="dsig0_swh_att" field="3205" sat="c2">
 	<long_name>backscatter coefficient correction due to SWH/attitude</long_name>
@@ -2053,7 +2062,7 @@ Global RADS configuration file
 	<data>dsig0_swh_att</data>
 	<format>f6.2</format>
 	<compress>int1 1d-2</compress>
-	<comment>Bias already added to backscatter coefficient</comment>
+	<comment>Correction already added to backscatter coefficient</comment>
 </var>
 <var name="dsig0_range" field="3206" sat="c2">
 	<long_name>backscatter coefficient correction due to range</long_name>
@@ -2061,7 +2070,7 @@ Global RADS configuration file
 	<data>dsig0_range</data>
 	<format>f6.2</format>
 	<compress>int1 1d-2</compress>
-	<comment>Bias already added to backscatter coefficient</comment>
+	<comment>Correction already added to backscatter coefficient</comment>
 </var>
 <var name="dsig0_temp" field="3207" sat="c2">
 	<long_name>backscatter coefficient correction due to temperature</long_name>
@@ -2069,7 +2078,7 @@ Global RADS configuration file
 	<data>dsig0_temp</data>
 	<format>f6.2</format>
 	<compress>int1 1d-2</compress>
-	<comment>Bias already added to backscatter coefficient</comment>
+	<comment>Correction already added to backscatter coefficient</comment>
 </var>
 <alias name="dsig0" field="32" sat="e1 e2 tx">dsig0_ku</alias>
 
@@ -2145,7 +2154,7 @@ Global RADS configuration file
 	<compress>int2</compress>
 </var>
 <var name="mqe" field="3409" sat="e1 e2 c2">
-	<long_name>mean quadratic error of retracking</long_name>
+	<long_name>mean quadratic error of waveform fit</long_name>
 	<data>mqe</data>
 	<format>f6.3</format>
 	<compress>int2 1e-3</compress>
@@ -2161,7 +2170,7 @@ Global RADS configuration file
 	<data>noise_floor_ku</data>
 	<units>dB</units>
 	<format>f7.3</format>
-	<compress>int2 1e-3</compress>
+	<compress>int2 1e-3 -20</compress>
 </var>
 <var name="noise_floor_rms_ku" field="3412" sat="c2">
 	<long_name>std dev of Ku-band noise floor of waveforms</long_name>
@@ -2173,6 +2182,7 @@ Global RADS configuration file
 <var name="flags_star_tracker" field="3413" sat="c2">
 	<long_name>star tracker flags</long_name>
 	<data>flags_star_tracker</data>
+	<flag_masks>str1_on str2_on str3_on</flag_masks>
 	<compress>int1</compress>
 	<format>z1</format>
 </var>
