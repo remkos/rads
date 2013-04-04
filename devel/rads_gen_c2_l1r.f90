@@ -106,7 +106,7 @@ type(rads_pass) :: P
 type :: var_
 	type(rads_var), pointer :: v ! Pointer to rads_var struct
 	real(eightbytereal) :: d(mrec) ! Data array
-	logical :: empty ! .true. if all NaN
+	logical :: skip ! .true. if to be skipped
 endtype
 type(var_) :: var(mvar)
 
@@ -348,13 +348,7 @@ files: do
 	call cpy_var ('iono_gim', 'iono_gim')
 	call cpy_var ('inv_baro', 'inv_bar_static')
 
-	! Version A: DAC already includes inv_baro, which is not the intent
-	! In L1R version 1.23 and later inv_baro is already taken out in the L1R file
-	if (version_a .and. l1r_version < '1.23') then
-		call cpy_var ('dac', 'inv_bar_mog2d')
-	else
-		call cpy_var ('inv_baro+dac','inv_bar_mog2d')
-	endif
+	call cpy_var ('inv_baro+dac','inv_bar_mog2d')
 	call cpy_var ('tide_solid', 'tide_solid')
 	call cpy_var ('tide_ocean', 'tide_ocean_got00')
 	call cpy_var ('tide_load', 'tide_load_got00')
@@ -474,14 +468,19 @@ P%original = 'L1R ('//trim(l1r_version)//') from L1B ('// &
 ! Open output file
 call rads_create_pass (S, P, ndata)
 
+! Check for variables we want to skip because they are empty
+do i = 1,nvar
+	var(i)%skip = (var(i)%v%name == 'inv_bar_mog2d' .and. all(var(i)%d(1:ndata) == 0d0))
+enddo
+
 ! Define all variables
 do i = 1,nvar
-	call rads_def_var (S, P, var(i)%v)
+	if (.not.var(i)%skip) call rads_def_var (S, P, var(i)%v)
 enddo
 
 ! Fill all the data fields
 do i = 1,nvar
-	call rads_put_var (S, P, var(i)%v, var(i)%d(1:ndata))
+	if (.not.var(i)%skip) call rads_put_var (S, P, var(i)%v, var(i)%d(1:ndata))
 enddo
 
 ! Close the data file
