@@ -1609,23 +1609,21 @@ case default
 end select
 
 ! Set NaN values and apply optional scale_factor and add_offset
+! If we read/write, we also store the scale factor and add_offset
 if (nff(nf90_get_att(P%ncid, info%varid, '_FillValue', x))) where (data == x) data = nan
-! If we read/write we store the scale factor and offset
-if (P%rw) then
-	if (nff(nf90_get_att(P%ncid, info%varid, 'scale_factor', info%scale_factor))) then
-		data = data * info%scale_factor
-	else
-		info%scale_factor = 1d0
-	endif
-	if (nff(nf90_get_att(P%ncid, info%varid, 'add_offset', info%add_offset))) then
-		data = data + info%add_offset
-	else
-		info%add_offset = 0d0
-	endif
+
+if (nff(nf90_get_att(P%ncid, info%varid, 'scale_factor', x))) then
+	data = data * x
 else
-	if (nff(nf90_get_att(P%ncid, info%varid, 'scale_factor', x))) data = data * x
-	if (nff(nf90_get_att(P%ncid, info%varid, 'add_offset', x))) data = data + x
+	x = 1d0
 endif
+if (P%rw) info%scale_factor = x
+if (nff(nf90_get_att(P%ncid, info%varid, 'add_offset', x))) then
+	data = data + x
+else
+	x = 0d0
+endif
+if (P%rw) info%add_offset = x
 end subroutine rads_get_var_nc
 
 subroutine rads_get_var_nc_att ! Get data attribute from RADS netCDF file
