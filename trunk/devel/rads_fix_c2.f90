@@ -84,7 +84,7 @@ integer(fourbyteint) :: l,i,cyc,pass
 integer(twobyteint) :: flag
 real(eightbytereal) :: time(mrec),alt(mrec),alt_rate(mrec),dry(mrec),wet(mrec), &
 	iono(mrec),sig0(mrec),swh(mrec),ssb(mrec),wind(mrec),flagword(mrec),range(mrec), &
-	ib(mrec),dac(mrec),ecmwf_ws,t,tbias
+	ib(mrec),ecmwf_ws,t,tbias
 logical :: ldrift=.false.,lmeteo=.false.,lrange=.false.,lssb=.false.,lswh=.false.,ltbias=.false., &
 	lwind=.false.,lsig0=.false.,cswh,cmeteo,ciono,lrm_l2,fdm_l2,old_ver,version_a,sar
 type(grid) :: issb_hyb
@@ -176,7 +176,6 @@ do cyc = S%cycles(1),S%cycles(2),S%cycles(3)
 		call rads_get_var (S, P, 'dry_tropo_ecmwf', dry, .true.)
 		call rads_get_var (S, P, 'wet_tropo_ecmwf', wet, .true.)
 		call rads_get_var (S, P, 'inv_bar_static', ib, .true.)
-		call rads_get_var (S, P, 'inv_bar_mog2d', dac, .true.)
 		call rads_get_var (S, P, 'iono_gim', iono, .true.)
 		call rads_get_var (S, P, 'swh_ku', swh, .true.)
 		call rads_get_var (S, P, 'sig0_ku', sig0, .true.)
@@ -218,7 +217,6 @@ do cyc = S%cycles(1),S%cycles(2),S%cycles(3)
 				dry(i) = nan
 				wet(i) = nan
 				ib(i) = nan
-				dac(i) = nan
 				cmeteo = .true.
 				if (iono(i) == 0d0) then
 					iono(i) = nan
@@ -322,7 +320,6 @@ do cyc = S%cycles(1),S%cycles(2),S%cycles(3)
 			call rads_put_var (S, P, 'dry_tropo', dry(:l))
 			call rads_put_var (S, P, 'wet_tropo', wet(:l))
 			call rads_put_var (S, P, 'inv_bar_static', ib(:l))
-			call rads_put_var (S, P, 'inv_bar_mog2d', dac(:l))
 		endif
 		if (ciono) call rads_put_var (S, P, 'iono_gim', iono(:l))
 		if (lssb) call rads_put_var (S, P, 'ssb_hyb', ssb(:l))
@@ -349,7 +346,7 @@ write (*,1310)
 'syntax: rads_fix_c2 [data-selectors] [options]' // &
 'where [options] are:' / &
 '--drift : Correct sigma0 for apparent drift' / &
-'--meteo : Set dry, wet, IB and DAC (and iono) to NaN when zero' / &
+'--meteo : Set dry, wet, IB (and iono) to NaN when zero' / &
 '--range : Correct range for biases' / &
 '--sig0  : Correct sigma0 for biases and reversal (L2 only)' / &
 '--ssb   : Add hybrid SSB model' / &
