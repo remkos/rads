@@ -26,7 +26,8 @@
 !
 ! range:
 ! - Add -3.33 m range bias for LRM L2 data prior to Feb 2011
-! - Supposedly we need to add 7 mm (1/64 of a range gate) to FDM/LRM L1 and FDM/LRM L2 range because of error in CAL1
+! - Supposedly we need to add 7 mm (1/64 of a range gate) to FDM/LRM L1 and
+!   FDM/LRM L2 range because of error in CAL1
 !
 ! sig0 (FDM L2 and LRM L2 only):
 ! - Reduce backscatter by 1.4 dB during period 2010-08-13 00:00 to 2010-09-03 00:00
@@ -82,9 +83,10 @@ real(eightbytereal), parameter :: fai = 7.3d-3, &
 integer(fourbyteint) :: l,i,cyc,pass
 integer(twobyteint) :: flag
 real(eightbytereal) :: time(mrec),alt(mrec),alt_rate(mrec),dry(mrec),wet(mrec), &
-	iono(mrec),sig0(mrec),swh(mrec),ssb(mrec),wind(mrec),flagword(mrec),range(mrec),ecmwf_ws,t,tbias
+	iono(mrec),sig0(mrec),swh(mrec),ssb(mrec),wind(mrec),flagword(mrec),range(mrec), &
+	ib(mrec),dac(mrec),ecmwf_ws,t,tbias
 logical :: ldrift=.false.,lmeteo=.false.,lrange=.false.,lssb=.false.,lswh=.false.,ltbias=.false., &
-	lwind=.false.,lsig0=.false.,cswh,dswh,cmeteo,ciono,lrm_l2,fdm_l2,old_ver,version_a,sar
+	lwind=.false.,lsig0=.false.,cswh,cmeteo,ciono,lrm_l2,fdm_l2,old_ver,version_a,sar
 type(grid) :: issb_hyb
 
 ! Formats
@@ -95,7 +97,7 @@ type(grid) :: issb_hyb
 ! Scan command line for options
 
 call synopsis
-call rads_set_options ('drift meteo range sig0 ssb swh tbias wind all')
+call rads_set_options (' drift meteo range sig0 ssb swh tbias wind all')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
@@ -146,7 +148,7 @@ endif
 
 do cyc = S%cycles(1),S%cycles(2),S%cycles(3)
 	do pass = S%passes(1),S%passes(2),S%passes(3)
-		call rads_open_pass (S, P, cyc, pass)
+		call rads_open_pass (S, P, cyc, pass, .true.)
 		if (P%ndata == 0) cycle
 		write (*,551) trim(P%filename)
 
@@ -166,21 +168,19 @@ do cyc = S%cycles(1),S%cycles(2),S%cycles(3)
 
 		! SWH corrections that apply to LRM L2 and FDM L2 (version A)
 		cswh = lswh .and. (lrm_l2 .or. fdm_l2) .and. version_a
-		! SWH corrections that apply to L1R data for version 1.25
-		! (and prior, but we do not have any)
-		! dswh = lswh .and. .not.(lrm_l2 .or. fdm_l2) .and. (index(logs(1),'L1R (1.25)') > 0)
-		dswh = .false. ! Switched off so far
 
-		call rads_get_var (S, P, 'time', time, .false.)
-		call rads_get_var (S, P, 'alt_cnes', alt, .false.)
-		call rads_get_var (S, P, 'alt_rate', alt_rate, .false.)
-		call rads_get_var (S, P, 'range_ku', range, .false.)
-		call rads_get_var (S, P, 'dry_tropo_ecmwf', dry, .false.)
-		call rads_get_var (S, P, 'wet_tropo_ecmwf', wet, .false.)
-		call rads_get_var (S, P, 'iono_gim', iono, .false.)
-		call rads_get_var (S, P, 'swh_ku', swh, .false.)
-		call rads_get_var (S, P, 'sig0_ku', sig0, .false.)
-		call rads_get_var (S, P, 'flags', flagword, .false.)
+		call rads_get_var (S, P, 'time', time, .true.)
+		call rads_get_var (S, P, 'alt_cnes', alt, .true.)
+		call rads_get_var (S, P, 'alt_rate', alt_rate, .true.)
+		call rads_get_var (S, P, 'range_ku', range, .true.)
+		call rads_get_var (S, P, 'dry_tropo_ecmwf', dry, .true.)
+		call rads_get_var (S, P, 'wet_tropo_ecmwf', wet, .true.)
+		call rads_get_var (S, P, 'inv_bar_static', ib, .true.)
+		call rads_get_var (S, P, 'inv_bar_mog2d', dac, .true.)
+		call rads_get_var (S, P, 'iono_gim', iono, .true.)
+		call rads_get_var (S, P, 'swh_ku', swh, .true.)
+		call rads_get_var (S, P, 'sig0_ku', sig0, .true.)
+		call rads_get_var (S, P, 'flags', flagword, .true.)
 
 ! Process data records
 
@@ -217,6 +217,8 @@ do cyc = S%cycles(1),S%cycles(2),S%cycles(3)
 			if (lmeteo .and. dry(i) == 0d0 .and. wet(i) == 0d0) then
 				dry(i) = nan
 				wet(i) = nan
+				ib(i) = nan
+				dac(i) = nan
 				cmeteo = .true.
 				if (iono(i) == 0d0) then
 					iono(i) = nan
@@ -238,13 +240,6 @@ do cyc = S%cycles(1),S%cycles(2),S%cycles(3)
 					swh(i) = sign(sqrt(abs(t)), t)
 					if (t < 0d0) swh(i) = -swh(i)
 				endif
-			endif
-
-! Fix effect of sig_ptr: was 0.513 gates in L1R 1.25 and prior, but should be 0.383
-
-			if (dswh) then
-				t = swh(i) * abs(swh(i)) + swh_adjustment
-				swh(i) = sign(sqrt(abs(t)), t)
 			endif
 
 ! For all data: Correct sigma0 for biases
@@ -301,33 +296,42 @@ do cyc = S%cycles(1),S%cycles(2),S%cycles(3)
 			ciono = .true.
 		endif
 
-! Define new variables, if required
+! If nothing changed, stop here
 
+		if (.not.(ltbias .or. lrange .or. cmeteo .or. ciono .or. lssb .or. cswh .or. lsig0 .or. lwind)) then
+			write (*,552) 0
+			call rads_close_pass (S, P)
+			cycle
+		endif
+
+! Update history and define new variables (if required)
+
+		call rads_put_history (S, P)
 		if (lssb) call rads_def_var (S, P, 'ssb_hyb')
-		if (lwind) call rads_def_var (S, P, 'wind_speed_ku')
+		if (lwind) call rads_def_var (S, P, 'wind_speed_alt')
 
 ! Write out all the data
 
+		l = P%ndata
 		if (ltbias) then
-			call rads_put_var (S, P, 'time', time)
-			call rads_put_var (S, P, 'alt_cnes', alt)
+			call rads_put_var (S, P, 'time', time(:l))
+			call rads_put_var (S, P, 'alt_cnes', alt(:l))
 		endif
-		if (lrange) call rads_put_var (S, P, 'range_ku', range)
-		if (cmeteo) call rads_put_var (S, P, 'dry_tropo', dry)
-		if (cmeteo) call rads_put_var (S, P, 'wet_tropo', wet)
-		if (ciono) call rads_put_var (S, P, 'iono_gim', iono)
-		if (lssb) call rads_put_var (S, P, 'ssb_hyb', ssb)
-		if (cswh .or. dswh) call rads_put_var (S, P, 'swh_ku', swh)
-		if (lsig0 .or. ldrift) call rads_put_var (S, P, 'sig0_ku', sig0)
-		if (lwind) call rads_put_var (S, P, 'wind_speed_ku', wind)
-
-! Dump all changed records
-
-		if (ltbias .or. lrange .or. cmeteo .or. ciono .or. lssb .or. cswh .or. lsig0 .or. lwind) then
-			write (*,552) P%ndata
-		else
-			write (*,552) 0
+		if (lrange) call rads_put_var (S, P, 'range_ku', range(:l))
+		if (cmeteo) then
+			call rads_put_var (S, P, 'dry_tropo', dry(:l))
+			call rads_put_var (S, P, 'wet_tropo', wet(:l))
+			call rads_put_var (S, P, 'inv_bar_static', ib(:l))
+			call rads_put_var (S, P, 'inv_bar_mog2d', dac(:l))
 		endif
+		if (ciono) call rads_put_var (S, P, 'iono_gim', iono(:l))
+		if (lssb) call rads_put_var (S, P, 'ssb_hyb', ssb(:l))
+		if (cswh) call rads_put_var (S, P, 'swh_ku', swh(:l))
+		if (lsig0 .or. ldrift) call rads_put_var (S, P, 'sig0_ku', sig0(:l))
+		if (lwind) call rads_put_var (S, P, 'wind_speed_alt', wind(:l))
+
+		write (*,552) l
+		call rads_close_pass (S, P)
 	enddo
 enddo
 
@@ -344,15 +348,15 @@ write (*,1310)
 1310 format (/ &
 'syntax: rads_fix_c2 [data-selectors] [options]' // &
 'where [options] are:' / &
-'drift : Correct sigma0 for apparent drift' / &
-'meteo : Set dry and wet (and iono) to NaN when zero' / &
-'range : Correct range for biases' / &
-'sig0  : Correct sigma0 for biases and reversal (L2 only)' / &
-'ssb   : Add hybrid SSB model' / &
-'swh   : Correct SWH' / &
-'tbias : Correct time and orbital altitude for timing bias' / &
-'wind  : Add wind speed' / &
-'all   : All of the above')
+'--drift : Correct sigma0 for apparent drift' / &
+'--meteo : Set dry, wet, IB and DAC (and iono) to NaN when zero' / &
+'--range : Correct range for biases' / &
+'--sig0  : Correct sigma0 for biases and reversal (L2 only)' / &
+'--ssb   : Add hybrid SSB model' / &
+'--swh   : Correct SWH' / &
+'--tbias : Correct time and orbital altitude for timing bias' / &
+'--wind  : Add wind speed' / &
+'--all   : All of the above')
 stop
 end subroutine synopsis
 
