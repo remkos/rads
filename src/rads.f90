@@ -142,6 +142,7 @@ type :: rads_pass
 	real(eightbytereal) :: start_time, end_time      ! Start and end time of pass
 	real(eightbytereal), pointer :: tll(:,:)         ! Time, lat, lon matrix
 	integer(twobyteint), pointer :: flags(:)         ! Array of engineering flags
+	logical :: rw                                    ! NetCDF file opened for read/write
 	integer(fourbyteint) :: cycle, pass              ! Cycle and pass number
 	integer(fourbyteint) :: ncid, ndims              ! NetCDF ID of pass file and number of dimensions
 	integer(fourbyteint) :: ndata                    ! Number of data points
@@ -665,7 +666,7 @@ type(rads_pass), intent(inout) :: P
 !-----------------------------------------------------------------------
 ! gfortran 4.4.1 segfaults on the next line if this routine is made pure or elemental,
 ! so please leave it as a normal routine.
-P = rads_pass ('', '', null(), nan, nan, nan, nan, null(), null(), 0, 0, 0, 1, 0, 0, 0, 0, S%sat, S%satid, null())
+P = rads_pass ('', '', null(), nan, nan, nan, nan, null(), null(), .false., 0, 0, 0, 1, 0, 0, 0, 0, S%sat, S%satid, null())
 end subroutine rads_init_pass_struct
 
 !***********************************************************************
@@ -1073,7 +1074,7 @@ end subroutine rads_end_1d
 !***********************************************************************
 !*rads_open_pass -- Open RADS pass file
 !+
-subroutine rads_open_pass (S, P, cycle, pass)
+subroutine rads_open_pass (S, P, cycle, pass, rw)
 use netcdf
 use rads_netcdf
 use rads_time
@@ -1082,6 +1083,7 @@ use rads_geo
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 integer(fourbyteint), intent(in) :: cycle, pass
+logical, intent(in), optional :: rw
 !
 ! This routine opens a netCDF file for access to the RADS machinery.
 ! However, prior to opening the file, three tests are performed to speed
@@ -1102,6 +1104,8 @@ integer(fourbyteint), intent(in) :: cycle, pass
 ! If the file cannot be read properly, rads_err_nc_parse is returned.
 ! Also, in both cases, P%ndata will be set to zero.
 !
+! By default the file is opened for reading only. Specify perm=nf90_write to
+! open for reading and writing.
 ! The file opened with this routine should be closed by using rads_close_pass.
 !
 ! Arguments:
@@ -1109,6 +1113,7 @@ integer(fourbyteint), intent(in) :: cycle, pass
 !  P        : Pass structure
 !  cycle    : Cycle number
 !  pass     : Pass number
+!  rw       : Optionally set read/write permission (def: read only)
 !
 ! Error codes:
 !  S%error  : rads_noerr, rads_warn_nc_file, rads_err_nc_parse
@@ -1192,8 +1197,18 @@ endif
 ! Open pass file
 S%pass_stat(6+ascdes) = S%pass_stat(6+ascdes) + 1
 write (P%filename, '(a,"/c",i3.3,"/",a2,"p",i4.4,"c",i3.3,".nc")') trim(S%phase%dataroot), cycle, S%sat, pass, cycle
-if (S%debug >= 2) write (*,*) 'Opening : '//trim(P%filename)
-if (nft(nf90_open(P%filename,nf90_nowrite,P%ncid))) return
+if (present(rw)) then
+	P%rw = rw
+else
+	P%rw = .false.
+endif
+if (P%rw) then
+	if (S%debug >= 2) write (*,*) 'Opening for read/write: '//trim(P%filename)
+	if (nft(nf90_open(P%filename,nf90_write,P%ncid))) return
+else
+	if (S%debug >= 2) write (*,*) 'Opening for read only: '//trim(P%filename)
+	if (nft(nf90_open(P%filename,nf90_nowrite,P%ncid))) return
+endif
 
 ! Read global attributes
 S%error = rads_err_nc_parse
@@ -1542,7 +1557,7 @@ recursive subroutine rads_get_var_nc ! Get data variable from RADS netCDF file
 use netcdf
 use rads_netcdf
 integer(fourbyteint) :: start(1), e, nctype, ndims
-real(eightbytereal) :: fillvalue, scale_factor, add_offset
+real(eightbytereal) :: x
 
 ! If time, lat, lon are already read, return those arrays upon request
 if (P%first_meas == 0) then
@@ -1561,12 +1576,12 @@ endif
 if (P%cycle == info%cycle .and. P%pass == info%pass) then
 	! Keep old varid
 else if (nff(nf90_inq_varid(P%ncid, info%dataname, info%varid))) then
-	! Read variable attributes if not yet set
-	if (info%nctype == 0) info%nctype = nctype
-	if (info%long_name(:1) == ' ') e = nf90_get_att(P%ncid, info%varid, 'long_name', info%long_name)
-	if (info%units(:1) == ' ') e = nf90_get_att(P%ncid, info%varid, 'units', info%units)
-	if (info%standard_name(:1) == ' ') e = nf90_get_att(P%ncid, info%varid, 'standard_name', info%standard_name)
-	if (info%comment(:1) == ' ') e = nf90_get_att(P%ncid, info%varid, 'comment', info%comment)
+	! Read variable attributes if not yet set, or if we read/write
+	if (P%rw .or. info%nctype == 0) e = nf90_inquire_variable (P%ncid, info%varid, xtype=info%nctype)
+	if (P%rw .or. info%long_name(:1) == ' ') e = nf90_get_att(P%ncid, info%varid, 'long_name', info%long_name)
+	if (P%rw .or. info%units(:1) == ' ') e = nf90_get_att(P%ncid, info%varid, 'units', info%units)
+	if (P%rw .or. info%standard_name(:1) == ' ') e = nf90_get_att(P%ncid, info%varid, 'standard_name', info%standard_name)
+	if (P%rw .or. info%comment(:1) == ' ') e = nf90_get_att(P%ncid, info%varid, 'comment', info%comment)
 else
 	! Failed to find variable
 	S%error = rads_err_nc_var
@@ -1594,9 +1609,23 @@ case default
 end select
 
 ! Set NaN values and apply optional scale_factor and add_offset
-if (nff(nf90_get_att(P%ncid, info%varid, '_FillValue', fillvalue))) where (data == fillvalue) data = nan
-if (nff(nf90_get_att(P%ncid, info%varid, 'scale_factor', scale_factor))) data = data * scale_factor
-if (nff(nf90_get_att(P%ncid, info%varid, 'add_offset', add_offset))) data = data + add_offset
+if (nff(nf90_get_att(P%ncid, info%varid, '_FillValue', x))) where (data == x) data = nan
+! If we read/write we store the scale factor and offset
+if (P%rw) then
+	if (nff(nf90_get_att(P%ncid, info%varid, 'scale_factor', info%scale_factor))) then
+		data = data * info%scale_factor
+	else
+		info%scale_factor = 1d0
+	endif
+	if (nff(nf90_get_att(P%ncid, info%varid, 'add_offset', info%add_offset))) then
+		data = data + info%add_offset
+	else
+		info%add_offset = 0d0
+	endif
+else
+	if (nff(nf90_get_att(P%ncid, info%varid, 'scale_factor', x))) data = data * x
+	if (nff(nf90_get_att(P%ncid, info%varid, 'add_offset', x))) data = data + x
+endif
 end subroutine rads_get_var_nc
 
 subroutine rads_get_var_nc_att ! Get data attribute from RADS netCDF file
@@ -3453,6 +3482,7 @@ if (nft(nf90_def_dim (P%ncid, 'time', P%ndata, l))) then
 	call rads_error (S, rads_err_nc_create, 'Error creating time dimension of ' // trim(P%filename))
 	return
 endif
+P%rw = .true.
 
 ! Specify the global attributes
 e = 0
@@ -3509,12 +3539,16 @@ type(rads_pass), intent(inout) :: P
 !  P        : Pass structure
 !-----------------------------------------------------------------------
 integer :: e
+
+! Make sure we are in define mode and that we can write
+if (nf90_redef (P%ncid) == nf90_eperm) call rads_error (S, rads_err_nc_put, 'File '//trim(P%filename)//' not opened for writing')
+! Write attribute
 if (associated(P%history)) then
 	e = nf90_put_att (P%ncid, nf90_global, 'history', datestamp()//': '//trim(S%command)//rads_linefeed//trim(P%history))
 else
 	e = nf90_put_att (P%ncid, nf90_global, 'history', datestamp()//': '//trim(S%command))
 endif
-if (e > 0) call rads_error (S, rads_err_nc_create, 'Error writing history attribute to '//trim(P%filename))
+if (e > 0) call rads_error (S, rads_err_nc_put, 'Error writing history attribute to '//trim(P%filename))
 end subroutine rads_put_history
 
 !***********************************************************************
@@ -3544,6 +3578,9 @@ if (present(add_offset)) info%add_offset = add_offset
 do n = 1,info%ndims
 	dimid(n) = info%ndims - n + 1
 enddo
+
+! Make sure we are in define mode and that we can write
+if (nf90_redef (P%ncid) == nf90_eperm) call rads_error (S, rads_err_nc_put, 'File '//trim(P%filename)//' not opened for writing')
 
 ! Define the the variable and its attributes
 if (nft(nf90_def_var(P%ncid, var%name, info%nctype, dimid(1:info%ndims), info%varid))) then
@@ -3624,7 +3661,7 @@ character(len=*), intent(in) :: varname
 integer(fourbyteint), intent(in), optional :: nctype
 real(eightbytereal), intent(in), optional :: scale_factor, add_offset
 type(rads_var), pointer :: var
-var => rads_varptr(S, varname)
+var => rads_varptr (S, varname)
 if (S%error /= rads_noerr) return
 call rads_def_var_by_var_0d (S, P, var, nctype, scale_factor, add_offset)
 if (S%error /= rads_noerr) return
@@ -3670,7 +3707,8 @@ case (nf90_int4)
 case default
 	e = nf90_put_var (P%ncid, var%info%varid, (data - var%info%add_offset) / var%info%scale_factor, start)
 end select
-if (e > 0) call rads_error (S, rads_err_nc_put, 'Error writing data for variable '//trim(var%name)//' to '//trim(P%filename))
+if (e /= nf90_noerr) call rads_error (S, rads_err_nc_put, &
+	'Error writing data for variable '//trim(var%name)//' to '//trim(P%filename))
 end subroutine rads_put_var_by_var_1d_start
 
 subroutine rads_put_var_by_var_2d (S, P, var, data)
@@ -3713,7 +3751,8 @@ case (nf90_int4)
 case default
 	e = nf90_put_var (P%ncid, var%info%varid, (data - var%info%add_offset) / var%info%scale_factor, start)
 end select
-if (e > 0) call rads_error (S, rads_err_nc_put, 'Error writing data for variable '//trim(var%name)//' to '//trim(P%filename))
+if (e /= nf90_noerr) call rads_error (S, rads_err_nc_put, &
+	'Error writing data for variable '//trim(var%name)//' to '//trim(P%filename))
 end subroutine rads_put_var_by_var_2d_start
 
 logical function rads_put_var_helper (S, P, var)
@@ -3724,8 +3763,12 @@ type(rads_pass), intent(inout) :: P
 type(rads_var), intent(inout) :: var
 integer(fourbyteint) :: e
 S%error = rads_noerr
-e = nf90_enddef(P%ncid) ! Make sure to get out of define mode
-if (P%cycle == var%info%cycle .and. P%pass == var%info%pass) then
+e = nf90_enddef (P%ncid) ! Make sure to get out of define mode
+if (.not.P%rw) then
+	call rads_error (S, rads_err_nc_put, &
+	'File '//trim(P%filename)//' not opened for writing variable '//trim(var%name))
+	rads_put_var_helper = .true.
+else if (P%cycle == var%info%cycle .and. P%pass == var%info%pass) then
 	rads_put_var_helper = .false. ! Keep old varid
 else if (nft(nf90_inq_varid (P%ncid, var%name, var%info%varid))) then
 	call rads_error (S, rads_err_nc_var, 'No variable '//trim(var%name)//' in '//trim(P%filename))
