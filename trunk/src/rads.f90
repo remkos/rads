@@ -3445,7 +3445,6 @@ character(len=*), intent(in), optional :: name
 !-----------------------------------------------------------------------
 integer(fourbyteint) :: i, l, e
 logical :: exist
-character(len=26) :: date(3)
 
 ! Initialise
 S%error = rads_noerr
@@ -3492,29 +3491,51 @@ l = index(P%filename, '/', .true.) + 1
 e = e + nf90_put_att (P%ncid, nf90_global, 'filename', trim(P%filename(l:)))
 e = e +	nf90_put_att (P%ncid, nf90_global, 'mission_name', trim(S%satellite)) + &
 	nf90_put_att (P%ncid, nf90_global, 'mission_phase', S%phase%name(:1))
-if (ndata > 0) then
-	date = strf1985f ((/P%equator_time,P%start_time,P%end_time/))
-	e = e + &
-	nf90_put_att (P%ncid, nf90_global, 'cycle_number', P%cycle) + &
-	nf90_put_att (P%ncid, nf90_global, 'pass_number', P%pass) + &
-	nf90_put_att (P%ncid, nf90_global, 'equator_longitude', P%equator_lon) + &
-	nf90_put_att (P%ncid, nf90_global, 'equator_time', date(1)) + &
-	nf90_put_att (P%ncid, nf90_global, 'first_meas_time', date(2)) + &
-	nf90_put_att (P%ncid, nf90_global, 'last_meas_time', date(3))
-endif
+if (ndata > 0) call rads_put_passinfo (S, P)
 if (P%original /= '') e = e + nf90_put_att (P%ncid, nf90_global, 'original', P%original)
 ! Temporarily also create a 'log01' record, to support RADS3
 l = index(P%original, rads_linefeed) - 1
 if (l < 0) l = len_trim(P%original)
 e = e + nf90_put_att (P%ncid, nf90_global, 'log01', datestamp()//' | '//trim(S%command)//': RAW data from '//P%original(:l))
 
-if (e > 0) call rads_error (S, rads_err_nc_create, 'Error writing global attributes to '//trim(P%filename))
+if (e /= 0) call rads_error (S, rads_err_nc_create, 'Error writing global attributes to '//trim(P%filename))
 
 call rads_put_history (S, P)
 end subroutine rads_create_pass
 
 !***********************************************************************
-!*rads_put_history -- Update and write history to RADS data file
+!*rads_put_passinfo -- Write pass info to RADS data file
+!
+subroutine rads_put_passinfo (S, P)
+use netcdf
+use rads_time
+type(rads_sat), intent(inout) :: S
+type(rads_pass), intent(inout) :: P
+!
+! This routine writes cycle and pass number, equator longitude and time,
+! and start and end time of the pass to the global attributes in a RADS
+! pass file.
+!
+! Arguments:
+!  S        : Satellite/mission dependent structure
+!  P        : Pass structure
+!-----------------------------------------------------------------------
+integer :: e
+character(len=26) :: date(3)
+e = 0
+date = strf1985f ((/P%equator_time,P%start_time,P%end_time/))
+e = e + &
+nf90_put_att (P%ncid, nf90_global, 'cycle_number', P%cycle) + &
+nf90_put_att (P%ncid, nf90_global, 'pass_number', P%pass) + &
+nf90_put_att (P%ncid, nf90_global, 'equator_longitude', modulo(P%equator_lon, 360d0)) + &
+nf90_put_att (P%ncid, nf90_global, 'equator_time', date(1)) + &
+nf90_put_att (P%ncid, nf90_global, 'first_meas_time', date(2)) + &
+nf90_put_att (P%ncid, nf90_global, 'last_meas_time', date(3))
+if (e /= 0) call rads_error (S, rads_err_nc_create, 'Error writing global attributes to '//trim(P%filename))
+end subroutine rads_put_passinfo
+
+!***********************************************************************
+!*rads_put_history -- Write history to RADS data file
 !
 subroutine rads_put_history (S, P)
 use netcdf
@@ -3546,7 +3567,7 @@ if (associated(P%history)) then
 else
 	e = nf90_put_att (P%ncid, nf90_global, 'history', datestamp()//': '//trim(S%command))
 endif
-if (e > 0) call rads_error (S, rads_err_nc_put, 'Error writing history attribute to '//trim(P%filename))
+if (e /= 0) call rads_error (S, rads_err_nc_put, 'Error writing history attribute to '//trim(P%filename))
 end subroutine rads_put_history
 
 !***********************************************************************
@@ -3621,7 +3642,7 @@ if (info%datatype < rads_type_time .and. info%dataname(:1) /= ':') &
 	e = e + nf90_put_att (P%ncid, info%varid, 'coordinates', 'lon lat')
 if (var%field(1) /= rads_nofield) e = e + nf90_put_att (P%ncid, info%varid, 'field', var%field(1))
 if (info%comment /= '') e = e + nf90_put_att (P%ncid, info%varid, 'comment', info%comment)
-if (e > 0) call rads_error (S, rads_err_nc_var, &
+if (e /= 0) call rads_error (S, rads_err_nc_var, &
 	'Error writing attributes for variable '//trim(var%name)//' in '//trim(P%filename))
 info%cycle = P%cycle
 info%pass = P%pass
@@ -3705,7 +3726,7 @@ case (nf90_int4)
 case default
 	e = nf90_put_var (P%ncid, var%info%varid, (data - var%info%add_offset) / var%info%scale_factor, start)
 end select
-if (e /= nf90_noerr) call rads_error (S, rads_err_nc_put, &
+if (e /= 0) call rads_error (S, rads_err_nc_put, &
 	'Error writing data for variable '//trim(var%name)//' to '//trim(P%filename))
 end subroutine rads_put_var_by_var_1d_start
 
@@ -3749,7 +3770,7 @@ case (nf90_int4)
 case default
 	e = nf90_put_var (P%ncid, var%info%varid, (data - var%info%add_offset) / var%info%scale_factor, start)
 end select
-if (e /= nf90_noerr) call rads_error (S, rads_err_nc_put, &
+if (e /= 0) call rads_error (S, rads_err_nc_put, &
 	'Error writing data for variable '//trim(var%name)//' to '//trim(P%filename))
 end subroutine rads_put_var_by_var_2d_start
 
