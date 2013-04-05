@@ -162,16 +162,6 @@ Global RADS configuration file
 	<compress sat="c2">int4 1d-4 700d3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_eiggc03c" field="412" sat="n1">
-	<long_name>EIGEN-GC03c orbital altitude</long_name>
-	<standard_name>height_above_reference_ellipsoid</standard_name>
-	<source>EIGEN-GC03c</source>
-	<units>m</units>
-	<data>alt_eiggc03c</data>
-	<format>f11.3</format>
-	<compress>int4 1d-3</compress>
-	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
-</var>
 <var name="alt_pgs7777" field="410" sat="g1">
 	<long_name>PGS7777 orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
@@ -194,6 +184,16 @@ Global RADS configuration file
 		<format>f12.4</format>
 		<compress>int4 1d-4 1300d3</compress>
 	</if>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<var name="alt_eiggc03c" field="412" sat="n1">
+	<long_name>EIGEN-GC03c orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>EIGEN-GC03c</source>
+	<units>m</units>
+	<data>alt_eiggc03c</data>
+	<format>f11.3</format>
+	<compress>int4 1d-3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_ggm02c_itrf2005" field="413" sat="pn tx">
