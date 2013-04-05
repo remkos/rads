@@ -69,7 +69,6 @@ program rads_gen_saral
 ! liquid_water - Liquid water content
 ! water_vapor_content - Water vapor content
 !-----------------------------------------------------------------------
-use typesizes
 use netcdf
 use rads
 use rads_misc
