@@ -145,6 +145,29 @@ enddo
 contains
 
 !-----------------------------------------------------------------------
+! Print synopsis
+!-----------------------------------------------------------------------
+
+subroutine synopsis (flag)
+character(len=*), optional :: flag
+if (rads_version ('$Revision$', 'Correct several CryoSat-2 measurement values', flag=flag)) return
+write (*,1310)
+1310 format (/ &
+'usage: rads_fix_c2 [data-selectors] [options]' // &
+'where [options] are:' / &
+'--drift : Correct sigma0 for apparent drift' / &
+'--meteo : Set dry, wet, IB (and iono) to NaN when zero' / &
+'--range : Correct range for biases' / &
+'--sig0  : Correct sigma0 for biases and reversal (L2 only)' / &
+'--ssb   : Add hybrid SSB model' / &
+'--swh   : Correct SWH' / &
+'--tbias : Correct time and orbital altitude for timing bias' / &
+'--wind  : Add wind speed' / &
+'--all   : All of the above')
+stop
+end subroutine synopsis
+
+!-----------------------------------------------------------------------
 ! Process a single pass
 !-----------------------------------------------------------------------
 
@@ -342,28 +365,5 @@ if (lwind) call rads_put_var (S, P, 'wind_speed_alt', wind)
 
 write (*,552) n
 end subroutine process_pass
-
-!-----------------------------------------------------------------------
-! Print synopsis
-!-----------------------------------------------------------------------
-
-subroutine synopsis (flag)
-character(len=*), optional :: flag
-if (rads_version ('$Revision$', 'Correct several CryoSat-2 measurement values', flag=flag)) return
-write (*,1310)
-1310 format (/ &
-'usage: rads_fix_c2 [data-selectors] [options]' // &
-'where [options] are:' / &
-'--drift : Correct sigma0 for apparent drift' / &
-'--meteo : Set dry, wet, IB (and iono) to NaN when zero' / &
-'--range : Correct range for biases' / &
-'--sig0  : Correct sigma0 for biases and reversal (L2 only)' / &
-'--ssb   : Add hybrid SSB model' / &
-'--swh   : Correct SWH' / &
-'--tbias : Correct time and orbital altitude for timing bias' / &
-'--wind  : Add wind speed' / &
-'--all   : All of the above')
-stop
-end subroutine synopsis
 
 end program rads_fix_c2
