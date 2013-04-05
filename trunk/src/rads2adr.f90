@@ -127,7 +127,7 @@ do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
 	! Process passes one-by-one
 	do pass = S%passes(1), S%passes(2), S%passes(3)
 		call rads_open_pass (S, P, cycle, pass)
-		if (P%ndata > 0) call process_pass
+		if (P%ndata > 0) call process_pass (P%ndata, S%nsel)
 		if (S%debug >= 1) call rads_progress_bar (S, P, nselpass)
 		call rads_close_pass (S, P)
 	enddo
@@ -166,9 +166,10 @@ end subroutine synopsis
 !***********************************************************************
 ! Process data for a single pass
 
-subroutine process_pass
+subroutine process_pass (ndata, nsel)
+integer(fourbyteint), intent(in) :: ndata, nsel
+real(eightbytereal) :: data(ndata,nsel)
 character(len=80) :: passname
-real(eightbytereal), allocatable :: data(:,:)
 integer(fourbyteint) :: i
 
 ! Open a new output file when outname is not specified
@@ -181,13 +182,12 @@ endif
 nselpass = 0
 
 ! Read the data
-allocate (data(P%ndata,S%nsel))
-do i = 1,S%nsel
+do i = 1,nsel
 	call rads_get_var (S, P, S%sel(i), data(:,i))
 enddo
 
 ! Loop through the data
-do i = 1,P%ndata,step
+do i = 1,ndata,step
 	! See if we have to reject this record
 	if (reject > 0) then
 		if (isnan_(data(i,reject))) cycle
@@ -221,7 +221,6 @@ do i = 1,P%ndata,step
 enddo
 
 nseltot = nseltot + nselpass
-deallocate (data)
 
 ! Close per-pass output file
 if (outname /= '') then

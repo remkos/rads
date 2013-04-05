@@ -86,7 +86,7 @@ do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
 	! Process passes one-by-one
 	do pass = S%passes(1), S%passes(2), S%passes(3)
 		call rads_open_pass (S, P, cycle, pass)
-		if (P%ndata > 0) call process_pass
+		if (P%ndata > 0) call process_pass (P%ndata, S%nsel)
 		if (S%debug >= 1) call rads_progress_bar (S, P, nselpass)
 		call rads_close_pass (S, P)
 	enddo
@@ -125,21 +125,21 @@ end subroutine synopsis
 
 !***********************************************************************
 
-subroutine process_pass
-real(eightbytereal), allocatable :: data(:,:)
-logical, allocatable :: accept(:)
+subroutine process_pass (ndata, nsel)
+integer(fourbyteint), intent(in) :: ndata, nsel
+real(eightbytereal) :: data(ndata,nsel)
+logical :: accept(ndata)
 integer(fourbyteint) :: i, start(1)
 
 ! Read the data
 nselpass = 0
-allocate (data(P%ndata,S%nsel), accept(P%ndata))
 accept = .false.
-do i = 1,S%nsel
+do i = 1,nsel
 	call rads_get_var (S, P, S%sel(i), data(:,i))
 enddo
 
 ! Loop through the data
-do i = 1,P%ndata,step
+do i = 1,ndata,step
 	! See if we have to reject this record
 	if (reject > 0) then
 		if (isnan_(data(i,reject))) cycle
@@ -166,11 +166,10 @@ else if (nseltot == 0) then
 endif
 
 ! Write the variables
-do i = 1,S%nsel
+do i = 1,nsel
 	call rads_put_var (S, Pout, S%sel(i), pack(data(:,i),accept), start)
 enddo
 nseltot = nseltot + nselpass
-deallocate (data, accept)
 
 ! Close per-pass output file
 ! We need to keep the history, etc, since rads_close_pass (S, P) in the main program
