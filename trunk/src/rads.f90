@@ -21,7 +21,7 @@ use rads_grid
 
 ! Dimensions
 integer(fourbyteint), parameter :: rads_var_chunk = 100, rads_varl = 40, rads_naml = 160, rads_cmdl = 320, &
-	rads_strl = 640, rads_hstl = 3200, rads_cyclistl = 50, rads_optl = 50
+	rads_strl = 800, rads_hstl = 3200, rads_cyclistl = 50, rads_optl = 50
 ! RADS4 data types
 integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, rads_type_flagmasks = 2, rads_type_flagvalues = 3, &
 	rads_type_time = 11, rads_type_lat = 12, rads_type_lon = 13
@@ -1248,7 +1248,7 @@ else if (nff(nf90_inquire_attribute(P%ncid,nf90_global,'log01',attnum=k))) then 
 		write (date, '("log",i2.2)') i
 		if (nft(nf90_get_att(P%ncid,nf90_global,date,string))) exit
 		if (i == 1) then
-			P%history = string
+			P%history = string(:k-1)
 			! If log01 has original file name, save it
 			k = index(string, 'RAW data from file')
 			if (k > 0) then
@@ -1258,7 +1258,7 @@ else if (nff(nf90_inquire_attribute(P%ncid,nf90_global,'log01',attnum=k))) then 
 				P%original = string(k+14:)
 			endif
 		else
-			P%history = trim(string) // rads_linefeed // P%history
+			P%history = string(:k-1) // rads_linefeed // P%history
 		endif
 	enddo
 endif
