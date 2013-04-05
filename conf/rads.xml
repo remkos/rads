@@ -1239,7 +1239,7 @@ Global RADS configuration file
 	<var name="range_rms_ka" field="2002">
 		<long_name>std dev of Ka-band range</long_name>
 		<units>m</units>
-		<limits>0.0 0.4</limits>
+		<limits>0.0 0.17</limits>
 		<data>range_rms_ka</data>
 		<format>f6.4</format>
 		<default>0</default>
