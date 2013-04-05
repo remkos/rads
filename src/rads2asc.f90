@@ -160,7 +160,7 @@ do j = 1,msat
 		! Process passes one-by-one
 		do pass = S%passes(1), S%passes(2), S%passes(3)
 			call rads_open_pass (S, P, cycle, pass)
-			if (P%ndata > 0) call process_pass(P%ndata,S%nsel)
+			if (P%ndata > 0) call process_pass (P%ndata, S%nsel)
 			if (S%debug >= 1 .and. outunit /= logunit) call rads_progress_bar (S, P, nselpass, logunit)
 			call rads_close_pass (S, P)
 		enddo
@@ -214,8 +214,8 @@ end subroutine synopsis
 
 subroutine process_pass (ndata, nsel)
 integer(fourbyteint), intent(in) :: ndata, nsel
-character(len=80) :: passname
 real(eightbytereal) :: data(ndata,nsel)
+character(len=80) :: passname
 integer(fourbyteint) :: i
 
 ! Open a new output file when outname is not specified

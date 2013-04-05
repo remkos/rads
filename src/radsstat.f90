@@ -36,7 +36,7 @@ character(len=rads_naml) :: filename = ''
 integer(fourbyteint), parameter :: period_day=0, period_pass=1, period_cycle=2
 integer(fourbyteint) :: nr=0, minnr=2, cycle, pass, i, l, &
 	period=period_day, wmode=0, nx, ny, kx, ky, ios, sizes(2), ncid, varid(2)
-real(eightbytereal), allocatable :: z(:,:), lat_w(:)
+real(eightbytereal), allocatable :: lat_w(:)
 real(eightbytereal) :: sini, step=1d0, x0, y0, res(2)=(/3d0,1d0/), start_time, end_time
 type :: stat
 	real(eightbytereal) :: wgt, mean, sum2, xmin, xmax
@@ -143,7 +143,7 @@ do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
 		if (isnan_(start_time)) start_time = Pin%start_time
 
 		! Process the pass data
-		if (Pin%ndata > 0) call process_pass
+		if (Pin%ndata > 0) call process_pass (Pin%ndata, S%nsel)
 
 		! Print the statistics at the end of the data pass (if requested)
 		if (period == period_pass .and. nint(modulo(dble(pass),step)) == 0) call output_stat
@@ -199,18 +199,19 @@ end subroutine synopsis
 !***********************************************************************
 ! Process data for a single pass
 
-subroutine process_pass
+subroutine process_pass (ndata, nsel)
+integer(fourbyteint), intent(in) :: ndata, nsel
+real(eightbytereal) :: z(ndata,0:nsel)
 integer :: i, j
 
 ! Read the data for this pass
-allocate (z(Pin%ndata,0:S%nsel))
 z(:,0) = Pin%tll(:,1)	! Store time
-do j = 1,S%nsel
+do j = 1,nsel
 	call rads_get_var (S, Pin, S%sel(j), z(:,j))
 enddo
 
 ! Update the statistics with data in this pass
-do i = 1,Pin%ndata
+do i = 1,ndata
 	! Print the statistics (if in "daily" mode)
 	if (period == period_day .and. Pin%tll(i,1) >= end_time) then
 		call output_stat
@@ -234,8 +235,6 @@ do i = 1,Pin%ndata
    	box(:,kx,ky)%xmax = max(box(:,kx,ky)%xmax, z(i,:))
    	nr = nr + 1
 enddo
-
-deallocate (z)
 end subroutine process_pass
 
 !***********************************************************************
