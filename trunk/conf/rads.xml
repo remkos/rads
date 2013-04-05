@@ -125,6 +125,7 @@ Global RADS configuration file
 	<long_name>JGM-3 orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>GSFC, JGM-3</source>
+	<original>jgm3.latest</original>
 	<units>m</units>
 	<data>alt_jgm3</data>
 	<format>f11.3</format>
@@ -135,6 +136,7 @@ Global RADS configuration file
 	<long_name>DGM-E04 orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>DEOS, DGM-E04</source>
+	<original>dgm-e04.latest</original>
 	<units>m</units>
 	<data>alt_dgme04</data>
 	<format>f11.3</format>
@@ -166,6 +168,7 @@ Global RADS configuration file
 	<long_name>PGS7777 orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>GSFC, PGS7777</source>
+	<original>pgs7777</original>
 	<units>m</units>
 	<data>alt_pgs7777</data>
 	<format>f11.3</format>
@@ -176,6 +179,7 @@ Global RADS configuration file
 	<long_name>GGM02c(ITRF2000) orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>GGM02c(ITRF2000)</source>
+	<original>ggm02c_itrf2000</original>
 	<units>m</units>
 	<data>alt_ggm02c_itrf2000</data>
 	<format>f11.3</format>
@@ -190,6 +194,7 @@ Global RADS configuration file
 	<long_name>EIGEN-GC03c orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>EIGEN-GC03c</source>
+	<original>eigen-cg03c</original>
 	<units>m</units>
 	<data>alt_eiggc03c</data>
 	<format>f11.3</format>
@@ -200,6 +205,7 @@ Global RADS configuration file
 	<long_name>GGM02c(ITRF2005) orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>GGM02c(ITRF2005)</source>
+	<original>ggm02c_itrf2005</original>
 	<units>m</units>
 	<data>alt_ggm02c_itrf2005</data>
 	<format>f11.3</format>
@@ -214,6 +220,7 @@ Global RADS configuration file
 	<long_name>EIGEN-GL04c orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>EIGEN-GL04c</source>
+	<original>eigen-gl04c</original>
 	<units>m</units>
 	<data>alt_eiggl04s</data>
 	<format>f12.4</format>
@@ -224,6 +231,7 @@ Global RADS configuration file
 	<long_name>GDR-C' orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>GDR-C' standards</source>
+	<original>gsfc_gdr_c_prime</original>
 	<units>m</units>
 	<data>alt_gdrcp</data>
 	<format>f11.3</format>
@@ -238,6 +246,7 @@ Global RADS configuration file
 	<long_name>GPS orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>JPL GPS orbits</source>
+	<original>jpl_gps</original>
 	<units>m</units>
 	<data>alt_gps</data>
 	<compress>int4 1d-3</compress>
@@ -252,6 +261,7 @@ Global RADS configuration file
 	<long_name>ESOC EIGEN-6C orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>ESOC, EIGEN-6C</source>
+	<original>eigen-6c-esoc</original>
 	<units>m</units>
 	<data>alt_eig6c</data>
 	<compress>int4 1d-3</compress>
@@ -267,6 +277,7 @@ Global RADS configuration file
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>GDR-D standards</source>
 	<units>m</units>
+	<original>gdr-d</original>
 	<data>alt_gdrd</data>
 	<format>f12.4</format>
 	<compress>int4 1d-4 700d3</compress>
@@ -277,6 +288,7 @@ Global RADS configuration file
 	<long_name>REAPER/COMBI orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>REAPER project, combined solution</source>
+	<original>reaper/combi</original>
 	<units>m</units>
 	<data>alt_reaper</data>
 	<format>f11.3</format>
@@ -287,6 +299,7 @@ Global RADS configuration file
 	<long_name>REAPER/DEOS orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>REAPER project, DEOS solution</source>
+	<original>reaper/deos</original>
 	<units>m</units>
 	<data>alt_reaper_deos</data>
 	<format>f11.3</format>
@@ -297,6 +310,7 @@ Global RADS configuration file
 	<long_name>REAPER/GFZ orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>REAPER project, GFZ solution</source>
+	<original>reaper/gfz</original>
 	<units>m</units>
 	<data>alt_reaper_gfz</data>
 	<format>f11.3</format>
@@ -307,6 +321,7 @@ Global RADS configuration file
 	<long_name>REAPER/ESOC orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>REAPER project, ESOC solution</source>
+	<original>reaper/esoc</original>
 	<units>m</units>
 	<data>alt_reaper_esoc</data>
 	<format>f11.3</format>

@@ -26,7 +26,6 @@
 program rads_add_orbit
 
 use rads
-use rads_misc
 use rads_grid
 
 ! Data variables
@@ -37,7 +36,7 @@ type(grid) :: info
 
 ! Command line arguments
 
-integer(fourbyteint) :: l,i,cyc,pass
+integer(fourbyteint) :: i,cyc,pass
 logical :: equator=.false.,range=.false.,doppler=.false.,range2=.false.,rate=.false.
 character(160) :: name='',dir='',gridnm='',var_old='',arg
 real(eightbytereal) :: tbias=0d0,maxrms=1d30,loc=0d0,dt=1d0,chirp=0d0
@@ -45,26 +44,6 @@ real(eightbytereal) :: tbias=0d0,maxrms=1d30,loc=0d0,dt=1d0,chirp=0d0
 ! Other variables
 
 integer(fourbyteint) :: ellipse=0,ios
-
-! Orbit models
-
-integer, parameter :: nmod = 15
-character(len=44) :: model(nmod) = (/ &
-'alt_jgm3 ODR.$sat/jgm3.latest               ', &
-'alt_dgme04 ODR.$sat/dgm-e04.latest          ', &
-'alt_pgs7777 ODR.$sat/pgs7777                ', &
-'alt_ggm02c_itrf2000 ODR.$sat/ggm02c_itrf2000', &
-'alt_eiggc03c ODR.$sat/eigen-cg03c           ', &
-'alt_ggm02c_itrf2005 ODR.$sat/ggm02c_itrf2005', &
-'alt_eiggl04 ODR.$sat/eigen-gl04c            ', &
-'alt_gdrcp ODR.$sat/gsfc_gdr_c_prime         ', &
-'alt_gps ODR.$sat/jpl_gps                    ', &
-'alt_eig6c ODR.$sat/eigen-6c-esoc            ', &
-'alt_gdrd ODR.$sat/gdr-d                     ', &
-'alt_reaper ODR.$sat/reaper/combi            ', &
-'alt_reaper_deos ODR.$sat/reaper/deos        ', &
-'alt_reaper_gfz ODR.$sat/reaper/gfz          ', &
-'alt_reaper_esoc ODR.$sat/reaper/esoc        ' /)
 
 ! Formats
 
@@ -123,31 +102,16 @@ enddo
 
 if (name /= '') S%sel(1)%info%long_name = trim(name) // ' orbital altitude'
 
-! Figure out directory from model specifications
+! Figure out directory from variable selection
 
-if (dir == '') then
-	do i = 1,nmod
-		l = index(model(i), ' ')
-		if (model(i)(:l-1) == S%sel(1)%name) dir = model(i)(l+1:)
-	enddo
-	if (dir == '') call rads_exit ('Unknown orbit')
-endif
+if (dir == '') dir = S%sel(1)%info%original
 
-! Add prefix $ALTIM/data/ to directory name and replace $sat by satellite name.
+! Add prefix $ALTIM/data/ODR.<satellite>/ to directory name
 
 if (dir(:1) == '/' .or. dir(:2) == './') then
 else
-	arg='/user/altim'
-	call checkenv('ALTIM',arg)
-	i = len_trim(arg)
-	arg(i+1:) = '/data/'//dir
-	dir = arg
-endif
-i = index(dir,'$sat')
-if (i > 0) then
-	arg = dir(:i-1)
-	arg(i:) = trim(S%satellite)//dir(i+4:)
-	dir = arg
+	call getenv ('ALTIM', arg)
+	dir = trim(arg) // '/data/ODR.' // trim(S%satellite) // '/' // dir
 endif
 
 ! Figure out time bias
@@ -216,7 +180,7 @@ endif
 do cyc = S%cycles(1), S%cycles(2), S%cycles(3)
 	do pass = S%passes(1), S%passes(2), S%passes(3)
 		call rads_open_pass (S, P, cyc, pass, .true.)
-		call process_pass (P%ndata)
+		if (P%ndata > 0) call process_pass (P%ndata)
 		call rads_close_pass (S, P)
 	enddo
 enddo
@@ -391,7 +355,7 @@ if (equator) then
 		if (i == i1) write (*,550) 'error scanning for equator crossing'
 	enddo
 endif
-if (S%debug >= 1) write (*,*) 'eq:',P%equator_time,P%equator_lon
+if (S%debug >= 1) write (*,*) 'eq:', P%equator_time, P%equator_lon
 
 ! Store all data fields.
 
@@ -432,7 +396,7 @@ if (var_old /= '') then
 	enddo
 	call rads_put_var (S, P, 'flags', flags)
 endif
-if (S%debug >= 1) write (*,*) 'rms:',pass,rms
+if (S%debug >= 1) write (*,*) 'rms:', pass, rms
 
 write (*,552) n
 end subroutine process_pass

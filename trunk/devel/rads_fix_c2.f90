@@ -120,16 +120,15 @@ enddo
 
 ! Load SSB model if requested
 
-arg = '/user/altim'
-call checkenv ('ALTIM', arg)
+call getenv ('ALTIM', arg)
 l = len_trim(arg)
 if (.not.lssb) then
 	! Do nothing
 else if (index(S%phase%dataroot, '/a.l2') > 0) then
-	arg(l+1:)='/data/models/c2_l2i_hyb.nc?ssb_hyb'
+	arg(l+1:) = '/data/models/c2_l2i_hyb.nc?ssb_hyb'
 	if (grid_load(arg,issb_hyb) /= 0) call rads_exit ('Error loading '//arg)
 else
-	arg(l+1:)='/data/models/c2_l1c_hyb.nc?ssb_hyb'
+	arg(l+1:) = '/data/models/c2_l1c_hyb.nc?ssb_hyb'
 	if (grid_load(arg,issb_hyb) /= 0) call rads_exit ('Error loading '//arg)
 endif
 
@@ -138,7 +137,7 @@ endif
 do cyc = S%cycles(1),S%cycles(2),S%cycles(3)
 	do pass = S%passes(1),S%passes(2),S%passes(3)
 		call rads_open_pass (S, P, cyc, pass, .true.)
-		call process_pass (P%ndata)
+		if (P%ndata > 0) call process_pass (P%ndata)
 		call rads_close_pass (S, P)
 	enddo
 enddo
