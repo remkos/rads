@@ -58,6 +58,7 @@ type :: rads_varinfo
 	character(len=rads_naml) :: long_name            ! Long name (description) of variable
 	character(len=rads_naml) :: standard_name        ! Optional pre-described CF-compliant 'standard' name ('' if not available)
 	character(len=rads_naml) :: source               ! Optional data source ('' if none)
+	character(len=rads_naml) :: original             ! Optional link to files for production ('' if none)
 	character(len=rads_strl) :: dataname             ! Name associated with data (e.g. netCDF var name, math string)
 	character(len=rads_cmdl) :: flag_meanings        ! Optional meaning of flag values ('' if none)
 	character(len=rads_cmdl) :: quality_flag         ! Quality flag(s) associated with this variable ('' if none)
@@ -2120,6 +2121,9 @@ do
 	case ('source')
 		info%source = val(1)(:rads_naml)
 
+	case ('original')
+		info%original = val(1)(:rads_naml)
+
 	case ('units')
 		info%units = val(1)(:rads_varl)
 
@@ -2461,7 +2465,7 @@ if (associated(tgt)) then
 	ptr%name => name
 else
 	allocate (ptr%info)
-	ptr%info = rads_varinfo (varname, varname, '', '', '', '', '', '', '', 'f0.3', '', '', null(), &
+	ptr%info = rads_varinfo (varname, varname, '', '', '', '', '', '', '', '', 'f0.3', '', '', null(), &
 		huge(0d0), nan, 0d0, 1d0, nan, nan, 0d0, 0d0, .false., 1, nf90_double, 0, 0, 0, 0, 0, 0, 0)
 	ptr%name => ptr%info%name
 endif
