@@ -51,7 +51,7 @@ character(1), intent(out) :: phasenm
 !-----------------------------------------------------------------------
 logical :: new
 integer(fourbyteint) :: unit,freeunit,npass=0,pnt,olders=0,ios
-integer(fourbyteint), parameter :: mpass=100000
+integer(fourbyteint), parameter :: mpass=170000
 type :: passtable
 	integer(fourbyteint) :: orbitnr
 	character(1) :: phasenm
@@ -68,17 +68,16 @@ save pnt,npass,olders,q
 if (ers == olders) then
 	new = .false.
 else
-	call getenv ('ALTIM',line)
-	write (line,610) trim(line),ers
+	call getenv ('ALTIM', line)
+	write (line,610) trim(line), ers
 	unit = freeunit()
-	npass=0
+	npass = 0
 	open (unit,file=line,status='old')
 	do
 		read (unit,'(a)',iostat=ios) line
 		if (ios /= 0) exit
 		if (line(:1) == '#') cycle
 		npass = npass + 1
-		if (npass > mpass) call fin('erspass: too many passes')
 		read (line,600) q(npass)
 	enddo
 	close (unit)

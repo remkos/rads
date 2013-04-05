@@ -98,11 +98,11 @@ do i = 1,rads_nopt
 	end select
 enddo
 
-! Overrule long_name if spefied
+! Overrule long_name if name is specified
 
 if (name /= '') S%sel(1)%info%long_name = trim(name) // ' orbital altitude'
 
-! Figure out directory from variable selection
+! If dir is not given, figure out directory from variable selection
 
 if (dir == '') dir = S%sel(1)%info%original
 
@@ -146,17 +146,12 @@ end select
 ! Store limits. Set x-limits to mid-point +/- 180.
 
 if (gridnm /= '') then
-	arg = '/user/altim'
-	call checkenv('ALTIM',arg)
-	i = len_trim(arg)
-	arg(i+1:) = '/data/'
-	i = len_trim(arg)
-
 	write (*,551) 'Loading grid '//trim(gridnm)
 	if (gridnm(:1) == '/' .or. gridnm(:2) == './') then
-		if (grid_load(gridnm,info) /= 0) call fin('Error loading grid.')
+		if (grid_load(gridnm,info) /= 0) call rads_exit ('Error loading grid.')
 	else
-		if (grid_load(arg(:i)//gridnm,info) /= 0) call fin('Error loading grid.')
+		call getenv ('ALTIM', arg)
+		if (grid_load(trim(arg)//'/data/'//gridnm,info) /= 0) call rads_exit ('Error loading grid.')
 	endif
 	write (*,550) 'done'
 endif
@@ -186,6 +181,37 @@ do cyc = S%cycles(1), S%cycles(2), S%cycles(3)
 enddo
 
 contains
+
+!-----------------------------------------------------------------------
+! Print synopsis
+!-----------------------------------------------------------------------
+
+subroutine synopsis (flag)
+character(len=*), optional :: flag
+if (rads_version ('$Revision$', 'Add orbit to RADS data', flag=flag)) return
+write (*,1310)
+1310 format (/ &
+'usage: radsp_orbit [data-selectors] [options]'// &
+'where [options] are:'/ &
+'--var=NAME    : set variable name for output orbit (required)'/ &
+'--name=STR    : specify name of orbit'/ &
+'--dir=STR     : specify orbit directory path'/ &
+'--tbias[=VAL] : add timing bias (ms) (defaults for various satellites)'/ &
+'--rate        : compute and store orbital altitude rate'/ &
+'--loc-6       : change latitude/longtitude (10^-6 deg)'/ &
+'--loc-7       : change latitude/longtitude (10^-7 deg)'/ &
+'--equator     : change equator crossing time and longitude'/ &
+'--range       : change field 601 from SSH to range'/ &
+'--doppler     : correct range for Doppler, based on altitude rate and chirp parameter'/ &
+'--grid        : use EGM96 grid to add slope-induced Doppler'/ &
+'--grid=NAME   : use named grid to add slope-induced Doppler'/ &
+'--chirp=F     : specify chirp parameter other than default (ms)'/ &
+'--dt=DT       : specify time interval for rate, etc (s), default: 1'/ &
+'--all         : same as: --tbias --rate --loc-6 --equator'// &
+'The orbit error flag can be set using the --flag= option:'/ &
+'--flag=VAR,RMS: specify variable of reference orbit and maximum rms with new orbit (cm)')
+stop
+end subroutine synopsis
 
 !-----------------------------------------------------------------------
 ! Process a single pass
@@ -413,36 +439,5 @@ itrel = max(1,min(nint(trel)-4,nvec-8))
 trel = nint((trel-itrel)*60d6)/60d6   ! Fix time resolution to 1 microsecond
 call inter8(ndim,trel,table(1,itrel),vec)
 end subroutine intab8
-
-!-----------------------------------------------------------------------
-! Print synopsis
-!-----------------------------------------------------------------------
-
-subroutine synopsis (flag)
-character(len=*), optional :: flag
-if (rads_version ('$Revision$', 'Add orbit to RADS data', flag=flag)) return
-write (*,1310)
-1310 format (/ &
-'usage: radsp_orbit [data-selectors] [options]'// &
-'where [options] are:'/ &
-'--var=NAME    : set variable name for output orbit (required)'/ &
-'--name=STR    : specify name of orbit'/ &
-'--dir=STR     : specify orbit directory path'/ &
-'--tbias[=VAL] : add timing bias (ms) (defaults for various satellites)'/ &
-'--rate        : compute and store orbital altitude rate'/ &
-'--loc-6       : change latitude/longtitude (10^-6 deg)'/ &
-'--loc-7       : change latitude/longtitude (10^-7 deg)'/ &
-'--equator     : change equator crossing time and longitude'/ &
-'--range       : change field 601 from SSH to range'/ &
-'--doppler     : correct range for Doppler, based on altitude rate and chirp parameter'/ &
-'--grid        : use EGM96 grid to add slope-induced Doppler'/ &
-'--grid=NAME   : use named grid to add slope-induced Doppler'/ &
-'--chirp=F     : specify chirp parameter other than default (ms)'/ &
-'--dt=DT       : specify time interval for rate, etc (s), default: 1'/ &
-'--all         : same as: --tbias --rate --loc-6 --equator'// &
-'The orbit error flag can be set using the --flag= option:'/ &
-'--flag=VAR,RMS: specify variable of reference orbit and maximum rms with new orbit (cm)')
-stop
-end subroutine synopsis
 
 end program rads_add_orbit

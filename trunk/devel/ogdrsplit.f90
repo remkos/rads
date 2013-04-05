@@ -69,14 +69,14 @@ filetype = filenm(i-3:l+3)
 
 ! Open the equator crossing table
 
-call checkenv('RADSROOT',radsroot,l)
+call getenv ('RADSROOT', radsroot)
 select case (filetype(:3))
 case ('JA1')
-	orf = radsroot(:l)//'/ext/j1/JA1_ORF.txt'
+	orf = trim(radsroot) // '/ext/j1/JA1_ORF.txt'
 case ('JA2')
-	orf = radsroot(:l)//'/ext/j2/JA2_ORF.txt'
+	orf = trim(radsroot) // '/ext/j2/JA2_ORF.txt'
 case ('SRL')
-	orf = radsroot(:l)//'/ext/sa/SRL_ORF.txt'
+	orf = trim(radsroot) // '/ext/sa/SRL_ORF.txt'
 case default
 	stop 'Wrong filetype'
 end select
