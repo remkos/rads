@@ -69,7 +69,6 @@
 !-----------------------------------------------------------------------
 program rads_gen_c2_l1r
 
-use typesizes
 use netcdf
 use rads
 use rads_netcdf
