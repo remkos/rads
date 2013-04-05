@@ -81,7 +81,6 @@ program rads_gen_reaper
 ! dsig0_atmos_ku - Sigma0 attenuation
 ! mqe - Mean quadratic error of waveform fit
 !-----------------------------------------------------------------------
-use typesizes
 use netcdf
 use rads
 use rads_misc
