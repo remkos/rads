@@ -33,8 +33,9 @@ use rads_netcdf
 use typesizes
 use netcdf
 
-character(80) :: radsroot,arg,orf,dimnm,filetype,destdir
+character(80) :: radsroot,orf,arg,filenm,dimnm,filetype,destdir
 character(26) :: date(2)
+character(1024) :: exclude_list = ','
 integer(fourbyteint), parameter :: mpass = 254 * 500
 real(eightbytereal), parameter :: sec2000 = 473299200d0
 integer(fourbyteint) :: l,yy,mm,dd,hh,mn,cycle(mpass),pass(mpass),npass,ipass,i0,i,ncid1, &
@@ -44,25 +45,27 @@ real(eightbytereal), allocatable :: time(:)
 
 ! Print description, if requested
 
-if (iargc() /= 1) then
+if (iargc() < 1) then
 	write (*,1300)
 	stop
 endif
 1300 format ('ogdrsplit -- Split OGDR or OGDR SSHA file into pass files'// &
-'syntax: ogdrsplit destdir < list'//'where'/ &
+'syntax: ogdrsplit [options] destdir < list'//'where'/ &
 '  destdir : Destination directory (appends c???/*.nc)'/ &
-'  list    : Input OGDR or OGDR SSHA files')
+'  list    : Input OGDR or OGDR SSHA files'// &
+'where [options] are:' / &
+'  -xvar   : Exclude variable from copying')
 
 ! First determine filetype
 
-read (*,550,iostat=ios) arg
+read (*,550,iostat=ios) filenm
 if (ios /= 0) stop
-l = index(arg,'_2P')
+l = index(filenm,'_2P')
 if (l == 0) stop 'Wrong filetype'
 do i = l-1,5,-1
-	if (arg(i:i) == '_') exit
+	if (filenm(i:i) == '_') exit
 enddo
-filetype = arg(i-3:l+3)
+filetype = filenm(i-3:l+3)
 
 ! Open the equator crossing table
 
@@ -110,14 +113,21 @@ npass = npass - 1
 600 format (i4,4(1x,i2),1x,f6.3,1x,i3,1x,i5,6x,2(1x,f6.2))
 610 format ('Splitting : ',a)
 
-! Read destination directory
+! Read options and destination directory
 
-call getarg (1,destdir)
+do i = 1,iargc()
+	call getarg (i,arg)
+	if (arg(:2) == '-x') then
+		exclude_list = trim(exclude_list) // arg(3:len_trim(arg)) // ','
+	else
+		destdir = arg
+	endif
+enddo
 
 ! Open the input OGDR file(s)
 
 do
-	call nfs(nf90_open(arg,nf90_nowrite,ncid1))
+	call nfs(nf90_open(filenm,nf90_nowrite,ncid1))
 
 ! Read the time dimension
 
@@ -134,7 +144,7 @@ do
 	call nfs(nf90_get_var(ncid1,varid,time))
 	call nfs(nf90_get_att(ncid1,nf90_global,'first_meas_time',date(1)))
 	call nfs(nf90_get_att(ncid1,nf90_global,'last_meas_time',date(2)))
-	write (*,610) trim(arg)
+	write (*,610) trim(filenm)
 
 ! Check time with equator crossing table
 
@@ -155,7 +165,7 @@ do
 
 ! Read next filename
 
-	read (*,550,iostat=ios) arg
+	read (*,550,iostat=ios) filenm
 	if (ios /= 0) exit
 enddo
 
@@ -167,7 +177,7 @@ contains
 subroutine copyfile (rec0, rec1)
 integer(fourbyteint), intent(inout) :: rec0
 integer(fourbyteint), intent(in) :: rec1
-integer(fourbyteint) :: nrec,ncid2,varid,xtype,ndims,dimids(2),natts,i,nvars,idxin(2)=1,idxut(2)=1,dimlen
+integer(fourbyteint) :: nrec,ncid2,varid,varid2,xtype,ndims,dimids(2),natts,i,nvars,idxin(2)=1,idxut(2)=1,dimlen
 character(80) :: outnm,attnm,varnm
 real(eightbytereal) :: time2(2)
 real(eightbytereal), allocatable :: darr1(:),darr2(:,:)
@@ -229,14 +239,16 @@ else
 
 ! Copy all the variable definitions and attributes
 
+	varid2 = 0
 	do varid = 0,nvars
 		if (varid > 0) then
 			call nfs(nf90_inquire_variable(ncid1,varid,varnm,xtype,ndims,dimids,natts))
-			call nfs(nf90_def_var(ncid2,varnm,xtype,dimids(1:ndims),varid))
+			if (excluded(varnm)) cycle
+			call nfs(nf90_def_var(ncid2,varnm,xtype,dimids(1:ndims),varid2))
 		endif
 		do i = 1,natts
 			call nfs(nf90_inq_attname(ncid1,varid,i,attnm))
-			call nfs(nf90_copy_att(ncid1,varid,attnm,ncid2,varid))
+			call nfs(nf90_copy_att(ncid1,varid,attnm,ncid2,varid2))
 		enddo
 	enddo
 endif
@@ -267,26 +279,29 @@ allocate (darr1(nrec),darr2(nhz,nrec),iarr1(nrec),iarr2(nhz,nrec),iarr3(nhz))
 
 ! Copy all data elements
 
+varid2 = 0
 do varid = 1,nvars
 	call nfs(nf90_inquire_variable(ncid1,varid,varnm,xtype,ndims,dimids,natts))
+	if (excluded(varnm)) cycle
+	varid2 = varid2 + 1
 	if (xtype == nf90_double) then
 		if (ndims == 2) then
-			call nfs(nf90_get_var(ncid1,varid,darr2,idxin))
-			call nfs(nf90_put_var(ncid2,varid,darr2,idxut))
+			call nfs(nf90_get_var(ncid1,varid ,darr2,idxin))
+			call nfs(nf90_put_var(ncid2,varid2,darr2,idxut))
 		else
-			call nfs(nf90_get_var(ncid1,varid,darr1,idxin(2:2)))
-			call nfs(nf90_put_var(ncid2,varid,darr1,idxut(2:2)))
+			call nfs(nf90_get_var(ncid1,varid ,darr1,idxin(2:2)))
+			call nfs(nf90_put_var(ncid2,varid2,darr1,idxut(2:2)))
 		endif
 	else
 		if (ndims == 2) then
-			call nfs(nf90_get_var(ncid1,varid,iarr2,idxin))
-			call nfs(nf90_put_var(ncid2,varid,iarr2,idxut))
+			call nfs(nf90_get_var(ncid1,varid ,iarr2,idxin))
+			call nfs(nf90_put_var(ncid2,varid2,iarr2,idxut))
 		else if (dimids(1) == 2) then
-			call nfs(nf90_get_var(ncid1,varid,iarr3))
-			call nfs(nf90_put_var(ncid2,varid,iarr3))
+			call nfs(nf90_get_var(ncid1,varid ,iarr3))
+			call nfs(nf90_put_var(ncid2,varid2,iarr3))
 		else
-			call nfs(nf90_get_var(ncid1,varid,iarr1,idxin(2:2)))
-			call nfs(nf90_put_var(ncid2,varid,iarr1,idxut(2:2)))
+			call nfs(nf90_get_var(ncid1,varid ,iarr1,idxin(2:2)))
+			call nfs(nf90_put_var(ncid2,varid2,iarr1,idxut(2:2)))
 		endif
 	endif
 enddo
@@ -296,5 +311,11 @@ deallocate (darr1,iarr1,iarr2)
 call nfs(nf90_close(ncid2))
 
 end subroutine copyfile
+
+function excluded (varnm)
+character(len=*), intent(in) :: varnm
+logical :: excluded
+excluded = (index(exclude_list,','//trim(varnm)//',') > 0)
+end function excluded
 
 end program ogdrsplit
