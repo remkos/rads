@@ -62,8 +62,6 @@
 !-----------------------------------------------------------------------
 program rads_fix_c2
 
-use typesizes
-use netcdf
 use rads
 use rads_misc
 use rads_grid
@@ -317,7 +315,11 @@ endif
 
 ! Update history and define new variables (if required)
 
+P%start_time = time(1)
+P%end_time = time(n)
+call rads_put_passinfo (S, P)
 call rads_put_history (S, P)
+
 if (lssb) call rads_def_var (S, P, 'ssb_hyb')
 if (lwind) call rads_def_var (S, P, 'wind_speed_alt')
 
