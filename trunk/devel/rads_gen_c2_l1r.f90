@@ -74,6 +74,7 @@ use rads
 use rads_netcdf
 use rads_misc
 use rads_time
+use rads_devel
 
 ! Command line arguments
 
@@ -400,11 +401,11 @@ contains
 subroutine synopsis (flag)
 character(len=*), optional :: flag
 if (rads_version ('$Revision$', 'Write CryoSat-2 L1R data to RADS', flag=flag)) return
+call synopsis_devel (' < list_of_L1R_file_names')
 write (*,1310)
 1310 format (/ &
-'syntax: rads_gen_c2_l1r [options] < list_of_L1R_file_names'// &
-'This program converts CryoSat-2 L1R files to RADS data'/ &
-'files with the name $RADSDATAROOT/data/c2/F/pPPPP/c2pPPPPcCCC.nc.'/ &
+'This program converts CryoSat-2 L1R files to RADS data' / &
+'files with the name $RADSDATAROOT/data/c2/F/pPPPP/c2pPPPPcCCC.nc.' / &
 'The directory is created automatically and old files are overwritten.')
 stop
 end subroutine synopsis

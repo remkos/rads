@@ -65,6 +65,7 @@ program rads_fix_c2
 use rads
 use rads_misc
 use rads_grid
+use rads_devel
 
 ! Data variables
 
@@ -151,19 +152,19 @@ contains
 subroutine synopsis (flag)
 character(len=*), optional :: flag
 if (rads_version ('$Revision$', 'Correct several CryoSat-2 measurement values', flag=flag)) return
+call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
-'usage: rads_fix_c2 [data-selectors] [options]' // &
-'where [options] are:' / &
-'--drift : Correct sigma0 for apparent drift' / &
-'--meteo : Set dry, wet, IB (and iono) to NaN when zero' / &
-'--range : Correct range for biases' / &
-'--sig0  : Correct sigma0 for biases and reversal (L2 only)' / &
-'--ssb   : Add hybrid SSB model' / &
-'--swh   : Correct SWH' / &
-'--tbias : Correct time and orbital altitude for timing bias' / &
-'--wind  : Add wind speed' / &
-'--all   : All of the above')
+'Additional [processing_options] are:' / &
+'  --drift                   Correct sigma0 for apparent drift' / &
+'  --meteo                   Set dry, wet, IB (and iono) to NaN when zero' / &
+'  --range                   Correct range for biases' / &
+'  --sig0                    Correct sigma0 for biases and reversal (L2 only)' / &
+'  --ssb                     Add hybrid SSB model' / &
+'  --swh                     Correct SWH' / &
+'  --tbias                   Correct time and orbital altitude for timing bias' / &
+'  --wind                    Add wind speed' / &
+'  --all                     All of the above')
 stop
 end subroutine synopsis
 
@@ -183,7 +184,6 @@ logical :: lrm_l2,fdm_l2,old_ver,version_a,sar
 551 format (a,' ...',$)
 552 format (i5,' records changed')
 
-if (n == 0) return
 write (*,551) trim(P%filename)
 
 ! Do we have FDM or LRM? Do we have an older version?
