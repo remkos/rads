@@ -1123,7 +1123,7 @@ character(len=40) :: date
 character(len=rads_strl) :: string
 integer(fourbyteint) :: i,k,ascdes,cc,pp
 real(eightbytereal) :: d
-real(eightbytereal), allocatable :: tll(:,:)
+real(eightbytereal), pointer :: temp(:,:)
 
 ! Initialise
 S%error = rads_warn_nc_file
@@ -1263,42 +1263,46 @@ else if (nff(nf90_inquire_attribute(P%ncid,nf90_global,'log01',attnum=k))) then 
 	enddo
 endif
 
-! Read time, lon, lat; including checking their limits
-allocate (tll(P%ndata,3))
-call rads_get_var_common (S, P, S%time, tll(:,1), .false.)
-call rads_get_var_common (S, P, S%lat, tll(:,2), .false.)
-call rads_get_var_common (S, P, S%lon, tll(:,3), .false.)
+! Read time, lon, lat
+! If read-only: also check their limits
+allocate (P%tll(P%ndata,3))
+call rads_get_var_common (S, P, S%time, P%tll(:,1), P%rw)
+call rads_get_var_common (S, P, S%lat, P%tll(:,2), P%rw)
+call rads_get_var_common (S, P, S%lon, P%tll(:,3), P%rw)
 
 ! If requested, check for distance to centroid
-if (S%centroid(3) > 0d0) then
+if (.not.P%rw .and. S%centroid(3) > 0d0) then
 	do i = 1,P%ndata
-		if (any(isnan_(tll(i,2:3)))) cycle
-		if (sfdist(tll(i,2)*rad, tll(i,3)*rad, S%centroid(2), S%centroid(1)) > S%centroid(3)) tll(i,2:3) = nan
+		if (any(isnan_(P%tll(i,2:3)))) cycle
+		if (sfdist(P%tll(i,2)*rad, P%tll(i,3)*rad, S%centroid(2), S%centroid(1)) > S%centroid(3)) P%tll(i,2:3) = nan
 	enddo
 endif
 
 ! Look for first non-NaN measurement
 do i = 1,P%ndata
-	if (.not.any(isnan_(tll(i,:)))) exit
+	if (.not.any(isnan_(P%tll(i,:)))) exit
 enddo
 if (i > P%ndata) then ! Got no non-NaNs
 	P%ndata = 0
-	deallocate (tll)
 	return
 endif
 P%first_meas = i
 
 ! Now look for last non-NaN measurement
 do i = P%ndata, P%first_meas, -1
-	if (.not.any(isnan_(tll(i,:)))) exit
+	if (.not.any(isnan_(P%tll(i,:)))) exit
 enddo
 P%last_meas = i
 
-! Allocate appropriately sized time, lat, lon arrays
-P%ndata = P%last_meas - P%first_meas + 1
-allocate (P%tll(P%ndata,3))
-P%tll = tll(P%first_meas:P%last_meas,:)
-deallocate (tll)
+! If subset is requested, reallocate appropriately sized time, lat, lon arrays
+i = P%last_meas - P%first_meas + 1
+if (i /= P%ndata) then
+	P%ndata = i
+	allocate (temp(P%ndata,3))
+	temp = P%tll(P%first_meas:P%last_meas,:)
+	deallocate (P%tll)
+	P%tll => temp
+endif
 
 ! Successful ending; update number of measurements in region
 S%error = rads_noerr
@@ -3520,6 +3524,9 @@ type(rads_pass), intent(inout) :: P
 ! and start and end time of the pass to the global attributes in a RADS
 ! pass file.
 !
+! Equator longitude is written in the range 0-360 and is truncated after
+! six decimals.
+!
 ! Arguments:
 !  S        : Satellite/mission dependent structure
 !  P        : Pass structure
@@ -3531,7 +3538,7 @@ date = strf1985f ((/P%equator_time,P%start_time,P%end_time/))
 e = e + &
 nf90_put_att (P%ncid, nf90_global, 'cycle_number', P%cycle) + &
 nf90_put_att (P%ncid, nf90_global, 'pass_number', P%pass) + &
-nf90_put_att (P%ncid, nf90_global, 'equator_longitude', modulo(P%equator_lon, 360d0)) + &
+nf90_put_att (P%ncid, nf90_global, 'equator_longitude', 1d-6 * nint(1d6 * modulo(P%equator_lon, 360d0))) + &
 nf90_put_att (P%ncid, nf90_global, 'equator_time', date(1)) + &
 nf90_put_att (P%ncid, nf90_global, 'first_meas_time', date(2)) + &
 nf90_put_att (P%ncid, nf90_global, 'last_meas_time', date(3))
@@ -3589,7 +3596,7 @@ real(eightbytereal), intent(in), optional :: scale_factor, add_offset
 ! Zero-dimensional version of rads_def_var.
 !-----------------------------------------------------------------------
 type(rads_varinfo), pointer :: info
-integer(fourbyteint) :: e, n
+integer(fourbyteint) :: e, n, xtype, ndims
 integer :: dimid(1:4) = 1
 S%error = rads_noerr
 
@@ -3605,11 +3612,20 @@ enddo
 ! Make sure we are in define mode and that we can write
 if (nf90_redef (P%ncid) == nf90_eperm) call rads_error (S, rads_err_nc_put, 'File '//trim(P%filename)//' not opened for writing')
 
-! Define the the variable and its attributes
-if (nft(nf90_def_var(P%ncid, var%name, info%nctype, dimid(1:info%ndims), info%varid))) then
+! First check if the variable already exists
+if (nff(nf90_inq_varid(P%ncid, var%name, info%varid))) then
+	e = nf90_inquire_variable (P%ncid, info%varid, xtype=xtype, ndims=ndims)
+	if (xtype /= info%nctype .or. ndims /= info%ndims) then
+		call rads_error (S, rads_err_nc_var, 'Cannot redefine variable '//trim(var%name)//' in '//trim(P%filename))
+		return
+	endif
+! Define the variable
+else if (nft(nf90_def_var(P%ncid, var%name, info%nctype, dimid(1:info%ndims), info%varid))) then
 	call rads_error (S, rads_err_nc_var, 'Error creating variable '//trim(var%name)//' in '//trim(P%filename))
 	return
 endif
+
+! (Re)set the attributes; they may have been changed since last write
 e = 0
 if (info%nctype == nf90_int1) then
 	e = e + nf90_put_att (P%ncid, info%varid, '_FillValue', huge(0_onebyteint))
