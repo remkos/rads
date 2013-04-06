@@ -298,11 +298,11 @@ contains
 subroutine synopsis (flag)
 character(len=*), optional :: flag
 if (rads_version ('$Revision$', 'Write SARAL data to RADS', flag=flag)) return
+call synopsis_devel (' < list_of_SARAL_file_names')
 write (*,1310)
 1310 format (/ &
-'syntax: rads_gen_saral [options] < list_of_SARAL_file_names'// &
-'This program converts SARAL OGDR/IGDR/GDR files to RADS data'/ &
-'files with the name $RADSDATAROOT/data/sa/a/pPPPP/sapPPPPcCCC.nc.'/ &
+'This program converts SARAL OGDR/IGDR/GDR files to RADS data' / &
+'files with the name $RADSDATAROOT/data/sa/a/pPPPP/sapPPPPcCCC.nc.' / &
 'The directory is created automatically and old files are overwritten.')
 stop
 end subroutine synopsis
