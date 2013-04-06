@@ -27,6 +27,7 @@ program rads_add_orbit
 
 use rads
 use rads_grid
+use rads_devel
 
 ! Data variables
 
@@ -189,27 +190,27 @@ contains
 subroutine synopsis (flag)
 character(len=*), optional :: flag
 if (rads_version ('$Revision$', 'Add orbit to RADS data', flag=flag)) return
+call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
-'usage: radsp_orbit [data-selectors] [options]'// &
-'where [options] are:'/ &
-'--var=NAME    : set variable name for output orbit (required)'/ &
-'--name=STR    : specify name of orbit'/ &
-'--dir=STR     : specify orbit directory path'/ &
-'--tbias[=VAL] : add timing bias (ms) (defaults for various satellites)'/ &
-'--rate        : compute and store orbital altitude rate'/ &
-'--loc-6       : change latitude/longtitude (10^-6 deg)'/ &
-'--loc-7       : change latitude/longtitude (10^-7 deg)'/ &
-'--equator     : change equator crossing time and longitude'/ &
-'--range       : change field 601 from SSH to range'/ &
-'--doppler     : correct range for Doppler, based on altitude rate and chirp parameter'/ &
-'--grid        : use EGM96 grid to add slope-induced Doppler'/ &
-'--grid=NAME   : use named grid to add slope-induced Doppler'/ &
-'--chirp=F     : specify chirp parameter other than default (ms)'/ &
-'--dt=DT       : specify time interval for rate, etc (s), default: 1'/ &
-'--all         : same as: --tbias --rate --loc-6 --equator'// &
+'Additional [processing_options] are:'/ &
+'  --var=NAME                Set variable name for output orbit (required)'/ &
+'  --name=STR                Specify name of orbit'/ &
+'  --dir=STR                 Specify orbit directory path'/ &
+'  --tbias[=VAL]             Add timing bias (ms) (defaults for various satellites)'/ &
+'  --rate                    Compute and store orbital altitude rate'/ &
+'  --loc-6                   Change latitude/longtitude (10^-6 deg)'/ &
+'  --loc-7                   Change latitude/longtitude (10^-7 deg)'/ &
+'  --equator                 Change equator crossing time and longitude'/ &
+'  --range                   Change field 601 from SSH to range'/ &
+'  --doppler                 Correct range for Doppler, based on altitude rate and chirp parameter'/ &
+'  --grid                    Use EGM96 grid to add slope-induced Doppler'/ &
+'  --grid=NAME               Use named grid to add slope-induced Doppler'/ &
+'  --chirp=F                 Specify chirp parameter other than default (ms)'/ &
+'  --dt=DT                   Specify time interval for rate, etc (s), default: 1'/ &
+'  --all                     Same as: --tbias --rate --loc-6 --equator'// &
 'The orbit error flag can be set using the --flag= option:'/ &
-'--flag=VAR,RMS: specify variable of reference orbit and maximum rms with new orbit (cm)')
+'  --flag=VAR,RMS            Specify variable of reference orbit and maximum rms with new orbit (cm)')
 stop
 end subroutine synopsis
 
@@ -231,8 +232,7 @@ logical :: asc, cryofix
 551  format (a,' ...',$)
 552  format (i5,' records changed')
 
-if (n == 0) return
-write (*,551) P%filename
+write (*,551) trim(P%filename)
 
 ! Determine if we need to fix Cryosat data
 ! Only if original data is LRM L2 and this is the first radsp_orbit run
@@ -383,15 +383,24 @@ if (equator) then
 endif
 if (S%debug >= 1) write (*,*) 'eq:', P%equator_time, P%equator_lon
 
-! Store all data fields.
+! Update history and (re)define variables that may be new and will be written
 
 call rads_put_passinfo (S, P)
 call rads_put_history (S, P)
-
-if (tbias /= 0d0) call rads_put_var (S, P, 'time', utc)
 if (loc /= 0d0) then
 	call rads_def_var (S, P, 'lat', scale_factor=loc)
 	call rads_def_var (S, P, 'lon', scale_factor=loc)
+endif
+call rads_def_var (S, P, S%sel(1))
+if (rate) call rads_def_var (S, P, 'alt_rate')
+if (range .or. range2) call rads_def_var (S, P, 'range_ku')
+if (range2) call rads_def_var (S, P, 'range_c')
+if (info%ntype > 0) call rads_def_var (S, P, 'drange_fm')
+
+! Now write out data
+
+if (tbias /= 0d0) call rads_put_var (S, P, 'time', utc)
+if (loc /= 0d0) then
 	call rads_put_var (S, P, 'lat', lat)
 	call rads_put_var (S, P, 'lon', lon)
 endif
