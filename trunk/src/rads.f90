@@ -703,18 +703,25 @@ if (alias .and. associated(var%name,var%info%name)) then
 	endif
 endif
 
-! Free long_name when it is not associated with the info struct
-if (.not.associated(var%long_name,var%info%long_name)) &
+! Unassociate or deallocate long_name
+if (associated(var%long_name,var%info%long_name)) then
+	nullify (var%long_name)
+else
 	deallocate (var%long_name, stat=ios)
-
-! We can now safely free the info struct if this is an original variable
-if (associated(var%name,var%info%name)) then
-	if (associated(var%info%grid)) call grid_free(var%info%grid)
-	deallocate (var%info, stat=ios)
 endif
 
-! Clean out all of var
-nullify (var%name,var%long_name,var%info,var%inf1,var%inf2)
+! Unassociate or deallocate name and info struct
+if (associated(var%name,var%info%name)) then
+	if (associated(var%info%grid)) call grid_free(var%info%grid)
+	nullify (var%name)
+	deallocate (var%info, stat=ios)
+else
+	deallocate (var%name)
+	nullify (var%info)
+endif
+
+! Clean out rest of var
+nullify (var%inf1,var%inf2)
 end subroutine rads_free_var_struct
 
 !***********************************************************************
