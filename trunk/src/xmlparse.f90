@@ -32,7 +32,6 @@
 ! - xml_ok()           : all is well, reading can continue
 ! - xml_data_trunc()   : was there truncation of the data?
 ! - xml_find_attrib()  : find an attribute by name
-! - xml_errors_
 !
 ! Further ideas:
 ! - Simple checking via a table: parent, tag, id, min, max
