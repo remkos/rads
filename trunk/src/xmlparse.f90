@@ -32,6 +32,7 @@
 ! - xml_ok()           : all is well, reading can continue
 ! - xml_data_trunc()   : was there truncation of the data?
 ! - xml_find_attrib()  : find an attribute by name
+! - xml_errors_
 !
 ! Further ideas:
 ! - Simple checking via a table: parent, tag, id, min, max
@@ -122,7 +123,6 @@ private :: xml_report_details_string_
 private :: xml_report_errors
 private :: xml_report_errors_int_
 private :: xml_report_errors_string_
-private :: xml_report_errors_extern_
 
 interface xml_report_details
 	module procedure xml_report_details_int_
@@ -131,7 +131,6 @@ end interface
 interface xml_report_errors
 	module procedure xml_report_errors_int_
 	module procedure xml_report_errors_string_
-	module procedure xml_report_errors_extern_
 end interface
 
 contains
@@ -198,22 +197,6 @@ if (report_errors_ .or. report_details_) then
 	if (present(lineno)) write(report_lun_,*) '   At or near line', lineno
 endif
 end subroutine xml_report_errors_string_
-
-! xml_report_errors_extern_ --
-!    Routine to write an error message text with a string value
-! Arguments:
-!    info        Structure holding information on the XML-file
-!    text        Text to be written
-! Note:
-!    This routine is meant for use by routines outside
-!    this module
-!
-subroutine xml_report_errors_extern_ (info, text)
-type(xml_parse),   intent(in)     :: info
-character(len=*),  intent(in)     :: text
-
-write(report_lun_,*) trim(text), ' - at or near line', info%lineno
-end subroutine xml_report_errors_extern_
 
 ! xml_open --
 !    Routine to open an XML file for reading or writing
