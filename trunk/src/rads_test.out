@@ -266,7 +266,7 @@
  Checking cycle/pass :           19          60
  Bail out on estimated time:   212284800.00000000        212371200.00000000        212281086.27906978        212284100.23255813     
  Checking cycle/pass :           19          61
- Opening : /rads/data/e1/a/c019/e1p0061c019.nc
+ Opening for read only: /rads/data/e1/a/c019/e1p0061c019.nc
  Start/end/equator time/longitude =    212285607.46814600        212284395.96138999        212287111.31474301       -25.854612999999972     
  cycle, pass, ndata =           19          61        1336
  Start rads_get_var
@@ -282,7 +282,7 @@ drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          62
  Bail out on estimated equator longitude:  -99.092603426953190        135.85137415828183        141.57348837209304     
  Checking cycle/pass :           19          63
- Opening : /rads/data/e1/a/c019/e1p0063c019.nc
+ Opening for read only: /rads/data/e1/a/c019/e1p0063c019.nc
  Start/end/equator time/longitude =    212291635.31923899        212290371.50762701        212293123.54238200       -50.971441000000027     
  cycle, pass, ndata =           19          63         883
  Start rads_get_var
@@ -296,7 +296,7 @@ flags                                   data(1), data(ndata) =  0000000000000001
 pass                                    data(1), data(ndata) =    63.   63.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          64
- Opening : /rads/data/e1/a/c019/e1p0064c019.nc
+ Opening for read only: /rads/data/e1/a/c019/e1p0064c019.nc
  Start/end/equator time/longitude =    212294644.89267400        212293199.02235100        212295782.61767700        116.48829000000001     
  cycle, pass, ndata =           19          64         939
  Start rads_get_var
@@ -310,7 +310,7 @@ flags                                   data(1), data(ndata) =  0010000001000001
 pass                                    data(1), data(ndata) =    64.   64.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          65
- Opening : /rads/data/e1/a/c019/e1p0065c019.nc
+ Opening for read only: /rads/data/e1/a/c019/e1p0065c019.nc
  Start/end/equator time/longitude =    212297663.20714399        212296318.11296001        212299161.77099299       -76.087318999999979     
  cycle, pass, ndata =           19          65         556
  Start rads_get_var
@@ -324,7 +324,7 @@ flags                                   data(1), data(ndata) =  0000000000000001
 pass                                    data(1), data(ndata) =    65.   65.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          66
- Opening : /rads/data/e1/a/c019/e1p0066c019.nc
+ Opening for read only: /rads/data/e1/a/c019/e1p0066c019.nc
  Start/end/equator time/longitude =    212300672.80774301        212299179.86229900        212301833.03647199        91.373141000000004     
  cycle, pass, ndata =           19          66        1133
  Start rads_get_var
@@ -338,7 +338,7 @@ flags                                   data(1), data(ndata) =  0010000001000001
 pass                                    data(1), data(ndata) =    66.   66.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          67
- Opening : /rads/data/e1/a/c019/e1p0067c019.nc
+ Opening for read only: /rads/data/e1/a/c019/e1p0067c019.nc
  Start/end/equator time/longitude =    212303691.19830799        212302255.80765101        212305180.44662800        258.79740399999997     
  cycle, pass, ndata =           19          67         114
  Start rads_get_var
@@ -352,7 +352,7 @@ flags                                   data(1), data(ndata) =  0000000000000001
 pass                                    data(1), data(ndata) =    67.   67.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          68
- Opening : /rads/data/e1/a/c019/e1p0068c019.nc
+ Opening for read only: /rads/data/e1/a/c019/e1p0068c019.nc
  Start/end/equator time/longitude =    212306700.76959300        212305199.86068800        212307896.15863401        66.257262999999995     
  cycle, pass, ndata =           19          68        1216
  Start rads_get_var
@@ -368,7 +368,7 @@ drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          69
  Bail out on estimated equator longitude:  -105.85137415828184        129.09260342695319        233.66651162790708     
  Checking cycle/pass :           19          70
- Opening : /rads/data/e1/a/c019/e1p0070c019.nc
+ Opening for read only: /rads/data/e1/a/c019/e1p0070c019.nc
  Start/end/equator time/longitude =    212312728.72934201        212311331.73430499        212314238.13598001        41.140714000000003     
  cycle, pass, ndata =           19          70         703
  Start rads_get_var
@@ -384,7 +384,7 @@ drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          71
  Bail out on estimated equator longitude:  -105.85137415828184        129.09260342695319        208.55023255813956     
  Checking cycle/pass :           19          72
- Opening : /rads/data/e1/a/c019/e1p0072c019.nc
+ Opening for read only: /rads/data/e1/a/c019/e1p0072c019.nc
  Start/end/equator time/longitude =    212318756.63012701        212317271.94437501        212320249.10360900        16.024046999999996     
  cycle, pass, ndata =           19          72         586
  Start rads_get_var
@@ -400,7 +400,7 @@ drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          73
  Bail out on estimated equator longitude:  -105.85137415828184        129.09260342695319        183.43395348837214     
  Checking cycle/pass :           19          74
- Opening : /rads/data/e1/a/c019/e1p0074c019.nc
+ Opening for read only: /rads/data/e1/a/c019/e1p0074c019.nc
  Start/end/equator time/longitude =    212324784.51563299        212323336.42542401        212326214.88960400       -9.0926549999999793     
  cycle, pass, ndata =           19          74         941
  Start rads_get_var
@@ -416,7 +416,7 @@ drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          75
  Bail out on estimated equator longitude:  -105.85137415828184        129.09260342695319        158.31767441860472     
  Checking cycle/pass :           19          76
- Opening : /rads/data/e1/a/c019/e1p0076c019.nc
+ Opening for read only: /rads/data/e1/a/c019/e1p0076c019.nc
  Start/end/equator time/longitude =    212330812.34729800        212329319.19164100        212332171.67047301       -34.208747000000017     
  cycle, pass, ndata =           19          76        1290
  Start rads_get_var
@@ -432,7 +432,7 @@ drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          77
  Bail out on estimated equator longitude:  -105.85137415828184        129.09260342695319        133.20139534883731     
  Checking cycle/pass :           19          78
- Opening : /rads/data/e1/a/c019/e1p0078c019.nc
+ Opening for read only: /rads/data/e1/a/c019/e1p0078c019.nc
  Start/end/equator time/longitude =    212336840.20250601        212335362.46834701        212338347.53920001       -59.324663999999984     
  cycle, pass, ndata =           19          78         409
  Start rads_get_var
@@ -446,7 +446,7 @@ flags                                   data(1), data(ndata) =  0000000000000001
 pass                                    data(1), data(ndata) =    78.   78.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          79
- Opening : /rads/data/e1/a/c019/e1p0079c019.nc
+ Opening for read only: /rads/data/e1/a/c019/e1p0079c019.nc
  Start/end/equator time/longitude =    212339858.56771499        212338350.69813600        212341349.13471001        108.09829000000002     
  cycle, pass, ndata =           19          79         697
  Start rads_get_var
@@ -460,7 +460,7 @@ flags                                   data(1), data(ndata) =  0000000000000001
 pass                                    data(1), data(ndata) =    79.   79.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          80
- Opening : /rads/data/e1/a/c019/e1p0080c019.nc
+ Opening for read only: /rads/data/e1/a/c019/e1p0080c019.nc
  Start/end/equator time/longitude =    212342868.18366501        212341382.10565200        212344377.04027399       -84.441311999999982     
  cycle, pass, ndata =           19          80         889
  Start rads_get_var
@@ -474,7 +474,7 @@ flags                                   data(1), data(ndata) =  0000000000000001
 pass                                    data(1), data(ndata) =    80.   80.
 drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          81
- Opening : /rads/data/e1/a/c019/e1p0081c019.nc
+ Opening for read only: /rads/data/e1/a/c019/e1p0081c019.nc
  Start/end/equator time/longitude =    212345886.54861301        212344378.02074200        212347343.57670599        82.980945000000020     
  cycle, pass, ndata =           19          81        1037
  Start rads_get_var
@@ -490,7 +490,7 @@ drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          82
  Bail out on estimated equator longitude:  -99.092603426953190        135.85137415828183        250.41069767441866     
  Checking cycle/pass :           19          83
- Opening : /rads/data/e1/a/c019/e1p0083c019.nc
+ Opening for read only: /rads/data/e1/a/c019/e1p0083c019.nc
  Start/end/equator time/longitude =    212351914.53371099        212350764.23929301        212353384.33681101        57.864072999999991     
  cycle, pass, ndata =           19          83        1217
  Start rads_get_var
@@ -506,7 +506,7 @@ drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          84
  Bail out on estimated equator longitude:  -99.092603426953190        135.85137415828183        225.29441860465113     
  Checking cycle/pass :           19          85
- Opening : /rads/data/e1/a/c019/e1p0085c019.nc
+ Opening for read only: /rads/data/e1/a/c019/e1p0085c019.nc
  Start/end/equator time/longitude =    212357942.48283201        212356799.91614699        212359428.59398600        32.747941999999995     
  cycle, pass, ndata =           19          85         588
  Start rads_get_var
@@ -522,7 +522,7 @@ drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           19          86
  Bail out on estimated equator longitude:  -99.092603426953190        135.85137415828183        200.17813953488371     
  Checking cycle/pass :           20           1
- Opening : /rads/data/e1/a/c020/e1p0001c020.nc
+ Opening for read only: /rads/data/e1/a/c020/e1p0001c020.nc
  Start/end/equator time/longitude =    212363970.35059199        212362774.31078300        212365454.23324299        7.6324050000000057     
  cycle, pass, ndata =           20           1         940
  Start rads_get_var
@@ -538,7 +538,7 @@ drange                                  data(1), data(ndata) =   0.409  0.409
  Checking cycle/pass :           20           2
  Bail out on estimated equator longitude:  -99.092603426953190        135.85137415828183        175.06186046511627     
  Checking cycle/pass :           20           3
- Opening : /rads/data/e1/a/c020/e1p0003c020.nc
+ Opening for read only: /rads/data/e1/a/c020/e1p0003c020.nc
  Start/end/equator time/longitude =    212369998.18419701        212368789.00009099        212371502.75604200       -17.483072999999990     
  cycle, pass, ndata =           20           3        1378
  Start rads_get_var
@@ -720,7 +720,7 @@ drange                                  data(1), data(ndata) =   0.409  0.409
  Start rads_end
 ######################################################################################################################################
 # Editing statistics for ERS-1 (e1)
-# Created: 2013-03-20 09:50:12 UTC: rads_test -vvv -Se1/a --ymd=19910924,19910925 -R-90/120/-50/30 -Vtime,lat,lon,sla,12_,tide_ocean_,flags_,pass,drange
+# Created: 2013-04-10 19:28:12 UTC: rads_test -vvv -Se1/a --ymd=19910924,19910925 -R-90/120/-50/30 -Vtime,lat,lon,sla,12_,tide_ocean_,flags_,pass,drange
 #
 # PASSES QUERIED                                           172
 #
@@ -766,4 +766,4 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 # pass number []                                   0     16852         NaN         NaN       1.000      85.000      62.645      25.165
 ######################################################################################################################################
  End of program
-CLOCK, CPU =   0.1130   0.0689
+CLOCK, CPU =   0.1000   0.0563
