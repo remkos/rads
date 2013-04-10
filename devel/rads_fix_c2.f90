@@ -36,7 +36,7 @@
 ! - Increase FDM L2 backscatter by 4.8 dB
 ! - ... Then flip the backscatter around (sig0 := 21 - sig0)
 !
-! drift:
+! drift (sig0):
 ! - Increase backscatter by 0.03 dB per month, based on information provided by ESA (Marco)
 ! - Reference time (time with no correction) is 2011-05-01, the middle of the period
 !   over which original sigma0 bias and SSB was determined
@@ -151,7 +151,7 @@ contains
 
 subroutine synopsis (flag)
 character(len=*), optional :: flag
-if (rads_version ('$Revision$', 'Correct several CryoSat-2 measurement values', flag=flag)) return
+if (rads_version ('$Revision$', 'Patch CryoSat-2 data for several anomalies', flag=flag)) return
 call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
