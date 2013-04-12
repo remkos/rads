@@ -30,3 +30,4 @@ install:	all
 man:
 clean:
 spotless:
+test:
