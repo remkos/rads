@@ -282,7 +282,7 @@ end interface rads_end
 ! Error code:
 !  S%error  : rads_noerr, rads_err_var, rads_err_memory, rads_err_source
 !-----------------------------------------------------------------------
-private rads_get_var_by_name, rads_get_var_by_var, rads_get_var_by_number, rads_get_var_common
+private :: rads_get_var_by_name, rads_get_var_by_var, rads_get_var_by_number, rads_get_var_common
 interface rads_get_var
 	module procedure rads_get_var_by_name
 	module procedure rads_get_var_by_var
@@ -716,7 +716,7 @@ if (associated(var%name,var%info%name)) then
 	nullify (var%name)
 	deallocate (var%info, stat=ios)
 else
-	deallocate (var%name)
+	deallocate (var%name, stat=ios)
 	nullify (var%info)
 endif
 
@@ -2412,6 +2412,7 @@ integer(fourbyteint) :: i, n
 type(rads_var), pointer :: temp(:)
 integer(twobyteint) :: field
 character(len=rads_varl), pointer :: name
+character(len=rads_naml), pointer :: long_name
 
 S%error = rads_noerr
 field = -999
@@ -2445,10 +2446,9 @@ if (i <= S%nvar) then
 	else if (associated(ptr%info,tgt%info)) then
 		! Association is already a fact
 		return
-	else
-		! Reassociate existing variable
-		call rads_free_var_struct (S, ptr, .true.)
 	endif
+	! Reassociate existing variable
+	call rads_free_var_struct (S, ptr, .true.)
 else if (.not.present(tgt)) then
 	! No match found, and none should be created: return null pointer and error
 	nullify (ptr)
@@ -2473,16 +2473,17 @@ endif
 if (associated(tgt)) then
 	ptr%info => tgt%info
 	allocate (name)
-	ptr%name => name
 else
 	allocate (ptr%info)
 	ptr%info = rads_varinfo (varname, varname, '', '', '', '', '', '', '', '', 'f0.3', '', '', null(), &
 		huge(0d0), nan, 0d0, 1d0, nan, nan, 0d0, 0d0, .false., 1, nf90_double, 0, 0, 0, 0, 0, 0, 0)
-	ptr%name => ptr%info%name
+	name => ptr%info%name
 endif
-ptr%long_name => ptr%info%long_name
+long_name => ptr%info%long_name ! This is to avoid warning in gfortran 4.8
 
 ! Assign name and long_name
+ptr%name => name
+ptr%long_name => long_name
 if (field > rads_nofield) then ! Was given field number
 	write (ptr%name, '("f",i4.4)') field
 	ptr%field = field
