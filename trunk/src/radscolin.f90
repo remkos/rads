@@ -324,6 +324,7 @@ call nfs (nf90_put_att (ncid, nf90_global, 'history', timestamp()//' UTC: '//tri
 ! To use general netCDF creation machinary, we trick the library a bit here
 P%ncid = ncid
 P%filename = filename
+P%rw = .true.
 S(1)%time%info%ndims = 2
 
 ! Define selected variables
