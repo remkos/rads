@@ -186,6 +186,7 @@ call nfs (nf90_def_dim (ncid, 'leg', 2, dimid(2)))
 ! To use general netCDF creation machinary, we trick the library a bit here
 P%ncid = ncid
 P%filename = filename
+P%rw = .true.
 S(1)%time%info%ndims = 2
 
 ! Define lat and lon (1D) and time (2D)

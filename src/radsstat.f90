@@ -418,6 +418,7 @@ call nfs (nf90_def_dim (ncid, 'stat', lstat, dimid(2)))
 ! To use general netCDF creation machinary, we trick the library a bit here
 Pout%ncid = ncid
 Pout%filename = filename
+Pout%rw = .true.
 
 ! Define "time" variables
 call nfs (nf90_def_var (ncid, 'nr', nf90_int4, dimid(1:1), varid(1)))
