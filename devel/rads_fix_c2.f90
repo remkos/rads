@@ -37,7 +37,8 @@
 ! - ... Then flip the backscatter around (sig0 := 21 - sig0)
 !
 ! drift (sig0):
-! - Increase backscatter by 0.03 dB per month, based on information provided by ESA (Marco)
+! - Increase backscatter by 0.32 dB per year, based on information provided by ESA (Marco)
+!   on 15 April 2013
 ! - Reference time (time with no correction) is 2011-05-01, the middle of the period
 !   over which original sigma0 bias and SSB was determined
 !
@@ -50,10 +51,10 @@
 ! - Adjust pseudo-LRM SWH to match LRM data (see notes of 16 Sep 2012)
 !
 ! tbias:
-! - Apply timing bias accoring to Marco's table
+! - Apply timing bias according to Marco's table (different for SAR and LRM data)
+! - Account for the change in timing bias in SIR1FDM/2.4 (See Ruby's e-mail of 22 Apr 2013)
 ! - Adjust altitude from the product accordingly (using altitude rate)
 ! - Note that this does NOT change the equator time or longitude!
-! - Does not apply to pseudo-LRM data
 !
 ! wind:
 ! - Add wind speed according to ECMWF model
@@ -76,12 +77,12 @@ type(rads_pass) :: P
 
 character(len=rads_naml) :: arg
 real(eightbytereal), parameter :: fai = 7.3d-3, &
-	sig0_drift = 0.03d0 / 30d0 / 86400d0, time_drift = 830822400d0, & ! Sigma0 drift is 0.03 dB per month since 1-MAY-2011
+	sig0_drift = 0.32d0 / 365.25d0 / 86400d0, time_drift = 830822400d0, & ! Sigma0 drift is 0.32 dB per year since 1-MAY-2011
 	swh_adjustment = 1.8737**2 * (0.513**2 - 0.383**2) ! Adjustment to be added to SWH squared
 integer(fourbyteint) :: l,i,cyc,pass
 integer(twobyteint) :: flag
 logical :: ldrift=.false.,lmeteo=.false.,lrange=.false.,lssb=.false.,lswh=.false.,ltbias=.false., &
-	lwind=.false.,lsig0=.false.,cswh,cmeteo,ciono
+	lwind=.false.,lsig0=.false.,cswh,cmeteo,ciono,fdm_l1_v24
 type(grid) :: issb_hyb
 
 ! Scan command line for options
@@ -177,7 +178,7 @@ integer(fourbyteint), intent(in) :: n
 real(eightbytereal) :: time(n),alt(n),alt_rate(n),dry(n),wet(n), &
 	iono(n),sig0(n),swh(n),ssb(n),wind(n),flagword(n),range(n),ib(n),ecmwf_ws,t,tbias
 integer(fourbyteint) :: i
-logical :: lrm_l2,fdm_l2,old_ver,version_a,sar
+logical :: lrm_l2,fdm_l2,old_version_a,version_a,sar
 
 ! Formats
 
@@ -187,13 +188,12 @@ logical :: lrm_l2,fdm_l2,old_ver,version_a,sar
 write (*,551) trim(P%filename)
 
 ! Do we have FDM or LRM? Do we have an older version?
-i = index(P%original,'IPF2LRM')
-lrm_l2 = (i > 0)
-i = index(P%original,'IPF2FDM')
-fdm_l2 = (i > 0)
+lrm_l2 = index(P%original,'IPF2LRM') > 0
+fdm_l2 = index(P%original,'IPF2FDM') > 0
 version_a = index(P%original,'_A00') > 0
+fdm_l1_v24 = index(logs(1),'SIR1FDM/2.4') > 0
 
-old_ver = (index(P%original,'-2010') > 0 .or. &
+old_version_a = (index(P%original,'-2010') > 0 .or. &
 	index(P%original,'-JAN-2011') > 0 .or. index(P%original,'-FEB-2011') > 0)
 
 ! These may be set to true later on
@@ -228,7 +228,7 @@ do i = 1,n
 
 	if (lrange) then
 		if (.not.sar) range(i) = range(i) + fai
-		if (lrm_l2 .and. old_ver) range(i) = range(i) - 3.33d0
+		if (lrm_l2 .and. old_version_a) range(i) = range(i) - 3.33d0
 	endif
 
 ! Apply timing bias.
@@ -240,6 +240,7 @@ do i = 1,n
 			tbias = +0.520795d-3
 		else
 			tbias = -4.699112d-3
+			if (fdm_l1_v24) tbias = tbias + 4.4436d-3 ! Partial correction of timing bias (See Ruby's e-mail of 22 Apr 2013)
 		endif
 		time(i) = time(i) + tbias
 		alt(i) = alt(i) + tbias * alt_rate(i)
