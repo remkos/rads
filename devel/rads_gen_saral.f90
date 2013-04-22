@@ -271,6 +271,7 @@ files: do
 	call cpy_var ('wind_speed_alt', 'wind_speed_alt')
 	call cpy_var ('rad_water_vapor', 'water_vapor_content')
 	call cpy_var ('rad_liquid_water', 'liquid_water')
+	var(nvar)%d = var(nvar)%d * 1d-2 ! Fix wrong scale
 	call get_var (ncid, 'range_used_40hz', d)
 	valid = (d == 0d0)
 	call get_var (ncid, 'peakiness_40hz', d)
