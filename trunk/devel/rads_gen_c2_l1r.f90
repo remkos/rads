@@ -353,7 +353,7 @@ files: do
 	call cpy_var ('iono_gim', 'iono_gim')
 	call cpy_var ('inv_baro', 'inv_bar_static')
 
-	call cpy_var ('inv_baro+dac','inv_bar_mog2d')
+	if (.not.fdm) call cpy_var ('inv_baro+dac','inv_bar_mog2d')
 	call cpy_var ('tide_solid', 'tide_solid')
 	call cpy_var ('tide_ocean', 'tide_ocean_got00')
 	call cpy_var ('tide_load', 'tide_load_got00')
