@@ -395,7 +395,9 @@ do j = 1,S%nsel
 		write (format_string(l+1:),'(",",i0,"(1x,",a,")")') lstat,trim(S%sel(j)%info%format)
 	else
 		call read_val (S%sel(j)%info%format(2:), sizes, '.')
-		write (format_string(l+1:),'(",",i0,"(1x,f",i0,".",i0,")")') lstat,sizes+1
+		if (sizes(1) > 0) sizes(1) = sizes(1) + 1
+		sizes(2) = sizes(2) + 1
+		write (format_string(l+1:),'(",",i0,"(1x,f",i0,".",i0,")")') lstat,sizes
 	endif
 enddo
 
