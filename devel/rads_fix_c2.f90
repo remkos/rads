@@ -222,7 +222,7 @@ do i = 1,n
 	sar = btest(flag,0)
 
 ! Apply range bias
-! All LRM L2 data processed prior to MAR-2010 have a 3.33 m range bias
+! All LRM L2 data processed prior to MAR-2011 have a 3.33 m range bias
 ! According to Marco Fornari:
 ! All FDM/LRM L1/L2 data have a CAL1 which is off by 1 FAI (1/64 gate). Thus add 7.3 mm to range.
 
