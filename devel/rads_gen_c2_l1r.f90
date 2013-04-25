@@ -91,7 +91,8 @@ character(19) :: l1b_proc_time
 character(14) :: l1b_version, l1r_version
 character(55) :: l1r_product
 real(eightbytereal) :: tai_utc, eq_time, eq_long
-integer(fourbyteint) :: passnr(2),cycnr(2),recnr(2),nrec,ncid,varid
+integer(fourbyteint) :: passnr(2), cycnr(2), recnr(2), nrec, ncid, varid, doris_nav
+logical :: version_a, sar, fdm
 
 ! Data variables
 
@@ -117,7 +118,6 @@ real(eightbytereal), parameter :: sec2000=473299200d0, rev_time = 5953.45d0, rev
 real(eightbytereal), parameter :: pitch_bias = 0.096d0, roll_bias = 0.086d0, yaw_bias = 0d0	! Attitude biases to be added
 real(eightbytereal) :: uso_corr, dhellips
 integer(fourbyteint) :: i, j, m, oldcyc=0, oldpass=0, mle=3
-logical :: version_a, sar
 
 ! Initialise
 
@@ -200,6 +200,7 @@ files: do
 	call nfs(nf90_get_att(ncid,nf90_global,'l1b_proc_time',l1b_proc_time))
 	call nfs(nf90_get_att(ncid,nf90_global,'l1b_version',l1b_version))
 	call nfs(nf90_get_att(ncid,nf90_global,'l1r_version',l1r_version))
+	call nfs(nf90_get_att(ncid,nf90_global,'doris_nav',doris_nav))
 	call nfs(nf90_get_att(ncid,nf90_global,'equator_longitude',eq_long))
 	call nfs(nf90_get_att(ncid,nf90_global,'equator_time',eq_time))
 	call nfs(nf90_get_att(ncid,nf90_global,'tai_utc',tai_utc))
@@ -216,6 +217,7 @@ files: do
 
 	version_a = index(l1r_product, '_A00') > 0
 	sar = index(l1r_product, '_SIR_SA') > 0 .or. index(l1r_product, '_SIR_FBR') > 0
+	fdm = index(l1r_product, '_SIR_FDM') > 0
 
 ! Allocate arrays
 
@@ -241,7 +243,7 @@ files: do
 	call get_var (ncid, 'surface_type', a)
 	if (l1r_version <= '1.26') a = a * 1d3 ! Error in scale_factor
 	if (sar) then
-		flags = 1
+		flags = 1 ! Set bit 1 for SAR
 	else
 		flags = 0
 	endif
@@ -261,6 +263,9 @@ files: do
 	enddo
 	call cpy_var ('lon', 'lon')
 	call get_var (ncid, 'alt', alt)
+	! If input is FDM and there is no DORIS Navigator orbit (i.e. predicted orbit)
+	! we blank the orbit out entirely: it would be useless anyhow
+	if (fdm .and. doris_nav == 0) dh = nan
 	call new_var ('alt_cnes', alt + dh)
 	call cpy_var ('alt_rate_20hz', 'alt_rate')
 
