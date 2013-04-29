@@ -58,7 +58,7 @@ type :: rads_varinfo
 	character(len=rads_naml) :: long_name            ! Long name (description) of variable
 	character(len=rads_naml) :: standard_name        ! Optional pre-described CF-compliant 'standard' name ('' if not available)
 	character(len=rads_naml) :: source               ! Optional data source ('' if none)
-	character(len=rads_naml) :: original             ! Optional link to files for production ('' if none)
+	character(len=rads_naml) :: source_file          ! Optional link to files for production ('' if none)
 	character(len=rads_strl) :: dataname             ! Name associated with data (e.g. netCDF var name, math string)
 	character(len=rads_cmdl) :: flag_meanings        ! Optional meaning of flag values ('' if none)
 	character(len=rads_cmdl) :: quality_flag         ! Quality flag(s) associated with this variable ('' if none)
@@ -2132,8 +2132,8 @@ do
 	case ('source')
 		info%source = val(1)(:rads_naml)
 
-	case ('original')
-		info%original = val(1)(:rads_naml)
+	case ('source_file')
+		info%source_file = val(1)(:rads_naml)
 
 	case ('units')
 		info%units = val(1)(:rads_varl)
