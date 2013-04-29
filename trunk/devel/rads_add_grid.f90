@@ -35,7 +35,7 @@ type(rads_pass) :: P
 type model
 	character(rads_varl) :: xvar, yvar
 	type(grid) :: info
-	logical :: spline
+	integer :: mode
 	real(eightbytereal) :: rate
 end type
 type(model), allocatable :: grd(:)
@@ -72,7 +72,9 @@ do k = 1,S%nsel
 	i = index(src, ' ')
 	filename = src(:i-1)
 
-	grd(k)%spline = index(src, ' -s') > 0
+	grd(k)%mode = rads_src_grid_lininter
+	if (index(src, ' -s') > 0) grd(k)%mode = rads_src_grid_splinter
+	if (index(src, ' -q') > 0) grd(k)%mode = rads_src_grid_query
 
 	grd(k)%rate = 0d0
 	i = index(src, ' -t')
@@ -157,13 +159,20 @@ years = (P%equator_time - t_2000) / t_year
 do k = 1,nmod
 	call rads_get_var (S, P, grd(k)%xvar, x, .true.)
 	call rads_get_var (S, P, grd(k)%yvar, y, .true.)
-	do i = 1,n
-		if (grd(k)%spline) then
-			z(i,k) = grid_splinter(grd(k)%info,x(i),y(i))
-		else
+	select case (grd(k)%mode)
+	case (rads_src_grid_lininter)
+		do i = 1,n
 			z(i,k) = grid_lininter(grd(k)%info,x(i),y(i))
-		endif
-	enddo
+		enddo
+	case (rads_src_grid_splinter)
+		do i = 1,n
+			z(i,k) = grid_splinter(grd(k)%info,x(i),y(i))
+		enddo
+	case default
+		do i = 1,n
+			z(i,k) = grid_query(grd(k)%info,x(i),y(i))
+		enddo
+	end select
 	if (grd(k)%rate /= 0d0) z(:,k) = z(:,k) * grd(k)%rate * years
 enddo
 
