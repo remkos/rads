@@ -1359,7 +1359,7 @@ Global RADS configuration file
 	<units>m</units>
 	<data>topo_dnsc08</data>
 	<format>f7.0</format>
-	<compress>int2 0.5</compress>
+	<compress>int2</compress>
 </var>
 <!--
 <var name="topo_srtm30" field="2204">
@@ -1378,7 +1378,7 @@ Global RADS configuration file
 	<units>m</units>
 	<data>topo_dtu10</data>
 	<format>f7.0</format>
-	<compress>int2 0.5</compress>
+	<compress>int2</compress>
 </var>
 <var name="topo_macess" field="2206">
 	<long_name>MACESS topography</long_name>
