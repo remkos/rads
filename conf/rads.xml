@@ -2234,6 +2234,7 @@ Global RADS configuration file
 
 <var name="basin" field="3601 36">
 	<long_name>basin code</long_name>
+	<source_file>basin_codes.nc -q</source_file>
 	<data>basin</data>
 	<format>f3.0</format>
 	<compress>int1</compress>
