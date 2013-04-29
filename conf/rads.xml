@@ -2334,7 +2334,7 @@ Global RADS configuration file
 
 <var name="dist_coast" field="4501 45">
 	<long_name>distance to coast</long_name>
-	<source>GMT/GSHHS</long_name>
+	<source>GMT/GSHHS</source>
 	<source_file>distance-to-coast_2m.nc</source_file>
 	<units>km</units>
 	<data>dist_coast</data>
