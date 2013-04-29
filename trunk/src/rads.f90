@@ -146,6 +146,7 @@ type :: rads_pass
 	logical :: rw                                    ! NetCDF file opened for read/write
 	integer(fourbyteint) :: cycle, pass              ! Cycle and pass number
 	integer(fourbyteint) :: ncid, ndims              ! NetCDF ID of pass file and number of dimensions
+	integer(fourbyteint) :: nlogs                    ! Number of RADS3 log entries
 	integer(fourbyteint) :: ndata                    ! Number of data points
 	integer(fourbyteint) :: first_meas, last_meas    ! Measurement index of first and last point in region
 	integer(fourbyteint) :: trkid                    ! Numerical track identifiers
@@ -667,7 +668,7 @@ type(rads_pass), intent(inout) :: P
 !-----------------------------------------------------------------------
 ! gfortran 4.4.1 segfaults on the next line if this routine is made pure or elemental,
 ! so please leave it as a normal routine.
-P = rads_pass ('', '', null(), nan, nan, nan, nan, null(), null(), .false., 0, 0, 0, 1, 0, 0, 0, 0, S%sat, S%satid, null())
+P = rads_pass ('', '', null(), nan, nan, nan, nan, null(), null(), .false., 0, 0, 0, 1, 0, 0, 0, 0, 0, S%sat, S%satid, null())
 end subroutine rads_init_pass_struct
 
 !***********************************************************************
@@ -1128,7 +1129,7 @@ logical, intent(in), optional :: rw
 !-----------------------------------------------------------------------
 character(len=40) :: date
 character(len=rads_strl) :: string
-integer(fourbyteint) :: i,k,ascdes,cc,pp
+integer(fourbyteint) :: i,j1,j2,k,ascdes,cc,pp
 real(eightbytereal) :: d
 real(eightbytereal), pointer :: temp(:,:)
 
@@ -1247,26 +1248,34 @@ if (nff(nf90_inquire_attribute(P%ncid,nf90_global,'history',attnum=k))) then
 	allocate (P%history)
 	call nfs(nf90_get_att(P%ncid,nf90_global,'history',P%history))
 	if (nft(nf90_get_att(P%ncid,nf90_global,'original',P%original))) P%original = ''
-else if (nff(nf90_inquire_attribute(P%ncid,nf90_global,'log01',attnum=k))) then ! Read logs
+else if (nff(nf90_inquire_attribute(P%ncid,nf90_global,'log01',attnum=k))) then ! Read logs (RADS3)
 	allocate (P%history)
 	i = 0
 	do
 		i = i + 1
 		write (date, '("log",i2.2)') i
 		if (nft(nf90_get_att(P%ncid,nf90_global,date,string))) exit
+		j1 = index(string, '|', .true.) ! Index of last '|'
+		j2 = index(string, ':') ! Index of first ':'
 		if (i == 1) then
-			P%history = string(:k-1)
 			! If log01 has original file name, save it
 			k = index(string, 'RAW data from file')
 			if (k > 0) then
 				P%original = string(k+19:)
 			else
 				k = index(string, 'RAW data from')
-				P%original = string(k+14:)
+				if (k > 0) then
+					P%original = string(k+14:)
+				else
+					P%original = string(j2+1:)
+				endif
 			endif
+			! Write date and command to history
+			P%history = string(:11) // ':' // string(j1+1:j2-1)
 		else
-			P%history = string(:k-1) // rads_linefeed // P%history
+			P%history = string(:11) // ':' // string(j1+1:j2-1) // rads_linefeed // P%history
 		endif
+		P%nlogs = i
 	enddo
 endif
 
@@ -3565,6 +3574,10 @@ type(rads_pass), intent(inout) :: P
 ! This routine writes a datestamp and the command line to the global
 ! attribute 'history', followed by any possible previous history.
 !
+! When we are dealing with a pass file that was previously created by RADS3,
+! this routine removes any previous log?? attributes (except log01) and
+! adds the attribute 'original'.
+!
 ! This command is called from rads_create_pass, so it is not required to
 ! call this command following rads_create_pass. However, when updating a
 ! file after rads_open_pass, it is necessary to call this routine to update
@@ -3576,17 +3589,27 @@ type(rads_pass), intent(inout) :: P
 !  S        : Satellite/mission dependent structure
 !  P        : Pass structure
 !-----------------------------------------------------------------------
-integer :: e
+integer :: e, i
+character(len=8) :: log
 
 ! Make sure we are in define mode and that we can write
 if (nf90_redef (P%ncid) == nf90_eperm) call rads_error (S, rads_err_nc_put, 'File '//trim(P%filename)//' not opened for writing')
-! Write attribute
+
+! Write history attribute
 if (associated(P%history)) then
 	e = nf90_put_att (P%ncid, nf90_global, 'history', datestamp()//': '//trim(S%command)//rads_linefeed//trim(P%history))
 else
 	e = nf90_put_att (P%ncid, nf90_global, 'history', datestamp()//': '//trim(S%command))
 endif
 if (e /= 0) call rads_error (S, rads_err_nc_put, 'Error writing history attribute to '//trim(P%filename))
+
+! Remove "log??" entries from RADS3 and make sure P%original is written
+if (P%nlogs == 0) return
+do i = 2,P%nlogs
+	write (log, '("log",i2.2)') i
+	e = nf90_del_att (P%ncid, nf90_global, log)
+enddo
+e = nf90_put_att (P%ncid, nf90_global, 'original', P%original)
 end subroutine rads_put_history
 
 !***********************************************************************
