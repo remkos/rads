@@ -1,0 +1,32 @@
+#!/bin/bash
+#-----------------------------------------------------------------------
+# $Id$
+#
+# Copyright (c) 2011-2013  Remko Scharroo (Altimetrics LLC)
+# See LICENSE.TXT file for copying and redistribution conditions.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#-----------------------------------------------------------------------
+#
+# Add/overwrite numerous fields in the RADS data base
+#
+options="$*"
+rads_add_grid     $options -Vdist_coast,inv_var_mog2d_mean,gia,mss_cnescls11,basin
+rads_add_grid     $options -Vgeoid_egm2008
+rads_add_grid     $options -Vmss_egm2008
+rads_add_grid     $options -Vmss_dtu10,topo_dtu10
+rads_add_surface  $options
+rads_add_tide     $options stide ptide fes04 got48 got49 lptide annual
+rads_add_webtide  $options sshelf ne_pac4 hudson arctic9 nwatl
+rads_add_refframe $options
+rads_add_sst      $options all
+rads_add_ncep     $options dry wet airtide
+rads_add_era      $options dry wet
