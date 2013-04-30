@@ -18,7 +18,7 @@
 include ../config.mk
 
 # Programs to create
-PROGS	= rads_add_grid rads_add_orbit \
+PROGS	= rads_add_grid rads_add_orbit rads_add_surface \
 		rads_fix_c2 rads_fix_sa \
 		rads_gen_c2_l1r rads_gen_reaper rads_gen_saral \
 		ogdrsplit
@@ -28,7 +28,7 @@ LIB     = ../src/librads.a $(ALTIM)/lib/rssubs.a
 LDLIBS  = $(NETCDF_LIB)
 
 # Shell scripts
-SCRIPTS = rads_gen_saral.sh rads_gen_saral_new.sh
+SCRIPTS = rads_add_common rads_gen_saral.sh rads_gen_saral_new.sh
 
 #-----------------------------------------------------------------------
 # What to create?
