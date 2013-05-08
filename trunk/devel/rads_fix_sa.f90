@@ -21,7 +21,7 @@
 ! by rads_gen_saral. These patches include:
 !
 ! ssb:
-! - Change SSB to 0.35% of SWH (Gregg Jacobs' suggestion)
+! - Change SSB to 3.5% of SWH
 !
 ! usage: rads_fix_sa [data-selectors] [options]
 !-----------------------------------------------------------------------
@@ -77,7 +77,7 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
-'  --ssb                     Change SSB to 0.35% of SWH' / &
+'  --ssb                     Change SSB to 3.5% of SWH' / &
 '  --all                     All of the above')
 stop
 end subroutine synopsis
@@ -101,22 +101,19 @@ call rads_get_var (S, P, 'swh_ku', swh, .true.)
 
 ! Process data records
 
-ssb = 0.35d-2 * swh
+ssb = 3.5d-2 * swh
 
 ! If nothing changed, stop here
 
-if (.not.(lssb)) then
+if (.not.lssb) then
 	write (*,552) 0
 	return
 endif
 
-! Update history
-
-call rads_put_history (S, P)
-
 ! Write out all the data
 
-if (lssb) call rads_put_var (S, P, 'ssb_ku', ssb)
+call rads_put_history (S, P)
+call rads_put_var (S, P, 'ssb_ku', ssb)
 
 write (*,552) n
 end subroutine process_pass
