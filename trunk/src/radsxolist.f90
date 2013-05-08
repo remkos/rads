@@ -30,15 +30,16 @@ use rads_time
 integer(fourbyteint) :: ncid, i, icol, ios, nvar, nxo_in, nxo_out, ntrk, &
 	id_flag, id_satid, id_track, id_sla, id_new, id_old, id_offset, nvar_replace = 0
 real(eightbytereal), allocatable :: var(:,:,:), stat(:,:,:)
-integer(fourbyteint), allocatable :: track(:,:)
+integer(fourbyteint), allocatable :: track(:,:), binnr(:,:)
 character(len=rads_naml), allocatable :: long_name(:)
-logical, allocatable :: mask(:)
+logical, allocatable :: boz(:), mask(:), binmask(:)
 type :: trk_
 	real(eightbytereal) :: equator_lon, equator_time, start_time, end_time
 	integer(twobyteint) :: nr_alt, nr_xover, satid, cycle, pass
 end type
 type(trk_), allocatable :: trk(:)
-character(len=640) :: fmt_string
+character(len=640) :: fmt_str
+
 character(len=rads_varl) :: optopt
 character(len=rads_naml) :: optarg, str_replace(10)
 character(len=rads_cmdl) :: command
@@ -53,11 +54,13 @@ type(sat_) :: sat(msat)
 character(len=3*msat) :: satlist = ''
 type(rads_sat) :: S
 character(len=*), parameter :: optlist = &
-	'e::dslnotr: lon: lat: dt: edit:: dual single nolist both-legs order both-times time: ymd: doy: sec: replace: check-flag:'
+	'e::dslnotr:b:: lon: lat: dt: edit:: bin:: dual single nolist both-legs order both-times ' // &
+	' time: ymd: doy: sec: replace: check-flag: full-year'
 
 integer(fourbyteint) :: var0 = 0, check_flag = -1
-logical :: diff = .true., stat_only = .false., singles = .true., duals = .true., xostat = .false.
-real(eightbytereal) :: t0 = 0d0, t1 = 0d0, lon0 = 0d0, lon1 = 0d0, lat0 = 0d0, lat1 = 0d0, dt0 = 0d0, dt1 = 0d0, edit = -1d0
+logical :: diff = .true., stat_only, singles = .true., duals = .true., xostat, fullyear = .false.
+real(eightbytereal) :: t0 = 0d0, t1 = 0d0, lon0 = 0d0, lon1 = 0d0, lat0 = 0d0, lat1 = 0d0, &
+	dt0 = 0d0, dt1 = 0d0, edit = -1d0, bin = 0d0
 
 ! Check operation mode
 call getarg (0, command)
@@ -111,16 +114,39 @@ do
 		order = optarg(1:1)
 	case ('t', 'both-times')
 		var0 = 1
+	case ('b', 'bin')
+		bin = 1d0
+		read (optarg, *, iostat=ios) bin
 	case ('r', 'replace')
 		nvar_replace = nvar_replace + 1
 		if (nvar_replace > 10) call rads_exit ('Too many -r options')
 		str_replace(nvar_replace) = optarg
+	case ('full-year')
+		fullyear = .true.
 	case ('check-flag')
 		read (optarg, *, iostat=ios) check_flag
 	case (' ')
-		call process (optarg) ! Process each file
+		! Skip filenames for now
 	case default
 		if (dateopt(optopt, optarg, t0, t1)) cycle
+	end select
+enddo
+
+! Some options exclude or imply others
+if (bin > 0d0) then
+	diff = .false.
+	var0 = 1
+endif
+
+! Now process all files
+call getopt_reset ()
+do
+	call getopt (optlist, optopt, optarg)
+	select case (optopt)
+	case ('!') ! End of arguments
+		exit
+	case (' ')
+		call process (optarg)
 	end select
 enddo
 
@@ -129,10 +155,12 @@ contains
 !***********************************************************************
 
 subroutine process (filename)
-character(len=*) :: filename
-integer(fourbyteint) :: i, j, k
-character(len=rads_naml) :: legs
+character(len=*), intent(in) :: filename
+integer(fourbyteint) :: i, j, k, nr, yy, mm, dd
+character(len=rads_naml) :: legs, varnm
 real(eightbytereal) :: mean, sigma
+real(eightbytereal), parameter :: day = 86400d0
+type(rads_var), pointer :: ptr
 
 ! Open netCDF file
 write (*, 600) trim(filename)
@@ -152,7 +180,6 @@ write (*, 605) nxo_in, ntrk
 605 format ('# Xovers,tracks = ',2i9)
 if (edit > 0d0) write (*, 606) edit
 606 format ('# Edit sigma    = ',f9.3)
-fmt_string = '('
 
 ! Read all the "base variables" into memory
 id_track = get_varid('track')
@@ -164,7 +191,7 @@ else ! New style xover file
 	nvar = id_track - 4
 	id_offset = 3
 endif
-allocate (track(2,nxo_in), trk(ntrk), var(2,nxo_in,-1:nvar), stat(2,-1:nvar,5), mask(nxo_in), long_name(-2:nvar))
+allocate (track(2,nxo_in), trk(ntrk), var(2,nxo_in,-1:nvar), stat(2,-1:nvar,5), mask(nxo_in), long_name(-2:nvar), boz(nvar))
 call get_var_1d (get_varid('lat'), var(1,:,-1), long_name(-2))
 call get_var_1d (get_varid('lon'), var(2,:,-1), long_name(-1))
 call get_var_2d (get_varid('time'), var(:,:,0), long_name(0))
@@ -189,8 +216,8 @@ if (nf90_get_att (ncid, get_varid('satid'), 'flag_meanings', satlist) == nf90_no
 			S%xover_params(1), S%xover_params(2), S%inclination)
 	enddo
 else
-	satlist = 'g3 sa gs e1 tx pn e2 g1 j1 n1 j2 c2'
-	do i = 1,12
+	satlist = 'g3 ss gs e1 tx pn e2 g1 j1 n1 j2 c2 sa'
+	do i = 1,13
 		if (.not.any(trk%satid == i)) cycle
 		call rads_init (S, satlist(i*3-2:i*3-1))
 		sat(S%satid) = sat_ (S%sat, 2*S%phase%pass_seconds, &
@@ -202,7 +229,22 @@ endif
 do i = 1,nvar
 	call get_var_2d (i + id_offset, var(:,:,i), long_name(i))
 enddo
-fmt_string(len_trim(fmt_string)-3:) = ')'
+
+! Make format string
+fmt_str = '(' // trim(S%lat%info%format) // ',1x,' // trim(S%lon%info%format) // ',1x,' // &
+	trim(S%time%info%format) // ',1x,'
+if (var0 == 1) fmt_str = trim(fmt_str) // trim(S%time%info%format) // ',1x,'
+do i = 1,nvar
+	j = nf90_inquire_variable (ncid, i + id_offset, varnm)
+	ptr => rads_varptr (S, varnm)
+	if (diff) then
+		fmt_str = trim(fmt_str) // trim(ptr%info%format) // ',1x,'
+	else
+		fmt_str = trim(fmt_str) // trim(ptr%info%format) // ',1x,' // trim(ptr%info%format) // ',1x,'
+	endif
+	boz(i) = ptr%info%boz_format
+enddo
+fmt_str(len_trim(fmt_str)-3:) = ')'
 
 ! Exchange any correction if requested
 do i = 1,nvar_replace
@@ -248,7 +290,7 @@ if (edit > 0d0) then
 	do j = 1,1	! For time being: first variable only
 		call mean_variance (pack(var(1,:,j)-var(2,:,j),mask), mean, sigma)
 		sigma = sqrt(sigma)*edit
-		mask = mask .and. (abs(var(1,:,j)-var(2,:,j)-mean) <= sigma)
+		where (abs(var(1,:,j)-var(2,:,j)-mean) > sigma) mask = .false.
 	enddo
 endif
 
@@ -259,13 +301,25 @@ write (*,610) nxo_out
 
 ! If no xovers: skip the rest
 if (nxo_out == 0) then
-	deallocate (track, trk, var, stat, mask, long_name)
+	deallocate (track, trk, var, stat, mask, long_name, boz)
 	return
+endif
+
+! If stats are to be binned, assign bins
+if (bin > 0d0) then
+	allocate (binnr(2,nxo_in),binmask(nxo_in))
+	binnr = floor(var(:,:,0)/bin/day)
 endif
 
 ! Write column info
 if (.not.xostat) then
 	icol = 0
+	if (bin > 0d0) then
+		write (*,611) 1, 'date [YYMMDD]'
+		write (*,611) 2, 'number of crossovers'
+		icol = 2
+		write (*,613) 'Mean of the following variables:'
+	endif
 	do i = -2,-1
 		icol = icol + 1
 		write (*,611) icol,trim(long_name(i))
@@ -274,6 +328,7 @@ if (.not.xostat) then
 		icol = icol + 2
 		write (*,612) icol-1,icol,trim(long_name(i))
 	enddo
+	if (bin > 0d0) write (*,613) 'Mean and std dev of the xover differences of variables:'
 	if (diff) then
 		do i = var0,nvar
 			icol = icol + 1
@@ -288,6 +343,7 @@ if (.not.xostat) then
 endif
 611 format ('# Column  ',i2,'    = ',a)
 612 format ('# Columns ',i2,'-',i2,' = ',a)
+613 format ('# ',a)
 
 ! Sort first and last depending on order
 select case (order)
@@ -321,28 +377,14 @@ case default ! Native order
 end select
 
 ! Specify order of values
-if (diff) then
+! Collapse data if needed
+if (diff .or. bin > 0d0) then
 	write (*,615) 'Difference',trim(legs)
+	var(1,:,var0:nvar) = var(1,:,var0:nvar) - var(2,:,var0:nvar)
 else
 	write (*,615) 'Order     ',trim(legs)
 endif
 615 format ('# ',a,'    = ',a)
-
-! Now collapse the data if needing difference
-if (diff) var(1,:,var0:nvar) = var(1,:,var0:nvar) - var(2,:,var0:nvar)
-
-! Print out data
-if (stat_only) then
-	! Skip
-else if (diff) then
-	do i = 1,nxo_in
-		if (mask(i)) write (*,fmt_string) var(:,i,-1:var0-1),var(1,i,var0:nvar)
-	enddo
-else
-	do i = 1,nxo_in
-		if (mask(i)) write (*,fmt_string) var(:,i,:)
-	enddo
-endif
 
 ! Do statistics
 do j = -1,nvar
@@ -355,8 +397,29 @@ do j = -1,nvar
 	enddo
 enddo
 
+! Print out data (warning, this alters variables with boz format)
+if (.not.stat_only .and. bin == 0d0) then
+	do i = 1,nxo_in
+		if (mask(i)) call print_data (var(:,i,:))
+	enddo
+endif
+
 ! Print statistics
-if (xostat) then
+if (bin > 0d0) then
+	do i = minval(binnr),maxval(binnr)
+		binmask = mask .and. (binnr(1,:) == i .or. binnr(2,:) == i)
+		nr = count(binmask)
+		call mjd2ymd (nint(i*bin)+46066,yy,mm,dd)
+		if (.not.fullyear) yy = modulo(yy,100)
+		write (*,630,advance='no') yy,mm,dd,nr
+		do j = -1,nvar
+			call mean_variance (pack(var(1,:,j),binmask), stat(1,j,1), stat(2,j,1))
+			stat(2,j,1) = sqrt(stat(2,j,1))
+			if (j < var0) call mean_variance (pack(var(2,:,j),binmask), stat(2,j,1), sigma)
+		enddo
+		call print_data (stat(:,:,1))
+	enddo
+else if (xostat) then
 	write (*,640) 'MIN','MAX','MEAN','RMS','STDDEV'
 	write (*,645) trim(long_name(-2)),stat(1,-1,:)
 	write (*,645) trim(long_name(-1)),stat(2,-1,:)
@@ -367,18 +430,16 @@ if (xostat) then
 else
 	do i = 1,5
 		write (*,650,advance='no') statname(i)
-		if (diff) then
-			write (*,fmt_string) stat(:,-1:var0-1,i),stat(1,var0:nvar,i)
-		else
-			write (*,fmt_string) stat(:,:,i)
-		endif
+		call print_data (stat(:,:,i))
 	enddo
 endif
+630 format (3i0.2,i9,1x)
 640 format ('# ',t43,5a16)
 645 format ('# ',a,t43,5f16.4)
 650 format ('# ',a,' : ')
 
-deallocate (track, trk, var, stat, mask, long_name)
+deallocate (track, trk, var, stat, mask, long_name, boz)
+if (bin > 0d0) deallocate (binnr, binmask)
 end subroutine process
 
 !***********************************************************************
@@ -411,7 +472,9 @@ endif
 '                              S|s = higher-lower satellite ID or vv'/ &
 '                              T|t = later-earlier measurement or vv')
 1301 format (/ &
-'  -n, --no-list             Do not print listing (print statistics only)')
+'  -b, --bin=DAYS            Bin data by number of DAYS and print mean and std dev'/ &
+'  --full-year               Print data as YYYYMMDD instead of YYMMDD'/ &
+'  -n, --no-list             Do not print listing (print overall statistics only)')
 stop
 end subroutine synopsis
 
@@ -430,14 +493,12 @@ integer(fourbyteint), intent(in) :: varid
 real(eightbytereal), intent(out) :: array(:)
 character(len=*), intent(out) :: long_name
 real(eightbytereal) :: val
-character(len=rads_varl) :: fmt, units
+character(len=rads_varl) :: units
 call nfs (nf90_get_var (ncid, varid, array))
 if (nf90_get_att (ncid, varid, 'scale_factor', val) == nf90_noerr) array = array * val
 if (nf90_get_att (ncid, varid, 'add_offset', val) == nf90_noerr) array = array + val
 if (nf90_get_att (ncid, varid, 'long_name', long_name) /= nf90_noerr) long_name = ''
 if (nf90_get_att (ncid, varid, 'units', units) /= nf90_noerr) units = ''
-if (nf90_get_att (ncid, varid, 'format', fmt) /= nf90_noerr) fmt = 'f0.3'
-fmt_string = trim(fmt_string) // trim(fmt) // ',1x,'
 long_name = trim(long_name)//' ['//trim(units)//']'
 end subroutine get_var_1d
 
@@ -448,20 +509,33 @@ integer(fourbyteint), intent(in) :: varid
 real(eightbytereal), intent(out) :: array(:,:)
 character(len=*), intent(out) :: long_name
 real(eightbytereal) :: val
-character(len=rads_varl) :: fmt, units
+character(len=rads_varl) :: units
 call nfs (nf90_get_var (ncid, varid, array))
 if (nf90_get_att (ncid, varid, 'scale_factor', val) == nf90_noerr) array = array * val
 if (nf90_get_att (ncid, varid, 'add_offset', val) == nf90_noerr) array = array + val
 if (nf90_get_att (ncid, varid, 'long_name', long_name) /= nf90_noerr) long_name = ''
 if (nf90_get_att (ncid, varid, 'units', units) /= nf90_noerr) units = ''
-if (nf90_get_att (ncid, varid, 'format', fmt) /= nf90_noerr) fmt = 'f0.3'
-if (.not.diff .or. (var0 == 1 .and. long_name == 'time')) then
-	fmt_string = trim(fmt_string) // trim(fmt) // ',1x,' // trim(fmt) // ',1x,'
-else
-	fmt_string = trim(fmt_string) // trim(fmt) // ',1x,'
-endif
 long_name = trim(long_name)//' ['//trim(units)//']'
 end subroutine get_var_2d
+
+!***********************************************************************
+! Print a single line of data (take care of flags)
+
+subroutine print_data (x)
+real(eightbytereal) :: x(2,-1:nvar)
+integer :: j
+! In the following we would have liked to use nint8 in the transfer
+! function, but an 8-byte integer is not guaranteed to work, so we use
+! padded 4-byte integers instead
+do j = 1,nvar
+	if (boz(j)) call bit_transfer (x(:,j))
+enddo
+if (diff) then
+	write (*,fmt_str) x(:,-1:var0-1),x(1,var0:nvar)
+else
+	write (*,fmt_str) x(:,:)
+endif
+end subroutine print_data
 
 !***********************************************************************
 
