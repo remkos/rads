@@ -165,7 +165,6 @@ else ! New style xover file
 	id_offset = 3
 endif
 allocate (track(2,nxo_in), trk(ntrk), var(2,nxo_in,-1:nvar), stat(2,-1:nvar,5), mask(nxo_in), long_name(-2:nvar))
-mask = .true.
 call get_var_1d (get_varid('lat'), var(1,:,-1), long_name(-2))
 call get_var_1d (get_varid('lon'), var(2,:,-1), long_name(-1))
 call get_var_2d (get_varid('time'), var(:,:,0), long_name(0))
@@ -223,19 +222,21 @@ if (check_flag >= 0) id_flag = get_varid('flag_alt_oper_mode') - id_offset
 ! Close netCDF file
 call nfs (nf90_close (ncid))
 
+! Mask out singles or duals
+if (.not.singles) then
+	mask = (trk(track(1,:))%satid /= trk(track(2,:))%satid)
+else if (.not.duals) then
+	mask = (trk(track(1,:))%satid == trk(track(2,:))%satid)
+else
+	mask = .true.
+endif
+
 ! Mask out data not in specified range
 if (lat1 > lat0) where (var(1,:,-1) < lat0 .or. var(1,:,-1) > lat1) mask = .false.
 if (lon1 > lon0) where (var(2,:,-1) < lon0 .or. var(2,:,-1) > lon1) mask = .false.
 if (t1   > t0  ) where (var(1,:, 0) < t0   .or. var(1,:, 0) > t1   .or. &
 						var(2,:, 0) < t0   .or. var(2,:, 0) > t1  ) mask = .false.
 if (dt1  > dt0 ) where (abs(var(1,:,0)-var(2,:,0)) < dt0 .or. abs(var(1,:,0)-var(2,:,0)) > dt1) mask = .false.
-
-! Mask out singles or duals
-if (.not.singles) then
-	mask = (trk(track(1,:))%satid /= trk(track(2,:))%satid)
-else if (.not.duals) then
-	mask = (trk(track(1,:))%satid == trk(track(2,:))%satid)
-endif
 
 ! Mask out based on data flag (for use with CryoSat)
 if (id_flag > 0) where (var(1,:,id_flag) /= check_flag) mask = .false.
@@ -256,7 +257,7 @@ nxo_out = count(mask)
 write (*,610) nxo_out
 610 format ('# Xovers sel''d  = ',i9)
 
-! If no xovers skip the rest
+! If no xovers: skip the rest
 if (nxo_out == 0) then
 	deallocate (track, trk, var, stat, mask, long_name)
 	return
