@@ -789,6 +789,51 @@ variance = sum2/(n-1)
 end subroutine mean_variance
 
 !***********************************************************************
+!*regression -- Compute best fitting linear regression
+!+
+subroutine regression (x, y, a, b, r, fit)
+real(eightbytereal), intent(in) :: x(:), y(:)
+real(eightbytereal), intent(out) :: a, b, r, fit
+!
+! Compute best fitting straight line through a number of points
+! with coordinates (<x>,<y>). Upon return, <a> and <b> will be the
+! coefficients of the line y = a + b * x that best fits the data points.
+!
+! Arguments:
+!  x     : x-coordinate
+!  y     : y-coordinate
+!  a, b  : Coefficients of linear regression (intercept and slope)
+!  r     : Regression
+!  fit   : RMS of fit of regression to the data
+!-
+real(eightbytereal) :: sumx,sumy,sumxx,sumxy,sumyy,uxx,uxy,uyy
+integer(fourbyteint) :: i,n
+n = 0
+sumx = 0d0
+sumy = 0d0
+sumxx = 0d0
+sumxy = 0d0
+sumyy = 0d0
+do i = 1,size(x)
+	if (isnan_(x(i)) .or. isnan_(y(i))) cycle
+	sumx = sumx + x(i)
+	sumy = sumy + y(i)
+	sumxx = sumxx + x(i)*x(i)
+	sumxy = sumxy + x(i)*y(i)
+	sumyy = sumyy + y(i)*y(i)
+	n = n + 1
+enddo
+
+uxx = n * sumxx - sumx * sumx
+uxy = n * sumxy - sumx * sumy
+uyy = n * sumyy - sumy * sumy
+b = uxy / uxx
+a = (sumy - b*sumx) / n
+r = uxy / sqrt(uxx*uyy)
+fit = sqrt((sumyy - a * sumy - b * sumxy) / n)
+end subroutine regression
+
+!***********************************************************************
 !*is_number -- Is string a number?
 !+
 pure function is_number (string)
