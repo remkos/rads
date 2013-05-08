@@ -155,7 +155,7 @@ files: do
 	write (*,550,advance='no') trim(infile) // ' ...'
 
 	if (nf90_open(infile,nf90_nowrite,ncid) /= nf90_noerr) then
-	    write (*,550) 'error opening file'
+		write (*,550) 'error opening file'
 		cycle files
 	endif
 
@@ -212,16 +212,16 @@ files: do
 
 	flags = 0
 	call nc2f ('qual_alt_1hz_off_nadir_angle_wf',1)	! bit  1: Quality off-nadir pointing
-	call nc2f ('surface_type',2,val=2)			! bit  2: Continental ice
-	call nc2f ('surface_type',4,lim=2)			! bit  4: Water/land
-	call nc2f ('surface_type',5,lim=1)			! bit  5: Ocean/other
-	call nc2f ('rad_surf_type',6,lim=2)			! bit  6: Radiometer land flag
-	call nc2f ('ice_flag',7)					! bit  7: Ice flag
-	call nc2f ('qual_rad_1hz_tb_k',9)			! bit  9: Quality 23.8 GHz channel
-	call nc2f ('qual_rad_1hz_tb_ka',10)			! bit 10: Quality 37.0 GHz channel
-	call nc2f ('qual_alt_1hz_range',11)			! bit 11: Quality of range
-	call nc2f ('qual_alt_1hz_swh',12)			! bit 12: Quality of SWH
-	call nc2f ('qual_alt_1hz_sig0',13)			! bit 13: Quality of sigma0
+	call nc2f ('surface_type',2,val=2)				! bit  2: Continental ice
+	call nc2f ('surface_type',4,lim=2)				! bit  4: Water/land
+	call nc2f ('surface_type',5,lim=1)				! bit  5: Ocean/other
+	call nc2f ('rad_surf_type',6,lim=2)				! bit  6: Radiometer land flag
+	call nc2f ('ice_flag',7)						! bit  7: Ice flag
+	call nc2f ('qual_rad_1hz_tb_k',9)				! bit  9: Quality 23.8 GHz channel
+	call nc2f ('qual_rad_1hz_tb_ka',10)				! bit 10: Quality 37.0 GHz channel
+	call nc2f ('qual_alt_1hz_range',11)				! bit 11: Quality of range
+	call nc2f ('qual_alt_1hz_swh',12)				! bit 12: Quality of SWH
+	call nc2f ('qual_alt_1hz_sig0',13)				! bit 13: Quality of sigma0
 	if (ogdr) then
 		call nc2f ('orb_state_flag_diode',15,lim=2)	! bit 15: Quality of DIODE orbit
 	else
