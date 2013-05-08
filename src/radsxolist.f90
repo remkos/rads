@@ -28,7 +28,7 @@ use rads_misc
 use rads_netcdf
 use rads_time
 integer(fourbyteint) :: ncid, i, icol, ios, nvar, nxo_in, nxo_out, ntrk, &
-	id_flag, id_satid, id_track, id_sla, id_new, id_old, id_offset, nvar_replace = 0
+	id_flag, id_satid, id_track, id_sla, id_new, id_old, id_offset, id_alt_rate, nvar_replace = 0
 real(eightbytereal), allocatable :: var(:,:,:), stat(:,:,:)
 integer(fourbyteint), allocatable :: track(:,:), binnr(:,:)
 character(len=rads_naml), allocatable :: long_name(:)
@@ -58,7 +58,7 @@ character(len=*), parameter :: optlist = &
 	' time: ymd: doy: sec: replace: check-flag: full-year'
 
 integer(fourbyteint) :: var0 = 0, check_flag = -1
-logical :: diff = .true., stat_only, singles = .true., duals = .true., xostat, fullyear = .false.
+logical :: diff = .true., stat_only, singles = .true., duals = .true., xostat, fullyear = .false., l_tbias
 real(eightbytereal) :: t0 = 0d0, t1 = 0d0, lon0 = 0d0, lon1 = 0d0, lat0 = 0d0, lat1 = 0d0, &
 	dt0 = 0d0, dt1 = 0d0, edit = -1d0, bin = 0d0
 
@@ -136,6 +136,8 @@ enddo
 if (bin > 0d0) then
 	diff = .false.
 	var0 = 1
+	stat_only = .false.
+	xostat = .false.
 endif
 
 ! Now process all files
@@ -246,12 +248,18 @@ do i = 1,nvar
 enddo
 fmt_str(len_trim(fmt_str)-3:) = ')'
 
+! Determine id_sla and id_alt_rate, if any
+if (nf90_inq_varid(ncid, 'sla', id_sla) /= nf90_noerr) id_sla = 0
+if (nf90_inq_varid(ncid, 'alt_rate', id_alt_rate) /= nf90_noerr) id_alt_rate = 0
+id_sla = id_sla - id_offset
+id_alt_rate = id_alt_rate - id_offset
+l_tbias = (id_sla > 0 .and. id_alt_rate > 0)
+
 ! Exchange any correction if requested
 do i = 1,nvar_replace
 	j = index(optarg,'=')
 	id_old = get_varid(optarg(:j-1)) - id_offset
 	id_new = get_varid(optarg(j+1:)) - id_offset
-	id_sla = get_varid('sla') - id_offset
 	if (optarg(:3) == 'alt') then	! Add change to altitude
 		var(:,:,id_sla) = var(:,:,id_sla) + (var(:,:,id_new) - var(:,:,id_old))
 	else	! Subtract change to corrections
@@ -340,6 +348,11 @@ if (.not.xostat) then
 			write (*,612) icol-1,icol,trim(long_name(i))
 		enddo
 	endif
+	if (bin > 0d0 .and. l_tbias) then
+		icol = icol + 1
+		write (*,613) 'Mean of the following variables:'
+		write (*,611) icol,'timing bias [ms]'
+	endif
 endif
 611 format ('# Column  ',i2,'    = ',a)
 612 format ('# Columns ',i2,'-',i2,' = ',a)
@@ -406,9 +419,11 @@ endif
 
 ! Print statistics
 if (bin > 0d0) then
+	! Statistics per bin
 	do i = minval(binnr),maxval(binnr)
-		binmask = mask .and. (binnr(1,:) == i .or. binnr(2,:) == i)
+		binmask = mask .and. (binnr(1,:) == i .or. binnr(2,:) == i) ! Select single bin
 		nr = count(binmask)
+		if (nr == 0) cycle
 		call mjd2ymd (nint(i*bin)+46066,yy,mm,dd)
 		if (.not.fullyear) yy = modulo(yy,100)
 		write (*,630,advance='no') yy,mm,dd,nr
@@ -417,16 +432,20 @@ if (bin > 0d0) then
 			stat(2,j,1) = sqrt(stat(2,j,1))
 			if (j < var0) call mean_variance (pack(var(2,:,j),binmask), stat(2,j,1), sigma)
 		enddo
-		call print_data (stat(:,:,1))
+		call print_data (stat(:,:,1), l_tbias)
+		if (l_tbias) write(*,631) &
+			solve_tbias(pack(var(1,:,id_sla),binmask),pack(var(1,:,id_alt_rate),binmask))*1d3
 	enddo
 else if (xostat) then
 	write (*,640) 'MIN','MAX','MEAN','RMS','STDDEV'
-	write (*,645) trim(long_name(-2)),stat(1,-1,:)
-	write (*,645) trim(long_name(-1)),stat(2,-1,:)
+	write (*,645) long_name(-2),stat(1,-1,:)
+	write (*,645) long_name(-1),stat(2,-1,:)
 	do i = 0,nvar
-		write (*,645) trim(long_name(i)),stat(1,i,:)
+		write (*,645) long_name(i),stat(1,i,:)
 		if (.not.diff .or. i < var0) write (*,645) trim(long_name(i)),stat(2,i,:)
 	enddo
+	if (l_tbias .and. diff) write (*,646) 'timing bias [ms]', &
+		solve_tbias(pack(var(1,:,id_sla),mask),pack(var(1,:,id_alt_rate),mask))*1d3
 else
 	do i = 1,5
 		write (*,650,advance='no') statname(i)
@@ -434,8 +453,10 @@ else
 	enddo
 endif
 630 format (3i0.2,i9,1x)
+631 format (1x,f10.4)
 640 format ('# ',t43,5a16)
 645 format ('# ',a,t43,5f16.4)
+646 format ('# ',a,t43,32x,f16.4)
 650 format ('# ',a,' : ')
 
 deallocate (track, trk, var, stat, mask, long_name, boz)
@@ -471,7 +492,7 @@ endif
 '                              H|h = higher-lower satellite or vv'/ &
 '                              S|s = higher-lower satellite ID or vv'/ &
 '                              T|t = later-earlier measurement or vv')
-1301 format (/ &
+1301 format ( &
 '  -b, --bin=DAYS            Bin data by number of DAYS and print mean and std dev'/ &
 '  --full-year               Print data as YYYYMMDD instead of YYMMDD'/ &
 '  -n, --no-list             Do not print listing (print overall statistics only)')
@@ -521,19 +542,28 @@ end subroutine get_var_2d
 !***********************************************************************
 ! Print a single line of data (take care of flags)
 
-subroutine print_data (x)
-real(eightbytereal) :: x(2,-1:nvar)
+subroutine print_data (x, no_advance)
+real(eightbytereal), intent(inout) :: x(2,-1:nvar)
+logical, optional :: no_advance
 integer :: j
+character(len=3) :: advance
 ! In the following we would have liked to use nint8 in the transfer
 ! function, but an 8-byte integer is not guaranteed to work, so we use
 ! padded 4-byte integers instead
+if (.not.present(no_advance)) then
+	advance = 'yes'
+else if (no_advance) then
+	advance = 'no'
+else
+	advance = 'yes'
+endif
 do j = 1,nvar
 	if (boz(j)) call bit_transfer (x(:,j))
 enddo
 if (diff) then
-	write (*,fmt_str) x(:,-1:var0-1),x(1,var0:nvar)
+	write (*,fmt_str,advance=advance) x(:,-1:var0-1),x(1,var0:nvar)
 else
-	write (*,fmt_str) x(:,:)
+	write (*,fmt_str,advance=advance) x(:,:)
 endif
 end subroutine print_data
 
@@ -558,5 +588,11 @@ b = a(1)
 a(1) = a(2)
 a(2) = b
 end subroutine flip
+
+function solve_tbias (sla, alt_rate)
+real(eightbytereal), intent(in) :: sla(:), alt_rate(:)
+real(eightbytereal) :: solve_tbias
+solve_tbias = sum(sla * alt_rate) / sum(alt_rate * alt_rate)
+end function solve_tbias
 
 end program radsxolist
