@@ -15,7 +15,7 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*radsxolist -- RADS crossover lister
+!*radsxolist -- RADS crossover lister and statistics generator
 !+
 program radsxolist
 
@@ -55,10 +55,10 @@ character(len=3*msat) :: satlist = ''
 type(rads_sat) :: S
 character(len=*), parameter :: optlist = &
 	'e::dslnotr:b:: lon: lat: dt: edit:: bin:: dual single nolist both-legs order both-times ' // &
-	' time: ymd: doy: sec: replace: check-flag: full-year'
+	' time: ymd: doy: sec: replace: check-flag: full-year tbias'
 
 integer(fourbyteint) :: var0 = 0, check_flag = -1
-logical :: diff = .true., stat_only, singles = .true., duals = .true., xostat, fullyear = .false., l_tbias
+logical :: diff = .true., stat_only, singles = .true., duals = .true., xostat, fullyear = .false., tbias
 real(eightbytereal) :: t0 = 0d0, t1 = 0d0, lon0 = 0d0, lon1 = 0d0, lat0 = 0d0, lat1 = 0d0, &
 	dt0 = 0d0, dt1 = 0d0, edit = -1d0, bin = 0d0
 
@@ -123,6 +123,8 @@ do
 		str_replace(nvar_replace) = optarg
 	case ('full-year')
 		fullyear = .true.
+	case ('tbias')
+		tbias = .true.
 	case ('check-flag')
 		read (optarg, *, iostat=ios) check_flag
 	case (' ')
@@ -227,16 +229,16 @@ else
 	enddo
 endif
 
-! Now load all the "data variables"
-do i = 1,nvar
-	call get_var_2d (i + id_offset, var(:,:,i), long_name(i))
-enddo
-
-! Make format string
+! Start format string with lat, lon, time
 fmt_str = '(' // trim(S%lat%info%format) // ',1x,' // trim(S%lon%info%format) // ',1x,' // &
 	trim(S%time%info%format) // ',1x,'
 if (var0 == 1) fmt_str = trim(fmt_str) // trim(S%time%info%format) // ',1x,'
+
+! Load all the "data variables" and complete the format string
+id_sla = 0
+id_alt_rate = 0
 do i = 1,nvar
+	call get_var_2d (i + id_offset, var(:,:,i), long_name(i))
 	j = nf90_inquire_variable (ncid, i + id_offset, varnm)
 	ptr => rads_varptr (S, varnm)
 	if (diff) then
@@ -245,18 +247,18 @@ do i = 1,nvar
 		fmt_str = trim(fmt_str) // trim(ptr%info%format) // ',1x,' // trim(ptr%info%format) // ',1x,'
 	endif
 	boz(i) = ptr%info%boz_format
+	if (varnm == 'sla') id_sla = i
+	if (varnm == 'alt_rate') id_alt_rate = i
 enddo
 fmt_str(len_trim(fmt_str)-3:) = ')'
 
-! Determine id_sla and id_alt_rate, if any
-if (nf90_inq_varid(ncid, 'sla', id_sla) /= nf90_noerr) id_sla = 0
-if (nf90_inq_varid(ncid, 'alt_rate', id_alt_rate) /= nf90_noerr) id_alt_rate = 0
-id_sla = id_sla - id_offset
-id_alt_rate = id_alt_rate - id_offset
-l_tbias = (id_sla > 0 .and. id_alt_rate > 0)
+! Try if we can generate a timing bias
+if (tbias .and. (id_sla == 0 .or. id_alt_rate == 0)) &
+	call rads_exit ('Cannot compute timing bias without both SLA and ALT_RATE present')
 
 ! Exchange any correction if requested
 do i = 1,nvar_replace
+	if (id_sla == 0) call rads_exit ('Cannot replace fields without SLA present')
 	j = index(optarg,'=')
 	id_old = get_varid(optarg(:j-1)) - id_offset
 	id_new = get_varid(optarg(j+1:)) - id_offset
@@ -348,10 +350,9 @@ if (.not.xostat) then
 			write (*,612) icol-1,icol,trim(long_name(i))
 		enddo
 	endif
-	if (bin > 0d0 .and. l_tbias) then
-		icol = icol + 1
-		write (*,613) 'Mean of the following variables:'
-		write (*,611) icol,'timing bias [ms]'
+	if (bin > 0d0 .and. tbias) then
+		icol = icol + 2
+		write (*,612) icol-1,icol,'timing bias [ms]'
 	endif
 endif
 611 format ('# Column  ',i2,'    = ',a)
@@ -432,20 +433,24 @@ if (bin > 0d0) then
 			stat(2,j,1) = sqrt(stat(2,j,1))
 			if (j < var0) call mean_variance (pack(var(2,:,j),binmask), stat(2,j,1), sigma)
 		enddo
-		call print_data (stat(:,:,1), l_tbias)
-		if (l_tbias) write(*,631) &
-			solve_tbias(pack(var(1,:,id_sla),binmask),pack(var(1,:,id_alt_rate),binmask))*1d3
+		call print_data (stat(:,:,1), tbias)
+		if (tbias) then
+			call solve_tbias (pack(var(1,:,id_sla),binmask),pack(var(1,:,id_alt_rate),binmask),mean,sigma)
+			write(*,631) mean*1d3, sigma*1d3
+		endif
 	enddo
 else if (xostat) then
 	write (*,640) 'MIN','MAX','MEAN','RMS','STDDEV'
-	write (*,645) long_name(-2),stat(1,-1,:)
-	write (*,645) long_name(-1),stat(2,-1,:)
+	write (*,645) trim(long_name(-2)),stat(1,-1,:)
+	write (*,645) trim(long_name(-1)),stat(2,-1,:)
 	do i = 0,nvar
-		write (*,645) long_name(i),stat(1,i,:)
+		write (*,645) trim(long_name(i)),stat(1,i,:)
 		if (.not.diff .or. i < var0) write (*,645) trim(long_name(i)),stat(2,i,:)
 	enddo
-	if (l_tbias .and. diff) write (*,646) 'timing bias [ms]', &
-		solve_tbias(pack(var(1,:,id_sla),mask),pack(var(1,:,id_alt_rate),mask))*1d3
+	if (tbias .and. diff) then
+		call solve_tbias (pack(var(1,:,id_sla),mask),pack(var(1,:,id_alt_rate),mask),mean,sigma)
+		write (*,646) 'timing bias [ms]', mean*1d3, sigma*1d3
+	endif
 else
 	do i = 1,5
 		write (*,650,advance='no') statname(i)
@@ -453,10 +458,10 @@ else
 	enddo
 endif
 630 format (3i0.2,i9,1x)
-631 format (1x,f10.4)
+631 format (1x,2f8.4)
 640 format ('# ',t43,5a16)
 645 format ('# ',a,t43,5f16.4)
-646 format ('# ',a,t43,32x,f16.4)
+646 format ('# ',a,t43,32x,f16.4,16x,f16.4)
 650 format ('# ',a,' : ')
 
 deallocate (track, trk, var, stat, mask, long_name, boz)
@@ -487,6 +492,7 @@ endif
 '  -s, --single              Select single satellite crossovers only'/ &
 '  -l, --both-legs           Write out both xover values (default is differences)'/ &
 '  -t, --both-times          Write out both times (default is difference)'/ &
+'  --tbias                   Write out timing bias estimate (when possible)'/ &
 '  -oTYPE, --order=TYPE      Order of the xover values (or difference), where TYPE is one of:'/ &
 '                              A|a = ascending-descending or vv'/ &
 '                              H|h = higher-lower satellite or vv'/ &
@@ -581,6 +587,8 @@ do i = 1,nxo_in
 enddo
 end subroutine reorder
 
+!***********************************************************************
+
 subroutine flip (a)
 real(eightbytereal), intent(inout) :: a(2)
 real(eightbytereal) :: b
@@ -589,10 +597,17 @@ a(1) = a(2)
 a(2) = b
 end subroutine flip
 
-function solve_tbias (sla, alt_rate)
+!***********************************************************************
+
+subroutine solve_tbias (sla, alt_rate, tbias, sig_tbias)
 real(eightbytereal), intent(in) :: sla(:), alt_rate(:)
-real(eightbytereal) :: solve_tbias
-solve_tbias = sum(sla * alt_rate) / sum(alt_rate * alt_rate)
-end function solve_tbias
+real(eightbytereal), intent(out) :: tbias, sig_tbias
+real(eightbytereal) :: atwa, atwb
+real(eightbytereal), parameter :: w = 1d2 ! Measurement sigma = 10 cm
+atwa = sum(alt_rate * w * alt_rate)
+atwb = sum(sla * w * alt_rate)
+tbias = atwb / atwa
+sig_tbias = sqrt(1d0/atwa)
+end subroutine solve_tbias
 
 end program radsxolist
