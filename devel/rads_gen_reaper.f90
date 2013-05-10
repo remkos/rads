@@ -100,7 +100,7 @@ character(80), parameter :: optlist='vC: debug: sat: cycle: t: mjd: sec: ymd: do
 
 character(1) :: phasenm(2)
 character(80) :: l2_proc_time, l2_version
-logical :: meteo
+logical :: alt_2m
 real(eightbytereal) :: tnode(2), lnode(2)
 integer(fourbyteint) :: orbitnr(2), cyclenr(2), passnr(2), varid
 
@@ -246,7 +246,7 @@ if (i <= 0) then
 	write (*,550) 'Error: Wrong input file'
 	return
 endif
-meteo = index(infile,'ERS_ALT_2M') > 0
+alt_2m = index(infile,'ERS_ALT_2M') > 0
 
 ! Open input file
 
@@ -288,8 +288,6 @@ else if (ndata+nrec > mrec) then
 endif
 call nfs(nf90_get_att(ncid,nf90_global,'l2_proc_time',l2_proc_time))
 call nfs(nf90_get_att(ncid,nf90_global,'l2_software_ver',l2_version))
-! The products of FEB-2013 are wrongly marked with version 01.02, whereas they should be 01.03.
-if (index(l2_proc_time, '-FEB-2013') > 0) l2_version = 'REAPER v 01.03'
 
 ! Allocate arrays
 
@@ -341,7 +339,7 @@ call invalidate (c <= 1, b)
 call new_var ('range_ku', a*1d-3)
 call new_var ('range_rms_ku', b*1d-3)
 call new_var ('range_numval_ku', c)
-if (meteo) then ! Different name in Meteo product
+if (alt_2m) then ! Different name in Meteo product
 	call get_var (ncid, 'ocean_valid_bitmap_1hz', a)
 else
 	call get_var (ncid, 'f_ocean_valid_bitmap_1hz', a)
@@ -365,7 +363,7 @@ enddo
 
 ! For some reason Meteo product has 1-Hz peakiness
 ! where (S)GDR have ocean_wind_1hz
-if (meteo) then
+if (alt_2m) then
 	call get_var (ncid, 'wf_pk_1hz', a)
 	call invalidate (c == 0, a)
 	call new_var ('peakiness_ku', a*1d-3)
@@ -377,7 +375,7 @@ endif
 
 ! Range data: High rate
 
-if (.not.meteo) then
+if (.not.alt_2m) then
 	call get_var (ncid, 'ocean_mean_quadratic_error', d)
 	call mean_1hz (d, valid, a, b)
 	call new_var ('mqe', a*1d-4)
@@ -440,7 +438,7 @@ call flag_set (c == 1, 5)
 call get_var (ncid, 'f_mwr_interp_qual_1hz', c)
 call invalidate (c == 3, a)
 call invalidate (c == 3, b)
-if (meteo) then
+if (alt_2m) then
 	call get_var (ncid, 'f_mwr_valid_1hz', c)
 else ! Wrong name in (S)GDR
 	call get_var (ncid, 'f_MWR_valid_1hz', c)
@@ -510,7 +508,7 @@ call get_var (ncid, 'em_bias_1hz', a)
 call new_var ('ssb_bm3', a*1d-3, 23)
 call get_var (ncid, 'h_mss_ucl04_1hz', a)
 call new_var ('mss_ucl04', a*1d-3+dh, 27)
-if (.not.meteo) then ! Only on (S)GDR
+if (.not.alt_2m) then ! Only on (S)GDR
 	call get_var (ncid, 'sig0_attn_c_1hz', a)
 	call new_var ('dsig0_atmos_ku', a*1d-2)
 endif
@@ -521,7 +519,7 @@ call new_var ('flags', flags*1d0)
 do i = 1,nrec
 	k = ndata + i
 	var(7)%d(k) = var(7)%d(k) - sum_d_applied(i)
-	if (.not.meteo .and. abs(sum_d_applied(i) - sum_c_applied(i)) > 1d-4) &
+	if (.not.alt_2m .and. abs(sum_d_applied(i) - sum_c_applied(i)) > 1d-4) &
 		write (*,553) 'Warning: sum_c_applied wrong: ',i,sum_d_applied(i),sum_c_applied(i),sum_d_applied(i)-sum_c_applied(i)
 enddo
 
@@ -593,9 +591,9 @@ if (P%start_time >= start_time) then
 else if (P%end_time < start_time) then
 	original = old_infile
 else
-	original = trim(old_infile) //' '// infile
+	original = trim(old_infile)//rads_linefeed//infile
 endif
-P%original = trim(l2_version)//' data of '//l2_proc_time(:11)//': '//trim(original)
+P%original = trim(l2_version)//' data of '//l2_proc_time(:11)//rads_linefeed//trim(original)
 
 ! Check which variables are empty
 do i = 1,nvar
