@@ -475,11 +475,9 @@ if (start_time >= 430880400d0) then	! After 1998-08-28 01:00:00 get GIM iono
 	call new_var ('iono_gim', a*1d-3, 10)
 endif
 call get_var (ncid, 'h_mss_cls01_1hz', a)
-call new_var ('mss_cls01', a*1d-3, 11)
-var(nvar)%d = var(nvar)%d + dh
+call new_var ('mss_cls01', a*1d-3+dh, 11)
 call get_var (ncid, 'h_geo_1hz', a)
-call new_var ('geoid_egm2008', a*1d-3, 12)
-var(nvar)%d = var(nvar)%d + dh
+call new_var ('geoid_egm2008', a*1d-3+dh, 12)
 call get_var (ncid, 'h_ot_1hz', a)
 call new_var ('tide_ocean_got47', a*1d-3, 13)
 call get_var (ncid, 'h_ot2_1hz', a)
