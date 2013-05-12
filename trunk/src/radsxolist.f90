@@ -54,13 +54,14 @@ type(sat_) :: sat(msat)
 character(len=3*msat) :: satlist = ''
 type(rads_sat) :: S
 character(len=*), parameter :: optlist = &
-	'e::dslnotr:b:: lon: lat: dt: edit:: bin:: dual single nolist both-legs order both-times ' // &
-	' time: ymd: doy: sec: replace: check-flag: full-year tbias'
+	'e::b::o:r:dsnltp lon: lat: dt: edit:: bin:: order: replace: dual single nolist both-legs both-times ' // &
+	' time: ymd: doy: sec: check-flag: full-year tbias:: pass-info'
 
 integer(fourbyteint) :: var0 = 0, check_flag = -1
-logical :: diff = .true., stat_only, singles = .true., duals = .true., xostat, fullyear = .false., tbias
+logical :: diff = .true., stat_only, singles = .true., duals = .true., xostat, fullyear = .false., &
+	ltbias = .false., pass_info = .false.
 real(eightbytereal) :: t0 = 0d0, t1 = 0d0, lon0 = 0d0, lon1 = 0d0, lat0 = 0d0, lat1 = 0d0, &
-	dt0 = 0d0, dt1 = 0d0, edit = -1d0, bin = 0d0
+	dt0 = 0d0, dt1 = 0d0, edit = -1d0, bin = 0d0, tbias = 0d0
 
 ! Check operation mode
 call getarg (0, command)
@@ -112,6 +113,7 @@ do
 		stat_only = .true.
 	case ('o', 'order')
 		order = optarg(1:1)
+		write (*,*) order
 	case ('t', 'both-times')
 		var0 = 1
 	case ('b', 'bin')
@@ -124,7 +126,10 @@ do
 	case ('full-year')
 		fullyear = .true.
 	case ('tbias')
-		tbias = .true.
+		ltbias = .true.
+		read (optarg, *, iostat=ios) tbias
+	case ('p', 'pass-info')
+		pass_info = .true.
 	case ('check-flag')
 		read (optarg, *, iostat=ios) check_flag
 	case (' ')
@@ -160,7 +165,7 @@ contains
 
 subroutine process (filename)
 character(len=*), intent(in) :: filename
-integer(fourbyteint) :: i, j, k, nr, yy, mm, dd
+integer(fourbyteint) :: i, j, k, nr, yy, mm, dd, trkid(2)
 character(len=rads_naml) :: legs, varnm
 real(eightbytereal) :: mean, sigma
 real(eightbytereal), parameter :: day = 86400d0
@@ -253,7 +258,7 @@ enddo
 fmt_str(len_trim(fmt_str)-3:) = ')'
 
 ! Try if we can generate a timing bias
-if (tbias .and. (id_sla == 0 .or. id_alt_rate == 0)) &
+if (ltbias .and. (id_sla == 0 .or. id_alt_rate == 0)) &
 	call rads_exit ('Cannot compute timing bias without both SLA and ALT_RATE present')
 
 ! Exchange any correction if requested
@@ -270,6 +275,9 @@ do i = 1,nvar_replace
 enddo
 id_flag = 0
 if (check_flag >= 0) id_flag = get_varid('flag_alt_oper_mode') - id_offset
+
+! Apply a timing bias, if requested
+if (tbias /= 0d0) var(:,:,id_sla) = var(:,:,id_sla) - tbias * 1d-3 * var(:,:,id_alt_rate)
 
 ! Close netCDF file
 call nfs (nf90_close (ncid))
@@ -350,9 +358,17 @@ if (.not.xostat) then
 			write (*,612) icol-1,icol,trim(long_name(i))
 		enddo
 	endif
-	if (bin > 0d0 .and. tbias) then
+	if (bin > 0d0 .and. ltbias) then
 		icol = icol + 2
 		write (*,612) icol-1,icol,'timing bias [ms]'
+	endif
+	if (pass_info) then
+		icol = icol + 2
+		write (*,612) icol-1,icol,'satellite id'
+		icol = icol + 2
+		write (*,612) icol-1,icol,'cycle number'
+		icol = icol + 2
+		write (*,612) icol-1,icol,'pass number'
 	endif
 endif
 611 format ('# Column  ',i2,'    = ',a)
@@ -414,7 +430,11 @@ enddo
 ! Print out data (warning, this alters variables with boz format)
 if (.not.stat_only .and. bin == 0d0) then
 	do i = 1,nxo_in
-		if (mask(i)) call print_data (var(:,i,:))
+		if (.not.mask(i)) cycle
+		call print_data (var(:,i,:), pass_info)
+		if (.not.pass_info) cycle
+		trkid = track(:,i)
+		write (*,632) trk(trkid)%satid,trk(trkid)%cycle,trk(trkid)%pass
 	enddo
 endif
 
@@ -433,8 +453,8 @@ if (bin > 0d0) then
 			stat(2,j,1) = sqrt(stat(2,j,1))
 			if (j < var0) call mean_variance (pack(var(2,:,j),binmask), stat(2,j,1), sigma)
 		enddo
-		call print_data (stat(:,:,1), tbias)
-		if (tbias) then
+		call print_data (stat(:,:,1), ltbias)
+		if (ltbias) then
 			call solve_tbias (pack(var(1,:,id_sla),binmask),pack(var(1,:,id_alt_rate),binmask),mean,sigma)
 			write(*,631) mean*1d3, sigma*1d3
 		endif
@@ -447,7 +467,7 @@ else if (xostat) then
 		write (*,645) trim(long_name(i)),stat(1,i,:)
 		if (.not.diff .or. i < var0) write (*,645) trim(long_name(i)),stat(2,i,:)
 	enddo
-	if (tbias .and. diff) then
+	if (ltbias .and. diff) then
 		call solve_tbias (pack(var(1,:,id_sla),mask),pack(var(1,:,id_alt_rate),mask),mean,sigma)
 		write (*,646) 'timing bias [ms]', mean*1d3, sigma*1d3
 	endif
@@ -459,6 +479,7 @@ else
 endif
 630 format (3i0.2,i9,1x)
 631 format (1x,2f8.4)
+632 format (2i3,2i4,2i5)
 640 format ('# ',t43,5a16)
 645 format ('# ',a,t43,5f16.4)
 646 format ('# ',a,t43,32x,f16.4,16x,f16.4)
@@ -492,7 +513,7 @@ endif
 '  -s, --single              Select single satellite crossovers only'/ &
 '  -l, --both-legs           Write out both xover values (default is differences)'/ &
 '  -t, --both-times          Write out both times (default is difference)'/ &
-'  --tbias                   Write out timing bias estimate (when possible)'/ &
+'  --tbias[=VAL]             Remove timing bias and/or estimate timing bias (when possible)'/ &
 '  -oTYPE, --order=TYPE      Order of the xover values (or difference), where TYPE is one of:'/ &
 '                              A|a = ascending-descending or vv'/ &
 '                              H|h = higher-lower satellite or vv'/ &
@@ -501,6 +522,7 @@ endif
 1301 format ( &
 '  -b, --bin=DAYS            Bin data by number of DAYS and print mean and std dev'/ &
 '  --full-year               Print data as YYYYMMDD instead of YYMMDD'/ &
+'  -p, --pass-info           Write out satellite ID, cycle and pass number for every record'/ &
 '  -n, --no-list             Do not print listing (print overall statistics only)')
 stop
 end subroutine synopsis
@@ -577,25 +599,21 @@ end subroutine print_data
 
 subroutine reorder (order)
 logical, intent(in) :: order(:)
-integer(fourbyteint) :: i, j
+integer(fourbyteint) :: i, j, k
+real(eightbytereal) :: a
 do i = 1,nxo_in
 	if (order(i)) then
 		do j = 0,nvar
-			call flip(var(:,i,j))
+			a = var(1,i,j)
+			var(1,i,j) = var(2,i,j)
+			var(2,i,j) = a
 		enddo
+		k = track(1,i)
+		track(1,i) = track(2,i)
+		track(2,i) = k
 	endif
 enddo
 end subroutine reorder
-
-!***********************************************************************
-
-subroutine flip (a)
-real(eightbytereal), intent(inout) :: a(2)
-real(eightbytereal) :: b
-b = a(1)
-a(1) = a(2)
-a(2) = b
-end subroutine flip
 
 !***********************************************************************
 
