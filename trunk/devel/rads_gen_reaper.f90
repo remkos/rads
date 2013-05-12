@@ -231,7 +231,7 @@ end subroutine synopsis
 
 subroutine get_reaper
 real(eightbytereal) :: dhellips, t(3), last_time
-integer(fourbyteint) :: i, k, flag
+integer(fourbyteint) :: i, k, flag, ivar0, ivar1
 
 550 format (a)
 551 format (a,' ...')
@@ -349,7 +349,7 @@ endif
 ! Bits are 0 when valid, 1 when invalid
 ! However, when all are invalid, value is 0
 do i = 1,nrec
-		flag = nint(a(i))
+	flag = nint(a(i))
 	if (c(i) == 0) then
 		valid(:,i) = .false.
 	else if (c(i) == 20) then
@@ -452,6 +452,7 @@ call new_var ('tb_365', b*1d-2)
 
 call get_var (ncid, 'dry_c_1hz', a)
 call new_var ('dry_tropo_ecmwf', a*1d-3, 1)
+ivar0 = nvar
 call get_var (ncid, 'ib_c_1hz', a)
 call new_var ('inv_bar_static', a*1d-3, 2)
 call get_var (ncid, 'mog2d_c_1hz', a)
@@ -495,22 +496,24 @@ call new_var ('tide_solid', a*1d-3, 19)
 call get_var (ncid, 'h_pol_1hz', a)
 call new_var ('tide_pole', a*1d-3, 20)
 
-call get_var (ncid, 'f_srf_typ_1hz', a)
-call flag_set (a >= 3, 2)
-call flag_set (a >= 2, 4)
-call flag_set (a >= 1, 5)
-
 call get_var (ncid, 'h_odle_1hz', a)
 call new_var ('topo_macess', a*1d-3, 22)
 call get_var (ncid, 'em_bias_1hz', a)
 call new_var ('ssb_bm3', a*1d-3, 23)
 call get_var (ncid, 'h_mss_ucl04_1hz', a)
 call new_var ('mss_ucl04', a*1d-3+dh, 27)
+ivar1 = nvar
+
+call get_var (ncid, 'f_srf_typ_1hz', a)
+call flag_set (a >= 3, 2)
+call flag_set (a >= 2, 4)
+call flag_set (a >= 1, 5)
+call new_var ('flags', flags*1d0)
+
 if (.not.alt_2m) then ! Only on (S)GDR
 	call get_var (ncid, 'sig0_attn_c_1hz', a)
 	call new_var ('dsig0_atmos_ku', a*1d-2)
 endif
-call new_var ('flags', flags*1d0)
 
 ! Remove applied corrections from range
 
@@ -548,6 +551,27 @@ if (k > 0) then
 	enddo
 	nrec = nrec - k
 endif
+
+! Another problem is that longitude at the dateline are incorrectly determined,
+! hence corrections at those points are wrong too.
+
+do i = 2,nrec-1
+	t = var(3)%d(ndata+i-1:ndata+i+1)
+	if (t(1) > -179.8d0 .or. t(3) < 179.8d0 .or. abs(t(2)) > 179.8d0) cycle
+	write (*,553) 'Warning: Fixed incorrect longitude at date line  :', i, t
+	! Average the previous and next longitude properly
+	t(2) = 0.5d0 * (t(1) + t(3))
+	if (t(2) > 0d0) then
+		var(3)%d(ndata+i) = t(2) - 180d0
+	else
+		var(3)%d(ndata+i) = t(2) + 180d0
+	endif
+	! Average the previous and next corrections
+	var(ivar0:ivar1)%d(ndata+i) = &
+		0.5d0 * (var(ivar0:ivar1)%d(ndata+i-1)+var(ivar0:ivar1)%d(ndata+i+1))
+	! Copy the flag words one forward
+	var(ivar1+1)%d(ndata+i) = var(ivar1+1)%d(ndata+i-1)
+enddo
 
 ! Close this input file
 
