@@ -337,6 +337,11 @@ save continued
 '# Original  = ',a)
 620 format('# Col ',i2,'    = ')
 
+! Replace linefeed by space in P%original
+do j = 1,len_trim(P%original)
+	if (P%original(j:j) == rads_linefeed) P%original(j:j) = ' '
+enddo
+
 ! Print the top of the header (skip a line first if this is a continuation)
 if (continued) write (outunit,*)
 write (outunit,600) timestamp(), trim(S%command), trim(S%satellite), trim(S%phase%name), cycle, pass, &
