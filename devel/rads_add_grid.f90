@@ -129,7 +129,7 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
-'  --var=NAME[,NAME,...]    Set variable name(s) for interpolation (required)'// &
+'  -V, --var=NAME[,...]      Select variable name(s) for interpolation (required)'// &
 'All information about the grids and interpolation options are given by'/ &
 'the <source_file> tags in the RADS configuration file.')
 stop
@@ -141,6 +141,7 @@ end subroutine synopsis
 
 subroutine process_pass (n, nmod)
 integer(fourbyteint), intent(in) :: n, nmod
+integer(fourbyteint) :: i, k
 real(eightbytereal) :: x(n), y(n), z(n, nmod), years
 
 ! Formats
@@ -179,6 +180,9 @@ enddo
 ! Store all data fields.
 
 call rads_put_history (S, P)
+do k = 1,nmod
+	call rads_def_var (S, P, S%sel(k))
+enddo
 do k = 1,nmod
 	call rads_put_var (S, P, S%sel(k), z(:,k))
 enddo
