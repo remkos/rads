@@ -42,8 +42,8 @@ integer(fourbyteint) :: cyc, pass
 
 ! Formats
 
-550   format (a)
-551   format (a,' ... ',$)
+550 format (a)
+551 format (a,' ... ',$)
 
 ! Initialise
 
@@ -52,7 +52,7 @@ call rads_init (S)
 
 ! Load the surface_type grid
 
-call checkenv ('ALTIM', filename)
+call getenv ('ALTIM', filename)
 filename = trim(filename) // '/data/landmask.nc'
 write (*,551) 'Loading mask '//trim(filename)
 if (grid_load (filename, info) /= 0) call rads_exit ('Error loading landmask.')
@@ -99,8 +99,8 @@ integer(fourbyteint) :: flag, surf, i
 
 ! Formats
 
-551  format (a,' ...',$)
-552  format (i5,' records changed')
+551 format (a,' ...',$)
+552 format (i5,' records changed')
 
 write (*,551) trim(P%filename)
 
@@ -115,16 +115,16 @@ call rads_get_var (S, P, 'surface_type', surface_type, .true.)
 !
 ! Bits and surface_type to be set when landmask contains any of the following values:
 !
-! landmask   | set bits  | surface_type
-! --------------------------------------
-! 0 = ocean  | none      | 0
-! 1 = land   | 4 and 5   | 1
-! 2 = lake   | 5 only    | 2
-! 3 = island | 4 and 5   | 1
-! 4 = pond   | 5 only    | 2
-! --------------------------------------
+! landmask   | bit 4 | bit 5 | surface_type
+! -----------------------------------------
+! 0 = ocean  |   0   |   0   |   0
+! 1 = land   |   1   |   1   |   2
+! 2 = lake   |   0   |   1   |   3
+! 3 = island |   1   |   1   |   2
+! 4 = pond   |   0   |   1   |   3
+! -----------------------------------------
 !
-! However, never undo surface_type = 3 (continental ice)
+! However, never undo surface_type = 4 (continental ice)
 
 do i = 1,n
 
@@ -134,27 +134,29 @@ do i = 1,n
 	surf = nint(surface_type(i))
 
 	select case (nint(grid_query (info, lon(i), lat(i))))
-	case (0)
+	case (0) ! ocean
 		flag = ibclr (flag, 4)
 		flag = ibclr (flag, 5)
-		if (surf /= 3) surf = 0
-	case (1, 3)
+		surf = 0
+	case (1, 3) ! land, island
 		flag = ibset (flag, 4)
 		flag = ibset (flag, 5)
-		if (surf /= 3) surf = 1
-	case default
+		surf = 2
+	case default ! lake, pond
 		flag = ibclr (flag, 4)
 		flag = ibset (flag, 5)
-		if (surf /= 3) surf = 2
+		surf = 3
 	end select
 
 	flags(i) = flag
-	surface_type(i) = surf
+	if (surface_type(i) /= 4) surface_type(i) = surf
 enddo
 
 ! Store all data fields.
 
 call rads_put_history (S, P)
+call rads_def_var (S, P, 'flags')
+call rads_def_var (S, P, 'surface_type')
 call rads_put_var (S, P, 'flags', flags)
 call rads_put_var (S, P, 'surface_type', surface_type)
 
