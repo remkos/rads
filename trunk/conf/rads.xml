@@ -631,7 +631,7 @@ Global RADS configuration file
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
 <var name="iono_gim" field="906">
-	<long_name>GIM ionospheric correction</long_name>
+	<long_name>JPL GIM ionospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>JPL GIM 6-hourly maps</source>
 	<units>m</units>
