@@ -73,7 +73,7 @@ do
 	case ('x')
 		select case (optarg)
 		case ('af')
-			t%fmt = 'a'
+			a%fmt = 'a'
 		case ('tf')
 			t%fmt = 't'
 		case ('xo')
