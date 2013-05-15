@@ -15,19 +15,19 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*rads_add_ncep -- Add NCEP meteo models to RADS data
+!*rads_add_era -- Add ERA interim meteo models to RADS data
 !+
 ! This program adjusts the contents of RADS altimeter data files
-! with values computed from NCEP meteorological models.
-! The models provide sea level pressure, columnal water vapour content
-! and surface temperature.
+! with values computed from ECMWF ERA interim meteorological models.
+! The models provide sea level pressure, columnal water vapour content and
+! surface temperature.
 !
-! Input grids are found in directories $ALTIM/data/ncep
+! Input grids are found in the directory $ALTIM/data/era-int-full.
 !
-! Interpolation is performed in 6-hourly grids of 2.5x2.5 degree
-! spacing; bi-cubic in space, linear in time.
+! Interpolation is performed in 6-hourly reduced Gaussian grids (N128);
+! bi-linear in space, linear in time; contained in yearly files.
 !
-! usage: rads_add_ncep [data-selectors] [options]
+! usage: rads_add_era [data-selectors] [options]
 !
 ! References:
 !
@@ -54,16 +54,15 @@
 ! Petit, G., and B. Luzum (Eds.) (2010), IERS Conventions (2010),
 ! IERS Technical Note 36, Verlag des Bundesamts für Kartographie und Geodäsie.
 !-----------------------------------------------------------------------
-program rads_add_ncep
+program rads_add_era
 
 use rads
-use rads_misc
-use rads_grid
-use rads_devel
 use rads_netcdf
-use tides
-use meteo_subs
+use rads_devel
 use netcdf
+use meteo_subs
+use tides
+use grib_api
 
 ! Command line arguments
 
@@ -77,14 +76,15 @@ character(rads_naml) :: path
 integer(fourbyteint) :: hex,hexold=-99999
 type(airtideinfo) :: airinfo
 real(eightbytereal), parameter :: rad2=2d0*atan(1d0)/45d0
-logical :: dry_on=.false., wet_on=.false., ib_on=.false., air_on=.false., new=.false., &
-	air_plus=.false., error
+logical :: dry_on=.false., wet_on=.false., ib_on=.false., air_on=.false., new=.false., error
 
 ! Model data
 
-character(80), parameter :: dry_fmt = 'slp.%Y.nc', wet_fmt = 'pr_wtr.eatm.%Y.nc', tmp_fmt = 'air.sig995.%Y.nc'
+integer(fourbyteint), parameter :: np_max=88838, nj_max=259
 type :: model_
-	type(grid) :: dry, wet, tmp
+	integer(fourbytereal) :: nj, np, ip, pl(nj_max), ql(nj_max), idx(4)
+	real(eightbytereal) :: glat(np_max), glon(np_max), w(4)
+	real(eightbytereal) :: slp(np_max), wet(np_max), tmp(np_max)
 end type
 type(model_) :: m1, m2
 
@@ -102,7 +102,7 @@ call rads_init (S)
 ! Get $ALTIM directory
 
 call getenv ('ALTIM', path)
-path = trim(path) // '/data/ncep/'
+path = trim(path) // '/data/era-int-full/era-int.%Y.grb'
 
 ! Which corrections are to be provided?
 
@@ -129,8 +129,6 @@ enddo
 ! Init air tide
 
 if (dry_on .or. ib_on) call airtideinit ('airtide', airinfo)
-air_plus = (air_on .and. (S%sat == 'e1' .or. S%sat == 'e2' .or. S%sat == 'n1' .or. &
-	S%sat == 'tx' .or. S%sat == 'pn'))
 
 ! Process all data files
 
@@ -150,13 +148,13 @@ contains
 
 subroutine synopsis (flag)
 character(len=*), optional :: flag
-if (rads_version ('$Revision$', 'Add NCEP meteo models to RADS data', flag=flag)) return
+if (rads_version ('$Revision$', 'Add ERA interim meteo models to RADS data', flag=flag)) return
 call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
-'  -d, --dry                 Add NCEP dry tropospheric correction' / &
-'  -w, --wet                 Add NCEP wet tropospheric correction' / &
+'  -d, --dry                 Add ERA interim dry tropospheric correction' / &
+'  -w, --wet                 Add ERA interim wet tropospheric correction' / &
 '  -a, --air                 Add air tide' / &
 '  -i, --ib                  Add static inverse barometer correction' / &
 '  --all                     All of the above' / &
@@ -183,8 +181,8 @@ write (*,551) trim(P%filename)
 
 ! If "new" option is used, write only when fields are not yet available
 
-if (new .and. nft(nf90_inq_varid(P%ncid,'dry_tropo_ncep',i)) .and. &
-	nft(nf90_inq_varid(P%ncid,'wet_tropo_ncep',i))) then
+if (new .and. nff(nf90_inq_varid(P%ncid,'dry_tropo_era',i)) .and. &
+	nff(nf90_inq_varid(P%ncid,'wet_tropo_era',i))) then
 	write (*,552) 0
 	return
 endif
@@ -221,10 +219,10 @@ do i = 1,n
 	if (hex /= hexold) then
 		if (hex == hexold + 1) then
 			m1 = m2
-			error = get_grids (hex+1,m2)
+			error = get_gribs (hex+1,m2)
 		else
-			error = get_grids (hex,m1)
-			if (.not.error) error = get_grids (hex+1,m2)
+			error = get_gribs (hex,m1)
+			if (.not.error) error = get_gribs (hex+1,m2)
 		endif
 		if (error) then
 			write (*,'(a)') 'Model switched off.'
@@ -236,22 +234,25 @@ do i = 1,n
 		hexold = hex
 	endif
 
-! Linearly interpolation in time, bi-cubic spline interpolation in space
+! Linearly interpolation in time, bi-linear interpolation in space
 
 	if (lon(i) < 0d0) lon(i) = lon(i) + 360d0
 	f2 = f2 - hex
 	f1 = 1d0 - f2
 
+! Find nearest grid points
+
+	call find_nearest (lat(i), lon(i), m1)
+	call find_nearest (lat(i), lon(i), m2)
+
 ! Interpolate surface temperature in space and time
 
-	tmp = f1 * grid_lininter(m1%tmp,lon(i),lat(i)) + f2 * grid_lininter(m2%tmp,lon(i),lat(i))
+	tmp = f1 * dot_product (m1%w,m1%tmp(m1%idx)) + f2 * dot_product (m2%w,m2%tmp(m2%idx))
 
 ! Correct sea level pressure grids for altitude over land and lakes using Hopfield [1969]
 ! Convert pressure (mbar) to simple IB (m) if requested and over ocean
 ! Convert sea level pressure (mbar) to dry correction (m) using Saastamoinen models as referenced
 ! in IERS Conventions Chap 9
-! Convert precipitable water (kg/m^2) to wet correction (m) using Mendes et al. [2000] and
-! Bevis et al. [1994]
 
 	if (surface_type(i) > 1.5d0) then ! Land and lakes
 		g1 = -22768d-7 / (1d0 - 266d-5*cos(lat(i)*rad2) - 28d-8*h(i)) * pp_hop(h(i),lat(i),tmp)
@@ -264,7 +265,7 @@ do i = 1,n
 ! Interpolate sea level pressure in space and time and add airtide correction
 
 	if (dry_on .or. ib_on .or. air_on) then
-		slp = f1 * grid_lininter(m1%dry,lon(i),lat(i)) + f2 * grid_lininter(m2%dry,lon(i),lat(i))
+		slp = f1 * dot_product (m1%w,m1%slp(m1%idx)) + f2 * dot_product (m2%w,m2%slp(m2%idx))
 
 		! Remove-and-restore the air tide
 		dslp = airtide (airinfo, time(i), lat(i), lon(i)) &
@@ -275,22 +276,22 @@ do i = 1,n
 		! Convert sea level pressure to dry tropo correction after Saastamoinen [1972]
 		dry(i) = slp * g1
 		air(i) = dslp * g1
+		write (*,*) h(i),slp,dslp,g1,dry(i)
 
 		! Convert sea level pressure to static inverse barometer
 		ib(i) = (slp - slp0) * g2
 	endif
 
-! Interpolate integrated water vapour in space and time
+! Interpolate integrated water vapour and surface temperature in space and time
 
 	if (wet_on) then
-		iwv = f1 * grid_lininter(m1%wet,lon(i),lat(i)) + f2 * grid_lininter(m2%wet,lon(i),lat(i))
+		iwv = f1 * dot_product (m1%w,m1%wet(m1%idx)) + f2 * dot_product (m2%w,m2%wet(m2%idx))
 		! Convert surface temperature to mean temperature after Mendes et al. [2000]
 		tmp = 50.4d0 + 0.789d0 * tmp
 		! Convert integrated water vapour and mean temp to wet tropo correction
 		! Also take into account conversion of iwv from kg/m^3 (= mm) to m.
 		wet(i) = -1d-9 * Rw * (k3 / tmp + k2p) * iwv
 	endif
-
 enddo
 
 ! If no more fields are determined, abort.
@@ -304,179 +305,161 @@ endif
 
 call rads_put_history (S, P)
 
-if (dry_on) call rads_def_var (S, P, 'dry_tropo_ncep')
-if (wet_on) call rads_def_var (S, P, 'wet_tropo_ncep')
+if (dry_on) call rads_def_var (S, P, 'dry_tropo_era')
+if (wet_on) call rads_def_var (S, P, 'wet_tropo_era')
 if (ib_on ) call rads_def_var (S, P, 'inv_bar_static')
 if (air_on) call rads_def_var (S, P, 'dry_tropo_airtide')
 
-if (dry_on) call rads_put_var (S, P, 'dry_tropo_ncep', dry)
-if (wet_on) call rads_put_var (S, P, 'wet_tropo_ncep', wet)
+if (dry_on) call rads_put_var (S, P, 'dry_tropo_era', dry)
+if (wet_on) call rads_put_var (S, P, 'wet_tropo_era', wet)
 if (ib_on ) call rads_put_var (S, P, 'inv_bar_static', ib)
 if (air_on) call rads_put_var (S, P, 'dry_tropo_airtide', air)
-if (air_plus) then
-	call rads_get_var (S, P, 'dry_tropo_ecmwf', dry)
-	call rads_put_var (S, P, 'dry_tropo_ecmwf', dry+air)
-endif
 
 write (*,552) n
 end subroutine process_pass
 
 !-----------------------------------------------------------------------
-! get_grids -- Load necessary NCEP meteo grids
+! get_gribs -- Load necessary ECMWF meteo grids
 !-----------------------------------------------------------------------
-
-function get_grids (hex, model)
-integer (fourbyteint), intent(in) :: hex
+function get_gribs (hex, model)
+integer(fourbyteint), intent(in) :: hex
 type(model_), intent(inout) :: model
-logical :: get_grids
-!
-! Input are yearly files with required fields of the form:
-! $(ALTIM)/data/ncep/slp.2012.nc
+logical :: get_gribs
+! Input are yearly files with all three required fields of the form:
+! $(ALTIM)/data/era-int-full/era-int.2012.grb
 !
 ! <hex> specifies the number of 6-hourly blocks since 1 Jan 1985.
 ! Data is stored in a buffer <model>
 !-----------------------------------------------------------------------
-get_grids = .true.
-if (get_grid(trim(path)//wet_fmt,hex,model%wet) /= 0) return
-if (get_grid(trim(path)//tmp_fmt,hex,model%tmp) /= 0) return
-if (get_grid(trim(path)//dry_fmt,hex,model%dry) /= 0) return
-get_grids = .false.
-end function get_grids
+character(len=160) :: filenm,old_filenm=''
+character(len=8) :: shortName
+integer(fourbyteint) :: fileid=-1,gribid=-1,i,l,status,strf1985,dataTime,dataDate
+real(eightbytereal) :: sec85
 
-!-----------------------------------------------------------------------
-! get_grid -- Special grid loading routine for NetCDF meteo grids
-!-----------------------------------------------------------------------
-
-function get_grid (filenm, hex, info)
-character(len=*), intent(in) :: filenm
-integer(fourbyteint), intent(in) :: hex
-type(grid), intent(out) :: info
-integer(fourbyteint) :: get_grid
-!
-! Input are sea level pressure files (slp.%Y.nc) and/or precipitable
-! water vapour files (pr_wtr.eatm.%Y.nc), where %Y is the
-! year number. <hex> specifies the number of 6-hourly blocks since 1 Jan 1985.
-!
-! Data is stored in a buffer pointed to by the returned value.
-!
-! Units are mbar and kg/m^2, stored as integers with units 0.01 mbar and 0.01
-! kg/m^2. However, the last digit is not significant (always 0).
-!-----------------------------------------------------------------------
-character(80) :: fn
-integer(fourbyteint) :: ncid,x_id,y_id,t_id,v_id,i,h1985,tmin,tmax,start(3)=1,l,strf1985
-real(eightbytereal) :: time(2),nan
-integer(fourbyteint) :: nx,ny,nt,hour
-integer(twobyteint), allocatable :: tmp(:,:)
-
-! Determine file name
-
-hour = hex * 6
-l = strf1985(fn,filenm,hour*3600)
-nan = 0d0
-nan = nan/nan
-
-! Free grid
-
-call grid_free(info)
-
-! Open input file
-
+600 format ('(',a,1x,i0,')')
 1300 format (a,': ',a)
-if (nft(nf90_open(fn,nf90_nowrite,ncid))) then
-	write (*,1300) 'Error opening file',fn(:l)
-	get_grid = 1
-	i = nf90_close(ncid)
+
+get_gribs = .true.
+
+! Load new file and load common variables
+
+l = strf1985(filenm, path, hex*21600)
+
+if (filenm /= old_filenm) then
+	if (gribid /= -1) call grib_release(gribid)
+	if (fileid /= -1) call grib_close_file(fileid)
+	write (*,600,advance='no') filenm(l-15:l),hex
+
+	call grib_open_file(fileid,filenm,'r',status)
+	if (status /= grib_success) then
+		write (*,1300) 'Error opening file',filenm(:l)
+		return
+	endif
+
+	call grib_new_from_file(fileid,gribid,status)
+	if (status /= grib_success) then
+		write (*,1300) 'Error loading first grib in',filenm(:l)
+		return
+	endif
+
+	! Check sizes and get longitudes and latitudes
+	call grib_get(gribid,'numberOfPoints',model%np)
+	if (model%np > np_max) then
+		write (*,1300) 'numberOfPoints is too large in',filenm(:l)
+		return
+	endif
+	call grib_get(gribid,'Nj',model%nj)
+	if (model%nj > nj_max) then
+		write (*,1300) 'Nj is too large in',filenm(:l)
+		return
+	endif
+	model%ip = 1
+	call grib_get(gribid,'pl',model%pl)
+	model%ql(1) = 1
+	do i = 2,model%nj
+		model%ql(i) = model%ql(i-1) + model%pl(i-1)
+	enddo
+	call grib_get_data(gribid,model%glat,model%glon,model%slp)
+endif
+
+! Loop until we find the right dataDate and dataTime
+do
+	call grib_get(gribid,'dataDate',dataDate)
+	call grib_get(gribid,'dataTime',dataTime)
+	dataTime = nint(sec85(2,dble(dataDate))/21600d0) + dataTime/600
+	if (dataTime == hex) exit
+	call grib_release(gribid)
+	call grib_new_from_file(fileid,gribid,status)
+	if (status /= grib_success) then
+		write (*,1300) 'Reached end of',filenm(:l)
+		return
+	endif
+enddo
+
+! Now read gribs
+call grib_get(gribid,'shortName',shortName)
+if (shortName /= 'tcwv') then
+	write (*,1300) 'Wrong field order ('//trim(shortName)//' != tcwv) in',filenm(:l)
 	return
 endif
-
-! Check if netcdf file contains SLP or PR_WTR or AIR.
-
-if (.not.nft(nf90_inq_varid(ncid,'slp',v_id))) then
-else if (.not.nft(nf90_inq_varid(ncid,'pr_wtr',v_id))) then
-else if (.not.nft(nf90_inq_varid(ncid,'air',v_id))) then
-else
-	write (*,1300) 'Error with ID# for data grid: no slp, pr_wtr, or air in',fn(:l)
-	get_grid = 2
-	i = nf90_close(ncid)
+call grib_get(gribid,'values',model%wet)
+call grib_release(gribid)
+call grib_new_from_file(fileid,gribid,status)
+call grib_get(gribid,'shortName',shortName)
+if (shortName /= 'msl') then
+	write (*,1300) 'Wrong field order ('//trim(shortName)//' != msl) in',filenm(:l)
 	return
 endif
-
-! Get the x, y and t dimensions
-
-i = 0
-if (nft(nf90_inq_dimid(ncid,'lon',x_id))) i = i + nf90_inq_dimid(ncid,'longitude',x_id)
-if (nft(nf90_inq_dimid(ncid,'lat',y_id))) i = i + nf90_inq_dimid(ncid,'latitude',y_id)
-i = i + nf90_inq_dimid(ncid,'time',t_id)
-
-
-if (i + nf90_inquire_dimension(ncid,x_id,len=nx) + nf90_inquire_dimension(ncid,y_id,len=ny) + &
-	nf90_inquire_dimension(ncid,t_id,len=nt) /= 0) then
-	write (*,1300) 'Error getting data dimensions in',fn(:l)
-	get_grid = 2
-	i = nf90_close(ncid)
+call grib_get(gribid,'values',model%slp)
+call grib_release(gribid)
+call grib_new_from_file(fileid,gribid,status)
+call grib_get(gribid,'shortName',shortName)
+if (shortName /= '2t') then
+	write (*,1300) 'Wrong field order ('//trim(shortName)//' != 2t) in',filenm(:l)
 	return
 endif
+call grib_get(gribid,'values',model%tmp)
 
-! Get start/stop times in hours since epoch
+! Successful completion
+get_gribs = .false.
+end function get_gribs
 
-start(3) = nt
-if (nf90_inq_varid(ncid,'time',t_id) + nf90_get_var(ncid,t_id,time(1:1)) + &
-	nf90_get_var(ncid,t_id,time(2:2),start(3:3)) /= 0) then
-	write (*,1300) 'Error getting time range in',fn(:l)
-	get_grid = 2
-	i = nf90_close(ncid)
-	return
-endif
+!-----------------------------------------------------------------------
+! find_nearest - Find the four grid points nearest to given point
+!-----------------------------------------------------------------------
 
-! Convert time range to hours since 1985
+subroutine find_nearest (lat, lon, model)
+real(eightbytereal), intent(in) :: lat, lon
+type(model_), intent(inout) :: model
+! Upon return model%idx and model%w are index and weight of closest points (NW, NE, SW, SE)
+integer(fourbyteint) :: i,j,ip
+real(eightbytereal) :: d
 
-h1985 = 17391432
-tmin = nint(time(1)) - h1985
-tmax = nint(time(2)) - h1985
+! Find highest latitude index for which glat >= lat; ip is north of lat, ip+1 is south of lat
+ip = model%ip
+do while (model%glat(model%ql(ip+1)) >= lat)
+	ip = ip + 1
+enddo
+do while (model%glat(model%ql(ip  )) < lat)
+	ip = ip - 1
+enddo
+model%ip = ip
 
-if (hour < tmin .or. hour > tmax) then
-	write (*,1300) 'Hour out of bounds in',fn(:l)
-	get_grid = 5
-	i = nf90_close(ncid)
-	return
-endif
+! Compute longitude indices and weights at northern side (j=0) and southern side (j=1)
+do j = 0,1
+	d = lon / 360d0 * model%pl(ip+j)
+	i = floor(d)
+	d = d - i
+	model%idx(2*j+1) = model%ql(ip+j) + modulo(i  ,model%pl(ip+j))
+	model%idx(2*j+2) = model%ql(ip+j) + modulo(i+1,model%pl(ip+j))
+	model%w(2*j+1) = 1d0 - d
+	model%w(2*j+2) = d
+enddo
 
-! Get scale factor, offset and missing value
+! Multiply with weight in latitude direction
+d = (lat - model%glat(model%ql(ip))) / (model%glat(model%ql(ip+1)) - model%glat(model%ql(ip)))
+model%w(1:2) = model%w(1:2) * (1d0 - d)
+model%w(3:4) = model%w(3:4) * d
+end subroutine find_nearest
 
-if (nft(nf90_get_att(ncid,v_id,'add_offset',info%z0))) info%z0 = 0
-if (nft(nf90_get_att(ncid,v_id,'scale_factor',info%dz))) info%dz = 1
-if (nft(nf90_get_att(ncid,v_id,'missing_value',info%znan))) info%znan = nan
-
-! Determine other header values and allocate buffer
-
-if (info%ntype == 0) then
-	info%ntype = nf90_int2
-	info%nx = nx
-	info%dx = 360d0 / nx
-	info%xmin = 0d0
-	info%xmax = (nx-1) * info%dx
-	info%ny = ny
-	info%dy = 180d0 / (ny-1)
-	info%ymin = -90d0
-	info%ymax = 90d0
-	info%nxwrap = nx
-	allocate (info%grid_int2(nx,ny))
-endif
-
-! Read only the required grid
-
-allocate (tmp(nx,ny))
-start(3)=(hour-tmin)/6+1
-if (nft(nf90_get_var(ncid,v_id,tmp,start))) call fin('Error reading data grid')
-
-! Reverse the order of the latitudes
-
-info%grid_int2(:,1:ny) = tmp(:,ny:1:-1)
-deallocate (tmp)
-
-i = nf90_close(ncid)
-get_grid = 0
-
-end function get_grid
-
-end program rads_add_ncep
+end program rads_add_era
