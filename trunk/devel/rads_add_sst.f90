@@ -49,39 +49,55 @@ use netcdf
 type(rads_sat) :: S
 type(rads_pass) :: P
 integer(fourbyteint) :: cyc, pass
+logical :: lice=.false., lsst=.false., lmean=.false.
 
 ! Data variables
 
 character(rads_naml) :: dir
-integer(fourbyteint) :: t1old=0, t2old=0,j
-integer(fourbyteint), parameter :: nx=360,ny=180,secweek=7*86400,sec2000=473299200
+integer(fourbyteint) :: t1old=0, t2old=0, j
+integer(fourbyteint), parameter :: nx=360, ny=180, secweek=7*86400, sec2000=473299200
 integer(fourbyteint), parameter :: sun = 157982400	! Sun 1990-01-03 12:00
 integer(fourbyteint), parameter :: wed = 157723200	! Wed 1989-12-31 12:00
-real(eightbytereal), parameter :: x0=0.5d0,y0=-89.5d0,dx=1d0,dy=1d0
+real(eightbytereal), parameter :: x0=0.5d0, y0=-89.5d0, dx=1d0, dy=1d0
 integer(twobyteint) :: grids(0:nx+1,ny,2,2)
 real(eightbytereal) :: meangrid(0:nx+1,ny)
 
 ! Initialise
 
 call synopsis
+call rads_set_options ('ism ice sst mean all')
 call rads_init (S)
 
 ! Get $ALTIM directory
 
 call getenv ('ALTIM', dir)
 
+! Check all options
+do j = 1,rads_nopt
+	select case (rads_opt(j)%opt)
+	case ('i', 'ice')
+		lice = .true.
+	case ('s', 'sst')
+		lsst = .true.
+	case ('m', 'mean')
+		lmean = .true.
+	case ('all')
+		lsst = .true.
+		lmean = .true.
+		lice = .true.
+	end select
+enddo
+
 ! Load the mean SST model if requested
 
-do j = 1,S%nsel
-	if (S%sel(j)%name == 'sst_mean') call get_mean (meangrid)
-enddo
+if (lmean) call get_mean (meangrid)
 
 ! Process all data files
 
 do cyc = S%cycles(1), S%cycles(2), S%cycles(3)
 	do pass = S%passes(1), S%passes(2), S%passes(3)
 		call rads_open_pass (S, P, cyc, pass, .true.)
-		if (P%ndata > 0) call process_pass (P%ndata,S%nsel)
+		if (P%ndata > 0) call process_pass (P%ndata)
 		call rads_close_pass (S, P)
 	enddo
 enddo
@@ -99,7 +115,10 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
-'  -V, --var=NAME[,...]      Select variable name(s) of SST/ice variables (required)')
+'  -i, --ice                 Add sea ice concentration' / &
+'  -s, --sst                 Add sea surface temperature' / &
+'  -m, --mean                Add local mean sea surface temperature' / &
+'  --all                     All of the above')
 stop
 end subroutine synopsis
 
@@ -107,9 +126,9 @@ end subroutine synopsis
 ! Process a single pass
 !-----------------------------------------------------------------------
 
-subroutine process_pass (n, nmod)
-integer(fourbyteint), intent(in) :: n, nmod
-integer(fourbyteint) :: i, j, ix, iy
+subroutine process_pass (n)
+integer(fourbyteint), intent(in) :: n
+integer(fourbyteint) :: i, ix, iy
 real(eightbytereal) :: time(n), lat(n), lon(n), ice(n), sst(n), meansst(n)
 integer(fourbyteint) :: t1, t2
 real(eightbytereal) :: wx, wy, wt, f(2,2,2)
@@ -209,19 +228,14 @@ enddo
 ! Store all data fields
 
 call rads_put_history (S, P)
-do j = 1,nmod
-	call rads_def_var (S, P, S%sel(j))
-enddo
-do j = 1,nmod
-	select case (S%sel(j)%name)
-	case ('sst_mean')
-		call rads_put_var (S, P, S%sel(j), meansst)
-	case ('sst')
-		call rads_put_var (S, P, S%sel(j), sst*1d-2)
-	case ('seaice_conc')
-		call rads_put_var (S, P, S%sel(j), ice)
-	end select
-enddo
+
+if (lice)  call rads_def_var (S, P, 'seaice_conc')
+if (lsst)  call rads_def_var (S, P, 'sst')
+if (lmean) call rads_def_var (S, P, 'sst_mean')
+
+if (lice)  call rads_put_var (S, P, 'seaice_conc', ice)
+if (lsst)  call rads_put_var (S, P, 'sst', sst*1d-2)
+if (lmean) call rads_put_var (S, P, 'sst_mean', meansst)
 
 write (*,552) n
 end subroutine process_pass
