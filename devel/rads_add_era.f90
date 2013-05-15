@@ -276,7 +276,6 @@ do i = 1,n
 		! Convert sea level pressure to dry tropo correction after Saastamoinen [1972]
 		dry(i) = slp * g1
 		air(i) = dslp * g1
-		write (*,*) h(i),slp,dslp,g1,dry(i)
 
 		! Convert sea level pressure to static inverse barometer
 		ib(i) = (slp - slp0) * g2
