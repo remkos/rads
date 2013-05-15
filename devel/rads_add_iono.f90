@@ -41,10 +41,13 @@ type(giminfo) :: info
 character(rads_naml) :: dir
 integer(fourbyteint) :: j, cyc, pass
 real(eightbytereal) :: f, f_scaled, hgt
+integer(fourbyteint), parameter :: nmod = 3
+logical :: model(nmod) = .false.
 
 ! Initialise
 
 call synopsis
+call rads_set_options ('gin gim iri2007 nic09 all')
 call rads_init (S)
 
 ! Determine conversion factor from TEC units to ionospheric delay in metres
@@ -67,23 +70,30 @@ end select
 
 call getenv ('ALTIM', dir)
 
-! Initialise the selected models
+! Check options
 
-do j = 1,S%nsel
-	select case (S%sel(j)%name)
-	case ('iono_gim')
-		info = giminit(trim(dir)//'/data/gim/jplg_',1)
-	case ('iono_nic09')
-		call nicinit(trim(dir)//'/data/nic09/nic09_clim.nc',trim(dir)//'/data/nic09/nic09_gtec.nc')
+do j = 1,rads_nopt
+	select case (rads_opt(j)%opt)
+	case ('g', 'gim')
+		model(1) = .true.
+	case ('i', 'iri2007')
+		model(2) = .true.
+	case ('n', 'nic09')
+		model(3) = .true.
+	case ('all')
+		model = .true.
 	end select
 enddo
+
+if (model(1)) info = giminit(trim(dir)//'/data/gim/jplg_',1)
+if (model(3)) call nicinit(trim(dir)//'/data/nic09/nic09_clim.nc',trim(dir)//'/data/nic09/nic09_gtec.nc')
 
 ! Process all data files
 
 do cyc = S%cycles(1), S%cycles(2), S%cycles(3)
 	do pass = S%passes(1), S%passes(2), S%passes(3)
 		call rads_open_pass (S, P, cyc, pass, .true.)
-		if (P%ndata > 0) call process_pass (P%ndata,S%nsel)
+		if (P%ndata > 0) call process_pass (P%ndata)
 		call rads_close_pass (S, P)
 	enddo
 enddo
@@ -101,7 +111,10 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
-'  -V, --var=NAME[,...]      Select variable name(s) of ionospere models (required)')
+'  -g, --gim                 Add JPL GIM model data' / &
+'  -i  --iri2007             Add IRI2007 ionosphere model' / &
+'  -n, --nic09               Add NIC09 ionosphere model' / &
+'  --all                     All of the above')
 stop
 end subroutine synopsis
 
@@ -109,11 +122,11 @@ end subroutine synopsis
 ! Process a single pass
 !-----------------------------------------------------------------------
 
-subroutine process_pass (n, nmod)
-integer(fourbyteint), intent(in) :: n, nmod
+subroutine process_pass (n)
+integer(fourbyteint), intent(in) :: n
 integer(fourbyteint) :: i, j, ii, iold
-real(eightbytereal) :: time(n), lat(n), lon(n), tec1(n), z(n, nmod), tec2, dtime, d
-logical :: allnan(nmod)
+real(eightbytereal) :: time(n), lat(n), lon(n), tec1(n), z(n,nmod), tec2, dtime, d
+logical :: ok(nmod)
 
 ! Formats
 
@@ -130,49 +143,53 @@ call rads_get_var (S, P, 'lon', lon, .true.)
 
 ! Now do all models
 
-do j = 1,nmod
-	select case (S%sel(j)%name)
-	case ('iono_gim')
-		do i = 1,n
-			z(i,j) = f_scaled * gimtec(time(i),lat(i),lon(i),info)
+if (model(1)) then ! JPL GIM
+	do i = 1,n
+		z(i,1) = f_scaled * gimtec(time(i),lat(i),lon(i),info)
+	enddo
+endif
+
+if (model(2)) then ! IRI2007
+	! Compute IRI every 10 seconds, then interpolate linearly in time
+	iold = 1
+	do i = 1,n
+		dtime = time(i) - time(iold)
+		if (dtime < 10d0 .and. i > 1 .and. i < n) cycle
+		call iri2007tec(0,time(i),lat(i),lon(i),hgt,hgt,tec1(i),tec2)
+		do ii = iold+1,i-1
+			d = (time(ii)-time(iold)) / dtime
+			tec1(ii) = (1d0-d) * tec1(iold) + d * tec1(i)
 		enddo
-	case ('iono_iri2007')
-		! Compute IRI every 10 seconds, then interpolate linearly in time
-		iold = 1
-		do i = 1,n
-			dtime = time(i) - time(iold)
-			if (dtime < 10d0 .and. i > 1 .and. i < n) cycle
-			call iri2007tec(0,time(i),lat(i),lon(i),hgt,hgt,tec1(i),tec2)
-			do ii = iold+1,i-1
-				d = (time(ii)-time(iold)) / dtime
-				tec1(ii) = (1d0-d) * tec1(iold) + d * tec1(i)
-			enddo
-			iold = i
-		enddo
-		z(:,j) = f * tec1
-	case ('iono_nic09')
-		do i = 1,n
-			z(i,j) = f_scaled * nictec(time(i),lat(i),lon(i))
-		enddo
-	end select
-enddo
+		iold = i
+	enddo
+	z(:,2) = f * tec1
+endif
+
+if (model(3)) then ! NIC09
+	do i = 1,n
+		z(i,3) = f_scaled * nictec(time(i),lat(i),lon(i))
+	enddo
+endif
 
 ! Store all (non-NaN) data fields
 
 do j = 1,nmod
-	allnan(j) = all(isnan_(z(:,j)))
+	ok(j) = model(j) .and. .not.all(isnan_(z(:,j)))
 enddo
-if (all(allnan)) then
+if (.not.any(ok)) then
 	write (*,552) 0
 	return
 endif
+
 call rads_put_history (S, P)
-do j = 1,nmod
-	if (.not.allnan(j)) call rads_def_var (S, P, S%sel(j))
-enddo
-do j = 1,nmod
-	if (.not.allnan(j)) call rads_put_var (S, P, S%sel(j), z(:,j))
-enddo
+
+if (ok(1)) call rads_def_var (S, P, 'iono_gim')
+if (ok(2)) call rads_def_var (S, P, 'iono_iri2007')
+if (ok(3)) call rads_def_var (S, P, 'iono_nic09')
+
+if (ok(1)) call rads_put_var (S, P, 'iono_gim', z(:,1))
+if (ok(2)) call rads_put_var (S, P, 'iono_iri2007', z(:,2))
+if (ok(3)) call rads_put_var (S, P, 'iono_nic09', z(:,3))
 
 write (*,552) n
 end subroutine process_pass

@@ -18,8 +18,8 @@
 include ../config.mk
 
 # Programs to create
-PROGS	= rads_add_grid rads_add_iono rads_add_orbit rads_add_sst \
-		rads_add_surface \
+PROGS	= rads_add_grid rads_add_iono rads_add_ncep rads_add_orbit \
+		rads_add_sst rads_add_surface \
 		rads_fix_c2 rads_fix_sa \
 		rads_gen_c2_l1r rads_gen_reaper rads_gen_saral \
 		ogdrsplit
@@ -51,6 +51,7 @@ man:	$(MAN)
 
 $(PROGS):	rads_devel.o $(LIB)
 rads_add_iono:	$(ALTIM)/lib/iono.a $(ALTIM)/lib/iri2007tec.a
+rads_add_ncep:	$(ALTIM)/lib/tides.a
 
 #-----------------------------------------------------------------------
 # Test programs

@@ -27,6 +27,6 @@ rads_add_surface  $options
 rads_add_tide     $options stide ptide fes04 got48 got49 lptide annual
 rads_add_webtide  $options sshelf ne_pac4 hudson arctic9 nwatl
 rads_add_refframe $options
-rads_add_sst      $options all
-rads_add_ncep     $options dry wet airtide
-rads_add_era      $options dry wet
+rads_add_sst      $options --all
+rads_add_ncep     $options --dry --wet --air
+rads_add_era      $options --dry --wet
