@@ -16,13 +16,13 @@
 #-----------------------------------------------------------------------
 
 include ../config.mk
-GRIB = -L/sw/lib -lgrib_api_f90 -lgrib_api -lopenjpeg -ljasper -lpng
+GRIB := $(shell pkg-config --libs grib_api_f90)
 PLM = $(ALTIM)/src/geograph/p_lm.o
 
 # Programs to create
 PROGS	= rads_add_ecmwf rads_add_era rads_add_grid rads_add_iono \
 		rads_add_ncep rads_add_orbit rads_add_refframe rads_add_sst rads_add_surface \
-		rads_add_webtide \
+		rads_add_tide rads_add_webtide \
 		rads_fix_c2 rads_fix_sa \
 		rads_gen_c2_l1r rads_gen_reaper rads_gen_saral \
 		ogdrsplit

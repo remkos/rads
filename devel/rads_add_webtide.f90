@@ -15,7 +15,7 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*rads_add_webtide -- Add surface type flags to RADS data
+!*rads_add_webtide -- Add WebTide ocean tide models to RADS data
 !+
 ! This program adjusts the contents of RADS altimeter data files
 ! with values computed from one of the WebTide models. These models
@@ -38,7 +38,6 @@ use tides
 
 type(rads_sat) :: S
 type(rads_pass) :: P
-type(grid) :: info
 
 ! Command line arguments
 
@@ -90,10 +89,6 @@ do cyc = S%cycles(1), S%cycles(2), S%cycles(3)
 	enddo
 enddo
 
-! Free the allocated grid
-
-call grid_free(info)
-
 contains
 
 !-----------------------------------------------------------------------
@@ -102,13 +97,13 @@ contains
 
 subroutine synopsis (flag)
 character(len=*), optional :: flag
-if (rads_version ('$Revision$', 'Add surface type flags to RADS data', flag=flag)) return
+if (rads_version ('$Revision$', 'Add WebTide ocean tide models to RADS data', flag=flag)) return
 call synopsis_devel ('')
 write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
-'  -m, --models=MODELS       Select WebTide models' / &
-'                            (default models are defined in rads.xml')
+'  -m, --models=MODEL[,...]  Select WebTide models' / &
+'                            (default models are defined in rads.xml)')
 stop
 end subroutine synopsis
 
@@ -125,7 +120,7 @@ integer(fourbyteint) :: i, j, nval
 
 551 format (a,' ...',i5,' records changed')
 
-! Get lat, lon
+! Get time and location
 
 call rads_get_var (S, P, 'time', time, .true.)
 call rads_get_var (S, P, 'lon', lon, .true.)
