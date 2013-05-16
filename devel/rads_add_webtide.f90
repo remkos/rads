@@ -15,21 +15,24 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*rads_add_refframe -- Add surface type flags to RADS data
+!*rads_add_webtide -- Add surface type flags to RADS data
 !+
-! This program adds a new field to the RADS data, which is meant
-! to model a constant reference frame offset between the satellite
-! and the others. A total of 5 spherical harmonic coefficients can
-! be used to model the offset: C00, C10, C11, S11 and C20.
+! This program adjusts the contents of RADS altimeter data files
+! with values computed from one of the WebTide models. These models
+! only provide the ocean tide.
 !
-! In practice we will use a zero offset for TOPEX.
+! usage: rads_add_webtide [data-selectors] [options]
 !
-! usage: rads_add_refframe [data-selectors] [options]
+! [options] indicate the WebTide models to be used.
+! See $ALTIM/data/WebTide for the various tide models that are
+! available.
 !-----------------------------------------------------------------------
-program rads_add_refframe
+program rads_add_webtide
 
 use rads
+use rads_misc
 use rads_devel
+use tides
 
 ! Data variables
 
@@ -40,37 +43,42 @@ type(grid) :: info
 ! Command line arguments
 
 integer(fourbyteint) :: cyc, pass
-real(eightbytereal) :: coef(5) = 0d0, a(5)
-logical :: constant
 type(rads_var), pointer :: var
+character(len=rads_naml) :: models, path
 
 ! Other variables
 
-integer(fourbyteint) :: ios, j
+integer(fourbyteint) :: j, i0, i1, nmod = 0
 
 ! Initialise
 
 call synopsis
-call rads_set_options (' coef:')
+call rads_set_options ('m: models:')
 call rads_init (S)
 
 ! Get default coefficients from rads.xml file
 
-var => rads_varptr (S, 'ref_frame_offset')
-read (var%info%parameters, *, iostat=ios) coef
+var => rads_varptr (S, 'tide_ocean_webtide')
+models = var%info%parameters
 
 ! Check for options
 
 do j = 1,rads_nopt
 	select case (rads_opt(j)%opt)
-	case ('coef')
-		coef = 0d0
-		read (rads_opt(j)%arg, *, iostat=ios) coef
+	case ('m', 'models')
+		models = rads_opt(j)%arg
 	end select
 enddo
 
-coef = coef*1d-3	! Convert mm to m
-constant = all(coef(2:5) == 0d0)
+! Which models are to be used?
+
+call getenv ('ALTIM',path)
+path = trim(path) // '/data/WebTide/data/'
+i1 = 0
+do
+	if (.not.next_word (models, i0, i1)) exit
+	j = webtideinit (trim(path) // models(i0:i1-1), 's2c', nmod)
+enddo
 
 ! Process all data files
 
@@ -99,8 +107,8 @@ call synopsis_devel ('')
 write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
-' --coef=C00,C10,C11,S11,C20 Set reference frame offset coefficients (mm)' / &
-'                            (default values come from rads.xml')
+'  -m, --models=MODELS       Select WebTide models' / &
+'                            (default models are defined in rads.xml')
 stop
 end subroutine synopsis
 
@@ -110,65 +118,47 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-real(eightbytereal) :: lon(n), lat(n), cor(n)
-real(eightbytereal), parameter :: rad=atan(1d0)/45d0
-integer(fourbyteint) :: i
+real(eightbytereal) :: time(n), lon(n), lat(n), z(n), tide2, lptide_eq, lptide_mf
+integer(fourbyteint) :: i, j, nval
 
 ! Formats
 
-551 format (a,' ...',$)
-552 format (i5,' records changed')
-
-write (*,551) trim(P%filename)
+551 format (a,' ...',i5,' records changed')
 
 ! Get lat, lon
 
+call rads_get_var (S, P, 'time', time, .true.)
 call rads_get_var (S, P, 'lon', lon, .true.)
 call rads_get_var (S, P, 'lat', lat, .true.)
 
-! Compute correction
+! Process data records
 
-if (constant) then
-	cor = coef(1)
-else
-	do i = 1,n
-		call get_spharm(lat(i)*rad,lon(i)*rad,a)
-		cor(i) = dot_product(coef,a)
+nval = 0
+do i = 1,n
+
+! Evaluate tide models.
+! Take the first one that provides a non-NaN value.
+
+	do j = 1,nmod
+		if (webtide (j,time(i),lat(i),lon(i),z(i),tide2) < 0) cycle
+		call lpetide (time(i),lat(i),1,lptide_eq,lptide_mf)
+		z(i) = z(i) + lptide_eq
+		nval = nval + 1
+		exit
 	enddo
-endif
+enddo
 
-! If Jason-1 phase C, subtract 5 mm
+! Store the values only when new ones are generated
 
-if (S%sat == 'j1' .and. S%phase%name == 'c') cor = cor - 5d0
+if (nval == 0) return
 
 ! Store all data fields.
 
 call rads_put_history (S, P)
 call rads_def_var (S, P, var)
-if (S%sat == 'j2') call rads_def_var (S, P, 'ref_frame_offset_mle3')
-call rads_put_var (S, P, var, cor)
-if (S%sat == 'j2') call rads_put_var (S, P, 'ref_frame_offset_mle3', cor+28.5d-3)
+call rads_put_var (S, P, var, z)
 
-write (*,552) n
+write (*,551) trim(P%filename), nval
 end subroutine process_pass
 
-!-----------------------------------------------------------------------
-! Determine first five spherical harmonics
-!-----------------------------------------------------------------------
-
-subroutine get_spharm (lat, lon, a)
-use typesizes
-real(eightbytereal), intent(in) :: lat, lon
-real(eightbytereal), intent(out) :: a(5)
-real(eightbytereal) :: plm(0:2)
-
-a(1) = 1d0					! C00
-call p_lm (1, lat, plm)
-a(2) = plm(0)				! C10
-a(3) = plm(1) * cos(lon)	! C11
-a(4) = plm(1) * sin(lon)	! S11
-call p_lm (2, lat, plm)
-a(5) = plm(0)				! C20
-end subroutine get_spharm
-
-end program rads_add_refframe
+end program rads_add_webtide
