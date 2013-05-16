@@ -782,6 +782,7 @@ Global RADS configuration file
 <var name="tide_ocean_webtide" field="1215">
 	<long_name>WebTide ocean tide</long_name>
 	<source>WebTide</source>
+	<parameters>sshelf ne_pac4 hudson arctic9 nwatl</parameters>
 	<units>m</units>
 	<limits>-5 5</limits>
 	<data>tide_ocean_webtide</data>

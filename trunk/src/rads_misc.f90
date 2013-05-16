@@ -868,7 +868,7 @@ logical :: next_word
 ! space, comma, or slash. Multiple spaces are seen as one delimeter,
 ! but not multiple commas or slashes.
 ! Upon return <i0> returns the start of the next word, and <i1> returns
-! the end of the next word PLUS 1. Hence, and empy next word will have
+! the end of the next word PLUS 1. Hence, an empy next word will have
 ! i0 == i1.
 !
 ! When scanning for all words in a string, initialize i1 = 0.
