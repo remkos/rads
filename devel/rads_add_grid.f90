@@ -68,7 +68,7 @@ dir = trim(dir) // '/data/'
 ! Load the selected grids
 
 do k = 1,S%nsel
-	src => S%sel(k)%info%source_file
+	src => S%sel(k)%info%parameters
 	i = index(src, ' ')
 	filename = src(:i-1)
 
@@ -131,7 +131,7 @@ write (*,1310)
 'Additional [processing_options] are:'/ &
 '  -V, --var=NAME[,...]      Select variable name(s) for interpolation (required)'// &
 'All information about the grids and interpolation options are given by'/ &
-'the <source_file> tags in the RADS configuration file.')
+'the <parameters> tags in the RADS configuration file.')
 stop
 end subroutine synopsis
 

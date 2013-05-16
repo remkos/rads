@@ -125,7 +125,7 @@ Global RADS configuration file
 	<long_name>JGM-3 orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>GSFC, JGM-3</source>
-	<source_file>jgm3.latest</source_file>
+	<parameters>jgm3.latest</parameters>
 	<units>m</units>
 	<data>alt_jgm3</data>
 	<format>f11.3</format>
@@ -136,7 +136,7 @@ Global RADS configuration file
 	<long_name>DGM-E04 orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>DEOS, DGM-E04</source>
-	<source_file>dgm-e04.latest</source_file>
+	<parameters>dgm-e04.latest</parameters>
 	<units>m</units>
 	<data>alt_dgme04</data>
 	<format>f11.3</format>
@@ -168,7 +168,7 @@ Global RADS configuration file
 	<long_name>PGS7777 orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>GSFC, PGS7777</source>
-	<source_file>pgs7777</source_file>
+	<parameters>pgs7777</parameters>
 	<units>m</units>
 	<data>alt_pgs7777</data>
 	<format>f11.3</format>
@@ -179,7 +179,7 @@ Global RADS configuration file
 	<long_name>GGM02c(ITRF2000) orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>GGM02c(ITRF2000)</source>
-	<source_file>ggm02c_itrf2000</source_file>
+	<parameters>ggm02c_itrf2000</parameters>
 	<units>m</units>
 	<data>alt_ggm02c_itrf2000</data>
 	<format>f11.3</format>
@@ -194,7 +194,7 @@ Global RADS configuration file
 	<long_name>EIGEN-GC03c orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>EIGEN-GC03c</source>
-	<source_file>eigen-cg03c</source_file>
+	<parameters>eigen-cg03c</parameters>
 	<units>m</units>
 	<data>alt_eiggc03c</data>
 	<format>f11.3</format>
@@ -205,7 +205,7 @@ Global RADS configuration file
 	<long_name>GGM02c(ITRF2005) orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>GGM02c(ITRF2005)</source>
-	<source_file>ggm02c_itrf2005</source_file>
+	<parameters>ggm02c_itrf2005</parameters>
 	<units>m</units>
 	<data>alt_ggm02c_itrf2005</data>
 	<format>f11.3</format>
@@ -220,7 +220,7 @@ Global RADS configuration file
 	<long_name>EIGEN-GL04c orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>EIGEN-GL04c</source>
-	<source_file>eigen-gl04c</source_file>
+	<parameters>eigen-gl04c</parameters>
 	<units>m</units>
 	<data>alt_eiggl04s</data>
 	<format>f12.4</format>
@@ -231,7 +231,7 @@ Global RADS configuration file
 	<long_name>GDR-C' orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>GDR-C' standards</source>
-	<source_file>gsfc_gdr_c_prime</source_file>
+	<parameters>gsfc_gdr_c_prime</parameters>
 	<units>m</units>
 	<data>alt_gdrcp</data>
 	<format>f11.3</format>
@@ -246,7 +246,7 @@ Global RADS configuration file
 	<long_name>GPS orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>JPL GPS orbits</source>
-	<source_file>jpl_gps</source_file>
+	<parameters>jpl_gps</parameters>
 	<units>m</units>
 	<data>alt_gps</data>
 	<compress>int4 1d-3</compress>
@@ -261,7 +261,7 @@ Global RADS configuration file
 	<long_name>ESOC EIGEN-6C orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>ESOC, EIGEN-6C</source>
-	<source_file>eigen-6c-esoc</source_file>
+	<parameters>eigen-6c-esoc</parameters>
 	<units>m</units>
 	<data>alt_eig6c</data>
 	<compress>int4 1d-3</compress>
@@ -276,7 +276,7 @@ Global RADS configuration file
 	<long_name>GDR-D orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>GDR-D standards</source>
-	<source_file>gdr-d</source_file>
+	<parameters>gdr-d</parameters>
 	<units>m</units>
 	<data>alt_gdrd</data>
 	<format>f12.4</format>
@@ -288,7 +288,7 @@ Global RADS configuration file
 	<long_name>REAPER/COMBI orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>REAPER project, combined solution</source>
-	<source_file>reaper/combi</source_file>
+	<parameters>reaper/combi</parameters>
 	<units>m</units>
 	<data>alt_reaper</data>
 	<format>f11.3</format>
@@ -299,7 +299,7 @@ Global RADS configuration file
 	<long_name>REAPER/DEOS orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>REAPER project, DEOS solution</source>
-	<source_file>reaper/deos</source_file>
+	<parameters>reaper/deos</parameters>
 	<units>m</units>
 	<data>alt_reaper_deos</data>
 	<format>f11.3</format>
@@ -310,7 +310,7 @@ Global RADS configuration file
 	<long_name>REAPER/GFZ orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>REAPER project, GFZ solution</source>
-	<source_file>reaper/gfz</source_file>
+	<parameters>reaper/gfz</parameters>
 	<units>m</units>
 	<data>alt_reaper_gfz</data>
 	<format>f11.3</format>
@@ -321,7 +321,7 @@ Global RADS configuration file
 	<long_name>REAPER/ESOC orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>REAPER project, ESOC solution</source>
-	<source_file>reaper/esoc</source_file>
+	<parameters>reaper/esoc</parameters>
 	<units>m</units>
 	<data>alt_reaper_esoc</data>
 	<format>f11.3</format>
@@ -737,7 +737,7 @@ Global RADS configuration file
 <var name="inv_bar_mog2d_mean" field="1005">
 	<long_name>local mean MOG2D dynamic atmospheric correction</long_name>
 	<source>MOG2D</source>
-	<source_file>mog2d/mog2d_combi_1993_2007_int.nc</source_file>
+	<parameters>mog2d/mog2d_combi_1993_2007_int.nc</parameters>
 	<units>m</units>
 	<limits>-1 1</limits>
 	<data>inv_bar_mog2d_mean</data>
@@ -958,7 +958,7 @@ Global RADS configuration file
 <var name="mss_cls01" field="1605">
 	<long_name>CLS01 mean sea surface height</long_name>
 	<source>CLS01</source>
-	<source_file>MSSCLS01/msscls01.nc -s</source_file>
+	<parameters>MSSCLS01/msscls01.nc -s</parameters>
 	<units>m</units>
 	<data>mss_cls01</data>
 	<format>f10.4</format>
@@ -969,7 +969,7 @@ Global RADS configuration file
 	<long_name>GGM02c geoid height</long_name>
 	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
 	<source>GGM02c gravity field</source>
-	<source_file>GGM02C/ggm02c.nc -s</source_file>
+	<parameters>GGM02C/ggm02c.nc -s</parameters>
 	<units>m</units>
 	<data>geoid_ggm02c</data>
 	<format>f10.4</format>
@@ -989,7 +989,7 @@ Global RADS configuration file
 	<long_name>EGM96 geoid height</long_name>
 	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
 	<source>EGM96</source>
-	<source_file>EGM96/egm96.nc -s</source_file>
+	<parameters>EGM96/egm96.nc -s</parameters>
 	<units>m</units>
 	<data>geoid_egm96</data>
 	<format>f10.4</format>
@@ -999,7 +999,7 @@ Global RADS configuration file
 	<long_name>EGM2008 geoid height</long_name>
 	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
 	<source>EGM2008</source>
-	<source_file>EGM2008/und_min1x1_egm2008_Nmax2190_MeanTide_global.nc</source_file>
+	<parameters>EGM2008/und_min1x1_egm2008_Nmax2190_MeanTide_global.nc</parameters>
 	<units>m</units>
 	<data>geoid_egm2008</data>
 	<format>f10.4</format>
@@ -1009,7 +1009,7 @@ Global RADS configuration file
 <var name="mss_egm2008" field="1611">
 	<long_name>EGM2008 mean sea surface height</long_name>
 	<source>EGM2008</source>
-	<source_file>EGM2008/mss_min1x1_egm2008_Nmax2190_MeanTide_global.nc</source_file>
+	<parameters>EGM2008/mss_min1x1_egm2008_Nmax2190_MeanTide_global.nc</parameters>
 	<units>m</units>
 	<data>mss_egm2008</data>
 	<format>f10.4</format>
@@ -1018,7 +1018,7 @@ Global RADS configuration file
 <var name="mss_dnsc08" field="1612">
 	<long_name>DNSC08 mean sea surface height</long_name>
 	<source>DNSC08</source>
-	<source_file>DNSC08/DNSC08MSS_1min.nc</source_file>
+	<parameters>DNSC08/DNSC08MSS_1min.nc</parameters>
 	<units>m</units>
 	<data>mss_dnsc08</data>
 	<format>f10.4</format>
@@ -1035,7 +1035,7 @@ Global RADS configuration file
 <var name="mss_dtu10" field="1614">
 	<long_name>DTU10 mean sea surface height</long_name>
 	<source>DTU10</source>
-	<source_file>DTU10/DTU10MSS_1min.nc</source_file>
+	<parameters>DTU10/DTU10MSS_1min.nc</parameters>
 	<units>m</units>
 	<data>mss_dtu10</data>
 	<format>f10.4</format>
@@ -1044,7 +1044,7 @@ Global RADS configuration file
 <var name="mss_cnescls11" field="1615">
 	<long_name>CNES-CLS11 mean sea surface height</long_name>
 	<source>CNES-CLS11</source>
-	<source_file>MSS_CNES-CLS11/MSS_CNES-CLS11.nc</source_file>
+	<parameters>MSS_CNES-CLS11/MSS_CNES-CLS11.nc</parameters>
 	<units>m</units>
 	<data>mss_cnescls11</data>
 	<format>f10.4</format>
@@ -1355,7 +1355,7 @@ Global RADS configuration file
 <var name="topo_dnsc08" field="2203">
 	<long_name>DNSC08 topography</long_name>
 	<source>DNSC08</source>
-	<source_file>DNSC08/DNSC08BAT_1min.nc</source_file>
+	<parameters>DNSC08/DNSC08BAT_1min.nc</parameters>
 	<units>m</units>
 	<data>topo_dnsc08</data>
 	<format>f7.0</format>
@@ -1374,7 +1374,7 @@ Global RADS configuration file
 <var name="topo_dtu10" field="2205">
 	<long_name>DTU10 topography</long_name>
 	<source>DTU10</source>
-	<source_file>DTU10/DTU10BAT_1min.nc</source_file>
+	<parameters>DTU10/DTU10BAT_1min.nc</parameters>
 	<units>m</units>
 	<data>topo_dtu10</data>
 	<format>f7.0</format>
@@ -2234,7 +2234,7 @@ Global RADS configuration file
 
 <var name="basin" field="3601 36">
 	<long_name>basin code</long_name>
-	<source_file>basin_codes.nc -q</source_file>
+	<parameters>basin_codes.nc -q</parameters>
 	<data>basin</data>
 	<format>f3.0</format>
 	<compress>int1</compress>
@@ -2262,6 +2262,17 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<default>0</default>
 	<compress>int2 1d-4</compress>
+	<parameters>0</parameters>
+	<parameters sat="gs">   0 -65  0  0 5</parameters>
+	<parameters sat="c2">-247   0  0  0 0</parameters>
+	<parameters sat="e1">  23  -7  0  0 0</parameters>
+	<parameters sat="e2">  61   2 12 12 0</parameters>
+	<parameters sat="g1">  70   0  0  0 0</parameters>
+	<parameters sat="j1">  88   0  0  0 0</parameters>
+	<parameters sat="j2"> -18   0  0  0 0</parameters>
+	<parameters sat="n1"> 448   0  0  0 0</parameters>
+	<parameters sat="pn"> -15   0  0  0 0</parameters>
+	<parameters sat="sa"> -65   0  0  0 0</parameters>
 </var>
 <var name="ref_frame_offset_mle3" field="3811" sat="j2">
 	<long_name>reference frame offset (MLE3)</long_name>
@@ -2336,7 +2347,7 @@ Global RADS configuration file
 <var name="dist_coast" field="4501 45">
 	<long_name>distance to coast</long_name>
 	<source>GMT/GSHHS</source>
-	<source_file>distance-to-coast_2m.nc</source_file>
+	<parameters>distance-to-coast_2m.nc</parameters>
 	<units>km</units>
 	<data>dist_coast</data>
 	<format>f6.0</format>
@@ -2396,7 +2407,7 @@ Global RADS configuration file
 <var name="gia" field="5101 51">
 	<long_name>GIA correction</long_name>
 	<source>ICE5G v1.3 VM2 L90 2012</source>
-	<source_file>ice5g/dGeoid250.1grid.ICE5Gv1.3_VM2_L90_2012.nc -t0.001</source_file>
+	<parameters>ice5g/dGeoid250.1grid.ICE5Gv1.3_VM2_L90_2012.nc -t0.001</parameters>
 	<units>m</units>
 	<data>gia</data>
 	<format>f7.4</format>

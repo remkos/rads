@@ -105,7 +105,7 @@ if (name /= '') S%sel(1)%info%long_name = trim(name) // ' orbital altitude'
 
 ! If dir is not given, figure out directory from variable selection
 
-if (dir == '') dir = S%sel(1)%info%source_file
+if (dir == '') dir = S%sel(1)%info%parameters
 
 ! Add prefix $ALTIM/data/ODR.<satellite>/ to directory name
 
