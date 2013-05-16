@@ -2285,7 +2285,7 @@ Global RADS configuration file
 </var>
 
 <var name="tide_equil" field="3901 39">
-	<long_name>long-period equilibrium tide</long_name>
+	<long_name>long-period equilibrium ocean tide</long_name>
 	<standard_name>sea_surface_height_amplitude_due_to_equilibrium_ocean_tide</standard_name>
 	<units>m</units>
 	<data>tide_equil</data>
@@ -2293,7 +2293,7 @@ Global RADS configuration file
 	<compress>int2 1d-4</compress>
 </var>
 <var name="tide_non_equil" field="3902">
-	<long_name>long-period non-equilibrium tide</long_name>
+	<long_name>long-period non-equilibrium ocean tide</long_name>
 	<standard_name>sea_surface_height_amplitude_due_to_non_equilibrium_ocean_tide</standard_name>
 	<units>m</units>
 	<data>tide_non_equil</data>
