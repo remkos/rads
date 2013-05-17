@@ -140,7 +140,7 @@ real(eightbytereal) :: wx, wy, wt, f(2,2,2)
 
 write (*,551) trim(P%filename)
 
-! Get time and position
+! Get time and location
 
 call rads_get_var (S, P, 'time', time, .true.)
 call rads_get_var (S, P, 'lat', lat, .true.)

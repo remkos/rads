@@ -1196,7 +1196,7 @@ Global RADS configuration file
 	<compress>int2 1d-3</compress>
 </var>
 <var name="wind_speed_ecmwf_u" field="1903" sat="!gs">
-	<long_name>ECMWF model wind speed (U)</long_name>
+	<long_name>ECMWF model zonal wind speed</long_name>
 	<standard_name>eastward_wind</standard_name>
 	<source>ECMWF</source>
 	<units>m/s</units>
@@ -1206,7 +1206,7 @@ Global RADS configuration file
 	<compress>int2 1d-3</compress>
 </var>
 <var name="wind_speed_ecmwf_v" field="1904" sat="!gs">
-	<long_name>ECMWF model wind speed (V)</long_name>
+	<long_name>ECMWF model meridional wind speed</long_name>
 	<standard_name>northward_wind</standard_name>
 	<source>ECMWF</source>
 	<units>m/s</units>
@@ -2302,7 +2302,7 @@ Global RADS configuration file
 </var>
 
 <var name="wave_m0" field="4001 40" sat="!e1 gs">
-	<long_name>wave height variance (WaveWatch3)</long_name>
+	<long_name>WaveWatch3 wave height variance</long_name>
 	<source>WaveWatch3</source>
 	<units>m^2</units>
 	<data>wave_m0</data>
@@ -2310,7 +2310,7 @@ Global RADS configuration file
 </var>
 
 <var name="wave_m1" field="4101 41" sat="!e1 gs">
-	<long_name>first moment of wave height (WaveWatch3)</long_name>
+	<long_name>WaveWatch3 first moment of wave height</long_name>
 	<source>WaveWatch3</source>
 	<units>m^2/s</units>
 	<data>wave_m1</data>
@@ -2319,7 +2319,7 @@ Global RADS configuration file
 </var>
 
 <var name="wave_m2" field="4201 42" sat="!e1 gs">
-	<long_name>wave velocity variance (WaveWatch3)</long_name>
+	<long_name>WaveWatch3 wave velocity variance</long_name>
 	<source>WaveWatch3</source>
 	<units>m^2/s^2</units>
 	<data>wave_m2</data>
@@ -2328,7 +2328,7 @@ Global RADS configuration file
 </var>
 
 <var name="wave_m4" field="4301 43" sat="!e1 gs">
-	<long_name>wave slope variance (WaveWatch3)</long_name>
+	<long_name>WaveWatch3 wave slope variance</long_name>
 	<source>WaveWatch3</source>
 	<units>radian^2</units>
 	<data>wave_m4</data>
@@ -2337,10 +2337,28 @@ Global RADS configuration file
 </var>
 
 <var name="wave_shs" field="4401 44" sat="!e1 gs">
-	<long_name>wave swell (WaveWatch3)</long_name>
+	<long_name>WaveWatch3 wave swell</long_name>
 	<source>WaveWatch3</source>
 	<units>m</units>
 	<data>wave_shs</data>
+	<format>f6.3</format>
+	<compress>int2 1d-3</compress>
+</var>
+
+<var name="wave_wu" sat="!e1 gs">
+	<long_name>WaveWatch3 zonal wind speed</long_name>
+	<source>WaveWatch3</source>
+	<units>m/s</units>
+	<data>wave_wu</data>
+	<format>f6.3</format>
+	<compress>int2 1d-3</compress>
+</var>
+
+<var name="wave_wv" sat="!e1 gs">
+	<long_name>WaveWatch3 meridional wind speed</long_name>
+	<source>WaveWatch3</source>
+	<units>m/s</units>
+	<data>wave_wu</data>
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
 </var>
