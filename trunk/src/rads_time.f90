@@ -162,12 +162,12 @@ character(len=26) :: strf1985f
 !
 ! This routine formats relative time in seconds since 1985 into a
 ! character string of 26 bytes in the form YYYY-MM-DDxHH:MM:SS.SSSSSS,
-! where 'x' is a seperator character given by the optional argument
+! where 'x' is a separator character given by the optional argument
 ! <sep> (default is a space)
 !
 ! Arguments:
 !  sec       : Seconds since 1.0 Jan 1985
-!  sep       : Seperator character (default is a space)
+!  sep       : (Optional) Separator character (default is a space)
 !
 ! Return value:
 !  strf1985f : Character string of time
@@ -177,7 +177,7 @@ real(eightbytereal) :: ss
 character(len=1) :: x
 call sec85ymdhms (sec, yy, mm, dd, hh, mn, ss)
 if (present(sep)) then
-	x = sep(1:1)
+	x = sep
 else
 	x = ' '
 endif
@@ -444,15 +444,24 @@ end function datestamp
 !***********************************************************************
 !*timestamp -- Create character string with current date
 !+
-function timestamp ()
+function timestamp (sep)
+character(len=1), optional :: sep
 character(len=19) :: timestamp
 !
 ! This function produces the current date (in UTC) in the form
-! 2012-06-15 02:58:15
+! 2012-06-15x02:58:15, where x is a separator character indicated
+! by the optional argument <sep>. Default is a space.
 !-----------------------------------------------------------------------
 integer :: values(9)
+character(len=1) :: x
+if (present(sep)) then
+	x = sep
+else
+	x = ' '
+endif
 call gmtime(time(),values)
-write (timestamp, '(i4.4,2("-",i2.2)," ",i2.2,2(":",i2.2))') values(6)+1900,values(5)+1,values(4:1:-1)
+write (timestamp, '(i4.4,2("-",i2.2)," ",i2.2,2(":",i2.2))') &
+	values(6)+1900,values(5)+1,values(4),x,values(3:1:-1)
 end function timestamp
 
 end module rads_time
