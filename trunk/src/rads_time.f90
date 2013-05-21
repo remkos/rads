@@ -460,7 +460,7 @@ else
 	x = ' '
 endif
 call gmtime(time(),values)
-write (timestamp, '(i4.4,2("-",i2.2)," ",i2.2,2(":",i2.2))') &
+write (timestamp, '(i4.4,2("-",i2.2),a1,i2.2,2(":",i2.2))') &
 	values(6)+1900,values(5)+1,values(4),x,values(3:1:-1)
 end function timestamp
 
