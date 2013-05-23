@@ -3034,17 +3034,17 @@ integer(fourbyteint), intent(in), optional :: unit
 logical :: rads_version
 !
 ! This routine prints out a message in one of the following forms,
-! depending on flag (or the first argument on the command line):
-! 1) When flag is --version:
+! on the first argument on the command line or the optional argument <flag>.
+! 1) When first command line argument or <flag> is --version:
 !    "rads_program: revision <number>, library revision <number>"
 !    The program then terminates here.
 ! 2) When no <description> is given:
 !    "rads_program (r<number>)"
 !    Return value is .true.
-! 3) When flag is empty or -? or --help:
+! 3) When first command line argument or <flag> is -? or --help:
 !    "rads_program (r<number>): <description>"
 !    Return value is .false.
-! 4) When flag is --head
+! 4) When first command line argument of <flag> is --head:
 !    "rads_program (r<number>): <description>"
 !    Return value is .true.
 ! 5) Otherwise:
@@ -3061,13 +3061,10 @@ logical :: rads_version
 !  rads_version: .false. if output is of type 3, otherwise .true.
 !-----------------------------------------------------------------------
 integer :: iunit
-character(len=rads_naml) :: progname,arg
+character(len=rads_naml) :: progname, arg
 call getarg (0, progname)
-if (present(flag)) then
-	arg = flag
-else
-	call getarg (1, arg)
-endif
+call getarg (1, arg)
+if (present(flag) .and. arg /= '--version' .and. arg /= '--help' .and. arg /= '-?' .and. arg /= '--head') arg = flag
 rads_version = .true.
 if (present(unit)) then
 	iunit = unit

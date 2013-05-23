@@ -54,7 +54,7 @@ integer(fourbyteint) :: ellipse=0,ios
 ! Scan command line for options
 
 info%ntype = 0
-call synopsis
+call synopsis ('--head')
 call rads_set_options (' model: name: dir: tbias:: rate loc-6 loc-7 equator range range2 doppler grid:: chirp: dt: all flag:')
 call rads_init (S)
 do i = 1,rads_nopt

@@ -75,7 +75,7 @@ type(model_) :: m1, m2
 
 ! Initialise
 
-call synopsis
+call synopsis ('--head')
 call rads_set_options ('dwain dry wet air ib all new')
 call rads_init (S)
 

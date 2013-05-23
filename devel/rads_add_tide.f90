@@ -56,7 +56,7 @@ integer(fourbyteint) :: j, i0, i1
 
 ! Initialise
 
-call synopsis
+call synopsis ('--head')
 call rads_set_options ('m: models:')
 call rads_init (S)
 

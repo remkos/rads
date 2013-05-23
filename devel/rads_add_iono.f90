@@ -46,7 +46,7 @@ logical :: model(nmod) = .false.
 
 ! Initialise
 
-call synopsis
+call synopsis ('--head')
 call rads_set_options ('gin gim iri2007 nic09 all')
 call rads_init (S)
 
