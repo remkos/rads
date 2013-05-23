@@ -57,7 +57,7 @@ real(eightbytereal), parameter :: t_2000 = 473299200d0, t_year = 365.25d0 * 8640
 
 ! Initialise
 
-call synopsis
+call synopsis ('--head')
 call rads_init (S)
 
 allocate (grd(S%nsel))

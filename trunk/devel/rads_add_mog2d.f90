@@ -62,7 +62,7 @@ type(rads_var), pointer :: var
 
 ! Initialise
 
-call synopsis
+call synopsis ('--head')
 call rads_init (S)
 var => rads_varptr (S, 'inv_bar_mog2d')
 

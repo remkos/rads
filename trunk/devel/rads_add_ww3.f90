@@ -67,7 +67,7 @@ character(4) :: varnm(nvar) = (/ 'm0  ', 'm1  ', 'm2  ', 'm4  ', 'shs ', 'wu  ',
 
 ! Initialise
 
-call synopsis
+call synopsis ('--head')
 call rads_set_options ('wvu ww3 wind all update')
 call rads_init (S)
 

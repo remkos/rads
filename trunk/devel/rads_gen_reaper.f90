@@ -137,7 +137,6 @@ t1 = nan
 
 ! Scan command line for options
 
-call synopsis
 do
 	call getopt (optlist, optopt, optarg)
 	select case (optopt)

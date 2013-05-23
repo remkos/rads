@@ -64,7 +64,7 @@ real(eightbytereal) :: meangrid(0:nx+1,ny)
 
 ! Initialise
 
-call synopsis
+call synopsis ('--head')
 call rads_set_options ('ism ice sst mean all')
 call rads_init (S)
 

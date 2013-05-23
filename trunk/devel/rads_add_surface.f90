@@ -47,7 +47,7 @@ integer(fourbyteint) :: cyc, pass
 
 ! Initialise
 
-call synopsis
+call synopsis ('--head')
 call rads_init (S)
 
 ! Load the surface_type grid

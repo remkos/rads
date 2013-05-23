@@ -50,7 +50,7 @@ integer(fourbyteint) :: ios, j
 
 ! Initialise
 
-call synopsis
+call synopsis ('--head')
 call rads_set_options (' coef:')
 call rads_init (S)
 

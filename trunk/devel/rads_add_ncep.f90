@@ -95,7 +95,7 @@ real(eightbytereal), parameter :: k2p = 0.221d0, k3 = 3739d0	! Refractivity cons
 
 ! Initialise
 
-call synopsis
+call synopsis ('--head')
 call rads_set_options ('dwain dry wet air ib all new')
 call rads_init (S)
 
