@@ -57,6 +57,7 @@
 program rads_add_era
 
 use rads
+use rads_misc
 use rads_netcdf
 use rads_devel
 use netcdf
@@ -72,8 +73,8 @@ integer(fourbyteint) :: j, cyc, pass
 
 ! Data elements
 
-character(rads_naml) :: path
-integer(fourbyteint) :: hex,hexold=-99999
+character(rads_cmdl) :: path
+integer(fourbyteint) :: hex, hexold=-99999
 type(airtideinfo) :: airinfo
 real(eightbytereal), parameter :: rad2=2d0*atan(1d0)/45d0
 logical :: dry_on=.false., wet_on=.false., ib_on=.false., air_on=.false., new=.false., error
@@ -99,10 +100,9 @@ call synopsis ('--head')
 call rads_set_options ('dwain dry wet air ib all new')
 call rads_init (S)
 
-! Get $ALTIM directory
+! Get template for path name
 
-call getenv ('ALTIM', path)
-path = trim(path) // '/data/era-int-full/era-int.%Y.grb'
+call parseenv ('${ALTIM}/data/era-int-full/era-int.%Y.grb', path)
 
 ! Which corrections are to be provided?
 

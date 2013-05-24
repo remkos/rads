@@ -26,6 +26,7 @@
 program rads_add_surface
 
 use rads
+use rads_misc
 use rads_grid
 use rads_devel
 
@@ -37,7 +38,7 @@ type(grid) :: info
 
 ! Command line arguments
 
-character(rads_naml) :: filename
+character(rads_cmdl) :: filename
 integer(fourbyteint) :: cyc, pass
 
 ! Formats
@@ -52,8 +53,7 @@ call rads_init (S)
 
 ! Load the surface_type grid
 
-call getenv ('ALTIM', filename)
-filename = trim(filename) // '/data/landmask.nc'
+call parseenv ('${ALTIM}/data/landmask.nc', filename)
 write (*,551) 'Loading mask '//trim(filename)
 if (grid_load (filename, info) /= 0) call rads_exit ('Error loading landmask.')
 write (*,550) 'done'

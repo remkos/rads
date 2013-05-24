@@ -53,7 +53,7 @@ logical :: lice=.false., lsst=.false., lmean=.false.
 
 ! Data variables
 
-character(rads_naml) :: dir
+character(len=rads_cmdl) :: path
 integer(fourbyteint) :: t1old=0, t2old=0, j
 integer(fourbyteint), parameter :: nx=360, ny=180, secweek=7*86400, sec2000=473299200
 integer(fourbyteint), parameter :: sun = 157982400	! Sun 1990-01-03 12:00
@@ -68,9 +68,9 @@ call synopsis ('--head')
 call rads_set_options ('ism ice sst mean all')
 call rads_init (S)
 
-! Get $ALTIM directory
+! Get template for path name
 
-call getenv ('ALTIM', dir)
+call parseenv ('${ALTIM}/data/sst/oisst.%Y.nc', path)
 
 ! Check all options
 do j = 1,rads_nopt
@@ -251,7 +251,7 @@ real(eightbytereal) :: grid(0:nx+1,ny)
 ! Open grid file and load mean SST
 
 write (*,'(a)') '(Reading mean SST)'
-if (nft(nf90_open(trim(dir)//'/data/sst/oisst.mean.nc',nf90_nowrite,ncid))) call rads_exit ('No mean SST grid file found')
+if (nft(nf90_open(path(:len_trim(path)-4)//'mean.nc',nf90_nowrite,ncid))) call rads_exit ('No mean SST grid file found')
 if (nft(nf90_inq_varid(ncid,'sst',v_id))) call rads_exit ('Could not find mean SST grid')
 if (nft(nf90_get_var(ncid,v_id,grid(1:nx,:)))) call rads_exit ('Error reading mean SST grid')
 
@@ -272,17 +272,17 @@ end subroutine get_mean
 function get_sst (t, grid)
 integer(fourbyteint) :: t, get_sst
 integer(twobyteint) :: grid(0:nx+1,ny,2)
-character(80) :: fn
+character(len=rads_cmdl) :: filename
 integer(fourbyteint) ::	ncid, v_id, j, start(3)=1, nt
 real(eightbytereal) :: time(60)
 
 ! Determine file name
 
-call strf1985(fn,'/data/sst/oisst.%Y.nc',t)
+call strf1985(filename,path,t)
 
 ! Open input file
 
-if (nft(nf90_open(trim(dir)//trim(fn),nf90_nowrite,ncid))) then
+if (nft(nf90_open(filename,nf90_nowrite,ncid))) then
 	get_sst = 1
 	return
 endif
@@ -302,8 +302,8 @@ if (start(3) > nt) then
 	get_sst = 3
 	return
 endif
-call strf1985(fn,'(Reading %Y-%m-%d %H:%M)',nint(time(start(3))))
-write (*,'(a)',advance='no') trim(fn)
+call strf1985(filename,'(Reading %Y-%m-%d %H:%M)',nint(time(start(3))))
+write (*,'(a)',advance='no') trim(filename)
 
 ! Read the required SST grid
 

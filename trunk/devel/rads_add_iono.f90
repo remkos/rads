@@ -38,7 +38,7 @@ type(giminfo) :: info
 
 ! Command line arguments
 
-character(rads_naml) :: dir
+character(rads_cmdl) :: path
 integer(fourbyteint) :: j, cyc, pass
 real(eightbytereal) :: f, f_scaled, hgt
 integer(fourbyteint), parameter :: nmod = 3
@@ -66,9 +66,9 @@ case default
 	hgt = 800d3
 end select
 
-! Get $ALTIM directory
+! Get $ALTIM/data directory
 
-call getenv ('ALTIM', dir)
+call parseenv ('${ALTIM}/data/', path)
 
 ! Check options
 
@@ -85,8 +85,8 @@ do j = 1,rads_nopt
 	end select
 enddo
 
-if (model(1)) info = giminit(trim(dir)//'/data/gim/jplg_',1)
-if (model(3)) call nicinit(trim(dir)//'/data/nic09/nic09_clim.nc',trim(dir)//'/data/nic09/nic09_gtec.nc')
+if (model(1)) info = giminit(trim(path)//'gim/jplg_',1)
+if (model(3)) call nicinit(trim(path)//'nic09/nic09_clim.nc',trim(path)//'nic09/nic09_gtec.nc')
 
 ! Process all data files
 

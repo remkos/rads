@@ -31,8 +31,8 @@ integer(fourbyteint) :: lstat=2, reject=-1
 character(len=*), parameter :: wtype(0:3)=(/ &
 	'box weight                  ', 'constant weight             ', &
 	'area weighted               ', 'inclination-dependent weight'/)
-character(len=640) :: format_string
-character(len=rads_naml) :: filename = ''
+character(len=rads_strl) :: format_string
+character(len=rads_cmdl) :: filename = ''
 integer(fourbyteint), parameter :: period_day=0, period_pass=1, period_cycle=2
 integer(fourbyteint) :: nr=0, minnr=2, cycle, pass, i, l, &
 	period=period_day, wmode=0, nx, ny, kx, ky, ios, sizes(2), ncid, varid(2)

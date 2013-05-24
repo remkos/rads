@@ -367,7 +367,7 @@ end subroutine write_pass_netcdf
 subroutine write_pass_ascii
 logical :: first = .true.
 integer :: i, j, k
-character(len=640) :: format_string
+character(len=rads_strl) :: format_string
 
 600 format('# RADS collinear track file'/'# Created: ',a,' UTC: ',a)
 610 format('#'/'# Pass      = ',i4.4/'# Satellite =',999(1x,a6))

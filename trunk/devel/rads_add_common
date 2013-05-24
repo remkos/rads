@@ -23,7 +23,7 @@ rads_add_grid     $* -Vgeoid_egm2008
 rads_add_grid     $* -Vmss_egm2008
 rads_add_grid     $* -Vmss_dtu10,topo_dtu10
 rads_add_surface  $*
-rads_add_tide     $* --stide --ptide --fes04 --got48 --got49 --lptide --annual
+rads_add_tide     $* --models=stide,ptide,fes04,got48,got49,lptide,annual
 rads_add_webtide  $*
 rads_add_refframe $*
 rads_add_sst      $* --all

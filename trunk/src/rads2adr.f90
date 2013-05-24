@@ -38,7 +38,7 @@ type(rads_pass) :: P
 
 ! Local declarations, etc.
 integer(fourbyteint) :: outunit
-character(len=rads_naml) :: outname = ''
+character(len=rads_cmdl) :: outname = ''
 integer(fourbyteint) :: i, ios, cycle, pass, step = 1, nseltot = 0, nselmax = huge(0_fourbyteint)
 integer(fourbyteint) :: reject = -1
 

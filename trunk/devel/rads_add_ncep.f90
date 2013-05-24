@@ -82,7 +82,7 @@ logical :: dry_on=.false., wet_on=.false., ib_on=.false., air_on=.false., new=.f
 
 ! Model data
 
-character(80), parameter :: dry_fmt = 'slp.%Y.nc', wet_fmt = 'pr_wtr.eatm.%Y.nc', tmp_fmt = 'air.sig995.%Y.nc'
+character(len=80), parameter :: dry_fmt = 'slp.%Y.nc', wet_fmt = 'pr_wtr.eatm.%Y.nc', tmp_fmt = 'air.sig995.%Y.nc'
 type :: model_
 	type(grid) :: dry, wet, tmp
 end type
@@ -99,10 +99,9 @@ call synopsis ('--head')
 call rads_set_options ('dwain dry wet air ib all new')
 call rads_init (S)
 
-! Get $ALTIM directory
+! Get $ALTIM/data/ncep/ directory
 
-call getenv ('ALTIM', path)
-path = trim(path) // '/data/ncep/'
+call parseenv ('${ALTIM}/data/ncep/', path)
 
 ! Which corrections are to be provided?
 
@@ -129,8 +128,12 @@ enddo
 ! Init air tide
 
 if (dry_on .or. ib_on) call airtideinit ('airtide', airinfo)
+
+! Correct existing ECMWF dry tropo correction for air tide on data of Envisat,
+! TOPEX, Poseidon, and ERS-1/2 (but not REAPER data)
+
 air_plus = (air_on .and. (S%sat == 'e1' .or. S%sat == 'e2' .or. S%sat == 'n1' .or. &
-	S%sat == 'tx' .or. S%sat == 'pn'))
+	S%sat == 'tx' .or. S%sat == 'pn') .and. index(P%original,'REAPER') < 0)
 
 ! Process all data files
 

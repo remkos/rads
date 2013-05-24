@@ -21,7 +21,7 @@ use typesizes
 ! These are used by getopt
 integer, save :: getopt_ind = 1, getopt_chr = 2
 logical, save :: getopt_err = .true.
-character(len=160), private, save :: getopt_arg
+character(len=320), private, save :: getopt_arg
 logical, private, save :: getopt_new = .true.
 
 ! Provide a NaN parameter
@@ -416,7 +416,7 @@ character(len=*), intent(inout) :: string
 !   string : Upon input: default value for string.
 !          : Upon output: contents of the environment variable or default.
 !-----------------------------------------------------------------------
-character(len=160) :: temp
+character(len=320) :: temp
 call getenv (env,temp)
 if (temp /= ' ') string = temp
 end subroutine checkenv
@@ -442,7 +442,7 @@ character(len=*), intent(inout) :: output
 !   input  : String to be parsed.
 !   output : String with environment variables replaced.
 !-----------------------------------------------------------------------
-character(len=160) :: env
+character(len=320) :: env
 integer :: j, k = 0, l, m, n
 output = input
 do
