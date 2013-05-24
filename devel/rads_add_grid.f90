@@ -25,6 +25,7 @@
 program rads_add_grid
 
 use rads
+use rads_misc
 use rads_grid
 use rads_devel
 
@@ -42,7 +43,7 @@ type(model), allocatable :: grd(:)
 
 ! Command line arguments
 
-character(rads_naml) :: dir, filename
+character(rads_cmdl) :: path, filename
 character(rads_naml), pointer :: src
 integer(fourbyteint) :: i, j, k, ios, cyc, pass
 
@@ -62,8 +63,7 @@ call rads_init (S)
 
 allocate (grd(S%nsel))
 
-call getenv ('ALTIM', dir)
-dir = trim(dir) // '/data/'
+call parseenv ('${ALTIM}/data/', path)
 
 ! Load the selected grids
 
@@ -94,7 +94,7 @@ do k = 1,S%nsel
 	if (filename(:1) == '/' .or. filename(:2) == './' .or. filename(:3) == '../') then
 		if (grid_load(filename,grd(k)%info) /= 0) call rads_exit ('Error loading grid')
 	else
-		if (grid_load(trim(dir)//filename,grd(k)%info) /= 0) call rads_exit ('Error loading grid')
+		if (grid_load(trim(path)//filename,grd(k)%info) /= 0) call rads_exit ('Error loading grid')
 	endif
 	write (*,550) 'done'
 enddo

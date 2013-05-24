@@ -44,7 +44,7 @@ type(rads_sat) :: S(msat)
 type(rads_pass) :: P
 integer(fourbyteint) :: i, j, nsat = 0, nsel = 0, reject = -1, ios, debug, ncid, dimid(3), start(2), varid(vbase)
 logical :: duals = .true., singles = .true., batches = .false., l
-character(len=rads_naml) :: satlist, filename = 'radsxogen.nc'
+character(len=rads_cmdl) :: satlist, filename = 'radsxogen.nc'
 character(len=rads_naml) :: legs = 'undetermined - undetermined'
 character(len=1) :: interpolant = 'q'
 integer(fourbyteint) :: inter_half = 3, inter_points, max_gap = 3

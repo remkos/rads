@@ -39,7 +39,7 @@ type(rads_var), pointer :: var, temp(:)
 
 ! Local declarations, etc.
 integer(fourbyteint) :: outunit, listunit = -1, logunit = stdout
-character(len=rads_naml) :: outname = ''
+character(len=rads_cmdl) :: outname = ''
 character(len=640) :: format_string
 integer(fourbyteint) :: i, j, l, ios, cycle, pass, step = 1, nseltot = 0, nselmax = huge(0_fourbyteint)
 logical :: freeform = .false., boz_format = .false.

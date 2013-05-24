@@ -29,18 +29,19 @@
 program ogdrsplit
 
 use rads
+use rads_misc
 use rads_netcdf
 use typesizes
 use netcdf
 
-character(80) :: radsroot,orf,arg,filenm,dimnm,filetype,destdir
-character(26) :: date(2)
-character(1024) :: exclude_list = ','
+character(len=rads_cmdl) :: orf, arg, filenm, dimnm, filetype, destdir
+character(len=26) :: date(2)
+character(len=rads_strl) :: exclude_list = ','
 integer(fourbyteint), parameter :: mpass = 254 * 500
 real(eightbytereal), parameter :: sec2000 = 473299200d0
-integer(fourbyteint) :: l,yy,mm,dd,hh,mn,cycle(mpass),pass(mpass),npass,ipass,i0,i,ncid1, &
-	nrec,nhz,hash,mjd,ios,varid
-real(eightbytereal) :: ss,lon,lat,eqtime(mpass),eqlon(mpass),starttime(mpass)
+integer(fourbyteint) :: l, yy, mm, dd, hh, mn, cycle(mpass), pass(mpass), npass, ipass, i0, i, ncid1, &
+	nrec, nhz, hash, mjd, ios, varid
+real(eightbytereal) :: ss, lon, lat, eqtime(mpass), eqlon(mpass), starttime(mpass)
 real(eightbytereal), allocatable :: time(:)
 
 ! Print description, if requested
@@ -69,14 +70,13 @@ filetype = filenm(i-3:l+3)
 
 ! Open the equator crossing table
 
-call getenv ('RADSROOT', radsroot)
 select case (filetype(:3))
 case ('JA1')
-	orf = trim(radsroot) // '/ext/j1/JA1_ORF.txt'
+	call parseenv ('${RADSROOT}/ext/j1/JA1_ORF.txt', orf)
 case ('JA2')
-	orf = trim(radsroot) // '/ext/j2/JA2_ORF.txt'
+	call parseenv ('${RADSROOT}/ext/j2/JA2_ORF.txt', orf)
 case ('SRL')
-	orf = trim(radsroot) // '/ext/sa/SRL_ORF.txt'
+	call parseenv ('${RADSROOT}/ext/sa/SRL_ORF.txt', orf)
 case default
 	stop 'Wrong filetype'
 end select

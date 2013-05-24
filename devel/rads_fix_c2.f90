@@ -75,11 +75,11 @@ type(rads_pass) :: P
 
 ! Other local variables
 
-character(len=rads_naml) :: arg
+character(len=rads_cmdl) :: path
 real(eightbytereal), parameter :: fai = 7.3d-3, &
 	sig0_drift = 0.32d0 / 365.25d0 / 86400d0, time_drift = 830822400d0, & ! Sigma0 drift is 0.32 dB per year since 1-MAY-2011
 	swh_adjustment = 1.8737**2 * (0.513**2 - 0.383**2) ! Adjustment to be added to SWH squared
-integer(fourbyteint) :: l,i,cyc,pass
+integer(fourbyteint) :: i,cyc,pass
 integer(twobyteint) :: flag
 logical :: ldrift=.false.,lmeteo=.false.,lrange=.false.,lssb=.false.,lswh=.false.,ltbias=.false., &
 	lwind=.false.,lsig0=.false.,cswh,cmeteo,ciono,fdm_l1_v24
@@ -122,16 +122,14 @@ enddo
 
 ! Load SSB model if requested
 
-call getenv ('ALTIM', arg)
-l = len_trim(arg)
 if (.not.lssb) then
 	! Do nothing
 else if (index(S%phase%dataroot, '/a.l2') > 0) then
-	arg(l+1:) = '/data/models/c2_l2i_hyb.nc?ssb_hyb'
-	if (grid_load(arg,issb_hyb) /= 0) call rads_exit ('Error loading '//arg)
+	call parseenv ('${ALTIM}/data/models/c2_l2i_hyb.nc?ssb_hyb', path)
+	if (grid_load(path,issb_hyb) /= 0) call rads_exit ('Error loading '//trim(path))
 else
-	arg(l+1:) = '/data/models/c2_l1c_hyb.nc?ssb_hyb'
-	if (grid_load(arg,issb_hyb) /= 0) call rads_exit ('Error loading '//arg)
+	call parseenv ('${ALTIM}/data/models/c2_l1c_hyb.nc?ssb_hyb', path)
+	if (grid_load(path,issb_hyb) /= 0) call rads_exit ('Error loading '//trim(path))
 endif
 
 ! Run process for all files

@@ -47,7 +47,7 @@ type(grid) :: sininfo, cosinfo
 ! Command line arguments
 
 integer(fourbyteint) :: cyc, pass
-character(len=rads_naml) :: models = '', path
+character(len=rads_cmdl) :: models = '', path
 logical :: do_ptide=.false., do_stide=.false., do_lptide=.false., do_annual=.false., do_fes(mfes)=.false., do_got(mgot)=.false.
 
 ! Other variables
@@ -84,9 +84,9 @@ do
 		do_lptide = .true.
 	case ('annual')
 		do_annual = .true.
-		call getenv ('ALTIM', path)
-		if (grid_load (trim(path)//'/data/DTU10/DTU10ANN_cos.nc',cosinfo) /= 0 .or. &
-			grid_load (trim(path)//'/data/DTU10/DTU10ANN_sin.nc',sininfo) /= 0) call rads_exit ('Error loading grid')
+		call parseenv ('${ALTIM}/data/DTU10/DTU10ANN_', path)
+		if (grid_load (trim(path)//'cos.nc',cosinfo) /= 0 .or. &
+			grid_load (trim(path)//'sin.nc',sininfo) /= 0) call rads_exit ('Error loading grid')
 	case ('fes04', 'fes2004')
 		do_fes(1) = .true.
 		call festideinit('FES2004',.true.,fesinfo(1))

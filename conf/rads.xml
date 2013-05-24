@@ -811,7 +811,7 @@ Global RADS configuration file
 	<compress>int4 1d-4</compress>
 	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
 </var>
-<var name="tide_ocean_got49" field="1221" sat="c2 j1 j2 pn tx">
+<var name="tide_ocean_got49" field="1221">
 	<long_name>GOT4.9 ocean tide</long_name>
 	<source>GOT4.9</source>
 	<units>m</units>
@@ -863,7 +863,7 @@ Global RADS configuration file
 	<compress>int2 1d-4</compress>
 	<comment>Load tide variation to be added to ocean tide</comment>
 </var>
-<var name="tide_load_got49" field="1321" sat="c2 j1 j2 pn tx">
+<var name="tide_load_got49" field="1321">
 	<long_name>GOT4.9 load tide</long_name>
 	<source>GOT4.9</source>
 	<units>m</units>

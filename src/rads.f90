@@ -136,7 +136,7 @@ type :: rads_sat
 endtype
 
 type :: rads_pass
-	character(len=rads_naml) :: filename             ! Name of the netCDF pass file
+	character(len=rads_cmdl) :: filename             ! Name of the netCDF pass file
 	character(len=rads_strl) :: original             ! Name of the original (GDR) pass file(s)
 	character(len=rads_hstl), pointer :: history     ! File creation history
 	real(eightbytereal) :: equator_time, equator_lon ! Equator time and longitude
@@ -157,7 +157,7 @@ endtype
 
 type :: rads_option
 	character(len=rads_varl) :: opt                  ! Option (without the - or --)
-	character(len=rads_naml) :: arg                  ! Option argument
+	character(len=rads_cmdl) :: arg                  ! Option argument
 	integer :: id                                    ! Identifier in form 10*nsat + i
 endtype
 

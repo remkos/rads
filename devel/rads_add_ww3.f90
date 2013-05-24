@@ -58,7 +58,7 @@ logical :: update = .false.
 
 ! Data elements
 
-character(rads_naml) :: path
+character(rads_cmdl) :: path
 integer(fourbyteint), parameter :: nx=361, ny=156, nhex=8, nvar=7, i2min=-32768
 integer(fourbyteint) :: mjd, mjdold=-99999, j
 real(eightbytereal) :: x0=-180d0, x1=180d0, y0=-77.5d0, y1=77.5d0, dx=1d0, dy=1d0, dz(nvar)
@@ -71,10 +71,9 @@ call synopsis ('--head')
 call rads_set_options ('wvu ww3 wind all update')
 call rads_init (S)
 
-! Prefix $ALTIM/data/wwatch3/
+! Get template for path name
 
-call getenv('ALTIM', path)
-path = trim(path) // '/data/wwatch3'
+call parseenv ('${ALTIM}/data/wwatch3/%Y/ww3_%Y%m%d.nc', path)
 
 ! Check all options
 do j = 1,rads_nopt
@@ -272,7 +271,7 @@ character(len=rads_naml) :: filenm
 
 get_ww3 = .true.
 
-l = strf1985(filenm,trim(path)//'/%Y/ww3_%Y%m%d.nc',mjd*86400)
+l = strf1985(filenm, path, mjd*86400)
 
 ! Open input file
 

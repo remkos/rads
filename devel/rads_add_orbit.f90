@@ -26,6 +26,7 @@
 program rads_add_orbit
 
 use rads
+use rads_misc
 use rads_grid
 use rads_devel
 
@@ -39,7 +40,7 @@ type(grid) :: info
 
 integer(fourbyteint) :: i,cyc,pass
 logical :: equator=.false.,range=.false.,doppler=.false.,range2=.false.,rate=.false.
-character(160) :: name='',dir='',gridnm='',var_old='',arg
+character(len=rads_cmdl) :: name='',dir='',gridnm='',var_old='',arg
 real(eightbytereal) :: tbias=0d0,maxrms=1d30,loc=0d0,dt=1d0,chirp=0d0
 
 ! Other variables
@@ -111,8 +112,7 @@ if (dir == '') dir = S%sel(1)%info%parameters
 
 if (dir(:1) == '/' .or. dir(:2) == './') then
 else
-	call getenv ('ALTIM', arg)
-	dir = trim(arg) // '/data/ODR.' // trim(S%satellite) // '/' // dir
+	call parseenv ('${ALTIM}/data/ODR.' // trim(S%satellite) // '/' // dir, dir)
 endif
 
 ! Figure out time bias
@@ -151,8 +151,8 @@ if (gridnm /= '') then
 	if (gridnm(:1) == '/' .or. gridnm(:2) == './') then
 		if (grid_load(gridnm,info) /= 0) call rads_exit ('Error loading grid.')
 	else
-		call getenv ('ALTIM', arg)
-		if (grid_load(trim(arg)//'/data/'//gridnm,info) /= 0) call rads_exit ('Error loading grid.')
+		call parseenv ('${ALTIM}/data/' // gridnm, arg)
+		if (grid_load(arg,info) /= 0) call rads_exit ('Error loading grid.')
 	endif
 	write (*,550) 'done'
 endif

@@ -28,7 +28,8 @@ use rads
 use rads_misc
 use rads_time
 
-character(len=rads_naml) :: grid_name='', format_string=''
+character(len=rads_cmdl) :: grid_name=''
+character(len=rads_strl) :: format_string=''
 integer(fourbyteint) :: minnr=2, n(2), k(2), i, j, l, cycle, pass, ios
 real(eightbytereal) :: lo(2), hi(2), res(2), x, y, limits(3,2)
 logical :: c(2)=.false.

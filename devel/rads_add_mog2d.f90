@@ -53,7 +53,7 @@ integer(fourbyteint) :: cyc, pass
 
 ! Data variables
 
-character(rads_naml) :: path
+character(rads_cmdl) :: path
 integer(fourbyteint) :: hexold=-99999, first=1
 integer(fourbyteint), parameter :: nx=1441, ny=721
 real(eightbytereal) :: x0=0d0, y0=-90d0, z0, dx=0.25d0, dy=0.25d0, dz
@@ -66,10 +66,9 @@ call synopsis ('--head')
 call rads_init (S)
 var => rads_varptr (S, 'inv_bar_mog2d')
 
-! Get $ALTIM directory
+! Get template for path name
 
-call getenv ('ALTIM', path)
-path = trim(path) // '/data/dac/'
+call parseenv ('${ALTIM}/data/dac/%Y/dac_dif_%Y%m%d_%H.nc', path)
 
 ! Process all data files
 
@@ -205,7 +204,7 @@ get_mog2d = .true.
 
 ! Determine file name
 
-l = strf1985(filenm,trim(path)//'/%Y/dac_dif_%Y%m%d_%H.nc',hex*21600)
+l = strf1985(filenm, path, hex*21600)
 
 ! Open input file
 

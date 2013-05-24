@@ -43,7 +43,7 @@ type(rads_pass) :: P
 
 integer(fourbyteint) :: cyc, pass
 type(rads_var), pointer :: var
-character(len=rads_naml) :: models, path
+character(len=rads_cmdl) :: models, path
 
 ! Other variables
 
@@ -71,8 +71,7 @@ enddo
 
 ! Which models are to be used?
 
-call getenv ('ALTIM',path)
-path = trim(path) // '/data/WebTide/data/'
+call parseenv ('${ALTIM}/data/WebTide/data/', path)
 i1 = 0
 do
 	if (.not.next_word (models, i0, i1)) exit
