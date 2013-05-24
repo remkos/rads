@@ -477,9 +477,9 @@ call get_var (ncid, 'h_mss_cls01_1hz', a)
 call new_var ('mss_cls01', a*1d-3+dh, 11)
 call get_var (ncid, 'h_geo_1hz', a)
 call new_var ('geoid_egm2008', a*1d-3+dh, 12)
-call get_var (ncid, 'h_ot_1hz', a)
+call get_var (ncid, 'h_ot_1hz-h_olt_1hz', a)
 call new_var ('tide_ocean_got47', a*1d-3, 13)
-call get_var (ncid, 'h_ot2_1hz', a)
+call get_var (ncid, 'h_ot2_1hz-h_olt2_1hz', a)
 call new_var ('tide_ocean_fes04', a*1d-3, 14)
 call get_var (ncid, 'h_olt_1hz', a)
 call new_var ('tide_load_got47', a*1d-3, 15)
@@ -555,7 +555,7 @@ endif
 
 do i = 2,nrec-1
 	t = var(3)%d(ndata+i-1:ndata+i+1)
-	if (t(1) > -179d0 .or. t(3) < 179d0 .or. abs(t(2)) > 179d0) cycle
+	if (t(1) > -179d0 .or. t(3) < 179d0 .or. abs(t(2))-179d0 < 1d0) cycle
 	write (*,553) 'Warning: Fixed incorrect longitude at date line  :', i, t
 	! Average the previous and next longitude properly
 	t(2) = 0.5d0 * (t(1) + t(3))
