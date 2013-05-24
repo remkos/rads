@@ -108,7 +108,7 @@ if (name /= '') S%sel(1)%info%long_name = trim(name) // ' orbital altitude'
 
 if (dir == '') dir = S%sel(1)%info%parameters
 
-! Add prefix $ALTIM/data/ODR.<satellite>/ to directory name
+! Add prefix ${ALTIM}/data/ODR.<satellite>/ to directory name
 
 if (dir(:1) == '/' .or. dir(:2) == './') then
 else
@@ -143,7 +143,7 @@ case ('e1', 'e2', 'n1')
 end select
 
 ! Load grid when requested.
-! Prefix $ALTIM/data/ if grid filenname does not start in / or ./
+! Prefix ${ALTIM}/data/ if grid filenname does not start in / or ./
 ! Store limits. Set x-limits to mid-point +/- 180.
 
 if (gridnm /= '') then

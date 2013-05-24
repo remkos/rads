@@ -22,7 +22,7 @@
 ! The models provide sea level pressure, columnal water vapour content and
 ! surface temperature.
 !
-! Input grids are found in the directory $ALTIM/data/era-int-full.
+! Input grids are found in the directory ${ALTIM}/data/era-int-full.
 !
 ! Interpolation is performed in 6-hourly reduced Gaussian grids (N128);
 ! bi-linear in space, linear in time; contained in yearly files.
@@ -325,12 +325,12 @@ integer(fourbyteint), intent(in) :: hex
 type(model_), intent(inout) :: model
 logical :: get_gribs
 ! Input are yearly files with all three required fields of the form:
-! $(ALTIM)/data/era-int-full/era-int.2012.grb
+! ${ALTIM}/data/era-int-full/era-int.2012.grb
 !
 ! <hex> specifies the number of 6-hourly blocks since 1 Jan 1985.
 ! Data is stored in a buffer <model>
 !-----------------------------------------------------------------------
-character(len=160) :: filenm,old_filenm=''
+character(len=rads_cmdl) :: filenm,old_filenm=''
 character(len=8) :: shortName
 integer(fourbyteint) :: fileid=-1,gribid=-1,i,l,status,strf1985,dataTime,dataDate
 real(eightbytereal) :: sec85

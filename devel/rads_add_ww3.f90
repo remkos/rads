@@ -31,7 +31,7 @@
 ! All five variables and all 4 daily temporal intervals can be found
 ! in a single netCDF file.
 !
-! These files can be found in $ALTIM/data/wwatch3. They are compressed
+! These files can be found in ${ALTIM}/data/wwatch3. They are compressed
 ! by bzip2. The required files are unpacked and placed in /tmp before
 ! being used in this program.
 !
@@ -63,7 +63,7 @@ integer(fourbyteint), parameter :: nx=361, ny=156, nhex=8, nvar=7, i2min=-32768
 integer(fourbyteint) :: mjd, mjdold=-99999, j
 real(eightbytereal) :: x0=-180d0, x1=180d0, y0=-77.5d0, y1=77.5d0, dx=1d0, dy=1d0, dz(nvar)
 integer(twobyteint) :: grids(nx,ny,nhex,nvar), subgrid(2,2,2,nvar)
-character(4) :: varnm(nvar) = (/ 'm0  ', 'm1  ', 'm2  ', 'm4  ', 'shs ', 'wu  ', 'wv  ' /)
+character(len=4) :: varnm(nvar) = (/ 'm0  ', 'm1  ', 'm2  ', 'm4  ', 'shs ', 'wu  ', 'wv  ' /)
 
 ! Initialise
 

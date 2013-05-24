@@ -25,7 +25,7 @@
 ! data by this routine includes both the low- and high-frequency
 ! components.
 !
-! Input grids are found in the directory $ALTIM/data/dac
+! Input grids are found in the directory ${ALTIM}/data/dac
 ! The grids are bzip2 compressed NetCDF files. The required grids
 ! are unpacked and placed in /tmp before being used in this program.
 !
@@ -193,7 +193,7 @@ function get_mog2d (hex, grid)
 integer(fourbyteint) :: hex
 logical :: get_mog2d
 integer(twobyteint) :: grid(:,:),tmp(ny,nx-1)
-character(160) :: filenm
+character(len=rads_cmdl) :: filenm
 integer(fourbyteint) ::	ncid,v_id,j,l,strf1985
 real(eightbytereal) :: time
 

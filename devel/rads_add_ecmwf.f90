@@ -21,7 +21,7 @@
 ! with values computed from ECMWF operational meteorological models.
 ! The models provide sea level pressure or wet tropospheric correction.
 !
-! Input grids are found in the directory $ALTIM/data/ecmwf.
+! Input grids are found in the directory ${ALTIM}/data/ecmwf.
 !
 ! Interpolation is performed in 6-hourly reduced Gaussian grids (N640);
 ! bi-linear in space, linear in time; contained in 6-hourly files.
@@ -80,7 +80,7 @@ call synopsis ('--head')
 call rads_set_options ('dwain dry wet air ib all new')
 call rads_init (S)
 
-! Get $ALTIM/data/ecmwf/ directory
+! Get ${ALTIM}/data/ecmwf/ directory
 
 call parseenv ('${ALTIM}/data/ecmwf/', path)
 
@@ -298,9 +298,9 @@ type(model_), intent(inout) :: model
 logical :: get_gribs
 !
 ! Input are mean sea level pressure files in the form
-! $(ALTIM)/data/ecmwf/2011/msl_20111207_120000.grb
+! ${ALTIM}/data/ecmwf/2011/msl_20111207_120000.grb
 ! and wet tropospheric correction files of the form
-! $(ALTIM)/data/ecmwf/2011/wet_20111207_120000.grb
+! ${ALTIM}/data/ecmwf/2011/wet_20111207_120000.grb
 !
 ! <hex> specifies the number of 6-hourly blocks since 1 Jan 1985.
 ! Data is stored in a buffer <model>
@@ -327,7 +327,7 @@ type(model_), intent(inout) :: model
 character(len=3), intent(in) :: type
 logical, intent(in) :: getlat
 logical :: get_grib
-character(len=160) :: filenm
+character(len=rads_cmdl) :: filenm
 integer(fourbyteint) :: fileid,gribid,i,l,status,strf1985
 
 600 format ('(',a,')')
