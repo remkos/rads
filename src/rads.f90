@@ -1595,7 +1595,11 @@ endif
 
 ! Look for the variable name in the netCDF file (or take the stored one)
 if (P%cycle == info%cycle .and. P%pass == info%pass) then
-	! Keep old varid
+	! Keep old varid, but produce error when already tried and failed
+	if (info%varid == 0) then
+		S%error = rads_err_nc_var
+		return
+	endif
 else if (nff(nf90_inq_varid(P%ncid, info%dataname, info%varid))) then
 	! Read variable attributes if not yet set, or if we read/write
 	if (P%rw .or. info%nctype == 0) e = nf90_inquire_variable (P%ncid, info%varid, xtype=info%nctype)
@@ -1606,6 +1610,7 @@ else if (nff(nf90_inq_varid(P%ncid, info%dataname, info%varid))) then
 else
 	! Failed to find variable
 	S%error = rads_err_nc_var
+	info%varid = 0
 	return
 endif
 e = nf90_inquire_variable (P%ncid, info%varid, xtype=nctype, ndims=ndims)
