@@ -555,7 +555,7 @@ endif
 
 do i = 2,nrec-1
 	t = var(3)%d(ndata+i-1:ndata+i+1)
-	if (t(1) > -179d0 .or. t(3) < 179d0 .or. abs(t(2))-179d0 < 1d0) cycle
+	if (t(1) > -179d0 .or. t(3) < 179d0 .or. abs(abs(t(2))-179d0) < 1d0) cycle
 	write (*,553) 'Warning: Fixed incorrect longitude at date line  :', i, t
 	! Average the previous and next longitude properly
 	t(2) = 0.5d0 * (t(1) + t(3))
