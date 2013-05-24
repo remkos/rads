@@ -24,7 +24,7 @@
 ! usage: rads_add_webtide [data-selectors] [options]
 !
 ! [options] indicate the WebTide models to be used.
-! See $ALTIM/data/WebTide for the various tide models that are
+! See ${ALTIM}/data/WebTide for the various tide models that are
 ! available.
 !-----------------------------------------------------------------------
 program rads_add_webtide

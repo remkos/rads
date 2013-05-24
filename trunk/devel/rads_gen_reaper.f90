@@ -92,14 +92,13 @@ use rads_devel
 
 integer(fourbyteint) :: verbose=0, c0=0, c1=999, ios
 real(eightbytereal) :: t0, t1
-character(160) :: infile, old_infile
-character(20) :: optopt, optarg
-character(80), parameter :: optlist='vC: debug: sat: cycle: t: mjd: sec: ymd: doy:'
+character(len=rads_cmdl) :: infile, old_infile
+character(len=rads_varl) :: optopt, optarg
 
 ! Header variables
 
-character(1) :: phasenm(2)
-character(80) :: l2_proc_time, l2_version
+character(len=1) :: phasenm(2)
+character(len=rads_varl) :: l2_proc_time, l2_version
 logical :: alt_2m
 real(eightbytereal) :: tnode(2), lnode(2)
 integer(fourbyteint) :: orbitnr(2), cyclenr(2), passnr(2), varid
@@ -138,7 +137,7 @@ t1 = nan
 ! Scan command line for options
 
 do
-	call getopt (optlist, optopt, optarg)
+	call getopt ('vC: debug: sat: cycle: t: mjd: sec: ymd: doy:', optopt, optarg)
 	select case (optopt)
 	case ('!')
 		exit
@@ -587,7 +586,7 @@ end subroutine get_reaper
 
 subroutine put_rads
 integer(fourbyteint) :: i
-character(160) :: original
+character(len=rads_cmdl) :: original
 
 if (nout == 0) return	! Skip empty data sets
 if (cyclenr(1) < c0 .or. cyclenr(1) > c1) return	! Skip chunks that are not of the selected cycle

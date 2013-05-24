@@ -66,7 +66,7 @@ case default
 	hgt = 800d3
 end select
 
-! Get $ALTIM/data directory
+! Get ${ALTIM}/data directory
 
 call parseenv ('${ALTIM}/data/', path)
 

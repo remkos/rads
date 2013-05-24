@@ -40,8 +40,8 @@ type(rads_pass) :: P
 integer(fourbyteint), parameter :: mfes = 1, mgot = 4
 type(festideinfo) :: fesinfo(mfes)
 type(gottideinfo) :: gotinfo(mgot)
-character(5), parameter :: nfes(mfes) = (/'fes04'/)
-character(5), parameter :: ngot(mgot) = (/'got00','got47','got48','got49'/)
+character(len=5), parameter :: nfes(mfes) = (/'fes04'/)
+character(len=5), parameter :: ngot(mgot) = (/'got00','got47','got48','got49'/)
 type(grid) :: sininfo, cosinfo
 
 ! Command line arguments

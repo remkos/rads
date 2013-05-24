@@ -23,7 +23,7 @@
 !
 ! The Reynolds SST grids and sea ice concentration grids are produced
 ! weekly and are converted first to netCDF and stored in
-! $ALTIM/data/sst. Note that the grids before 1990 were centered
+! ${ALTIM}/data/sst. Note that the grids before 1990 were centered
 ! on Sundays, currently on Mondays.
 !
 ! The SST grids have 1x1 degree resolution and contain no data gaps

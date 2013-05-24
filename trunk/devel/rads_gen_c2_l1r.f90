@@ -80,16 +80,15 @@ use rads_devel
 
 integer(fourbyteint) :: verbose=0, c0=0, c1=999, ios
 real(eightbytereal) :: t0, t1
-character(160) :: filename, arg
-character(1024) :: filenames = ''
-character(20) :: optopt, optarg
-character(80), parameter :: optlist='vC: debug: sat: cycle: t: mjd: sec: ymd: doy:'
+character(len=rads_cmdl) :: filename, arg
+character(len=rads_strl) :: filenames = ''
+character(len=rads_varl) :: optopt, optarg
 
 ! Header variables
 
-character(19) :: l1b_proc_time
-character(14) :: l1b_version, l1r_version
-character(55) :: l1r_product
+character(len=19) :: l1b_proc_time
+character(len=14) :: l1b_version, l1r_version
+character(len=55) :: l1r_product
 real(eightbytereal) :: tai_utc, eq_time, eq_long
 integer(fourbyteint) :: passnr(2), cycnr(2), recnr(2), nrec, ncid, varid, doris_nav
 logical :: version_a, sar, fdm
@@ -129,7 +128,7 @@ t1 = nan
 ! Scan command line for options
 
 do
-	call getopt (optlist, optopt, optarg)
+	call getopt ('vC: debug: sat: cycle: t: mjd: sec: ymd: doy:', optopt, optarg)
 	select case (optopt)
 	case ('!')
 		exit

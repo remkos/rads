@@ -178,7 +178,7 @@ subroutine copyfile (rec0, rec1)
 integer(fourbyteint), intent(inout) :: rec0
 integer(fourbyteint), intent(in) :: rec1
 integer(fourbyteint) :: nrec,ncid2,varid,varid2,xtype,ndims,dimids(2),natts,i,nvars,idxin(2)=1,idxut(2)=1,dimlen
-character(80) :: outnm,attnm,varnm
+character(len=rads_naml) :: outnm,attnm,varnm
 real(eightbytereal) :: time2(2)
 real(eightbytereal), allocatable :: darr1(:),darr2(:,:)
 integer(fourbyteint), allocatable :: iarr1(:),iarr2(:,:),iarr3(:)

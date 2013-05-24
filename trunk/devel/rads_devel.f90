@@ -27,7 +27,7 @@ real(eightbytereal), intent(in) :: utc
 integer(fourbyteint), intent(in) :: ers
 integer(fourbytereal), intent(out) :: orbitnr, cyclenr, passnr
 real(eightbytereal), intent(out) :: tnode, lnode
-character(1), intent(out) :: phasenm
+character(len=1), intent(out) :: phasenm
 
 ! This routine returns the ESA orbit number (orbitnr), mission phase
 ! (phase), and the cycle number (cyclenr) and pass (or half-orbit) number
@@ -54,12 +54,12 @@ integer(fourbyteint) :: unit,freeunit,npass=0,pnt,olders=0,ios
 integer(fourbyteint), parameter :: mpass=170000
 type :: passtable
 	integer(fourbyteint) :: orbitnr
-	character(1) :: phasenm
+	character(len=1) :: phasenm
 	integer(fourbyteint) :: cyclenr,passnr
 	real(eightbytereal) :: start,tnode,lnode
 endtype
 type(passtable) :: q(mpass)
-character(160) :: line
+character(len=160) :: line
 
 save pnt,npass,olders,q
 
@@ -127,7 +127,7 @@ character(len=*), intent(in) :: syntax
 ! Argument:
 !   syntax : string to be added to syntax
 !-----------------------------------------------------------------------
-character(len=80) :: arg
+character(len=160) :: arg
 call getarg (0, arg)
 if (index(arg, 'rads_gen_') > 0) then
 	write (*,1300) trim(arg),syntax

@@ -22,7 +22,7 @@
 ! The models provide sea level pressure, columnal water vapour content
 ! and surface temperature.
 !
-! Input grids are found in directories $ALTIM/data/ncep
+! Input grids are found in directories ${ALTIM}/data/ncep
 !
 ! Interpolation is performed in 6-hourly grids of 2.5x2.5 degree
 ! spacing; bi-cubic in space, linear in time.
@@ -99,7 +99,7 @@ call synopsis ('--head')
 call rads_set_options ('dwain dry wet air ib all new')
 call rads_init (S)
 
-! Get $ALTIM/data/ncep/ directory
+! Get ${ALTIM}/data/ncep/ directory
 
 call parseenv ('${ALTIM}/data/ncep/', path)
 
@@ -334,7 +334,7 @@ type(model_), intent(inout) :: model
 logical :: get_grids
 !
 ! Input are yearly files with required fields of the form:
-! $(ALTIM)/data/ncep/slp.2012.nc
+! ${ALTIM}/data/ncep/slp.2012.nc
 !
 ! <hex> specifies the number of 6-hourly blocks since 1 Jan 1985.
 ! Data is stored in a buffer <model>
@@ -365,7 +365,7 @@ integer(fourbyteint) :: get_grid
 ! Units are mbar and kg/m^2, stored as integers with units 0.01 mbar and 0.01
 ! kg/m^2. However, the last digit is not significant (always 0).
 !-----------------------------------------------------------------------
-character(80) :: fn
+character(len=rads_cmdl) :: fn
 integer(fourbyteint) :: ncid,x_id,y_id,t_id,v_id,i,h1985,tmin,tmax,start(3)=1,l,strf1985
 real(eightbytereal) :: time(2),nan
 integer(fourbyteint) :: nx,ny,nt,hour
@@ -374,7 +374,7 @@ integer(twobyteint), allocatable :: tmp(:,:)
 ! Determine file name
 
 hour = hex * 6
-l = strf1985(fn,filenm,hour*3600)
+l = strf1985 (fn, filenm, hour*3600)
 nan = 0d0
 nan = nan/nan
 
