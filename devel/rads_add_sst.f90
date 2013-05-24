@@ -53,7 +53,7 @@ logical :: lice=.false., lsst=.false., lmean=.false.
 
 ! Data variables
 
-character(len=rads_cmdl) :: path
+character(len=rads_cmdl) :: path, meanpath
 integer(fourbyteint) :: t1old=0, t2old=0, j
 integer(fourbyteint), parameter :: nx=360, ny=180, secweek=7*86400, sec2000=473299200
 integer(fourbyteint), parameter :: sun = 157982400	! Sun 1990-01-03 12:00
@@ -71,6 +71,7 @@ call rads_init (S)
 ! Get template for path name
 
 call parseenv ('${ALTIM}/data/sst/oisst.%Y.nc', path)
+call parseenv ('${ALTIM}/data/sst/oisst.mean.nc', meanpath)
 
 ! Check all options
 do j = 1,rads_nopt
@@ -250,8 +251,9 @@ real(eightbytereal) :: grid(0:nx+1,ny)
 
 ! Open grid file and load mean SST
 
-write (*,'(a)') '(Reading mean SST)'
-if (nft(nf90_open(path(:len_trim(path)-4)//'mean.nc',nf90_nowrite,ncid))) call rads_exit ('No mean SST grid file found')
+600 format ('(Reading mean SST: ',a,')')
+write (*,600) trim(meanpath)
+if (nft(nf90_open(meanpath,nf90_nowrite,ncid))) call rads_exit ('No mean SST grid file found')
 if (nft(nf90_inq_varid(ncid,'sst',v_id))) call rads_exit ('Could not find mean SST grid')
 if (nft(nf90_get_var(ncid,v_id,grid(1:nx,:)))) call rads_exit ('Error reading mean SST grid')
 
