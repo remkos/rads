@@ -21,7 +21,7 @@
 module rads_grid
 use typesizes
 type grid
-	character(128) :: filenm
+	character(len=160) :: filenm
 	integer(fourbyteint) :: nx, ny, ntype, nxwrap
 	real(eightbytereal) :: xmin, xmax, dx, ymin, ymax, dy, zmin, zmax, dz, z0, znan
 	integer(onebyteint), allocatable :: grid_int1(:,:)
@@ -98,7 +98,7 @@ type(grid), intent(inout) :: info
 !             4 = Error loading grid
 !-----------------------------------------------------------------------
 integer(fourbyteint) :: i,ncid,z_id
-character(80) :: units
+character(len=80) :: units
 
 call grid_load_nc
 if (grid_load /= 0) then
