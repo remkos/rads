@@ -2118,13 +2118,19 @@ Global RADS configuration file
 	<compress>int2 1d-2</compress>
 </var>
 
-<var name="water_vapor_content" field="3302" sat="e1 e2 sa">
+<var name="water_vapor_content" field="3302" sat="e1 e2 j2 sa">
 	<long_name>radiometer water vapor content</long_name>
 	<standard_name>atmosphere_water_vapor_content</standard_name>
 	<units>kg/m^2</units>
-	<data>wvc</data>
-	<format>f6.2</format>
-	<compress>int2 1d-2</compress>
+	<data>water_vapor_content</data>
+	<if sat="e1 e2">
+		<format>f6.2</format>
+		<compress>int2 1d-2</compress>
+	</fi>
+	<else>
+		<format>f6.1</format>
+		<compress>int2 1d-1</compress>
+	</else>
 </var>
 <!--
 <var name="frame_count" field="3401">
