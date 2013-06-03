@@ -2126,7 +2126,7 @@ Global RADS configuration file
 	<if sat="e1 e2">
 		<format>f6.2</format>
 		<compress>int2 1d-2</compress>
-	</fi>
+	</if>
 	<else>
 		<format>f6.1</format>
 		<compress>int2 1d-1</compress>
