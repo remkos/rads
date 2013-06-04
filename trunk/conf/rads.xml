@@ -2751,7 +2751,7 @@ Global RADS configuration file
 	<satid>13</satid>
 	<dt1hz>1</dt1hz>
 	<inclination>98.54</inclination>
-	<frequency>35</frequency>
+	<frequency>35.75</frequency>
 	<xover_params>0.05 0.05</xover_params>
 	<phase name="a">
 		<mission>Multi-disciplinary Phase</mission>
