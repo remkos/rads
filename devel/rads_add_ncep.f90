@@ -82,9 +82,9 @@ logical :: dry_on=.false., wet_on=.false., ib_on=.false., air_on=.false., new=.f
 
 ! Model data
 
-character(len=80), parameter :: dry_fmt = 'slp.%Y.nc', wet_fmt = 'pr_wtr.eatm.%Y.nc', tmp_fmt = 'air.sig995.%Y.nc'
+character(len=80), parameter :: slp_fmt = 'slp.%Y.nc', wvc_fmt = 'pr_wtr.eatm.%Y.nc', tmp_fmt = 'air.sig995.%Y.nc'
 type :: model_
-	type(grid) :: dry, wet, tmp
+	type(grid) :: slp, wvc, tmp
 end type
 type(model_) :: m1, m2
 
@@ -175,7 +175,7 @@ subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
 integer(fourbyteint) :: i
 real(eightbytereal) :: time(n), lat(n), lon(n), h(n), surface_type(n), dry(n), wet(n), ib(n), air(n), &
-	f1, f2, g1, g2, slp, dslp, slp0, iwv, tmp
+	f1, f2, g1, g2, slp, dslp, slp0, wvc, tmp
 
 ! Formats
 
@@ -245,7 +245,7 @@ do i = 1,n
 	f2 = f2 - hex
 	f1 = 1d0 - f2
 
-! Interpolate surface temperature in space and time
+! Interpolate near-surface temperature in space and time
 
 	tmp = f1 * grid_lininter(m1%tmp,lon(i),lat(i)) + f2 * grid_lininter(m2%tmp,lon(i),lat(i))
 
@@ -267,7 +267,7 @@ do i = 1,n
 ! Interpolate sea level pressure in space and time and add airtide correction
 
 	if (dry_on .or. ib_on .or. air_on) then
-		slp = f1 * grid_lininter(m1%dry,lon(i),lat(i)) + f2 * grid_lininter(m2%dry,lon(i),lat(i))
+		slp = f1 * grid_lininter(m1%slp,lon(i),lat(i)) + f2 * grid_lininter(m2%slp,lon(i),lat(i))
 
 		! Remove-and-restore the air tide
 		dslp = airtide (airinfo, time(i), lat(i), lon(i)) &
@@ -286,12 +286,12 @@ do i = 1,n
 ! Interpolate integrated water vapour in space and time
 
 	if (wet_on) then
-		iwv = f1 * grid_lininter(m1%wet,lon(i),lat(i)) + f2 * grid_lininter(m2%wet,lon(i),lat(i))
+		wvc = f1 * grid_lininter(m1%wvc,lon(i),lat(i)) + f2 * grid_lininter(m2%wvc,lon(i),lat(i))
 		! Convert surface temperature to mean temperature after Mendes et al. [2000]
 		tmp = 50.4d0 + 0.789d0 * tmp
 		! Convert integrated water vapour and mean temp to wet tropo correction
-		! Also take into account conversion of iwv from kg/m^3 (= mm) to m.
-		wet(i) = -1d-9 * Rw * (k3 / tmp + k2p) * iwv
+		! Also take into account conversion of wvc from kg/m^3 (= mm) to m.
+		wet(i) = -1d-9 * Rw * (k3 / tmp + k2p) * wvc
 	endif
 
 enddo
@@ -340,9 +340,9 @@ logical :: get_grids
 ! Data is stored in a buffer <model>
 !-----------------------------------------------------------------------
 get_grids = .true.
-if (get_grid(trim(path)//wet_fmt,hex,model%wet) /= 0) return
+if (get_grid(trim(path)//wvc_fmt,hex,model%wvc) /= 0) return
 if (get_grid(trim(path)//tmp_fmt,hex,model%tmp) /= 0) return
-if (get_grid(trim(path)//dry_fmt,hex,model%dry) /= 0) return
+if (get_grid(trim(path)//slp_fmt,hex,model%slp) /= 0) return
 get_grids = .false.
 end function get_grids
 

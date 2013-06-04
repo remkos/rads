@@ -85,7 +85,7 @@ integer(fourbyteint), parameter :: np_max=88838, nj_max=259
 type :: model_
 	integer(fourbytereal) :: nj, np, ip, pl(nj_max), ql(nj_max), idx(4)
 	real(eightbytereal) :: glat(np_max), glon(np_max), w(4)
-	real(eightbytereal) :: slp(np_max), wet(np_max), tmp(np_max)
+	real(eightbytereal) :: slp(np_max), wvc(np_max), tmp(np_max)
 end type
 type(model_) :: m1, m2
 
@@ -170,7 +170,7 @@ subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
 integer(fourbyteint) :: i
 real(eightbytereal) :: time(n), lat(n), lon(n), h(n), surface_type(n), dry(n), wet(n), ib(n), air(n), &
-	f1, f2, g1, g2, slp, dslp, slp0, iwv, tmp
+	f1, f2, g1, g2, slp, dslp, slp0, wvc, tmp
 
 ! Formats
 
@@ -284,12 +284,12 @@ do i = 1,n
 ! Interpolate integrated water vapour and surface temperature in space and time
 
 	if (wet_on) then
-		iwv = f1 * dot_product (m1%w,m1%wet(m1%idx)) + f2 * dot_product (m2%w,m2%wet(m2%idx))
+		wvc = f1 * dot_product (m1%w,m1%wvc(m1%idx)) + f2 * dot_product (m2%w,m2%wvc(m2%idx))
 		! Convert surface temperature to mean temperature after Mendes et al. [2000]
 		tmp = 50.4d0 + 0.789d0 * tmp
 		! Convert integrated water vapour and mean temp to wet tropo correction
-		! Also take into account conversion of iwv from kg/m^3 (= mm) to m.
-		wet(i) = -1d-9 * Rw * (k3 / tmp + k2p) * iwv
+		! Also take into account conversion of wvc from kg/m^3 (= mm) to m.
+		wet(i) = -1d-9 * Rw * (k3 / tmp + k2p) * wvc
 	endif
 enddo
 
@@ -401,7 +401,7 @@ if (shortName /= 'tcwv') then
 	write (*,1300) 'Wrong field order ('//trim(shortName)//' != tcwv) in',filenm(:l)
 	return
 endif
-call grib_get(gribid,'values',model%wet)
+call grib_get(gribid,'values',model%wvc)
 call grib_release(gribid)
 call grib_new_from_file(fileid,gribid,status)
 call grib_get(gribid,'shortName',shortName)
