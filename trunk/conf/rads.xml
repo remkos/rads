@@ -2053,15 +2053,17 @@ Global RADS configuration file
 	<units>dB</units>
 	<data>dsig0_atmos_ka</data>
 	<format>f6.2</format>
-	<compress>int1 1d-2</compress>
+	<compress>int2 1d-2</compress>
 	<comment>Correction already added to backscatter coefficient</comment>
 </var>
 <var name="dsig0_atmos_ku" field="3203" sat="e1 e2 j1 j2 n1 pn tx">
 	<long_name>Ku-band backscatter coefficient correction due to atmosphere/attitude</long_name>
 	<units>dB</units>
 	<data>dsig0_atmos_ku</data>
+	<default>0</default>
 	<format>f6.2</format>
 	<compress>int1 1d-2</compress>
+	<compress sat="j2">int2 1d-2</compress>
 	<comment>Correction already added to backscatter coefficient</comment>
 </var>
 <var name="dsig0_atmos_c" field="3204" sat="j1 j2 tx">

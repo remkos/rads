@@ -78,14 +78,14 @@ character(rads_naml) :: path
 integer(fourbyteint) :: hex,hexold=-99999
 type(airtideinfo) :: airinfo
 real(eightbytereal), parameter :: rad2=2d0*atan(1d0)/45d0
-logical :: dry_on=.false., wet_on=.false., ib_on=.false., air_on=.false., new=.false., &
+logical :: dry_on=.false., wet_on=.false., ib_on=.false., air_on=.false., sig0_on = .false., new=.false., &
 	air_plus=.false., error
-character(len=4) :: source = 'ncep'
+character(len=4) :: source = 'ncep', band
 
 ! Model data
 
 type :: model_
-	type(grid) :: slp, wvc, tmp
+	type(grid) :: slp, wvc, tmp, lwc
 end type
 type(model_) :: m1, m2
 
@@ -97,7 +97,7 @@ real(eightbytereal), parameter :: k2p = 0.221d0, k3 = 3739d0	! Refractivity cons
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('gdwain gfs dry wet air ib all new')
+call rads_set_options ('gdwaisn gfs dry wet air ib sig0 all new')
 call rads_init (S)
 
 ! Get ${ALTIM}/data/ directory
@@ -118,6 +118,8 @@ do j = 1,rads_nopt
 		air_on = .true.
 	case ('i', 'ib')
 		ib_on = .true.
+	case ('s', 'sig0')
+		sig0_on = .true.
 	case ('n', 'new')
 		new = .true.
 	case ('all')
@@ -125,8 +127,21 @@ do j = 1,rads_nopt
 		wet_on = .true.
 		air_on = .true.
 		ib_on = .true.
+		sig0_on = .true.
 	end select
 enddo
+
+! When reanalysis, then no attenuation computation
+
+if (source == 'ncep') sig0_on = .false.
+
+! Determine frequency band
+
+if (S%frequency(1) < 14d0) then
+	band = 'ku'
+else
+	band = 'ka'
+endif
 
 ! Init air tide
 
@@ -166,6 +181,7 @@ write (*,1310)
 '  -w, --wet                 Add NCEP wet tropospheric correction' / &
 '  -a, --air                 Add air tide' / &
 '  -i, --ib                  Add static inverse barometer correction' / &
+'  -s, --sig0                Add sigma0 attenuation, lwc, wvc (with -g only)' / &
 '  --all                     All of the above' / &
 '  -n, --new                 Only add variables when not yet existing')
 stop
@@ -179,7 +195,7 @@ subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
 integer(fourbyteint) :: i
 real(eightbytereal) :: time(n), lat(n), lon(n), h(n), surface_type(n), dry(n), wet(n), ib(n), air(n), &
-	f1, f2, g1, g2, slp, dslp, slp0, wvc, tmp
+	atten(n), wvc(n), lwc(n), sig0(n), f1, f2, g1, g2, slp, dslp, slp0, tmp, mtmp, rp, rt
 
 ! Formats
 
@@ -216,6 +232,14 @@ enddo
 ! Get global pressure
 
 call globpres(4,P%equator_time,slp0)
+
+! If backscatter attenuation is computed, remove the old one here
+
+if (sig0_on) then
+	call rads_get_var (S, P, 'sig0_'//band, sig0)
+	call rads_get_var (S, P, 'dsig0_atmos_'//band, atten)
+	sig0 = sig0 - atten
+endif
 
 ! Process data records
 
@@ -270,7 +294,7 @@ do i = 1,n
 
 ! Interpolate sea level pressure in space and time and add airtide correction
 
-	if (dry_on .or. ib_on .or. air_on) then
+	if (dry_on .or. ib_on .or. air_on .or. sig0_on) then
 		slp = f1 * grid_lininter(m1%slp,lon(i),lat(i)) + f2 * grid_lininter(m2%slp,lon(i),lat(i))
 
 		! Remove-and-restore the air tide
@@ -289,20 +313,38 @@ do i = 1,n
 
 ! Interpolate integrated water vapour in space and time
 
-	if (wet_on) then
-		wvc = f1 * grid_lininter(m1%wvc,lon(i),lat(i)) + f2 * grid_lininter(m2%wvc,lon(i),lat(i))
+	if (wet_on .or. sig0_on) then
+		wvc(i) = f1 * grid_lininter(m1%wvc,lon(i),lat(i)) + f2 * grid_lininter(m2%wvc,lon(i),lat(i))
 		! Convert surface temperature to mean temperature after Mendes et al. [2000]
-		tmp = 50.4d0 + 0.789d0 * tmp
+		mtmp = 50.4d0 + 0.789d0 * tmp
 		! Convert integrated water vapour and mean temp to wet tropo correction
 		! Also take into account conversion of wvc from kg/m^3 (= mm) to m.
-		wet(i) = -1d-9 * Rw * (k3 / tmp + k2p) * wvc
+		wet(i) = -1d-9 * Rw * (k3 / mtmp + k2p) * wvc(i)
 	endif
 
+! Interpolate liquid water content in space and time
+
+	if (sig0_on) then
+		lwc(i) = f1 * grid_lininter(m1%lwc,lon(i),lat(i)) + f2 * grid_lininter(m2%lwc,lon(i),lat(i))
+		! Compute attenuation due to dry troposphere, water vapour and liquid water content
+		rp = slp / 1013d0
+		rt = 288.15d0 / tmp
+		if (S%frequency(1) < 14d0) then	! Ku-band
+			atten(i) = 0.094d0 - 0.177d0 * rp - 0.145d0 * rt + 0.274d0 * rp * rt &
+				+ 1.45d-3 * wvc(i) + 0.66d-5 * wvc(i) * wvc(i) &
+				+ 0.169 * lwc(i)
+		else ! Ka-band
+			atten(i) = 0.310d0 - 0.593d0 * rp - 0.499d0 * rt + 0.956d0 * rp * rt &
+				+ 7.21d-3 * wvc(i) + 4.43d-5 * wvc(i) * wvc(i) &
+				+ 1.070 * lwc(i)
+		endif
+		atten(i) = 2d0 * atten(i) ! 2-way attenuation
+	endif
 enddo
 
 ! If no more fields are determined, abort.
 
-if (.not.(dry_on .or. ib_on .or. wet_on)) then
+if (.not.(dry_on .or. ib_on .or. wet_on .or. sig0_on)) then
 	write (*,552) 0
 	stop
 endif
@@ -315,11 +357,22 @@ if (dry_on) call rads_def_var (S, P, 'dry_tropo_'//source)
 if (wet_on) call rads_def_var (S, P, 'wet_tropo_'//source)
 if (ib_on ) call rads_def_var (S, P, 'inv_bar_static')
 if (air_on) call rads_def_var (S, P, 'dry_tropo_airtide')
+if (sig0_on) then
+	call rads_def_var (S, P, 'dsig0_atmos_'//band)
+	call rads_def_var (S, P, 'water_vapor_content')
+	call rads_def_var (S, P, 'liquid_water')
+endif
 
 if (dry_on) call rads_put_var (S, P, 'dry_tropo_'//source, dry)
 if (wet_on) call rads_put_var (S, P, 'wet_tropo_'//source, wet)
 if (ib_on ) call rads_put_var (S, P, 'inv_bar_static', ib)
 if (air_on) call rads_put_var (S, P, 'dry_tropo_airtide', air)
+if (sig0_on) then
+	call rads_put_var (S, P, 'sig0_'//band, sig0+atten)
+	call rads_put_var (S, P, 'dsig0_atmos_'//band, atten)
+	call rads_put_var (S, P, 'water_vapor_content', wvc)
+	call rads_put_var (S, P, 'liquid_water', lwc)
+endif
 if (air_plus) then
 	call rads_get_var (S, P, 'dry_tropo_ecmwf', dry)
 	call rads_put_var (S, P, 'dry_tropo_ecmwf', dry+air)
@@ -359,6 +412,9 @@ else
 	if (get_grib(trim(path)//'gfs/%Y/pwat_%Y%m%d_%H00_000.grb2',hex,model%wvc)) return
 	if (get_grib(trim(path)//'gfs/%Y/t995_%Y%m%d_%H00_000.grb2',hex,model%tmp)) return
 	if (get_grib(trim(path)//'gfs/%Y/prmsl_%Y%m%d_%H00_000.grb2',hex,model%slp)) return
+	if (sig0_on) then
+		if (get_grib(trim(path)//'gfs/%Y/cwat_%Y%m%d_%H00_000.grb2',hex,model%lwc)) return
+	endif
 endif
 get_grids = .false.
 end function get_grids
@@ -546,6 +602,7 @@ info%ymax = 90d0
 info%nxwrap = nx
 info%z0 = 0d0
 info%dz = 1d0
+info%znan = nan
 allocate(info%grid_dble(nx,ny),tmp(nx*ny))
 
 ! Get grid data. Swap the grid upside down.
