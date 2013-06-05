@@ -64,6 +64,7 @@ use rads_netcdf
 use tides
 use meteo_subs
 use netcdf
+use grib_api
 
 ! Command line arguments
 
@@ -79,10 +80,10 @@ type(airtideinfo) :: airinfo
 real(eightbytereal), parameter :: rad2=2d0*atan(1d0)/45d0
 logical :: dry_on=.false., wet_on=.false., ib_on=.false., air_on=.false., new=.false., &
 	air_plus=.false., error
+character(len=4) :: source = 'ncep'
 
 ! Model data
 
-character(len=80), parameter :: slp_fmt = 'slp.%Y.nc', wvc_fmt = 'pr_wtr.eatm.%Y.nc', tmp_fmt = 'air.sig995.%Y.nc'
 type :: model_
 	type(grid) :: slp, wvc, tmp
 end type
@@ -96,17 +97,19 @@ real(eightbytereal), parameter :: k2p = 0.221d0, k3 = 3739d0	! Refractivity cons
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('dwain dry wet air ib all new')
+call rads_set_options ('gdwain gfs dry wet air ib all new')
 call rads_init (S)
 
-! Get ${ALTIM}/data/ncep/ directory
+! Get ${ALTIM}/data/ directory
 
-call parseenv ('${ALTIM}/data/ncep/', path)
+call parseenv ('${ALTIM}/data/', path)
 
 ! Which corrections are to be provided?
 
 do j = 1,rads_nopt
 	select case (rads_opt(j)%opt)
+	case ('g', 'gfs')
+		source = 'gfs'
 	case ('d', 'dry')
 		dry_on = .true.
 	case ('w', 'wet')
@@ -158,6 +161,7 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
+'  -g, --gfs                 Use GFS analysis instead of reanalysis' / &
 '  -d, --dry                 Add NCEP dry tropospheric correction' / &
 '  -w, --wet                 Add NCEP wet tropospheric correction' / &
 '  -a, --air                 Add air tide' / &
@@ -186,8 +190,8 @@ write (*,551) trim(P%filename)
 
 ! If "new" option is used, write only when fields are not yet available
 
-if (new .and. nft(nf90_inq_varid(P%ncid,'dry_tropo_ncep',i)) .and. &
-	nft(nf90_inq_varid(P%ncid,'wet_tropo_ncep',i))) then
+if (new .and. nft(nf90_inq_varid(P%ncid,'dry_tropo_'//source,i)) .and. &
+	nft(nf90_inq_varid(P%ncid,'wet_tropo_'//source,i))) then
 	write (*,552) 0
 	return
 endif
@@ -307,13 +311,13 @@ endif
 
 call rads_put_history (S, P)
 
-if (dry_on) call rads_def_var (S, P, 'dry_tropo_ncep')
-if (wet_on) call rads_def_var (S, P, 'wet_tropo_ncep')
+if (dry_on) call rads_def_var (S, P, 'dry_tropo_'//source)
+if (wet_on) call rads_def_var (S, P, 'wet_tropo_'//source)
 if (ib_on ) call rads_def_var (S, P, 'inv_bar_static')
 if (air_on) call rads_def_var (S, P, 'dry_tropo_airtide')
 
-if (dry_on) call rads_put_var (S, P, 'dry_tropo_ncep', dry)
-if (wet_on) call rads_put_var (S, P, 'wet_tropo_ncep', wet)
+if (dry_on) call rads_put_var (S, P, 'dry_tropo_'//source, dry)
+if (wet_on) call rads_put_var (S, P, 'wet_tropo_'//source, wet)
 if (ib_on ) call rads_put_var (S, P, 'inv_bar_static', ib)
 if (air_on) call rads_put_var (S, P, 'dry_tropo_airtide', air)
 if (air_plus) then
@@ -325,7 +329,7 @@ write (*,552) n
 end subroutine process_pass
 
 !-----------------------------------------------------------------------
-! get_grids -- Load necessary NCEP meteo grids
+! get_grids -- Load necessary NCEP/GFS meteo grids
 !-----------------------------------------------------------------------
 
 function get_grids (hex, model)
@@ -333,16 +337,29 @@ integer (fourbyteint), intent(in) :: hex
 type(model_), intent(inout) :: model
 logical :: get_grids
 !
-! Input are yearly files with required fields of the form:
+! Input are NCEP reanalysis yearly files with required fields of the form:
 ! ${ALTIM}/data/ncep/slp.2012.nc
+! Or NCEP GFS 6-hourly files of the form:
+! ${ALTIM}/data/gfs/slp.20121231_1200_000.grb2
 !
 ! <hex> specifies the number of 6-hourly blocks since 1 Jan 1985.
-! Data is stored in a buffer <model>
+! Data is stored in a grid buffer pointed to by <model>.
+!
+! Quantities read from the file are:
+! - sea level pressure (Pa)
+! - near-surface temperature (K)
+! - water vapour content (kg/m^2)
 !-----------------------------------------------------------------------
 get_grids = .true.
-if (get_grid(trim(path)//wvc_fmt,hex,model%wvc) /= 0) return
-if (get_grid(trim(path)//tmp_fmt,hex,model%tmp) /= 0) return
-if (get_grid(trim(path)//slp_fmt,hex,model%slp) /= 0) return
+if (source == 'ncep') then
+	if (get_grid(trim(path)//'ncep/pr_wtr.eatm.%Y.nc',hex,model%wvc)) return
+	if (get_grid(trim(path)//'ncep/air.sig995.%Y.nc',hex,model%tmp)) return
+	if (get_grid(trim(path)//'ncep/slp.%Y.nc',hex,model%slp)) return
+else
+	if (get_grib(trim(path)//'gfs/%Y/pwat_%Y%m%d_%H00_000.grb2',hex,model%wvc)) return
+	if (get_grib(trim(path)//'gfs/%Y/t995_%Y%m%d_%H00_000.grb2',hex,model%tmp)) return
+	if (get_grib(trim(path)//'gfs/%Y/prmsl_%Y%m%d_%H00_000.grb2',hex,model%slp)) return
+endif
 get_grids = .false.
 end function get_grids
 
@@ -354,40 +371,32 @@ function get_grid (filenm, hex, info)
 character(len=*), intent(in) :: filenm
 integer(fourbyteint), intent(in) :: hex
 type(grid), intent(out) :: info
-integer(fourbyteint) :: get_grid
-!
-! Input are sea level pressure files (slp.%Y.nc) and/or precipitable
-! water vapour files (pr_wtr.eatm.%Y.nc), where %Y is the
-! year number. <hex> specifies the number of 6-hourly blocks since 1 Jan 1985.
-!
-! Data is stored in a buffer pointed to by the returned value.
-!
-! Units are mbar and kg/m^2, stored as integers with units 0.01 mbar and 0.01
-! kg/m^2. However, the last digit is not significant (always 0).
-!-----------------------------------------------------------------------
+logical :: get_grid
 character(len=rads_cmdl) :: fn
 integer(fourbyteint) :: ncid,x_id,y_id,t_id,v_id,i,h1985,tmin,tmax,start(3)=1,l,strf1985
-real(eightbytereal) :: time(2),nan
+real(eightbytereal) :: time(2)
 integer(fourbyteint) :: nx,ny,nt,hour
 integer(twobyteint), allocatable :: tmp(:,:)
+
+600 format ('(',a,1x,i0,')')
+get_grid = .true.
 
 ! Determine file name
 
 hour = hex * 6
 l = strf1985 (fn, filenm, hour*3600)
-nan = 0d0
-nan = nan/nan
+i = index(fn,'/',.true.)
+write (*,600,advance='no') fn(i+1:l),hex
 
 ! Free grid
 
 call grid_free(info)
 
-! Open input file
+! Open netCDF file
 
 1300 format (a,': ',a)
 if (nft(nf90_open(fn,nf90_nowrite,ncid))) then
 	write (*,1300) 'Error opening file',fn(:l)
-	get_grid = 1
 	i = nf90_close(ncid)
 	return
 endif
@@ -399,7 +408,6 @@ else if (.not.nft(nf90_inq_varid(ncid,'pr_wtr',v_id))) then
 else if (.not.nft(nf90_inq_varid(ncid,'air',v_id))) then
 else
 	write (*,1300) 'Error with ID# for data grid: no slp, pr_wtr, or air in',fn(:l)
-	get_grid = 2
 	i = nf90_close(ncid)
 	return
 endif
@@ -415,7 +423,6 @@ i = i + nf90_inq_dimid(ncid,'time',t_id)
 if (i + nf90_inquire_dimension(ncid,x_id,len=nx) + nf90_inquire_dimension(ncid,y_id,len=ny) + &
 	nf90_inquire_dimension(ncid,t_id,len=nt) /= 0) then
 	write (*,1300) 'Error getting data dimensions in',fn(:l)
-	get_grid = 2
 	i = nf90_close(ncid)
 	return
 endif
@@ -426,7 +433,6 @@ start(3) = nt
 if (nf90_inq_varid(ncid,'time',t_id) + nf90_get_var(ncid,t_id,time(1:1)) + &
 	nf90_get_var(ncid,t_id,time(2:2),start(3:3)) /= 0) then
 	write (*,1300) 'Error getting time range in',fn(:l)
-	get_grid = 2
 	i = nf90_close(ncid)
 	return
 endif
@@ -439,7 +445,6 @@ tmax = nint(time(2)) - h1985
 
 if (hour < tmin .or. hour > tmax) then
 	write (*,1300) 'Hour out of bounds in',fn(:l)
-	get_grid = 5
 	i = nf90_close(ncid)
 	return
 endif
@@ -478,8 +483,90 @@ info%grid_int2(:,1:ny) = tmp(:,ny:1:-1)
 deallocate (tmp)
 
 i = nf90_close(ncid)
-get_grid = 0
+get_grid = .false.
 
 end function get_grid
+
+!-----------------------------------------------------------------------
+! get_grib -- Special grid loading routine for GRIB meteo grids
+!-----------------------------------------------------------------------
+
+function get_grib (filenm, hex, info)
+character(len=*), intent(in) :: filenm
+integer(fourbyteint), intent(in) :: hex
+type(grid), intent(out) :: info
+logical :: get_grib
+character(len=rads_cmdl) :: fn
+integer(fourbyteint) :: fileid,gribid,i,j,k,l,status,strf1985,nx,ny
+real(eightbytereal), allocatable :: tmp(:)
+
+600 format ('(',a,')')
+1300 format (a,': ',a)
+
+! Determine file name
+
+get_grib = .true.
+l = strf1985(fn, filenm, hex*21600)
+i = index(fn, '/', .true.)
+write (*,600,advance='no') fn(i+1:l)
+
+! Free grid
+
+call grid_free(info)
+
+! Open grib file
+
+call grib_open_file(fileid,fn,'r',status)
+if (status /= grib_success) then
+	write (*,1300) 'Error opening file',fn(:l)
+	return
+endif
+call grib_new_from_file(fileid,gribid,status)
+if (status /= grib_success) then
+	write (*,1300) 'Error loading grid',fn(:l)
+	return
+endif
+
+! Get sizes
+
+call grib_get(gribid,'Ni',nx,status)
+call grib_get(gribid,'Nj',ny,status)
+
+! Set up info struct
+
+info%ntype = nf90_double
+info%nx = nx
+info%dx = 360d0 / nx
+info%xmin = 0d0
+info%xmax = (nx-1) * info%dx
+info%ny = ny
+info%dy = 180d0 / (ny-1)
+info%ymin = -90d0
+info%ymax = 90d0
+info%nxwrap = nx
+info%z0 = 0d0
+info%dz = 1d0
+allocate(info%grid_dble(nx,ny),tmp(nx*ny))
+
+! Get grid data. Swap the grid upside down.
+
+call grib_get(gribid,'values',tmp,status)
+k = 0
+do j = ny,1,-1
+	do i = 1,nx
+		k = k + 1
+		info%grid_dble(i,j) = tmp(k)
+	enddo
+enddo
+deallocate(tmp)
+
+! Close file
+
+call grib_release(gribid)
+call grib_close_file(fileid)
+
+! Successful completion
+get_grib = .false.
+end function get_grib
 
 end program rads_add_ncep

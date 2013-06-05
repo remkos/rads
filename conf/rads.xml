@@ -451,19 +451,17 @@ Global RADS configuration file
 	<compress>int2 1d-4</compress>
 	<comment>A dry tropospheric correction must be added to range to correct for dry troposphere delays</comment>
 </var>
-<!--
-<var name="dry_tropo_ncep2" field="708">
-	<long_name>NCEP(reanalysis2) dry tropospheric correction</long_name>
+<var name="dry_tropo_gfs" field="708">
+	<long_name>NCEP GFS dry tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_dry_troposphere</standard_name>
-	<source>NCEP reanalysis 2</source>
+	<source>NCEP Global Forecast System</source>
 	<units>m</units>
 	<limits>-2.4 -2.1</limits>
-	<data>dry_tropo_ncep2</data>
+	<data>dry_tropo_gfs</data>
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 	<comment>A dry tropospheric correction must be added to range to correct for dry troposphere delays</comment>
 </var>
--->
 <var name="dry_tropo_era" field="709">
 	<long_name>ERA dry tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_dry_troposphere</standard_name>
@@ -546,14 +544,13 @@ Global RADS configuration file
 	<compress>int2 1d-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
 </var>
-<!--
-<var name="wet_tropo_ncep2" field="808">
-	<long_name>NCEP(reanalysis2) wet tropospheric correction</long_name>
+<var name="wet_tropo_gfs" field="808">
+	<long_name>NCEP GFS wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
-	<source>NCEP reanalysis 2</source>
+	<source>NCEP Global Forecast System</source>
 	<units>m</units>
 	<limits>-0.6 0.0</limits>
-	<data>wet_tropo_ncep2</data>
+	<data>wet_tropo_gfs</data>
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
