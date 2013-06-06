@@ -67,6 +67,7 @@ use rads
 use rads_misc
 use rads_grid
 use rads_devel
+use meteo_subs
 
 ! Data variables
 
@@ -174,7 +175,7 @@ end subroutine synopsis
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
 real(eightbytereal) :: time(n),alt(n),alt_rate(n),dry(n),wet(n), &
-	iono(n),sig0(n),swh(n),ssb(n),wind(n),flagword(n),range(n),ib(n),ecmwf_ws,t,tbias
+	iono(n),sig0(n),swh(n),ssb(n),wind(n),flagword(n),range(n),ib(n),t,tbias
 integer(fourbyteint) :: i
 logical :: lrm_l2,fdm_l2,old_version_a,version_a,sar
 
@@ -307,7 +308,7 @@ do i = 1,n
 
 ! Compute wind speed with ECMWF model
 
-	if (lwind) wind(i) = ecmwf_ws(sig0(i))
+	if (lwind) wind(i) = wind_ecmwf(sig0(i))
 
 ! Apply hybrid SSB
 
