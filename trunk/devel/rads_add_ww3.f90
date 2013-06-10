@@ -225,7 +225,7 @@ enddo
 ! If requested, check for changes first
 
 if (update) then
-	call rads_get_var (S, P, 'wave_'//varnm(var0), tmp)
+	call rads_get_var (S, P, 'wave_'//varnm(var0), tmp, .true.)
 	do i = 1,n
 		if (isnan(tmp(i)) .and. isnan(ww3(i,var0))) cycle
 		if (isnan(tmp(i))) exit

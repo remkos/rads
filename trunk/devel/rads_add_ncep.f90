@@ -236,8 +236,8 @@ call globpres(4,P%equator_time,slp0)
 ! If backscatter attenuation is computed, remove the old one here
 
 if (sig0_on) then
-	call rads_get_var (S, P, 'sig0_'//band, sig0)
-	call rads_get_var (S, P, 'dsig0_atmos_'//band, atten)
+	call rads_get_var (S, P, 'sig0_'//band, sig0, .true.)
+	call rads_get_var (S, P, 'dsig0_atmos_'//band, atten, .true.)
 	sig0 = sig0 - atten
 endif
 
@@ -374,7 +374,7 @@ if (sig0_on) then
 	call rads_put_var (S, P, 'liquid_water', lwc)
 endif
 if (air_plus) then
-	call rads_get_var (S, P, 'dry_tropo_ecmwf', dry)
+	call rads_get_var (S, P, 'dry_tropo_ecmwf', dry, .true.)
 	call rads_put_var (S, P, 'dry_tropo_ecmwf', dry+air)
 endif
 
