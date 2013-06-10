@@ -28,7 +28,10 @@
 program rads_fix_sa
 
 use rads
+use rads_misc
+use rads_grid
 use rads_devel
+use meteo_subs
 
 ! Data variables
 
@@ -37,22 +40,34 @@ type(rads_pass) :: P
 
 ! Other local variables
 
+character(len=rads_cmdl) :: path
 integer(fourbyteint) :: i,cyc,pass
-logical :: lssb
+logical :: lssb = .false., lwind = .false.
+type(grid) :: issb_hyb
 
 ! Scan command line for options
 
 call synopsis
-call rads_set_options (' ssb all')
+call rads_set_options (' ssb wind all')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
 	case ('ssb')
 		lssb = .true.
+	case ('wind')
+		lwind = .true.
 	case ('all')
 		lssb = .true.
+		lwind = .true.
 	end select
 enddo
+
+! Load SSB model
+
+if (lssb) then
+	call parseenv ('${ALTIM}/data/models/sax_hyb.nc?ssb_hyb', path)
+	if (grid_load(path,issb_hyb) /= 0) call rads_exit ('Error loading '//trim(path))
+endif
 
 ! Run process for all files
 
@@ -77,7 +92,8 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
-'  --ssb                     Change SSB to 3.5% of SWH' / &
+'  --ssb                     Add hybrid SSB' / &
+'  --wind                    Compute wind speed' / &
 '  --all                     All of the above')
 stop
 end subroutine synopsis
@@ -88,7 +104,7 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-real(eightbytereal) :: swh(n),ssb(n)
+real(eightbytereal) :: swh(n),ssb(n),sig0(n),wind(n),t
 
 ! Formats
 
@@ -97,15 +113,29 @@ real(eightbytereal) :: swh(n),ssb(n)
 
 write (*,551) trim(P%filename)
 
-call rads_get_var (S, P, 'swh_ku', swh, .true.)
-
 ! Process data records
 
-ssb = 3.5d-2 * swh
+call rads_get_var (S, P, 'sig0_ka', sig0, .true.)
+
+! Compute SSB
+
+if (lssb) then
+	call rads_get_var (S, P, 'swh_ka', swh, .true.)
+	do i = 1,n
+		t = swh(i)
+		if (t < 0d0) t = 0d0
+		if (t > 12d0) t = 12d0
+		ssb(i) = grid_lininter (issb_hyb,sig0(i),t)
+	enddo
+endif
+
+! Compute wind speed
+
+if (lwind) wind = wind_ecmwf (sig0, 2.6d0)
 
 ! If nothing changed, stop here
 
-if (.not.lssb) then
+if (.not.(lssb .or. lwind)) then
 	write (*,552) 0
 	return
 endif
@@ -113,7 +143,8 @@ endif
 ! Write out all the data
 
 call rads_put_history (S, P)
-call rads_put_var (S, P, 'ssb_ku', ssb)
+if (lssb) call rads_put_var (S, P, 'ssb_bm3', ssb)
+if (lwind) call rads_put_var (S, P, 'wind_speed_alt', wind)
 
 write (*,552) n
 end subroutine process_pass
