@@ -20,7 +20,7 @@
 #
 # syntax: rads_gen_saral.sh <directories>
 #-----------------------------------------------------------------------
-. radssandbox.sh
+. rads_sandbox.sh
 
 rads_open_sandbox sa a
 lst=$SANDBOX/rads_gen_saral.lst
