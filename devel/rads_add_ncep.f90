@@ -410,7 +410,7 @@ if (source == 'ncep') then
 	if (get_grid(trim(path)//'ncep/slp.%Y.nc',hex,model%slp)) return
 else
 	if (get_grib(trim(path)//'gfs/%Y/pwat_%Y%m%d_%H00_000.grb2',hex,model%wvc)) return
-	if (get_grib(trim(path)//'gfs/%Y/t995_%Y%m%d_%H00_000.grb2',hex,model%tmp)) return
+	if (get_grib(trim(path)//'gfs/%Y/t2m_%Y%m%d_%H00_000.grb2',hex,model%tmp)) return
 	if (get_grib(trim(path)//'gfs/%Y/prmsl_%Y%m%d_%H00_000.grb2',hex,model%slp)) return
 	if (sig0_on) then
 		if (get_grib(trim(path)//'gfs/%Y/cwat_%Y%m%d_%H00_000.grb2',hex,model%lwc)) return
