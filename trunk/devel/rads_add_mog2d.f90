@@ -15,7 +15,7 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*rads_add_mog2d -- Add SST temperature and ice concentration to RADS data
+!*rads_add_mog2d -- Add MOG2D dynamic atmospheric correction to RADS data
 !+
 ! This program adds the MOG2D correction to RADS data. The MOG2D
 ! serves as a replacement to the conventional IB correction.
@@ -88,15 +88,8 @@ contains
 
 subroutine synopsis (flag)
 character(len=*), optional :: flag
-if (rads_version ('$Revision$', 'Add SST temperature and ice concentration to RADS data', flag=flag)) return
-call synopsis_devel (' [processing_options]')
-write (*,1310)
-1310  format (/ &
-'Additional [processing_options] are:'/ &
-'  -i, --ice                 Add sea ice concentration' / &
-'  -s, --sst                 Add sea surface temperature' / &
-'  -m, --mean                Add local mean sea surface temperature' / &
-'  --all                     All of the above')
+if (rads_version ('$Revision$', 'Add MOG2D dynamic atmospheric correction to RADS data', flag=flag)) return
+call synopsis_devel ('')
 stop
 end subroutine synopsis
 
