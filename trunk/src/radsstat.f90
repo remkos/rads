@@ -139,8 +139,8 @@ do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
 	do pass = S%passes(1), S%passes(2), S%passes(3)
 		call rads_open_pass (S, Pin, cycle, pass)
 		! After very first call, initialise the day counter
-		if (isnan_(end_time)) end_time = floor(Pin%start_time/86400d0+step)*86400d0
 		if (isnan_(start_time)) start_time = Pin%start_time
+		if (isnan_(end_time)) end_time = floor(Pin%start_time/86400d0+step)*86400d0
 
 		! Process the pass data
 		if (Pin%ndata > 0) call process_pass (Pin%ndata, S%nsel)
