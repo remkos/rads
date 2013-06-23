@@ -23,7 +23,7 @@
 . radssandbox.sh
 
 rads_open_sandbox sa a
-lst=$SANDBOX/rads_gen_saral_new.lst
+lst=$SANDBOX/rads_gen_saral.lst
 
 date								>  $log 2>&1
 
@@ -42,10 +42,12 @@ done
 
 # Do the patches to all data
 
-radsp_iono   $options jpl iri nic	>> $log 2>&1
-radsp_common $options				>> $log 2>&1
-radsp_mog2d  $options				>> $log 2>&1
-radsp_ib     $options				>> $log 2>&1
+rads_add_ncep   $options -gdws		>> $log 2>&1
+rads_fix_sa     $options --all		>> $log 2>&1
+rads_add_iono   $options --all		>> $log 2>&1
+rads_add_common $options			>> $log 2>&1
+rads_add_mog2d  $options			>> $log 2>&1
+rads_add_ib     $options			>> $log 2>&1
 
 date								>> $log 2>&1
 
