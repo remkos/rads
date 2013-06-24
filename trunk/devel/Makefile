@@ -32,7 +32,7 @@ LIB     = ../src/librads.a $(ALTIM)/lib/rssubs.a
 LDLIBS  = $(NETCDF_LIB) $(GRIB)
 
 # Shell scripts
-SCRIPTS = rads_add_common rads_gen_saral.sh rads_gen_saral_new.sh rads_sandbox.sh
+SCRIPTS = rads_add_common rads_gen_c2_l1r.sh rads_gen_saral.sh rads_gen_saral_new.sh rads_sandbox.sh
 
 #-----------------------------------------------------------------------
 # What to create?
