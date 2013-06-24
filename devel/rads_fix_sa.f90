@@ -21,7 +21,9 @@
 ! by rads_gen_saral. These patches include:
 !
 ! ssb:
-! - Change SSB to 3.5% of SWH
+! - Add hybrid SSB to the RADS data
+! wind:
+! - Update the wind speed
 !
 ! usage: rads_fix_sa [data-selectors] [options]
 !-----------------------------------------------------------------------
@@ -143,7 +145,7 @@ endif
 ! Write out all the data
 
 call rads_put_history (S, P)
-if (lssb) call rads_put_var (S, P, 'ssb_bm3', ssb)
+if (lssb) call rads_put_var (S, P, 'ssb_hyb', ssb)
 if (lwind) call rads_put_var (S, P, 'wind_speed_alt', wind)
 
 write (*,552) n
