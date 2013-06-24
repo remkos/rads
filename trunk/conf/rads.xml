@@ -2280,7 +2280,7 @@ Global RADS configuration file
 	<compress>int2 1d-4</compress>
 	<parameters>0</parameters>
 	<parameters sat="gs">   0 -65  0  0 5</parameters>
-	<parameters sat="c2">-247   0  0  0 0</parameters>
+	<parameters sat="c2">-720   0  0  0 0</parameters>
 	<parameters sat="e1">  23  -7  0  0 0</parameters>
 	<parameters sat="e2">  61   2 12 12 0</parameters>
 	<parameters sat="g1">  70   0  0  0 0</parameters>
