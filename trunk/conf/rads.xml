@@ -257,7 +257,7 @@ Global RADS configuration file
 	</if>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_eig6c" field="417" sat="c2 j1 j2 n1">
+<var name="alt_eig6c" field="417" sat="c2 j1 j2 n1 sa">
 	<long_name>ESOC EIGEN-6C orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>ESOC, EIGEN-6C</source>
