@@ -39,7 +39,7 @@ for tar in $*; do
 	case $dir in
 	*/c???) options="$options -C"`basename $dir | cut -c2-` ;;
 	esac
-	c2l1rraw $options < $lst	>> $log 2>&1
+	rads_gen_c2_l1r $options < $lst	>> $log 2>&1
 	case $tar in
 		*.t?z) chmod -R u+w $dir; rm -rf $dir ;;
 	esac
