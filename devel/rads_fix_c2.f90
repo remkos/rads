@@ -344,6 +344,7 @@ call rads_put_history (S, P)
 
 if (lssb) call rads_def_var (S, P, 'ssb_hyb')
 if (lwind) call rads_def_var (S, P, 'wind_speed_alt')
+if (lssb) call rads_def_var (S, P, 'ssb_hyb')
 
 ! Write out all the data
 
