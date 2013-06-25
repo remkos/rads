@@ -56,7 +56,7 @@ rads_add_orbit  $options $orbit_opt --equator --loc-7 --rate	>> $log 2>&1
 rads_add_orbit  $options -Valt_eig6c		>> $log 2>&1
 rads_add_common $options 					>> $log 2>&1
 rads_add_ecmwf  $options --all				>> $log 2>&1
-rads_add_iono   $options --jpl --iri --nic	>> $log 2>&1
+rads_add_iono   $options --all				>> $log 2>&1
 rads_add_ww3    $options -C1,23 --all		>> $log 2>&1
 rads_add_mog2d  $options					>> $log 2>&1
 date										>> $log 2>&1
