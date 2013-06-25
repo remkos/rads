@@ -26,6 +26,7 @@
 rads_open_sandbox c2 a
 
 options="-Sc2/a.new"
+cycle=
 
 date							>  $log 2>&1
 
@@ -37,9 +38,9 @@ for tar in $*; do
 	esac
 	find -L $dir -name "CS_*.nc" -print | sort -r | sort -u -t/ -k3.20,3.34 > $lst
 	case $dir in
-	*/c???) options="$options -C"`basename $dir | cut -c2-` ;;
+	*/c???) cycle="-C"`basename $dir | cut -c2-` ;;
 	esac
-	rads_gen_c2_l1r $options < $lst	>> $log 2>&1
+	rads_gen_c2_l1r $options $cycle < $lst	>> $log 2>&1
 	case $tar in
 		*.t?z) chmod -R u+w $dir; rm -rf $dir ;;
 	esac
