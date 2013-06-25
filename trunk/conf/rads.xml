@@ -1158,7 +1158,7 @@ Global RADS configuration file
 	<long_name>automatic gain control</long_name>
 	<units>dB</units>
 	<limits>0 70</limits>
-	<data>sig0_sdr</data>
+	<data>agc_ku</data>
 	<format>f6.2</format>
 	<compress>int2 1d-2</compress>
 </var>
