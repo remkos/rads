@@ -48,6 +48,7 @@ rads_add_ncep   $options -gdwsu		>> $log 2>&1
 rads_fix_sa     $options --all		>> $log 2>&1
 rads_add_mog2d  $options			>> $log 2>&1
 rads_add_ib     $options			>> $log 2>&1
+rads_add_orbit  $options -Valt_gdrd --equator --loc-7	>> $log 2>&1
 
 date								>> $log 2>&1
 
