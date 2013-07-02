@@ -1222,6 +1222,36 @@ Global RADS configuration file
 	<format>f7.3</format>
 	<compress>int2 1d-3</compress>
 </var>
+<var name="wind_speed_gfs_u" sat="sa">
+	<long_name>NOAA/GFS model zonal wind speed</long_name>
+	<standard_name>eastward_wind</standard_name>
+	<source>NOAA Global Forecast System</source>
+	<units>m/s</units>
+	<limits>-30 30</limits>
+	<data>wind_speed_gfs_u</data>
+	<format>f7.3</format>
+	<compress>int2 1d-3</compress>
+</var>
+<var name="wind_speed_gfs_v" sat="sa">
+	<long_name>NOAA/GFS model meridional wind speed</long_name>
+	<standard_name>northward_wind</standard_name>
+	<source>NOAA Global Forecast System</source>
+	<units>m/s</units>
+	<limits>-30 30</limits>
+	<data>wind_speed_gfs_v</data>
+	<format>f7.3</format>
+	<compress>int2 1d-3</compress>
+</var>
+<var name="wind_speed_gfs" sat="sa">
+	<long_name>NOAA/GFS model wind speed</long_name>
+	<standard_name>wind_speed</standard_name>
+	<source>NOAA Global Forecast System</source>
+	<units>m/s</units>
+	<limits>0 30</limits>
+	<data>wind_speed_gfs_u wind_speed_gfs_v HYPOT</data>
+	<format>f7.3</format>
+	<compress>int2 1d-3</compress>
+</var>
 <var name="wind_speed_cls" field="1905" sat="n1">
 	<long_name>altimeter wind speed (CLS algo)</long_name>
 	<standard_name>wind_speed</standard_name>
@@ -1722,6 +1752,7 @@ Global RADS configuration file
 
 <var name="drange_ku" field="2701" sat="c2 e1 e2 gs n1">
 	<long_name>Ku-band range bias</long_name>
+	<long_name sat="c2">Ku-band retracker range (relative to window delay)</long_name>
 	<units>m</units>
 	<data>drange_ku</data>
 	<compress>int2 1d-3</compress>

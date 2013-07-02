@@ -78,14 +78,14 @@ character(rads_naml) :: path
 integer(fourbyteint) :: hex,hexold=-99999
 type(airtideinfo) :: airinfo
 real(eightbytereal), parameter :: rad2=2d0*atan(1d0)/45d0
-logical :: dry_on=.false., wet_on=.false., ib_on=.false., air_on=.false., sig0_on = .false., new=.false., &
-	air_plus=.false., error
+logical :: dry_on=.false., wet_on=.false., ib_on=.false., air_on=.false., sig0_on = .false., wind_on = .false., &
+	new=.false., air_plus=.false., error
 character(len=4) :: source = 'ncep', band
 
 ! Model data
 
 type :: model_
-	type(grid) :: slp, wvc, tmp, lwc
+	type(grid) :: slp, wvc, tmp, lwc, u10, v10
 end type
 type(model_) :: m1, m2
 
@@ -97,7 +97,7 @@ real(eightbytereal), parameter :: k2p = 0.221d0, k3 = 3739d0	! Refractivity cons
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('gdwaisn gfs dry wet air ib sig0 all new')
+call rads_set_options ('gdwaisun gfs dry wet air ib sig0 wind all new')
 call rads_init (S)
 
 ! Get ${ALTIM}/data/ directory
@@ -120,6 +120,8 @@ do j = 1,rads_nopt
 		ib_on = .true.
 	case ('s', 'sig0')
 		sig0_on = .true.
+	case ('u', 'wind')
+		wind_on = .true.
 	case ('n', 'new')
 		new = .true.
 	case ('all')
@@ -128,12 +130,16 @@ do j = 1,rads_nopt
 		air_on = .true.
 		ib_on = .true.
 		sig0_on = .true.
+		wind_on = .true.
 	end select
 enddo
 
-! When reanalysis, then no attenuation computation
+! When reanalysis, then no attenuation and no wind computation
 
-if (source == 'ncep') sig0_on = .false.
+if (source == 'ncep') then
+	sig0_on = .false.
+	wind_on = .false.
+endif
 
 ! Determine frequency band
 
@@ -176,13 +182,14 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
-'  -g, --gfs                 Use GFS analysis instead of reanalysis' / &
 '  -d, --dry                 Add NCEP dry tropospheric correction' / &
 '  -w, --wet                 Add NCEP wet tropospheric correction' / &
 '  -a, --air                 Add air tide' / &
 '  -i, --ib                  Add static inverse barometer correction' / &
 '  -s, --sig0                Add sigma0 attenuation, lwc, wvc (with -g only)' / &
+'  -u, --wind                Add GFS wind speed (with -g only)' / &
 '  --all                     All of the above' / &
+'  -g, --gfs                 Use GFS analysis instead of reanalysis' / &
 '  -n, --new                 Only add variables when not yet existing')
 stop
 end subroutine synopsis
@@ -195,7 +202,7 @@ subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
 integer(fourbyteint) :: i
 real(eightbytereal) :: time(n), lat(n), lon(n), h(n), surface_type(n), dry(n), wet(n), ib(n), air(n), &
-	atten(n), wvc(n), lwc(n), sig0(n), f1, f2, g1, g2, slp, dslp, slp0, tmp, mtmp, rp, rt
+	atten(n), wvc(n), lwc(n), sig0(n), u10(n), v10(n), f1, f2, g1, g2, slp, dslp, slp0, tmp, mtmp, rp, rt
 
 ! Formats
 
@@ -340,11 +347,18 @@ do i = 1,n
 		endif
 		atten(i) = 2d0 * atten(i) ! 2-way attenuation
 	endif
+
+! Interpolate wind speed
+
+	if (wind_on) then
+		u10(i) = f1 * grid_lininter(m1%u10,lon(i),lat(i)) + f2 * grid_lininter(m2%u10,lon(i),lat(i))
+		v10(i) = f1 * grid_lininter(m1%v10,lon(i),lat(i)) + f2 * grid_lininter(m2%v10,lon(i),lat(i))
+	endif
 enddo
 
 ! If no more fields are determined, abort.
 
-if (.not.(dry_on .or. ib_on .or. wet_on .or. sig0_on)) then
+if (.not.(dry_on .or. ib_on .or. wet_on .or. sig0_on .or. wind_on)) then
 	write (*,552) 0
 	stop
 endif
@@ -362,6 +376,10 @@ if (sig0_on) then
 	call rads_def_var (S, P, 'water_vapor_content')
 	call rads_def_var (S, P, 'liquid_water')
 endif
+if (wind_on) then
+	call rads_def_var (S, P, 'wind_speed_gfs_u')
+	call rads_def_var (S, P, 'wind_speed_gfs_v')
+endif
 
 if (dry_on) call rads_put_var (S, P, 'dry_tropo_'//source, dry)
 if (wet_on) call rads_put_var (S, P, 'wet_tropo_'//source, wet)
@@ -372,6 +390,10 @@ if (sig0_on) then
 	call rads_put_var (S, P, 'dsig0_atmos_'//band, atten)
 	call rads_put_var (S, P, 'water_vapor_content', wvc)
 	call rads_put_var (S, P, 'liquid_water', lwc)
+endif
+if (wind_on) then
+	call rads_put_var (S, P, 'wind_speed_gfs_u', u10)
+	call rads_put_var (S, P, 'wind_speed_gfs_v', v10)
 endif
 if (air_plus) then
 	call rads_get_var (S, P, 'dry_tropo_ecmwf', dry, .true.)
@@ -414,6 +436,10 @@ else
 	if (get_grib(trim(path)//'gfs/%Y/prmsl_%Y%m%d_%H00_000.grb2',hex,model%slp)) return
 	if (sig0_on) then
 		if (get_grib(trim(path)//'gfs/%Y/cwat_%Y%m%d_%H00_000.grb2',hex,model%lwc)) return
+	endif
+	if (wind_on) then
+		if (get_grib(trim(path)//'gfs/%Y/u10m_%Y%m%d_%H00_000.grb2',hex,model%u10)) return
+		if (get_grib(trim(path)//'gfs/%Y/v10m_%Y%m%d_%H00_000.grb2',hex,model%v10)) return
 	endif
 endif
 get_grids = .false.
