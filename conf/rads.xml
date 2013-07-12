@@ -1102,6 +1102,14 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
 </var>
+<var name="swh_ww3" field="1712" sat="sa c2">
+	<long_name>WaveWatch3 significant wave height</long_name>
+	<standard_name>sea_surface_wave_significant_height</standard_name>
+	<units>m</units>
+	<data>swh_ww3</data>
+	<format>f5.2</format>
+	<compress>int2 1d-2</compress>
+</var>
 
 <if sat="sa">
 	<var name="sig0_ka" field="1801">

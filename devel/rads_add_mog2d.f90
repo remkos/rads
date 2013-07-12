@@ -56,7 +56,8 @@ integer(fourbyteint) :: cyc, pass
 character(rads_cmdl) :: path
 integer(fourbyteint) :: hexold=-99999, first=1
 integer(fourbyteint), parameter :: nx=1441, ny=721
-real(eightbytereal) :: x0=0d0, y0=-90d0, z0, dx=0.25d0, dy=0.25d0, dz
+real(eightbytereal), parameter :: x0=0d0, y0=-90d0, dx=0.25d0, dy=0.25d0
+real(eightbytereal) :: z0, dz
 integer(twobyteint) :: grids(nx,ny,2)
 type(rads_var), pointer :: var
 
@@ -126,23 +127,22 @@ do i = 1,n
 
 ! Load new grids when entering new 6-hour period
 
-	if (hex == hexold) then
-		! Nothing
-	else if (hex == hexold+1) then
-		! Replace first (oldest) grid with a new grid
-		err = get_mog2d(hex+1,grids(:,:,first))
-		first = 3-first	! Switch notion of first and second grid
+	if (hex /= hexold) then
+		if (hex == hexold+1) then
+			! Replace first (oldest) grid with a new grid
+			err = get_mog2d(hex+1,grids(:,:,first))
+			first = 3-first	! Switch notion of first and second grid
+		else
+			! Replace both grids
+			first = 1
+			err = get_mog2d(hex,grids(:,:,1)) .or. get_mog2d(hex+1,grids(:,:,2))
+		endif
+		if (err) then
+			write (*,551,advance='no') 'Warning: No MOG2D field for current time.'
+			write (*,552) 0
+			stop
+		endif
 		hexold = hex
-	else
-		! Replace both grids
-		first = 1
-		err = get_mog2d(hex,grids(:,:,1)) .or. get_mog2d(hex+1,grids(:,:,2))
-		hexold = hex
-	endif
-	if (err) then
-		write (*,551,advance='no') 'Warning: No MOG2D field for current time.'
-		write (*,552) 0
-		stop
 	endif
 
 ! Linearly interpolate in space and time

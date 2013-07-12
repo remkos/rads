@@ -15,33 +15,29 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*rads_add_ww3 -- Add variables from WaveWatch3 model to RADS data
+!*rads_add_ww3_314 -- Add variables from WaveWatch3 model to RADS data
 !+
-! This program adds 5 to 7 variables from the WaveWatch 3 model to
-! the RADS data base. These variables are:
+! This program adds 5 to 7 variables from the WaveWatch 3 model
+! (version 3.14) to the RADS data base. These variables are:
 ! m0 = wave height variance in m^2
 ! m1 = first order moment in m^2/s
 ! m2 = second order moment (velocity variance) in m^2/s^2
 ! m4 = fourth order moment (slope variance) (unitless)
 ! shs = swell height in m
-! u = zonal wind speed in m/s
-! v = meridionalwind speed in m/s
+! wu = zonal wind speed in m/s
+! wv = meridional wind speed in m/s
 !
-! The variables are stored in 1x1 degree grids at 6 hourly intervals.
+! The variables are stored in 1x1 degree grids at 6-hour intervals.
 ! All five variables and all 4 daily temporal intervals can be found
-! in a single netCDF file.
-!
-! These files can be found in ${ALTIM}/data/wwatch3. They are compressed
-! by bzip2. The required files are unpacked and placed in /tmp before
-! being used in this program.
+! in a single netCDF file. These files can be found in ${ALTIM}/data/ww3_314.
 !
 ! The grids contain invalid values, whose mask changes with time, because
 ! of ice cover. The grids are linearly interpolated in space and time
 ! and require a minimum weight of 0.5 for the value to be used.
 !
-! usage: rads_add_ww3 [data-selectors] [options]
+! usage: rads_add_ww3_314 [data-selectors] [options]
 !-----------------------------------------------------------------------
-program rads_add_ww3
+program rads_add_ww3_314
 
 use rads
 use rads_misc
@@ -61,7 +57,8 @@ logical :: update = .false.
 character(rads_cmdl) :: path
 integer(fourbyteint), parameter :: nx=361, ny=156, nhex=8, nvar=7, i2min=-32768
 integer(fourbyteint) :: mjd, mjdold=-99999, j
-real(eightbytereal) :: x0=-180d0, x1=180d0, y0=-77.5d0, y1=77.5d0, dx=1d0, dy=1d0, dz(nvar)
+real(eightbytereal), parameter :: x0=-180d0, x1=180d0, y0=-77.5d0, y1=77.5d0, dx=1d0, dy=1d0
+real(eightbytereal) :: dz(nvar)
 integer(twobyteint) :: grids(nx,ny,nhex,nvar), subgrid(2,2,2,nvar)
 character(len=4) :: varnm(nvar) = (/ 'm0  ', 'm1  ', 'm2  ', 'm4  ', 'shs ', 'wu  ', 'wv  ' /)
 
@@ -73,7 +70,7 @@ call rads_init (S)
 
 ! Get template for path name
 
-call parseenv ('${ALTIM}/data/wwatch3/%Y/ww3_%Y%m%d.nc', path)
+call parseenv ('${ALTIM}/data/ww3_314/%Y/ww3_%Y%m%d.nc', path)
 
 ! Check all options
 do j = 1,rads_nopt
@@ -107,12 +104,12 @@ contains
 
 subroutine synopsis (flag)
 character(len=*), optional :: flag
-if (rads_version ('$Revision$', 'Add variables from WaveWatch3 model to RADS data', flag=flag)) return
+if (rads_version ('$Revision$', 'Add variables from WaveWatch3 (v3.14) model to RADS data', flag=flag)) return
 call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
-'  -w, --ww3                 Add WaveWatch3 variables m0, m1, m2, m4 and shs' / &
+'  -w, --ww3                 Add WaveWatch3 (v3.14) variables m0, m1, m2, m4 and shs' / &
 '  -v, --wind                Add U and V wind speed components' / &
 '  --all                     All of the above' / &
 '  -u, --update              Update files only when there are changes')
@@ -154,7 +151,7 @@ do i = 1,n
 	endif
 	if (lon(i) > x1) lon(i) = lon(i) - 360d0
 
-! Determine number of 6-hourly blobks since 1985
+! Determine number of 6-hourly blocks since 1985
 
 	f2 = time(i)/21600d0
 	hex = int(f2)
@@ -162,22 +159,21 @@ do i = 1,n
 
 ! Load new grids when entering new day
 
-	if (mjd == mjdold) then
-		! Nothing
-	else if (mjd == mjdold+1) then
-		! Replace first set of grids with second set grids and load new set
-		grids(:,:,1:4,:) = grids(:,:,5:8,:)
-		err = get_ww3(mjd+1,grids(:,:,5:8,:))
+	if (mjd /= mjdold) then
+		if (mjd == mjdold+1) then
+			! Replace first set of grids with second set grids and load new set
+			grids(:,:,1:4,:) = grids(:,:,5:8,:)
+			err = get_ww3(mjd+1,grids(:,:,5:8,:))
+		else
+			! Replace both sets of grids
+			err = get_ww3(mjd  ,grids(:,:,1:4,:)) .or. get_ww3(mjd+1,grids(:,:,5:8,:))
+		endif
+		if (err) then
+			write (*,'(a,$)') 'No WW3 data for current time ...'
+			write (*,552) 0
+			stop
+		endif
 		mjdold = mjd
-	else
-		! Replace both sets of grids
-		err = get_ww3(mjd  ,grids(:,:,1:4,:)) .or. get_ww3(mjd+1,grids(:,:,5:8,:))
-		mjdold = mjd
-	endif
-	if (err) then
-		write (*,'(a,$)') 'No WW3 data for current time ...'
-		write (*,552) 0
-		stop
 	endif
 
 ! Linearly interpolate in space and time
@@ -227,9 +223,9 @@ enddo
 if (update) then
 	call rads_get_var (S, P, 'wave_'//varnm(var0), tmp, .true.)
 	do i = 1,n
-		if (isnan(tmp(i)) .and. isnan(ww3(i,var0))) cycle
-		if (isnan(tmp(i))) exit
-		if (nint(tmp(i)/dz(var0)) .ne. nint(ww3(i,var0))) exit
+		if (isnan_(tmp(i)) .and. isnan_(ww3(i,var0))) cycle
+		if (isnan_(tmp(i))) exit
+		if (nint(tmp(i)/dz(var0)) /= nint(ww3(i,var0))) exit
 	enddo
 	if (i > n) then	! No changes
 		write (*,552) 0
@@ -293,4 +289,4 @@ l = nf90_close(ncid)
 get_ww3 = .false.
 end function get_ww3
 
-end program rads_add_ww3
+end program rads_add_ww3_314
