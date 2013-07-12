@@ -44,7 +44,7 @@ done
 
 rads_add_iono    $options --all		>> $log 2>&1
 rads_add_common  $options			>> $log 2>&1
-rads_add_ncep    $options -gdwsu		>> $log 2>&1
+rads_add_ncep    $options -gdwsu	>> $log 2>&1
 rads_fix_sa      $options --all		>> $log 2>&1
 rads_add_mog2d   $options			>> $log 2>&1
 rads_add_ib      $options			>> $log 2>&1

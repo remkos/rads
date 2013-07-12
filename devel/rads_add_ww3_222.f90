@@ -146,9 +146,9 @@ do i = 1,n
 	call mjd2ymd (mjd+46066, yy, mm, dd)
 	if (yy*100+mm /= yymm) then
 		if (get_ww3(mjd)) then
-			write (*,'(a,$)') 'No WW3 data for current time'
+			write (*,'(a,$)') 'No WW3 data for current time ...'
 			write (*,552) 0
-			exit
+			stop
 		endif
 		call ymd2mjd (yy, mm, 01, mjd)
 		t0 = (mjd - 46066) * 86400d0
