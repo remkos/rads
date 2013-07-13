@@ -48,9 +48,9 @@ logical :: update = .false., lswh = .false.
 ! Data elements
 
 character(rads_cmdl) :: path
-integer(fourbyteint), parameter :: nx=720, ny=311, nt=249
+integer(fourbyteint), parameter :: nx=721, ny=311, nt=249
 integer(fourbyteint) :: mjd, j, yy, mm, dd, yymm=0
-real(eightbytereal), parameter :: x0=0d0, x1=359.5d0, y0=-77.5d0, y1=77.5d0, dx=0.5d0, dy=0.5d0, dt=10800d0, dz=1d-2
+real(eightbytereal), parameter :: x0=0d0, x1=360d0, y0=-77.5d0, y1=77.5d0, dx=0.5d0, dy=0.5d0, dt=10800d0, dz=1d-2
 real(eightbytereal) :: t0=0d0
 integer(twobyteint) :: grids(nx,ny,nt), subgrid(2,2,2)
 
@@ -137,7 +137,7 @@ do i = 1,n
 		ww3(i) = nan
 		cycle
 	endif
-	if (lon(i) > x1) lon(i) = lon(i) - 360d0
+	if (lon(i) < x0) lon(i) = lon(i) + 360d0
 
 ! Check if we rolled into a new month
 ! If so, load a whole month of gridded SWH
@@ -260,7 +260,7 @@ endif
 
 call grib_get(gribid,'Ni',ni,status)
 call grib_get(gribid,'Nj',nj,status)
-if (ni /= nx .or. nj /= ny) stop 'Error in GRIB dimensions'
+if (ni+1 /= nx .or. nj /= ny) stop 'Error in GRIB dimensions'
 
 ! Get all grids
 
@@ -272,11 +272,12 @@ do
 	if (status /= grib_success) exit
 	k = 0
 	do iy = ny,1,-1
-		do ix = 1,nx
+		do ix = 1,ni
 			k = k + 1
 			grids(ix,iy,it) = nint2(tmp(k)/dz)
 		enddo
 	enddo
+	grids(nx,:,it) = grids(1,:,it) ! Duplicate left column to the right
 	call grib_new_from_file(fileid,gribid,status)
 	if (status /= grib_success) exit
 enddo
