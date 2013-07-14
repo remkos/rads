@@ -48,11 +48,12 @@ logical :: update = .false., lswh = .false.
 ! Data elements
 
 character(rads_cmdl) :: path
-integer(fourbyteint), parameter :: nx=721, ny=311, nt=249
-integer(fourbyteint) :: mjd, j, yy, mm, dd, yymm=0
-real(eightbytereal), parameter :: x0=0d0, x1=360d0, y0=-77.5d0, y1=77.5d0, dx=0.5d0, dy=0.5d0, dt=10800d0, dz=1d-2
-real(eightbytereal) :: t0=0d0
-integer(twobyteint) :: grids(nx,ny,nt), subgrid(2,2,2)
+integer(fourbyteint), parameter :: mt=249
+real(eightbytereal), parameter :: dz=1d-2
+integer(fourbyteint) :: j, nx, ny, nt, mjd, yy, mm, dd, yymm=0
+real(eightbytereal) :: x0, x1, dx, y0, y1, dy, t0=0d0, dt
+integer(twobyteint), allocatable :: grids(:,:,:)
+integer(twobyteint) :: subgrid(2,2,2)
 
 ! Initialise
 
@@ -85,6 +86,8 @@ do cyc = S%cycles(1), S%cycles(2), S%cycles(3)
 		call rads_close_pass (S, P)
 	enddo
 enddo
+
+deallocate (grids,stat=j)
 
 contains
 
@@ -129,15 +132,8 @@ call rads_get_var (S, P, 'lat', lat, .true.)
 call rads_get_var (S, P, 'lon', lon, .true.)
 
 ! Process data records
+
 do i = 1,n
-
-! Skip data beyond latitude limits
-
-	if (lat(i) < y0 .or. lat(i) > y1) then
-		ww3(i) = nan
-		cycle
-	endif
-	if (lon(i) < x0) lon(i) = lon(i) + 360d0
 
 ! Check if we rolled into a new month
 ! If so, load a whole month of gridded SWH
@@ -155,10 +151,24 @@ do i = 1,n
 		yymm = yy*100+mm
 	endif
 
+! Skip data beyond latitude limits
+
+	if (lat(i) < y0 .or. lat(i) > y1) then
+		ww3(i) = nan
+		cycle
+	endif
+	if (lon(i) < x0) lon(i) = lon(i) + 360d0
+
 ! Linearly interpolate in space and time
 
 	f2 = (time(i)-t0)/dt + 1
 	it = int(f2)
+
+	if (it >= nt) then
+		write (*,'(a,$)') 'No WW3 data for current time ...'
+		write (*,552) 0
+		stop
+	endif
 
 	f2 = f2 - it
 	f1 = 1d0 - f2
@@ -177,7 +187,9 @@ do i = 1,n
 	f(:,:,1) = f(:,:,1)*f1
 	f(:,:,2) = f(:,:,2)*f2
 
-	subgrid = grids(ix:ix+1,iy:iy+1,it:it+1)
+	subgrid(1,:,:) = grids(ix,iy:iy+1,it:it+1)
+	ix = mod(ix,nx)+1
+	subgrid(2,:,:) = grids(ix,iy:iy+1,it:it+1)
 
 	w = 0d0
 	z = 0d0
@@ -230,8 +242,8 @@ end subroutine process_pass
 function get_ww3 (mjd)
 logical :: get_ww3
 integer(fourbyteint), intent(in) :: mjd
-integer(fourbyteint) ::	fileid, gribid, ni, nj, ix, iy, it, k, l, status, strf1985
-real(eightbytereal) :: tmp(nx*ny)
+integer(fourbyteint) ::	fileid, gribid, ix, iy, it, k, l, status, strf1985
+real(eightbytereal), allocatable :: tmp(:)
 character(len=rads_naml) :: fn
 
 600 format ('(',a,')')
@@ -258,9 +270,20 @@ endif
 
 ! Get sizes
 
-call grib_get(gribid,'Ni',ni,status)
-call grib_get(gribid,'Nj',nj,status)
-if (ni+1 /= nx .or. nj /= ny) stop 'Error in GRIB dimensions'
+call grib_get(gribid,'Ni',nx,status)
+call grib_get(gribid,'longitudeOfFirstGridPointInDegrees',x0,status)
+call grib_get(gribid,'longitudeOfLastGridPointInDegrees',x1,status)
+call grib_get(gribid,'iDirectionIncrementInDegrees',dx,status)
+
+call grib_get(gribid,'Nj',ny,status)
+call grib_get(gribid,'latitudeOfFirstGridPointInDegrees',y1,status)
+call grib_get(gribid,'latitudeOfLastGridPointInDegrees',y0,status)
+call grib_get(gribid,'jDirectionIncrementInDegrees',dy,status)
+
+dt = 21600d0 * dy ! This happens to be the case now
+
+deallocate (grids,stat=k)
+allocate (grids(nx,ny,mt),tmp(nx*ny))
 
 ! Get all grids
 
@@ -272,15 +295,16 @@ do
 	if (status /= grib_success) exit
 	k = 0
 	do iy = ny,1,-1
-		do ix = 1,ni
+		do ix = 1,nx
 			k = k + 1
 			grids(ix,iy,it) = nint2(tmp(k)/dz)
 		enddo
 	enddo
-	grids(nx,:,it) = grids(1,:,it) ! Duplicate left column to the right
+	nt = it
 	call grib_new_from_file(fileid,gribid,status)
 	if (status /= grib_success) exit
 enddo
+deallocate(tmp)
 
 ! Close file
 
