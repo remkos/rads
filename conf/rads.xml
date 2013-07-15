@@ -2155,6 +2155,14 @@ Global RADS configuration file
 	<compress>int1 1d-2</compress>
 	<comment>Correction already added to backscatter coefficient</comment>
 </var>
+<var name="dsig0_atmos_nn_ka" field="3208" sat="sa">
+	<long_name>Ka-band backscatter coefficient correction due to atmosphere/attitude (NN)</long_name>
+	<units>dB</units>
+	<data>dsig0_atmos_nn_ka</data>
+	<format>f6.2</format>
+	<compress>int2 1d-2</compress>
+	<comment>Alternative to dsig0_atmos_ka which is already applied</comment>
+</var>
 <alias name="dsig0" field="32" sat="e1 e2 tx">dsig0_ku</alias>
 
 <var name="liquid_water" field="3301 33" sat="e1 e2 j1 j2 n1 pn sa tx">

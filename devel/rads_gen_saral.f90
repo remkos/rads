@@ -87,7 +87,7 @@ character(len=rads_varl) :: optopt, optarg
 
 integer(fourbyteint) :: cyclenr, passnr, varid
 real(eightbytereal) :: equator_time
-logical :: ogdr
+logical :: ogdr, old_l2
 
 ! Data variables
 
@@ -201,6 +201,11 @@ files: do
 	i = index(infile, '/', .true.)
 	P%original = infile(i+1:)
 
+! Determine L2 processing version
+
+	call nfs(nf90_get_att(ncid,nf90_global,'references',arg))
+	old_l2 = index(arg, 'L2 library=V4.2p1p6p9,') > 0
+
 ! Allocate variables
 
 	allocate (a(nrec),b(nrec),d(40,nrec),valid(40,nrec),flags(nrec))
@@ -246,6 +251,7 @@ files: do
 	call cpy_var ('swh_rms', 'swh_rms_ka')
 	call cpy_var ('sig0', 'sig0_ka')
 	call cpy_var ('atmos_corr_sig0', 'dsig0_atmos_ka')
+	if (.not.old_l2) call cpy_var ('atmos_corr_sig0', 'dsig0_atmos_nn_ka')
 	call cpy_var ('off_nadir_angle_wf', 'off_nadir_angle2_wf_ka')
 	call cpy_var ('tb_k', 'tb_238')
 	call cpy_var ('tb_ka', 'tb_370')
