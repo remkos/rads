@@ -133,7 +133,7 @@ endif
 
 ! Compute wind speed
 
-if (lwind) wind = wind_ecmwf (sig0, 2.6d0)
+if (lwind) wind = wind_ecmwf (sig0, .true.)
 
 ! If nothing changed, stop here
 
