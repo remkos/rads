@@ -245,6 +245,7 @@ files: do
 	call cpy_var ('model_dry_tropo_corr', 'dry_tropo_ecmwf')
 	call cpy_var ('model_wet_tropo_corr', 'wet_tropo_ecmwf')
 	call cpy_var ('rad_wet_tropo_corr', 'wet_tropo_rad')
+	if (old_l2) var(nvar)%d = var(nvar)%d + 19d-3
 	call cpy_var ('iono_corr_gim', 'iono_gim')
 	call cpy_var ('sea_state_bias', 'ssb_bm3')
 	call cpy_var ('swh', 'swh_ka')
@@ -275,7 +276,7 @@ files: do
 	call cpy_var ('wind_speed_alt', 'wind_speed_alt')
 	call cpy_var ('rad_water_vapor', 'water_vapor_content')
 	call cpy_var ('rad_liquid_water', 'liquid_water')
-	var(nvar)%d = var(nvar)%d * 1d-2 ! Fix wrong scale
+	if (old_l2) var(nvar)%d = var(nvar)%d * 1d-2 ! Fix wrong scale
 	call get_var (ncid, 'range_used_40hz', d)
 	valid = (d == 0d0)
 	call get_var (ncid, 'peakiness_40hz', d)
