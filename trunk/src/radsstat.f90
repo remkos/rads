@@ -138,12 +138,13 @@ do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
 	! Process passes one-by-one
 	do pass = S%passes(1), S%passes(2), S%passes(3)
 		call rads_open_pass (S, Pin, cycle, pass)
-		! After very first call, initialise the day counter
-		if (isnan_(start_time)) start_time = Pin%start_time
-		if (isnan_(end_time)) end_time = floor(Pin%start_time/86400d0+step)*86400d0
-
-		! Process the pass data
-		if (Pin%ndata > 0) call process_pass (Pin%ndata, S%nsel)
+		if (Pin%ndata > 0) then
+			! After very first call with actual data, initialise the day counter
+			if (isnan_(start_time)) start_time = Pin%start_time
+			if (isnan_(end_time)) end_time = floor(Pin%start_time/86400d0+step)*86400d0
+			! Process the pass data
+			call process_pass (Pin%ndata, S%nsel)
+		endif
 
 		! Print the statistics at the end of the data pass (if requested)
 		if (period == period_pass .and. nint(modulo(dble(pass),step)) == 0) call output_stat
