@@ -578,6 +578,16 @@ Global RADS configuration file
 	<compress>int2 1d-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
 </var>
+<var name="wet_tropo_diff">
+	<long_name>difference between radiometer and ECMWF wet tropospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
+	<units>m</units>
+	<limits>-0.6 0.6</limits>
+	<data>wet_tropo_rad wet_tropo_ecmwf SUB</data>
+	<format>f7.4</format>
+	<compress>int2 1d-4</compress>
+	<comment>Determined by subtracting wet_tropo_ecmwf from wet_tropo_rad</comment>
+</var>
 <alias name="wet_tropo" field="8" sat="!c2 g1 gs">wet_tropo_rad wet_tropo_ecmwf</alias>
 <alias name="wet_tropo" field="8" sat="c2">wet_tropo_ecmwf</alias>
 <alias name="wet_tropo" field="8" sat="g1">wet_tropo_rad wet_tropo_era</alias>
