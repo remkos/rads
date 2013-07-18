@@ -2345,7 +2345,7 @@ Global RADS configuration file
 	<parameters sat="j2"> -18   0  0  0 0</parameters>
 	<parameters sat="n1"> 448   0  0  0 0</parameters>
 	<parameters sat="pn"> -15   0  0  0 0</parameters>
-	<parameters sat="sa"> -48   0  0  0 0</parameters>
+	<parameters sat="sa"> -60   0  0  0 0</parameters>
 </var>
 <var name="ref_frame_offset_mle3" field="3811" sat="j2">
 	<long_name>reference frame offset (MLE3)</long_name>
@@ -2443,6 +2443,15 @@ Global RADS configuration file
 	<data>dist_coast</data>
 	<format>f6.0</format>
 	<compress>int2</compress>
+</var>
+
+<var name="prox_coast" field="4502">
+	<long_name>coastal proximity parameter</long_name>
+	<source>NOC Southampton</source>
+	<parameters>CoastalProximity_v2_1.nc</parameters>
+	<data>prox_coast</data>
+	<format>f4.2</format>
+	<compress>int1 1d-2</compress>
 </var>
 
 <var name="seaice_class" field="4601 46" sat="e1 e2 n1">

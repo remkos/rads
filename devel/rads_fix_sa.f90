@@ -67,7 +67,7 @@ enddo
 ! Load SSB model
 
 if (lssb) then
-	call parseenv ('${ALTIM}/data/models/sax_hyb.nc?ssb_hyb', path)
+	call parseenv ('${ALTIM}/data/models/sa_ssb_hyb.nc?ssb_hyb', path)
 	if (grid_load(path,issb_hyb) /= 0) call rads_exit ('Error loading '//trim(path))
 endif
 
