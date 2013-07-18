@@ -2445,7 +2445,7 @@ Global RADS configuration file
 	<compress>int2</compress>
 </var>
 
-<var name="prox_coast" field="4502">
+<var name="prox_coast" field="4502" sat="n1">
 	<long_name>coastal proximity parameter</long_name>
 	<source>NOC Southampton</source>
 	<parameters>CoastalProximity_v2_1.nc</parameters>
