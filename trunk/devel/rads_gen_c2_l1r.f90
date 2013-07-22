@@ -295,7 +295,6 @@ files: do
 	call cpy_var ('swh_20hz', 'swh_ku', 'swh_rms_ku')
 	call cpy_var ('agc_20hz', 'agc_ku')
 	call cpy_var ('agc_amp_20hz+dagc_eta_20hz+dagc_alt_20hz+dagc_xi_20hz+dagc_swh_20hz', 'sig0_ku', 'sig0_rms_ku')
-	var(nvar-1)%v%info%scale_factor = 1d-2 ! Overrule default scale_factor
 
 	if (mle == 4) call cpy_var ('xi_sq_20hz', 'off_nadir_angle2_wf_ku', 'off_nadir_angle2_wf_rms_ku')
 
