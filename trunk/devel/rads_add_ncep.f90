@@ -151,7 +151,7 @@ endif
 
 ! Init air tide
 
-if (dry_on .or. ib_on) call airtideinit ('airtide', airinfo)
+if (dry_on .or. ib_on .or. air_on .or. sig0_on) call airtideinit ('airtide', airinfo)
 
 ! Correct existing ECMWF dry tropo correction for air tide on data of Envisat,
 ! TOPEX, Poseidon, and ERS-1/2 (but not REAPER data)
@@ -339,11 +339,11 @@ do i = 1,n
 		if (S%frequency(1) < 14d0) then	! Ku-band
 			atten(i) = 0.094d0 - 0.177d0 * rp - 0.145d0 * rt + 0.274d0 * rp * rt &
 				+ 1.45d-3 * wvc(i) + 0.66d-5 * wvc(i) * wvc(i) &
-				+ 0.169 * lwc(i)
+				+ 0.169d0 * lwc(i)
 		else ! Ka-band
 			atten(i) = 0.310d0 - 0.593d0 * rp - 0.499d0 * rt + 0.956d0 * rp * rt &
 				+ 7.21d-3 * wvc(i) + 4.43d-5 * wvc(i) * wvc(i) &
-				+ 1.070 * lwc(i)
+				+ 1.070d0 * lwc(i)
 		endif
 		atten(i) = 2d0 * atten(i) ! 2-way attenuation
 	endif
@@ -373,8 +373,8 @@ if (ib_on ) call rads_def_var (S, P, 'inv_bar_static')
 if (air_on) call rads_def_var (S, P, 'dry_tropo_airtide')
 if (sig0_on) then
 	call rads_def_var (S, P, 'dsig0_atmos_'//band)
-	call rads_def_var (S, P, 'water_vapor_content')
-	call rads_def_var (S, P, 'liquid_water')
+	call rads_def_var (S, P, 'water_vapor_content_gfs')
+	call rads_def_var (S, P, 'liquid_water_gfs')
 endif
 if (wind_on) then
 	call rads_def_var (S, P, 'wind_speed_gfs_u')
@@ -388,8 +388,8 @@ if (air_on) call rads_put_var (S, P, 'dry_tropo_airtide', air)
 if (sig0_on) then
 	call rads_put_var (S, P, 'sig0_'//band, sig0+atten)
 	call rads_put_var (S, P, 'dsig0_atmos_'//band, atten)
-	call rads_put_var (S, P, 'water_vapor_content', wvc)
-	call rads_put_var (S, P, 'liquid_water', lwc)
+	call rads_put_var (S, P, 'water_vapor_content_gfs', wvc)
+	call rads_put_var (S, P, 'liquid_water_gfs', lwc)
 endif
 if (wind_on) then
 	call rads_put_var (S, P, 'wind_speed_gfs_u', u10)

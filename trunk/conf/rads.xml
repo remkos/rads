@@ -443,7 +443,7 @@ Global RADS configuration file
 <var name="dry_tropo_ncep" field="702">
 	<long_name>NCEP dry tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_dry_troposphere</standard_name>
-	<source>NCEP reanalysis</source>
+	<source>NOAA/NCEP reanalysis</source>
 	<units>m</units>
 	<limits>-2.4 -2.1</limits>
 	<data>dry_tropo_ncep</data>
@@ -452,9 +452,9 @@ Global RADS configuration file
 	<comment>A dry tropospheric correction must be added to range to correct for dry troposphere delays</comment>
 </var>
 <var name="dry_tropo_gfs" field="708">
-	<long_name>NCEP GFS dry tropospheric correction</long_name>
+	<long_name>NOAA GFS dry tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_dry_troposphere</standard_name>
-	<source>NCEP Global Forecast System</source>
+	<source>NOAA Global Forecast System</source>
 	<units>m</units>
 	<limits>-2.4 -2.1</limits>
 	<data>dry_tropo_gfs</data>
@@ -503,7 +503,7 @@ Global RADS configuration file
 <var name="wet_tropo_ncep" field="803">
 	<long_name>NCEP wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
-	<source>NCEP</source>
+	<source>NOAA/NCEP reanalysis</source>
 	<units>m</units>
 	<limits>-0.6 0.0</limits>
 	<data>wet_tropo_ncep</data>
@@ -536,7 +536,7 @@ Global RADS configuration file
 <var name="wet_tropo_tovs_ncep" field="807" sat="gs">
 	<long_name>TOVS/NCEP wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
-	<source>TOVS and NCEP</source>
+	<source>TOVS and NOAA/NCEP</source>
 	<units>m</units>
 	<limits>-0.6 0.0</limits>
 	<data>wet_tropo_tovs_ncep</data>
@@ -545,9 +545,9 @@ Global RADS configuration file
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
 </var>
 <var name="wet_tropo_gfs" field="808">
-	<long_name>NCEP GFS wet tropospheric correction</long_name>
+	<long_name>NOAA/GFS wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
-	<source>NCEP Global Forecast System</source>
+	<source>NOAA Global Forecast System</source>
 	<units>m</units>
 	<limits>-0.6 0.0</limits>
 	<data>wet_tropo_gfs</data>
@@ -1128,8 +1128,8 @@ Global RADS configuration file
 		<units>dB</units>
 		<limits>6 27</limits>
 		<data>sig0_ka</data>
-		<format>f6.3</format>
-		<compress>int2 1d-3</compress>
+		<format>f6.2</format>
+		<compress>int2 1d-2</compress>
 	</var>
 	<alias name="sig0" field="18">sig0_ka</alias>
 </if>
@@ -1140,8 +1140,8 @@ Global RADS configuration file
 		<units>dB</units>
 		<limits>6 27</limits>
 		<data>sig0_ku</data>
-		<format>f6.3</format>
-		<compress>int2 1d-3</compress>
+		<format>f6.2</format>
+		<compress>int2 1d-2</compress>
 	</var>
 	<alias name="sig0" field="18">sig0_ku</alias>
 </else>
@@ -1151,8 +1151,8 @@ Global RADS configuration file
 	<units>dB</units>
 	<limits>6 27</limits>
 	<data>sig0_c</data>
-	<format>f6.3</format>
-	<compress>int2 1d-3</compress>
+	<format>f6.2</format>
+	<compress>int2 1d-2</compress>
 </var>
 <var name="sig0_s" field="1802" sat="n1">
 	<long_name>S-band backscatter coefficient</long_name>
@@ -1160,8 +1160,8 @@ Global RADS configuration file
 	<units>dB</units>
 	<limits>6 27</limits>
 	<data>sig0_s</data>
-	<format>f6.3</format>
-	<compress>int2 1d-3</compress>
+	<format>f6.2</format>
+	<compress>int2 1d-2</compress>
 </var>
 <var name="sig0_sdr" field="1803" sat="gs">
 	<long_name>Ku-band backscatter coefficient (SDR)</long_name>
@@ -1169,8 +1169,8 @@ Global RADS configuration file
 	<units>dB</units>
 	<limits>6 27</limits>
 	<data>sig0_sdr</data>
-	<format>f6.3</format>
-	<compress>int2 1d-3</compress>
+	<format>f6.2</format>
+	<compress>int2 1d-2</compress>
 </var>
 <var name="agc_ku" field="1803" sat="c2">
 	<long_name>automatic gain control</long_name>
@@ -1186,8 +1186,8 @@ Global RADS configuration file
 	<units>dB</units>
 	<limits>6 27</limits>
 	<data>sig0_ku_mle3</data>
-	<format>f6.3</format>
-	<compress>int2 1d-3</compress>
+	<format>f6.2</format>
+	<compress>int2 1d-2</compress>
 </var>
 
 <var name="wind_speed_alt" field="1901">
@@ -2093,43 +2093,43 @@ Global RADS configuration file
 	<long_name>Ku-band backscatter coefficient bias</long_name>
 	<units>dB</units>
 	<data>dsig0_ku</data>
-	<format>f6.3</format>
+	<format>f6.2</format>
 	<default>0</default>
-	<compress>int2 1d-3</compress>
+	<compress>int2 1d-2</compress>
 	<comment>Correction already added to backscatter coefficient</comment>
 </var>
 <var name="dsig0_c" field="3202" sat="tx">
 	<long_name>C-band backscatter coefficient bias</long_name>
 	<units>dB</units>
 	<data>dsig0_c</data>
-	<format>f6.3</format>
+	<format>f6.2</format>
 	<default>0</default>
-	<compress>int2 1d-3</compress>
+	<compress>int2 1d-2</compress>
 	<comment>Correction already added to backscatter coefficient</comment>
 </var>
 <var name="dsig0_atmos_ka" field="3203" sat="sa">
 	<long_name>Ka-band backscatter coefficient correction due to atmosphere/attitude</long_name>
 	<units>dB</units>
 	<data>dsig0_atmos_ka</data>
-	<format>f6.2</format>
+	<format>f4.2</format>
 	<compress>int2 1d-2</compress>
 	<comment>Correction already added to backscatter coefficient</comment>
 </var>
-<var name="dsig0_atmos_ku" field="3203" sat="e1 e2 j1 j2 n1 pn tx">
+<var name="dsig0_atmos_ku" field="3203" sat="c2 e1 e2 j1 j2 n1 pn tx">
 	<long_name>Ku-band backscatter coefficient correction due to atmosphere/attitude</long_name>
 	<units>dB</units>
 	<data>dsig0_atmos_ku</data>
-	<default>0</default>
-	<format>f6.2</format>
+	<default>0.22</default>
+	<format>f4.2</format>
 	<compress>int1 1d-2</compress>
-	<compress sat="j2">int2 1d-2</compress>
+	<compress sat="c2 j2">int2 1d-2</compress>
 	<comment>Correction already added to backscatter coefficient</comment>
 </var>
 <var name="dsig0_atmos_c" field="3204" sat="j1 j2 tx">
 	<long_name>C-band backscatter coefficient correction due to atmosphere/attitude</long_name>
 	<units>dB</units>
 	<data>dsig0_atmos_c</data>
-	<format>f6.2</format>
+	<format>f4.2</format>
 	<compress>int1 1d-2</compress>
 	<comment>Correction already added to backscatter coefficient</comment>
 </var>
@@ -2137,7 +2137,7 @@ Global RADS configuration file
 	<long_name>S-band backscatter coefficient correction due to atmosphere/attitude</long_name>
 	<units>dB</units>
 	<data>dsig0_atmos_s</data>
-	<format>f6.2</format>
+	<format>f4.2</format>
 	<compress>int1 1d-2</compress>
 	<comment>Correction already added to backscatter coefficient</comment>
 </var>
@@ -2180,6 +2180,17 @@ Global RADS configuration file
 	<standard_name>atmosphere_mass_content_of_cloud_liquid_water</standard_name>
 	<units>kg/m^2</units>
 	<data>liquid_water</data>
+	<default>0</default>
+	<format>f6.2</format>
+	<compress>int2 1d-2</compress>
+</var>
+<var name="liquid_water_gfs" sat="c2 sa">
+	<long_name>NOAA/GFS liquid water content</long_name>
+	<standard_name>atmosphere_mass_content_of_cloud_liquid_water</standard_name>
+	<source>NOAA Global Forecast System</source>
+	<units>kg/m^2</units>
+	<data>liquid_water_gfs</data>
+	<default>0</default>
 	<format>f6.2</format>
 	<compress>int2 1d-2</compress>
 </var>
@@ -2189,15 +2200,27 @@ Global RADS configuration file
 	<standard_name>atmosphere_mass_content_of_water_vapor</standard_name>
 	<units>kg/m^2</units>
 	<data>water_vapor_content</data>
-	<if sat="e1 e2">
-		<format>f6.2</format>
-		<compress>int2 1d-2</compress>
-	</if>
-	<else>
+	<default>0</default>
+	<if sat="j2">
 		<format>f6.1</format>
 		<compress>int2 1d-1</compress>
+	</if>
+	<else>
+		<format>f6.2</format>
+		<compress>int2 1d-2</compress>
 	</else>
 </var>
+<var name="water_vapor_content_gfs" field="3302" sat="c2 sa">
+	<long_name>NOAA/GFS water vapor content</long_name>
+	<standard_name>atmosphere_mass_content_of_water_vapor</standard_name>
+	<source>NOAA Global Forecast System</source>
+	<units>kg/m^2</units>
+	<data>water_vapor_content</data>
+	<default>0</default>
+	<format>f6.2</format>
+	<compress>int2 1d-2</compress>
+</var>
+
 <!--
 <var name="frame_count" field="3401">
 	<long_name>frame count</long_name>
