@@ -1,3 +1,5 @@
+% $Id$
+
 \documentclass[a4paper,11pt,openany,natbib]{thesis}
 \usepackage{palatino}
 \usepackage{verbatim}
@@ -72,21 +74,21 @@ The time corresponds to the moment of reflection of the radar pulse on the sea s
 \begin{vartable}
 \var{time_1985} & 101 & time since 1985-01-01 00:00:00 & s & all & & \\
 \var{time_2000} & 106 & time since 2000-01-01 00:00:00 & s & all & & \\
-\var{time_rel_eq} & 102 & time relative to equator crossing & s & all & & 1 \\
-\var{time_local_solar} & 103 & local solar time & s & all & & 2 \\
-\var{time_mjd} & 105 & time since 1858-11-17 00:00:00 & days & all & & 3 \\
-\var{time_ymdhms} & 104 & time formatted as ymdhms &  & all & & 4 \\
+\var{time_rel_eq} & 102 & time relative to equator crossing & s & all & & \ref{item:time_rel_eq} \\
+\var{time_local_solar} & 103 & local solar time & s & all & & \ref{item:time_local_solar} \\
+\var{time_mjd} & 105 & time since 1858-11-17 00:00:00 & days & all & & \ref{item:time_mjd} \\
+\var{time_ymdhms} & 104 & time formatted as ymdhms &  & all & & \ref{item:time_ymdhms} \\
 \hline
-\var{time} & 1 & \alias{time_1985} & & all & & 5 \\
+\var{time} & 1 & \alias{time_1985} & & all & & \ref{item:time} \\
 \end{vartable}
 
 Notes:
 \begin{enumerate}
-\item Time is negative prior to equator crossing, positive thereafter.
-\item The local solar time is expressed as seconds since the start of the day.
-\item Same as Modified Julian Days.
-\item The variable \var{time_ymdhms} will produce a floating value of the type 20110908135001.536 for 8 Sep 2011 13:50:01.536 UTC.
-\item No time limit is set by default. Can be controlled by the \cmd{t=} or \cmd{ymd=} flags on the command line.
+\item Time is negative prior to equator crossing, positive thereafter.\label{item:time_rel_eq}
+\item The local solar time is expressed as seconds since the start of the day.\label{item:time_local_solar}
+\item Time in Modified Julian Days.\label{item:time_mjd}
+\item The variable \var{time_ymdhms} will produce a floating value of the type 20110908135001.536 for 8 Sep 2011 13:50:01.536 UTC.\label{item:time_ymdhms}
+\item No time limit is set by default. Can be controlled by the \cmd{t=} or \cmd{ymd=} flags on the command line.\label{item:time}
 \end{enumerate}
 
 \section{Latitude and longitude}
@@ -109,43 +111,46 @@ The altitude is that of the centre-of-mass of the spacecraft, so corrections fro
 If the time tags on the original GDR data include a bias, the orbit is either (re)interpolated at the \emph{corrected} time tag, or a correction proportional to the orbital altitude rate is applied.
 
 \begin{vartable}
-\var{alt_jgm3}     & 401 & JGM-3 altitude   & m & gs pn tx && 1 \\
-\var{alt_dgme04}   & 402 & DGM-E04 altitude & m & e1 e2 && 2 \\
-\var{alt_cnes}     & 404 & CNES altitude    & m & c2 n1 pn tx && 3 \\
-\var{alt_pgs7777}  & 410 & PGS7777 altitude  & m & g1 && 4 \\
-\var{alt_ggm02c_itrf2000}& 411 & GGM02c(ITRF2000) altitude  & m & gs pn tx && 5 \\
-\var{alt_ggm02c_itrf2005}& 413 & GGM02c(ITRF2005) altitude  & m & pn tx && 5 \\
-\var{alt_eiggl04s} & 414 & EIGEN-GL04c altitude & m & c2 j1 j2 n1 pn tx && 6 \\
-\var{alt_gdrcp}    & 415 & GDR-C' altitude & m & g1 gs j1 j2 pn tx && 7 \\
-\var{alt_gps}      & 416 & GPS altitude & m & j1 j2 && 8 \\
-\var{alt_eig6}     & 417 & EIGEN-6C altitude & m & j1 j2 n1 && 9 \\
-\var{alt_reaper}   & 420 & REAPER/COMBI altitude & m & e1 e2 && 10 \\
-\var{alt_reaper_deos} & 421 & REAPER/DEOS altitude & m & e1 e2 && 10 \\
-\var{alt_reaper_gfz}  & 422 & REAPER/GFZ altitude & m & e1 e2 && 10 \\
-\var{alt_reaper_esoc} & 423 & REAPER/ESOC altitude & m & e1 e2 && 10 \\
+\var{alt_jgm3}     & 401 & JGM-3 altitude   & m & gs pn tx && \ref{item:alt_jgm3} \\
+\var{alt_dgme04}   & 402 & DGM-E04 altitude & m & e1 e2 && \ref{item:alt_dgme04} \\
+\var{alt_cnes}     & 404 & CNES altitude    & m & c2 n1 pn tx && \ref{item:alt_cnes} \\
+\var{alt_pgs7777}  & 410 & PGS7777 altitude  & m & g1 && \ref{item:alt_pgs7777} \\
+\var{alt_ggm02c_itrf2000}& 411 & GGM02c(ITRF2000) altitude  & m & gs pn tx && \ref{item:alt_ggm02c} \\
+\var{alt_ggm02c_itrf2005}& 413 & GGM02c(ITRF2005) altitude  & m & pn tx && \ref{item:alt_ggm02c} \\
+\var{alt_eiggl04s} & 414 & EIGEN-GL04c altitude & m & c2 j1 j2 n1 pn tx && \ref{item:alt_eiggl04s} \\
+\var{alt_gdrcp}    & 415 & GDR-C' altitude & m & g1 gs j1 j2 pn tx && \ref{item:alt_gdrcp} \\
+\var{alt_gps}      & 416 & GPS altitude & m & j1 j2 && \ref{item:alt_gps} \\
+\var{alt_eig6}     & 417 & EIGEN-6C altitude & m & j1 j2 n1 && \ref{item:alt_eig6} \\
+\var{alt_gdrd}     & 418 & GDR-D altitude & m & c2 j1 j2 n1 sa && \ref{item:alt_gdrd} \\
+\var{alt_reaper}   & 420 & REAPER/COMBI altitude & m & e1 e2 && \ref{item:alt_reaper} \\
+\var{alt_reaper_deos} & 421 & REAPER/DEOS altitude & m & e1 e2 && \ref{item:alt_reaper} \\
+\var{alt_reaper_gfz}  & 422 & REAPER/GFZ altitude & m & e1 e2 && \ref{item:alt_reaper} \\
+\var{alt_reaper_esoc} & 423 & REAPER/ESOC altitude & m & e1 e2 && \ref{item:alt_reaper} \\
 \hline
-\var{alt} & 4 & \alias{alt_cnes} & & c2 && 11\\
-\var{alt} & 4 & \alias{alt_reaper} & & e1 && 11 \\
-\var{alt} & 4 & \alias{alt_dgme04} & & e2 && 11 \\
-\var{alt} & 4 & \alias{alt_pgs7777} & & g1 && 11 \\
-\var{alt} & 4 & \alias{alt_gdrcp} & & gs && 11 \\
-\var{alt} & 4 & \alias{alt_eiggl04s} & & j1 j2 n1 && 11 \\
-\var{alt} & 4 & \alias{alt_gdrcp} & & pn tx && 11 \\
+\var{alt} & 4 & \alias{alt_gdrd} \var{alt_cnes} & & c2 && \ref{item:alt}\\
+\var{alt} & 4 & \alias{alt_reaper} \var{alt_gfz} & & e1 e2 && \ref{item:alt} \\
+\var{alt} & 4 & \alias{alt_pgs7777} & & g1 && \ref{item:alt} \\
+\var{alt} & 4 & \alias{alt_gdrcp} & & gs && \ref{item:alt} \\
+\var{alt} & 4 & \alias{alt_gdrd} \var{alt_eiggl04s} & & j1 && \ref{item:alt} \\
+\var{alt} & 4 & \alias{alt_gdrd} & & j2 sa && \ref{item:alt} \\
+\var{alt} & 4 & \alias{alt_gdrd} \var{alt_gdrcp} & & n1 && \ref{item:alt} \\
+\var{alt} & 4 & \alias{alt_gdrcp} \var{alt_jgm3} & & pn tx && \ref{item:alt} \\
 \end{vartable}
 
 Notes:
 \begin{enumerate}
-\item JGM-3 was the original gravity field solutions used by NASA for the orbit determination of Geosat and TOPEX/Poseidon that featured on the GDR products. Though the gravity field was tailored to the TOPEX orbit, it was generally regarded the best at the time and was hence also used more widely than just for TOPEX/Poseidon. The radial orbit accuracy of about 3 cm for TOPEX/Poseidon and 8 cm for Geosat has since been superseded by more up-to-date orbit solutions.
-\item DGM-E04 was a gravity field model developed at the Delft University of Technology tailored to the ERS-1 and ERS-2 orbits and derived from the JGM-3 model. The model significantly improved the radial orbit accuracy to about 3.5 cm, better than any general purpose models available at the time.
-\item CNES produces the operational and precise orbits for a number of satellites. Unfortunately, in RADS the CNES orbits are based on mix of gravity field solutions. The CNES orbits for the TOPEX/Poseidon mission feature on the GDRs and are based on the JGM-3 gravity field model. The CNES orbits for CryoSat and Envisat are obtained from their respective GDR products and are based on the EIGEN-GL04c gravity field model.
-\item PGS7777 is a NASA preliminary gravity field solution tailored to the Geosat and GFO satellite orbits. The NASA PGS7777 orbit solution for GFO is based on SLR data only as the GPS tracking system on GFO failed.
-\item Orbit solutions created at NASA using the GGM02c gravity field and station coordinates in the ITRF2000 or ITRF2005 reference frame.
-\item Orbits produced with the EIGEN-GL04c or EIGEN-GL04s gravity fields.
-\item Orbits produced under strict Jason GDR-C' standards.
-\item Reduced-dynamic (fast-delivery) orbits based on GPS tracking data only.
-\item Orbits provided by ESOC using the EIGEN-6C gravity field.
-\item Orbits produced by the REAPER project. A combined solution and individual solutions created by DEOS (TU Delft), GFZ and ESOC are available \citep{rudenko2011}.
-\item The variable \var{alt} refers to the preferred (best) orbit solution for each satellite.
+\item JGM-3 was the original gravity field solutions used by NASA for the orbit determination of Geosat and TOPEX/Poseidon that featured on the GDR products. Though the gravity field was tailored to the TOPEX orbit, it was generally regarded the best at the time and was hence also used more widely than just for TOPEX/Poseidon. The radial orbit accuracy of about 3 cm for TOPEX/Poseidon and 8 cm for Geosat has since been superseded by more up-to-date orbit solutions.\label{item:alt_jgm3}
+\item DGM-E04 was a gravity field model developed at the Delft University of Technology tailored to the ERS-1 and ERS-2 orbits and derived from the JGM-3 model. The model significantly improved the radial orbit accuracy to about 3.5 cm, better than any general purpose models available at the time.\label{item:alt_dgme04}
+\item CNES produces the operational and precise orbits for a number of satellites. Unfortunately, in RADS the CNES orbits are based on mix of gravity field solutions. The CNES orbits for the TOPEX/Poseidon mission feature on the GDRs and are based on the JGM-3 gravity field model. The CNES orbits for CryoSat and Envisat are obtained from their respective GDR products and are based on the EIGEN-GL04c gravity field model.\label{item:alt_cnes}
+\item PGS7777 is a NASA preliminary gravity field solution tailored to the Geosat and GFO satellite orbits. The NASA PGS7777 orbit solution for GFO is based on SLR data only as the GPS tracking system on GFO failed.\label{item:alt_pgs7777}
+\item Orbit solutions created at NASA using the GGM02c gravity field and station coordinates in the ITRF2000 or ITRF2005 reference frame.\label{item:alt_ggm02c}
+\item Orbits produced with the EIGEN-GL04c or EIGEN-GL04s gravity fields.\label{item:alt_eiggl04s}
+\item Orbits produced under strict Jason GDR-C' standards.\label{item:alt_gdrcp}
+\item Reduced-dynamic (fast-delivery) orbits based on GPS tracking data only.\label{item:alt_gps}
+\item Orbits provided by ESOC using the EIGEN-6C gravity field.\label{item:alt_eig6}
+\item Orbits produced under strict Jason GDR-D standards (current baseline).\label{item:alt_gdrd}
+\item Orbits produced by the REAPER project. A combined solution and individual solutions created by DEOS (TU Delft), GFZ and ESOC are available \citep{rudenko2011}.\label{item:alt_reaper}
+\item The variable \var{alt} refers to the preferred (best) orbit solution for each satellite. If two variable names are mentioned, RADS picks the first one by preference; it that is not available, the second variable is used.\label{item:alt}
 \end{enumerate}
 
 \section{Orbital altitude rate}
@@ -163,11 +168,11 @@ The sea level anomaly in RADS is always computed on-the-fly. This means that the
 
 The \file{rads.xml} configuration file spells out, in reverse polish notation (RPN), how the sea level anomaly is computed. The `sea level equation' is written as:
 \begin{smallverb}
-<math>
+<data>
     alt range SUB dry_tropo SUB wet_tropo SUB iono SUB
     inv_bar SUB tide_solid SUB tide_ocean SUB tide_load SUB
     tide_pole SUB ssb SUB mss SUB ref_frame_offset SUB
-</math>
+</data>
 \end{smallverb}
 where \cmd{SUB} stands for `subtract' and the others are names or aliases of the various variables that make up the sea level anomaly. If any of these variables is NaN, the result is NaN as well. 
 The use of aliases comes in handy here. We can, for example, switch out the orbit solution between one flavour
@@ -176,7 +181,7 @@ and another simply by directing the alias \var{alt} from say \var{alt_jgm3} to \
 The configuration file also spells out which variables are used as `quality flag'. That is, if any of these variables is set to NaN, the sea level anomaly is also set to NaN, even though these variables strictly do not contribute to the computation of sea level. For example:
 \begin{smallverb}
 <quality_flag>
-    swh_ku sig0_ku wind_speed range_rms_ku range_numval_ku flags
+    swh sig0 range_rms range_numval flags
 </quality_flag>
 \end{smallverb} 
 \begin{vartable}
@@ -199,11 +204,14 @@ To compute the height of the sea surface, we subtract the primary range (general
 Dual-frequency altimeters measure the range also on a secondary frequency (C- and S-band) which allows for the computation of the ionospheric path delay directly for altimeter observations rather than models.
 
 \begin{vartable}
-\var{range_ku} & 601 & altimeter range (Ku) & m & all & & \\
+\var{range_ka} & 601 & altimeter range (Ka) & m & sa & & \\
+\var{range_ku} & 601 & altimeter range (Ku) & m & other & & \\
+\var{range_ku_mle3} & 601 & altimeter range (MLE3) & m & j2 & & \ref{item:range_ku_mle3} \\
 \var{range_c}  & 602 & altimeter range (C) & m & tx j1 j2 & & \\
 \var{range_s}  & 602 & altimeter range (S) & m & n1 & & \\
 \hline
-\var{range} & 6 & \alias{range_ku} & & all & & \\
+\var{range} & 6 & \alias{range_ka} & & sa & & \\
+\var{range} & 6 & \alias{range_ku} & & other & & \\
 \end{vartable}
 
 Notes:
@@ -214,12 +222,14 @@ Notes:
 \item The ERS-2 USO correction appears to be low during the periods 1997-07-26 20:24:04 to 1998-01-07 03:58:09 and 1998-03-17 11:10:48 to 2000-01-08 06:04:13. During both periods 4.77 mm is added to the USO correction (and to range).
 \item The USO correction for Envisat is based on external USO correction files (1-Hz data): \url{http://earth.esa.int/pcs/envisat/ra2/auxdata/}
 \item The Envisat Ku- and S-band ranges are increased by a constant of 409.2 mm (same as ERS-1). During the short operation of the Side B altimeter an additional 9 mm is added to both ranges. An additional 150 mm is added to the S-band range to account for a bias in the dual-frequency ionosphere correction \citep{scharroo2010a}.
+\item S-band range for Envisat is available only until the loss of the S-band signal.
 \item TOPEX Ku- and C-band ranges are corrected for internal path delays and oscillator drifts based on external correction files (one value per cycle: \url{http://topex.wff.nasa.gov/}) \citep{hayne1994}. An additional -15.4 mm is added to the C-band range to account for a bias in the dual-frequency ionosphere correction \citep{scharroo2010a}.
 \item A constant bias of -2.3 mm is added to the Jason-1 C-band range to account for a bias in the dual-frequency ionosphere correction \citep{scharroo2010a}.
+\item A separate range based on an MLE3 retracker is available for Jason-2.\label{item:range_ku_mle3}
 \end{enumerate}
 
 \section{Altimeter range statistics}
-The altimeter ranges are provided in RADS as (approximately) 1-second averages based on 10 or 20 `elementary' measurements during that second. The altimeter range reported is, in fact, not the statistical mean, but is generally determined as follows:
+The altimeter ranges are provided in RADS as (approximately) 1-second averages based on 10, 20, or 40 'elementary' measurements during that second. The altimeter range reported is, in fact, not the statistical mean, but is generally determined as follows:
 \begin{itemize}
 \item Interpolate the orbital altitude at the same time tags as the elementary measurements;
 \item Subtract the orbital altitude from the range;
@@ -231,26 +241,34 @@ The altimeter ranges are provided in RADS as (approximately) 1-second averages b
 Hence, technically, \var{range_rms} is not the standard deviation of the altimeter range, but the standard deviation of the elementary `orbit minus range' values with a trend fitted and removed as well, and taking into account the extra degree of freedom. It should also not be confused with an error estimate for the range measurement.
 
 \begin{vartable}
+\var{range_rms_ka} & 2002 & std dev of Ka-band range & m & sa & 0.0 0.17 & \\
 \var{range_rms_ku} & 2002 & std dev of Ku-band range & m & g1 gs & 0.0 0.25 & \\
                     &      &                          &   & j1 & 0.0 0.2 & \\
                     &      &                          &   & j2 & 0.0 0.17 & \\
                     &      &                          &   & tx & 0.0 0.15 & \\
                     &      &                          &   & other & 0.0 0.4 & \\
 \var{range_rms_c}  & 2004 & std dev of C-band range  & m & j1 j2 & 0.0 0.4 & \\
-\var{range_rms_s}  & 2004 & std dev of S-band range  & m & n1 & 0.0 0.4 & 1 \\
-\var{range_numval_ku} & 2101 & nr of valid Ku-band measurements && g1 gs tx & 9 10 & \\
-                      &      &                                      && j1 j2 & 16 20 & \\
-                      &      &                                      && other & 17 20 & \\
-\var{range_numval_ku_c} & 2102 & nr of valid C-band measurements && j1 j2 & 17 20 & \\
+\var{range_rms_s}  & 2004 & std dev of S-band range  & m & n1 & 0.0 0.4 & \ref{item:range_rms_s} \\
 \hline
-\var{range_rms}    &   20 & \alias{range_rms_ku} && all && \\
-\var{range_numval} &   21 & \alias{range_numval_ku} && all && \\
+\var{range_rms}    &   20 & \alias{range_rms_ka} && sa && \\
+\var{range_rms}    &   20 & \alias{range_rms_ku} && other && \\
 \end{vartable}
 
 Note:
 \begin{enumerate}
-\item Standard deviation of S-band range for Envisat available on data processed after 17 April 2012, and only until the loss of the S-band signal.
+\item Standard deviation of S-band range for Envisat is available only until the loss of the S-band signal.\label{item:range_rms_s}
 \end{enumerate}
+
+\begin{vartable}
+\var{range_numval_ku} & 2101 & nr of valid Ka-band measurements && sa & 33 40 & \\
+\var{range_numval_ku} & 2101 & nr of valid Ku-band measurements && g1 gs tx & 9 10 & \\
+                      &      &                                      && j1 j2 & 16 20 & \\
+                      &      &                                      && other & 17 20 & \\
+\var{range_numval_c} & 2102 & nr of valid C-band measurements && j1 j2 & 17 20 & \\
+\hline
+\var{range_numval} &   21 & \alias{range_numval_ka} && sa && \\
+\var{range_numval} &   21 & \alias{range_numval_ku} && other && \\
+\end{vartable}
 
 \section{Dry tropospheric correction and air tide}
 \label{var:dry_tropo}
@@ -261,22 +279,22 @@ Generally, the temporal spacing of the model grids is 6 hours, while the spatial
 To remedy this problem an air tide correction is applied to the sea level pressure, by removing the air tide from the 6-hourly grids before spatio-temporal interpolation and then adding the air tide back for the time and location of the measurement. This correction is already applied to the ECMWF dry tropospheric correction on the Jason-2 GDRs; for all others it is corrected in the RADS processing.
 
 \begin{vartable}
-\var{dry_tropo_ecmwf} & 701 & ECWMF dry tropo corr & m & all, but g1 gs & -2.4 -2.1 & 1 \\
-\var{dry_tropo_ncep}  & 702 & NCEP dry tropo corr  & m & all & -2.4 -2.1 & 2, 4 \\
-\var{dry_tropo_era}   & 709 & ERA Interim dry tropo corr   & m & all & -2.4 -2.1 & 3, 4 \\
-\var{dry_tropo_airtide} & 4901 & air tide corr     & m & c2 e1 j1 pn tx & & 5 \\
+\var{dry_tropo_ecmwf} & 701 & ECWMF dry tropo corr & m & all, but g1 gs & -2.4 -2.1 & \ref{item:dry_tropo_ecmwf} \\
+\var{dry_tropo_ncep}  & 702 & NCEP dry tropo corr  & m & all & -2.4 -2.1 & \ref{item:dry_tropo_ncep}, \ref{item:dry_tropo_lakes} \\
+\var{dry_tropo_era}   & 709 & ERA Interim dry tropo corr   & m & all & -2.4 -2.1 & \ref{item:dry_tropo_era}, \ref{item:dry_tropo_lakes} \\
+\var{dry_tropo_airtide} & 4901 & air tide corr     & m & c2 e1 j1 pn tx & & \ref{item:dry_tropo_airtide} \\
 \hline
-\var{dry_tropo}       &   7 & \alias{dry_tropo_ncep} && g1 gs && \\
+\var{dry_tropo}       &   7 & \alias{dry_tropo_era} && g1 gs && \\
 \var{dry_tropo}       &   7 & \alias{dry_tropo_ecmwf} && other && \\
 \end{vartable}
 
 Notes:
 \begin{enumerate}
-\item The pressure fields on which this correction is based are from the ECMWF operational analysis runs. That means that numerous changes to the models and their resolution create an unstable reference for long-term studies. Please verify any of the ECMWF model results against the other models. Because of an unfortunate choice to use surface pressure fields, instead of sea level pressure fields, for this correction, coastal areas may be affected by ``leaking'' of the effect of higher terrain over land (thus lower pressure) into the sea and ocean (where there should be no terrain effect).
-\item The NCEP reanalysis model used for this correction has \emph{not} gone through any updates, so from that point of view the correction should be consistent over time. However, this older model also is less accurate and has a lower resolution (2.5\deg$\times$2.5\deg) than the ECMWF analysis fields. 
-\item The ERA (ECMWF ReAnalysis) Interim model provides an excellent long-term consistency. The data iis distributed by ECMWF as Gaussian grids with an approximately uniform spacing of 79~km \citep{berrisford2011}.
-\item NCEP and ERA sea level pressure grids are interpolated and, over land, the pressure is then corrected for altitude based on a high-resolution terrain model, thus avoiding the coastal contamination seen in the ECMWF dry tropospheric correction.
-\item The air tide correction to the dry tropospheric correction is provided for reference only. It is already applied to all variations of the dry tropospheric correction (ECMWF, NCEP, ERA interim).
+\item The pressure fields on which this correction is based are from the ECMWF operational analysis runs. That means that numerous changes to the models and their resolution create an unstable reference for long-term studies. Please verify any of the ECMWF model results against the other models. Because of an unfortunate choice to use surface pressure fields, instead of sea level pressure fields, for this correction, coastal areas may be affected by ``leaking'' of the effect of higher terrain over land (thus lower pressure) into the sea and ocean (where there should be no terrain effect).\label{item:dry_tropo_ecmwf}
+\item The NCEP reanalysis model used for this correction has \emph{not} gone through any updates, so from that point of view the correction should be consistent over time. However, this older model also is less accurate and has a lower resolution (2.5\deg$\times$2.5\deg) than the ECMWF analysis fields. \label{item:dry_tropo_ncep}
+\item The ERA (ECMWF ReAnalysis) Interim model provides an excellent long-term consistency. The data is distributed by ECMWF as Gaussian grids with an approximately uniform spacing of 79~km \citep{berrisford2011}.\label{item:dry_tropo_era}
+\item NCEP and ERA sea level pressure grids are interpolated and, over land and lakes, the pressure is then corrected for altitude based on a high-resolution terrain model, thus avoiding the coastal contamination seen in the ECMWF dry tropospheric correction.\label{item:dry_tropo_lakes}
+\item The air tide correction to the dry tropospheric correction is provided for reference only. It is already applied to all variations of the dry tropospheric correction (ECMWF, NCEP, ERA interim).\label{item:dry_tropo_airtide}
 \end{enumerate}
 
 \section{Wet tropospheric correction}
@@ -292,65 +310,69 @@ Because of the large spatial and temporal variability (much more so than pressur
 The radiometer wet tropospheric correction for ERS-1, ERS-2, and Envisat is based on the altimeter backscatter coefficient (before correction for atmospheric attenuation) and the radiometer brightness temperatures at 23.8 GHz and 36.5 GHz, using all the same neural network algorithm as was developed for Envisat \citep{labroue2003}. For TOPEX/Poseidon, Jason-1 and -2, the radiometer wet tropospheric correction is derived from their respective 3-channel brightness temperatures using multi-layer parametric algorithms  \citep{ruf1995c,dumont2001}. For GFO, the the 2-channel brightness temperatures are combined with the altimeter wind speed using a log-linear model \citep{ruf1996}. See Sections~\ref{var:sig0} and \ref{var:tb} for information about corrections applied to the backscatter and brightness temperatures prior to evaluating the models.
 
 \begin{vartable}
-\var{wet_tropo_rad} & 801 & radiometer wet tropo corr & m & n1 & -0.6 0.05 & 1 \\
-                    &     &                           &   & pn tx & -0.6 -0.001 & 2 \\
-                    &     &                           &   & e2 & -0.6 0.0 & 3 \\
+\var{wet_tropo_rad} & 801 & radiometer wet tropo corr & m & n1 & -0.6 0.05 & \ref{item:wet_tropo_rad_n1} \\
+                    &     &                           &   & pn tx & -0.6 -0.001 & \ref{item:wet_tropo_rad_tp} \\
+                    &     &                           &   & e2 & -0.6 0.0 & \ref{item:wet_tropo_rad_e2} \\
                     &     &                           &   & e1 g1 j1 j2 & -0.6 0.0 & \\
-\var{wet_tropo_ecmwf} & 802 & ECMWF wet tropo corr    & m & all, but g1 gs & -0.6 0.0 & 4 \\ 
-\var{wet_tropo_ncep} & 803 & NCEP wet tropo corr      & m & all & -0.6 0.0 & 5 \\
-\var{wet_tropo_nvap} & 804 & NASA NVAP wet tropo corr & m & gs & -0.6 0.0 & 6 \\
-\var{wet_tropo_tovs_ssmi} & 805 & TOVS/SSMI wet tropo corr & m & gs & -0.6 0.0 & 7 \\
-\var{wet_tropo_tovs_ncep} & 807 & TOVS/NCEP wet tropo corr & m & gs & -0.6 0.0 & 8 \\
-\var{wet_tropo_era} & 809 & ERA wet tropo corr        & m & all & -0.6 0.0 & 9 \\
-\var{wet_tropo_rad_enh} & 810 & enhanced rad wet tropo & m & j1 j2 & -0.6 0.0 & 10 \\
+\var{wet_tropo_ecmwf} & 802 & ECMWF wet tropo corr    & m & all, but g1 gs & -0.6 0.0 & \ref{item:wet_tropo_ecmwf} \\ 
+\var{wet_tropo_ncep} & 803 & NCEP wet tropo corr      & m & all & -0.6 0.0 & \ref{item:wet_tropo_ncep} \\
+\var{wet_tropo_nvap} & 804 & NASA NVAP wet tropo corr & m & gs & -0.6 0.0 & \ref{item:wet_tropo_nvap} \\
+\var{wet_tropo_tovs_ssmi} & 805 & TOVS/SSMI wet tropo corr & m & gs & -0.6 0.0 & \ref{item:wet_tropo_tovs_ssmi} \\
+\var{wet_tropo_tovs_ncep} & 807 & TOVS/NCEP wet tropo corr & m & gs & -0.6 0.0 & \ref{item:wet_tropo_tovs_ncep} \\
+\var{wet_tropo_era} & 809 & ERA interim wet tropo corr & m & all & -0.6 0.0 & \ref{item:wet_tropo_era} \\
 \hline
-\var{wet_tropo} & 8 & \alias{wet_tropo_ncep} & & gs & & \\
-\var{wet_tropo} & 8 & \alias{wet_tropo_ecmwf} & & c2 & & \\
-\var{wet_tropo} & 8 & \alias{wet_tropo_rad} & & other & & \\
+\var{wet_tropo} & 8 & \alias{wet_tropo_ecmwf} & & c2 & & \ref{item:wet_tropo} \\
+\var{wet_tropo} & 8 & \alias{wet_tropo_era} & & gs & & \ref{item:wet_tropo} \\
+\var{wet_tropo} & 8 & \alias{wet_tropo_rad} \var{wet_tropo_era} & & g1 & & \ref{item:wet_tropo} \\
+\var{wet_tropo} & 8 & \alias{wet_tropo_rad} \var{wet_tropo_ecmwf} & & other & & \ref{item:wet_tropo} \\
 \end{vartable}
 
 Notes:
 \begin{enumerate}
-\item Because of model bias and noise, allow positive values.
-\item Need to exclude bogus zero values from TMR measurements.
-\item ERS-2 MWR is not available 2009-05-04 to 2010-01-15. Defaults to \var{wet_tropo_ecmwf}.
-\item The ECMWF correction is actually computed by integrating several layers of the atmosphere, rather than using the simplified form discussed above. The meteorological fields on which this correction is based are from the ECMWF operational analysis runs. That means that numerous changes to the models and their resolution create an unstable reference for long-term studies. Please verify any of the ECMWF model results against the other models.
-\item NCEP reanalysis model used for this correction has \emph{not} gone through any updates, so from that point of view the correction should be consistent over time. However, this older model also is less accurate and has a lower resolution (2.5\deg$\times$2.5\deg) than the ECMWF analysis fields.
-\item The NASA NVAP model is an old water vapour model used in the Geosat era.
-\item TOVS and SSMI are separate radiometer constellations whose data were used to model the water vapour content globally.
-\item This the result of a merger of the TOVS radiometer data with the NCEP water vapour and near-surface temperature models.
-\item The ERA (ECMWF ReAnalysis) (Interim) model has a lower resolution (1.5\deg$\times$1.5\deg) than the operational but provides long-term consistency.
-The model fields start January 1989. The Geosat data before that time features the older ERA40 (ECWMF 40-year reanalysis) instead.
-\item The \emph{enhanced} radiometer wet tropospheric correction (\var{wet_tropo_rad_enh}) is a variation of
-\var{wet_tropo_rad} in which the data near the coasts are treated with a special algorithm to lessen the influence of land in the radiometer footprint on the results. These correction fields are available, on semi-operational basis for Jason-1 and Jason-2 only.
+\item Because of model bias and noise, allow positive values.\label{item:wet_tropo_rad_n1}
+\item Need to exclude bogus zero values from TMR measurements.\label{item:wet_tropo_rad_tp}
+\item ERS-2 MWR is not available from 2009-05-04 to 2010-01-15.\label{item:wet_tropo_rad_e2}
+\item The ECMWF correction is actually computed by integrating several layers of the atmosphere, rather than using the simplified form discussed above. The meteorological fields on which this correction is based are from the ECMWF operational analysis runs. That means that numerous changes to the models and their resolution create an unstable reference for long-term studies. Please verify any of the ECMWF model results against the other models.\label{item:wet_tropo_ecmwf}
+\item NCEP reanalysis model used for this correction has \emph{not} gone through any updates, so from that point of view the correction should be consistent over time. However, this older model also is less accurate and has a lower resolution (2.5\deg$\times$2.5\deg) than the ECMWF analysis fields.\label{item:wet_tropo_ncep}
+\item The NASA NVAP model is an old water vapour model used in the Geosat era.\label{item:wet_tropo_nvap}
+\item TOVS and SSMI are separate radiometer constellations whose data were used to model the water vapour content globally.\label{item:wet_tropo_tovs_ssmi}
+\item This the result of a merger of the TOVS radiometer data with the NCEP water vapour and near-surface temperature models.\label{item:wet_tropo_tovs_ncep}
+\item The ERA (ECMWF ReAnalysis) Interim model provides an excellent long-term consistency. The data is distributed by ECMWF as Gaussian grids with an approximately uniform spacing of 79~km \citep{berrisford2011}.\label{item:wet_tropo_era}
+%\item The \emph{enhanced} radiometer wet tropospheric correction (\var{wet_tropo_rad_enh}) is a variation of\var{wet_tropo_rad} in which the data near the coasts are treated with a special algorithm to lessen the influence of land in the radiometer footprint on the results. These correction fields are available, on semi-operational basis for Jason-1 and Jason-2 only.\label{item:wet_tropo}
+\item CryoSat-2 and Geosat have no radiometer, so the wet tropospheric correction is always based on models. For the other missions we may default to the model if the radiometer correction is not \emph{at all} available on the product. This would be the case when the radiometer is \emph{permanently} switched off, or off for a long time. The model will not be used during short outages.\label{item:wet_tropo}
 \end{enumerate}
 
 \section{Ionospheric correction}
 The radar signal is also delayed by ions and electrons in the upper layers of the atmosphere (the ionosphere). The delay is inversely proportional to the altimeter radar frequency, and otherwise proportional to the vertically integrated electron density, known as total electron content or TEC. This dispersive nature allows dual-frequency altimeters (TOPEX, Envisat, Jason-1 and -2) to directly determine the ionospheric path delay on either frequency. For single frequency altimeters we rely on TEC estimates from models based on other dual-frequency equipment (GPS, DORIS) or climatologies.
 
 \begin{vartable}
-\var{iono_alt} & 901 & dual-frequency iono corr & m & n1 j1 j2 tx & -0.4 0.04 & 1 \\
-\var{iono_alt_smooth} & 903 & smoothed dual-freq iono corr & m & n1 j1 j2 tx & -0.4 0.04 & 2 \\
-\var{iono_bent} & 902 & Bent iono corr & m & c2 e1 e2 n1 pn tx & -0.4 0.04 & 3 \\
-\var{iono_doris} & 904 & DORIS iono corr & m & n1 pn tx & -0.4 0.04 & 4 \\
-\var{iono_gim} & 906 & JPL GIM iono corr & m & c2 e2 g1 j1 j2 n1 pn tx & -0.4 0.04 & 5 \\
-\var{iono_iri2007} & 907 & IRI2007 iono corr & m & all & -0.4 0.04 & 6 \\
-\var{iono_nic09} & 908 & NIC09 iono corr & m & all & -0.4 0.04 & 7 \\
+\var{iono_alt} & 901 & dual-frequency iono corr & m & n1 j1 j2 tx & -0.4 0.04 & \ref{item:iono_alt} \\
+\var{iono_alt_smooth} & 903 & smoothed dual-freq iono corr & m & n1 j1 j2 tx & -0.4 0.04 & \ref{item:iono_alt_smooth} \\
+\var{iono_bent} & 902 & Bent iono corr & m & c2 e1 e2 n1 pn tx & -0.4 0.04 & \ref{item:iono_bent} \\
+\var{iono_doris} & 904 & DORIS iono corr & m & n1 pn tx & -0.4 0.04 & \ref{item:iono_doris} \\
+\var{iono_gim} & 906 & JPL GIM iono corr & m & all but gs e1 pn & -0.4 0.04 & \ref{item:iono_gim} \\
+\var{iono_iri2007} & 907 & IRI2007 iono corr & m & all & -0.4 0.04 & \ref{item:iono_iri2007} \\
+\var{iono_nic09} & 908 & NIC09 iono corr & m & all & -0.4 0.04 & \ref{item:iono_nic09} \\
+\var{iono_alt_mle3} & 911 & dual-freq iono corr (MLE3) & m & j2 & -0.4 0.04 & \ref{item:iono_alt_mle3} \\
+\var{iono_alt_smooth_mle3} & 913 & smoothed d-f iono corr (MLE3) & m & j2 & -0.4 0.04 & \ref{item:iono_alt_smooth_mle3} \\
 \hline
-\var{iono} & 9 & \alias{iono_alt_smooth} & & j1 j2 n1 tx & \\
-\var{iono} & 9 & \alias{iono_gim} & & c2 e2 g1 & \\
-\var{iono} & 9 & \alias{iono_nic09} & & e1 gs & \\
+\var{iono} & 9 & \alias{iono_alt_smooth} & &  &&  \\
+& & ~~~ \var{iono_gim} \var{iono_nic09} & & j1 j2 n1 tx && \ref{item:iono} \\
+\var{iono} & 9 & \alias{iono_gim} \var{iono_nic09} & & c2 e2 g1 sa && \ref{item:iono} \\
+\var{iono} & 9 & \alias{iono_nic09} & & e1 gs pn && \ref{item:iono} \\
 \end{vartable}
 
 Notes:
 \begin{enumerate}
-\item Positive correction values are allowed to account for noise in the altimeter dual-frequency ionospheric correction. The values for this correction have been adjusted from the original GDR products to account for relative C-band and S-band biases (Section~\\ref{var:range}).
-\item Because of the relatively large noise in the dual-frequency ionospheric correction, \var{iono_alt} is smoothed over 35 seconds along the altimeter track (appoximately 250 km), in contrast to the 21 seconds suggested by \citet{imel1994}.
-\item The ``ancient'' Bent TEC climatology \citep{llewellyn1973} should no longer be used.
-\item The TEC model based on DORIS featured for a while on TOPEX/Poseidon and Envisat altimeter products but was far behind the accuracy of the (similar in construct) GPS-derived GIM models.
-\item JPL produces, based on the global constellation of GPS satellites and IGS GPS receivers, 2-hourly maps of TEC, known as the JPL GIM model \citep{komjathy2000}. The models have a spatial resolution of 5\deg$\times$2.5\deg\ and start in August 1998. Prior to that date, we have to rely on climatologies, chiefly the NIC09 climatology which was based on the JPL GIM data. When using \var{iono_gim} prior to August 1998, RADS will automatically default to \var{iono_nic09}.
-\item The International Reference Ionosphere went through several versions, the latest of which is IRI2007 \citep{bilitza2008}. Because of its rather coarse spatial and temporal resolution, it cannot compete with the JPL GIM model, or even the NIC09 climatology.
-\item The NIC09 climatology is based on 12 years of JPL GIM maps and can be extended as far back as the 1950s or extrapolated using predicted solar flux values \citep{scharroo2010a}.
+\item Positive correction values are allowed to account for noise in the altimeter dual-frequency ionospheric correction. The values for this correction have been adjusted from the original GDR products to account for relative C-band and S-band biases (Section~\ref{var:range}).\label{item:iono_alt}
+\item Because of the relatively large noise in the dual-frequency ionospheric correction, \var{iono_alt} is smoothed over 35 seconds along the altimeter track (appoximately 250 km), in contrast to the 21 seconds suggested by \citet{imel1994}.\label{item:iono_alt_smooth}
+\item For Jason-2, a separate dual-frequency correction based on the MLE3 retracker is available.\label{item:iono_alt_mle3}\label{item:iono_alt_smooth_mle3}
+\item The ``ancient'' Bent TEC climatology \citep{llewellyn1973} should no longer be used.\label{item:iono_bent}
+\item The TEC model based on DORIS featured for a while on TOPEX/Poseidon and Envisat altimeter products but was far behind the accuracy of the (similar in construct) GPS-derived GIM models.\label{item:iono_doris}
+\item JPL produces, based on the global constellation of GPS satellites and IGS GPS receivers, 2-hourly maps of TEC, known as the JPL GIM model \citep{komjathy2000}. The models have a spatial resolution of 5\deg$\times$2.5\deg\ and start in August 1998.\label{item:iono_gim}
+\item The International Reference Ionosphere went through several versions, the latest of which is IRI2007 \citep{bilitza2008}. Because of its rather coarse spatial and temporal resolution, it cannot compete with the JPL GIM model, or even the NIC09 climatology.\label{item:iono_iri2007}
+\item The NIC09 climatology is based on 12 years of JPL GIM maps and can be extended as far back as the 1950s or extrapolated using predicted solar flux values \citep{scharroo2010a}. This model is particularly useful for the period prior to August 1998 (before the availability of \var{iono_gim}).\label{item:iono_nic09}
+\item The alias \var{iono} with use either the smoothed dual-frequency ionospheric correction or one of the models in the order as given.\label{item:iono}
 \end{enumerate}
 
 \section{Atmospheric (inverse barometer) correction}
@@ -363,23 +385,23 @@ However, there are also dynamics involved in this. For example, an ocean basin c
 Over inland waters, this correction should not be applied \citep{cretaux2006}.
 
 \begin{vartable}
-\var{inv_bar_static} & 1001 & static inverse baro corr & m & all & -1 1 & 1 \\
-\var{inv_bar_global} & 1002 & global mean inv baro corr & m & all & -1 1 & 2 \\
-\var{inv_bar_mog2d}  & 1003 & MOG2D dynamic atmospheric corr & m & all & -1 1 & 3 \\
-\var{inv_bar_mok2d}  & 1004 & MOK2D dynamic atmospheric corr & m & all & -1 1 & 3 \\
-\var{inv_bar_mog2d_mean} & 1005 & local mean of MOG2D & m & all & -1 1 & 4 \\
+\var{inv_bar_static} & 1001 & static inverse baro corr & m & all & -1 1 & \ref{item:inv_bar_static} \\
+\var{inv_bar_global} & 1002 & global mean inv baro corr & m & all & -1 1 & \ref{item:inv_bar_global} \\
+\var{inv_bar_mog2d}  & 1003 & MOG2D dynamic atmospheric corr & m & all & -1 1 & \ref{item:inv_bar_mog2d} \\
+\var{inv_bar_mok2d}  & 1004 & MOK2D dynamic atmospheric corr & m & all & -1 1 & \ref{item:inv_bar_mok2d} \\
+\var{inv_bar_mog2d_mean} & 1005 & local mean of MOG2D & m & all & -1 1 & \ref{item:inv_bar_mog2d_mean} \\
 \hline
-\var{inv_bar} & 10 & \alias{inv_bar_mog2d} & & all & & 5 \\
+\var{inv_bar} & 10 & \alias{inv_bar_mog2d} \var{inv_bar_mok2d} & & all & & \ref{item:inv_bar} \\
 \end{vartable}
 
 Notes:
 \begin{enumerate}
-\item This correction is the simplification explained above.
-\item For reference the global mean pressure, converted to an IB correction, $C p_0$, is provided.
-\item The dynamic atmospheric correction model MOG2D includes the ocean dynamic response to wind and pressure forcing. It also accounts for the aliasing of the air tides as discussed in Section~\ref{var:dry_tropo}. Since the models only start in 1992, we have created a ``mock-up'' version of MOG2D (a simple linear variant of \var{inv_bar_static}) to match the mean of MOG2D as to not disturb continuity of the DAC prior to 1992. Before that time \var{inv_bar_mog2d} defaults to \var{inv_bar_mok2d}.
-MOG2D also comes with two latencies: (a) a few days, and thus features on the IGDR-derived products, and (b) a few weeks, and thus features on the GDR-derived products. For fast-delivery products there is generally no MOG2D correction (so MOK2D will be used), but the MOG2D field will be filled in as soon as the MOG2D maps have been distributed.
-\item For reference, the local long-term mean of the MOG2D correction is provided. This is the interpolation of a static grid computed as the average of all MOG2D maps over the period 1993-2009.
-\item Since \var{inv_bar_mog2d} automatically defaults to \var{inv_bar_mok2d} this alias can be used for all satellites.
+\item This correction is the simplification explained above.\label{item:inv_bar_static}
+\item For reference the global mean pressure, converted to an IB correction, $C p_0$, is provided.\label{item:inv_bar_global}
+\item The dynamic atmospheric correction model MOG2D includes the ocean dynamic response to wind and pressure forcing. It also accounts for the aliasing of the air tides as discussed in Section~\ref{var:dry_tropo}. MOG2D also comes with two latencies: (a) a few days, and thus features on the IGDR-derived products, and (b) a few weeks, and thus features on the GDR-derived products. For fast-delivery products there is generally no MOG2D correction (so MOK2D will be used), but the MOG2D field will be filled in as soon as the MOG2D maps have been distributed.\label{item:inv_bar_mog2d}
+\item Since the MOG2D only start in 1992, we have created a ``mock-up'' version of MOG2D (a simple linear variant of \var{inv_bar_static}) to match the mean of MOG2D as to not disturb continuity of the DAC prior to 1992.\label{item:inv_bar_mok2d}.
+\item For reference, the local long-term mean of the MOG2D correction is provided. This is the interpolation of a static grid computed as the average of all MOG2D maps over the period 1993-2009.\label{item:inv_bar_mog2d_mean}
+\item When using the \var{inv_bar} alias, \var{inv_bar_mog2d} is used while automatically defaulting to \var{inv_bar_mok2d}.\label{item:inv_bar}
 \end{enumerate}
 
 \section{Solid earth and pole tide}
@@ -413,29 +435,32 @@ Tide models generally only include the diurnal and semi-diurnal waves (those aro
 Although the FES and GOT models are global, they are limited in scope. Over land, the ocean tide is not defined and will be set to the NaN value. In some coastal regions, where the models may likely not be defined, the ocean tide value is set to NaN as well.
 
 \begin{vartable}
-\var{tide_ocean_fes04} & 1213 & FES2004 ocean tide & m & all & -5 5 & 1 \\
-\var{tide_load_fes04}  & 1313 & FES2004 load  tide & m & all & -0.5 0.5 & 1 \\
-\var{tide_ocean_got47} & 1217 & GOT4.7  ocean tide & m & all & -5 5 & 2 \\
-\var{tide_load_got47}  & 1317 & GOT4.7  load  tide & m & all & -0.5 0.5 & 2 \\
-\var{tide_ocean_got49} & 1219 & GOT4.9  ocean tide & m & & -5 5 & 3 \\
-\var{tide_load_got49}  & 1319 & GOT4.9  load  tide & m & & -0.5 0.5 & 3 \\
-\var{tide_ocean_webtide} & 1215 & WebTide ocean tide & m & all & -5 5 & 4 \\
-\var{tide_equil}       & 3901 & long-period equilibrium tide & m & all & -1 1 & 5 \\
-\var{tide_non_equil}   & 3902 & long-period non-equil tide & m & all & -1 1 & 6 \\
+\var{tide_ocean_fes04} & 1213 & FES2004 ocean tide & m & all & -5 5 & \ref{item:tide_ocean_fes04} \\
+\var{tide_load_fes04}  & 1313 & FES2004 load  tide & m & all & -0.5 0.5 & \ref{item:tide_load_fes04} \\
+\var{tide_ocean_got47} & 1217 & GOT4.7  ocean tide & m & all & -5 5 & \ref{item:tide_ocean_got47} \\
+\var{tide_load_got47}  & 1317 & GOT4.7  load  tide & m & all & -0.5 0.5 & \ref{item:tide_load_got47} \\
+\var{tide_ocean_got47} & 1217 & GOT4.8  ocean tide & m & all & -5 5 & \ref{item:tide_ocean_got48} \\
+\var{tide_load_got47}  & 1317 & GOT4.8  load  tide & m & all & -0.5 0.5 & \ref{item:tide_load_got48} \\
+\var{tide_ocean_got49} & 1219 & GOT4.9  ocean tide & m & & -5 5 & \ref{item:tide_ocean_got49} \\
+\var{tide_load_got49}  & 1319 & GOT4.9  load  tide & m & & -0.5 0.5 & \ref{item:tide_load_got49} \\
+\var{tide_ocean_webtide} & 1215 & WebTide ocean tide & m & all & -5 5 & \ref{item:tide_ocean_webtide} \\
+\var{tide_equil}       & 3901 & long-period equilibrium tide & m & all & -1 1 & \ref{item:tide_equil} \\
+\var{tide_non_equil}   & 3902 & long-period non-equil tide & m & all & -1 1 & \ref{item:tide_non_equil} \\
 \hline
-\var{tide_ocean} & 12 & \alias{tide_ocean_got47} && all && \\
-\var{tide_load}  & 13 & \alias{tide_load_got47} && all && \\
+\var{tide_ocean} & 12 & \alias{tide_ocean_got48} && all && \\
+\var{tide_load}  & 13 & \alias{tide_load_got48} && all && \\
                  & 39 & \alias{tide_equil} && all && \\
 \end{vartable}
 
 Notes:
 \begin{enumerate}
-\item The Finite Element Solution (FES2004) includes 9 short-period waves (Q1, O1, K1, P1, 2N2, N2, M2, K2, and S2) plus 24 additional short-period waves determined by admittance, and 4 long-period waves (Mf, Mm, Mtm and MSqm) \citep{lyard2006}. Long-period equilibrium tides (not yet included in FES2004) are added to these.
-\item The Goddard Ocean Tide model (GOT 4.7) includes 10 short-period waves (K1, O1, P1, Q1, S1, K2, M2, N2, S2, and M4) plus 17 additional short-period waves determined by admittance \citep{ray2011}. The 4 long-period waves from FES2004 and additional long-period equilibrium tides are added to these.
-\item The Goddard Ocean Tide model (GOT 4.9) differs from GOT 4.7 only in its S2 component. \textbf{Not yet implemented.}
-\item WebTide is a collection of regional tide models along the Canadian coast, made available on the web by the Bedford Institute of Oceanography \url{http://www.bio.gc.ca/research-recherche/WebTide-MareeWeb/webtide-eng.htm}. In RADS, a single value is presented in \var{tide_ocean_webtide}, determined from (in order of decreasing preference) the regional models for: Scotia/Fundy/Maine, Northeast Pacific, Arctic, Hudson Bay. Each of these models has a very limited amount of constituents, does not include admittance to infer others, and also does not include any long-period tides (equilibrium or non-equilibrium).
-\item The equilibrium ocean tide includes 15 tidal spectrum lines from the Cartwright-Tayler-Edden tables \citep{cartwright1971,cartwright1973} plus an additional 123 second and third order waves \citep{tamura1987}.
-\item The four long-period non-equlibrium ocean tidal components (Mm, Mf, Mtm, and MSqm) from the FES2004 model are represented in \var{tide_non_equil}. The equilibrium parts of those have been removed to avoid double accounting.
+\item The Finite Element Solution (FES2004) includes 9 short-period waves (Q1, O1, K1, P1, 2N2, N2, M2, K2, and S2) plus 24 additional short-period waves determined by admittance, and 4 long-period waves (Mf, Mm, Mtm and MSqm) \citep{lyard2006}. Long-period equilibrium tides (not yet included in FES2004) are added to these.\label{item:tide_ocean_fes04}\label{item:tide_load_fes04}
+\item The Goddard Ocean Tide model (GOT 4.7) includes 10 short-period waves (K1, O1, P1, Q1, S1, K2, M2, N2, S2, and M4) plus 17 additional short-period waves determined by admittance \citep{ray2011}. The 4 long-period waves from FES2004 and additional long-period equilibrium tides are added to these.\label{item:tide_ocean_got47}\label{item:tide_load_got47}
+\item The Goddard Ocean Tide model (GOT 4.8) differs from GOT 4.7 only in its S2 component.\label{item:tide_ocean_got48}\label{item:tide_load_got48}
+\item The Goddard Ocean Tide model (GOT 4.9) differs from GOT 4.7 only in its S2 component.\label{item:tide_ocean_got49}\label{item:tide_load_got49}
+\item WebTide is a collection of regional tide models along the Canadian coast, made available on the web by the Bedford Institute of Oceanography \url{http://www.bio.gc.ca/research-recherche/WebTide-MareeWeb/webtide-eng.htm}. In RADS, a single value is presented in \var{tide_ocean_webtide}, determined from (in order of decreasing preference) the regional models for: Scotia/Fundy/Maine, Northeast Pacific, Arctic, Hudson Bay. Each of these models has a very limited amount of constituents, does not include admittance to infer others, and also does not include any long-period tides (equilibrium or non-equilibrium).\label{item:tide_ocean_webtide}
+\item The equilibrium ocean tide includes 15 tidal spectrum lines from the Cartwright-Tayler-Edden tables \citep{cartwright1971,cartwright1973} plus an additional 123 second and third order waves \citep{tamura1987}.\label{item:tide_equil}
+\item The four long-period non-equlibrium ocean tidal components (Mm, Mf, Mtm, and MSqm) from the FES2004 model are represented in \var{tide_non_equil}. The equilibrium parts of those have been removed to avoid double accounting.\label{item:tide_non_equil}
 \end{enumerate}
 
 \section{Sea state bias}
@@ -452,22 +477,24 @@ Because of the instrumental part of sea state bias, every altimeter, in principl
 In the earlier days of altimetry the sea state bias was generally considered as a simple fraction, around --3.5\%, of significant wave height \citep{chelton1994}. Then \citet{gaspar1994a} brought a major improvement in SSB modelling by expressing SSB as a polynomial function of SWH and wind speed, recognising that not only the wave height, but also the shape of the waves (altered by wind) has influence on the altimeter range bias. But this approach still exhibits some limitations, in that it imposes the type of variations that are allowed as a result of changes in SWH or wind speed. Currently, SSB models tend to be non-parametric, generally expressed in the form of a grid with SWH and wind speed as coordinates \citep[e.g.,][]{gaspar1998b}. But several more complex multi-dimensional models are currently under development \citep[e.g.,][]{feng2010,tran2010}.
 
 \begin{vartable}
-\var{ssb_bm3} & 1501 & parametric sea state bias & m & e1 e2 g1 gs pn tx & -1 1 & 1 \\
-\var{ssb_cls} & 1502 & CLS non-parametric SSB & m & j1 j2 n1 tx       & -1 1 & 2 \\
-\var{ssb_csr} & 1503 & CSR BM4 sea state bias & m & tx                & -1 1 & 3 \\
-\var{ssb_hyb} & 1504 & hybrid sea state bias  & m & g1 gs n1 pn       & -1 1 & 4 \\
+\var{ssb_bm3} & 1501 & parametric sea state bias & m & e1 e2 g1 gs pn tx & -1 1 & \ref{item:ssb_bm3} \\
+\var{ssb_cls} & 1502 & CLS non-parametric SSB & m & j1 j2 n1 tx       & -1 1 & \ref{item:ssb_cls} \\
+\var{ssb_csr} & 1503 & CSR BM4 sea state bias & m & tx                & -1 1 & \ref{item:ssb_csr} \\
+\var{ssb_hyb} & 1504 & NOAA hybrid sea state bias & m & g1 gs n1 pn sa & -1 1 & \ref{item:ssb_hyb} \\
+\var{ssb_cls_mle3} & 1512 & CLS non-parametric SSB (MLE3) & m & j2      & -1 1 & \ref{item:ssb_cls_mle3} \\
 \hline
-\var{ssb}     &   15 & \alias{ssb_bm3} && e1 e2 && \\
+\var{ssb}     &   15 & \alias{ssb_bm3} && e1 e2 pn && \\
 \var{ssb}     &   15 & \alias{ssb_cls} && j1 j2 n1 tx && \\
-\var{ssb}     &   15 & \alias{ssb_hyb} && g1 gs && \\
+\var{ssb}     &   15 & \alias{ssb_hyb} && c2 g1 gs sa && \\
 \end{vartable}
 
 Notes:
 \begin{enumerate}
-\item One-, three- or four-term polynomials of SWH and wind speed \citep{gaspar1994a}.
-\item Non-parametric sea state bias models by CLS \citep{gaspar2002,labroue2004}.
-\item Four-term sea state bias model for TOPEX (different model for side A and side B altimeters) \citep{chambers2003a}.
-\item Hybrid (mix between parametric and non-parametric techniques) sea state bias models produced at NOAA \citep{scharroo2005e}.
+\item One-, three- or four-term polynomials of SWH and wind speed \citep{gaspar1994a}.\label{item:ssb_bm3}
+\item Non-parametric sea state bias models by CLS \citep{gaspar2002,labroue2004}.\label{item:ssb_cls}
+\item For Jason-2 data retracked by MLE3, a separate non-parametric model is available.\label{item:ssb_cls_mle3}
+\item Four-term sea state bias model for TOPEX (different model for side A and side B altimeters) \citep{chambers2003a}.\label{item:ssb_csr}
+\item Hybrid (mix between parametric and non-parametric techniques) sea state bias models produced at NOAA \citep{scharroo2005e}.\label{item:ssb_hyb}
 \end{enumerate}
 
 \section{Geoid and mean sea surface}
@@ -477,62 +504,69 @@ The sea level anomaly (SLA) is expressed as the difference of the instantaneous 
 Another reference surface is the geoid (the theoretical mean sea surface in absence of ocean currents, wind, etc.). Geoid models are generally made from satellite tracking data (for the longer wave lengths), and altimetry and in-situ gravimetry (for the shorter wave lengths).
 
 \begin{vartable}
-\var{mss_cls01} & 1605 & CLS01 mean sea surface & m & all & -200 200 & 1 \\
-\var{mss_egm2008} & 1610 & EGM2008 mean sea surface & m & all & -200 200 & 2 \\
-\var{mss_dncs2008} & 1612 & DNSC08 mean sea surface & m & all & -200 200 & 3 \\
-\var{mss_dtu10} & 1613 & DTU10 mean sea surface & m &  & -200 200 & 4 \\
-\var{mss_cls11} & 1614 & CLS11 mean sea surface & m &  & -200 200 & 5 \\
-\var{geoid_egm2008} & 1611 & EGM2008 geoid & m & all & -200 200 & 2 \\ 
+\var{mss_cls01} & 1605 & CLS01 mean sea surface & m & all & -200 200 & \ref{item:mss_cls01} \\
+\var{mss_egm2008} & 1610 & EGM2008 mean sea surface & m & all & -200 200 & \ref{item:mss_egm2008} \\
+\var{mss_dncs2008} & 1612 & DNSC08 mean sea surface & m & all & -200 200 & \ref{item:mss_dnsc2008} \\
+\var{mss_dtu10} & 1613 & DTU10 mean sea surface & m &  & -200 200 & \ref{item:mss_dtu10} \\
+\var{mss_cls11} & 1614 & CLS11 mean sea surface & m &  & -200 200 & \ref{item:mss_cls11} \\
+\var{geoid_egm2008} & 1611 & EGM2008 geoid & m & all & -200 200 & \ref{item:geoid_egm2008} \\ 
 \hline
-\var{mss} & 16 & \alias{mss_dnsc08} && all && \\
+\var{mss} & 16 & \alias{mss_dtu10} && all && \\
 \var{geoid} && \alias{geoid_egm2008} && all && \\
 \end{vartable}
 
 Notes:
 \begin{enumerate}
-\item Widely used, but outdated, mean sea surface model based on ERS-1/2 and TOPEX data created at CLS \citep{hernandez2001}.
-\item Combined geoid and mean sea surface solution \citep{pavlis2008}.
-\item Older version a mean sea surface model based on RADS data created at DNSC (now DTU) \citep{andersen2009}.
-\item Most up-to-date mean sea surface model based on RADS data created at DTU \citep{andersen2010}. \textbf{Not yet implemented.}
-\item Newest iteration of mean sea surface models at CNES/CLS \citep{schaeffer2010}. \textbf{Not yet implemented.}
+\item Widely used, but outdated, mean sea surface model based on ERS-1/2 and TOPEX data created at CLS \citep{hernandez2001}.\label{item:mss_cls01}
+\item Combined geoid and mean sea surface solution \citep{pavlis2008}.\label{item:mss_egm2008}\label{item:geoid_egm2008}
+\item Older version a mean sea surface model based on RADS data created at DNSC (now DTU) \citep{andersen2009}.\label{item:mss_dnsc2008}
+\item Most up-to-date mean sea surface model based on RADS data created at DTU \citep{andersen2010}.\label{item:mss_dtu10}
+\item Newest iteration of mean sea surface models at CNES/CLS \citep{schaeffer2010}.\label{item:mss_cls11}
 \end{enumerate}
 
-\chapter{Wind and wave height variables}
+\chapter{Wind speed and wave height variables}
 \section{Significant wave height}
 \label{var:swh}
 The significant wave height (SWH) is generally defined as the mean wave height (peak to trough) of the highest one-third of the ocean waves. Another commonly used definition is four times the standard deviation of the elevation of the sea surface in the radar footprint.
 
 SWH is determined from the rate of increase of returned power of the radar altimeter pulse (the waveform slope) and requires no further correction other than some instrument parameters. There is one complexity in this, and that is that SWH is defined as follows:
-$$ \mathrm{SWH}^2 = \sigma_c^2 - \sigma_p^2 $$
-where $\sigma_c$ is a measure of the waveform slope and $\sigma_p$ is an instrument parameter. Because of noise in the measurement of $\sigma_c$ and a possible bias in $\sigma_p$, $\mathrm{SWH}^2$ could become negative. In most GDR products, SWH is then set to zero, which creates a wrongly truncated measurement, and makes it difficult to correct for any biases in SWH the measurement (which would raise the zero SWH above zero). Where we can, however, in RADS, this case is tackled by writing out the negative of the square root of the absolute value of the argument instead. Hence:
-$$ \mathrm{SWH} = - \sqrt{\sigma_p^2 - \sigma_c^2} \mathrm{~~when~~} \sigma_c < \sigma_p $$
-$$ \mathrm{SWH} = \sqrt{\sigma_c^2 - \sigma_p^2} \mathrm{~~when~~} \sigma_c \ge \sigma_p $$
+$$ \mathrm{SWH}^2 = \alpha^2 (\sigma_c^2 - \sigma_p^2) $$
+where $\sigma_c$ is a measure of the waveform slope and $\sigma_p$ is an instrument parameter, and $\alpha$ is a constant. Because of noise in the measurement of $\sigma_c$ and a possible bias in $\sigma_p$, $\mathrm{SWH}^2$ could become negative. In most GDR products, SWH is then set to zero, which creates a wrongly truncated measurement, and makes it difficult to correct for any biases in SWH the measurement (which would raise the zero SWH above zero). Where we can, however, in RADS, this case is tackled by writing out the negative of the square root of the absolute value of the argument instead. Hence:
+$$ \mathrm{SWH} = - \alpha \sqrt{\sigma_p^2 - \sigma_c^2} \mathrm{~~when~~} \sigma_c < \sigma_p $$
+$$ \mathrm{SWH} = \alpha \sqrt{\sigma_c^2 - \sigma_p^2} \mathrm{~~when~~} \sigma_c \ge \sigma_p $$
 (See Note 1 below).
 
-The 1-Hz standard deviation of SWH is determined from the individual 10- or 20-Hz elementary measurements. Note that this is the standard deviation of the elementary measurements (denominator is $(n-1)$), not an estimate of the error of SWH.
+The 1-Hz standard deviation of SWH is determined from the individual 10-, 20-, or 40-Hz elementary measurements. Note that this is the standard deviation of the elementary measurements (denominator is $(n-1)$), not an estimate of the error of SWH.
 
 \begin{vartable}
-\var{swh_ku} & 1701 & Ku-band significant wave height & m & c2 n1 & -0.5 8 & 1,2 \\
+\var{swh_ka} & 1701 & Ka-band significant wave height & m & sa & 0 8 & \\
+\var{swh_ku} & 1701 & Ku-band significant wave height & m & c2 n1 & -0.5 8 & \ref{item:swh_1},\ref{item:swh_2} \\
 & & & & other & 0 8 & \\
 \var{swh_c} & 1702 & C-band significant wave height & m & j1 j2 tx & 0 8 & \\
-\var{swh_s} & 1702 & S-band significant wave height & m & n1 & -0.5 8 & 1,3 \\
+\var{swh_s} & 1702 & S-band significant wave height & m & n1 & -0.5 8 & \ref{item:swh_1},\ref{item:swh_3} \\
+\var{swh_ku_mle3} & 1711 & Ku-band significant wave height (MLE3) & m & j2 & 0 8 & \ref{item:swh_ku_mle3} \\
+\hline
+\var{swh_rms_ka} & 2802 & std dev of Ku-band SWH & m & sa & 0 2.1 & \\
 \var{swh_rms_ku} & 2802 & std dev of Ku-band SWH & m & g1 & 0 0.5 & \\
 & & & & j1 j2 & 0 1.5 & \\
 & & & & tx & 0 0.9 & \\
 & & & & other & 0 2.1 & \\
-\var{swh_rms_c} & 2804 & std dev of C-band SWH & m & j1 j2 tx & 0 2.1 & 4 \\
-\var{swh_rms_s} & 2804 & std dev of S-band SWH & m & n1 & 0 2.1 & 3,4 \\
+\var{swh_rms_c} & 2804 & std dev of C-band SWH & m & j1 j2 tx & 0 2.1 & \\
+\var{swh_rms_s} & 2804 & std dev of S-band SWH & m & n1 & 0 2.1 & \ref{item:swh_3} \\
 \hline
-\var{swh} & 17 & \alias{swh_ku} && all && \\
-\var{swh_rms} & 28 & \alias{swh_rms_ku} && all && \\
+\var{swh} & 17 & \alias{swh_ka} && sa && \\
+\var{swh} & 17 & \alias{swh_ku} && other && \\
+\hline
+\var{swh_rms} & 28 & \alias{swh_rms_ka} && sa && \\
+\var{swh_rms} & 28 & \alias{swh_rms_ku} && other && \\
 \end{vartable}
 
 Notes:
 \begin{enumerate}
-\item The SWH of Envisat and CryoSat will be set to a negative value when $\sigma_c<\sigma_p$. For other missions, the value is set to 0.
-\item During the degradation of the TOPEX SWH measurements (cycles 98-235) the SWH values are corrected according to \citet{queffeulou2004}. Thereafter 32 mm was added.
-\item S-band SWH for Envisat is only until the loss of the S-band signal.
-\item For TOPEX and Envisat, this value is only available on RADS products created since 26 Sep 2011.
+\item The SWH of Envisat and CryoSat will be set to a negative value when $\sigma_c<\sigma_p$. For other missions, the value is set to 0.\label{item:swh_1}
+\item During the degradation of the TOPEX SWH measurements (cycles 98-235) the SWH values are corrected according to \citet{queffeulou2004}. Thereafter 32 mm was added.\label{item:swh_2}
+\item S-band SWH for Envisat is only until the loss of the S-band signal.\label{item:swh_3}
+\item For Jason-2, significant wave heights from the MLE3 retracker are available as well.\label{item:swh_ku_mle3}
 \end{enumerate}
 
 \section{Altimeter backscatter coefficient}
@@ -541,29 +575,37 @@ The backscatter coefficient is derived from the total returned power of the rada
 
 The correction for atmospheric losses is generally determined from the radiometer measurements. In case the brightness temperatures were corrected with respect to the GDR values (Section~\ref{var:tb}), so is the wet tropospheric correction, the atmospheric correction to the backscatter and the backscatter coefficient itself.
 
-The 1-Hz standard deviation of backscatter coefficient is determined from the individual 10- or 20-Hz elementary measurements. Note that this is the standard deviation of the elementary measurements (denominator is $(n-1)$), not an estimate of the error of the backscatter coefficient.
+The 1-Hz standard deviation of backscatter coefficient is determined from the individual 10-, 20- or 40-Hz elementary measurements. Note that this is the standard deviation of the elementary measurements (denominator is $(n-1)$), not an estimate of the error of the backscatter coefficient.
 
 \begin{vartable}
-\var{sig0_ku} & 1801 & Ku-band backscatter coefficient & dB & all & 6 27 & 1-4 \\
-\var{sig0_c} & 1802 & C-band backscatter coefficient & dB & j1 j2 tx & 6 27 & 3,4 \\
-\var{sig0_s} & 1802 & S-band backscatter coefficient & dB & n1 & 6 27 & 5 \\
-\var{sig0_rms_ku} & 2902 & std dev of Ku-band SWH & dB & all & 0 1 & \\
-\var{sig0_rms_c} & 2904 & std dev of C-band SWH & dB & j1 j2 tx & & 6,7 \\
-\var{sig0_rms_s} & 2904 & std dev of S-band SWH & dB & n1 & & 5,7 \\
+\var{sig0_ka} & 1801 & Ka-band backscatter coefficient & dB & sa & 6 27 & \\
+\var{sig0_ku} & 1801 & Ku-band backscatter coefficient & dB & other & 6 27 & \ref{item:sig0_e1}-\ref{item:sig0_tx} \\
+\var{sig0_c} & 1802 & C-band backscatter coefficient & dB & j1 j2 tx & 6 27 & \ref{item:sig0_j1}-\ref{item:sig0_tx} \\
+\var{sig0_s} & 1802 & S-band backscatter coefficient & dB & n1 & 6 27 & \ref{item:sig0_n1} \\
+\var{sig0_ku_mle3} & 1811 & Ku-band backscatter coefficient (MLE3) & dB & j2 & 6 27 & \ref{item:sig0_ku_mle3} \\
 \hline
-\var{sig0} & 18 & \alias{sig0_ku} && all && \\
-\var{sig0_rms} & 29 & \alias{sig0_rms_ku} && all && \\
+\var{sig0_rms_ka} & 2902 & std dev of Ka-band SWH & dB & sa & 0 1 & \\
+\var{sig0_rms_ku} & 2902 & std dev of Ku-band SWH & dB & all & 0 1 & \\
+\var{sig0_rms_c} & 2904 & std dev of C-band SWH & dB & j1 j2 tx & & \ref{item:sig0_rms_tx} \\
+\var{sig0_rms_s} & 2904 & std dev of S-band SWH & dB & n1 & & \ref{item:sig0_n1} \\
+\hline
+\var{sig0} & 18 & \alias{sig0_ka} && sa && \\
+\var{sig0} & 18 & \alias{sig0_ku} && other && \\
+\hline
+\var{sig0_rms} & 29 & \alias{sig0_rms_ka} && sa && \\
+\var{sig0_rms} & 29 & \alias{sig0_rms_ku} && other && \\
 \end{vartable}
 
 Notes:
 \begin{enumerate}
-\item The ERS-1 backscatter coefficient is corrected for varying biases due to the attitude control. Between 0 and 0.35 dB was added.
-\item The GFO backscatter is corrected for a few deficiencies in lookup tables, adding 0.37~dB before 6 Dec 2000 and between 7 and 9 March 2001.
-\item The Jason-1 Ku- and C-band backscatter are aligned with TOPEX values by subtracting 2.40 and 0.725 dB, respectively. For the time being, the same biases are applied to Jason-2. However, wind speed values are not adjusted.
-\item TOPEX backscatter is corrected following the off-line Wallops correction tables.
-\item S-band backscatter for Envisat is only until the loss of the S-band signal.
-\item For TOPEX, the standard deviation is that of the automatic gain control, not of the backscatter coefficient. That means that the variation of the total volume of the waveform in not included, only the variation of the gain setting of the instrument.
-\item For TOPEX and Envisat, this value is only available on RADS products created since 26 Sep 2011.
+\item The ERS-1 backscatter coefficient is corrected for varying biases due to the attitude control. Between 0 and 0.35 dB was added.\label{item:sig0_e1}
+\item The GFO backscatter is corrected for a few deficiencies in lookup tables, adding 0.37~dB before 6 Dec 2000 and between 7 and 9 March 2001.\label{item:sig0_g1}
+\item The Jason-1 Ku- and C-band backscatter are aligned with TOPEX values by subtracting 2.40 and 0.725 dB, respectively. For the time being, the same biases are applied to Jason-2. However, wind speed values are not adjusted.\label{item:sig0_j1}
+\item The Jason-2 Ku- and C-band backscatter are reduced in noise based on a correlation with off-nadir angle \citep{quartly2009a}. In addition, biases of 2.40 and 0.725 dB have been removed from the Ku- and C-band backscatter, respectively.\label{item:sig0_j2}
+\item TOPEX backscatter is corrected following the off-line Wallops correction tables.\label{item:sig0_tx}
+\item S-band backscatter for Envisat is only until the loss of the S-band signal.\label{item:sig0_n1}
+\item For Jason-2, the backscatter coefficient from the MLE3 retracker is available as well.\label{item:sig0_ku_mle3}
+\item For TOPEX, the standard deviation is that of the automatic gain control, not of the backscatter coefficient. That means that the variation of the total volume of the waveform in not included, only the variation of the gain setting of the instrument.\label{item:sig0_rms_tx}
 \end{enumerate}
 
 \section{Wind speed}
@@ -575,21 +617,21 @@ Three-channel radiometers provide the opportunity to estimate wind speed. In ess
 Atmospheric models, like those at ECMWF also provide wind speed and wind directions, or their vectorial components pointing north and east. Those model values are provided for some missions as well.
 
 \begin{vartable}
-\var{wind_speed_alt} & 1901 & altimeter wind speed & m/s & all & -1 30 & 1-4 \\
+\var{wind_speed_alt} & 1901 & altimeter wind speed & m/s & all & -1 30 & \ref{item:wind_speed_mcw}-\ref{item:wind_speed_jason} \\
 \var{wind_speed_rad} & 1902 & radiometer wind speed & m/s & j1 j2 pn tx & 0 30 & \\
-\var{wind_speed_u}   & 1903 & model U-component wind speed & m/s & e2 g1 j1 j2 n1 pn tx & 0 30 & 5 \\ 
-\var{wind_speed_v}   & 1904 & model V-component wind speed & m/s & e2 g1 j1 j2 n1 pn tx & 0 30 & 5 \\ 
+\var{wind_speed_u}   & 1903 & model U-component wind speed & m/s & all but e1 gs & 0 30 & \ref{item:wind_speed_model} \\ 
+\var{wind_speed_v}   & 1904 & model V-component wind speed & m/s & all but e1 gs & 0 30 & \ref{item:wind_speed_model} \\ 
 \hline
 \var{wind_speed} & 19 & \alias{wind_speed_alt} && all && \\
 \end{vartable}
 
 Notes:
 \begin{enumerate}
-\item For Geosat, GFO, ERS-1 and ERS-2, the wind speed is based on the Modified Chelton-Wentz (MCW) algorithm \citep{witter1991}. In case of GFO 0.63 dB was subtracted from the backscatter coefficient before feeding it into the MCW algorithm.
-\item The CryoSat and Envisat wind speed is based on the ECMWF 1-parameter algorithm tailored to Envisat \citep{abdalla2007}.
-\item The TOPEX/Poseidon wind speed is based on the 2-parameter model by \citet{gourrion2002b}. 
-\item For Jason-1 and Jason-2, a variant of the 2-parameter model by \citet{gourrion2002b} tailored to Jason-1 is used to derive wind speed \citep{collard2004}.
-\item The U (towards east) and V (towards north) components of the wind speed come from model data. For ERS-2, GFO and TOPEX/Poseidon this is the WaveWatch 3 model; for CryoSat, Jason-1, Jason-2, and Envisat this is the ECMWF operational model.
+\item For Geosat, GFO, ERS-1 and ERS-2, the wind speed is based on the Modified Chelton-Wentz (MCW) algorithm \citep{witter1991}. In case of GFO 0.63 dB was subtracted from the backscatter coefficient before feeding it into the MCW algorithm.\label{item:wind_speed_mcw}
+\item The CryoSat and Envisat wind speed is based on the ECMWF 1-parameter algorithm tailored to Envisat \citep{abdalla2007}. A special version of this is used for SARAL.\label{item:wind_speed_ecmwf}
+\item The TOPEX/Poseidon wind speed is based on the 2-parameter model by \citet{gourrion2002b}.\label{item:wind_speed_topex}
+\item For Jason-1 and Jason-2, a variant of the 2-parameter model by \citet{gourrion2002b} tailored to Jason-1 is used to derive wind speed \citep{collard2004}.\label{item:wind_speed_jason}
+\item The U (towards east) and V (towards north) components of the wind speed come from model data. For ERS-2, GFO and TOPEX/Poseidon this is the WaveWatch 3 model; for CryoSat, Jason-1, Jason-2, and Envisat this is the ECMWF operational model.\label{item:wind_speed_model}
 \end{enumerate}
 
 \section{Other wind and wave model data}
