@@ -2201,13 +2201,13 @@ Global RADS configuration file
 	<units>kg/m^2</units>
 	<data>water_vapor_content</data>
 	<default>0</default>
-	<if sat="j2">
-		<format>f6.1</format>
-		<compress>int2 1d-1</compress>
-	</if>
-	<else>
+	<if sat="e1 e2">
 		<format>f6.2</format>
 		<compress>int2 1d-2</compress>
+	</if>
+	<else>
+		<format>f6.1</format>
+		<compress>int2 1d-1</compress>
 	</else>
 </var>
 <var name="water_vapor_content_gfs" field="3302" sat="c2 sa">
