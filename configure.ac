@@ -84,37 +84,6 @@ AC_SUBST(DEVEL)
 AC_SUBST(DEVEL_OBJS)
 
 # -----------------------------------------------------------------
-# Default settings come from nf-config
-# Allow user to set --with-netcdf-inc and/or --with-netcdf-dir
-# -----------------------------------------------------------------
-AC_PATH_PROG([nf_config], [nf-config], [$with_nf_config])
-AC_MSG_CHECKING([for netCDF includes])
-if ! test "x$with_netcdf_inc" = "x" ; then
-	NETCDF_INC=-I$with_netcdf_inc
-elif test -x "$nf_config" ; then
-	NETCDF_INC=-I`$nf_config --includedir`
-else
-	NETCDF_INC=-I/usr/local/inc
-fi
-AC_MSG_RESULT($NETCDF_INC)
-AC_SUBST(NETCDF_INC)
-
-AC_MSG_CHECKING([for netCDF libraries])
-if ! test "x$with_netcdf_lib" = "x" ; then
-	NETCDF_LIB="-L"`echo $with_netcdf_lib | sed "s=:= -L="`" -lnetcdf"
-	doit="find "`echo $with_netcdf_lib | sed "s=:= ="`" -name libnetcdff*"
-	if test `$doit|wc -l` -ne 0; then
-		NETCDF_LIB="${NETCDF_LIB}f -lnetcdf"
-	fi
-elif test -x "$nf_config" ; then
-	NETCDF_LIB=`$nf_config --flibs`
-else
-	NETCDF_LIB=-L/usr/local/lib -lnetcdf -lnetcdff
-fi
-AC_MSG_RESULT($NETCDF_LIB)
-AC_SUBST(NETCDF_LIB)
-
-# -----------------------------------------------------------------
 # Find Fortran 90 compilers.
 # -----------------------------------------------------------------
 # If F90 is set, and FC isn't, then set FC to whatever F90 was set to.
@@ -160,7 +129,7 @@ AC_LANG_POP(Fortran)
 AC_MSG_CHECKING([if $FC can handle Fortran 90])
 cat <<EOF >conftest.f90
 program foo
-REAL, PARAMETER :: PI = 3.141592654
+real, parameter :: pi = 3.141592654
 end program
 EOF
 
@@ -171,6 +140,116 @@ else
 	AC_MSG_ERROR([Cannot use $F90 to compile Fortran 90 code. Cannot continue.])
 fi
 rm -rf conftest.*
+
+# Check which flag to use for modules
+AC_MSG_CHECKING([Fortran 90 modules inclusion flag])
+mkdir -p conftest.dir
+cat <<EOF >conftest.dir/confmod.f90
+module confmod
+contains
+subroutine conftest_routine
+stop
+end subroutine conftest_routine
+end module confmod
+EOF
+doit='(cd conftest.dir;$FC $FCFLAGS confmod.f90 -c)'
+if ! AC_TRY_EVAL(doit); then
+	AC_MSG_ERROR([Could not compile module at all])
+fi
+
+cat <<EOF >conftest.f90
+program conftest
+use confmod
+end program conftest
+EOF
+
+MOD_FLAG="none"
+for flag in "-I" "-M" "-p"; do
+	doit='$FC $FCFLAGS ${flag}conftest.dir conftest.f90 -o conftest.exe'
+	if AC_TRY_EVAL(doit); then
+		MOD_FLAG=$flag
+		break
+	fi
+done
+if test "x$MOD_FLAG" = xnone; then
+	AC_MSG_ERROR([Could not find flag to include modules])
+else
+	AC_MSG_RESULT($MOD_FLAG)
+fi
+rm -rf conftest.*
+AC_SUBST(MOD_FLAG)
+
+# -----------------------------------------------------------------
+# How to specify extended (i.e. 132-byte) record length
+# -----------------------------------------------------------------
+AC_MSG_CHECKING([how to allow lines longer than 72 characters])
+opt=
+if test "x$ac_cv_f77_compiler_gnu" = "xyes" ; then
+	opt=" -ffixed-line-length-none"
+fi
+if test "x$FC" = "xifort"; then
+	opt=" -extend-source"
+fi
+if test "x$FC" = "xpgf77" || test "x$FC" = "xpgf90" ; then
+	opt=" -Mextend"
+fi
+FCFLAGS=$FCFLAGS$opt
+AC_MSG_RESULT($opt)
+
+# -----------------------------------------------------------------
+# Additional flags for GNU compilers
+# -----------------------------------------------------------------
+AC_MSG_CHECKING([for additional compiler flags])
+opt=
+if test "x$ac_cv_f77_compiler_gnu" = "xyes" ; then
+	opt=" -Wall -Wimplicit"
+fi
+if test "x$FC" = "xgfortran" ; then
+	opt=" -Wall -Wtabs -fimplicit-none"
+fi
+if test "x$enable_devel" = "xyes"; then
+	DEVEL_FLAGS=" -I../devel $MOD_FLAG"'${ALTIM}/include'
+fi
+FCFLAGS=$FCFLAGS$opt
+AC_MSG_RESULT($opt$DEVEL_FLAGS)
+AC_SUBST(DEVEL_FLAGS)
+
+# -----------------------------------------------------------------
+# How are Fortran subroutine names translated?
+# -----------------------------------------------------------------
+AC_FC_FUNC("FC_name",FC_name)
+AC_SUBST(FC_name)
+
+# -----------------------------------------------------------------
+# Default settings come from nf-config
+# Allow user to set --with-netcdf-inc and/or --with-netcdf-lib
+# -----------------------------------------------------------------
+AC_PATH_PROG([nf_config], [nf-config], [$with_nf_config])
+AC_MSG_CHECKING([for netCDF includes])
+if ! test "x$with_netcdf_inc" = "x" ; then
+	NETCDF_INC=$MOD_FLAG$with_netcdf_inc
+elif test -x "$nf_config" ; then
+	NETCDF_INC=$MOD_FLAG`$nf_config --includedir`
+else
+	NETCDF_INC=$MOD_FLAG/usr/local/inc
+fi
+AC_MSG_RESULT($NETCDF_INC)
+AC_SUBST(NETCDF_INC)
+
+AC_MSG_CHECKING([for netCDF libraries])
+if ! test "x$with_netcdf_lib" = "x" ; then
+	NETCDF_LIB="-L"`echo $with_netcdf_lib | sed "s=:= -L="`" -lnetcdf"
+	doit="find "`echo $with_netcdf_lib | sed "s=:= ="`" -name libnetcdff*"
+	if test `$doit|wc -l` -ne 0; then
+		NETCDF_LIB="${NETCDF_LIB}f -lnetcdf"
+	fi
+elif test -x "$nf_config" ; then
+	NETCDF_LIB=`$nf_config --flibs`
+else
+	NETCDF_LIB=-L/usr/local/lib -lnetcdf -lnetcdff
+fi
+AC_MSG_RESULT($NETCDF_LIB)
+AC_SUBST(NETCDF_LIB)
 
 # -----------------------------------------------------------------
 # Try to compile simple program with netCDF
@@ -210,48 +289,6 @@ else
 	echo "========================================================"
 	exit 1
 fi
-
-# -----------------------------------------------------------------
-# How to specify extended (i.e. 132-byte) record length
-# -----------------------------------------------------------------
-AC_MSG_CHECKING([how to allow lines longer than 72 characters])
-opt=
-if test "x$ac_cv_f77_compiler_gnu" = "xyes" ; then
-	opt=" -ffixed-line-length-none"
-fi
-if test "x$FC" = "xifort"; then
-	opt=" -extend-source"
-fi
-if test "x$FC" = "xpgf77" || test "x$FC" = "xpgf90" ; then
-	opt=" -Mextend"
-fi
-FCFLAGS=$FCFLAGS$opt
-AC_MSG_RESULT($opt)
-
-# -----------------------------------------------------------------
-# Additional flags if GNU compilers
-# -----------------------------------------------------------------
-AC_MSG_CHECKING([for additional compiler flags])
-opt=
-if test "x$ac_cv_f77_compiler_gnu" = "xyes" ; then
-	opt=" -Wall -Wimplicit"
-fi
-if test "x$FC" = "xgfortran" ; then
-	opt=" -Wall -Wtabs -fimplicit-none"
-fi
-if test "x$enable_devel" = "xyes"; then
-	DEVEL_FLAGS=" -I../devel "'-I${ALTIM}/include'
-fi
-FCFLAGS=$FCFLAGS$opt
-AC_MSG_RESULT($opt$DEVEL_FLAGS)
-AC_SUBST(DEVEL_FLAGS)
-
-# -----------------------------------------------------------------
-# How are Fortran subroutine names translated?
-# -----------------------------------------------------------------
-AC_FC_FUNC("FC_name",FC_name)
-AC_SUBST(FC_name)
-AC_SUBST(MOD_FLAG, $ax_f90_modflag)
 
 # -----------------------------------------------------------------
 # Where to find lapack

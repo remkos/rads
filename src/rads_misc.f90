@@ -572,7 +572,7 @@ endif
 end subroutine bit_transfer
 
 !***********************************************************************
-!*isnan -- Check if double precision number is a NaN
+!*isnan_ -- Check if double precision number is a NaN
 !+
 elemental function isnan_ (x)
 real(eightbytereal), intent(in) :: x
