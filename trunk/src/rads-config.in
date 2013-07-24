@@ -87,7 +87,7 @@ fi
 
 while test $# -gt 0; do
 	case "$1" in
-	
+
 	--help)		usage 0 ;;
 	--all)		all ;;
 	--configure) echo $configure ;;
