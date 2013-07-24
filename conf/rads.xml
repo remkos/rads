@@ -31,9 +31,9 @@ Global RADS configuration file
 	<long_name>sea level anomaly</long_name>
 	<standard_name>sea_surface_height_above_sea_level</standard_name>
 	<units>m</units>
-	<limits>-5 5</limits>
+	<limits>-3 3</limits>
 	<format>f8.4</format>
-	<compress>int4 1e-4</compress>
+	<compress>int2 1e-4</compress>
 	<data>alt range SUB dry_tropo SUB wet_tropo SUB iono SUB inv_bar SUB tide_solid SUB tide_ocean SUB tide_load SUB
 	tide_pole SUB ssb SUB mss SUB ref_frame_offset SUB</data>
 	<quality_flag>swh sig0 range_rms range_numval flags</quality_flag>
@@ -44,6 +44,18 @@ Global RADS configuration file
 	<comment>Sea level determined from satellite altitude - range - all altimetric corrections</comment>
 </var>
 <alias name="ssha">sla</alias>
+
+<var name="sla_pre">
+	<long_name>sea level anomaly (precomputed)</long_name>
+	<standard_name>sea_surface_height_above_sea_level</standard_name>
+	<units>m</units>
+	<data>sla</data>
+	<limits>-3 3</limits>
+	<format>f8.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Sea level pre-determined from satellite altitude - range - all altimetric corrections</comment>
+</var>
+<alias name="ssha_pre">sla_pre</alias>
 
 <var name="time" field="101 1">
 	<long_name>time</long_name>
@@ -2175,11 +2187,11 @@ Global RADS configuration file
 </var>
 <alias name="dsig0" field="32" sat="e1 e2 tx">dsig0_ku</alias>
 
-<var name="liquid_water" field="3301 33" sat="e1 e2 j1 j2 n1 pn sa tx">
+<var name="liquid_water_rad" field="3301 33" sat="e1 e2 j1 j2 n1 pn sa tx">
 	<long_name>radiometer liquid water content</long_name>
 	<standard_name>atmosphere_mass_content_of_cloud_liquid_water</standard_name>
 	<units>kg/m^2</units>
-	<data>liquid_water</data>
+	<data>liquid_water_rad</data>
 	<default>0</default>
 	<format>f6.2</format>
 	<compress>int2 1d-2</compress>
@@ -2195,11 +2207,11 @@ Global RADS configuration file
 	<compress>int2 1d-2</compress>
 </var>
 
-<var name="water_vapor_content" field="3302" sat="e1 e2 j2 sa">
+<var name="water_vapor_rad" field="3302" sat="e1 e2 j2 sa">
 	<long_name>radiometer water vapor content</long_name>
 	<standard_name>atmosphere_mass_content_of_water_vapor</standard_name>
 	<units>kg/m^2</units>
-	<data>water_vapor_content</data>
+	<data>water_vapor_rad</data>
 	<default>0</default>
 	<if sat="e1 e2">
 		<format>f6.2</format>
@@ -2210,12 +2222,12 @@ Global RADS configuration file
 		<compress>int2 1d-1</compress>
 	</else>
 </var>
-<var name="water_vapor_content_gfs" field="3302" sat="c2 sa">
+<var name="water_vapor_content_gfs" sat="c2 sa">
 	<long_name>NOAA/GFS water vapor content</long_name>
 	<standard_name>atmosphere_mass_content_of_water_vapor</standard_name>
 	<source>NOAA Global Forecast System</source>
 	<units>kg/m^2</units>
-	<data>water_vapor_content</data>
+	<data>water_vapor_gfs</data>
 	<default>0</default>
 	<format>f6.2</format>
 	<compress>int2 1d-2</compress>
