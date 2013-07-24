@@ -43,19 +43,18 @@ Global RADS configuration file
 	<quality_flag sat="c2 n1 sa" action="append">peakiness</quality_flag>
 	<comment>Sea level determined from satellite altitude - range - all altimetric corrections</comment>
 </var>
-<alias name="ssha">sla</alias>
 
-<var name="sla_pre">
-	<long_name>sea level anomaly (precomputed)</long_name>
+<var name="ssha">
+	<long_name>sea surface height anomaly</long_name>
 	<standard_name>sea_surface_height_above_sea_level</standard_name>
 	<units>m</units>
-	<data>sla</data>
+	<data>ssha</data>
 	<limits>-3 3</limits>
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
-	<comment>Sea level pre-determined from satellite altitude - range - all altimetric corrections</comment>
+	<comment>Sea level from satellite altitude - range - all altimetric corrections.
+		These values were computed when the data set was created, in contrast to the sla variable.</comment>
 </var>
-<alias name="ssha_pre">sla_pre</alias>
 
 <var name="time" field="101 1">
 	<long_name>time</long_name>

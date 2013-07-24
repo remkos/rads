@@ -93,8 +93,8 @@ call rads_get_var (S, P, 'sla', sla)
 
 call rads_put_history (S, P)
 
-call rads_def_var (S, P, 'sla')
-call rads_put_var (S, P, 'sla', sla)
+call rads_def_var (S, P, 'ssha')
+call rads_put_var (S, P, 'ssha', sla)
 
 write (*,552) n
 end subroutine process_pass
