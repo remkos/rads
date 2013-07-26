@@ -113,7 +113,7 @@ do i = 1,rads_nopt
 enddo
 
 ! Allocate data arrays
-nbins = nint((S(1)%phase%pass_seconds + 60d0)/dt/2d0) ! Number of bins on either side of equator
+nbins = nint(S(1)%phase%pass_seconds/dt * 0.6d0) ! Number of bins on either side of equator (20% margin)
 allocate (data(ntrx+2,nsel,-nbins:nbins), mask(ntrx+2,-nbins:nbins), nr_in_bin(-nbins:nbins), &
 	bin(-nbins:nbins), stat(ntrx+2,nsel), info(ntrx+2))
 
@@ -160,7 +160,6 @@ end subroutine synopsis
 
 subroutine process_pass
 real(eightbytereal), allocatable :: temp(:)
-integer, allocatable :: bin(:)
 integer :: i, j, k, m
 type(rads_pass) :: P
 
@@ -185,7 +184,7 @@ do m = 1,nsat
 		if (P%ndata > 0) then
 			ntrx = ntrx + 1 ! track counter
 			info(ntrx) = info_ ('    '//S(m)%sat, S(m)%satid, int(cycle,twobyteint), P%ndata)
-			allocate (temp(P%ndata), bin(P%ndata))
+			allocate (temp(P%ndata))
 			bin = nint((P%tll(:,1) - P%equator_time) / dt) ! Store bin nr associated with measurement
 			do j = 1,nsel
 				call rads_get_var (S(m), P, S(m)%sel(j), temp)
@@ -193,7 +192,7 @@ do m = 1,nsat
 			enddo
 			! For time being, set to "true" ANY incoming data point, even if NaN
 			mask(ntrx,bin(:)) = .true.
-			deallocate (temp,bin)
+			deallocate (temp)
 		endif
 		call rads_close_pass (S(m), P)
 	enddo
