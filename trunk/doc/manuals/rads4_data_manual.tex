@@ -7,6 +7,7 @@
 \usepackage{rads}
 \usepackage{makeidx}
 \usepackage{url}\urlstyle{sf}
+\usepackage{rotating}
 \bibliographystyle{agu08}
 
 \makeindex
@@ -61,6 +62,37 @@ Variable & field & name & units & sat & range & note \\
 
 \chapter{Introduction}
 \label{ch:intro}
+This manual is intended to explain the details about the many variables available in the RADS data base. Many of the variables come in different "flavours", like one could choose to use the wet tropospheric correction based on radiometer measurements (\var{wet_tropo_rad}) or one of the atmospheric models (e.g., \var{wet_tropo_ecmwf}). RADS also provides the option to use more generic variable names (like \var{wet_tropo}) that will pick the best available correction depending on the satellite mission (or period).
+
+The variables are organised various chapters. Consult the table of contents to find the variables you are looking for, or go to the index at the end of the manual, where all variables are listed.
+
+\begin{table}
+\begin{tabular}{lcc}
+\hline
+Altimeter & Abbreviation & Number \\
+\hline
+GEOS 3    & g3           & 1      \\
+Seasat    & sa           & 2      \\
+Geosat    & gs           & 3      \\
+ERS-1     & e1           & 4      \\
+TOPEX     & tx           & 5      \\
+Poseidon  & pn           & 6      \\
+ERS-2     & e2           & 7      \\
+GFO       & g1           & 8      \\
+JASON-1   & j1           & 9      \\
+Envisat   & n1           & 10     \\
+JASON-2   & j2           & 11     \\
+CRYOSAT-2 & c2           & 12     \\
+SARAL     & sa           & 13     \\
+\hline
+\end{tabular}
+\caption{Abbreviation and numbers used for the various altimeter missions.}
+\label{tab:sats}
+\end{table}
+
+For each variable, a list of different flavours is presented. For an example, turn to Section~\ref{var:wet_tropo}. This Section describes the various wet tropospheric corrections. The table in that Section lists in the first column the various variable names, followed by the field number as was used in RADS 3 (and can still be used in RADS 4), a short description, and the units of this variable. The next column lists for which altimeter missions this variable is available (see Table~\ref{tab:sats}), where "all" stands of all missions, and "other" stands for all missions not mentioned above it. The second to last column is the default range used for editing (NaN is returned when the value exceeds this range). When this column is empty, no range limits are set. Finally, the rightmost column relates to a list of notes provided in that Section.
+
+Near the bottom of each variable table a number of "aliases" are provided. These are short-cuts to one (or more) of the flavours of variables. For example, the tables in Section~\ref{var:wet_tropo} shows that for most altimeter missions the alias \var{wet_tropo} means that radiometer wet tropospheric correction is used (\var{wet_tropo}), but, when not available, for example during extended outage, the ECMWF model wet tropospheric correction (\var{wet_tropo_ecmwf}) is used instead. These "aliases" make it easier to get the preferred flavour of the variable which may differ from mission to mission (for example, some do not have a radiometer). This largely simplifies the construction of sea level anomalies, as described in Section~\ref{var:sla}.
 
 \chapter{Time and location}
 \label{ch:time and location}
@@ -162,6 +194,7 @@ The rate of change of the orbital altitude is relevant for computing the Doppler
 
 \chapter{Sea level variables}
 \section{Sea level anomaly}
+\label{var:sla}
 The sea level anomaly (SLA) or sea surface height anomaly (SSHA) is the height for the sea surface relative to a long term mean. It can be constructed by subtracting from the satellite orbital altitude the altimeter range, propagation corrections, sea state bias, tides, and a mean sea surface model. 
 
 The sea level anomaly in RADS is always computed on-the-fly. This means that the RADS software will gather the required variables and their selected flavours from the netCDF data files, edit those data based on the user-selected criteria, and then constructs the sea level anomaly based on those. If any of the variables that make up the sea level anomaly is not available, marked invalid, or is out of range, then the sea level anomaly is also marked invalid (set to the NaN value). In addition, variables that do not strictly make up the sea level anomaly (like wave height or wind speed) can be used as edit criteria, e.g. rejecting data with high sea states.
@@ -298,6 +331,7 @@ Notes:
 \end{enumerate}
 
 \section{Wet tropospheric correction}
+\label{var:wet_tropo}
 The wet tropospheric correction (the negative of zenith wet delay, ZWD) accounts for the delay of the radar signal in the atmosphere due to the presence of water vapour. This effect is non-dispersive, i.e., it is the same on Ku-, S- and C-band frequencies, and it can be determined by integrating a function of water vapour density and temperature \citep[e.g.,][]{askne1987}, which to good approximation simplifies to
 $$ \mathrm{ZWD} = \mathrm{IWV} R_w (k_3 / T_m + k'_2) $$
 where IWV is integrated water vapour, $T_m$ is the mean temperature in the atmospheric column, and $R_w$, $k'_2$ and $k_3$ are constants \citep{bevis1994}. The mean temperature can further be approximated from model data of near-surface air temperature, $T_s$, by
@@ -619,8 +653,12 @@ Atmospheric models, like those at ECMWF also provide wind speed and wind directi
 \begin{vartable}
 \var{wind_speed_alt} & 1901 & altimeter wind speed & m/s & all & -1 30 & \ref{item:wind_speed_mcw}-\ref{item:wind_speed_jason} \\
 \var{wind_speed_rad} & 1902 & radiometer wind speed & m/s & j1 j2 pn tx & 0 30 & \\
-\var{wind_speed_u}   & 1903 & model U-component wind speed & m/s & all but e1 gs & 0 30 & \ref{item:wind_speed_model} \\ 
-\var{wind_speed_v}   & 1904 & model V-component wind speed & m/s & all but e1 gs & 0 30 & \ref{item:wind_speed_model} \\ 
+\var{wind_speed_ecmwf_u} & 1903 & ECMWF model wind speed (U) & m/s & e2 j1 j2 n1 sa & & \ref{item:wind_speed_ecmwf} \\ 
+\var{wind_speed_ecmwf_v} & 1904 & ECMWF model wind speed (V) & m/s & e2 j1 j2 n1 sa & & \ref{item:wind_speed_ecmwf} \\ 
+\var{wind_speed_ecmwf} & & ECMWF model wind speed & m/s & e2 j1 j2 n1 sa & & \ref{item:wind_speed_ecmwf} \\ 
+\var{wind_speed_gfs_u} & 1903 & NOAA/GFS model wind speed (U) & m/s & sa & & \ref{item:wind_speed_gfs} \\ 
+\var{wind_speed_gfs_v} & 1904 & NOAA/GFS model wind speed (V) & m/s & sa & & \ref{item:wind_speed_gfs} \\ 
+\var{wind_speed_gfs} & & NOAA/GFS model wind speed & m/s & sa & & \ref{item:wind_speed_gfs} \\ 
 \hline
 \var{wind_speed} & 19 & \alias{wind_speed_alt} && all && \\
 \end{vartable}
@@ -628,14 +666,23 @@ Atmospheric models, like those at ECMWF also provide wind speed and wind directi
 Notes:
 \begin{enumerate}
 \item For Geosat, GFO, ERS-1 and ERS-2, the wind speed is based on the Modified Chelton-Wentz (MCW) algorithm \citep{witter1991}. In case of GFO 0.63 dB was subtracted from the backscatter coefficient before feeding it into the MCW algorithm.\label{item:wind_speed_mcw}
-\item The CryoSat and Envisat wind speed is based on the ECMWF 1-parameter algorithm tailored to Envisat \citep{abdalla2007}. A special version of this is used for SARAL.\label{item:wind_speed_ecmwf}
+\item The CryoSat and Envisat wind speed is based on the ECMWF 1-parameter algorithm tailored to Envisat \citep{abdalla2007}. A special version of this is used for SARAL.\label{item:wind_speed_abdalla}
 \item The TOPEX/Poseidon wind speed is based on the 2-parameter model by \citet{gourrion2002b}.\label{item:wind_speed_topex}
 \item For Jason-1 and Jason-2, a variant of the 2-parameter model by \citet{gourrion2002b} tailored to Jason-1 is used to derive wind speed \citep{collard2004}.\label{item:wind_speed_jason}
-\item The U (towards east) and V (towards north) components of the wind speed come from model data. For ERS-2, GFO and TOPEX/Poseidon this is the WaveWatch 3 model; for CryoSat, Jason-1, Jason-2, and Envisat this is the ECMWF operational model.\label{item:wind_speed_model}
+\item The U (towards east) and V (towards north) components of the wind speed according to ECMWF model data. The absolute magnitude can be computed on-the-fly.\label{item:wind_speed_ecmwf}
+\item The U (towards east) and V (towards north) components of the wind speed according to 0.5$\deg\times$0.5$\deg\times$6h model grids from NOAA's Global Forecast System. The absolute magnitude can be computed on-the-fly. \emph{The inclusion of these fields is experimental, and may be removed in the future.}\label{item:wind_speed_gfs}
 \end{enumerate}
 
-\section{Other wind and wave model data}
+\section{Other wave model data}
+For calibration and validation purposes, and to support further studies that include wind and wave processes (like swell and their effect on sea state bias) a number of variables from the WaveWatch 3 models. These variables are currently only available during the year 2000 to 2011 (inclusive).
 
+\begin{vartable}
+\var{wave_m0} & 4001 & WaveWatch3 wave height variance & m$^2$ & all & & \\
+\var{wave_m1} & 4002 & WaveWatch3 first moment of wave height & m$^2$/s & all & & \\
+\var{wave_m2} & 4003 & WaveWatch3 wave velocity variance & m$^2$/s$^2$ & all & & \\ 
+\var{wave_m4} & 4004 & WaveWatch3 wave slope variance & rad$^2$ & all & & \\ 
+\var{wave_shs} & 4005 & WaveWatch3 wave swell & m & all & & \\ 
+\end{vartable}
 
 \chapter{Additional variables}
 \section{Engineering and geophysical flags}
@@ -663,21 +710,28 @@ In future version of the data base the flag word \var{flags} will be phased out 
 
 The individual bits of the flag word \var{flags} are described in the following table. Note that the limits on these alias are not actually set at this time, but they are a transposition of the editing ranges for each individual altimeter as indicated in the table above. In general, 0 means no or OK, 1 means yes or bad.
 
-\begin{vartable}
-\var{flag_status}   & 2516 & bit 0: hardware/software status & & pn tx & & \\
-                    &      & bit 0: SPTR availability & & e1 & & \\
-                    &      & bit 0: altimeter status & & j1 n1 & & 0 = Side A, 1 = Side B \\
-                    &      & bit 0: altimeter status & & c2 & & 0 = LRM, 1 = PLRM \\
-\var{flag_attitude} & 2501 & bit 1: attitude status & & e2 g1 gs j1 j2 n1 tx &  &\\
-                    &      & bit 1: attitude status & & pn & & \\
-                    &      & bit 1: satellite ground track & & e1 & & 1 = off-track \\
-\var{flag_ice}      & 2502 & bit 2: continental ice & & j1 j2 n1 & & \\
-                    &      & bit 2: dH status & & gs & & 1 = suspect \\       
-                    &      & bit 2: TMP 21 GHz Channel status & & pn tx & & 0 = A, 1 = B \\
-\var{flag_iono}     & 2503 & bit 3: quality of dual-frequency iono corr & & j2 n1 tx & & \\
-\var{flag_land}     & 2504 & bit 4: water/land flag & & all & & 0 = water, 1 = land \\
-\var{flag_ocean}    & 2505 & bit 5: ocean/non-ocean flag & & all & & 0 = ocean, 1 = non-ocean \\
-\end{vartable}
+\begin{table}
+\small
+\begin{sideways}
+\begin{tabular}{lrlll}
+\hline
+Variable & field & name & values & sat \\
+\hline
+\var{flag_alt_oper_mode} & 2516 & bit 0: hardware/software status & 0 = nominal, 1 = bad & pn tx \\
+                         & 2516 & bit 0: altimeter status & 0 = Side A, 1 = Side B & j1 j2 n1\\
+                         & 2516 & bit 0: altimeter status &  0 = LRM, 1 = PLRM & c2 \\
+\var{qual_sptr}          & 2516 & bit 0: SPTR availability & & e1 \\
+\var{qual_attitude}      & 2501 & bit 1: quality of attitude & 0 = ok, 1 = bad & e2 j1 j2 n1 tx sa \\
+                         &      & bit 1: quality of attitude & 0 = ok, 1 = suspect & g1 gs pn \\
+\var{qual_dh}            & 2502 & bit 2: dH status & 1 = suspect & gs \\       
+\var{flag_rad_oper_mode} & 2502 & bit 2: TMP 21 GHz Channel status & 0 = A, 1 = B & pn tx \\
+\var{flag_iono}     & 2503 & bit 3: quality of dual-frequency iono corr & & j2 n1 tx \\
+\var{flag_land}     & 2504 & bit 4: water/land flag & 0 = water, 1 = land & all \\
+\var{flag_ocean}    & 2505 & bit 5: ocean/non-ocean flag & 0 = ocean, 1 = non-ocean & all \\
+\hline
+\end{tabular}
+\end{sideways}
+\end{table}
 
 
 \section{Radiometer brightness temperatures}
