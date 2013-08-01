@@ -198,8 +198,8 @@ files: do
 	P%start_time = strp1985f(arg)
 	call nfs(nf90_get_att(ncid,nf90_global,'last_meas_time',arg))
 	P%end_time = strp1985f(arg)
-	i = index(infile, '/', .true.)
-	P%original = infile(i+1:)
+	i = index(infile, '/', .true.) + 1
+	P%original = infile(i:)
 
 ! Determine L2 processing version
 
