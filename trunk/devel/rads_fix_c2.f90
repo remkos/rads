@@ -184,7 +184,7 @@ logical :: lrm_l2,fdm_l2,old_version_a,version_a,sar
 551 format (a,' ...',$)
 552 format (i5,' records changed')
 
-write (*,551) trim(P%filename)
+write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
 
 ! Do we have FDM or LRM? Do we have an older version?
 lrm_l2 = index(P%original,'IPF2LRM') > 0
