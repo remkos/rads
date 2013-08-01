@@ -25,7 +25,6 @@
 
 rads_open_sandbox c2 a
 
-options="-Sc2/a.new"
 cycle=
 
 date							>  $log 2>&1
@@ -56,11 +55,15 @@ rads_add_orbit   $options $orbit_opt --equator --loc-7 --rate	>> $log 2>&1
 rads_add_orbit   $options -Valt_eig6c		>> $log 2>&1
 rads_add_common  $options 					>> $log 2>&1
 rads_add_ecmwf   $options --all				>> $log 2>&1
+rads_add_gfs     $options -gs               >> $log 2>&1
 rads_add_iono    $options --all				>> $log 2>&1
 rads_add_mog2d   $options					>> $log 2>&1
 rads_add_ww3_222 $options --all				>> $log 2>&1
 rads_add_ww3_314 $options -C1,23 --all		>> $log 2>&1
+rads_add_sla     $options                   >> $log 2>&1
 
 date										>> $log 2>&1
+
+mv $SANDBOX/$rads_sat/{a,a.sak}
 
 rads_close_sandbox
