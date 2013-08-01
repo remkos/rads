@@ -152,7 +152,7 @@ call rads_put_history (S, P)
 call rads_def_var (S, P, var)
 call rads_put_var (S, P, var, z)
 
-write (*,551) trim(P%filename), nval
+write (*,551) trim(P%filename(len_trim(S%dataroot)+2:)), nval
 end subroutine process_pass
 
 end program rads_add_webtide

@@ -149,7 +149,7 @@ real(eightbytereal) :: x(n), y(n), z(n, nmod), years
 551  format (a,' ...',$)
 552  format (i5,' records changed')
 
-write (*,551) trim(P%filename)
+write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
 
 ! Determine time in years since 2000
 

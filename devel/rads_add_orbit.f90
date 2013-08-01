@@ -232,7 +232,7 @@ logical :: asc, cryofix
 551  format (a,' ...',$)
 552  format (i5,' records changed')
 
-write (*,551) trim(P%filename)
+write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
 
 ! Determine if we need to fix Cryosat data
 ! Only if original data is LRM L2 and this is the first radsp_orbit run
