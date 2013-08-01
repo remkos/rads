@@ -241,7 +241,7 @@ do i = 1,n
 			tbias = -4.699112d-3
 			if (fdm_l1_v24) tbias = tbias + 4.4436d-3 ! Partial correction of timing bias (See Ruby's e-mail of 22 Apr 2013)
 		endif
-		tbias = tbias - 0.4d-3 ! Additional timing bias from my own research (1-Aug-2013)
+		tbias = tbias + 0.4d-3 ! Additional timing bias from my own research (1-Aug-2013)
 		time(i) = time(i) + tbias
 		alt(i) = alt(i) + tbias * alt_rate(i)
 	endif
