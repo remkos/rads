@@ -361,7 +361,8 @@ files: do
 
 	! Add current filename to list of input files
 
-	filenames = trim(filenames) // rads_linefeed // filename
+	j = index(filename, '/', .true.) + 1
+	filenames = trim(filenames) // rads_linefeed // filename(j:)
 
 	! If input file is split between ascending/descending, dump the first chunk,
 	! move the second chunk down and update the equator crossing to the new pass
@@ -374,7 +375,8 @@ files: do
 		do i = 1,nvar
 			var(i)%d(1:recnr(2)) = var(i)%d(ndata+1:ndata+recnr(2))
 		enddo
-		filenames = filename
+		j = index(filename, '/', .true.) + 1
+		filenames = filename(j:)
 
 		! Update equator crossing info to the next pass
 		eq_long = modulo (eq_long + 0.5d0 * rev_long + 180d0, 360d0)

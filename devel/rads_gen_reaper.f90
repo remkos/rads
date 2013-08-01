@@ -585,7 +585,7 @@ end subroutine get_reaper
 !-----------------------------------------------------------------------
 
 subroutine put_rads
-integer(fourbyteint) :: i
+integer(fourbyteint) :: i, j
 character(len=rads_cmdl) :: original
 
 if (nout == 0) return	! Skip empty data sets
@@ -607,11 +607,15 @@ P%equator_lon = lnode(1)
 
 ! Check which input files pertain
 if (P%start_time >= start_time) then
-	original = infile
+	i = index(infile, '/', .true.) + 1
+	original = infile(i:)
 else if (P%end_time < start_time) then
+	i = index(old_infile, '/', .true.) + 1
 	original = old_infile
 else
-	original = trim(old_infile)//rads_linefeed//infile
+	i = index(old_infile, '/', .true.) + 1
+	j = index(infile, '/', .true.) + 1
+	original = trim(old_infile(i:))//rads_linefeed//infile(j:)
 endif
 P%original = trim(l2_version)//' data of '//l2_proc_time(:11)//rads_linefeed//trim(original)
 

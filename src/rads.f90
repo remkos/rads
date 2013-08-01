@@ -21,7 +21,7 @@ use rads_grid
 
 ! Dimensions
 integer(fourbyteint), parameter :: rads_var_chunk = 100, rads_varl = 40, rads_naml = 160, rads_cmdl = 320, &
-	rads_strl = 800, rads_hstl = 3200, rads_cyclistl = 50, rads_optl = 50
+	rads_strl = 960, rads_hstl = 3200, rads_cyclistl = 50, rads_optl = 50
 ! RADS4 data types
 integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, rads_type_flagmasks = 2, rads_type_flagvalues = 3, &
 	rads_type_time = 11, rads_type_lat = 12, rads_type_lon = 13
