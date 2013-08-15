@@ -53,7 +53,7 @@ call rads_init (S)
 ! Determine conversion factor from TEC units to ionospheric delay in metres
 ! and mean altitude.
 
-f = -0.40250d0/S%frequency(1)**2	! freq in GHz from rads.xml; f = factor from TEC to meters
+f = -0.4028d0/S%frequency(1)**2	! freq in GHz from rads.xml; f = factor from TEC to meters
 select case (S%sat)
 case ('c2')
 	f_scaled = 0.844 * f	! CryoSat
