@@ -1139,8 +1139,8 @@ Global RADS configuration file
 		<units>dB</units>
 		<limits>6 27</limits>
 		<data>sig0_ka</data>
-		<format>f6.2</format>
-		<compress>int2 1d-2</compress>
+		<format>f6.3</format>
+		<compress>int2 1d-3</compress>
 	</var>
 	<alias name="sig0" field="18">sig0_ka</alias>
 </if>
@@ -2122,8 +2122,8 @@ Global RADS configuration file
 	<long_name>Ka-band backscatter coefficient correction due to atmosphere/attitude</long_name>
 	<units>dB</units>
 	<data>dsig0_atmos_ka</data>
-	<format>f4.2</format>
-	<compress>int2 1d-2</compress>
+	<format>f5.3</format>
+	<compress>int2 1d-3</compress>
 	<comment>Correction already added to backscatter coefficient</comment>
 </var>
 <var name="dsig0_atmos_ku" field="3203" sat="c2 e1 e2 j1 j2 n1 pn tx">
@@ -2180,8 +2180,8 @@ Global RADS configuration file
 	<long_name>Ka-band backscatter coefficient correction due to atmosphere/attitude (NN)</long_name>
 	<units>dB</units>
 	<data>dsig0_atmos_nn_ka</data>
-	<format>f6.2</format>
-	<compress>int2 1d-2</compress>
+	<format>f6.3</format>
+	<compress>int2 1d-3</compress>
 	<comment>Alternative to dsig0_atmos_ka which is already applied</comment>
 </var>
 <alias name="dsig0" field="32" sat="e1 e2 tx">dsig0_ku</alias>
