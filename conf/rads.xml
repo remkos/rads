@@ -1717,7 +1717,7 @@ Global RADS configuration file
 	<compress>int1</compress>
 </var>
 
-<var name="flag_alt_track_mode" field="2514" sat="e1 e2 pn tx">
+<var name="flag_alt_track_mode" field="2514" sat="e1 e2 gs j1 pn tx">
 	<long_name>altimeter tracking mode</long_name>
 	<flag_values>nominal preset</flag_values>
 	<flag_values sat="gs tx">nominal coarse_or_acquisition</flag_values>
