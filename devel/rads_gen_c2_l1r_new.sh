@@ -18,37 +18,31 @@
 #
 # Convert CryoSat-2 L1R files to RADS
 #
-# syntax: rads_gen_c2_l1r.sh <directories>
+# The most recently updated data in the directory SIR_FDM_L1/LATEST
+# will be processed.
+#
+# syntax: rads_gen_c2_l1r_new.sh
 #-----------------------------------------------------------------------
 
 . rads_sandbox.sh
 
 rads_open_sandbox c2 a
 
+mrk=$SANDBOX/bookmark
 cycle=
 
-date							>  $log 2>&1
+# Pick start date: either 4 days ago or the last processed time, whatever is earlier
+d0=`date -u -v -4d -v +4H +%Y%m%d`
+d2=20`tail -n 1 $RADSROOT/tables/c2a.cyc | cut -c34-39`
+[[ $d2 -lt $d0 ]] && d0=$d2
 
-for tar in $*; do
-	case $tar in
-		*.txz) tar -xJf $tar; dir=`basename $tar .txz` ;;
-		*.tgz) tar -xzf $tar; dir=`basename $tar .tgz` ;;
-		*) dir=$tar ;;
-	esac
-	find -L $dir -name "CS_*.nc" -print | sort -r | sort -u -t/ -k3.20,3.34 > $lst
-	case $dir in
-	*/c???) cycle="-C"`basename $dir | cut -c2-` ;;
-	esac
-	rads_gen_c2_l1r $options $cycle < $lst	>> $log 2>&1
-	case $tar in
-		*.t?z) chmod -R u+w $dir; rm -rf $dir ;;
-	esac
-done
+date										>  $log 2>&1
 
-case $dir in
-*FDM*) orbit_opt="-Valt_gdrd --dir=gdr-d-moe" ;;
-*LRM*) orbit_opt="-Valt_gdrd" ;;
-esac
+TZ=UTC touch -t ${d0}0000 $mrk
+find SIR_FDM_L1/LATEST -name "CS_*.nc" -a -newer $mrk | sort -r | sort -u -t_ -k8,8 > $lst
+rads_gen_c2_l1r $options --ymd=$d0 $* < $lst >> $log 2>&1
+
+orbit_opt="-Valt_gdrd --dir=gdr-d-moe"
 
 rads_fix_c2      $options --all				>> $log 2>&1
 rads_add_orbit   $options $orbit_opt --equator --loc-7 --rate	>> $log 2>&1
@@ -59,11 +53,21 @@ rads_add_ncep    $options -gs               >> $log 2>&1
 rads_add_iono    $options --all				>> $log 2>&1
 rads_add_mog2d   $options					>> $log 2>&1
 rads_add_ww3_222 $options --all				>> $log 2>&1
-rads_add_ww3_314 $options -C1,23 --all		>> $log 2>&1
 rads_add_sla     $options                   >> $log 2>&1
 
 date										>> $log 2>&1
 
-mv $SANDBOX/$rads_sat/{a,a.sak}
+# Set Navy data aside
+pushd $SANDBOX/c2/a
+for dir in c??? ; do
+	mkdir -p $RADSROOT/ext/c2/to_navy/$dir
+	for file in $dir/*.nc ; do
+		ncrename -hOv alt_gdrd,alt_eiggl04s $file $RADSROOT/ext/c2/to_navy/$file >& /dev/null
+	done
+done
+# Remove old Navy data
+popd
+find to_navy -type f -mtime +30 | xargs rm -f
+find to_navy -type d -empty | xargs rmdir
 
 rads_close_sandbox

@@ -725,7 +725,25 @@ Variable & field & name & values & sat \\
                          &      & bit 1: quality of attitude & 0 = ok, 1 = suspect & g1 gs pn \\
 \var{qual_dh}            & 2502 & bit 2: dH status & 1 = suspect & gs \\       
 \var{flag_rad_oper_mode} & 2502 & bit 2: TMP 21 GHz Channel status & 0 = A, 1 = B & pn tx \\
-\var{flag_iono}     & 2503 & bit 3: quality of dual-frequency iono corr & & j2 n1 tx \\
+\var{qual_iono_alt}      & 2503 & bit 3: quality of dual-frequency iono corr & 0 = ok, 1 = bad & j1 j2 n1 tx \\
+\var{surface_type}       & 2504 & surface type & 0 = open_ocean, 2 = enclosed_sea_or_lake, 3 = land, 4 = continental_ice & all \\
+\var{surface_type_rad}   & 2506 & bit 6: radiometer land flag & 0 = water, 1 = land & all but c2 gs \\
+\var{qual_alt_rain_ice}  & 2507 & bit 7: altimeter rain/ice flag & 0 = no rain/ice, 1 = rain/ice & all but c2 gs \\
+\var{qual_rad_rain_ice}  & 2508 & bit 8: radiometer rain/ice flag & 0 = no rain/ice, 1 = rain/ice & e1 e2 j1 j2 n1 pn tx \\
+\var{qual_rad_tb}        & 2509 & bit 9/10: radiometer quality flag & 0 = ok, 1 = interp.\ near land, 2 = extrap., 3 = interp.\ failed & pn tx \\
+                         &      & & 0 = ok, 1 = bad tb238, 2 = bad tb365, 3 = both bad & e1 e2 n1 \\
+                         &      & & 0 = ok, 1 = bad tb220, 2 = bad tb370, 3 = both bad & g1 \\
+                         &      & & 0 = ok, 1 = bad tb187/tb238, 2 = bad tb340, 3 = both bad & j1 j2 \\
+                         &      & & 0 = ok, 1 = bad tb238, 2 = bad tb370, 3 = both bad & sa \\
+\var{qual_range}         & 2511 & bit 11: quality of range & 0 = ok, 1 = some 10Hz invalid & gs \\
+                         &      & & 0 = ok, 1 = suspect & other \\
+\var{qual_swh}           & 2512 & bit 12: quality of SSB & 0 = ok, 1 = suspect & gs \\
+                         &      & bit 12: quality of SWH & 0 = ok, 1 = suspect & other \\
+\var{flag_alt_track_mode}& 2514 & bit 14: altimeter tracking mode & 0 = nominal, 1 = preset & e1 e2 \\  
+                         &      & & 0 = nominal, 1 = coarse or acquisition & gs tx \\
+                         &      & & 0 = nominal, 1 = C-band coarse & j1 \\
+                         &      & & 0 = nominal, 1 = acquisition & pn \\
+\var{qual_orbit}         & 
 \var{flag_land}     & 2504 & bit 4: water/land flag & 0 = water, 1 = land & all \\
 \var{flag_ocean}    & 2505 & bit 5: ocean/non-ocean flag & 0 = ocean, 1 = non-ocean & all \\
 \hline
