@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# $Id: rads_gen_saral.f90 377 2013-03-27 18:58:08Z remko@altimetrics.com $
+# $Id$
 #
 # Copyright (c) 2011-2013  Remko Scharroo (Altimetrics LLC)
 # See LICENSE.TXT file for copying and redistribution conditions.

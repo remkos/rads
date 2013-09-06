@@ -113,7 +113,7 @@ do i = 1,rads_nopt
 enddo
 
 ! Allocate data arrays
-nbins = nint(S(1)%phase%pass_seconds/dt * 0.6d0) ! Number of bins on either side of equator (20% margin)
+nbins = nint(S(1)%phase%pass_seconds/dt * 0.8d0) ! Number of bins on either side of equator (20% margin)
 allocate (data(ntrx+2,nsel,-nbins:nbins), mask(ntrx+2,-nbins:nbins), nr_in_bin(-nbins:nbins), &
 	bin(-nbins:nbins), stat(ntrx+2,nsel), info(ntrx+2))
 
