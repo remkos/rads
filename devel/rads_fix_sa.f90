@@ -49,7 +49,7 @@ type(grid) :: issb_hyb
 
 ! Scan command line for options
 
-call synopsis
+call synopsis ('--head')
 call rads_set_options (' ssb wind all')
 call rads_init (S)
 do i = 1,rads_nopt
