@@ -178,6 +178,7 @@ real(eightbytereal) :: time(n),alt(n),alt_rate(n),dry(n),wet(n), &
 	iono(n),sig0(n),swh(n),ssb(n),wind(n),flagword(n),range(n),ib(n),t,tbias
 integer(fourbyteint) :: i
 logical :: lrm_l2,fdm_l2,old_version_a,version_a,sar
+character(len=4) :: l1r_ver
 
 ! Formats
 
@@ -194,6 +195,7 @@ fdm_l1_v24 = index(P%original,'SIR1FDM/2.4') > 0
 
 old_version_a = (index(P%original,'-2010') > 0 .or. &
 	index(P%original,'-JAN-2011') > 0 .or. index(P%original,'-FEB-2011') > 0)
+l1r_ver = P%original(6:9)
 
 ! These may be set to true later on
 cmeteo = .false.
@@ -228,7 +230,7 @@ do i = 1,n
 ! subtracted from range afterall. Hence subtract 2 FAI here.
 
 	if (lrange) then
-		if (.not.sar) range(i) = range(i) - 2*fai
+		if (.not.sar .and. l1r_ver < "2.03") range(i) = range(i) - 2*fai
 		if (lrm_l2 .and. old_version_a) range(i) = range(i) - 3.33d0
 	endif
 
