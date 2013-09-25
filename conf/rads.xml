@@ -755,7 +755,7 @@ Global RADS configuration file
 <var name="inv_bar_mog2d_mean" field="1005">
 	<long_name>local mean MOG2D dynamic atmospheric correction</long_name>
 	<source>MOG2D</source>
-	<parameters>mog2d/mog2d_combi_1993_2007_int.nc</parameters>
+	<parameters>dac/mog2d_combi_1993_2007_int.nc</parameters>
 	<units>m</units>
 	<limits>-1 1</limits>
 	<data>inv_bar_mog2d_mean</data>
