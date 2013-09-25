@@ -35,7 +35,7 @@ Global RADS configuration file
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
 	<data>alt range SUB dry_tropo SUB wet_tropo SUB iono SUB inv_bar SUB tide_solid SUB tide_ocean SUB tide_load SUB
-	tide_pole SUB ssb SUB mss SUB ref_frame_offset SUB</data>
+		tide_pole SUB ssb SUB mss SUB ref_frame_offset SUB</data>
 	<quality_flag>swh sig0 range_rms range_numval flags</quality_flag>
 	<quality_flag sat="e1 e2 g1 j1 j2 n1 tx" action="append">swh_rms</quality_flag>
 	<quality_flag sat="j1 j2" action="append">sig0_rms</quality_flag>
@@ -2405,6 +2405,15 @@ Global RADS configuration file
 	<data>tide_non_equil</data>
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
+</var>
+<var name="tide_lunar_nodal">
+	<long_name>nodal lunar ocean tide</long_name>
+	<standard_name>sea_surface_height_amplitude_due_to_nodal_lunar_ocean_tide</standard_name>
+	<units>m</units>
+	<data>time 6.128907968287D-07 MUL 55.151702881 SUB 360 FMOD COSD lat SIND SQR 1.5 MUL 0.5 SUB MUL
+		0.01220911657 MUL</data>
+	<format>f7.4</format>
+	<compress>int1 1d-4</compress>
 </var>
 
 <var name="wave_m0" field="4001 40" sat="!e1 gs">
