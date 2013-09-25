@@ -163,10 +163,10 @@ endtype
 
 ! Some private variables to keep
 
-character(len=*), parameter, private :: default_optlist = 'S:X:vqV:C:P:A:F:R:L:Q: ' // &
-	't: h: args: sat: xml: debug: quiet var: sel: cycle: pass: alias: fmt: format: ' // &
-	'lat: lon: time: sla: limits: opt: mjd: sec: ymd: doy: quality_flag: region:'
-character(len=rads_strl), save, private :: rads_optlist = default_optlist
+character(len=*), parameter, private :: default_short_optlist = 'S:X:vqV:C:P:A:F:R:L:Q:', &
+	default_long_optlist = ' t: h: args: sat: xml: debug: quiet var: sel: cycle: pass: alias:' // &
+	' fmt: format: lat: lon: time: sla: limits: opt: mjd: sec: ymd: doy: quality_flag: region:'
+character(len=rads_strl), save, private :: rads_optlist = default_short_optlist // default_long_optlist
 
 ! These options can be accessed by RADS programs
 
@@ -745,12 +745,12 @@ if (.not.present(optlist)) return
 ! Find first space in optlist
 i = index(optlist, ' ')
 ! Now merge it appropriately with default list
-if (i == 0) then	! Short options only go in the front
-	rads_optlist = optlist // default_optlist
-else if (i == 1) then	! Long options only go in the back
-	rads_optlist = default_optlist // optlist
-else ! Short options in front, long options in the back
-	rads_optlist = optlist(1:i-1) // default_optlist // optlist(i:)
+if (i == 0) then	! Only short options specified in oplist
+	rads_optlist = optlist // default_short_optlist // default_long_optlist
+else if (i == 1) then	! Only long options specified in optlist
+	rads_optlist = default_short_optlist // optlist // default_long_optlist
+else ! Short options in front, long options in the middle
+	rads_optlist = optlist(1:i-1) // default_short_optlist // optlist(i:) // default_long_optlist
 endif
 end subroutine rads_set_options
 
