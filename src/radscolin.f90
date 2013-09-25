@@ -37,7 +37,7 @@ character(len=rads_naml) :: prefix = 'radscolin_p', suffix = '.nc', satlist
 logical :: ascii = .true., out_data = .true., out_mean = .false., out_sdev = .false., force = .false., boz_format = .false.
 real(eightbytereal), allocatable :: data(:,:,:)
 logical, allocatable :: mask(:,:)
-integer(fourbyteint), allocatable :: nr_in_bin(:), bin(:)
+integer(fourbyteint), allocatable :: nr_in_bin(:), idx(:)
 type :: stat_
 	integer(fourbyteint) :: nr
 	real(eightbytereal) :: mean,sum2
@@ -115,9 +115,9 @@ enddo
 ! Allocate data arrays
 nbins = nint(S(1)%phase%pass_seconds/dt * 0.6d0) ! Number of bins on either side of equator (20% margin)
 allocate (data(ntrx+2,nsel,-nbins:nbins), mask(ntrx+2,-nbins:nbins), nr_in_bin(-nbins:nbins), &
-	bin(-nbins:nbins), stat(ntrx+2,nsel), info(ntrx+2))
+	idx(-nbins:nbins), stat(ntrx+2,nsel), info(ntrx+2))
 
-forall (i=-nbins:nbins) bin(i) = i
+forall (i=-nbins:nbins)	idx(i) = i
 
 ! Read one pass for each satellites at a time
 do pass = S(1)%passes(1), S(1)%passes(2), S(1)%passes(3)
@@ -128,7 +128,7 @@ enddo
 call rads_end (S)
 
 ! Deallocate data arrays
-deallocate (data, mask, nr_in_bin, bin, stat, info)
+deallocate (data, mask, nr_in_bin, idx, stat, info)
 
 contains
 
@@ -160,6 +160,7 @@ end subroutine synopsis
 
 subroutine process_pass
 real(eightbytereal), allocatable :: temp(:)
+integer, allocatable :: bin(:)
 integer :: i, j, k, m
 type(rads_pass) :: P
 
@@ -175,16 +176,17 @@ stat = stat_ (0, 0d0, 0d0)
 do m = 1,nsat
 	do cycle = S(m)%cycles(1), S(m)%cycles(2), S(m)%cycles(3)
 		call rads_open_pass (S(m), P, cycle, pass)
-		! Pass ranges should be the same for all satellites, otherwise we do not have collinear tracks
 		if (force) then
+			! Skip the next check, do collinear anyway
 		else if (S(m)%phase%passes /= S(1)%phase%passes .or. S(m)%phase%ref_lon /= S(1)%phase%ref_lon) then
+			! Pass ranges should be the same for all satellites, otherwise we do not have collinear tracks
 			call rads_exit ('Satellite missions '//S(m)%sat//'/'//trim(S(m)%phase%name)// &
 				' and '//S(1)%sat//'/'//trim(S(1)%phase%name)//' are not collinear')
 		endif
 		if (P%ndata > 0) then
 			ntrx = ntrx + 1 ! track counter
 			info(ntrx) = info_ ('    '//S(m)%sat, S(m)%satid, int(cycle,twobyteint), P%ndata)
-			allocate (temp(P%ndata))
+			allocate (temp(P%ndata),bin(P%ndata))
 			bin = nint((P%tll(:,1) - P%equator_time) / dt) ! Store bin nr associated with measurement
 			do j = 1,nsel
 				call rads_get_var (S(m), P, S(m)%sel(j), temp)
@@ -192,7 +194,7 @@ do m = 1,nsat
 			enddo
 			! For time being, set to "true" ANY incoming data point, even if NaN
 			mask(ntrx,bin(:)) = .true.
-			deallocate (temp)
+			deallocate (temp,bin)
 		endif
 		call rads_close_pass (S(m), P)
 	enddo
@@ -339,8 +341,8 @@ call nfs (nf90_put_var (ncid, varid(1), info(1:ncols)%satid))
 call nfs (nf90_put_var (ncid, varid(2), info(1:ncols)%cycle))
 
 ! Write bin info
-call nfs (nf90_put_var (ncid, varid(3), pack(bin, nr_in_bin > 0)))
-call nfs (nf90_put_var (ncid, varid(4), pack(nr_in_bin, nr_in_bin > 0)))
+call nfs (nf90_put_var (ncid, varid(3), pack(idx(-nbins:nbins:step), nr_in_bin(-nbins:nbins:step) > 0)))
+call nfs (nf90_put_var (ncid, varid(4), pack(nr_in_bin(-nbins:nbins:step), nr_in_bin(-nbins:nbins:step) > 0)))
 
 ! Write data
 allocate (tmp(ncols,n))
@@ -358,6 +360,7 @@ enddo
 deallocate (tmp)
 
 call nfs (nf90_close (ncid))
+
 end subroutine write_pass_netcdf
 
 !***********************************************************************
