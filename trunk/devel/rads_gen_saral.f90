@@ -183,6 +183,7 @@ files: do
 ! Skip passes of which the cycle number or equator crossing time is outside the specified interval
 
 	if (equator_time < t0 .or. equator_time > t1 .or. cyclenr < c0 .or. cyclenr > c1) then
+		call nfs(nf90_close(ncid))
 		write (*,550) 'Skipped'
 		cycle files
 	endif
