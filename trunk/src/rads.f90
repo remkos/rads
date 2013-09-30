@@ -2956,7 +2956,10 @@ character(len=*), intent(in) :: string
 ! Argument:
 !  string   : Error message
 !-----------------------------------------------------------------------
+character(len=rads_naml) :: progname
+call getarg (0, progname)
 call rads_message (string)
+call rads_message ('Use "'//trim(progname)//' --help" for more info')
 call exit (10)
 end subroutine rads_exit
 
