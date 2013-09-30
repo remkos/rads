@@ -42,7 +42,7 @@ integer(fourbyteint) :: outunit, listunit = -1, logunit = stdout
 character(len=rads_cmdl) :: outname = ''
 character(len=640) :: format_string
 integer(fourbyteint) :: i, j, l, ios, cycle, pass, step = 1, nseltot = 0, nselmax = huge(0_fourbyteint)
-logical :: freeform = .false., boz_format = .false.
+logical :: has_sel = .false., has_f = .false., boz_format = .false.
 integer(fourbyteint) :: reject = -1
 
 ! For statistics
@@ -75,7 +75,9 @@ do i = 1,rads_nopt
 			read (rads_opt(i)%arg, *, iostat=ios) reject
 		endif
 	case ('f')
-		freeform = .true.
+		has_f = .true.
+	case ('sel')
+		has_sel = .true.
 	case ('s')
 		if (rads_opt(i)%arg == 'p') then
 			stat_mode = pass_stat
@@ -100,18 +102,21 @@ do j = 1,msat
 	if (Sats(j)%sat == '') exit
 	S => Sats(j)
 
-	! If there is no -f option, add relative time, lat, lon to the front of the list
-	if (.not.freeform) then
+	! If sel= is used and there is no -f option, add relative time, lat, lon to the front of the list
+	if (has_sel .and. .not.has_f) then
 		allocate (temp(S%nsel+3))
 		var => rads_varptr (S, 'time_rel_eq')
 		temp(1) = var
 		temp(2) = S%lat
 		temp(3) = S%lon
-		temp(4:S%nsel+3) = S%sel(1:S%nsel)
+		if (S%nsel > 0) temp(4:S%nsel+3) = S%sel(1:S%nsel)
 		S%nsel = S%nsel + 3
 		deallocate (S%sel, stat=ios)
 		S%sel => temp
 	endif
+
+	! Check if there is at least one variable specified
+	if (S%nsel == 0) call rads_exit ('No variables are selected for satellite '//trim(S%sat))
 
 	! Per-cycle statistics cannot be done for per-pass files
 	if (outname == '' .and. stat_mode == cycle_stat) then
