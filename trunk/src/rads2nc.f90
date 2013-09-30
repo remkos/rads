@@ -68,6 +68,9 @@ do i = 1,rads_nopt
 	end select
 enddo
 
+! Check if there is at least one variable specified
+if (S%nsel == 0) call rads_exit ('No variables are selected')
+
 ! If SLA is among the results, remember which index that is
 do i = 1,S%nsel
 	if (S%sel(i)%info%datatype == rads_type_sla) then
