@@ -181,7 +181,7 @@ call rads_get_var (S, P, 'surface_type', surface_type, .true.)
 do i = 1,n
 	if (lon(i) > 46.5d0 .and. lon(i) < 54.1d0 .and. &
 		lat(i) > 36.5d0 .and. lat(i) < 47.1d0 .and. &
-		surface_type(i) > 2.5d0) h(i) = -27d0
+		surface_type(i) < 2.5d0) h(i) = -27d0
 enddo
 
 ! Get global pressure
