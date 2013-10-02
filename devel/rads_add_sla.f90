@@ -30,18 +30,28 @@ program rads_add_sla
 
 use rads
 use rads_devel
+use rads_misc
 
 ! Command line arguments
 
 type(rads_sat) :: S
 type(rads_pass) :: P
-integer(fourbyteint) :: cyc, pass
+integer(fourbyteint) :: cyc, pass, j
+logical :: update = .false.
 
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options (' all')
+call rads_set_options ('u update all')
 call rads_init (S)
+
+! Check all options
+do j = 1,rads_nopt
+	select case (rads_opt(j)%opt)
+	case ('u', 'update')
+		update = .true.
+	end select
+enddo
 
 ! Process all data files
 
@@ -66,7 +76,8 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
-'  --all                     (Has no effect)')
+'  --all                     (Has no effect)'/ &
+'  -u, --update              Update files only when there are changes')
 stop
 end subroutine synopsis
 
@@ -76,7 +87,9 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-real(eightbytereal) :: sla(n)
+integer(fourbyteint) :: i
+real(eightbytereal) :: sla(n), tmp(n)
+real(eightbytereal), parameter :: dz = 1d-4
 
 ! Formats
 
@@ -88,6 +101,21 @@ write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
 ! Get sea level anomaly
 
 call rads_get_var (S, P, 'sla', sla)
+
+! If requested, check for changes first
+
+if (update) then
+	call rads_get_var (S, P, 'ssha', tmp, .true.)
+	do i = 1,n
+		if (isnan_(tmp(i)) .and. isnan_(sla(i))) cycle
+		if (isnan_(tmp(i))) exit
+		if (nint(tmp(i)/dz) /= nint(sla(i)/dz)) exit
+	enddo
+	if (i > n) then	! No changes
+		write (*,552) 0
+		return
+	endif
+endif
 
 ! Store all data fields
 
