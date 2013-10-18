@@ -213,8 +213,8 @@ write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
 
 ! If "new" option is used, write only when fields are not yet available
 
-if (new .and. nft(nf90_inq_varid(P%ncid,'dry_tropo_'//source,i)) .and. &
-	nft(nf90_inq_varid(P%ncid,'wet_tropo_'//source,i))) then
+if (new .and. nff(nf90_inq_varid(P%ncid,'dry_tropo_'//source,i)) .and. &
+	nff(nf90_inq_varid(P%ncid,'wet_tropo_'//source,i))) then
 	write (*,552) 0
 	return
 endif
