@@ -186,21 +186,6 @@ Global RADS configuration file
 	<compress>int4 1d-3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_ggm02c_itrf2000" field="411" sat="gs pn tx">
-	<long_name>GGM02c(ITRF2000) orbital altitude</long_name>
-	<standard_name>height_above_reference_ellipsoid</standard_name>
-	<source>GGM02c(ITRF2000)</source>
-	<parameters>ggm02c_itrf2000</parameters>
-	<units>m</units>
-	<data>alt_ggm02c_itrf2000</data>
-	<format>f11.3</format>
-	<compress>int4 1d-3</compress>
-	<if sat="j1 j2">
-		<format>f12.4</format>
-		<compress>int4 1d-4 1300d3</compress>
-	</if>
-	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
-</var>
 <var name="alt_eiggc03c" field="412" sat="n1">
 	<long_name>EIGEN-GC03c orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
@@ -210,21 +195,6 @@ Global RADS configuration file
 	<data>alt_eiggc03c</data>
 	<format>f11.3</format>
 	<compress>int4 1d-3</compress>
-	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
-</var>
-<var name="alt_ggm02c_itrf2005" field="413" sat="pn tx">
-	<long_name>GGM02c(ITRF2005) orbital altitude</long_name>
-	<standard_name>height_above_reference_ellipsoid</standard_name>
-	<source>GGM02c(ITRF2005)</source>
-	<parameters>ggm02c_itrf2005</parameters>
-	<units>m</units>
-	<data>alt_ggm02c_itrf2005</data>
-	<format>f11.3</format>
-	<compress>int4 1d-3</compress>
-	<if sat="j1 j2">
-		<format>f12.4</format>
-		<compress>int4 1d-4 1300d3</compress>
-	</if>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_eiggl04s" field="414" sat="j1 n1">
@@ -293,6 +263,21 @@ Global RADS configuration file
 	<format>f12.4</format>
 	<compress>int4 1d-4 700d3</compress>
 	<compress sat="j1 j2">int4 1d-4 1300d3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<var name="alt_std1204" field="419" sat="pn tx j1 j2">
+	<long_name>GSFC/Std1204 orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>GSFC/Std1204</source>
+	<parameters>gsfc_std1204</parameters>
+	<units>m</units>
+	<data>alt_std1204</data>
+	<format>f11.3</format>
+	<compress>int4 1d-3</compress>
+	<if sat="j1 j2">
+		<format>f12.4</format>
+		<compress>int4 1d-4 1300d3</compress>
+	</if>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_reaper" field="420" sat="e1 e2">
@@ -984,16 +969,6 @@ Global RADS configuration file
 	<compress>int4 1d-4</compress>
 </var>
 <!--
-<var name="geoid_ggm02c" field="1608">
-	<long_name>GGM02c geoid height</long_name>
-	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
-	<source>GGM02c gravity field</source>
-	<parameters>GGM02C/ggm02c.nc -s</parameters>
-	<units>m</units>
-	<data>geoid_ggm02c</data>
-	<format>f10.4</format>
-	<compress>int4 1d-4</compress>
-</var>
 <var name="mss_arcgice" field="1609">
 	<long_name>ArcGICE geoid height</long_name>
 	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
