@@ -34,6 +34,8 @@ use rads_misc
 use rads_grid
 use rads_devel
 use meteo_subs
+use netcdf
+use rads_netcdf
 
 ! Data variables
 
@@ -43,23 +45,32 @@ type(rads_pass) :: P
 ! Other local variables
 
 character(len=rads_cmdl) :: path
-integer(fourbyteint) :: i,cyc,pass
-logical :: lssb = .false., lwind = .false.
+integer(fourbyteint) :: i, cyc, pass, ncid, varid
+integer(fourbyteint), allocatable :: rad_pass(:), rad_dsig0(:)
+logical, allocatable :: mask(:)
+logical :: lsig0 = .false., usig0, lssb = .false., lwet = .false., lwind = .false.
 type(grid) :: issb_hyb
+character(len=9) :: str = '123456789'
 
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options (' ssb wind all')
+call rads_set_options (' sig0 ssb wet wind all')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
+	case ('sig0')
+		lsig0 = .true.
 	case ('ssb')
 		lssb = .true.
+	case ('wet')
+		lwet = .true.
 	case ('wind')
 		lwind = .true.
 	case ('all')
+		lsig0 = .true.
 		lssb = .true.
+		lwet = .true.
 		lwind = .true.
 	end select
 enddo
@@ -74,11 +85,29 @@ endif
 ! Run process for all files
 
 do cyc = S%cycles(1),S%cycles(2),S%cycles(3)
+	! Load radiometer patch file
+	usig0 = lsig0 .and. cyc >= 1 .and. cyc <= 5
+	if (usig0) then
+		call parseenv ('${RADSROOT}/ext/sa/mwr/AL_RadiometerL2_CLS_Patch2draft_c'//str(cyc:cyc)//'.nc', path)
+		call nfs(nf90_open(path, nf90_nowrite, ncid))
+		call nfs(nf90_inquire_dimension (ncid, 1, len=i))
+		allocate (rad_pass(i), rad_dsig0(i), mask(i))
+		call nfs(nf90_inq_varid (ncid, 'pass', varid))
+		call nfs(nf90_get_var (ncid, varid, rad_pass))
+		call nfs(nf90_inq_varid (ncid, 'atmos_corr_sig0', varid))
+		call nfs(nf90_get_var (ncid, varid, rad_dsig0))
+		call nfs(nf90_close (ncid))
+	endif
+
+	! Process passes
 	do pass = S%passes(1),S%passes(2),S%passes(3)
 		call rads_open_pass (S, P, cyc, pass, .true.)
 		if (P%ndata > 0) call process_pass (P%ndata)
 		call rads_close_pass (S, P)
 	enddo
+
+	! Deallocate patch file info
+	if (usig0) deallocate (rad_pass, rad_dsig0, mask)
 enddo
 
 contains
@@ -94,7 +123,9 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
+'  --sig0                    Update sigma0 with new (Patch2 draft) attenuation' / &
 '  --ssb                     Add hybrid SSB' / &
+'  --wet                     Shift MWR wet prior to 2013-10-22' / &
 '  --wind                    Compute wind speed' / &
 '  --all                     All of the above')
 stop
@@ -106,7 +137,8 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-real(eightbytereal) :: swh(n),ssb(n),sig0(n),wind(n),t
+real(eightbytereal) :: time(n),wet(n),swh(n),ssb(n),sig0(n),dsig0(n),dsig0_old(n),wind(n),t
+real(eightbytereal), parameter :: time0 = 909058527d0 ! 2013-10-22 12:15:27
 
 ! Formats
 
@@ -118,6 +150,19 @@ write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
 ! Process data records
 
 call rads_get_var (S, P, 'sig0_ka', sig0, .true.)
+
+! Update sigma0
+
+if (usig0) then
+	call rads_get_var (S, P, 'dsig0_atmos_ka', dsig0_old, .true.)
+	mask = (rad_pass == pass)
+	if (count(mask) == n) then
+		dsig0 = pack(rad_dsig0, mask) * 1d-4
+		sig0 = sig0 + dsig0_old - dsig0
+	else
+		dsig0 = dsig0_old
+	endif
+endif
 
 ! Compute SSB
 
@@ -131,13 +176,22 @@ if (lssb) then
 	enddo
 endif
 
+! Shift MWR wet tropo prior to 2013-10-22 12:15:27
+
+if (P%start_time > time0) lwet = .false.
+if (lwet) then
+	call rads_get_var (S, P, 'time', time, .true.)
+	call rads_get_var (S, P, 'wet_tropo_rad', wet, .true.)
+	where (time < time0) wet = wet - 6.4d-3
+endif
+
 ! Compute wind speed
 
 if (lwind) wind = wind_ecmwf (sig0, .true.)
 
 ! If nothing changed, stop here
 
-if (.not.(lssb .or. lwind)) then
+if (.not.(usig0 .or. lssb .or. lwet .or. lwind)) then
 	write (*,552) 0
 	return
 endif
@@ -145,8 +199,11 @@ endif
 ! Write out all the data
 
 call rads_put_history (S, P)
+! if (usig0) call rads_put_var (S, P, 'sig0', sig0)
+if (usig0) call rads_put_var (S, P, 'dsig0_atmos_nn_ka', dsig0)
 if (lssb) call rads_def_var (S, P, 'ssb_hyb')
 if (lssb) call rads_put_var (S, P, 'ssb_hyb', ssb)
+if (lwet) call rads_put_var (S, P, 'wet_tropo_rad', wet)
 if (lwind) call rads_put_var (S, P, 'wind_speed_alt', wind)
 
 write (*,552) n
