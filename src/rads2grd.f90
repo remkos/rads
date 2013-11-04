@@ -93,6 +93,8 @@ do i = 1,rads_nopt
 enddo
 
 ! Set up the grid cells
+if (any(isnan_(limits(:,1)))) call rads_exit ('You have not set the range or resolution of the x-coordinate')
+if (any(isnan_(limits(:,2)))) call rads_exit ('You have not set the range or resolution of the y-coordinate')
 lo  = limits(1,:)
 hi  = limits(2,:)
 res = limits(3,:)
