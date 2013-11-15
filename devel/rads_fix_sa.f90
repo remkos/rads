@@ -20,8 +20,12 @@
 ! This program makes numerous patches to the SARAL RADS data processed
 ! by rads_gen_saral. These patches include:
 !
+! sig0:
+! - Add attenuation correction from Patch2 version of NN algorithm
 ! ssb:
 ! - Add hybrid SSB to the RADS data
+! wet:
+! - Shift MWR wet prior to 2013-10-22: subtract 6.4 mm
 ! wind:
 ! - Update the wind speed
 !
@@ -68,7 +72,6 @@ do i = 1,rads_nopt
 	case ('wind')
 		lwind = .true.
 	case ('all')
-		lsig0 = .true.
 		lssb = .true.
 		lwet = .true.
 		lwind = .true.
@@ -85,11 +88,14 @@ endif
 ! Run process for all files
 
 do cyc = S%cycles(1),S%cycles(2),S%cycles(3)
-	! Load radiometer patch file
-	usig0 = lsig0 .and. cyc >= 1 .and. cyc <= 5
-	if (usig0) then
+	! Load radiometer patch file (if requested and if available)
+	if (lsig0) then
 		call parseenv ('${RADSROOT}/ext/sa/mwr/AL_RadiometerL2_CLS_Patch2draft_c'//str(cyc:cyc)//'.nc', path)
-		call nfs(nf90_open(path, nf90_nowrite, ncid))
+		usig0 = nff(nf90_open(path, nf90_nowrite, ncid))
+	else
+		usig0 = .false.
+	endif
+	if (usig0) then
 		call nfs(nf90_inquire_dimension (ncid, 1, len=i))
 		allocate (rad_pass(i), rad_dsig0(i), mask(i))
 		call nfs(nf90_inq_varid (ncid, 'pass', varid))
@@ -123,11 +129,11 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
-'  --sig0                    Update sigma0 with new (Patch2 draft) attenuation' / &
 '  --ssb                     Add hybrid SSB' / &
 '  --wet                     Shift MWR wet prior to 2013-10-22' / &
 '  --wind                    Compute wind speed' / &
-'  --all                     All of the above')
+'  --all                     All of the above' / &
+'  --sig0                    Update sigma0 with new (Patch2 draft) attenuation')
 stop
 end subroutine synopsis
 
