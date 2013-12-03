@@ -244,7 +244,7 @@ do
 	endif
 	if (nf90_get_att(ncid,varid,'scale_factor',scale_factor) /= nf90_noerr) scale_factor = 1d0
 	if (nf90_get_att(ncid,varid,'add_offset',add_offset) /= nf90_noerr) add_offset = 0d0
-	with_fillvalue = (nf90_get_att(ncid,varid,'_FillValue',fillvalue) /= nf90_noerr)
+	with_fillvalue = (nf90_get_att(ncid,varid,'_FillValue',fillvalue) == nf90_noerr)
 	if (i0 == 0) then
 		call nfs(nf90_get_var(ncid,varid,array))
 		if (with_fillvalue) where (array == fillvalue) array = nan
@@ -281,7 +281,7 @@ do
 	endif
 	if (nf90_get_att(ncid,varid,'scale_factor',scale_factor) /= nf90_noerr) scale_factor = 1d0
 	if (nf90_get_att(ncid,varid,'add_offset',add_offset) /= nf90_noerr) add_offset = 0d0
-	with_fillvalue = (nf90_get_att(ncid,varid,'_FillValue',fillvalue) /= nf90_noerr)
+	with_fillvalue = (nf90_get_att(ncid,varid,'_FillValue',fillvalue) == nf90_noerr)
 	if (i0 == 0) then
 		call nfs(nf90_get_var(ncid,varid,array))
 		if (with_fillvalue) where (array == fillvalue) array = nan
