@@ -655,6 +655,7 @@ Global RADS configuration file
 	<source>IRI2007 climatology</source>
 	<parameters>0.856</parameters>
 	<parameters sat="c2">0.844</parameters>
+	<parameters sat="s2">0.859</parameters>
 	<parameters sat="h2">0.880</parameters>
 	<parameters sat="tx pn j1 j2 j3">0.925</parameters>
 	<units>m</units>
