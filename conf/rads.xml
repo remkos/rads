@@ -637,6 +637,10 @@ Global RADS configuration file
 	<long_name>JPL GIM ionospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>JPL GIM 6-hourly maps</source>
+	<parameters>0.856</parameters>
+	<parameters sat="c2">0.844</parameters>
+	<parameters sat="h2">0.880</parameters>
+	<parameters sat="tx pn j1 j2 j3">0.925</parameters>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
 	<data>iono_gim</data>
@@ -649,6 +653,10 @@ Global RADS configuration file
 	<long_name>IRI2007 ionospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>IRI2007 climatology</source>
+	<parameters>0.856</parameters>
+	<parameters sat="c2">0.844</parameters>
+	<parameters sat="h2">0.880</parameters>
+	<parameters sat="tx pn j1 j2 j3">0.925</parameters>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
 	<data>iono_iri2007</data>
@@ -660,6 +668,10 @@ Global RADS configuration file
 	<long_name>NIC09 ionospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>NIC09 climatology</source>
+	<parameters>0.856</parameters>
+	<parameters sat="c2">0.844</parameters>
+	<parameters sat="h2">0.880</parameters>
+	<parameters sat="tx pn j1 j2 j3">0.925</parameters>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
 	<data>iono_nic09</data>
