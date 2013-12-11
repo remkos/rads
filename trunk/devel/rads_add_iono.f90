@@ -34,13 +34,14 @@ use nicsubs
 
 type(rads_sat) :: S
 type(rads_pass) :: P
+type(rads_var), pointer :: var
 type(giminfo) :: info
 
 ! Command line arguments
 
 character(rads_cmdl) :: path
 integer(fourbyteint) :: j, cyc, pass
-real(eightbytereal) :: f, f_scaled, hgt
+real(eightbytereal) :: f, f_scaled
 integer(fourbyteint), parameter :: nmod = 3
 logical :: model(nmod) = .false.
 
@@ -54,17 +55,9 @@ call rads_init (S)
 ! and mean altitude.
 
 f = -0.4028d0/S%frequency(1)**2	! freq in GHz from rads.xml; f = factor from TEC to meters
-select case (S%sat)
-case ('c2')
-	f_scaled = 0.844 * f	! CryoSat
-	hgt = 750d3
-case ('tx', 'pn', 'j1', 'j2', 'j3', 'j4')
-	f_scaled = 0.925 * f	! TOPEX, Jason
-	hgt = 1350d3
-case default
-	f_scaled = 0.856 * f	! Other LEOs
-	hgt = 800d3
-end select
+var => rads_varptr (S, 'iono_gim')
+read (var%info%parameters, *) f_scaled ! Get the ionosphere scaling parameter
+f_scaled = f_scaled * f
 
 ! Get ${ALTIM}/data directory
 
@@ -125,7 +118,7 @@ end subroutine synopsis
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
 integer(fourbyteint) :: i, j, ii, iold
-real(eightbytereal) :: time(n), lat(n), lon(n), tec1(n), z(n,nmod), tec2, dtime, d
+real(eightbytereal) :: time(n), lat(n), lon(n), alt(n), tec1(n), z(n,nmod), tec2, dtime, d
 logical :: ok(nmod)
 
 ! Formats
@@ -140,6 +133,7 @@ write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
 call rads_get_var (S, P, 'time', time, .true.)
 call rads_get_var (S, P, 'lat', lat, .true.)
 call rads_get_var (S, P, 'lon', lon, .true.)
+call rads_get_var (S, P, 'alt', alt, .true.)
 
 ! Now do all models
 
@@ -155,7 +149,7 @@ if (model(2)) then ! IRI2007
 	do i = 1,n
 		dtime = time(i) - time(iold)
 		if (dtime < 10d0 .and. i > 1 .and. i < n) cycle
-		call iri2007tec(0,time(i),lat(i),lon(i),hgt,hgt,tec1(i),tec2)
+		call iri2007tec(0,time(i),lat(i),lon(i),alt(i),alt(i),tec1(i),tec2)
 		do ii = iold+1,i-1
 			d = (time(ii)-time(iold)) / dtime
 			tec1(ii) = (1d0-d) * tec1(iold) + d * tec1(i)
