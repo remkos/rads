@@ -22,7 +22,7 @@ Global RADS configuration file
 <global_attributes>
 	Conventions CF-1.6
 	title RADS 4.0 pass file
-	institution Altimetrics / NOAA / TU Delft
+	institution Altimetrics / EUMETSAT / NOAA / TU Delft
 	source radar altimeter
 	references RADS Data Manual, Issue 4.0
 </global_attributes>

@@ -175,7 +175,7 @@ end subroutine synopsis
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
 real(eightbytereal) :: time(n),alt(n),alt_rate(n),dry(n),wet(n), &
-	iono(n),sig0(n),swh(n),ssb(n),wind(n),flagword(n),range(n),ib(n),t,tbias
+	iono(n),sig0(n),swh(n),ssb(n),wind(n),flagword(n),range(n),ib(n),x,y,tbias
 integer(fourbyteint) :: i
 logical :: lrm_l2,fdm_l2,old_version_a,version_a,sar
 character(len=4) :: l1r_ver
@@ -272,10 +272,10 @@ do i = 1,n
 		if (btest(flag,12)) then
 			swh(i) = nan
 		else
-			t = swh(i) * abs(swh(i))
-			t = (t + 2.7124d0) / 0.5777d0
-			swh(i) = sign(sqrt(abs(t)), t)
-			if (t < 0d0) swh(i) = -swh(i)
+			x = swh(i) * abs(swh(i))
+			x = (x + 2.7124d0) / 0.5777d0
+			swh(i) = sign(sqrt(abs(x)), x)
+			if (x < 0d0) swh(i) = -swh(i)
 		endif
 	endif
 
@@ -318,10 +318,13 @@ do i = 1,n
 ! Apply hybrid SSB
 
 	if (lssb) then
-		t = swh(i)
-		if (t < 0d0) t = 0d0
-		if (t > 12d0) t = 12d0
-		ssb(i) = grid_lininter (issb_hyb,sig0(i),t)
+		x = sig0(i)
+		if (x < issb_hyb%xmin) x = issb_hyb%xmin
+		if (x > issb_hyb%xmax) x = issb_hyb%xmax
+		y = swh(i)
+		if (y < issb_hyb%ymin) y = issb_hyb%ymin
+		if (y > issb_hyb%ymax) y = issb_hyb%ymax
+		ssb(i) = grid_lininter (issb_hyb, x, y)
 	endif
 
 enddo
