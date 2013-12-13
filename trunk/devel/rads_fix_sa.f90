@@ -143,7 +143,7 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-real(eightbytereal) :: time(n),wet(n),swh(n),ssb(n),sig0(n),dsig0(n),dsig0_old(n),wind(n),t
+real(eightbytereal) :: time(n),wet(n),swh(n),ssb(n),sig0(n),dsig0(n),dsig0_old(n),wind(n),x,y
 real(eightbytereal), parameter :: time0 = 909058527d0 ! 2013-10-22 12:15:27
 
 ! Formats
@@ -175,10 +175,13 @@ endif
 if (lssb) then
 	call rads_get_var (S, P, 'swh_ka', swh, .true.)
 	do i = 1,n
-		t = swh(i)
-		if (t < 0d0) t = 0d0
-		if (t > 12d0) t = 12d0
-		ssb(i) = grid_lininter (issb_hyb,sig0(i),t)
+		x = sig0(i)
+		if (x < issb_hyb%xmin) x = issb_hyb%xmin
+		if (x > issb_hyb%xmax) x = issb_hyb%xmax
+		y = swh(i)
+		if (y < issb_hyb%ymin) y = issb_hyb%ymin
+		if (y > issb_hyb%ymax) y = issb_hyb%ymax
+		ssb(i) = grid_lininter (issb_hyb, x, y)
 	enddo
 endif
 

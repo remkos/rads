@@ -1492,13 +1492,13 @@ end subroutine rads_get_var_by_name
 !***********************************************************************
 !*rads_get_var_common -- Read variable (data) from RADS database (common to all)
 !+
-recursive subroutine rads_get_var_common (S, P, var, data, skip_edit)
+recursive subroutine rads_get_var_common (S, P, var, data, noedit)
 use rads_misc
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 type(rads_var), intent(inout) :: var
 real(eightbytereal), intent(out) :: data(:)
-logical, intent(in) :: skip_edit
+logical, intent(in) :: noedit
 !
 ! This routine is common to all rads_get_var_* routines. It should only
 ! be called from those routines.
@@ -1564,7 +1564,7 @@ do i = 1,3 ! This loop is here to allow processing of aliases
 enddo ! End alias loop
 
 ! Edit this data if required and no error occurred
-if (.not.skip_edit .and. S%error == rads_noerr) then
+if (.not.noedit .and. S%error == rads_noerr) then
 	if (any(info%limits == info%limits)) call rads_limits_check
 	if (info%quality_flag(:1) /= ' ') call rads_quality_check
 endif
