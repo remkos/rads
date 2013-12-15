@@ -2754,7 +2754,7 @@ Global RADS configuration file
 	</phase>
 	<phase name="c">
 		<mission>Geodetic Mission</mission>
-		<cycles>382 499</cycles>
+		<cycles>382 425</cycles>
 		<!--This is "real" cycle and pass, i.e. subcycle 382, pass 1-->
 		<repeat>406.528444 10438</repeat>
 		<ref_pass>2012-05-07T14:57:08 308.15 1 1</ref_pass>
@@ -2776,7 +2776,7 @@ Global RADS configuration file
 	<xover_params>0.04 0.035</xover_params>
 	<phase name="a">
 		<mission>Exact Repeat Mission</mission>
-		<cycles>0 200</cycles>
+		<cycles>0 300</cycles>
 		<repeat>9.91564280 254</repeat>
 		<ref_pass>2008-07-12T01:48:13 99.92 1 1</ref_pass>
 		<start_time>2008-07-04</start_time>
