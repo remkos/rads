@@ -159,7 +159,7 @@ write (*,1310)
 '  --drift                   Correct sigma0 for apparent drift' / &
 '  --meteo                   Set dry, wet, IB (and iono) to NaN when zero' / &
 '  --range                   Correct range for biases' / &
-'  --sig0                    Correct sigma0 for biases and reversal (L2 only)' / &
+'  --sig0                    Correct sigma0 for biases and reversal' / &
 '  --ssb                     Add hybrid SSB model' / &
 '  --swh                     Correct SWH' / &
 '  --tbias                   Correct time and orbital altitude for timing bias' / &
