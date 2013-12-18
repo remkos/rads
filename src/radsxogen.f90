@@ -71,7 +71,7 @@ integer(fourbyteint), allocatable :: key(:), idx(:), trkid(:,:)
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('dsbi:g:r:: dt:')
+call rads_set_options ('dsbi:g:r:: dual single batch interpolant: gap: dt:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 dt = nan
