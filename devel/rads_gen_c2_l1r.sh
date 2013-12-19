@@ -35,27 +35,28 @@ for tar in $*; do
 	esac
 	find -L $dir -name "CS_*.nc" -print | sort -r | sort -u -t/ -k3.20,3.34 > $lst
 	case $dir in
-	*/c???) cycle="-C"`basename $dir | cut -c2-` ;;
-	*)      cycle= ;;
-	esac
-	case $dir in
-	*FDM*) orbit_opt="-Valt_gdrd --dir=gdr-d-moe" ;;
-	*LRM*) orbit_opt="-Valt_gdrd" ;;
+		*/c???) cycle="-C"`basename $dir | cut -c2-` ;;
+		*)      cycle= ;;
 	esac
 
 	rads_gen_c2_l1r $options $cycle < $lst	>> $log 2>&1
-	rads_fix_c2     $options $cycle --all	>> $log 2>&1
-	rads_add_orbit  $options $cycle $orbit_opt --equator --loc-7 --rate	>> $log 2>&1
 
 	case $tar in
 		*.t?z) chmod -R u+w $dir; rm -rf $dir ;;
 	esac
 done
 
+case $dir in
+	*FDM*) orbit_opt="-Valt_gdrd --dir=gdr-d-moe" ;;
+	*LRM*) orbit_opt="-Valt_gdrd" ;;
+esac
+
+rads_add_ncep    $options -gs               >> $log 2>&1
+rads_fix_c2      $options $cycle --all		>> $log 2>&1
+rads_add_orbit   $options $cycle $orbit_opt --equator --loc-7 --rate	>> $log 2>&1
 rads_add_orbit   $options -Valt_eig6c		>> $log 2>&1
 rads_add_common  $options 					>> $log 2>&1
 rads_add_ecmwf   $options --all				>> $log 2>&1
-rads_add_ncep    $options -gs               >> $log 2>&1
 rads_add_iono    $options --all				>> $log 2>&1
 rads_add_mog2d   $options					>> $log 2>&1
 rads_add_ww3_222 $options --all				>> $log 2>&1
