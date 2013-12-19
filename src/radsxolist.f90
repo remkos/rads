@@ -45,7 +45,7 @@ character(len=rads_naml) :: optarg, str_replace(10)
 character(len=rads_cmdl) :: command
 character(len=1) :: order = ''
 character(len=4) :: statname(5) = (/ 'min ', 'max ', 'mean', 'rms ', 'std ' /)
-integer(fourbyteint), parameter :: msat = 20, maxtrk = 32768
+integer(fourbyteint), parameter :: msat = 20
 type :: sat_
 	character(len=4) :: name
 	real(eightbytereal) :: period, altsig, orberr, inclination
@@ -59,7 +59,7 @@ character(len=*), parameter :: optlist = &
 
 integer(fourbyteint) :: var0 = 0, check_flag = -1
 logical :: diff = .true., stat_only, singles = .true., duals = .true., xostat, fullyear = .false., &
-	ltbias = .false., pass_info = .false.
+	ltbias = .false., pass_info = .false., dual_asc = .false., dual_des = .false.
 real(eightbytereal) :: t0 = 0d0, t1 = 0d0, lon0 = 0d0, lon1 = 0d0, lat0 = 0d0, lat1 = 0d0, &
 	dt0 = 0d0, dt1 = 0d0, edit = -1d0, bin = 0d0, tbias = 0d0
 
@@ -102,6 +102,12 @@ do
 	case ('e', 'edit')
 		edit = 3.5d0
 		read (optarg, *, iostat=ios) edit
+	case ('dual-asc')
+		singles = .false.
+		dual_asc = .true.
+	case ('dual-des')
+		singles = .false.
+		dual_des = .true.
 	case ('d', 'dual')
 		singles = .false.
 	case ('s', 'single')
@@ -113,7 +119,6 @@ do
 		stat_only = .true.
 	case ('o', 'order')
 		order = optarg(1:1)
-		write (*,*) order
 	case ('t', 'both-times')
 		var0 = 1
 	case ('b', 'bin')
@@ -181,9 +186,6 @@ call nfs (nf90_inq_dimid (ncid, 'xover', i))
 call nfs (nf90_inquire_dimension (ncid, i, len=nxo_in))
 call nfs (nf90_inq_dimid (ncid, 'track', i))
 call nfs (nf90_inquire_dimension (ncid, i, len=ntrk))
-if (ntrk >= maxtrk) then
-	write (*,'(a)') 'Output format does not allow track numbers exceeding 32767. We will modulo them.'
-endif
 
 write (*, 605) nxo_in, ntrk
 605 format ('# Xovers,tracks = ',2i9)
@@ -290,6 +292,10 @@ else if (.not.duals) then
 else
 	mask = .true.
 endif
+
+! Mask out ascending or descending passes on first satellite
+if (dual_asc) where (trk(track(1,:))%pass == 0) mask = .false.
+if (dual_des) where (trk(track(1,:))%pass == 1) mask = .false.
 
 ! Mask out data not in specified range
 if (lat1 > lat0) where (var(1,:,-1) < lat0 .or. var(1,:,-1) > lat1) mask = .false.
@@ -518,7 +524,9 @@ endif
 '                              A|a = ascending-descending or vv'/ &
 '                              H|h = higher-lower satellite or vv'/ &
 '                              S|s = higher-lower satellite ID or vv'/ &
-'                              T|t = later-earlier measurement or vv')
+'                              T|t = later-earlier measurement or vv'/ &
+'  --dual-asc                Select only ascending passes on first satellite'/ &
+'  --dual-des                Select only descending passes on first satellite')
 1301 format ( &
 '  -b, --bin=DAYS            Bin data by number of DAYS and print mean and std dev'/ &
 '  --full-year               Print data as YYYYMMDD instead of YYMMDD'/ &
