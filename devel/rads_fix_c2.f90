@@ -78,8 +78,10 @@ type(rads_pass) :: P
 
 character(len=rads_cmdl) :: path
 real(eightbytereal), parameter :: fai = 7.3d-3, &
-	sig0_drift = 0.21d0 / 365.25d0 / 86400d0, time_drift = 830822400d0, & ! Sigma0 drift is 0.21 dB per year since 1-MAY-2011. See notes of 18-DEC-2013
 	swh_adjustment = 1.8737**2 * (0.513**2 - 0.383**2) ! Adjustment to be added to SWH squared
+ ! Sigma0 drift and bias with reference time 1-MAY-2011. See notes of 18-DEC-2013
+real(eightbytereal) :: sig0_drift_lrm = 0.21d0 / 365.25d0 / 86400d0, sig0_bias_lrm = -3.02d0, &
+	sig0_drift_sar = 0.27d0 / 365.25d0 / 86400d0, sig0_bias_sar = -3.04d0, time_drift = 830822400d0
 integer(fourbyteint) :: i,cyc,pass
 integer(twobyteint) :: flag
 logical :: ldrift=.false.,lmeteo=.false.,lrange=.false.,lssb=.false.,lswh=.false.,ltbias=.false., &
@@ -303,16 +305,26 @@ do i = 1,n
 		else
 			sig0(i) = sig0(i) - 7.0d0
 		endif
-	else if ((time(i) > 808272000d0 .and. time(i) < 810086400d0) .or. &	! 2010-08-13 00:00 - 2010-09-03 00:00
-			 (time(i) > 812764800d0 .and. time(i) < 814233600d0)) then	! 2010-10-04 00:00 - 2010-10-21 00:00
-		sig0(i) = sig0(i) - 1.52d0 ! These are biased low by 1.5 dB, so we subtract 1.52 instead of 3.02 dB
 	else	! All L1 data (LRM and PLRM)
-		sig0(i) = sig0(i) - 3.02d0
+		if ((time(i) > 808272000d0 .and. time(i) < 810086400d0) .or. &	! 2010-08-13 00:00 - 2010-09-03 00:00
+			 (time(i) > 812764800d0 .and. time(i) < 814233600d0)) &	! 2010-10-04 00:00 - 2010-10-21 00:00
+			sig0(i) = sig0(i) + 1.5d0 ! These data are biased low by 1.5 dB, so we add 1.5 dB
+		if (sar) then
+			sig0(i) = sig0(i) + sig0_bias_sar
+		else
+			sig0(i) = sig0(i) + sig0_bias_lrm
+		endif
 	endif
 
-! Correct for (ad hoc) sigma0 drift
+! Correct for sigma0 drift
 
-	if (ldrift) sig0(i) = sig0(i) + sig0_drift * (time(i)-time_drift)
+	if (.not.ldrift) then
+		! skip
+	else if (sar) then
+		sig0(i) = sig0(i) + sig0_drift_sar * (time(i)-time_drift)
+	else
+		sig0(i) = sig0(i) + sig0_drift_lrm * (time(i)-time_drift)
+	endif
 
 ! Compute wind speed with ECMWF model
 
