@@ -36,9 +36,14 @@
 ! - Increase FDM L2 backscatter by 4.8 dB
 ! - ... Then flip the backscatter around (sig0 := 21 - sig0)
 !
+! sig0 (LRM and PLRM L1):
+! - Increase backscatter by 1.5 dB during period 2010-08-13 00:00 to 2010-09-03 00:00
+! - Increase backscatter by 1.5 dB during period 2010-10-04 00:00 to 2010-10-21 00:00
+! - Reduce backscatter by 3.02 dB (LRM) or 3.04 dB (PLRM)
+!
 ! drift (sig0):
-! - Increase backscatter by 0.32 dB per year, based on information provided by ESA (Marco)
-!   on 15 April 2013
+! - Increase backscatter by 0.22 dB/year (LRM) or 0.27 dB/year (PLRM), based on
+!   Thales documentation and own analysis 18-19 Dec 2013
 ! - Reference time (time with no correction) is 2011-05-01, the middle of the period
 !   over which original sigma0 bias and SSB was determined
 !
