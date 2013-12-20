@@ -80,7 +80,7 @@ character(len=rads_cmdl) :: path
 real(eightbytereal), parameter :: fai = 7.3d-3, &
 	swh_adjustment = 1.8737**2 * (0.513**2 - 0.383**2) ! Adjustment to be added to SWH squared
  ! Sigma0 drift and bias with reference time 1-MAY-2011. See notes of 18-DEC-2013
-real(eightbytereal) :: sig0_drift_lrm = 0.21d0 / 365.25d0 / 86400d0, sig0_bias_lrm = -3.02d0, &
+real(eightbytereal) :: sig0_drift_lrm = 0.22d0 / 365.25d0 / 86400d0, sig0_bias_lrm = -3.02d0, &
 	sig0_drift_sar = 0.27d0 / 365.25d0 / 86400d0, sig0_bias_sar = -3.04d0, time_drift = 830822400d0
 integer(fourbyteint) :: i,cyc,pass
 integer(twobyteint) :: flag
