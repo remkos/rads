@@ -79,7 +79,7 @@ integer(fourbyteint) :: hex,hexold=-99999
 type(airtideinfo) :: airinfo
 real(eightbytereal), parameter :: rad2=2d0*atan(1d0)/45d0
 logical :: dry_on=.false., wet_on=.false., ib_on=.false., air_on=.false., sig0_on = .false., wind_on = .false., &
-	new=.false., air_plus=.false., error
+	topo_on=.false., new=.false., air_plus=.false., error
 character(len=4) :: source = 'ncep', band
 
 ! Model data
@@ -159,6 +159,10 @@ if (dry_on .or. ib_on .or. air_on .or. sig0_on) call airtideinit ('airtide', air
 air_plus = (air_on .and. (S%sat == 'e1' .or. S%sat == 'e2' .or. S%sat == 'n1' .or. &
 	S%sat == 'tx' .or. S%sat == 'pn') .and. index(P%original,'REAPER') < 0)
 
+! Determine if topo is needed
+
+topo_on = dry_on .or. air_on .or. ib_on
+
 ! Process all data files
 
 do cyc = S%cycles(1), S%cycles(2), S%cycles(3)
@@ -201,7 +205,7 @@ end subroutine synopsis
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
 integer(fourbyteint) :: i
-real(eightbytereal) :: time(n), lat(n), lon(n), h(n), surface_type(n), dry(n), wet(n), ib(n), air(n), &
+real(eightbytereal) :: time(n), lat(n), lon(n), topo(n), surface_type(n), dry(n), wet(n), ib(n), air(n), &
 	atten(n), wvc(n), lwc(n), sig0(n), u10(n), v10(n), f1, f2, g1, g2, slp, dslp, slp0, tmp, mtmp, rp, rt
 
 ! Formats
@@ -224,17 +228,19 @@ endif
 call rads_get_var (S, P, 'time', time, .true.)
 call rads_get_var (S, P, 'lat', lat, .true.)
 call rads_get_var (S, P, 'lon', lon, .true.)
-call rads_get_var (S, P, 'topo', h, .true.)
-call rads_get_var (S, P, 'surface_type', surface_type, .true.)
 
 ! Correct DNSC08 or DTU10 topography of the Caspian Sea (-R46.5/54.1/36.5/47.1)
 ! It has bathymetry in both models in stead of lake topography (about -27 m)
 
-do i = 1,n
-	if (lon(i) > 46.5d0 .and. lon(i) < 54.1d0 .and. &
-		lat(i) > 36.5d0 .and. lat(i) < 47.1d0 .and. &
-		surface_type(i) < 2.5d0) h(i) = -27d0
-enddo
+if (topo_on) then
+	call rads_get_var (S, P, 'topo', topo, .true.)
+	call rads_get_var (S, P, 'surface_type', surface_type, .true.)
+	do i = 1,n
+		if (lon(i) > 46.5d0 .and. lon(i) < 54.1d0 .and. &
+			lat(i) > 36.5d0 .and. lat(i) < 47.1d0 .and. &
+			surface_type(i) < 2.5d0) topo(i) = -27d0
+	enddo
+endif
 
 ! Get global pressure
 
@@ -291,8 +297,8 @@ do i = 1,n
 ! Convert precipitable water (kg/m^2) to wet correction (m) using Mendes et al. [2000] and
 ! Bevis et al. [1994]
 
-	if (surface_type(i) > 1.5d0) then ! Land and lakes
-		g1 = -22768d-7 / (1d0 - 266d-5*cos(lat(i)*rad2) - 28d-8*h(i)) * pp_hop(h(i),lat(i),tmp)
+	if (topo_on .and. surface_type(i) > 1.5d0) then ! Land and lakes
+		g1 = -22768d-7 / (1d0 - 266d-5*cos(lat(i)*rad2) - 28d-8*topo(i)) * pp_hop(topo(i),lat(i),tmp)
 		g2 = 0d0	! Set IB to zero
 	else    ! Ocean (altitude is zero)
 		g1 = -22768d-7 / (1d0 - 266d-5*cos(lat(i)*rad2))
