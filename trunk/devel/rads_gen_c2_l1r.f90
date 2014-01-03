@@ -171,23 +171,26 @@ files: do
 		cycle files
 	endif
 
-! Read cycle and pass number and determine if we need to dump the data
+! Check input file type
+
+	call nfs(nf90_get_att(ncid,nf90_global,'title',arg))
+	if (arg /= 'CryoSat-2 Level-1 Retracked') then
+		write (*,550) 'Error: Wrong input file'
+		cycle files
+	endif
+
+! Read cycle and pass number
 
 	call nfs(nf90_get_att(ncid,nf90_global,'cycle_number',cycnr))
 	call nfs(nf90_get_att(ncid,nf90_global,'pass_number',passnr))
-	if (passnr(1) /= oldpass .or. cycnr(1) /= oldcyc) then
-		call put_rads (oldcyc, oldpass, ndata)
-		ndata = 0
-		filenames = ''
-	endif
-	nvar = 0
 
 ! Read length of time dimension.
 ! Throw out some long files (in cycle 7 only?) that span 3 passes
 
 	call nfs(nf90_inq_dimid(ncid,'time',varid))
 	call nfs(nf90_inquire_dimension(ncid,varid,len=nrec))
-	if (passnr(1) > passnr(2) .or. (passnr(1) == passnr(2) .and. nrec > 4000)) then
+	if ((cycnr(1) == cycnr(2) .and. passnr(1) > passnr(2)) .or. &
+		(passnr(1) == passnr(2) .and. nrec > 4000)) then
 		write (*,550) 'Error: File too long (covers 3 passes)'
 		cycle files
 	else if (nrec > mrec) then
@@ -195,15 +198,18 @@ files: do
 		cycle files
 	endif
 
+! Determine if we need to dump pending data
+
+	if (passnr(1) /= oldpass .or. cycnr(1) /= oldcyc) then
+		call put_rads (oldcyc, oldpass, ndata)
+		ndata = 0
+		filenames = ''
+	endif
+	nvar = 0
+
 ! Read remaining header records
 
 	call nfs(nf90_get_att(ncid,nf90_global,'product',l1r_product))
-	call nfs(nf90_get_att(ncid,nf90_global,'title',arg))
-	if (arg /= 'CryoSat-2 Level-1 Retracked') then
-		write (*,550) 'Error: Wrong input file'
-		cycle files
-	endif
-
 	call nfs(nf90_get_att(ncid,nf90_global,'l1b_proc_time',l1b_proc_time))
 	call nfs(nf90_get_att(ncid,nf90_global,'l1b_version',l1b_version))
 	call nfs(nf90_get_att(ncid,nf90_global,'l1r_version',l1r_version))
