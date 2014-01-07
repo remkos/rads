@@ -111,111 +111,144 @@ endif
 select case (string)
 
 ! Most commonly used first
+!! x y SUB a : a = x - y
 case ('SUB')
 	call math_check (2)
 	top%prev%data = top%prev%data - top%data
 	call math_pop (top)
+!! x y ADD a : a = x + y
 case ('ADD')
 	call math_check (2)
 	top%prev%data = top%prev%data + top%data
 	call math_pop (top)
+!! x y MUL a : a = x * y
 case ('MUL')
 	call math_check (2)
 	top%prev%data = top%prev%data * top%data
 	call math_pop (top)
 
 ! - MATH x (0 arguments to 1)
+!! PI a : a = pi
 case ('PI')
 	call math_push (n, top)
 	top%data = pi
+!! E a : a = exp(1)
 case ('E')
 	call math_push (n, top)
 	top%data = exp(1d0)
 
 ! x MATH - (1 argument to 0)
+!! x POP : remove last item from stack
 case ('POP')
 	call math_check (1)
 	call math_pop (top)
 
 ! x MATH x (1 argument to 1)
+!! x NEG a : a = -x
 case ('NEG')
 	call math_check (1)
 	top%data = -top%data
+!! x ABS a : a = |x|
 case ('ABS')
 	call math_check (1)
 	top%data = abs(top%data)
+!! x INV a : a = 1/x
 case ('INV')
 	call math_check (1)
 	top%data = 1d0 / top%data
+!! x SQRT a : a = sqrt(x)
 case ('SQRT')
 	call math_check (1)
 	top%data = sqrt(top%data)
+!! x SQR a : a = x*x
 case ('SQR')
 	call math_check (1)
 	top%data = top%data * top%data
+!! x EXP a : a = exp(x)
 case ('EXP')
 	call math_check (1)
 	top%data = exp(top%data)
+!! x LOG a : a = log(x)
 case ('LOG')
 	call math_check (1)
 	top%data = log(top%data)
+!! x LOG10 a : a = log10(x)
 case ('LOG10')
 	call math_check (1)
 	top%data = log10(top%data)
+!! x SIN a : a = sin(x)
 case ('SIN')
 	call math_check (1)
 	top%data = sin(top%data)
+!! x COS a : a = cos(x)
 case ('COS')
 	call math_check (1)
 	top%data = cos(top%data)
+!! x TAN a : a = tan(x)
 case ('TAN')
 	call math_check (1)
 	top%data = tan(top%data)
+!! x SIND a : a = sin(x) [x in degrees]
 case ('SIND')
 	call math_check (1)
 	top%data = sin(top%data * d2r)
+!! x COSD a : a = cos(x) [x in degrees]
 case ('COSD')
 	call math_check (1)
 	top%data = cos(top%data * d2r)
+!! x TAND a : a = tan(x) [x in degrees]
 case ('TAND')
 	call math_check (1)
 	top%data = tan(top%data * d2r)
+!! x SINH a : a = sinh(x)
 case ('SINH')
 	call math_check (1)
 	top%data = sin(top%data)
+!! x COSH a : a = cosh(x)
 case ('COSH')
 	call math_check (1)
 	top%data = cosh(top%data)
+!! x TANH a : a = tanh(x)
 case ('TANH')
 	call math_check (1)
 	top%data = tanh(top%data)
+!! x ASIN a : a = arcsin(x)
 case ('ASIN')
 	call math_check (1)
 	top%data = asin(top%data)
+!! x ACOS a : a = arccos(x)
 case ('ACOS')
 	call math_check (1)
 	top%data = acos(top%data)
+!! x ATAN a : a = arctan(x)
 case ('ATAN')
 	call math_check (1)
 	top%data = atan(top%data)
+!! x ASIND a : a = arcsin(x) [a in degrees]
 case ('ASIND')
 	call math_check (1)
 	top%data = asin(top%data) * r2d
+!! x ACOSD a : a = arccos(x) [a in degrees]
 case ('ACOSD')
 	call math_check (1)
 	top%data = acos(top%data) * r2d
+!! x ATAND a : a = arctan(x) [a in degrees]
 case ('ATAND')
 	call math_check (1)
 	top%data = atan(top%data) * r2d
+!! x ASINH a : a = arcsinh(x)
 case ('ASINH')
 	call math_check (1)
 	top%data = asinh_(top%data)
+!! x ACOSH a : a = arccosh(x)
 case ('ACOSH')
 	call math_check (1)
 	top%data = acosh_(top%data)
+!! x ATANH a : a = arctanh(x)
 case ('ATANH')
 	call math_check (1)
 	top%data = atanh_(top%data)
+!! x ISNAN a : a = 1 if x is NaN; a = 0 otherwise
 case ('ISNAN')
 	call math_check (1)
 	where (isnan_(top%data))
@@ -223,64 +256,82 @@ case ('ISNAN')
 	elsewhere
 		top%data = 0d0
 	endwhere
+!! x RINT a : a is nearest integer to x
+!! x NINT a : a is nearest integer to x
 case ('RINT', 'NINT')
 	call math_check (1)
 	top%data = nint(top%data)
+!! x CEIL a : a is nearest integer greater or equal to x
+!! x CEILING a : a is nearest integer greater or equal to x
 case ('CEIL', 'CEILING')
 	call math_check (1)
 	top%data = ceiling(top%data)
+!! x FLOOR a : a is nearest integer less or equal to x
 case ('FLOOR')
 	call math_check (1)
 	top%data = floor(top%data)
+!! x D2R a : convert x from degrees to radian
 case ('D2R')
 	call math_check (1)
 	top%data = top%data * d2r
+!! x R2D a : convert x from radian to degrees
 case ('R2D')
 	call math_check (1)
 	top%data = top%data * r2d
+!! x YMDHMS a : convert seconds of 1985 to format YYYYMMDDHHMMSS
 case ('YMDHMS')
 	call math_check (1)
 	top%data = ymdhms_(top%data)
 
 ! x MATH x y (1 argument to 2)
+!! x DUP a b : duplicate the last item on the stack
 case ('DUP')
 	call math_check (1)
 	call math_push (n, top)
 	top%data = top%prev%data
 
 ! x y MATH x (2 arguments to 1)
+!! x y DIV a : a = x / y
 case ('DIV')
 	call math_check (2)
 	top%prev%data = top%prev%data / top%data
 	call math_pop (top)
+!! x y POW a : a = x ^ y
 case ('POW')
 	call math_check (2)
 	top%prev%data = top%prev%data ** top%data
 	call math_pop (top)
+!! x y FMOD a : a = x modulo y
 case ('FMOD')
 	call math_check (2)
 	top%prev%data = modulo(top%prev%data, top%data)
 	call math_pop (top)
+!! x y MIN a : a = the lesser of x and y
 case ('MIN')
 	call math_check (2)
 	top%prev%data = min(top%prev%data, top%data)
 	call math_pop (top)
+!! x y MAX a : a = the greater of x and y
 case ('MAX')
 	call math_check (2)
 	top%prev%data = max(top%prev%data, top%data)
 	call math_pop (top)
+!! x y ATAN2 a : a = arctan(x) taking into account the quadrant as determined by y
 case ('ATAN2')
 	call math_check (2)
 	top%prev%data = atan2(top%prev%data, top%data)
 	call math_pop (top)
+!! x y HYPOT a : a = sqrt(x*x+y*y)
 case ('HYPOT')
 	call math_check (2)
 	top%prev%data = hypot_(top%prev%data, top%data)
 	call math_pop (top)
+!! x y R2 a : a = x*x + y*y
 case ('R2')
 	call math_check (2)
 	top%prev%data = top%prev%data*top%prev%data + top%data*top%data
 	call math_pop (top)
+!! x y EQ a : a = 1 if x == y; a = 0 otherwise (incl x or y is NaN)
 case ('EQ')
 	call math_check (2)
 	where (top%prev%data == top%data)
@@ -289,6 +340,7 @@ case ('EQ')
 		top%prev%data = 0d0
 	endwhere
 	call math_pop (top)
+!! x y NE a : a = 0 if x == y; a = 1 otherwise (incl x or y is NaN)
 case ('NEQ', 'NE')
 	call math_check (2)
 	where (top%prev%data /= top%data)
@@ -297,6 +349,7 @@ case ('NEQ', 'NE')
 		top%prev%data = 0d0
 	endwhere
 	call math_pop (top)
+!! x y LT a : a = 1 if x < y; a = 0 otherwise (incl x or y is NaN)
 case ('LT')
 	call math_check (2)
 	where (top%prev%data < top%data)
@@ -305,6 +358,7 @@ case ('LT')
 		top%prev%data = 0d0
 	endwhere
 	call math_pop (top)
+!! x y LE a : a = 1 if x <= y; a = 0 otherwise (incl x or y is NaN)
 case ('LE')
 	call math_check (2)
 	where (top%prev%data <= top%data)
@@ -313,6 +367,7 @@ case ('LE')
 		top%prev%data = 0d0
 	endwhere
 	call math_pop (top)
+!! x y GT a : a = 1 if x > y; a = 0 otherwise (incl x or y is NaN)
 case ('GT')
 	call math_check (2)
 	where (top%prev%data > top%data)
@@ -321,6 +376,7 @@ case ('GT')
 		top%prev%data = 0d0
 	endwhere
 	call math_pop (top)
+!! x y GE a : a = 1 if x >= y; a = 0 otherwise (incl x or y is NaN)
 case ('GE')
 	call math_check (2)
 	where (top%prev%data >= top%data)
@@ -329,18 +385,40 @@ case ('GE')
 		top%prev%data = 0d0
 	endwhere
 	call math_pop (top)
+!! x y NAN a : a = NaN if x == y; a = x otherwise
 case ('NAN')
 	call math_check (2)
 	where (top%prev%data == top%data) top%prev%data = nan
 	call math_pop (top)
+!! x y AND a : a = y if x is NaN; a = x otherwise
 case ('AND')
 	call math_check (2)
 	where (isnan_(top%prev%data)) top%prev%data = top%data
 	call math_pop (top)
+!! x y OR a : a = NaN if y is NaN; a = x otherwise
 case ('OR')
 	call math_check (2)
 	where (isnan_(top%data)) top%prev%data = nan
 	call math_pop (top)
+!! x y IAND a : a = bitwise AND of x and y
+case ('IAND')
+	call math_check (2)
+	where (isnan_(top%prev%data) .or. isnan_(top%data))
+		top%prev%data = nan
+	elsewhere
+		top%data = iand(nint(top%prev%data),nint(top%data))
+	endwhere
+	call math_pop (top)
+!! x y IOR a : a = bitwise OR of x and y
+case ('IOR')
+	call math_check (2)
+	where (isnan_(top%prev%data) .or. isnan_(top%data))
+		top%prev%data = nan
+	elsewhere
+		top%data = ior(nint(top%prev%data),nint(top%data))
+	endwhere
+	call math_pop (top)
+!! x y BTEST a : a = 1 if bit y of x is set; a = 0 otherwise
 case ('BTEST')
 	call math_check (2)
 	where (isnan_(top%prev%data) .or. isnan_(top%data))
@@ -351,6 +429,7 @@ case ('BTEST')
 		top%prev%data = 0d0
 	endwhere
 	call math_pop (top)
+!! x y AVG a : a = 0.5*(x+y) [when x or y is NaN a returns the other value]
 case ('AVG')
 	call math_check (2)
 	where (isnan_(top%prev%data))
@@ -361,6 +440,7 @@ case ('AVG')
 	call math_pop (top)
 
 ! x y MATH x y (2 arguments to 2)
+!! x y EXCH a b : exchange the last two items on the stack
 case ('EXCH')
 	call math_check (2)
 	temp => top%prev
@@ -369,6 +449,7 @@ case ('EXCH')
 	top => temp
 
 ! x y z MATH x (3 arguments to 1)
+!! x y z INRANGE a : a = 1 if x is between y and z; a = 0 otherwise (also in case of any NaN)
 case ('INRANGE')
 	call math_check (3)
 	where (top%prev%prev%data >= top%prev%data .and. top%prev%prev%data <= top%data)
