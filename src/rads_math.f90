@@ -88,9 +88,9 @@ integer(fourbyteint) :: math_eval
 !  math_eval : 0 = no error, -1 = no matching command
 !-----------------------------------------------------------------------
 type(math_ll), pointer :: temp
-real(eightbytereal) :: value
+real(eightbytereal) :: x, y, z, w
 real(eightbytereal), parameter :: pi = 4d0*atan(1d0), d2r = pi/180d0, r2d = 180d0/pi
-integer(fourbyteint) :: ios
+integer(fourbyteint) :: ios, i, j, k
 
 math_eval = 0
 
@@ -100,10 +100,10 @@ if (string == '') return
 ! Check if string could be a value
 if ((string(:1) >= '0' .and. string(:1) <= '9') .or. string(:1) == '-' .or. &
 	string(:1) == '+' .or. string(:1) == '.') then
-	read (string,*,iostat=ios) value
+	read (string,*,iostat=ios) x
 	if (ios /= 0) call math_exit ('Error parsing value; iostat =',ios)
 	call math_push (n, top)
-	top%data = value
+	top%data = x
 	return
 endif
 
@@ -168,7 +168,7 @@ case ('SQR')
 case ('EXP')
 	call math_check (1)
 	top%data = exp(top%data)
-!! x LOG a : a = log(x)
+!! x LOG a : a = ln(x)
 case ('LOG')
 	call math_check (1)
 	top%data = log(top%data)
@@ -282,6 +282,21 @@ case ('R2D')
 case ('YMDHMS')
 	call math_check (1)
 	top%data = ymdhms_(top%data)
+!! x SUM a : a(i) = x(1) + ... + x(i) while skipping all NaN
+case ('SUM')
+	call math_check (1)
+	x = 0d0
+	do i = 1,n
+		if (.not.isnan_(top%data(i))) x = x + top%data(i)
+		top%data(i) = x
+	enddo
+!! x DIF a : a(i) = x(i)-x(i-1); a(1) = NaN
+case ('DIF')
+	call math_check (1)
+	do i = n,2,-1
+		top%data(i) = top%data(i) - top%data(i-1)
+	enddo
+	top%data(1) = nan
 
 ! x MATH x y (1 argument to 2)
 !! x DUP a b : duplicate the last item on the stack
@@ -438,6 +453,18 @@ case ('AVG')
 		top%prev%data = 0.5d0 * (top%prev%data + top%data)
 	endwhere
 	call math_pop (top)
+!! x y DXDY a : a = (x(i+1)-x(i-1))/(y(i+1)-y(i-1)); a(1) = a(n) = NaN
+case ('DXDY')
+	call math_check (2)
+	x = top%prev%data(1)
+	top%prev%data(1) = nan
+	do i = 2,n-1
+		y = (top%prev%data(i+1) - x) / (top%data(i+1) - top%data(i-1))
+		x = top%prev%data(i)
+		top%prev%data(i) = y
+	enddo
+	top%prev%data(n) = nan
+	call math_pop (top)
 
 ! x y MATH x y (2 arguments to 2)
 !! x y EXCH a b : exchange the last two items on the stack
@@ -457,6 +484,58 @@ case ('INRANGE')
 	elsewhere
 		top%prev%prev%data = 0d0
 	endwhere
+	call math_pop (top)
+	call math_pop (top)
+!! x y z BOXCAR a : filter x along monotonic dimension y with boxcar of length z (NaNs are skipped)
+case ('BOXCAR')
+	call math_check (3)
+	z = 0.5d0 * top%data(1)
+	do i = 1,n
+		x = 0d0
+		k = 0
+		do j = i,1,-1
+			if (isnan_(top%prev%prev%data(j))) cycle
+			if (abs(top%prev%data(j)-top%prev%data(i)) > z) exit
+			x = x + top%prev%prev%data(j)
+			k = k + 1
+		enddo
+		do j = i+1,n
+			if (isnan_(top%prev%prev%data(j))) cycle
+			if (abs(top%prev%data(j)-top%prev%data(i)) > z) exit
+			x = x + top%prev%prev%data(j)
+			k = k + 1
+		enddo
+		top%data(i) = x/k
+	enddo
+	top%prev%prev%data = top%data
+	call math_pop (top)
+	call math_pop (top)
+!! x y z GAUSS a : filter x along monotonic dimension y with Gauss function with sigma z (NaNs are skipped)
+case ('GAUSS')
+	call math_check (3)
+	z = -0.5d0 / top%data(1) / top%data(1)
+	do i = 1,n
+		x = 0d0
+		y = 0d0
+		do j = i,1,-1
+			if (isnan_(top%prev%prev%data(j))) cycle
+			w = top%prev%data(j) - top%prev%data(i)
+			w = exp (x * x * z)
+			if (w < 1d-8) exit
+			x = x + w * top%prev%prev%data(j)
+			y = y + w
+		enddo
+		do j = i+1,n
+			if (isnan_(top%prev%prev%data(j))) cycle
+			w = top%prev%data(j) - top%prev%data(i)
+			w = exp (x * x * z)
+			if (w < 1d-8) exit
+			x = x + w * top%prev%prev%data(j)
+			y = y + w
+		enddo
+		top%data(i) = x/y
+	enddo
+	top%prev%prev%data = top%data
 	call math_pop (top)
 	call math_pop (top)
 
