@@ -745,15 +745,18 @@ end subroutine iqsort
 !***********************************************************************
 !*mean_variance -- Compute mean and standard deviation of a series
 !+
-pure subroutine mean_variance (x, mean, variance)
+pure subroutine mean_variance (x, mean, variance, nr)
 real(eightbytereal), intent(in) :: x(:)
 real(eightbytereal), intent(out) :: mean, variance
+integer(fourbyteint), intent(out), optional :: nr
 !
 ! This routine computes the mean and variance of a series
 ! of values <x> using the method proposed by West (1979), since it is
 ! more stable in the way it computes the variance.
 !
-! This routine does not check for NaN values.
+! If <nr> is used in the subroutine call, all NaN values will be skipped
+! and <nr> will return the number of non-NaN values.
+! If <nr> is omitted, no check is made for NaN values.
 !
 ! Reference:
 !  West, D. H. D
@@ -764,28 +767,40 @@ real(eightbytereal), intent(out) :: mean, variance
 !  x        : Series of values
 !  mean     : Mean of series <x>
 !  variance : Variance of series <x>
+!  nr       : Number of valid values in series <x>
 !-----------------------------------------------------------------------
 real(eightbytereal) :: q, r, sum2
 integer(fourbyteint) :: i, n
 n = size(x)
-if (n == 0) then
-	mean = nan
-	variance = mean
-	return
-else if (n == 1) then
-	mean = x(1)
-	variance = nan
-	return
-endif
 mean = 0d0
 sum2 = 0d0
-do i = 1,n
-	q = x(i) - mean
-	r = q / i
-	mean = mean + r
-	sum2 = sum2 + r * q * (i-1)
-enddo
-variance = sum2/(n-1)
+if (present(nr)) then
+	nr = 0
+	do i = 1,n
+		if (isnan_(x(i))) cycle
+		nr = nr + 1
+		q = x(i) - mean
+		r = q / nr
+		mean = mean + r
+		sum2 = sum2 + r * q * (nr-1)
+	enddo
+	n = nr
+else
+	do i = 1,n
+		q = x(i) - mean
+		r = q / i
+		mean = mean + r
+		sum2 = sum2 + r * q * (i-1)
+	enddo
+endif
+if (n == 0) then
+	mean = nan
+	variance = nan
+else if (n == 1) then
+	variance = nan
+else
+	variance = sum2/(n-1)
+endif
 end subroutine mean_variance
 
 !***********************************************************************
