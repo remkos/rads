@@ -453,7 +453,7 @@ case ('AVG')
 		top%prev%data = 0.5d0 * (top%prev%data + top%data)
 	endwhere
 	call math_pop (top)
-!! x y DXDY a : a = (x(i+1)-x(i-1))/(y(i+1)-y(i-1)); a(1) = a(n) = NaN
+!! x y DXDY a : a(i) = (x(i+1)-x(i-1))/(y(i+1)-y(i-1)); a(1) = a(n) = NaN
 case ('DXDY')
 	call math_check (2)
 	x = top%prev%data(1)
@@ -486,7 +486,7 @@ case ('INRANGE')
 	endwhere
 	call math_pop (top)
 	call math_pop (top)
-!! x y z BOXCAR a : filter x along monotonic dimension y with boxcar of length z (NaNs are skipped)
+!! x y z BOXCAR a : a = filter x along monotonic dimension y with boxcar of length z (NaNs are skipped)
 case ('BOXCAR')
 	call math_check (3)
 	z = 0.5d0 * top%data(1)
@@ -510,7 +510,7 @@ case ('BOXCAR')
 	top%prev%prev%data = top%data
 	call math_pop (top)
 	call math_pop (top)
-!! x y z GAUSS a : filter x along monotonic dimension y with Gauss function with sigma z (NaNs are skipped)
+!! x y z GAUSS a : a = filter x along monotonic dimension y with Gauss function with sigma z (NaNs are skipped)
 case ('GAUSS')
 	call math_check (3)
 	z = -0.5d0 / top%data(1) / top%data(1)
