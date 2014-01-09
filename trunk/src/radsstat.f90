@@ -1,7 +1,7 @@
 !-----------------------------------------------------------------------
 ! $Id$
 !
-! Copyright (c) 2011-2013  Remko Scharroo (Altimetrics LLC)
+! Copyright (c) 2011-2014  Remko Scharroo (Altimetrics LLC)
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -34,7 +34,7 @@ character(len=*), parameter :: wtype(0:3)=(/ &
 character(len=rads_strl) :: format_string
 character(len=rads_cmdl) :: filename = ''
 integer(fourbyteint), parameter :: period_day=0, period_pass=1, period_cycle=2
-integer(fourbyteint) :: nr=0, minnr=2, cycle, pass, i, l, &
+integer(fourbyteint) :: nr, minnr=2, cycle, pass, i, l, &
 	period=period_day, wmode=0, nx, ny, kx, ky, ios, sizes(2), ncid, varid(2)
 real(eightbytereal), allocatable :: lat_w(:)
 real(eightbytereal) :: sini, step=1d0, x0, y0, res(2)=(/3d0,1d0/), start_time, end_time
@@ -51,8 +51,6 @@ call synopsis
 call rads_set_options ('c::d::p::b::maslo::r:: full-year min: res: output::')
 call rads_init (S)
 if (S%error /= rads_noerr) call rads_exit ('Fatal error')
-start_time = nan
-end_time = nan
 
 ! If no sel= is given, use sla
 if (S%nsel == 0)  call rads_parse_varlist (S, 'sla')
@@ -126,7 +124,7 @@ else
 endif
 
 ! Initialize statistics
-box = stat(0d0, 0d0, 0d0, nan, nan)
+call init_stat
 if (ascii) then
 	call ascii_header
 else
@@ -138,18 +136,11 @@ do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
 	! Process passes one-by-one
 	do pass = S%passes(1), S%passes(2), S%passes(3)
 		call rads_open_pass (S, Pin, cycle, pass)
-		if (Pin%ndata > 0) then
-			! After very first call with actual data, initialise the day counter
-			if (isnan_(start_time)) start_time = Pin%start_time
-			if (isnan_(end_time)) end_time = floor(Pin%start_time/86400d0+step)*86400d0
-			! Process the pass data
-			call process_pass (Pin%ndata, S%nsel)
-		endif
-
+		! Process the pass data
+		if (Pin%ndata > 0) call process_pass (Pin%ndata, S%nsel)
 		! Print the statistics at the end of the data pass (if requested)
 		if (period == period_pass .and. nint(modulo(dble(pass),step)) == 0) call output_stat
-		! Print the statistics for the past day(s) (if requested)
-		if (period == period_day .and. Pin%end_time >= end_time) call output_stat
+		! Close the pass file
 		call rads_close_pass (S, Pin)
 	enddo
 
@@ -213,28 +204,30 @@ enddo
 
 ! Update the statistics with data in this pass
 do i = 1,ndata
-	! Print the statistics (if in "daily" mode)
-	if (period == period_day .and. Pin%tll(i,1) >= end_time) then
-		call output_stat
-		start_time = Pin%tll(i,1)
-   	endif
-   	if (reject > 0) then
-   		if (isnan_(z(i,reject))) cycle ! Reject if selected variable is NaN
-   	else if (reject == -2) then
-   		if (any(isnan_(z(i,:)))) cycle ! Reject if any variable is NaN
-   	endif
+	if (reject > 0) then
+		if (isnan_(z(i,reject))) cycle ! Reject if selected variable is NaN
+	else if (reject == -2) then
+		if (any(isnan_(z(i,:)))) cycle ! Reject if any variable is NaN
+	endif
+
+	! Print the "daily" statistics (if requested)
+	if (period == period_day .and. Pin%tll(i,1) >= end_time) call output_stat
+
+	! First call (after start or statistics reset) initialises the day counter
+	if (isnan_(start_time)) start_time = Pin%tll(i,1)
+	if (isnan_(end_time)) end_time = floor(start_time/86400d0+step)*86400d0
 
 	! Update the box statistics
-   	kx = floor((Pin%tll(i,3)-x0)/res(1) + 1d0)
-   	ky = floor((Pin%tll(i,2)-y0)/res(2) + 1d0)
-   	kx = max(1,min(kx,nx))
-   	ky = max(1,min(ky,ny))
-   	box(:,kx,ky)%wgt  = box(:,kx,ky)%wgt  + 1d0
-   	box(:,kx,ky)%mean = box(:,kx,ky)%mean + z(i,:)
-   	box(:,kx,ky)%sum2 = box(:,kx,ky)%sum2 + z(i,:)*z(i,:)
-   	box(:,kx,ky)%xmin = min(box(:,kx,ky)%xmin, z(i,:))
-   	box(:,kx,ky)%xmax = max(box(:,kx,ky)%xmax, z(i,:))
-   	nr = nr + 1
+	kx = floor((Pin%tll(i,3)-x0)/res(1) + 1d0)
+	ky = floor((Pin%tll(i,2)-y0)/res(2) + 1d0)
+	kx = max(1,min(kx,nx))
+	ky = max(1,min(ky,ny))
+	box(:,kx,ky)%wgt  = box(:,kx,ky)%wgt  + 1d0
+	box(:,kx,ky)%mean = box(:,kx,ky)%mean + z(i,:)
+	box(:,kx,ky)%sum2 = box(:,kx,ky)%sum2 + z(i,:)*z(i,:)
+	box(:,kx,ky)%xmin = min(box(:,kx,ky)%xmin, z(i,:))
+	box(:,kx,ky)%xmax = max(box(:,kx,ky)%xmax, z(i,:))
+	nr = nr + 1
 enddo
 end subroutine process_pass
 
@@ -246,8 +239,9 @@ integer(fourbyteint) :: j, yy, mm, dd, start(2) = 1
 real(eightbytereal) :: w
 type(rads_var), pointer :: var
 
+! If not enough data available, simply reset the statistics
 if (nr < minnr) then
-	end_time = end_time + step * 86400d0
+	call init_stat
 	return
 endif
 
@@ -261,9 +255,9 @@ do ky=1,ny
 
 		! Determine the weight
 		if (wmode == 0) then
-	    	w = lat_w(ky) / box(1,kx,ky)%wgt
+			w = lat_w(ky) / box(1,kx,ky)%wgt
 		else
-	    	w = lat_w(ky)
+			w = lat_w(ky)
 		endif
 
 		! Update overall statistics
@@ -338,15 +332,22 @@ else
 endif
 
 ! Reset statistics
-box = stat(0d0, 0d0, 0d0, nan, nan)
-nr  = 0
-start_time = nan
-end_time = end_time + step * 86400d0
+call init_stat
 
 600 format (3i0.2)
 601 format (i3,i5)
 602 format (i3,1x,3i0.2)
 end subroutine output_stat
+
+!***********************************************************************
+! Initialise statistics
+
+subroutine init_stat
+box = stat(0d0, 0d0, 0d0, nan, nan)
+nr = 0
+start_time = nan
+end_time = nan
+end subroutine init_stat
 
 !***********************************************************************
 ! Write out ASCII the header
