@@ -761,7 +761,7 @@ end subroutine xml_replace_entities_
 !    report_details      Write messages about all kinds of actions or not
 !
 subroutine xml_options (info, ignore_whitespace, no_data_truncation, &
-           report_lun, report_errors, report_details)
+		report_lun, report_errors, report_details)
 type(xml_parse),  intent(inout) :: info
 logical, intent(in), optional   :: ignore_whitespace
 logical, intent(in), optional   :: no_data_truncation

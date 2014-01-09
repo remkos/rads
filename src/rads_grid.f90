@@ -1,7 +1,7 @@
 !-----------------------------------------------------------------------
 ! $Id$
 !
-! Copyright (c) 2011-2013  Remko Scharroo (Altimetrics LLC)
+! Copyright (c) 2011-2014  Remko Scharroo (Altimetrics LLC)
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -600,13 +600,13 @@ integer(fourbyteint) :: k
 w(1) = 0
 u(1) = 0
 do k = 2,n-1
-   p = w(k-1) / 2 + 2
-   w(k) = -0.5d0 / p
-   u(k) = (3*(y(k+1)-2*y(k)+y(k-1))-u(k-1)/2) / p
+	p = w(k-1) / 2 + 2
+	w(k) = -0.5d0 / p
+	u(k) = (3*(y(k+1)-2*y(k)+y(k-1))-u(k-1)/2) / p
 enddo
 w(n-1) = u(n-1)
 do k = n-2,n/2,-1
-   w(k) = w(k) * w(k+1) + u(k)
+	w(k) = w(k) * w(k+1) + u(k)
 enddo
 end subroutine grid_splintert
 

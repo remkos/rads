@@ -1,7 +1,7 @@
 !-----------------------------------------------------------------------
 ! $Id$
 !
-! Copyright (c) 2011-2013  Remko Scharroo (Altimetrics LLC)
+! Copyright (c) 2011-2014  Remko Scharroo (Altimetrics LLC)
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -154,7 +154,7 @@ logical :: radsargs1
 radsargs1 = .false.
 if (usage == 3) then
 	call rads_synopsis
-    return
+	return
 endif
 if (.not.rads_init_done) call rads_init (S)
 rads_init_done = .true.
@@ -172,7 +172,7 @@ logical :: radsargs2
 radsargs2 = .false.
 if (usage == 3) then
 	call rads_synopsis
-    return
+	return
 endif
 if (S%nsel > nsel) then
 	call rads_error (S, rads_err_memory, 'Too many data selectors on sel= argument')

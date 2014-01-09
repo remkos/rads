@@ -1,7 +1,7 @@
 !-----------------------------------------------------------------------
 ! $Id$
 !
-! Copyright (c) 2011-2013  Remko Scharroo (Altimetrics LLC)
+! Copyright (c) 2011-2014  Remko Scharroo (Altimetrics LLC)
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -265,8 +265,8 @@ call nfs (nf90_put_att(ncid,varid(3),'long_name','mean of '//trim(S(1)%sel(3)%lo
 call nfs (nf90_put_att(ncid,varid(4),'long_name','std dev of '//trim(S(1)%sel(3)%long_name)))
 call nfs (nf90_put_att(ncid,varid(5),'long_name','number of points per cell'))
 do k = 3,4
-   call nfs (nf90_put_att(ncid,varid(k),'units',trim(S(1)%sel(3)%info%units)))
-   call nfs (nf90_put_att(ncid,varid(k),'_FillValue',nan))
+	call nfs (nf90_put_att(ncid,varid(k),'units',trim(S(1)%sel(3)%info%units)))
+	call nfs (nf90_put_att(ncid,varid(k),'_FillValue',nan))
 enddo
 call nfs (nf90_enddef(ncid))
 
