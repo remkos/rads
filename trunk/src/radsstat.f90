@@ -20,6 +20,22 @@ program radsstat
 ! This program reads the RADS data base and computes statistics
 ! by pass, cycle or day of a number of RADS data variables.
 !
+! Output can be either as an ASCII table or as a netCDF file.
+! The output will always include both the mean and standard deviation of
+! each of the selected variables per the selected period (N cycles, N
+! passes or N days). Optionally also minimum and maximum values can be
+! produced.
+!
+! Statistics are produced in one of various ways:
+! - Weighting boxes of given size by their respective area
+! - Equal weight to each measurement
+! - Weight measurements by cosine of latitude
+! - Use inclination-dependent weight
+!
+! When choosing statistics spanning N days, the N-day intervals are
+! at fixed locations, starting at 1.0 Jan 1985. For example, 7-day
+! periods will thus always start on Tuesday (as is 1 Jan 1985).
+!
 ! usage: radsstat [RADS_options] [options]
 !-----------------------------------------------------------------------
 use netcdf
@@ -37,7 +53,7 @@ integer(fourbyteint), parameter :: period_day=0, period_pass=1, period_cycle=2
 integer(fourbyteint) :: nr, minnr=2, cycle, pass, i, l, &
 	period=period_day, wmode=0, nx, ny, kx, ky, ios, sizes(2), ncid, varid(2)
 real(eightbytereal), allocatable :: lat_w(:)
-real(eightbytereal) :: sini, step=1d0, x0, y0, res(2)=(/3d0,1d0/), start_time, end_time
+real(eightbytereal) :: sini, step=1d0, x0, y0, res(2)=(/3d0,1d0/), start_time
 type :: stat
 	real(eightbytereal) :: wgt, mean, sum2, xmin, xmax
 end type
@@ -98,6 +114,7 @@ do i = 1,rads_nopt
 	end select
 enddo
 ascii = (filename == '')
+if (period == period_day) step = step * 86400d0 ! Convert from days to seconds
 
 ! If SLA is among the selected variables, remember index
 ! Also check if we have boz-formats
@@ -180,7 +197,7 @@ write (stderr,1300)
 '  -m                        Give all measurements equal weight'/ &
 '  -a                        Weight measurements by cosine of latitude'/ &
 '  -s                        Use inclination-dependent weight'/ &
-'  -l                        Print min and max in addition to mean and stddev'/ &
+'  -l                        Output min and max in addition to mean and stddev'/ &
 '  --full-year               Write date as YYYYMMDD instead of the default YYMMDD'/ &
 '  --min=MINNR               Minimum number of measurements per statistics record (default = 2)'/ &
 '  --res=DX,DY               Size of averaging boxes (default = 3x1 degrees)'/ &
@@ -210,12 +227,14 @@ do i = 1,ndata
 		if (any(isnan_(z(i,:)))) cycle ! Reject if any variable is NaN
 	endif
 
-	! Print the "daily" statistics (if requested)
-	if (period == period_day .and. Pin%tll(i,1) >= end_time) call output_stat
-
-	! First call (after start or statistics reset) initialises the day counter
-	if (isnan_(start_time)) start_time = Pin%tll(i,1)
-	if (isnan_(end_time)) end_time = floor(start_time/86400d0+step)*86400d0
+	if (period == period_day) then	! If "daily" statistics are requested
+		if (Pin%tll(i,1) >= start_time + step) call output_stat	! Output stat when beyond end of "day"
+		! First call (after start or statistics reset) sets the start time to integer multiple of "step"
+		if (isnan_(start_time)) start_time = floor(Pin%tll(i,1)/step) * step
+	else
+		! First call (after start or statistics reset) saves the start time
+		if (isnan_(start_time)) start_time = Pin%tll(i,1)
+	endif
 
 	! Update the box statistics
 	kx = floor((Pin%tll(i,3)-x0)/res(1) + 1d0)
@@ -346,7 +365,6 @@ subroutine init_stat
 box = stat(0d0, 0d0, 0d0, nan, nan)
 nr = 0
 start_time = nan
-end_time = nan
 end subroutine init_stat
 
 !***********************************************************************
