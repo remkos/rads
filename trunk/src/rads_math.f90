@@ -520,7 +520,7 @@ case ('GAUSS')
 		do j = i,1,-1
 			if (isnan_(top%prev%prev%data(j))) cycle
 			w = top%prev%data(j) - top%prev%data(i)
-			w = exp (x * x * z)
+			w = exp (w * w * z)
 			if (w < 1d-8) exit
 			x = x + w * top%prev%prev%data(j)
 			y = y + w
@@ -528,7 +528,7 @@ case ('GAUSS')
 		do j = i+1,n
 			if (isnan_(top%prev%prev%data(j))) cycle
 			w = top%prev%data(j) - top%prev%data(i)
-			w = exp (x * x * z)
+			w = exp (w * w * z)
 			if (w < 1d-8) exit
 			x = x + w * top%prev%prev%data(j)
 			y = y + w
