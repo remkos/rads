@@ -49,7 +49,8 @@ use netcdf
 
 type(rads_sat) :: S
 type(rads_pass) :: P
-integer(fourbyteint) :: cyc, pass
+integer(fourbyteint) :: cyc, pass, j
+logical :: update = .false.
 
 ! Data variables
 
@@ -64,8 +65,17 @@ type(rads_var), pointer :: var
 ! Initialise
 
 call synopsis ('--head')
+call rads_set_options ('u update all')
 call rads_init (S)
 var => rads_varptr (S, 'inv_bar_mog2d')
+
+! Check all options
+do j = 1,rads_nopt
+	select case (rads_opt(j)%opt)
+	case ('u', 'update')
+		update = .true.
+	end select
+enddo
 
 ! Get template for path name
 
@@ -90,7 +100,12 @@ contains
 subroutine synopsis (flag)
 character(len=*), optional :: flag
 if (rads_version ('$Revision$', 'Add MOG2D dynamic atmospheric correction to RADS data', flag=flag)) return
-call synopsis_devel ('')
+call synopsis_devel (' [processing_options]')
+write (*,1310)
+1310  format (/ &
+'Additional [processing_options] are:'/ &
+'  --all                     (Has no effect)'/ &
+'  -u, --update              Update files only when there are changes')
 stop
 end subroutine synopsis
 
@@ -101,7 +116,7 @@ end subroutine synopsis
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
 integer(fourbyteint) :: i, ix, iy, hex
-real(eightbytereal) :: time(n), lat(n), lon(n), cor(n)
+real(eightbytereal) :: time(n), lat(n), lon(n), cor(n), tmp(n)
 real(eightbytereal) :: f1, f2, f(2,2), z1, z2, x, y
 logical :: err
 
@@ -168,6 +183,21 @@ do i = 1,n
 
 	cor(i) = (f1*z1 + f2*z2) * dz + z0
 enddo
+
+! If requested, check for changes first
+
+if (update) then
+	call rads_get_var (S, P, 'inv_bar_mog2d', tmp, .true.)
+	do i = 1,n
+		if (isnan_(tmp(i)) .and. isnan_(cor(i))) cycle
+		if (isnan_(tmp(i))) exit
+		if (nint(tmp(i)/dz) /= nint(cor(i)/dz)) exit
+	enddo
+	if (i > n) then	! No changes
+		write (*,552) 0
+		return
+	endif
+endif
 
 ! Store all data fields
 
