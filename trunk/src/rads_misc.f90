@@ -1025,6 +1025,7 @@ do j = 1,size(y,2)
 	enddo
 	if (n < 1) then
 		mean(j) = nan
+		rms(j) = nan
 	else
 		uxx = n * sumxx - sumx * sumx
 		uxy = n * sumxy - sumx * sumy
@@ -1032,11 +1033,11 @@ do j = 1,size(y,2)
 		b = uxy / uxx
 		a = (sumy - b*sumx) / n
 		mean(j) = a
-	endif
-	if (n < 3) then
-		rms(j) = nan
-	else
-		rms(j) = sqrt ((sumyy - a * sumy - b * sumxy) / (n-2))
+		if (n < 3) then
+			rms(j) = nan
+		else
+			rms(j) = sqrt ((sumyy - a * sumy - b * sumxy) / (n-2))
+		endif
 	endif
 enddo
 end subroutine trend_1hz
