@@ -604,21 +604,28 @@ end function cross_product
 !***********************************************************************
 !*iqsort -- Make a quick sort of an INTEGER*4 array
 !+
-subroutine iqsort (idx, val, nr)
+pure subroutine iqsort (idx, val, nr, nstack)
 use typesizes
 integer(fourbyteint), intent(inout) :: idx(nr)
-integer(fourbyteint), intent(in) :: val(:), nr
+integer(fourbyteint), intent(in) :: val(:), nr, nstack
 !
 ! This routine quick-sorts an integer array <idx> according to the
 ! corresponding value in array <val> of type integer.
 ! The array <idx> contains <nr> pointers to the values in array <val>,
 ! which does not have to be equally large.
 !
+! Define <nstack> large enough so that the sorting can succeed.
+! Experience shows that nstack = nr/10 is generally large enough.
+! This routine can fail when the allocated stack size is too small.
+! In that case the routine returns the value 0 in idx(1).
+!
 ! Arguments:
-!  idx (input) : One-dimensional array of index numbers
-!     (output) : Row of index numbers sorted on corresponding value
-!  val (input) : One-dimensional array of values
-!  nr  (input) : Number of indices/values
+!  idx    (input) : One-dimensional array of index numbers
+!        (output) : Row of index numbers sorted on corresponding value
+!                   On failure: idx(1) = 0.
+!  val    (input) : One-dimensional array of values
+!  nr     (input) : Number of indices/values
+!  nstack (input) : Size of the internal stack used
 !
 ! Example 1:
 ! Assume you have 6 values 100, 10, 11, 21, 17, and 90, stored in array
@@ -662,7 +669,7 @@ integer(fourbyteint), intent(in) :: val(:), nr
 ! Printing the values in ascending order after this goes the same as in
 ! Example 1.
 !-----------------------------------------------------------------------
-integer(fourbyteint), parameter :: m = 7, nstack = 2000
+integer(fourbyteint), parameter :: m = 7
 integer(fourbyteint) :: i,indxt,ir,itemp,j,jstack,k,l,istack(nstack)
 integer(fourbyteint) :: a
 jstack = 0
@@ -728,7 +735,10 @@ do
 		idx(l) = idx(j)
 		idx(j) = indxt
 		jstack = jstack+2
-		if (jstack > nstack) stop 'NSTACK too small in IQSORT'
+		if (jstack > nstack) then
+			idx(1) = 0
+			return
+		endif
 		if (ir-i+1 >= j-1) then
 			istack(jstack) = ir
 			istack(jstack-1) = i
@@ -806,7 +816,7 @@ end subroutine mean_variance
 !***********************************************************************
 !*regression -- Compute best fitting linear regression
 !+
-subroutine regression (x, y, a, b, r, fit)
+pure subroutine regression (x, y, a, b, r, fit)
 real(eightbytereal), intent(in) :: x(:), y(:)
 real(eightbytereal), intent(out) :: a, b, r, fit
 !
@@ -875,7 +885,7 @@ end function is_number
 !+
 function next_word (string, i0, i1)
 character(len=*), intent(in) :: string
-integer, intent(inout) :: i0,i1
+integer, intent(inout) :: i0, i1
 logical :: next_word
 !
 ! This routine scans <string> and finds the next word in <string>
@@ -932,7 +942,7 @@ end function next_word
 !***********************************************************************
 !*mean_1hz -- Compute mean and rms of multi-Hz array
 !+
-subroutine mean_1hz (y, valid, mean, rms)
+pure subroutine mean_1hz (y, valid, mean, rms)
 real(eightbytereal), intent(in) :: y(:,:)
 logical, intent(in) :: valid(:,:)
 real(eightbytereal), intent(out) :: mean(:), rms(:)
@@ -979,7 +989,7 @@ end subroutine mean_1hz
 !***********************************************************************
 !*trend_1hz -- Compute mean and rms of multi-Hz array with trend removal
 !+
-subroutine trend_1hz (x, x0, y, valid, mean, rms)
+pure subroutine trend_1hz (x, x0, y, valid, mean, rms)
 real(eightbytereal), intent(in) :: x(:,:), x0(:), y(:,:)
 logical, intent(in) :: valid(:,:)
 real(eightbytereal), intent(out) :: mean(:), rms(:)
