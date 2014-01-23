@@ -243,7 +243,7 @@ do i = 1,n
 
 ! Apply timing bias.
 ! Different values apply for SAR and LRM separately.
-! See IPF_datation_biases_v4.xlsx by Marco Fornari.
+! See IPF1_datation_biases_v4.xlsx by Marco Fornari.
 
 	if (ltbias) then
 		if (sar) then
