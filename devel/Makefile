@@ -46,6 +46,8 @@ install:	all
 	$(INSTALL_PROGRAM) $(PROGS) $(bindir)
 	$(INSTALL_SCRIPT) $(SCRIPTS) $(bindir)
 	$(INSTALL_DATA) *.xml $(datadir)/conf
+	rsync -avzu $(HOME)/cron rads.tudelft.nl:ext/loon
+	rsync -avzu rads.tudelft.nl:ext/loon/cron $(HOME)
 
 man:	$(MAN)
 
