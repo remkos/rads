@@ -52,8 +52,8 @@ case $dir in
 esac
 
 rads_add_ncep    $options -gs               >> $log 2>&1
-rads_fix_c2      $options $cycle --all		>> $log 2>&1
-rads_add_orbit   $options $cycle $orbit_opt --equator --loc-7 --rate	>> $log 2>&1
+rads_fix_c2      $options --all				>> $log 2>&1
+rads_add_orbit   $options $orbit_opt --equator --loc-7 --rate	>> $log 2>&1
 rads_add_orbit   $options -Valt_eig6c		>> $log 2>&1
 rads_add_common  $options 					>> $log 2>&1
 rads_add_ecmwf   $options --all				>> $log 2>&1
