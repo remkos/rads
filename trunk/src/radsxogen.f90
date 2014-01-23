@@ -247,8 +247,8 @@ forall (i = 1:nr%trk)
 	idx(i) = i
 	key(i) = trk(i)%satid * 10000000 + trk(i)%cycle * 10000 + trk(i)%pass
 end forall
-call iqsort (idx, key, nr%trk, nr%trk/10)
-if (key(1) == 0) call rads_exit ('stack size for iqsort is too small')
+call iqsort (idx, key)
+if (idx(1) == 0) call rads_exit ('stack size for iqsort is too small')
 
 ! Add the track info to the netCDF file
 call nfs (nf90_redef (ncid))
