@@ -1412,7 +1412,7 @@ do i = 1,S%nvar
 	endif
 enddo
 write (name,'(i0)') field
-call rads_error (S, rads_err_var, 'Variable with field number '//name//' not found')
+call rads_error (S, rads_err_var, 'No variable with field number '//name//' was defined')
 data(:P%ndata) = nan
 end subroutine rads_get_var_by_number
 
@@ -1510,7 +1510,7 @@ if (S%debug >= 4) write (*,*) 'rads_get_var_common: '//trim(var%name)
 
 ! Check size of array
 if (size(data) < P%ndata) then
-	call rads_error (S, rads_err_memory, 'Too little memory allocated to read data')
+	call rads_error (S, rads_err_memory, 'Too little memory allocated to read data from file', P)
 	return
 endif
 
@@ -1556,7 +1556,7 @@ do i = 1,3 ! This loop is here to allow processing of aliases
 		info => var%inf2
 
 	else ! Ran out of options
-		call rads_error (S, rads_err_var, 'Could not find any data for variable "'//trim(var%name)//'"')
+		call rads_error (S, rads_err_var, 'Could not find any data for variable "'//trim(var%name)//'" in file', P)
 		data = nan
 		exit
 	endif
@@ -1619,18 +1619,18 @@ e = nf90_inquire_variable (P%ncid, info%varid, xtype=nctype, ndims=ndims)
 select case (ndims)
 case (0) ! Constant
 	if (nft(nf90_get_var(P%ncid, info%varid, data(1)))) then
-		call rads_error (S, rads_err_nc_get, 'Error reading netCDF constant "'//trim(info%dataname)//'"')
+		call rads_error (S, rads_err_nc_get, 'Error reading netCDF constant "'//trim(info%dataname)//'" in file', P)
 		return
 	endif
 	data = data(1)
 case (1) ! Array
 	start = max(1,P%first_meas)
 	if (nft(nf90_get_var(P%ncid, info%varid, data(1:P%ndata), start))) then
-		call rads_error (S, rads_err_nc_get, 'Error reading netCDF array "'//trim(info%dataname)//'"')
+		call rads_error (S, rads_err_nc_get, 'Error reading netCDF array "'//trim(info%dataname)//'" in file', P)
 		return
 	endif
 case default
-	call rads_error (S, rads_err_nc_get, 'Wrong dimensions of variable "'//trim(info%dataname)//'" (not 0 or 1)')
+	call rads_error (S, rads_err_nc_get, 'Wrong dimensions of variable "'//trim(info%dataname)//'" (not 0 or 1) in file', P)
 	return
 end select
 
@@ -1676,14 +1676,14 @@ if (nft(nf90_inquire_attribute (P%ncid, varid, info%dataname(i+1:), xtype=info%n
 if (info%nctype == nf90_char) then
 	! This is likely a date string
 	if (nft(nf90_get_att(P%ncid, varid, info%dataname(i+1:), date))) then
-		call rads_error (S, rads_err_nc_get, 'Error reading netCDF attribute "'//trim(info%dataname)//'"')
+		call rads_error (S, rads_err_nc_get, 'Error reading netCDF attribute "'//trim(info%dataname)//'" in file', P)
 		return
 	endif
 	data = strp1985f (date)
 else
 	! Load an integer or float value
 	if (nft(nf90_get_att(P%ncid, varid, info%dataname(i+1:), data(1)))) then
-		call rads_error (S, rads_err_nc_get, 'Error reading netCDF attribute "'//trim(info%dataname)//'"')
+		call rads_error (S, rads_err_nc_get, 'Error reading netCDF attribute "'//trim(info%dataname)//'" in file', P)
 		return
 	endif
 	data = data(1)
@@ -1707,7 +1707,7 @@ if (info%dataname /= 'flags') then
 		start = max(1,P%first_meas)
 		allocate (P%flags(P%ndata))
 		if (nft(nf90_get_var(P%ncid, info%varid, P%flags, start))) then
-			call rads_error (S, rads_err_nc_get, 'Error reading netCDF array "flags"')
+			call rads_error (S, rads_err_nc_get, 'Error reading netCDF array "flags" in file', P)
 			return
 		endif
 	endif
@@ -2466,7 +2466,7 @@ if (i <= S%nvar) then
 else if (.not.present(tgt)) then
 	! No match found, and none should be created: return null pointer and error
 	nullify (ptr)
-	call rads_error (S, rads_err_var, 'Variable "'//trim(varname)//'" not found')
+	call rads_error (S, rads_err_var, 'No variable "'//trim(varname)//'" was defined')
 	return
 else
 	! If we got here, we need to make a new variable. Do we also need to allocate more space?
@@ -2966,10 +2966,11 @@ end subroutine rads_exit
 !***********************************************************************
 !*rads_error -- Print error message
 !+
-subroutine rads_error (S, ierr, string)
+subroutine rads_error (S, ierr, string, P)
 type(rads_sat), intent(inout) :: S
 integer(fourbyteint), intent(in) :: ierr
 character(len=*), intent(in) :: string
+type(rads_pass), intent(in), optional :: P
 !
 ! This routine prints an error message and sets the error code.
 ! The message is subpressed when -q is used (S%debug < 0)
@@ -2978,28 +2979,35 @@ character(len=*), intent(in) :: string
 !  S        : Satellite/mission dependent structure
 !  ierr     : Error code
 !  string   : Error message
+!  P        : If used, it will add the pass file name at the end of <string>
 !
 ! Error code:
 !  S%error  : Will be set to ierr when not rads_noerr
 !-----------------------------------------------------------------------
-if (S%debug >= 0) call rads_message (string)
+if (S%debug >= 0) call rads_message (string, P)
 if (ierr /= rads_noerr) S%error = ierr
 end subroutine rads_error
 
 !***********************************************************************
 !*rads_message -- Print message to standard error
 !+
-subroutine rads_message (string)
+subroutine rads_message (string, P)
 character(len=*), intent(in) :: string
+type(rads_pass), intent(in), optional :: P
 !
 ! This routine prints a message to standard error.
 !
 ! Arguments:
 !  string   : Error message
+!  P        : If used, it will add the pass file name at the end of <string>
 !-----------------------------------------------------------------------
 character(len=rads_naml) :: progname
 call getarg (0, progname)
-write (stderr, '(a,": ",a)') trim(progname),trim(string)
+if (present(P)) then
+	write (stderr, '(a,": ",a,1x,a)') trim(progname),trim(string),trim(P%filename)
+else
+	write (stderr, '(a,": ",a)') trim(progname),trim(string)
+endif
 end subroutine rads_message
 
 !***********************************************************************
@@ -3502,13 +3510,13 @@ endif
 ! Create the (new) data file
 if (S%debug >= 2) write (*,*) 'Creating ',trim(P%filename),P%ndata
 if (nft(nf90_create(P%filename, nf90_write+nf90_nofill, P%ncid))) then
-	call rads_error (S, rads_err_nc_create, 'Error creating ' // trim(P%filename))
+	call rads_error (S, rads_err_nc_create, 'Error creating file', P)
 	return
 endif
 
 ! Define the principle dimension
 if (nft(nf90_def_dim (P%ncid, 'time', P%ndata, l))) then
-	call rads_error (S, rads_err_nc_create, 'Error creating time dimension of ' // trim(P%filename))
+	call rads_error (S, rads_err_nc_create, 'Error creating time dimension in file', P)
 	return
 endif
 P%rw = .true.
@@ -3530,7 +3538,7 @@ l = index(P%original, rads_linefeed) - 1
 if (l < 0) l = len_trim(P%original)
 e = e + nf90_put_att (P%ncid, nf90_global, 'log01', datestamp()//' | '//trim(S%command)//': RAW data from '//P%original(:l))
 
-if (e /= 0) call rads_error (S, rads_err_nc_create, 'Error writing global attributes to '//trim(P%filename))
+if (e /= 0) call rads_error (S, rads_err_nc_create, 'Error writing global attributes to file', P)
 
 call rads_put_history (S, P)
 end subroutine rads_create_pass
@@ -3566,7 +3574,7 @@ nf90_put_att (P%ncid, nf90_global, 'equator_longitude', 1d-6 * nint(1d6 * modulo
 nf90_put_att (P%ncid, nf90_global, 'equator_time', date(1)) + &
 nf90_put_att (P%ncid, nf90_global, 'first_meas_time', date(2)) + &
 nf90_put_att (P%ncid, nf90_global, 'last_meas_time', date(3))
-if (e /= 0) call rads_error (S, rads_err_nc_create, 'Error writing global attributes to '//trim(P%filename))
+if (e /= 0) call rads_error (S, rads_err_nc_create, 'Error writing global attributes to file', P)
 end subroutine rads_put_passinfo
 
 !***********************************************************************
@@ -3600,7 +3608,7 @@ integer :: e, i
 character(len=8) :: log
 
 ! Make sure we are in define mode and that we can write
-if (nf90_redef (P%ncid) == nf90_eperm) call rads_error (S, rads_err_nc_put, 'File '//trim(P%filename)//' not opened for writing')
+if (nf90_redef (P%ncid) == nf90_eperm) call rads_error (S, rads_err_nc_put, 'File not opened for writing:', P)
 
 ! Write history attribute
 if (associated(P%history)) then
@@ -3608,7 +3616,7 @@ if (associated(P%history)) then
 else
 	e = nf90_put_att (P%ncid, nf90_global, 'history', datestamp()//': '//trim(S%command))
 endif
-if (e /= 0) call rads_error (S, rads_err_nc_put, 'Error writing history attribute to '//trim(P%filename))
+if (e /= 0) call rads_error (S, rads_err_nc_put, 'Error writing history attribute to file', P)
 
 ! Remove "log??" entries from RADS3 and make sure P%original is written
 if (P%nlogs == 0) return
@@ -3648,18 +3656,18 @@ do n = 1,info%ndims
 enddo
 
 ! Make sure we are in define mode and that we can write
-if (nf90_redef (P%ncid) == nf90_eperm) call rads_error (S, rads_err_nc_put, 'File '//trim(P%filename)//' not opened for writing')
+if (nf90_redef (P%ncid) == nf90_eperm) call rads_error (S, rads_err_nc_put, 'File not opened for writing:', P)
 
 ! First check if the variable already exists
 if (nff(nf90_inq_varid(P%ncid, var%name, info%varid))) then
 	e = nf90_inquire_variable (P%ncid, info%varid, xtype=xtype, ndims=ndims)
 	if (xtype /= info%nctype .or. ndims /= info%ndims) then
-		call rads_error (S, rads_err_nc_var, 'Cannot redefine variable '//trim(var%name)//' in '//trim(P%filename))
+		call rads_error (S, rads_err_nc_var, 'Cannot redefine variable "'//trim(var%name)//'" in file', P)
 		return
 	endif
 ! Define the variable
 else if (nft(nf90_def_var(P%ncid, var%name, info%nctype, dimid(1:info%ndims), info%varid))) then
-	call rads_error (S, rads_err_nc_var, 'Error creating variable '//trim(var%name)//' in '//trim(P%filename))
+	call rads_error (S, rads_err_nc_var, 'Error creating variable "'//trim(var%name)//'" in file', P)
 	return
 endif
 
@@ -3701,7 +3709,7 @@ if (info%datatype < rads_type_time .and. info%dataname(:1) /= ':') &
 if (var%field(1) /= rads_nofield) e = e + nf90_put_att (P%ncid, info%varid, 'field', var%field(1))
 if (info%comment /= '') e = e + nf90_put_att (P%ncid, info%varid, 'comment', info%comment)
 if (e /= 0) call rads_error (S, rads_err_nc_var, &
-	'Error writing attributes for variable '//trim(var%name)//' in '//trim(P%filename))
+	'Error writing attributes for variable "'//trim(var%name)//'" in file', P)
 info%cycle = P%cycle
 info%pass = P%pass
 
@@ -3785,7 +3793,7 @@ case default
 	e = nf90_put_var (P%ncid, var%info%varid, (data - var%info%add_offset) / var%info%scale_factor, start)
 end select
 if (e /= 0) call rads_error (S, rads_err_nc_put, &
-	'Error writing data for variable '//trim(var%name)//' to '//trim(P%filename))
+	'Error writing data for variable "'//trim(var%name)//'" to file', P)
 end subroutine rads_put_var_by_var_1d_start
 
 subroutine rads_put_var_by_var_2d (S, P, var, data)
@@ -3829,7 +3837,7 @@ case default
 	e = nf90_put_var (P%ncid, var%info%varid, (data - var%info%add_offset) / var%info%scale_factor, start)
 end select
 if (e /= 0) call rads_error (S, rads_err_nc_put, &
-	'Error writing data for variable '//trim(var%name)//' to '//trim(P%filename))
+	'Error writing data for variable "'//trim(var%name)//'" to file', P)
 end subroutine rads_put_var_by_var_2d_start
 
 logical function rads_put_var_helper (S, P, var)
@@ -3843,12 +3851,12 @@ S%error = rads_noerr
 e = nf90_enddef (P%ncid) ! Make sure to get out of define mode
 if (.not.P%rw) then
 	call rads_error (S, rads_err_nc_put, &
-	'File '//trim(P%filename)//' not opened for writing variable '//trim(var%name))
+	'File not opened for writing variable "'//trim(var%name)//'":', P)
 	rads_put_var_helper = .true.
 else if (P%cycle == var%info%cycle .and. P%pass == var%info%pass) then
 	rads_put_var_helper = .false. ! Keep old varid
 else if (nft(nf90_inq_varid (P%ncid, var%name, var%info%varid))) then
-	call rads_error (S, rads_err_nc_var, 'No variable '//trim(var%name)//' in '//trim(P%filename))
+	call rads_error (S, rads_err_nc_var, 'No variable "'//trim(var%name)//'" in file', P)
 	rads_put_var_helper = .true.
 else
 	rads_put_var_helper = .false. ! Set new varid

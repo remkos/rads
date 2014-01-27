@@ -85,7 +85,7 @@ call rads_open_pass (S, P, cycle, pass)
 ndata = P%ndata
 if (ndata <= 0) then
 else if (ndata > maxdata) then
-	call rads_error (S, rads_err_memory, 'Too little memory allocated to read data')
+	call rads_error (S, rads_err_memory, 'Too little memory allocated to read data from file', P)
 else
 	time(1:ndata) = P%tll(:,1)
 	dlat(1:ndata) = P%tll(:,2)
