@@ -2603,7 +2603,7 @@ Global RADS configuration file
 		<!--This is "real" cycle and pass, i.e. subcycle 14, pass 1-->
 		<ref_pass>2011-04-12T11:40:14 0.731073 2 1</ref_pass>
 		<repeat>368.239641 10688</repeat>
-		<start_time>2010-07-15</start_time>
+		<start_time>2010-07-14</start_time>
 		<subcycles>840 840 782 840 840 782 840 840 782 840 840 782 840</subcycles>
 	</phase>
 </if>
