@@ -3277,6 +3277,7 @@ real(eightbytereal) :: rads_cycle_to_time
 !-----------------------------------------------------------------------
 integer :: i, cc, pp
 real(eightbytereal) :: d, t0
+! Find the correct phase
 i = 1
 do i = 1,size(S%phases)-1
 	if (cycle < S%phases(i+1)%cycles(1)) exit
@@ -3286,11 +3287,12 @@ d = S%phases(i)%pass_seconds
 t0 = S%phases(i)%ref_time - (S%phases(i)%ref_pass - 0.5d0) * d ! Time of start of ref_cycle
 
 if (associated(S%phases(i)%subcycles)) then
+	! Convert subcycle numbering to "real" cycle numbering
 	cc = cycle - S%phases(i)%subcycles%i
 	pp = S%phases(i)%subcycles%list(modulo(cc,S%phases(i)%subcycles%n)+1)
 	cc = cc / S%phases(i)%subcycles%n + 1
 	rads_cycle_to_time = max(S%phases(i)%start_time, &
-		t0 + (cc - S%phases(i)%ref_cycle) * S%phases(i)%repeat_days * 86400d0) + pp * d
+		t0 + (cc - S%phases(i)%ref_cycle) * S%phases(i)%repeat_days * 86400d0 + pp * d)
 else
 	rads_cycle_to_time = max(S%phases(i)%start_time, &
 		t0 + (cycle - S%phases(i)%ref_cycle) * S%phases(i)%repeat_days * 86400d0)
