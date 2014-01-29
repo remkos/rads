@@ -330,8 +330,7 @@ S(1)%time%info%ndims = 2
 
 ! Define selected variables
 do j = 1,nsel
-	S(1)%sel(j)%info%ndims = 2
-	call rads_def_var (S(1), P, S(1)%sel(j))
+	call rads_def_var (S(1), P, S(1)%sel(j), ndims = 2)
 enddo
 
 call nfs (nf90_enddef (ncid))

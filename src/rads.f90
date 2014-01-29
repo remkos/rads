@@ -293,13 +293,13 @@ end interface rads_get_var
 !***********************************************************************
 !*rads_def_var -- Define variable(s) to be written to RADS data file
 !+
-! subroutine rads_def_var (S, P, var, nctype, scale_factor, add_offset)
+! subroutine rads_def_var (S, P, var, nctype, scale_factor, add_offset, ndims)
 !
 ! type(rads_sat), intent(inout) :: S
 ! type(rads_pass), intent(inout) :: P
 ! type(rads_var), intent(in) :: var <or> var(:) <or>
 !     character(len=*), intent(in) :: var
-! integer(fourbyteint), intent(in), optional :: nctype
+! integer(fourbyteint), intent(in), optional :: nctype, ndims
 ! real(eightbytereal), intent(in), optional :: scale_factor, add_offset
 !
 ! This routine defines the variables to be written to a RADS data file by
@@ -3630,19 +3630,19 @@ end subroutine rads_put_history
 !***********************************************************************
 !*rads_def_var_by_var_0d -- Define variable to be written to RADS data file
 !
-subroutine rads_def_var_by_var_0d (S, P, var, nctype, scale_factor, add_offset)
+subroutine rads_def_var_by_var_0d (S, P, var, nctype, scale_factor, add_offset, ndims)
 use netcdf
 use rads_netcdf
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 type(rads_var), intent(in) :: var
-integer(fourbyteint), intent(in), optional :: nctype
+integer(fourbyteint), intent(in), optional :: nctype, ndims
 real(eightbytereal), intent(in), optional :: scale_factor, add_offset
 !
 ! Zero-dimensional version of rads_def_var.
 !-----------------------------------------------------------------------
 type(rads_varinfo), pointer :: info
-integer(fourbyteint) :: e, n, xtype, ndims
+integer(fourbyteint) :: e, n, xtype
 integer :: dimid(1:4) = 1
 S%error = rads_noerr
 
@@ -3651,18 +3651,18 @@ info => var%info
 if (present(nctype)) info%nctype = nctype
 if (present(scale_factor)) info%scale_factor = scale_factor
 if (present(add_offset)) info%add_offset = add_offset
-do n = 1,info%ndims
-	dimid(n) = info%ndims - n + 1
-enddo
+if (present(ndims)) info%ndims = ndims
+forall (n = 1:info%ndims) dimid(n) = info%ndims - n + 1
 
 ! Make sure we are in define mode and that we can write
 if (nf90_redef (P%ncid) == nf90_eperm) call rads_error (S, rads_err_nc_put, 'File not opened for writing:', P)
 
 ! First check if the variable already exists
 if (nff(nf90_inq_varid(P%ncid, var%name, info%varid))) then
-	e = nf90_inquire_variable (P%ncid, info%varid, xtype=xtype, ndims=ndims)
-	if (xtype /= info%nctype .or. ndims /= info%ndims) then
-		call rads_error (S, rads_err_nc_var, 'Cannot redefine variable "'//trim(var%name)//'" in file', P)
+	e = nf90_inquire_variable (P%ncid, info%varid, xtype=xtype, ndims=n)
+	if (xtype /= info%nctype .or. n /= info%ndims) then
+		call rads_error (S, rads_err_nc_var, &
+			'Cannot redefine variable "'//trim(var%name)//'" with different dimension in file', P)
 		return
 	endif
 ! Define the variable
@@ -3726,29 +3726,29 @@ end function count_spaces
 
 end subroutine rads_def_var_by_var_0d
 
-subroutine rads_def_var_by_var_1d (S, P, var, nctype, scale_factor, add_offset)
+subroutine rads_def_var_by_var_1d (S, P, var, nctype, scale_factor, add_offset, ndims)
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 type(rads_var), intent(in) :: var(:)
-integer(fourbyteint), intent(in), optional :: nctype
+integer(fourbyteint), intent(in), optional :: nctype, ndims
 real(eightbytereal), intent(in), optional :: scale_factor, add_offset
 integer :: i
 do i = 1,size(var)
-	call rads_def_var_by_var_0d (S, P, var(i), nctype, scale_factor, add_offset)
+	call rads_def_var_by_var_0d (S, P, var(i), nctype, scale_factor, add_offset, ndims)
 	if (S%error /= rads_noerr) return
 enddo
 end subroutine rads_def_var_by_var_1d
 
-subroutine rads_def_var_by_name (S, P, varname, nctype, scale_factor, add_offset)
+subroutine rads_def_var_by_name (S, P, varname, nctype, scale_factor, add_offset, ndims)
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 character(len=*), intent(in) :: varname
-integer(fourbyteint), intent(in), optional :: nctype
+integer(fourbyteint), intent(in), optional :: nctype, ndims
 real(eightbytereal), intent(in), optional :: scale_factor, add_offset
 type(rads_var), pointer :: var
 var => rads_varptr (S, varname)
 if (S%error /= rads_noerr) return
-call rads_def_var_by_var_0d (S, P, var, nctype, scale_factor, add_offset)
+call rads_def_var_by_var_0d (S, P, var, nctype, scale_factor, add_offset, ndims)
 if (S%error /= rads_noerr) return
 end subroutine rads_def_var_by_name
 
