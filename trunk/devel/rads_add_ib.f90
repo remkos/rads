@@ -94,7 +94,7 @@ contains
 
 subroutine synopsis (flag)
 character(len=*), optional :: flag
-if (rads_version ('$Revision$', 'Add surface type flags to RADS data', flag=flag)) return
+if (rads_version ('$Revision$', 'Add global average inverse barometer correction to RADS data', flag=flag)) return
 call synopsis_devel ('')
 stop
 end subroutine synopsis
