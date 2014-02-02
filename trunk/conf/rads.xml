@@ -107,6 +107,26 @@ Global RADS configuration file
 	<comment>UTC time of measurement</comment>
 	<format>f12.6</format>
 </var>
+<var name="time_20hz" sat="c2">
+	<long_name>20-Hz time</long_name>
+	<standard_name>time</standard_name>
+	<units>seconds since 1985-01-01 00:00:00 UTC</units>
+	<data>time</data>
+	<comment>UTC time of 20-Hz measurement. Attribute leap_second gives time of leap second if any occurs
+	during the data set</comment>
+	<format>f16.6</format>
+	<dimensions>2</dimensions>
+</var>
+
+<var name="meas_ind" sat="c2">
+	<long_name>elementary measurement index</long_name>
+	<standard_name>dimension</standard_name>
+	<units>count</units>
+	<data>meas_ind</data>
+	<comment>Added to be CF-compliant</comment>
+	<compress>int1</compress>
+	<dimensions>2</dimensions>
+</var>
 
 <var name="lat" field="201 2">
 	<long_name>latitude</long_name>
@@ -119,6 +139,18 @@ Global RADS configuration file
 	<compress sat="c2">int4 1d-7</compress>
 	<comment>Positive latitude is North latitude, negative latitude is South latitude</comment>
 </var>
+<var name="lat_20hz" sat="c2">
+	<long_name>20-Hz latitude</long_name>
+	<standard_name>latitude</standard_name>
+	<units>degrees_north</units>
+	<limits>-90 90</limits>
+	<data>lat</data>
+	<format>f10.6</format>
+	<compress>int4 1d-6</compress>
+	<compress sat="c2">int4 1d-7</compress>
+	<dimensions>2</dimensions>
+	<comment>Positive latitude is North latitude, negative latitude is South latitude</comment>
+</var>
 
 <var name="lon" field="301 3">
 	<long_name>longitude</long_name>
@@ -129,6 +161,18 @@ Global RADS configuration file
 	<format>f11.6</format>
 	<compress>int4 1d-6</compress>
 	<compress sat="c2">int4 1d-7</compress>
+	<comment>East longitude relative to Greenwich meridian</comment>
+</var>
+<var name="lon_20hz" sat="c2">
+	<long_name>20-Hz longitude</long_name>
+	<standard_name>longitude</standard_name>
+	<units>degrees_east</units>
+	<limits>-180 180</limits>
+	<data>lon</data>
+	<format>f11.6</format>
+	<compress>int4 1d-6</compress>
+	<compress sat="c2">int4 1d-7</compress>
+	<dimensions>2</dimensions>
 	<comment>East longitude relative to Greenwich meridian</comment>
 </var>
 
