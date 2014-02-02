@@ -160,11 +160,11 @@ if (nselpass == 0) return
 start(1) = nseltot + 1
 if (outname == '') then
 	Pout = P
-	call rads_create_pass (S, Pout, nselpass, '')
+	call rads_create_pass (S, Pout, nselpass, name='')
 	call rads_def_var (S, Pout, S%sel)
 	start(1) = 1
 else if (nseltot == 0) then
-	call rads_create_pass (S, Pout, 0, outname)
+	call rads_create_pass (S, Pout, 0, name=outname)
 	call rads_def_var (S, Pout, S%sel)
 endif
 

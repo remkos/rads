@@ -24,7 +24,7 @@ integer(fourbyteint), parameter :: rads_var_chunk = 100, rads_varl = 40, rads_na
 	rads_strl = 1600, rads_hstl = 3200, rads_cyclistl = 50, rads_optl = 50
 ! RADS4 data types
 integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, rads_type_flagmasks = 2, rads_type_flagvalues = 3, &
-	rads_type_time = 11, rads_type_lat = 12, rads_type_lon = 13
+	rads_type_time = 11, rads_type_lat = 12, rads_type_lon = 13, rads_type_dim = 14
 ! RADS4 data sources
 integer(fourbyteint), parameter :: rads_src_none = 0, rads_src_nc_var = 10, rads_src_nc_att = 11, &
 	rads_src_math = 20, rads_src_grid_lininter = 30, rads_src_grid_splinter = 31, rads_src_grid_query = 32, &
@@ -74,7 +74,7 @@ type :: rads_varinfo
 	logical :: boz_format                            ! Format starts with B, O or Z.
 	integer(fourbyteint) :: ndims                    ! Number of dimensions of variable
 	integer(fourbyteint) :: nctype, varid            ! netCDF data type (nf90_int, etc.) and variable ID
-	integer(fourbyteint) :: datatype                 ! Type of data (rads_type_other|flagmasks|flagvalues|time|lat|lon)
+	integer(fourbyteint) :: datatype                 ! Type of data (rads_type_other|flagmasks|flagvalues|time|lat|lon|dim)
 	integer(fourbyteint) :: datasrc                  ! Retrieval source (rads_src_nc_var|nc_att|math|grid_lininter|grid_splinter|grid_query|constant|flags)
 	integer(fourbyteint) :: cycle, pass              ! Last processed cycle and pass
 	integer(fourbyteint) :: selected, rejected       ! Number of selected or rejected measurements
@@ -145,9 +145,9 @@ type :: rads_pass
 	integer(twobyteint), pointer :: flags(:)         ! Array of engineering flags
 	logical :: rw                                    ! NetCDF file opened for read/write
 	integer(fourbyteint) :: cycle, pass              ! Cycle and pass number
-	integer(fourbyteint) :: ncid, ndims              ! NetCDF ID of pass file and number of dimensions
+	integer(fourbyteint) :: ncid                     ! NetCDF ID of pass file and number of dimensions
 	integer(fourbyteint) :: nlogs                    ! Number of RADS3 log entries
-	integer(fourbyteint) :: ndata                    ! Number of data points
+	integer(fourbyteint) :: ndata, n_hz              ! Number of data points (1-Hz) and second dimension (n-Hz, 0=none)
 	integer(fourbyteint) :: first_meas, last_meas    ! Measurement index of first and last point in region
 	integer(fourbyteint) :: trkid                    ! Numerical track identifiers
 	character(len=2) :: sat                          ! 2-Letter satellite abbreviation
@@ -283,7 +283,7 @@ end interface rads_end
 ! Error code:
 !  S%error  : rads_noerr, rads_err_var, rads_err_memory, rads_err_source
 !-----------------------------------------------------------------------
-private :: rads_get_var_by_name, rads_get_var_by_var, rads_get_var_by_number, rads_get_var_common
+private :: rads_get_var_by_name, rads_get_var_by_var, rads_get_var_by_number, rads_get_var_helper, rads_get_var_common
 interface rads_get_var
 	module procedure rads_get_var_by_name
 	module procedure rads_get_var_by_var
@@ -668,7 +668,7 @@ type(rads_pass), intent(inout) :: P
 !-----------------------------------------------------------------------
 ! gfortran 4.4.1 segfaults on the next line if this routine is made pure or elemental,
 ! so please leave it as a normal routine.
-P = rads_pass ('', '', null(), nan, nan, nan, nan, null(), null(), .false., 0, 0, 0, 1, 0, 0, 0, 0, 0, S%sat, S%satid, null())
+P = rads_pass ('', '', null(), nan, nan, nan, nan, null(), null(), .false., 0, 0, 0, 0, 0, 0, 0, 0, 0, S%sat, S%satid, null())
 end subroutine rads_init_pass_struct
 
 !***********************************************************************
@@ -1221,8 +1221,8 @@ endif
 
 ! Read global attributes
 S%error = rads_err_nc_parse
-if (nft(nf90_inquire(P%ncid,ndimensions=P%ndims))) return
 if (nft(nf90_inquire_dimension(P%ncid,1,len=P%ndata))) return
+if (nft(nf90_inquire_dimension(P%ncid,2,len=P%n_hz))) P%n_hz = 0
 if (nft(nf90_get_att(P%ncid,nf90_global,'equator_longitude',P%equator_lon))) return
 P%equator_lon = S%lon%info%limits(1) + modulo (P%equator_lon - S%lon%info%limits(1), 360d0)
 if (nft(nf90_get_att(P%ncid,nf90_global,'equator_time',date))) return
@@ -1395,7 +1395,7 @@ integer :: i
 logical :: skip_edit
 
 S%error = rads_noerr
-if (P%ndata <= 0) return ! Skip empty files
+if (rads_get_var_helper (S, P, data)) return ! Check data sizes
 
 ! Do we need to skip editing?
 if (present(noedit)) then
@@ -1434,7 +1434,7 @@ logical, intent(in), optional :: noedit
 logical :: skip_edit
 
 S%error = rads_noerr
-if (P%ndata <= 0) return ! Skip empty files
+if (rads_get_var_helper (S, P, data)) return ! Check data sizes
 
 ! Do we need to skip editing?
 if (var%noedit) then
@@ -1468,7 +1468,7 @@ integer(fourbyteint) :: l
 logical :: skip_edit
 
 S%error = rads_noerr
-if (P%ndata <= 0) return ! Skip empty files
+if (rads_get_var_helper (S, P, data)) return ! Check data sizes
 
 ! If varname ends with %, suspend editing, otherwise follow noedit, or default = .false.
 l = len_trim(varname)
@@ -1488,6 +1488,29 @@ if (.not.associated(var)) then
 endif
 call rads_get_var_common (S, P, var, data(:P%ndata), skip_edit)
 end subroutine rads_get_var_by_name
+
+!***********************************************************************
+!*rads_get_var_helper -- Helper routine for all rads_get_var_by_* routines
+!+
+logical function rads_get_var_helper (S, P, data)
+type(rads_sat), intent(inout) :: S
+type(rads_pass), intent(in) :: P
+real(eightbytereal), intent(in) :: data(:)
+!
+! This routine checks two things:
+! - If P%ndata <= 0, then return .true.
+! - If allocated memory is too small, then return .true. and print error
+! - Else return .false.
+!-----------------------------------------------------------------------
+if (P%ndata <= 0) then
+	rads_get_var_helper = .true.
+else if (size(data) < P%ndata) then
+	call rads_error (S, rads_err_memory, 'Too little memory allocated to read data from file', P)
+	rads_get_var_helper = .true.
+else
+	rads_get_var_helper = .false.
+endif
+end function rads_get_var_helper
 
 !***********************************************************************
 !*rads_get_var_common -- Read variable (data) from RADS database (common to all)
@@ -1577,7 +1600,7 @@ include "rads_tpj.f90"
 recursive subroutine rads_get_var_nc ! Get data variable from RADS netCDF file
 use netcdf
 use rads_netcdf
-integer(fourbyteint) :: start(1), e, nctype, ndims
+integer(fourbyteint) :: start(1), e
 real(eightbytereal) :: x
 
 ! If time, lat, lon are already read, return those arrays upon request
@@ -1613,24 +1636,25 @@ else
 	info%varid = 0
 	return
 endif
-e = nf90_inquire_variable (P%ncid, info%varid, xtype=nctype, ndims=ndims)
+e = nf90_inquire_variable (P%ncid, info%varid, ndims=info%ndims)
 
 ! Load the data
-select case (ndims)
-case (0) ! Constant
+select case (info%ndims)
+case (0) ! Constant to be converted to 1-dimensional array
 	if (nft(nf90_get_var(P%ncid, info%varid, data(1)))) then
 		call rads_error (S, rads_err_nc_get, 'Error reading netCDF constant "'//trim(info%dataname)//'" in file', P)
 		return
 	endif
 	data = data(1)
-case (1) ! Array
+	info%ndims = 1
+case (1) ! 1-dimensional array
 	start = max(1,P%first_meas)
-	if (nft(nf90_get_var(P%ncid, info%varid, data(1:P%ndata), start))) then
+	if (nft(nf90_get_var(P%ncid, info%varid, data, start))) then
 		call rads_error (S, rads_err_nc_get, 'Error reading netCDF array "'//trim(info%dataname)//'" in file', P)
 		return
 	endif
 case default
-	call rads_error (S, rads_err_nc_get, 'Wrong dimensions of variable "'//trim(info%dataname)//'" (not 0 or 1) in file', P)
+	call rads_error (S, rads_err_nc_get, 'Too many dimensions for variable "'//trim(info%dataname)//'" in file', P)
 	return
 end select
 
@@ -2137,6 +2161,9 @@ do
 			info%datatype = rads_type_lat
 		case ('longitude')
 			info%datatype = rads_type_lon
+		case ('dimension')
+			info%datatype = rads_type_dim
+			info%standard_name = '' ! Do not use this as standard name
 		case ('sea_surface_height_above_sea_level')
 			info%datatype = rads_type_sla
 		case default
@@ -2254,6 +2281,9 @@ do
 			call parseenv (val(1), info%grid%filenm)
 			info%grid%ntype = 0	! This signals that the grid was not loaded yet
 		endif
+
+	case ('dimensions')
+		read (val(:nval), *, iostat=ios) info%ndims
 
 	case ('if', 'elseif', 'else', '!--')
 		! Dummy and comment tags
@@ -3442,24 +3472,28 @@ end subroutine rads_progress_bar
 !***********************************************************************
 !*rads_create_pass -- Create RADS pass (data) file
 !+
-subroutine rads_create_pass (S, P, ndata, name)
+subroutine rads_create_pass (S, P, ndata, n_hz, name)
 use netcdf
 use rads_netcdf
 use rads_time
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
-integer(fourbyteint), intent(in), optional :: ndata
+integer(fourbyteint), intent(in), optional :: ndata, n_hz
 character(len=*), intent(in), optional :: name
 !
 ! This routine creates a new RADS netCDF data file. If one of the same
 ! file name already exists, it is removed.
 ! The file is initialized with the appropriate global attributes, and
-! the primary dimension ('time') will be set up. This dimension can
-! either be fixed (ndata > 0) or unlimited (ndata == 0).
+! the dimensions ('time' and optionally 'meas_ind') will be set up.
+! The primary dimension can either be fixed (ndata > 0) or unlimited (ndata == 0).
 ! If an unlimited dimension is selected, then the pass-related global
 ! attributes, like cycle, pass, equator_time, equator_lon will not be written
 ! to the file.
-! When the <ndata> argument is omitted, the dimension <P%ndata> is used.
+! When the <ndata> argument is omitted, the value <P%ndata> is used.
+!
+! The optional argument <n_hz> gives the size of the secondary dimension for
+! multi-Hertz data. When <h_hz> is omitted, the value <P%n_hz> is used.
+! When n_hz == 0, no secondary dimension is created.
 !
 ! The optional argument <name> can have one of three forms:
 ! - Left empty it specifies the current directory
@@ -3489,6 +3523,7 @@ logical :: exist
 ! Initialise
 S%error = rads_noerr
 if (present(ndata)) P%ndata = ndata
+if (present(n_hz)) P%n_hz = n_hz
 
 ! Build the file name, make directory if needed
 if (.not.present(name)) then
@@ -3516,7 +3551,14 @@ endif
 
 ! Define the principle dimension
 if (nft(nf90_def_dim (P%ncid, 'time', P%ndata, l))) then
-	call rads_error (S, rads_err_nc_create, 'Error creating time dimension in file', P)
+	call rads_error (S, rads_err_nc_create, 'Error creating dimension "time" in file', P)
+	return
+endif
+
+! Define second dimension (if requested)
+if (P%n_hz == 0) then ! Do nothing
+else if (nft(nf90_def_dim (P%ncid, 'meas_ind', P%n_hz, l))) then
+	call rads_error (S, rads_err_nc_create, 'Error creating dimension "meas_ind" in file', P)
 	return
 endif
 P%rw = .true.
@@ -3643,7 +3685,7 @@ real(eightbytereal), intent(in), optional :: scale_factor, add_offset
 !-----------------------------------------------------------------------
 type(rads_varinfo), pointer :: info
 integer(fourbyteint) :: e, n, xtype
-integer :: dimid(1:4) = 1
+integer :: j, j0, j1
 S%error = rads_noerr
 
 ! Get some information on dimensions and scale factors
@@ -3652,7 +3694,11 @@ if (present(nctype)) info%nctype = nctype
 if (present(scale_factor)) info%scale_factor = scale_factor
 if (present(add_offset)) info%add_offset = add_offset
 if (present(ndims)) info%ndims = ndims
-forall (n = 1:info%ndims) dimid(n) = info%ndims - n + 1
+
+! Set the range of dimensions to be referenced
+j0 = 1
+j1 = info%ndims
+if (info%datatype == rads_type_dim) j0 = j1 ! Single dimension that is not primary
 
 ! Make sure we are in define mode and that we can write
 if (nf90_redef (P%ncid) == nf90_eperm) call rads_error (S, rads_err_nc_put, 'File not opened for writing:', P)
@@ -3662,18 +3708,20 @@ if (nff(nf90_inq_varid(P%ncid, var%name, info%varid))) then
 	e = nf90_inquire_variable (P%ncid, info%varid, xtype=xtype, ndims=n)
 	if (xtype /= info%nctype .or. n /= info%ndims) then
 		call rads_error (S, rads_err_nc_var, &
-			'Cannot redefine variable "'//trim(var%name)//'" with different dimension in file', P)
+			'Cannot redefine variable "'//trim(var%name)//'" with different type or dimension in file', P)
 		return
 	endif
 ! Define the variable
-else if (nft(nf90_def_var(P%ncid, var%name, info%nctype, dimid(1:info%ndims), info%varid))) then
+else if (nft(nf90_def_var(P%ncid, var%name, info%nctype, (/(j,j=j1,j0,-1)/), info%varid))) then
 	call rads_error (S, rads_err_nc_var, 'Error creating variable "'//trim(var%name)//'" in file', P)
 	return
 endif
 
 ! (Re)set the attributes; they may have been changed since last write
 e = 0
-if (info%nctype == nf90_int1) then
+if (info%datatype == rads_type_dim) then
+	! Do not write _FillValue for dimension coordinates, like meas_ind
+else if (info%nctype == nf90_int1) then
 	e = e + nf90_put_att (P%ncid, info%varid, '_FillValue', huge(0_onebyteint))
 else if (info%nctype == nf90_int2) then
 	e = e + nf90_put_att (P%ncid, info%varid, '_FillValue', huge(0_twobyteint))
@@ -3704,8 +3752,13 @@ endif
 if (info%quality_flag /= '') e = e + nf90_put_att (P%ncid, info%varid, 'quality_flag', info%quality_flag)
 if (info%scale_factor /= 1d0) e = e + nf90_put_att (P%ncid, info%varid, 'scale_factor', info%scale_factor)
 if (info%add_offset /= 0d0)  e = e + nf90_put_att (P%ncid, info%varid, 'add_offset', info%add_offset)
-if (info%datatype < rads_type_time .and. info%dataname(:1) /= ':') &
+if (info%datatype >= rads_type_time .or. info%dataname(:1) == ':') then
+	! Do not add coordinate attribute for some data type
+else if (info%ndims == 1) then
 	e = e + nf90_put_att (P%ncid, info%varid, 'coordinates', 'lon lat')
+else
+	e = e + nf90_put_att (P%ncid, info%varid, 'coordinates', 'lon_20hz lat_20hz')
+endif
 if (var%field(1) /= rads_nofield) e = e + nf90_put_att (P%ncid, info%varid, 'field', var%field(1))
 if (info%comment /= '') e = e + nf90_put_att (P%ncid, info%varid, 'comment', info%comment)
 if (e /= 0) call rads_error (S, rads_err_nc_var, &

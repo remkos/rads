@@ -95,7 +95,7 @@ logical :: version_a, sar, fdm
 
 ! Data variables
 
-integer(fourbyteint), parameter :: mrec = 6000, mvar=50
+integer(fourbyteint), parameter :: mrec=6000, mvar=50
 integer(fourbyteint) :: nvar=0, ndata=0
 real(eightbytereal), allocatable :: a(:),b(:),c(:),d(:,:),t_1hz(:),t_20hz(:,:),alt(:),dh(:)
 logical, allocatable :: valid(:,:)
@@ -105,7 +105,7 @@ type(rads_sat) :: S
 type(rads_pass) :: P
 type :: var_
 	type(rads_var), pointer :: v ! Pointer to rads_var struct
-	real(eightbytereal) :: d(mrec) ! Data array
+	real(eightbytereal) :: d(mrec), d2(20,mrec) ! Data arrays
 	logical :: skip ! .true. if to be skipped
 endtype
 type(var_) :: var(mvar)
@@ -116,7 +116,7 @@ integer(fourbyteint), parameter :: maxint4=2147483647
 real(eightbytereal), parameter :: sec2000=473299200d0, rev_time = 5953.45d0, rev_long = -24.858d0
 real(eightbytereal), parameter :: pitch_bias = 0.096d0, roll_bias = 0.086d0, yaw_bias = 0d0	! Attitude biases to be added
 real(eightbytereal) :: uso_corr, dhellips
-integer(fourbyteint) :: i, j, m, oldcyc=0, oldpass=0, mle=3
+integer(fourbyteint) :: i, j, m, oldcyc=0, oldpass=0, mle=3, nhz=0
 
 ! Initialise
 
@@ -128,7 +128,7 @@ t1 = nan
 ! Scan command line for options
 
 do
-	call getopt ('vC:S: debug: sat: cycle: t: mjd: sec: ymd: doy:', optopt, optarg)
+	call getopt ('mvC:S: debug: sat: cycle: t: mjd: sec: ymd: doy: with-20hz', optopt, optarg)
 	select case (optopt)
 	case ('!')
 		exit
@@ -142,6 +142,8 @@ do
 		if (c1 < c0) c1 = c0
 	case ('S', 'sat')
 		sat = optarg
+	case ('m', 'with-20hz')
+		nhz = 20
 	case default
 		if (.not.dateopt (optopt, optarg, t0, t1)) then
 			call synopsis ('--help')
@@ -239,9 +241,10 @@ files: do
 
 ! Load time records
 
-	call get_var (ncid, 'time_20hz', t_20hz)
 	call get_var (ncid, 'time', t_1hz)
 	call new_var ('time', t_1hz + sec2000 - tai_utc)
+	call get_var (ncid, 'time_20hz', t_20hz)
+	call new_var_2d ('time_20hz', t_20hz + sec2000 - tai_utc)
 
 ! Compile flag bits; needs to be done BEFORE any averaging
 
@@ -275,12 +278,14 @@ files: do
 		dh(i) = dhellips(1,a(i))
 	enddo
 	call cpy_var ('lon', 'lon')
+	call cpy_var ('lat_20hz', 'lat_20hz')
+	call cpy_var ('lon_20hz', 'lon_20hz')
 	call get_var (ncid, 'alt', alt)
 	! If input is FDM and there is no DORIS Navigator orbit (i.e. predicted orbit)
 	! we blank the orbit out entirely: it would be useless anyhow
 	if (fdm .and. doris_nav == 0) dh = nan
 	call new_var ('alt_cnes', alt + dh)
-	call cpy_var ('alt_rate_20hz', 'alt_rate')
+	call cpy_var ('alt_rate_20hz', '', 'alt_rate')
 
 	call new_var ('flags', dble(flags))
 
@@ -300,16 +305,16 @@ files: do
 	call trend_1hz (t_20hz, t_1hz, d, valid, a, b)	! Temporary
 	call new_var ('drange_ku', a)
 
-	call cpy_var ('instr_range_corr_20hz', 'drange_cal')
-	call cpy_var ('doppler_corr_20hz', 'drange_fm')
+	call cpy_var ('instr_range_corr_20hz', '', 'drange_cal')
+	call cpy_var ('doppler_corr_20hz', '', 'drange_fm')
 
 ! Waves and backscatter
 
-	call cpy_var ('swh_20hz', 'swh_ku', 'swh_rms_ku')
-	call cpy_var ('agc_20hz', 'agc_ku')
-	call cpy_var ('agc_amp_20hz+dagc_eta_20hz+dagc_alt_20hz+dagc_xi_20hz+dagc_swh_20hz', 'sig0_ku', 'sig0_rms_ku')
+	call cpy_var ('swh_20hz', '', 'swh_ku', 'swh_rms_ku')
+	call cpy_var ('agc_20hz', '', 'agc_ku')
+	call cpy_var ('agc_amp_20hz+dagc_eta_20hz+dagc_alt_20hz+dagc_xi_20hz+dagc_swh_20hz', '', 'sig0_ku', 'sig0_rms_ku')
 
-	if (mle == 4) call cpy_var ('xi_sq_20hz', 'off_nadir_angle2_wf_ku', 'off_nadir_angle2_wf_rms_ku')
+	if (mle == 4) call cpy_var ('xi_sq_20hz', '', 'off_nadir_angle2_wf_ku', 'off_nadir_angle2_wf_rms_ku')
 
 ! Convert pitch, roll, yaw from microradian to degrees and remove bias when MLE3
 
@@ -353,9 +358,9 @@ files: do
 
 ! Waveform-related info
 
-	call cpy_var ('peakiness_20hz', 'peakiness_ku')
-	call cpy_var ('mqe_20hz', 'mqe')
-	call cpy_var ('noise_20hz', 'noise_floor_ku', 'noise_floor_rms_ku')
+	call cpy_var ('peakiness_20hz', '', 'peakiness_ku')
+	call cpy_var ('mqe_20hz', '', 'mqe')
+	call cpy_var ('noise_20hz', '', 'noise_floor_ku', 'noise_floor_rms_ku')
 
 ! Geophysical corrections
 
@@ -421,8 +426,10 @@ subroutine synopsis (flag)
 character(len=*), optional :: flag
 if (rads_version ('$Revision$', 'Write CryoSat-2 L1R data to RADS', flag=flag)) return
 call synopsis_devel (' < list_of_L1R_file_names')
-write (*,1310)
-1310 format (/ &
+write (*,1300)
+1300 format (/ &
+'Program specific [program_options] are:' / &
+' -m, --with-20hz            Do dual satellite crossovers only'// &
 'This program converts CryoSat-2 L1R files to RADS data' / &
 'files with the name $RADSDATAROOT/data/c2/F/pPPPP/c2pPPPPcCCC.nc.' / &
 'The directory is created automatically and old files are overwritten.')
@@ -433,17 +440,20 @@ end subroutine synopsis
 ! Copy variable to RADS
 !-----------------------------------------------------------------------
 
-subroutine cpy_var (varin, varout, varrms)
+subroutine cpy_var (varin, varout, varmean, varrms)
 character(len=*), intent(in) :: varin, varout
-character(len=*), intent(in), optional :: varrms
+character(len=*), intent(in), optional :: varmean, varrms
 if (index(varin,'_20hz') == 0) then ! 1-Hz variable
 	call get_var (ncid, varin, a)
-	call new_var (varout, a)
+	call new_var (varout, a) ! Copy 1-Hz data
 else ! 20-Hz variable
 	call get_var (ncid, varin, d)
-	call mean_1hz (d, valid, a, b)
-	call new_var (varout, a)
-	if (present(varrms)) call new_var (varrms, b)
+	call new_var_2d (varout, d) ! Copy 20-Hz data
+	if (present(varmean)) then	! Create 1-Hz mean and rms
+		call mean_1hz (d, valid, a, b)
+		call new_var (varout, a)
+		if (present(varrms)) call new_var (varrms, b)
+	endif
 endif
 end subroutine cpy_var
 
@@ -452,14 +462,26 @@ end subroutine cpy_var
 !-----------------------------------------------------------------------
 
 subroutine new_var (varnm, data)
-! Write variables one after the other to the output file
+! Store 1-Hz variables to be written later by put_var
 character(len=*), intent(in) :: varnm
 real(eightbytereal), intent(in) :: data(:)
+if (varnm == '') return
 nvar = nvar + 1
 if (nvar > mvar) stop 'Too many variables'
 var(nvar)%v => rads_varptr (S, varnm)
 var(nvar)%d(ndata+1:ndata+nrec) = data(1:nrec)
 end subroutine new_var
+
+subroutine new_var_2d (varnm, data)
+! Store 20-Hz variables to be written later by put_var
+character(len=*), intent(in) :: varnm
+real(eightbytereal), intent(in) :: data(:,:)
+if (varnm == '' .or. nhz == 0) return
+nvar = nvar + 1
+if (nvar > mvar) stop 'Too many variables'
+var(nvar)%v => rads_varptr (S, varnm)
+var(nvar)%d2(:,ndata+1:ndata+nrec) = data(:,1:nrec)
+end subroutine new_var_2d
 
 !-----------------------------------------------------------------------
 ! Write content of memory to a single pass of RADS data
@@ -467,7 +489,7 @@ end subroutine new_var
 
 subroutine put_rads (cycnr, passnr, ndata)
 integer(fourbyteint), intent(in) :: cycnr, passnr, ndata
-integer(fourbyteint) :: i
+integer(fourbyteint) :: i, j
 
 if (ndata == 0) return	! Skip empty data sets
 if (cycnr < c0 .or. cycnr > c1) return	! Skip chunks that are not of the selected cycle
@@ -485,7 +507,7 @@ P%original = 'L1R ('//trim(l1r_version)//') from L1B ('// &
 	trim(l1b_version)//') data of '//trim(l1b_proc_time)//rads_linefeed//filenames
 
 ! Open output file
-call rads_create_pass (S, P, ndata)
+call rads_create_pass (S, P, ndata, nhz)
 
 ! Check for variables we want to skip because they are empty
 do i = 1,nvar
@@ -494,12 +516,20 @@ enddo
 
 ! Define all variables
 do i = 1,nvar
-	if (.not.var(i)%skip) call rads_def_var (S, P, var(i)%v)
+	if (var(i)%skip) cycle
+	call rads_def_var (S, P, var(i)%v)
+	if (i == 1 .and. nhz == 20) call rads_def_var (S, P, 'meas_ind')
 enddo
 
 ! Fill all the data fields
 do i = 1,nvar
-	if (.not.var(i)%skip) call rads_put_var (S, P, var(i)%v, var(i)%d(1:ndata))
+	if (var(i)%skip) cycle
+	if (var(i)%v%info%ndims == 1) then
+		call rads_put_var (S, P, var(i)%v, var(i)%d(1:ndata))
+	else
+		call rads_put_var (S, P, var(i)%v, var(i)%d2(:,1:ndata))
+	endif
+	if (i == 1 .and. nhz == 20) call rads_put_var (S, P, 'meas_ind', (/(j*1d0,j=0,19)/))
 enddo
 
 ! Close the data file
