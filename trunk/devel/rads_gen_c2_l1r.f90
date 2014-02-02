@@ -451,7 +451,7 @@ else ! 20-Hz variable
 	call new_var_2d (varout, d) ! Copy 20-Hz data
 	if (present(varmean)) then	! Create 1-Hz mean and rms
 		call mean_1hz (d, valid, a, b)
-		call new_var (varout, a)
+		call new_var (varmean, a)
 		if (present(varrms)) call new_var (varrms, b)
 	endif
 endif
