@@ -92,7 +92,7 @@ use rads_devel
 
 integer(fourbyteint) :: verbose=0, c0=0, c1=999, ios
 real(eightbytereal) :: t0, t1
-character(len=rads_cmdl) :: infile, old_infile
+character(len=rads_cmdl) :: infile, filenm, old_filenm = ''
 character(len=rads_varl) :: optopt, optarg
 
 ! Header variables
@@ -101,7 +101,7 @@ character(len=1) :: phasenm(2)
 character(len=rads_varl) :: l2_proc_time, l2_version
 logical :: alt_2m
 real(eightbytereal) :: tnode(2), lnode(2)
-integer(fourbyteint) :: orbitnr(2), cyclenr(2), passnr(2), varid
+integer(fourbyteint) :: orbitnr(2), cyclenr(2), passnr(2), varid, com=999
 
 ! Data variables
 
@@ -177,9 +177,9 @@ do
 		if (ndata == 0) exit ! No more data left in memory and no more new files
 	else if (ndata == 0 .or. var(1)%d(1) >= start_time) then
 		! Read the next file
-		old_infile = infile
 		read (*,550,iostat=ios) infile
 		if (ios == 0) call get_reaper
+		if (ndata == 0) cycle ! If still no data, try again
 	endif
 
 	! Look where to split this chunk of data
@@ -236,15 +236,23 @@ integer(fourbyteint) :: i, k, flag, ivar0, ivar1
 552 format (i5,' records ...')
 553 format (a,i5,3f18.3)
 
+! Reduce file name to basename only
+
+i = index(infile,'/',.true.) + 1
+old_filenm = filenm
+filenm = infile(i:)
+
 ! Check input file name
 
 write (*,551,advance='no') trim(infile)
-i = index(infile,'ERS_ALT_2')
+i = index(filenm, '_ERS_ALT_2')
 if (i <= 0) then
 	write (*,550) 'Error: Wrong input file'
 	return
 endif
-alt_2m = index(infile,'ERS_ALT_2M') > 0
+alt_2m = (filenm(i+10:i+10) == 'M')
+i = index(filenm, '_COM')
+if (i > 0) read (filenm(i+4:i+4), *) com
 
 ! Open input file
 
@@ -253,18 +261,13 @@ if (nf90_open(infile,nf90_nowrite,ncid) /= nf90_noerr) then
 	return
 endif
 
-! Reduce file name to basename only
-
-i = index(infile,'/',.true.)
-infile = infile(i+1:)
-
 ! Check for ERS-1 or -2
 ! Do not trust 'mission' attribute. It is always 'E1'.
 
-if (infile(:2) == 'E1') then
+if (filenm(:2) == 'E1') then
 	if (ers == 0) call rads_init (S, 'e1/a.r', verbose)
 	ers = 1
-else if (infile(:2) == 'E2') then
+else if (filenm(:2) == 'E2') then
 	if (ers == 0) call rads_init (S, 'e2/a.r', verbose)
 	ers = 2
 else
@@ -460,9 +463,9 @@ call new_var ('wet_tropo_ecmwf', a*1d-3, 5)
 call get_var (ncid, 'wet_c_mwr_1hz', a)
 call new_var ('wet_tropo_rad', a*1d-3, 6)
 call get_var (ncid, 'water_vapor_content_1hz', a)
-call new_var ('water_vapor_content', a*1d-2, -6)
+call new_var ('water_vapor_rad', a*1d-2, -6)
 call get_var (ncid, 'liquid_water_content_1hz', a)
-call new_var ('liquid_water', a*1d-2, -6)
+call new_var ('liquid_water_rad', a*1d-2, -6)
 call get_var (ncid, 'u_wind_1hz', a)
 call new_var ('wind_speed_ecmwf_u', a*1d-3, 7)
 call get_var (ncid, 'v_wind_1hz', a)
@@ -477,10 +480,15 @@ call get_var (ncid, 'h_mss_cls01_1hz', a)
 call new_var ('mss_cls01', a*1d-3+dh, 11)
 call get_var (ncid, 'h_geo_1hz', a)
 call new_var ('geoid_egm2008', a*1d-3+dh, 12)
-call get_var (ncid, 'h_ot_1hz-h_olt_1hz', a)
+if (com < 5) then ! Prior to COM5 ocean tide is OT+OLT+LPT
+	call get_var (ncid, 'h_ot_1hz-h_olt_1hz', a)
+	call get_var (ncid, 'h_ot2_1hz-h_olt2_1hz', b)
+else ! Since COM5 ocean tide is split up (hence add LPT)
+	call get_var (ncid, 'h_ot_1hz+h_lpt_1hz', a)
+	call get_var (ncid, 'h_ot2_1hz+h_lpt_1hz', b)
+endif
 call new_var ('tide_ocean_got47', a*1d-3, 13)
-call get_var (ncid, 'h_ot2_1hz-h_olt2_1hz', a)
-call new_var ('tide_ocean_fes04', a*1d-3, 14)
+call new_var ('tide_ocean_fes04', b*1d-3, 14)
 call get_var (ncid, 'h_olt_1hz', a)
 call new_var ('tide_load_got47', a*1d-3, 15)
 call get_var (ncid, 'h_olt2_1hz', a)
@@ -513,14 +521,16 @@ if (.not.alt_2m) then ! Only on (S)GDR
 	call new_var ('dsig0_atmos_ku', a*1d-2)
 endif
 
-! Remove applied corrections from range
+! Prior to COM5: remove applied corrections from range
 
-do i = 1,nrec
-	k = ndata + i
-	var(7)%d(k) = var(7)%d(k) - sum_d_applied(i)
-	if (.not.alt_2m .and. abs(sum_d_applied(i) - sum_c_applied(i)) > 1d-4) &
-		write (*,553) 'Warning: sum_c_applied wrong: ',i,sum_d_applied(i),sum_c_applied(i),sum_d_applied(i)-sum_c_applied(i)
-enddo
+if (com < 5) then
+	do i = 1,nrec
+		k = ndata + i
+		var(7)%d(k) = var(7)%d(k) - sum_d_applied(i)
+		if (.not.alt_2m .and. abs(sum_d_applied(i) - sum_c_applied(i)) > 1d-4) &
+			write (*,553) 'Warning: sum_c_applied wrong: ',i,sum_d_applied(i),sum_c_applied(i),sum_d_applied(i)-sum_c_applied(i)
+	enddo
+endif
 
 ! There may be measurements with invalid times.
 ! If so, weed them out.
@@ -585,7 +595,7 @@ end subroutine get_reaper
 !-----------------------------------------------------------------------
 
 subroutine put_rads
-integer(fourbyteint) :: i, j
+integer :: i
 character(len=rads_cmdl) :: original
 
 if (nout == 0) return	! Skip empty data sets
@@ -607,15 +617,11 @@ P%equator_lon = lnode(1)
 
 ! Check which input files pertain
 if (P%start_time >= start_time) then
-	i = index(infile, '/', .true.) + 1
-	original = infile(i:)
+	original = filenm
 else if (P%end_time < start_time) then
-	i = index(old_infile, '/', .true.) + 1
-	original = old_infile
+	original = old_filenm
 else
-	i = index(old_infile, '/', .true.) + 1
-	j = index(infile, '/', .true.) + 1
-	original = trim(old_infile(i:))//rads_linefeed//infile(j:)
+	original = trim(old_filenm)//rads_linefeed//filenm
 endif
 P%original = trim(l2_version)//' data of '//l2_proc_time(:11)//rads_linefeed//trim(original)
 
@@ -658,7 +664,7 @@ end subroutine put_rads
 !-----------------------------------------------------------------------
 
 subroutine new_var (varnm, data, bit)
-! Write variables one after the other to the output file
+! Store variables to be written later by put_var
 character(len=*), intent(in) :: varnm
 real(eightbytereal), intent(in) :: data(:)
 integer, optional, intent(in) :: bit
