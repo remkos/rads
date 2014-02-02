@@ -89,7 +89,7 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
-'  --ptr                     Correct range for PTR error' / &
+'  --ptr                     Correct range for PTR error (Pre-COM5 only)' / &
 '  --all                     All of the above')
 stop
 end subroutine synopsis
@@ -101,7 +101,7 @@ end subroutine synopsis
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
 real(eightbytereal) :: time(n), range_ku(n)
-integer :: n_changed
+integer :: n_changed, i, com
 
 ! Formats
 
@@ -110,25 +110,29 @@ integer :: n_changed
 
 write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
 
+n_changed = 0
+com = 999
+i = index(P%original, '_COM')
+if (i > 0) read (P%original(i+4:i+4), *) com
+if (lptr .and. com < 5) then
+
 ! Check if time range matches PTR table
 
-do while (time_ptr + 0.5d0 < P%start_time)
-	call next_ptr
-enddo
-if (time_ptr - 0.5d0 > P%end_time) then
-	write (*,552) 0
-	return
-endif
+	do while (time_ptr + 0.5d0 < P%start_time)
+		call next_ptr
+	enddo
+	if (time_ptr - 0.5d0 > P%end_time) then
+		write (*,552) 0
+		return
+	endif
 
 ! Process data records
 
-call rads_get_var (S, P, 'time', time, .true.)
-call rads_get_var (S, P, 'range_ku', range_ku, .true.)
+	call rads_get_var (S, P, 'time', time, .true.)
+	call rads_get_var (S, P, 'range_ku', range_ku, .true.)
 
 ! Match up PTR
 
-n_changed = 0
-if (lptr) then
 	do i = 1,n
 		do while (time_ptr + 0.5d0 < time(i))
 			call next_ptr
@@ -149,7 +153,7 @@ endif
 ! Write out all the data
 
 call rads_put_history (S, P)
-if (lptr) call rads_put_var (S, P, 'range_ku', range_ku)
+if (lptr .and. com < 5) call rads_put_var (S, P, 'range_ku', range_ku)
 
 write (*,552) n_changed
 
