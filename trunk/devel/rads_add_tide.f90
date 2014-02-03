@@ -37,11 +37,11 @@ use tides
 
 type(rads_sat) :: S
 type(rads_pass) :: P
-integer(fourbyteint), parameter :: mfes = 1, mgot = 4
+integer(fourbyteint), parameter :: mfes = 1, mgot = 5
 type(festideinfo) :: fesinfo(mfes)
 type(gottideinfo) :: gotinfo(mgot)
 character(len=5), parameter :: nfes(mfes) = (/'fes04'/)
-character(len=5), parameter :: ngot(mgot) = (/'got00','got47','got48','got49'/)
+character(len=5), parameter :: ngot(mgot) = (/'got00','got47','got48','got49','got10'/)
 type(grid) :: sininfo, cosinfo
 
 ! Command line arguments
@@ -102,6 +102,9 @@ do
 	case ('got49')
 		do_got(4) = .true.
 		call gottideinit('GOT4.9',.true.,gotinfo(4))
+	case ('got10')
+		do_got(5) = .true.
+		call gottideinit('GOT4.10',.true.,gotinfo(5))
 	end select
 enddo
 
@@ -148,7 +151,8 @@ write (*,1310)
 '  got00 : GOT00.2 ocean and load tide'/ &
 '  got47 : GOT4.7 ocean and load tide'/ &
 '  got48 : GOT4.8 ocean and load tide'/ &
-'  got49 : GOT4.9 ocean and load tide'// &
+'  got49 : GOT4.9 ocean and load tide'/ &
+'  got10 : GOT4.10 ocean and load tide'// &
 'In addition, several of the following MODEL indicators can be used:'/ &
 '  ptide : Pole tide'/ &
 '  stide : Solid earth tide'/ &
