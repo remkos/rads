@@ -426,10 +426,10 @@ subroutine synopsis (flag)
 character(len=*), optional :: flag
 if (rads_version ('$Revision$', 'Write CryoSat-2 L1R data to RADS', flag=flag)) return
 call synopsis_devel (' < list_of_L1R_file_names')
-write (*,1300)
-1300 format (/ &
+write (*,1310)
+1310 format (/ &
 'Program specific [program_options] are:' / &
-' -m, --with-20hz            Do dual satellite crossovers only'// &
+'  -m, --with-20hz           Do dual satellite crossovers only'// &
 'This program converts CryoSat-2 L1R files to RADS data' / &
 'files with the name $RADSDATAROOT/data/c2/F/pPPPP/c2pPPPPcCCC.nc.' / &
 'The directory is created automatically and old files are overwritten.')
