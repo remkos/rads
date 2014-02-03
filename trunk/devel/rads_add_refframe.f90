@@ -15,7 +15,7 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*rads_add_refframe -- Add surface type flags to RADS data
+!*rads_add_refframe -- Add reference frame correction to RADS data
 !+
 ! This program adds a new field to the RADS data, which is meant
 ! to model a constant reference frame offset between the satellite
@@ -94,7 +94,7 @@ contains
 
 subroutine synopsis (flag)
 character(len=*), optional :: flag
-if (rads_version ('$Revision$', 'Add surface type flags to RADS data', flag=flag)) return
+if (rads_version ('$Revision$', 'Add reference frame correction to RADS data', flag=flag)) return
 call synopsis_devel ('')
 write (*,1310)
 1310  format (/ &
