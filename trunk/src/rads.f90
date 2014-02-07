@@ -2026,7 +2026,7 @@ do
 	endif
 
 	! Check if we need to skip this level
-	! This level well be skipped when all three of the following are true
+	! This level will be skipped when all three of the following are true
 	! a) Tag contains attribute "sat="
 	! b) The attribute value contains the satellite abbreviaton, or
 	!    the attribute value starts with "!" and does not contain the satellite abbreviation

@@ -124,7 +124,7 @@ contains
 
 subroutine synopsis (flag)
 character(len=*), optional :: flag
-if (rads_version ('$Revision$', 'Patch SARAL data for several anomalies', flag=flag)) return
+if (rads_version ('$Revision$', 'Patch SARAL data for several anomalies (pre patch 2 only)', flag=flag)) return
 call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
@@ -152,6 +152,13 @@ real(eightbytereal), parameter :: time0 = 909058527d0 ! 2013-10-22 12:15:27
 552 format (i5,' records changed')
 
 write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
+
+! Do not do anything for patch 2
+
+if (index(P%original, '(V5.2') > 0) then
+	write (*,552) 0
+	return
+endif
 
 ! Process data records
 
