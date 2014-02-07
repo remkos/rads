@@ -153,9 +153,9 @@ real(eightbytereal), parameter :: time0 = 909058527d0 ! 2013-10-22 12:15:27
 
 write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
 
-! Do not do anything for patch 2
+! Do not do anything for patch 2 or later
 
-if (index(P%original, '(V5.2') > 0) then
+if (index(P%original, '(V5') > 0) then
 	write (*,552) 0
 	return
 endif

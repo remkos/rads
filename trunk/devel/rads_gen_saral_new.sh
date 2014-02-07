@@ -28,33 +28,33 @@ lst=$SANDBOX/rads_gen_saral_new.lst
 imrk=igdr/.bookmark
 omrk=ogdr/.bookmark
 
-date								>  $log 2>&1
+date											>  $log 2>&1
 
 # Process only OGDR data for the last three days (including current)
 
 d0=`date -u -v -2d +%Y%m%d`
 TZ=UTC touch -t ${d0}0000 $omrk
 find ogdr/c??? -name "SRL_*.nc" -a -newer $omrk | sort > $lst
-rads_gen_saral --ymd=$d0 < $lst		>> $log 2>&1
+rads_gen_saral --ymd=$d0 < $lst					>> $log 2>&1
 
 # Now process all IGDR data that came in during the last four days (including current)
 
 d0=`date -u -v -3d +%Y%m%d`
 TZ=UTC touch -t ${d0}0000 $imrk
 find igdr/c??? -name "SRL_*.nc" -a -newer $imrk | sort > $lst
-rads_gen_saral < $lst				>> $log 2>&1
+rads_gen_saral < $lst							>> $log 2>&1
 
 # Do the patches to all data
 
-rads_add_iono    $options --all		>> $log 2>&1
-rads_add_common  $options			>> $log 2>&1
-rads_add_ncep    $options -gdwsu	>> $log 2>&1
-rads_fix_sa      $options --all		>> $log 2>&1
-rads_add_mog2d   $options			>> $log 2>&1
-rads_add_ib      $options			>> $log 2>&1
-rads_add_ww3_222 $options --all		>> $log 2>&1
-rads_add_sla     $options           >> $log 2>&1
+rads_add_iono    $options --all					>> $log 2>&1
+rads_add_common  $options						>> $log 2>&1
+rads_add_ncep    $options -gdwu --sig0-saral	>> $log 2>&1
+rads_fix_sa      $options --all					>> $log 2>&1
+rads_add_mog2d   $options						>> $log 2>&1
+rads_add_ib      $options						>> $log 2>&1
+rads_add_ww3_222 $options --all					>> $log 2>&1
+rads_add_sla     $options           			>> $log 2>&1
 
-date								>> $log 2>&1
+date											>> $log 2>&1
 
 rads_close_sandbox

@@ -79,7 +79,7 @@ integer(fourbyteint) :: hex,hexold=-99999
 type(airtideinfo) :: airinfo
 real(eightbytereal), parameter :: rad2=2d0*atan(1d0)/45d0
 logical :: dry_on=.false., wet_on=.false., ib_on=.false., air_on=.false., sig0_on = .false., wind_on = .false., &
-	topo_on=.false., new=.false., air_plus=.false., error
+	topo_on=.false., saral=.false., new=.false., air_plus=.false., error
 character(len=4) :: source = 'ncep', band
 
 ! Model data
@@ -97,7 +97,7 @@ real(eightbytereal), parameter :: k2p = 0.221d0, k3 = 3739d0	! Refractivity cons
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('gdwaisun gfs dry wet air ib sig0 wind all new')
+call rads_set_options ('gdwaisun gfs dry wet air ib sig0 sig0-saral wind all new')
 call rads_init (S)
 
 ! Get ${ALTIM}/data/ directory
@@ -120,6 +120,9 @@ do j = 1,rads_nopt
 		ib_on = .true.
 	case ('s', 'sig0')
 		sig0_on = .true.
+	case ('sig0-saral')
+		sig0_on = .true.
+		saral = .true.
 	case ('u', 'wind')
 		wind_on = .true.
 	case ('n', 'new')
@@ -191,6 +194,7 @@ write (*,1310)
 '  -a, --air                 Add air tide' / &
 '  -i, --ib                  Add static inverse barometer correction' / &
 '  -s, --sig0                Add sigma0 attenuation, lwc, wvc (with -g only)' / &
+'  --sig0-saral              Add sigma0 attenuation only to SARAL pre-patch 2 data' / &
 '  -u, --wind                Add GFS wind speed (with -g only)' / &
 '  --all                     All of the above' / &
 '  -g, --gfs                 Use GFS analysis instead of reanalysis' / &
@@ -248,6 +252,7 @@ call globpres(4,P%equator_time,slp0)
 
 ! If backscatter attenuation is computed, remove the old one here
 
+if (sig0_on .and. saral .and. index(P%original, '(V5') > 0) sig0_on = .false.
 if (sig0_on) then
 	call rads_get_var (S, P, 'sig0_'//band, sig0, .true.)
 	call rads_get_var (S, P, 'dsig0_atmos_'//band, atten, .true.)
