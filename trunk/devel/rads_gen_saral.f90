@@ -207,7 +207,7 @@ files: do
 	j = index(arg, 'L2 library=')
 	P%original = trim(infile(i:)) // ' (' // arg(j+11:)
 	j = index(P%original, ',')
-	P%original(j:j) = ')'
+	P%original(j:) = ')'
 	if (index(P%original, '(V4.2p1p6p9)') > 0) then
 		patch = 0
 	else if (index(P%original, '(V4.2') > 0) then
