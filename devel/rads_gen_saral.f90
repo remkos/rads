@@ -78,16 +78,16 @@ use rads_devel
 
 ! Command line arguments
 
-integer(fourbyteint) :: verbose=0, c0=0, c1=999, ios, i
+integer(fourbyteint) :: verbose=0, c0=0, c1=999, ios, i, j
 real(eightbytereal) :: t0, t1
 character(len=rads_cmdl) :: infile, arg
 character(len=rads_varl) :: optopt, optarg
 
 ! Header variables
 
-integer(fourbyteint) :: cyclenr, passnr, varid
+integer(fourbyteint) :: cyclenr, passnr, varid, patch
 real(eightbytereal) :: equator_time
-logical :: ogdr, old_l2
+logical :: ogdr
 
 ! Data variables
 
@@ -199,13 +199,22 @@ files: do
 	P%start_time = strp1985f(arg)
 	call nfs(nf90_get_att(ncid,nf90_global,'last_meas_time',arg))
 	P%end_time = strp1985f(arg)
-	i = index(infile, '/', .true.) + 1
-	P%original = infile(i:)
 
 ! Determine L2 processing version
 
 	call nfs(nf90_get_att(ncid,nf90_global,'references',arg))
-	old_l2 = index(arg, 'L2 library=V4.2p1p6p9,') > 0
+	i = index(infile, '/', .true.) + 1
+	j = index(arg, 'L2 library=')
+	P%original = trim(infile(i:)) // ' (' // arg(j+11:)
+	j = index(P%original, ',')
+	P%original(j:j) = ')'
+	if (index(P%original, '(V4.2p1p6p9)') > 0) then
+		patch = 0
+	else if (index(P%original, '(V4.2') > 0) then
+		patch = 1
+	else
+		patch = 2
+	endif
 
 ! Allocate variables
 
@@ -246,14 +255,18 @@ files: do
 	call cpy_var ('model_dry_tropo_corr', 'dry_tropo_ecmwf')
 	call cpy_var ('model_wet_tropo_corr', 'wet_tropo_ecmwf')
 	call cpy_var ('rad_wet_tropo_corr', 'wet_tropo_rad')
-	if (old_l2) var(nvar)%d = var(nvar)%d + 19d-3
+	if (patch == 0) var(nvar)%d = var(nvar)%d + 19d-3
 	call cpy_var ('iono_corr_gim', 'iono_gim')
-	call cpy_var ('sea_state_bias', 'ssb_bm3')
+	if (patch < 2) then
+		call cpy_var ('sea_state_bias', 'ssb_bm3')
+	else
+		call cpy_var ('sea_state_bias', 'ssb_hyb')
+	endif
 	call cpy_var ('swh', 'swh_ka')
 	call cpy_var ('swh_rms', 'swh_rms_ka')
 	call cpy_var ('sig0', 'sig0_ka')
 	call cpy_var ('atmos_corr_sig0', 'dsig0_atmos_ka')
-	if (.not.old_l2) call cpy_var ('atmos_corr_sig0', 'dsig0_atmos_nn_ka')
+	if (patch == 1) call cpy_var ('atmos_corr_sig0', 'dsig0_atmos_nn_ka')
 	call cpy_var ('off_nadir_angle_wf', 'off_nadir_angle2_wf_ka')
 	call cpy_var ('tb_k', 'tb_238')
 	call cpy_var ('tb_ka', 'tb_370')
@@ -277,7 +290,7 @@ files: do
 	call cpy_var ('wind_speed_alt', 'wind_speed_alt')
 	call cpy_var ('rad_water_vapor', 'water_vapor_rad')
 	call cpy_var ('rad_liquid_water', 'liquid_water_rad')
-	if (old_l2) var(nvar)%d = var(nvar)%d * 1d-2 ! Fix wrong scale
+	if (patch == 0) var(nvar)%d = var(nvar)%d * 1d-2 ! Fix wrong scale
 	call get_var (ncid, 'range_used_40hz', d)
 	valid = (d == 0d0)
 	call get_var (ncid, 'peakiness_40hz', d)
