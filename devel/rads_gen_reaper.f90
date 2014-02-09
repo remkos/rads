@@ -125,6 +125,7 @@ type(var_) :: var(mvar)
 
 real(eightbytereal), parameter :: sec1990=157766400d0	! UTC seconds from 1 Jan 1985 to 1 Jan 1990
 real(eightbytereal), parameter :: picosec_to_m=0.5d-12*299792458d0	! picoseconds of 2-way range to mm 1-way
+real(eightbytereal), parameter :: uso_wap=15000000.05d0	! Nominal USO frequency used in WAP products
 integer :: i
 logical :: new
 
@@ -230,6 +231,7 @@ end subroutine synopsis
 subroutine get_reaper
 real(eightbytereal) :: dhellips, t(3), last_time
 integer(fourbyteint) :: i, k, flag, ivar0, ivar1
+character(len=80) :: string
 
 550 format (a)
 551 format (a,' ...')
@@ -345,6 +347,14 @@ if (alt_2m) then ! Different name in Meteo product
 else
 	call get_var (ncid, 'f_ocean_valid_bitmap_1hz', a)
 endif
+
+! Get USO frequency and convert to a range correction assuming WAP's
+! nominal USO frequency is 15000000.05 Hz
+call nfs(nf90_get_att(ncid,nf90_global,'uso_applied_1', string))
+i = index(string, '@')
+read (string(:i-1),*) a(1) ! Get frequency from headers
+a = -1d-4 * nint (795d7 * (a(1) - uso_wap) / uso_wap) ! Convert to meters and truncate at 4 decimals
+call new_var ('drange_uso', a, ndims=0)
 
 ! Set "valid" array based on bitmap
 ! Bits are 0 when valid, 1 when invalid
@@ -663,16 +673,18 @@ end subroutine put_rads
 ! Create new RADS variable
 !-----------------------------------------------------------------------
 
-subroutine new_var (varnm, data, bit)
+subroutine new_var (varnm, data, bit, ndims)
 ! Store variables to be written later by put_var
 character(len=*), intent(in) :: varnm
 real(eightbytereal), intent(in) :: data(:)
 integer, optional, intent(in) :: bit
+integer, optional, intent(in) :: ndims
 integer :: i
 nvar = nvar + 1
 if (nvar > mvar) stop 'Too many variables'
 var(nvar)%v => rads_varptr (S, varnm)
 var(nvar)%d(ndata+1:ndata+nrec) = data
+if (present(ndims)) var(nvar)%v%info%ndims = ndims
 if (.not.present(bit)) return
 if (bit > 0) then
 	do i = 1,nrec
