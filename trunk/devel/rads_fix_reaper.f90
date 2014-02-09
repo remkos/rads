@@ -30,6 +30,7 @@ program rads_fix_reaper
 use rads
 use rads_misc
 use rads_devel
+use rads_netcdf
 
 ! Data variables
 
@@ -41,12 +42,13 @@ type(rads_pass) :: P
 character(len=rads_cmdl) :: path
 integer(fourbyteint) :: i, cyc, pass
 real(eightbytereal) :: time_ptr, drange_ptr
-logical :: lptr = .false., luso = .false.
+type(grid) :: issb_hyb
+logical :: lptr = .false., luso = .false., lssb = .false.
 
 ! Scan command line for options
 
 call synopsis
-call rads_set_options (' ptr uso all')
+call rads_set_options (' ptr ssb uso all')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
@@ -54,9 +56,12 @@ do i = 1,rads_nopt
 		lptr = .true.
 	case ('uso')
 		luso = .true.
+	case ('ssb')
+		lssb = .true.
 	case ('all')
 		lptr = .true.
 		luso = .true.
+		lssb = .true.
 	end select
 enddo
 
@@ -65,6 +70,13 @@ enddo
 if (lptr) then
 	call parseenv ('${RADSROOT}/ext/reaper/commissioning/diff_ptrolc_ers'//S%sat(2:2)//'.dat', path)
 	open (10,file=path,status='old')
+endif
+
+! Load SSB model
+
+if (lssb) then
+	call parseenv ('${ALTIM}/data/models/reaper_ssb_hyb.nc?ssb_hyb', path)
+	if (grid_load(path,issb_hyb) /= 0) call rads_exit ('Error loading '//trim(path))
 endif
 
 ! Run process for all files
@@ -77,7 +89,8 @@ do cyc = S%cycles(1),S%cycles(2),S%cycles(3)
 	enddo
 enddo
 
-close (10)
+if (lptr) close (10)
+if (lssb) call grid_free (issb_hyb)
 
 contains
 
@@ -93,6 +106,7 @@ write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
 '  --ptr                     Correct range for PTR error (use for pre-COM5 only)' / &
+'  --ssb                     Add hybrid SSB model' / &
 '  --uso                     Correct range for USO drift' / &
 '  --all                     All of the above')
 stop
@@ -104,7 +118,7 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-real(eightbytereal) :: time(n), range_ku(n), drange_uso(n)
+real(eightbytereal) :: x, y, time(n), range_ku(n), drange_uso(n), sig0(n), swh(n), ssb(n)
 integer :: n_changed, i
 
 ! Formats
@@ -116,6 +130,8 @@ write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
 
 n_changed = 0
 call rads_get_var (S, P, 'range_ku', range_ku, .true.)
+
+! Apply PTR correction
 
 if (lptr) then
 
@@ -143,10 +159,30 @@ if (lptr) then
 		n_changed = n_changed + 1
 		range_ku(i) = range_ku(i) - drange_ptr
 	enddo
+endif
 
-else if (luso) then
+! Apply USO correction
+
+if (luso) then
 	call rads_get_var (S, P, 'drange_uso', drange_uso)
 	range_ku = range_ku + drange_uso
+	n_changed = n
+endif
+
+! Compute SSB
+
+if (lssb) then
+	call rads_get_var (S, P, 'sig0_ku', sig0, .true.)
+	call rads_get_var (S, P, 'swh_ku', swh, .true.)
+	do i = 1,n
+		x = sig0(i)
+		if (x < issb_hyb%xmin) x = issb_hyb%xmin
+		if (x > issb_hyb%xmax) x = issb_hyb%xmax
+		y = swh(i)
+		if (y < issb_hyb%ymin) y = issb_hyb%ymin
+		if (y > issb_hyb%ymax) y = issb_hyb%ymax
+		ssb(i) = grid_lininter (issb_hyb, x, y)
+	enddo
 	n_changed = n
 endif
 
@@ -161,6 +197,10 @@ endif
 
 call rads_put_history (S, P)
 call rads_put_var (S, P, 'range_ku', range_ku)
+if (lssb) then
+	call rads_def_var (S, P, 'ssb_hyb')
+	call rads_put_var (S, P, 'ssb_hyb', ssb)
+endif
 
 write (*,552) n_changed
 

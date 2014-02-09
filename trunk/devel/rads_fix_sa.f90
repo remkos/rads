@@ -116,6 +116,8 @@ do cyc = S%cycles(1),S%cycles(2),S%cycles(3)
 	if (usig0) deallocate (rad_pass, rad_dsig0, mask)
 enddo
 
+if (lssb) call grid_free (issb_hyb)
+
 contains
 
 !-----------------------------------------------------------------------
@@ -129,7 +131,7 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
-'  --ssb                     Add hybrid SSB' / &
+'  --ssb                     Add hybrid SSB model' / &
 '  --wet                     Shift MWR wet prior to 2013-10-22' / &
 '  --wind                    Compute wind speed' / &
 '  --all                     All of the above' / &
