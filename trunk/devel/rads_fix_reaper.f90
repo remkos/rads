@@ -40,20 +40,23 @@ type(rads_pass) :: P
 
 character(len=rads_cmdl) :: path
 integer(fourbyteint) :: i, cyc, pass
-real(eightbytereal) :: time_ptr, range_ptr
-logical :: lptr = .false.
+real(eightbytereal) :: time_ptr, drange_ptr
+logical :: lptr = .false., luso = .false.
 
 ! Scan command line for options
 
 call synopsis
-call rads_set_options (' ptr all')
+call rads_set_options (' ptr uso all')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
 	case ('ptr')
 		lptr = .true.
+	case ('uso')
+		luso = .true.
 	case ('all')
 		lptr = .true.
+		luso = .true.
 	end select
 enddo
 
@@ -89,7 +92,8 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
-'  --ptr                     Correct range for PTR error (Pre-COM5 only)' / &
+'  --ptr                     Correct range for PTR error (use for pre-COM5 only)' / &
+'  --uso                     Correct range for USO drift' / &
 '  --all                     All of the above')
 stop
 end subroutine synopsis
@@ -100,8 +104,8 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-real(eightbytereal) :: time(n), range_ku(n)
-integer :: n_changed, i, com
+real(eightbytereal) :: time(n), range_ku(n), drange_uso(n)
+integer :: n_changed, i
 
 ! Formats
 
@@ -111,10 +115,9 @@ integer :: n_changed, i, com
 write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
 
 n_changed = 0
-com = 999
-i = index(P%original, '_COM')
-if (i > 0) read (P%original(i+4:i+4), *) com
-if (lptr .and. com < 5) then
+call rads_get_var (S, P, 'range_ku', range_ku, .true.)
+
+if (lptr) then
 
 ! Check if time range matches PTR table
 
@@ -129,7 +132,6 @@ if (lptr .and. com < 5) then
 ! Process data records
 
 	call rads_get_var (S, P, 'time', time, .true.)
-	call rads_get_var (S, P, 'range_ku', range_ku, .true.)
 
 ! Match up PTR
 
@@ -139,8 +141,13 @@ if (lptr .and. com < 5) then
 		enddo
 		if (time_ptr - 0.5d0 > time(i)) cycle
 		n_changed = n_changed + 1
-		range_ku(i) = range_ku(i) - range_ptr
+		range_ku(i) = range_ku(i) - drange_ptr
 	enddo
+
+else if (luso) then
+	call rads_get_var (S, P, 'drange_uso', drange_uso)
+	range_ku = range_ku + drange_uso
+	n_changed = n
 endif
 
 ! If nothing changed, stop here
@@ -153,7 +160,7 @@ endif
 ! Write out all the data
 
 call rads_put_history (S, P)
-if (lptr .and. com < 5) call rads_put_var (S, P, 'range_ku', range_ku)
+call rads_put_var (S, P, 'range_ku', range_ku)
 
 write (*,552) n_changed
 
@@ -174,7 +181,7 @@ do
 		exit
 	endif
 	if (line(1:1) == '#') cycle
-	read (line,*) time_ptr, n, corr1, corr2, range_ptr
+	read (line,*) time_ptr, n, corr1, corr2, drange_ptr
 	exit
 enddo
 end subroutine next_ptr
