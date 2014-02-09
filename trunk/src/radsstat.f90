@@ -292,7 +292,7 @@ enddo
 
 tot%mean = tot%mean / tot%wgt
 if (nr > 1) then
-	tot%sum2 = sqrt((tot%sum2 / tot%wgt - tot%mean*tot%mean) * nr / (nr - 1d0))
+	tot%sum2 = sqrt(max(tot%sum2 / tot%wgt - tot%mean*tot%mean, 1d0) * nr / (nr - 1d0)) ! max() avoids tiny negatives
 else
 	tot%sum2 = nan
 endif
