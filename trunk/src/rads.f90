@@ -365,10 +365,13 @@ end interface rads_def_var
 ! Error codes:
 !  S%error  : rads_noerr, rads_err_nc_put
 !-----------------------------------------------------------------------
-private :: rads_put_var_by_var_1d, rads_put_var_by_var_1d_start, rads_put_var_by_name_1d, &
-	rads_put_var_by_var_2d, rads_put_var_by_var_2d_start, rads_put_var_by_name_2d, &
-	rads_put_var_helper
+private :: rads_put_var_helper, &
+	rads_put_var_by_var_0d, rads_put_var_by_name_0d, &
+	rads_put_var_by_var_1d, rads_put_var_by_var_1d_start, rads_put_var_by_name_1d, &
+	rads_put_var_by_var_2d, rads_put_var_by_var_2d_start, rads_put_var_by_name_2d
 interface rads_put_var
+	module procedure rads_put_var_by_var_0d
+	module procedure rads_put_var_by_name_0d
 	module procedure rads_put_var_by_var_1d
 	module procedure rads_put_var_by_var_1d_start
 	module procedure rads_put_var_by_name_1d
@@ -3711,7 +3714,16 @@ if (nff(nf90_inq_varid(P%ncid, var%name, info%varid))) then
 			'Cannot redefine variable "'//trim(var%name)//'" with different type or dimension in file', P)
 		return
 	endif
-! Define the variable
+! Define a constant (always as double)
+else if (info%ndims == 0) then
+	info%scale_factor = 1d0
+	info%add_offset = 0d0
+	info%nctype = nf90_double
+	if (nft(nf90_def_var(P%ncid, var%name, info%nctype, info%varid))) then
+		call rads_error (S, rads_err_nc_var, 'Error creating variable "'//trim(var%name)//'" in file', P)
+		return
+	endif
+! Define a 1- or 2-dimensional variable
 else if (nft(nf90_def_var(P%ncid, var%name, info%nctype, (/(j,j=j1,j0,-1)/), info%varid))) then
 	call rads_error (S, rads_err_nc_var, 'Error creating variable "'//trim(var%name)//'" in file', P)
 	return
@@ -3756,7 +3768,7 @@ if (info%datatype >= rads_type_time .or. info%dataname(:1) == ':') then
 	! Do not add coordinate attribute for some data type
 else if (info%ndims == 1) then
 	e = e + nf90_put_att (P%ncid, info%varid, 'coordinates', 'lon lat')
-else
+else if (info%ndims == 2) then
 	e = e + nf90_put_att (P%ncid, info%varid, 'coordinates', 'lon_20hz lat_20hz')
 endif
 if (var%field(1) /= rads_nofield) e = e + nf90_put_att (P%ncid, info%varid, 'field', var%field(1))
@@ -3804,6 +3816,29 @@ if (S%error /= rads_noerr) return
 call rads_def_var_by_var_0d (S, P, var, nctype, scale_factor, add_offset, ndims)
 if (S%error /= rads_noerr) return
 end subroutine rads_def_var_by_name
+
+subroutine rads_put_var_by_var_0d (S, P, var, data)
+use netcdf
+use rads_netcdf
+type(rads_sat), intent(inout) :: S
+type(rads_pass), intent(inout) :: P
+type(rads_var), intent(inout) :: var
+real(eightbytereal), intent(in) :: data
+if (rads_put_var_helper (S, P, var)) return
+if (nft(nf90_put_var (P%ncid, var%info%varid, data))) call rads_error (S, rads_err_nc_put, &
+	'Error writing data for variable "'//trim(var%name)//'" to file', P)
+end subroutine rads_put_var_by_var_0d
+
+subroutine rads_put_var_by_name_0d (S, P, varname, data)
+type(rads_sat), intent(inout) :: S
+type(rads_pass), intent(inout) :: P
+character(len=*), intent(in) :: varname
+real(eightbytereal), intent(in) :: data
+type(rads_var), pointer :: var
+var => rads_varptr (S, varname)
+if (S%error /= rads_noerr) return
+call rads_put_var_by_var_0d (S, P, var, data)
+end subroutine rads_put_var_by_name_0d
 
 subroutine rads_put_var_by_var_1d (S, P, var, data)
 type(rads_sat), intent(inout) :: S
