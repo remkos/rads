@@ -3688,7 +3688,7 @@ real(eightbytereal), intent(in), optional :: scale_factor, add_offset
 !-----------------------------------------------------------------------
 type(rads_varinfo), pointer :: info
 integer(fourbyteint) :: e, n, xtype
-integer :: j, j0, j1
+integer :: j=0, j0, j1
 S%error = rads_noerr
 
 ! Get some information on dimensions and scale factors

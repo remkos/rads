@@ -490,15 +490,14 @@ call get_var (ncid, 'h_mss_cls01_1hz', a)
 call new_var ('mss_cls01', a*1d-3+dh, 11)
 call get_var (ncid, 'h_geo_1hz', a)
 call new_var ('geoid_egm2008', a*1d-3+dh, 12)
-if (com < 5) then ! Prior to COM5 ocean tide is OT+OLT+LPT
-	call get_var (ncid, 'h_ot_1hz-h_olt_1hz', a)
-	call get_var (ncid, 'h_ot2_1hz-h_olt2_1hz', b)
-else ! Since COM5 ocean tide is split up (hence add LPT)
-	call get_var (ncid, 'h_ot_1hz+h_lpt_1hz', a)
-	call get_var (ncid, 'h_ot2_1hz+h_lpt_1hz', b)
-endif
+! Prior to COM5 ocean tide is OT+OLT+LPT
+! Since COM5 ocean tide is split up
+! Nonetheless we ignore that here and simply copy the values
+! This can be fixed with rads_fix_reaper --tide
+call get_var (ncid, 'h_ot_1hz', a)
 call new_var ('tide_ocean_got47', a*1d-3, 13)
-call new_var ('tide_ocean_fes04', b*1d-3, 14)
+call get_var (ncid, 'h_ot2_1hz', a)
+call new_var ('tide_ocean_fes04', a*1d-3, 14)
 call get_var (ncid, 'h_olt_1hz', a)
 call new_var ('tide_load_got47', a*1d-3, 15)
 call get_var (ncid, 'h_olt2_1hz', a)
