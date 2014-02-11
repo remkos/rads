@@ -43,25 +43,28 @@ character(len=rads_cmdl) :: path
 integer(fourbyteint) :: i, cyc, pass
 real(eightbytereal) :: time_ptr, drange_ptr
 type(grid) :: issb_hyb
-logical :: lptr = .false., luso = .false., lssb = .false.
+logical :: lptr = .false., lssb = .false., ltide = .false., luso = .false.
 
 ! Scan command line for options
 
 call synopsis
-call rads_set_options (' ptr ssb uso all')
+call rads_set_options ('pstu ptr ssb uso all')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
-	case ('ptr')
+	case ('p', 'ptr')
 		lptr = .true.
-	case ('uso')
-		luso = .true.
-	case ('ssb')
+	case ('s', 'ssb')
 		lssb = .true.
+	case ('t', 'tide')
+		ltide = .true.
+	case ('u', 'uso')
+		luso = .true.
 	case ('all')
 		lptr = .true.
-		luso = .true.
 		lssb = .true.
+		ltide = .true.
+		luso = .true.
 	end select
 enddo
 
@@ -105,9 +108,10 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
-'  --ptr                     Correct range for PTR error (use for pre-COM5 only)' / &
-'  --ssb                     Add hybrid SSB model' / &
-'  --uso                     Correct range for USO drift' / &
+'  -p, --ptr                 Correct range for PTR error (use for pre-COM5 only)' / &
+'  -s, --ssb                 Add hybrid SSB model' / &
+'  -t, --tide                Fix the tide, subtracting load tide or adding long period tide' / &
+'  -u, --uso                 Correct range for USO drift' / &
 '  --all                     All of the above')
 stop
 end subroutine synopsis
@@ -118,8 +122,8 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-real(eightbytereal) :: x, y, time(n), range_ku(n), drange_uso(n), sig0(n), swh(n), ssb(n)
-integer :: n_changed, i
+real(eightbytereal) :: x, y, time(n), range_ku(n), drange_uso(n), sig0(n), swh(n), ssb(n), got47(n), fes04(n), a(n)
+integer :: n_changed, i, com
 
 ! Formats
 
@@ -129,7 +133,11 @@ integer :: n_changed, i
 write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
 
 n_changed = 0
-call rads_get_var (S, P, 'range_ku', range_ku, .true.)
+com = 999
+i = index(P%original, '_COM')
+if (i > 0) read (P%original(i+4:i+4), *) com
+
+if (lptr .or. luso) call rads_get_var (S, P, 'range_ku', range_ku, .true.)
 
 ! Apply PTR correction
 
@@ -161,14 +169,6 @@ if (lptr) then
 	enddo
 endif
 
-! Apply USO correction
-
-if (luso) then
-	call rads_get_var (S, P, 'drange_uso', drange_uso)
-	range_ku = range_ku + drange_uso
-	n_changed = n
-endif
-
 ! Compute SSB
 
 if (lssb) then
@@ -186,6 +186,32 @@ if (lssb) then
 	n_changed = n
 endif
 
+! Fix the tide
+
+if (ltide) then
+	call rads_get_var (S, P, 'tide_ocean_got47', got47)
+	call rads_get_var (S, P, 'tide_ocean_fes04', fes04)
+	if (com < 5) then	! Prior to COM5: remove load tide from ocean tide
+		call rads_get_var (S, P, 'tide_load_got47', a)
+		got47 = got47 - a
+		call rads_get_var (S, P, 'tide_load_fes04', a)
+		fes04 = fes04 - a
+	else	! From COM5 onward: add long-period tide to ocean tide
+		call rads_get_var (S, P, 'tide_equil', a)
+		got47 = got47 + a
+		fes04 = fes04 + a
+	endif
+	n_changed = n
+endif
+
+! Apply USO correction
+
+if (luso) then
+	call rads_get_var (S, P, 'drange_uso', drange_uso)
+	range_ku = range_ku + drange_uso
+	n_changed = n
+endif
+
 ! If nothing changed, stop here
 
 if (n_changed == 0) then
@@ -196,7 +222,11 @@ endif
 ! Write out all the data
 
 call rads_put_history (S, P)
-call rads_put_var (S, P, 'range_ku', range_ku)
+if (luso .or. lptr) call rads_put_var (S, P, 'range_ku', range_ku)
+if (ltide) then
+	call rads_put_var (S, P, 'tide_ocean_got47', got47)
+	call rads_put_var (S, P, 'tide_ocean_fes04', fes04)
+endif
 if (lssb) then
 	call rads_def_var (S, P, 'ssb_hyb')
 	call rads_put_var (S, P, 'ssb_hyb', ssb)
