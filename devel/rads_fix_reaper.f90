@@ -143,16 +143,6 @@ if (lptr .or. luso) call rads_get_var (S, P, 'range_ku', range_ku, .true.)
 
 if (lptr) then
 
-! Check if time range matches PTR table
-
-	do while (time_ptr + 0.5d0 < P%start_time)
-		call next_ptr
-	enddo
-	if (time_ptr - 0.5d0 > P%end_time) then
-		write (*,552) 0
-		return
-	endif
-
 ! Process data records
 
 	call rads_get_var (S, P, 'time', time, .true.)
