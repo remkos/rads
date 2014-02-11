@@ -48,7 +48,7 @@ logical :: lptr = .false., lssb = .false., ltide = .false., luso = .false.
 ! Scan command line for options
 
 call synopsis
-call rads_set_options ('pstu ptr ssb uso all')
+call rads_set_options ('pstu ptr ssb tide uso all')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
