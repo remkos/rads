@@ -17,18 +17,20 @@
 
 !*rads_add_ww3_314 -- Add variables from WaveWatch3 model to RADS data
 !+
-! This program adds 5 to 7 variables from the WaveWatch 3 model
+! This program adds 5, 7 or 9 variables from the WaveWatch 3 model
 ! (version 3.14) to the RADS data base. These variables are:
 ! m0 = wave height variance in m^2
 ! m1 = first order moment in m^2/s
 ! m2 = second order moment (velocity variance) in m^2/s^2
 ! m4 = fourth order moment (slope variance) (unitless)
 ! shs = swell height in m
+! sdr = swell direction in rad
+! spr = swell period in s
 ! wu = zonal wind speed in m/s
 ! wv = meridional wind speed in m/s
 !
 ! The variables are stored in 1x1 degree grids at 6-hour intervals.
-! All five variables and all 4 daily temporal intervals can be found
+! All nine variables and all 4 daily temporal intervals can be found
 ! in a single netCDF file. These files can be found in ${ALTIM}/data/ww3_314.
 !
 ! The grids contain invalid values, whose mask changes with time, because
@@ -49,18 +51,19 @@ use netcdf
 
 type(rads_sat) :: S
 type(rads_pass) :: P
-integer(fourbyteint) :: cyc, pass, var0=9, var1=0
+integer(fourbyteint) :: cyc, pass, var0 = 1
 logical :: update = .false.
 
 ! Data elements
 
 character(rads_cmdl) :: path
-integer(fourbyteint), parameter :: nx=361, ny=156, nhex=8, nvar=7, i2min=-32768
+integer(fourbyteint), parameter :: nx=361, ny=156, nhex=8, nvar=9, i2min=-32768
 integer(fourbyteint) :: mjd, mjdold=-99999, j
 real(eightbytereal), parameter :: x0=-180d0, x1=180d0, y0=-77.5d0, y1=77.5d0, dx=1d0, dy=1d0
 real(eightbytereal) :: dz(nvar)
 integer(twobyteint) :: grids(nx,ny,nhex,nvar), subgrid(2,2,2,nvar)
-character(len=4) :: varnm(nvar) = (/ 'm0  ', 'm1  ', 'm2  ', 'm4  ', 'shs ', 'wu  ', 'wv  ' /)
+character(len=4) :: varnm(nvar) = (/ 'm0  ', 'm1  ', 'm2  ', 'm4  ', 'shs ', 'sdr ', 'spr ', 'wu  ', 'wv  ' /)
+logical :: lvar(nvar) = .false.
 
 ! Initialise
 
@@ -73,14 +76,20 @@ call rads_init (S)
 call parseenv ('${ALTIM}/data/ww3_314/%Y/ww3_%Y%m%d.nc', path)
 
 ! Check all options
+
 do j = 1,rads_nopt
 	select case (rads_opt(j)%opt)
 	case ('w', 'ww3')
-		var0 = 1 ; var1 = max(var1,5)
+		lvar(1:5) = .true.
+		var0 = 1
+	case ('s', 'swell')
+		lvar(6:7) = .true.
+		var0 = 6
 	case ('v', 'wind')
-		var0 = min(var0,6) ; var1 = nvar
+		lvar(8:9) = .true.
+		var0 = 8
 	case ('all')
-		var0 = 1 ; var1 = nvar
+		lvar = .true.
 	case ('u', 'update')
 		update = .true.
 	end select
@@ -110,6 +119,7 @@ write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
 '  -w, --ww3                 Add WaveWatch3 (v3.14) variables m0, m1, m2, m4 and shs' / &
+'  -s, --swell               Add swell variables sdr and spr' / &
 '  -v, --wind                Add U and V wind speed components' / &
 '  --all                     All of the above' / &
 '  -u, --update              Update files only when there are changes')
@@ -236,14 +246,14 @@ endif
 ! Define data fields
 
 call rads_put_history (S, P)
-do var = var0,var1
-	call rads_def_var (S, P, 'wave_'//varnm(var))
+do var = 1,nvar
+	if (lvar(var)) call rads_def_var (S, P, 'wave_'//varnm(var))
 enddo
 
 ! Store data fields
 
-do var = var0,var1
-	call rads_put_var (S, P, 'wave_'//varnm(var), ww3(:,var)*dz(var))
+do var = 1,nvar
+	if (lvar(var)) call rads_put_var (S, P, 'wave_'//varnm(var), ww3(:,var)*dz(var))
 enddo
 
 write (*,552) n
@@ -280,6 +290,7 @@ endif
 ! Check netCDF file for all variables, long_name, scale_factor, units, and grids
 
 do var = 1,nvar
+	if (.not.lvar(var)) cycle
 	if (nft(nf90_inq_varid(ncid,varnm(var),v_id))) call rads_exit ('Error finding variable')
 	if (nft(nf90_get_att(ncid,v_id,'scale_factor',dz(var)))) call rads_exit ('Missing attribute scale_factor')
 	if (nft(nf90_get_var(ncid,v_id,grid(:,:,:,var)))) call rads_exit ('Error reading data grid')
