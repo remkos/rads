@@ -147,14 +147,14 @@ call rads_init (S, 'sa', verbose)
 ! Read all file names from standard input
 !----------------------------------------------------------------------
 
-files: do
+do
 	read (*,550,iostat=ios) infile
-	if (ios /= 0) exit files
+	if (ios /= 0) exit
 	write (*,550,advance='no') trim(infile) // ' ...'
 
 	if (nf90_open(infile,nf90_nowrite,ncid) /= nf90_noerr) then
 		write (*,550) 'error opening file'
-		cycle files
+		cycle
 	endif
 
 ! Read global attributes
@@ -162,15 +162,15 @@ files: do
 	call nfs(nf90_inq_dimid(ncid,'time',varid))
 	call nfs(nf90_inquire_dimension(ncid,varid,len=nrec))
 	if (nrec == 0) then
-		cycle files
+		cycle
 	else if (nrec > mrec) then
 		write (*,'("Error: Too many measurements:",i5)') nrec
-		cycle files
+		cycle
 	endif
 	call nfs(nf90_get_att(ncid,nf90_global,'mission_name',arg))
 	if (arg /= 'SARAL') then
 		write (*,550) 'Error: Wrong misson-name found in header'
-		cycle files
+		cycle
 	endif
 
 	call nfs(nf90_get_att(ncid,nf90_global,'title',arg))
@@ -185,7 +185,7 @@ files: do
 	if (equator_time < t0 .or. equator_time > t1 .or. cyclenr < c0 .or. cyclenr > c1) then
 		call nfs(nf90_close(ncid))
 		write (*,550) 'Skipped'
-		cycle files
+		cycle
 	endif
 
 ! Store relevant info
@@ -305,7 +305,7 @@ files: do
 	call put_rads
 	deallocate (a, b, d, valid, flags)
 
-enddo files
+enddo
 
 call rads_end (S)
 
