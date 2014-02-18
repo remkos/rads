@@ -1817,20 +1817,12 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<comment>Range correction already added to range</comment>
 </var>
-<var name="drange_cal" field="2702" sat="c2 gs">
+<var name="drange_cal" field="2702" sat="c2 e1 e2 gs">
 	<long_name>internal calibration correction to range</long_name>
 	<units>m</units>
 	<data>drange_cal</data>
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
-	<comment>Range correction already added to range</comment>
-</var>
-<var name="drange_cal" field="2702" sat="e1 e2">
-	<long_name>SPTR correction to range</long_name>
-	<units>m</units>
-	<data>drange_cal</data>
-	<format>f6.3</format>
-	<compress>int2 1d-4</compress>
 	<comment>Range correction already added to range</comment>
 </var>
 <var name="drange_uso" field="2703" sat="e1 e2 gs n1">
@@ -1879,6 +1871,14 @@ Global RADS configuration file
 	<data>drange_dat</data>
 	<format>f6.3</format>
 	<compress>int2 1d-3</compress>
+	<comment>Range correction already added to range</comment>
+</var>
+<var name="drange_sptr" field="2709" sat="e1 e2">
+	<long_name>SPTR correction to range</long_name>
+	<units>m</units>
+	<data>drange_sptr</data>
+	<format>f6.3</format>
+	<compress>int2 1d-4</compress>
 	<comment>Range correction already added to range</comment>
 </var>
 <alias name="drange" field="27" sat="c2 e1 e2 gs n1">drange_ku</alias>
