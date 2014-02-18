@@ -138,7 +138,7 @@ t1 = nan
 ! Scan command line for options
 
 do
-	call getopt ('vC: debug: sat: cycle: t: mjd: sec: ymd: doy:', optopt, optarg)
+	call getopt ('vC: debug: cycle: t: mjd: sec: ymd: doy:', optopt, optarg)
 	select case (optopt)
 	case ('!')
 		exit

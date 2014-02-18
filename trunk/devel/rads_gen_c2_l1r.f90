@@ -161,16 +161,16 @@ call rads_init (S, sat, verbose)
 ! Read all file names for standard input
 !----------------------------------------------------------------------
 
-files: do
+do
 	read (*,550,iostat=ios) filename
-	if (ios /= 0) exit files
+	if (ios /= 0) exit
 
 ! Open input file
 
 	write (*,551) trim(filename)
 	if (nf90_open(filename,nf90_nowrite,ncid) /= nf90_noerr) then
 		write (*,550) 'Error opening file'
-		cycle files
+		cycle
 	endif
 
 ! Check input file type
@@ -178,7 +178,7 @@ files: do
 	call nfs(nf90_get_att(ncid,nf90_global,'title',arg))
 	if (arg /= 'CryoSat-2 Level-1 Retracked') then
 		write (*,550) 'Error: Wrong input file'
-		cycle files
+		cycle
 	endif
 
 ! Read cycle and pass number
@@ -194,10 +194,10 @@ files: do
 	if ((cycnr(1) == cycnr(2) .and. passnr(1) > passnr(2)) .or. &
 		(passnr(1) == passnr(2) .and. nrec > 4000)) then
 		write (*,550) 'Error: File too long (covers 3 passes)'
-		cycle files
+		cycle
 	else if (nrec > mrec) then
 		write (*,'("Error: Too many measurements:",i5)') nrec
-		cycle files
+		cycle
 	endif
 
 ! Determine if we need to dump pending data
@@ -224,7 +224,7 @@ files: do
 	eq_time = eq_time + sec2000	! Equator time is already in UTC, other times are in TAI
 	if (ndata + nrec > mrec) then
 		write (*,'("Error: Too many accumulated measurements:",i5)') ndata+nrec
-		cycle files
+		cycle
 	endif
 
 ! Determine if this is version A (filenames ending in A001.nc)
@@ -410,7 +410,7 @@ files: do
 
 	call nfs(nf90_close(ncid))
 
-enddo files ! Each file
+enddo ! Each file
 
 ! Dump whatever remains
 
