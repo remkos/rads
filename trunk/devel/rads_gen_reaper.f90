@@ -398,7 +398,7 @@ if (.not.alt_2m) then
 	call mean_1hz (d, valid, a, b)
 	call new_var ('drange_fm', a*1d-3)
 	call get_var (ncid, 'sptr_jumps_c', d)
-	call new_var ('drange_cal', d(1,:) * picosec_to_m)
+	call new_var ('drange_sptr', d(1,:) * picosec_to_m)
 	call get_var (ncid, 'sum_c_applied', d)
 	sum_c_applied = d(1,:)*1d-3
 	do i = 1,nrec
