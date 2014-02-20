@@ -3657,9 +3657,9 @@ if (nf90_redef (P%ncid) == nf90_eperm) call rads_error (S, rads_err_nc_put, 'Fil
 
 ! Write history attribute
 if (associated(P%history)) then
-	e = nf90_put_att (P%ncid, nf90_global, 'history', datestamp()//': '//trim(S%command)//rads_linefeed//trim(P%history))
+	e = nf90_put_att (P%ncid, nf90_global, 'history', trim(P%history)//rads_linefeed//timestamp()//' : '//trim(S%command))
 else
-	e = nf90_put_att (P%ncid, nf90_global, 'history', datestamp()//': '//trim(S%command))
+	e = nf90_put_att (P%ncid, nf90_global, 'history', timestamp()//' : '//trim(S%command))
 endif
 if (e /= 0) call rads_error (S, rads_err_nc_put, 'Error writing history attribute to file', P)
 
