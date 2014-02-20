@@ -20,11 +20,12 @@ Global RADS configuration file
 -->
 
 <global_attributes>
-	Conventions CF-1.6
+	Conventions CF-1.7
 	title RADS 4.0 pass file
 	institution Altimetrics / EUMETSAT / NOAA / TU Delft
 	source radar altimeter
 	references RADS Data Manual, Issue 4.0
+	featureType point
 </global_attributes>
 
 <var name="sla" field="0">
@@ -88,6 +89,7 @@ Global RADS configuration file
 </var>
 <var name="time_mjd" field="105">
 	<long_name>Modified Julian Days</long_name>
+	<standard_name>time</standard_name>
 	<units>days since 1858-11-17 00:00:00 UTC</units>
 	<data>time 86400 DIV 46066 ADD</data>
 	<comment>UTC time of measurement expressed in Modified Julian Days</comment>
@@ -95,6 +97,7 @@ Global RADS configuration file
 </var>
 <var name="time_2000" field="106">
 	<long_name>time</long_name>
+	<standard_name>time</standard_name>
 	<units>seconds since 2000-01-01 00:00:00 UTC</units>
 	<data>time 473299200 SUB</data>
 	<comment>UTC time of measurement</comment>
@@ -102,6 +105,7 @@ Global RADS configuration file
 </var>
 <var name="time_1950">
 	<long_name>time</long_name>
+	<standard_name>time</standard_name>
 	<units>days since 1950-01-01 00:00:00 UTC</units>
 	<data>time 86400 DIV 12784 ADD</data>
 	<comment>UTC time of measurement</comment>
@@ -749,7 +753,7 @@ Global RADS configuration file
 
 <var name="inv_bar_static" field="1002">
 	<long_name>static inverse barometer correction</long_name>
-	<standard_name>sea_surface_height_correction_due_to_air_pressure</standard_name>
+	<standard_name>sea_surface_height_correction_due_to_air_pressure_at_low_frequency</standard_name>
 	<source>ECMWF</source>
 	<units>m</units>
 	<limits>-1 1</limits>
@@ -766,22 +770,20 @@ Global RADS configuration file
 	<data>inv_bar_global</data>
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
-	<comment>Global mean effect of the static atmospheric pressure on sea surface</comment>
+	<comment>Global mean effect of the static atmospheric pressure on sea surface height</comment>
 </var>
 <var name="inv_bar_mog2d" field="1004">
 	<long_name>MOG2D dynamic atmospheric correction</long_name>
-	<standard_name>sea_surface_height_correction_due_to_air_pressure_and_wind</standard_name>
 	<source>MOG2D-G</source>
 	<units>m</units>
 	<limits>-1 1</limits>
 	<data>inv_bar_mog2d</data>
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
-	<comment>Combined low and high frequency effect of atmospheric pressure and wind on sea surface</comment>
+	<comment>Combined low and high frequency effect of atmospheric pressure and wind on sea surface height</comment>
 </var>
 <var name="inv_bar_mok2d">
 	<long_name>MOK2D inverse barometer correction</long_name>
-	<standard_name>sea_surface_height_correction_due_to_air_pressure_and_wind</standard_name>
 	<units>m</units>
 	<limits>-1 1</limits>
 	<data>inv_bar_static 0.9603 MUL 0.0025 SUB</data>
@@ -934,7 +936,7 @@ Global RADS configuration file
 
 <var name="tide_pole" field="1401 14">
 	<long_name>pole tide</long_name>
-	<standard_name>sea_surface_height_amplitude_due_pole_tide</standard_name>
+	<standard_name>sea_surface_height_amplitude_due_to_pole_tide</standard_name>
 	<source>Wahr [1985]</source>
 	<units>m</units>
 	<limits>-0.1 0.1</limits>
@@ -1403,6 +1405,7 @@ Global RADS configuration file
 <if sat="sa">
 	<var name="range_numval_ka" field="2101">
 		<long_name>number of valid Ka-band measurements</long_name>
+		<units>count</units>
 		<limits>32.5 40.5</limits>
 		<data>range_numval_ka</data>
 		<default>40</default>
@@ -1414,6 +1417,7 @@ Global RADS configuration file
 <else>
 	<var name="range_numval_ku" field="2101">
 		<long_name>number of valid Ku-band measurements</long_name>
+		<units>count</units>
 		<limits>16.5 20.5</limits>
 		<limits sat="j1 j2">15.5 20.5</limits>
 		<limits sat="g1 gs tx">8.5 10.5</limits> <!--GFO, Geosat, TOPEX are only 10 Hz-->
@@ -1427,6 +1431,7 @@ Global RADS configuration file
 
 <var name="range_numval_c" field="2102" sat="j1 j2">
 	<long_name>number of valid C-band measurements</long_name>
+	<units>count</units>
 	<limits>16.5 20.5</limits>
 	<data>range_numval_c</data>
 	<format>f3.0</format>
@@ -1434,6 +1439,7 @@ Global RADS configuration file
 </var>
 <var name="range_numval_ku_mle3" field="2101" sat="j2">
 	<long_name>number of valid Ku-band measurements (MLE3)</long_name>
+	<units>count</units>
 	<limits>15.5 20.5</limits>
 	<data>range_numval_ku_mle3</data>
 	<format>f3.0</format>
@@ -1596,6 +1602,7 @@ Global RADS configuration file
 <if sat="c2 e1 e2 n1">
 	<var name="peakiness_ku" field="2401">
 		<long_name>Ku-band peakiness</long_name>
+		<units>1</units>
 		<limits sat="n1">1.4 1.9</limits>
 		<limits sat="c2">1.1 1.6</limits>
 		<data>peakiness_ku</data>
@@ -1607,6 +1614,7 @@ Global RADS configuration file
 <elseif sat="sa">
 	<var name="peakiness_ka" field="2401">
 		<long_name>Ka-band peakiness</long_name>
+		<units>1</units>
 		<data>peakiness_ka</data>
 		<limits>3.2 6.0</limits>
 		<format>f6.2</format>
@@ -1616,6 +1624,7 @@ Global RADS configuration file
 </elseif>
 <var name="peakiness_s" field="2402" sat="n1">
 	<long_name>S-band peakiness</long_name>
+	<units>1</units>
 	<limits>1.4 1.9</limits>
 	<data>peakiness_s</data>
 	<format>f6.2</format>
@@ -2370,6 +2379,7 @@ Global RADS configuration file
 
 <var name="basin" field="3601 36">
 	<long_name>basin code</long_name>
+	<units>1</units>
 	<parameters>basin_codes.nc -q</parameters>
 	<data>basin</data>
 	<format>f3.0</format>
@@ -2437,7 +2447,6 @@ Global RADS configuration file
 </var>
 <var name="tide_lunar_nodal">
 	<long_name>nodal lunar ocean tide</long_name>
-	<standard_name>sea_surface_height_amplitude_due_to_nodal_lunar_ocean_tide</standard_name>
 	<units>m</units>
 	<data>time 6.128907968287D-07 MUL 55.151702881 SUB 360 FMOD COSD lat SIND SQR 1.5 MUL 0.5 SUB MUL
 		0.01220911657 MUL</data>
@@ -2481,7 +2490,8 @@ Global RADS configuration file
 </var>
 
 <var name="wave_shs" field="4401 44" sat="!e1 gs">
-	<long_name>WaveWatch3 wave swell</long_name>
+	<long_name>WaveWatch3 wave swell height</long_name>
+	<standard_name>sea_surface_swell_wave_significant_height</standard_name>
 	<source>WaveWatch3</source>
 	<units>m</units>
 	<data>wave_shs</data>
