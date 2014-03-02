@@ -294,7 +294,8 @@ do
 	call get_var (ncid, 'range_used_40hz', d)
 	valid = (d == 0d0)
 	call get_var (ncid, 'peakiness_40hz', d)
-	call mean_1hz (d, valid, a, b)
+	where (.not.valid) d = nan
+	call mean_1hz (d, a, b)
 	call new_var ('peakiness_ka', a)
 	a = flags
 	call new_var ('flags', a)

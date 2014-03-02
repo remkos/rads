@@ -939,9 +939,8 @@ end function next_word
 !***********************************************************************
 !*mean_1hz -- Compute mean and rms of multi-Hz array
 !+
-pure subroutine mean_1hz (y, valid, mean, rms)
+pure subroutine mean_1hz (y, mean, rms)
 real(eightbytereal), intent(in) :: y(:,:)
-logical, intent(in) :: valid(:,:)
 real(eightbytereal), intent(out) :: mean(:), rms(:)
 !
 ! Compute mean and stddev values from multi-Hz array <y(m,n)> where <m> is
@@ -949,12 +948,10 @@ real(eightbytereal), intent(out) :: mean(:), rms(:)
 ! number of 1-Hz measurements in the array. Output are the mean values,
 ! stored in <mean(n)> and the standard deviations stored in <rms(n)>.
 !
-! Only the values of <y> for which the corresponding value of <valid> is
-! true are used.
+! Points for which <y> is NaN are skipped.
 !
 ! Arguments:
 !  y     : Input array of dimension (m,n)
-!  valid : Indicates which values of y to use
 !  mean  : Average of y per 1-Hz, dimension n
 !  rms   : Standard deviation of 1-Hz, dimension n
 !-
@@ -964,11 +961,10 @@ do j = 1,size(y,2)
 	rms(j) = 0d0
 	n = 0
 	do i = 1,size(y,1)
-		if (valid(i,j)) then
-			n = n + 1
-			mean(j) = mean(j) + y(i,j)
-			rms(j) = rms(j) + y(i,j)**2
-		endif
+		if (isnan_(y(i,j))) cycle
+		n = n + 1
+		mean(j) = mean(j) + y(i,j)
+		rms(j) = rms(j) + y(i,j)**2
 	enddo
 	if (n < 1) then
 		mean(j) = nan
@@ -986,9 +982,8 @@ end subroutine mean_1hz
 !***********************************************************************
 !*trend_1hz -- Compute mean and rms of multi-Hz array with trend removal
 !+
-pure subroutine trend_1hz (x, x0, y, valid, mean, rms)
+pure subroutine trend_1hz (x, x0, y, mean, rms)
 real(eightbytereal), intent(in) :: x(:,:), x0(:), y(:,:)
-logical, intent(in) :: valid(:,:)
 real(eightbytereal), intent(out) :: mean(:), rms(:)
 !
 ! Compute mean and stddev values from multi-Hz array <y(m,n)> where <m> is
@@ -999,14 +994,12 @@ real(eightbytereal), intent(out) :: mean(:), rms(:)
 ! A trend is removed while computing the mean at x-coordinate <x0>. <x>
 ! indicates the x-coordinate corresponding to the array <y>.
 !
-! Only the values of <y> for which the corresponding value of <valid> is
-! true are used.
+! Points for which <x> or <y> is NaN are skipped.
 !
 ! Arguments:
 !  x     : x-coordinate belonging to the values y
 !  x0    : x-coordinate to compute mean
 !  y     : Input array of dimension (m,n)
-!  valid : Indicates which values of y to use
 !  mean  : Average of y per 1-Hz, dimension n
 !  rms   : Standard deviation of 1-Hz, dimension n
 !-
@@ -1020,15 +1013,14 @@ do j = 1,size(y,2)
 	sumxy = 0d0
 	sumyy = 0d0
 	do i = 1,size(y,1)
-		if (valid(i,j)) then
-			xx = x(i,j) - x0(j)
-			sumx = sumx + xx
-			sumy = sumy + y(i,j)
-			sumxx = sumxx + xx*xx
-			sumxy = sumxy + xx*y(i,j)
-			sumyy = sumyy + y(i,j)*y(i,j)
-			n = n + 1
-		endif
+		if (isnan_(x(i,j)) .or. isnan_(y(i,j))) cycle
+		xx = x(i,j) - x0(j)
+		sumx = sumx + xx
+		sumy = sumy + y(i,j)
+		sumxx = sumxx + xx*xx
+		sumxy = sumxy + xx*y(i,j)
+		sumyy = sumyy + y(i,j)*y(i,j)
+		n = n + 1
 	enddo
 	if (n < 1) then
 		mean(j) = nan

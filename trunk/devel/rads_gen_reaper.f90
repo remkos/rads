@@ -388,14 +388,15 @@ endif
 
 if (.not.alt_2m) then
 	call get_var (ncid, 'ocean_mean_quadratic_error', d)
-	call mean_1hz (d, valid, a, b)
+	where (.not.valid) d = nan
+	call mean_1hz (d, a, b)
 	call new_var ('mqe', a*1d-4)
 	call get_var (ncid, 'wf_pk', d)
-	call mean_1hz (d, valid, a, b)
+	where (.not.valid) d = nan
+	call mean_1hz (d, a, b)
 	call new_var ('peakiness_ku', a*1d-3)
 	call get_var (ncid, 'dop_c+delta_dop_c', d)
-	valid = .true.	! For Doppler, we use all
-	call mean_1hz (d, valid, a, b)
+	call mean_1hz (d, a, b)
 	call new_var ('drange_fm', a*1d-3)
 	call get_var (ncid, 'sptr_jumps_c', d)
 	call new_var ('drange_sptr', d(1,:) * picosec_to_m)
