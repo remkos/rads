@@ -3522,6 +3522,7 @@ character(len=*), intent(in), optional :: name
 !-----------------------------------------------------------------------
 integer(fourbyteint) :: i, l, e
 logical :: exist
+real(eightbytereal), parameter :: ellipsoid_axis = 6378136.3d0, ellipsoid_flattening = 1d0/298.257d0
 
 ! Initialise
 S%error = rads_noerr
@@ -3572,9 +3573,11 @@ do i = 1,size(S%glob_att)
 	l = index(S%glob_att(i),' ')
 	e = e + nf90_put_att (P%ncid, nf90_global, S%glob_att(i)(:l-1), S%glob_att(i)(l+1:))
 enddo
+e = e + nf90_put_att (P%ncid, nf90_global, 'ellipsoid_axis', ellipsoid_axis) + &
+	nf90_put_att (P%ncid, nf90_global, 'ellipsoid_flattening', ellipsoid_flattening)
 l = index(P%filename, '/', .true.) + 1
-e = e + nf90_put_att (P%ncid, nf90_global, 'filename', trim(P%filename(l:)))
-e = e +	nf90_put_att (P%ncid, nf90_global, 'mission_name', trim(S%satellite)) + &
+e = e + nf90_put_att (P%ncid, nf90_global, 'filename', trim(P%filename(l:))) + &
+	nf90_put_att (P%ncid, nf90_global, 'mission_name', trim(S%satellite)) + &
 	nf90_put_att (P%ncid, nf90_global, 'mission_phase', S%phase%name(:1))
 if (ndata > 0) call rads_put_passinfo (S, P)
 if (P%original /= '') e = e + nf90_put_att (P%ncid, nf90_global, 'original', P%original)

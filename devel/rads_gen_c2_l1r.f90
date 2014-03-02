@@ -97,7 +97,7 @@ logical :: version_a, sar, fdm
 
 integer(fourbyteint), parameter :: mrec=6000, mvar=50
 integer(fourbyteint) :: nvar=0, ndata=0
-real(eightbytereal), allocatable :: a(:),b(:),c(:),d(:,:),t_1hz(:),t_20hz(:,:),alt(:),dh(:)
+real(eightbytereal), allocatable :: a(:),b(:),c(:),d(:,:),t_1hz(:),t_20hz(:,:),alt(:),alt_20hz(:,:),dh(:)
 logical, allocatable :: valid(:,:)
 integer(fourbyteint), allocatable :: nvalid(:)
 integer(twobyteint), allocatable :: flags(:)
@@ -237,9 +237,9 @@ do
 ! Allocate arrays
 
 	allocate (a(nrec),b(nrec),c(nrec),d(20,nrec), &
-		t_1hz(nrec),t_20hz(20,nrec),alt(nrec),dh(nrec),valid(20,nrec),nvalid(nrec),flags(nrec))
+		t_1hz(nrec),t_20hz(20,nrec),alt(nrec),alt_20hz(20,nrec),dh(nrec),valid(20,nrec),nvalid(nrec),flags(nrec))
 
-! Load time records
+! Time information
 
 	call get_var (ncid, 'time', t_1hz)
 	call new_var ('time', t_1hz + sec2000 - tai_utc)
@@ -270,21 +270,26 @@ do
 	call flag_set (nvalid <= 10, 12)
 	call flag_set (nvalid <= 10, 13)
 
-! Load location records
+! Location information
 
 	call cpy_var ('lat', 'lat')
 	! Compute ellipsoid corrections
 	do i = 1,nrec
 		dh(i) = dhellips(1,a(i))
 	enddo
-	call cpy_var ('lon', 'lon')
 	call cpy_var ('lat_20hz', 'lat_20hz')
+	call cpy_var ('lon', 'lon')
 	call cpy_var ('lon_20hz', 'lon_20hz')
 	call get_var (ncid, 'alt', alt)
+	call get_var (ncid, 'alt_20hz', alt_20hz)
 	! If input is FDM and there is no DORIS Navigator orbit (i.e. predicted orbit)
 	! we blank the orbit out entirely: it would be useless anyhow
 	if (fdm .and. doris_nav == 0) dh = nan
 	call new_var ('alt_cnes', alt + dh)
+	if (nhz /= 0) then
+		forall (i = 1:20) d(i,:) = alt_20hz(i,:) + dh(:)
+		call new_var_2d ('alt_cnes_20hz', d)
+	endif
 	call cpy_var ('alt_rate_20hz', '', 'alt_rate')
 
 	call new_var ('flags', dble(flags))
@@ -295,9 +300,15 @@ do
 	call get_var (ncid, 'uso_corr_20hz', d)
 	uso_corr = 730d3 * d(1,1)
 
-	call get_var (ncid, 'range_20hz+drange_20hz-alt_20hz', d)
-	call trend_1hz (t_20hz, t_1hz, d, valid, a, b)
+	call get_var (ncid, 'range_20hz+drange_20hz', d)
+	call trend_1hz (t_20hz, t_1hz, d - alt_20hz, valid, a, b)
 	call new_var ('range_ku', a + alt + uso_corr)
+	if (nhz /= 0) then
+		call new_var_2d ('range_20hz_ku', d + uso_corr)
+		d = 1
+		where (valid) d = 0
+		call new_var_2d ('range_used_20hz_ku', d)
+	endif
 	call new_var ('range_rms_ku', b)
 	call new_var ('range_numval_ku', dble(nvalid))
 
@@ -310,9 +321,9 @@ do
 
 ! Waves and backscatter
 
-	call cpy_var ('swh_20hz', '', 'swh_ku', 'swh_rms_ku')
+	call cpy_var ('swh_20hz', 'swh_20hz_ku', 'swh_ku', 'swh_rms_ku')
 	call cpy_var ('agc_20hz', '', 'agc_ku')
-	call cpy_var ('agc_amp_20hz+dagc_eta_20hz+dagc_alt_20hz+dagc_xi_20hz+dagc_swh_20hz', '', 'sig0_ku', 'sig0_rms_ku')
+	call cpy_var ('agc_amp_20hz+dagc_eta_20hz+dagc_alt_20hz+dagc_xi_20hz+dagc_swh_20hz', 'sig0_20hz_ku', 'sig0_ku', 'sig0_rms_ku')
 
 	if (mle == 4) call cpy_var ('xi_sq_20hz', '', 'off_nadir_angle2_wf_ku', 'off_nadir_angle2_wf_rms_ku')
 
@@ -358,8 +369,8 @@ do
 
 ! Waveform-related info
 
-	call cpy_var ('peakiness_20hz', '', 'peakiness_ku')
-	call cpy_var ('mqe_20hz', '', 'mqe')
+	call cpy_var ('peakiness_20hz', 'peakiness_20hz_ku', 'peakiness_ku')
+	call cpy_var ('mqe_20hz', 'mqe_20hz_ku', 'mqe')
 	call cpy_var ('noise_20hz', '', 'noise_floor_ku', 'noise_floor_rms_ku')
 
 ! Geophysical corrections
@@ -446,14 +457,15 @@ character(len=*), intent(in), optional :: varmean, varrms
 if (index(varin,'_20hz') == 0) then ! 1-Hz variable
 	call get_var (ncid, varin, a)
 	call new_var (varout, a) ! Copy 1-Hz data
-else ! 20-Hz variable
+else if (present(varmean)) then ! 20-Hz variable to be averaged
 	call get_var (ncid, varin, d)
 	call new_var_2d (varout, d) ! Copy 20-Hz data
-	if (present(varmean)) then	! Create 1-Hz mean and rms
-		call mean_1hz (d, valid, a, b)
-		call new_var (varmean, a)
-		if (present(varrms)) call new_var (varrms, b)
-	endif
+	call mean_1hz (d, valid, a, b)
+	call new_var (varmean, a)
+	if (present(varrms)) call new_var (varrms, b)
+else if (varout /= '' .and. nhz /= 0) then
+	call get_var (ncid, varin, d)
+	call new_var_2d (varout, d) ! Copy 20-Hz data
 endif
 end subroutine cpy_var
 
