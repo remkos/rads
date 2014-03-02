@@ -95,10 +95,10 @@ logical :: version_a, sar, fdm
 
 ! Data variables
 
-integer(fourbyteint), parameter :: mrec=6000, mvar=50
+integer(fourbyteint), parameter :: mrec=6000, mvar=60
 integer(fourbyteint) :: nvar=0, ndata=0
 real(eightbytereal), allocatable :: a(:),b(:),c(:),d(:,:),t_1hz(:),t_20hz(:,:),alt(:),alt_20hz(:,:),dh(:)
-logical, allocatable :: valid(:,:)
+logical, allocatable :: t_valid(:,:),valid(:,:)
 integer(fourbyteint), allocatable :: nvalid(:)
 integer(twobyteint), allocatable :: flags(:)
 type(rads_sat) :: S
@@ -237,38 +237,18 @@ do
 ! Allocate arrays
 
 	allocate (a(nrec),b(nrec),c(nrec),d(20,nrec), &
-		t_1hz(nrec),t_20hz(20,nrec),alt(nrec),alt_20hz(20,nrec),dh(nrec),valid(20,nrec),nvalid(nrec),flags(nrec))
+		t_1hz(nrec),t_20hz(20,nrec),alt(nrec),alt_20hz(20,nrec),dh(nrec), &
+		t_valid(20,nrec),valid(20,nrec),nvalid(nrec),flags(nrec))
 
 ! Time information
 
 	call get_var (ncid, 'time', t_1hz)
 	call new_var ('time', t_1hz + sec2000 - tai_utc)
 	call get_var (ncid, 'time_20hz', t_20hz)
+	t_valid = (t_20hz /= 0d0)
+	valid = t_valid
+	where (.not.t_valid) t_20hz = nan
 	call new_var_2d ('time_20hz', t_20hz + sec2000 - tai_utc)
-
-! Compile flag bits; needs to be done BEFORE any averaging
-
-	call get_var (ncid, 'mqe_20hz', d)
-	valid = (t_20hz /= 0d0 .and. d <= 20d0)
-	call get_var (ncid, 'retrack_flag_20hz', d)
-	valid = (valid .and. d == 0)
-	do i = 1,nrec
-		nvalid(i) = count(valid(:,i))
-	enddo
-
-	call get_var (ncid, 'surface_type', a)
-	if (l1r_version <= '1.26') a = a * 1d3 ! Error in scale_factor
-	if (sar) then
-		flags = 1 ! Set bit 1 for SAR
-	else
-		flags = 0
-	endif
-	call flag_set (nint(a) == 2, 2)
-	call flag_set (nint(a) >= 2, 4)
-	call flag_set (nint(a) >= 1, 5)
-	call flag_set (nvalid <= 10, 11)
-	call flag_set (nvalid <= 10, 12)
-	call flag_set (nvalid <= 10, 13)
 
 ! Location information
 
@@ -292,6 +272,35 @@ do
 	endif
 	call cpy_var ('alt_rate_20hz', '', 'alt_rate')
 
+! 20-Hz corrections
+
+	call cpy_var ('instr_range_corr_20hz', '', 'drange_cal')
+	call cpy_var ('doppler_corr_20hz', '', 'drange_fm')
+
+! Compile flag bits; needs to be done BEFORE any averaging of the measurements
+
+	call get_var (ncid, 'mqe_20hz', d)
+	valid = (t_valid .and. d <= 20d0)
+	call get_var (ncid, 'retrack_flag_20hz', d)
+	valid = (valid .and. d == 0)
+	do i = 1,nrec
+		nvalid(i) = count(valid(:,i))
+	enddo
+
+	call get_var (ncid, 'surface_type', a)
+	if (l1r_version <= '1.26') a = a * 1d3 ! Error in scale_factor
+	if (sar) then
+		flags = 1 ! Set bit 1 for SAR
+	else
+		flags = 0
+	endif
+	call flag_set (nint(a) == 2, 2)
+	call flag_set (nint(a) >= 2, 4)
+	call flag_set (nint(a) >= 1, 5)
+	call flag_set (nvalid <= 10, 11)
+	call flag_set (nvalid <= 10, 12)
+	call flag_set (nvalid <= 10, 13)
+
 	call new_var ('flags', dble(flags))
 
 ! Range measurements
@@ -301,7 +310,8 @@ do
 	uso_corr = 730d3 * d(1,1)
 
 	call get_var (ncid, 'range_20hz+drange_20hz', d)
-	call trend_1hz (t_20hz, t_1hz, d - alt_20hz, valid, a, b)
+	where (.not.valid) d = nan
+	call trend_1hz (t_20hz, t_1hz, d - alt_20hz, a, b)
 	call new_var ('range_ku', a + alt + uso_corr)
 	if (nhz /= 0) then
 		call new_var_2d ('range_20hz_ku', d + uso_corr)
@@ -312,12 +322,10 @@ do
 	call new_var ('range_rms_ku', b)
 	call new_var ('range_numval_ku', dble(nvalid))
 
-	call get_var (ncid, 'drange_20hz', d)
-	call trend_1hz (t_20hz, t_1hz, d, valid, a, b)	! Temporary
-	call new_var ('drange_ku', a)
-
-	call cpy_var ('instr_range_corr_20hz', '', 'drange_cal')
-	call cpy_var ('doppler_corr_20hz', '', 'drange_fm')
+!	call get_var (ncid, 'drange_20hz', d)
+!	where (.not.valid) d = nan
+!	call trend_1hz (t_20hz, t_1hz, d, a, b)	! Temporary
+!	call new_var ('drange_ku', a)
 
 ! Waves and backscatter
 
@@ -330,21 +338,30 @@ do
 ! Convert pitch, roll, yaw from microradian to degrees and remove bias when MLE3
 
 	call get_var (ncid, 'attitude_pitch_20hz', d)
-	call mean_1hz (d/rad, valid, a, b)
-	if (mle /= 4) a = a - pitch_bias
+	where (.not.t_valid) d = nan
+	d = d / rad
+	if (mle /= 4) d = d - pitch_bias
+	call mean_1hz (d, a, b)
 	call new_var ('attitude_pitch', a)
+	call new_var_2d ('attitude_pitch_20hz', d)
 	c = a*a
 
 	call get_var (ncid, 'attitude_roll_20hz', d)
-	call mean_1hz (d/rad, valid, a, b)
-	if (mle /= 4) a = a - roll_bias
+	where (.not.t_valid) d = nan
+	d = d / rad
+	if (mle /= 4) d = d - roll_bias
+	call mean_1hz (d, a, b)
 	call new_var ('attitude_roll', a)
+	call new_var_2d ('attitude_roll_20hz', d)
 	c = c + a*a
 
 	call get_var (ncid, 'attitude_yaw_20hz', d)
-	call mean_1hz (d/rad, valid, a, b)
-	if (mle /= 4) a = a - yaw_bias
+	where (.not.t_valid) d = nan
+	d = d / rad
+	if (mle /= 4) d = d - yaw_bias
+	call mean_1hz (d, a, b)
 	call new_var ('attitude_yaw', a)
+	call new_var_2d ('attitude_yaw_20hz', d)
 
 	call new_var ('off_nadir_angle2_pf', c)
 
@@ -371,7 +388,7 @@ do
 
 	call cpy_var ('peakiness_20hz', 'peakiness_20hz_ku', 'peakiness_ku')
 	call cpy_var ('mqe_20hz', 'mqe_20hz_ku', 'mqe')
-	call cpy_var ('noise_20hz', '', 'noise_floor_ku', 'noise_floor_rms_ku')
+	call cpy_var ('noise_20hz', 'noise_floor_20hz_ku', 'noise_floor_ku', 'noise_floor_rms_ku')
 
 ! Geophysical corrections
 
@@ -417,7 +434,7 @@ do
 	oldcyc = cycnr(2)
 	oldpass = passnr(2)
 
-	deallocate (a,b,c,d,t_1hz,t_20hz,alt,alt_20hz,dh,valid,nvalid,flags)
+	deallocate (a,b,c,d,t_1hz,t_20hz,alt,alt_20hz,dh,t_valid,valid,nvalid,flags)
 
 	call nfs(nf90_close(ncid))
 
@@ -459,12 +476,14 @@ if (index(varin,'_20hz') == 0) then ! 1-Hz variable
 	call new_var (varout, a) ! Copy 1-Hz data
 else if (present(varmean)) then ! 20-Hz variable to be averaged
 	call get_var (ncid, varin, d)
+	where (.not.valid) d = nan
 	call new_var_2d (varout, d) ! Copy 20-Hz data
-	call mean_1hz (d, valid, a, b)
+	call mean_1hz (d, a, b)
 	call new_var (varmean, a)
 	if (present(varrms)) call new_var (varrms, b)
 else if (varout /= '' .and. nhz /= 0) then
 	call get_var (ncid, varin, d)
+	where (.not.valid) d = nan
 	call new_var_2d (varout, d) ! Copy 20-Hz data
 endif
 end subroutine cpy_var
