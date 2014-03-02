@@ -417,7 +417,7 @@ do
 	oldcyc = cycnr(2)
 	oldpass = passnr(2)
 
-	deallocate (a,b,c,d,t_1hz,t_20hz,alt,dh,valid,nvalid,flags)
+	deallocate (a,b,c,d,t_1hz,t_20hz,alt,alt_20hz,dh,valid,nvalid,flags)
 
 	call nfs(nf90_close(ncid))
 
