@@ -2146,6 +2146,14 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 </var>
+<var name="attitude_pitch_20hz" sat="c2">
+	<long_name>20-Hz platform pitch angle</long_name>
+	<units>degrees</units>
+	<data>attitude_pitch_20hz</data>
+	<format>f7.4</format>
+	<compress>int2 1d-4</compress>
+	<dimensions>2</dimensions>
+</var>
 <var name="attitude_roll" field="3007" sat="c2">
 	<long_name>platform roll angle</long_name>
 	<units>degrees</units>
@@ -2153,12 +2161,28 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
 </var>
+<var name="attitude_roll_20hz" sat="c2">
+	<long_name>20-Hz platform roll angle</long_name>
+	<units>degrees</units>
+	<data>attitude_roll_20hz</data>
+	<format>f7.4</format>
+	<compress>int2 1d-4</compress>
+	<dimensions>2</dimensions>
+</var>
 <var name="attitude_yaw" field="3008" sat="c2">
 	<long_name>platform yaw angle</long_name>
 	<units>degrees</units>
 	<data>attitude_yaw</data>
 	<format>f7.4</format>
 	<compress>int2 1d-4</compress>
+</var>
+<var name="attitude_yaw_20hz" sat="c2">
+	<long_name>20-Hz platform yaw angle</long_name>
+	<units>degrees</units>
+	<data>attitude_yaw_20hz</data>
+	<format>f7.4</format>
+	<compress>int2 1d-4</compress>
+	<dimensions>2</dimensions>
 </var>
 
 <var name="dswh_ku" field="3101" sat="tx">
@@ -2416,6 +2440,14 @@ Global RADS configuration file
 	<units>dB</units>
 	<format>f7.3</format>
 	<compress>int2 1e-3</compress>
+</var>
+<var name="noise_floor_20hz_ku" sat="c2">
+	<long_name>20-Hz Ku-band noise floor of waveforms</long_name>
+	<data>noise_floor_20hz_ku</data>
+	<units>dB</units>
+	<format>f7.3</format>
+	<compress>int2 1e-3 -20</compress>
+	<dimensions>2</dimensions>
 </var>
 <var name="flags_star_tracker" field="3413" sat="c2">
 	<long_name>star tracker flags</long_name>
