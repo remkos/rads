@@ -26,6 +26,7 @@ Global RADS configuration file
 	source radar altimeter
 	references RADS Data Manual, Issue 4.0
 	featureType point
+	ellipsoid TOPEX
 </global_attributes>
 
 <var name="sla" field="0">
@@ -115,7 +116,7 @@ Global RADS configuration file
 	<long_name>20-Hz time</long_name>
 	<standard_name>time</standard_name>
 	<units>seconds since 1985-01-01 00:00:00 UTC</units>
-	<data>time</data>
+	<data>time_20hz</data>
 	<comment>UTC time of 20-Hz measurement. Attribute leap_second gives time of leap second if any occurs
 	during the data set</comment>
 	<format>f16.6</format>
@@ -148,10 +149,9 @@ Global RADS configuration file
 	<standard_name>latitude</standard_name>
 	<units>degrees_north</units>
 	<limits>-90 90</limits>
-	<data>lat</data>
+	<data>lat_20hz</data>
 	<format>f10.6</format>
-	<compress>int4 1d-6</compress>
-	<compress sat="c2">int4 1d-7</compress>
+	<compress>int4 1d-7</compress>
 	<dimensions>2</dimensions>
 	<comment>Positive latitude is North latitude, negative latitude is South latitude</comment>
 </var>
@@ -172,10 +172,9 @@ Global RADS configuration file
 	<standard_name>longitude</standard_name>
 	<units>degrees_east</units>
 	<limits>-180 180</limits>
-	<data>lon</data>
+	<data>lon_20hz</data>
 	<format>f11.6</format>
-	<compress>int4 1d-6</compress>
-	<compress sat="c2">int4 1d-7</compress>
+	<compress>int4 1d-7</compress>
 	<dimensions>2</dimensions>
 	<comment>East longitude relative to Greenwich meridian</comment>
 </var>
@@ -380,6 +379,17 @@ Global RADS configuration file
 <alias name="alt" field="4" sat="j2 sa">alt_gdrd</alias>
 <alias name="alt" field="4" sat="n1">alt_gdrd alt_gdrcp</alias>
 <alias name="alt" field="4" sat="pn tx">alt_gdrcp alt_jgm3</alias>
+<var name="alt_cnes_20hz" sat="c2">
+	<long_name>20-Hz CNES orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>CNES</source>
+	<units>m</units>
+	<data>alt_cnes_20hz</data>
+	<format>f11.3</format>
+	<compress>int4 1d-4 700d3</compress>
+	<dimensions>2</dimensions>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
 
 <var name="alt_rate" field="501 5">
 	<long_name>orbital altitude rate</long_name>
@@ -471,6 +481,26 @@ Global RADS configuration file
 	<data>range_ku_mle3</data>
 	<format>f12.4</format>
 	<compress>int4 1d-4 1300d3</compress>
+</var>
+<var name="range_20hz_ku" sat="c2">
+	<long_name>20-Hz Ku-band range corrected for instr. effects</long_name>
+	<standard_name>altimeter_range</standard_name>
+	<units>m</units>
+	<limits>700d3 800d3</limits>
+	<format>f11.3</format>
+	<data>range_20hz_ku</data>
+	<compress>int4 1d-4 700d3</compress>
+	<dimensions>2</dimensions>
+</var>
+
+<var name="range_used_20hz_ku" sat="c2">
+	<long_name>20-Hz flag for utilization in the computation of 1-Hz Ku-band range</long_name>
+	<flag_values>yes no</flag_values>
+	<format>f11.3</format>
+	<data>range_used_20hz_ku</data>
+	<compress>int1</compress>
+	<dimensions>2</dimensions>
+	<comment>Map of valid points used to compute the 1-Hz Ku-band altimeter range, SWH, and sigma0</comment>
 </var>
 
 <var name="dry_tropo_ecmwf" field="701" sat="!g1 gs">
@@ -1162,6 +1192,16 @@ Global RADS configuration file
 	<format>f5.2</format>
 	<compress>int2 1d-2</compress>
 </var>
+<var name="swh_20hz_ku" sat="c2">
+	<long_name>20-Hz Ku-band significant wave height</long_name>
+	<standard_name>sea_surface_wave_significant_height</standard_name>
+	<units>m</units>
+	<limits>-0.5 8.0</limits> <!--Due to model bias and noise, allow negative values-->
+	<data>swh_20hz_ku</data>
+	<format>f6.3</format>
+	<compress>int2 1d-3</compress>
+	<dimensions>2</dimensions>
+</var>
 
 <if sat="sa">
 	<var name="sig0_ka" field="1801">
@@ -1230,6 +1270,16 @@ Global RADS configuration file
 	<data>sig0_ku_mle3</data>
 	<format>f6.2</format>
 	<compress>int2 1d-2</compress>
+</var>
+<var name="sig0_20hz_ku" sat="c2">
+	<long_name>20-Hz Ku-band backscatter coefficient</long_name>
+	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
+	<units>dB</units>
+	<limits>6 27</limits>
+	<data>sig0_20hz_ku</data>
+	<format>f6.2</format>
+	<compress>int2 1d-2</compress>
+	<dimensions>2</dimensions>
 </var>
 
 <var name="wind_speed_alt" field="1901">
@@ -1629,6 +1679,15 @@ Global RADS configuration file
 	<data>peakiness_s</data>
 	<format>f6.2</format>
 	<compress>int2 1d-2</compress>
+</var>
+<var name="peakiness_20hz_ku" sat="c2">
+	<long_name>20-Hz Ku-band peakiness</long_name>
+	<units>1</units>
+	<limits>1.1 1.6</limits>
+	<data>peakiness_20hz_ku</data>
+	<format>f6.2</format>
+	<compress>int2 1d-2</compress>
+	<dimensions>2</dimensions>
 </var>
 
 <var name="flag_alt_oper_mode" field="2516" sat="c2 j1 j2 n1 pn tx">
@@ -2330,6 +2389,14 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<compress>int2 1e-3</compress>
 </var>
+<var name="mqe_20hz_ku" sat="c2">
+	<long_name>20-Hz mean quadratic error of Ku-band waveform fit</long_name>
+	<data>mqe_20hz_ku</data>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+	<dimensions>2</dimensions>
+</var>
+
 <var name="nr_iter" field="3410" sat="c2">
 	<long_name>number of iterations of retracking</long_name>
 	<data>nr_iter</data>
