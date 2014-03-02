@@ -18,7 +18,7 @@ rads_phase=$2
 SANDBOX=`mktemp -d $RADSROOT/sandbox/XXXXXX`
 ln -s $RADSDATAROOT/nml $RADSDATAROOT/conf $SANDBOX
 export RADSDATAROOT=$SANDBOX
-options="-S$rads_sat/$rads_phase"
+options=${options:-"-S$rads_sat/$rads_phase"}
 log=$RADSDATAROOT/${rads_job}-`date -u +%Y%m%d-%H%M%S`.log
 lst=$RADSDATAROOT/${rads_job}-`date -u +%Y%m%d-%H%M%S`.lst
 }
