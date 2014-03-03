@@ -2643,6 +2643,26 @@ Global RADS configuration file
 	<compress>int2 1d-3</compress>
 </var>
 
+<var name="wave_spr" sat="!e1 gs">
+	<long_name>WaveWatch3 wave swell period</long_name>
+	<standard_name>sea_surface_swell_wave_period</standard_name>
+	<source>WaveWatch3</source>
+	<units>s</units>
+	<data>wave_spr</data>
+	<format>f6.3</format>
+	<compress>int2 1d-3</compress>
+</var>
+
+<var name="wave_sdr" sat="!e1 gs">
+	<long_name>WaveWatch3 wave swell direction</long_name>
+	<standard_name>sea_surface_swell_wave_to_direction</standard_name>
+	<source>WaveWatch3</source>
+	<units>radian</units>
+	<data>wave_sdr</data>
+	<format>f6.3</format>
+	<compress>int2 1d-3</compress>
+</var>
+
 <var name="dist_coast" field="4501 45">
 	<long_name>distance to coast</long_name>
 	<source>GMT/GSHHS</source>
