@@ -126,6 +126,7 @@ type :: rads_sat
 	integer(fourbyteint) :: pass_stat(7)             ! Statistics of rejection at start of rads_open_pass
 	integer(fourbyteint) :: total_read, total_inside ! Total number of measurements read and inside region
 	integer(fourbyteint) :: nvar, nsel               ! Number of available and selected variables and aliases
+	logical :: n_hz_output                           ! Produce multi-Hz output
 	character(len=2) :: sat                          ! 2-Letter satellite abbreviation
 	integer(twobyteint) :: satid                     ! Numerical satellite identifier
 	type(rads_cyclist), pointer :: excl_cycles       ! Excluded cycles (if requested)
@@ -628,7 +629,7 @@ type(rads_sat), intent(inout) :: S
 ! gfortran 4.4.1 segfaults on the next line if this routine is made pure or elemental,
 ! so please leave it as a normal routine.
 S = rads_sat ('', '', '', null(), '', 1d0, (/13.8d0, nan/), 90d0, nan, nan, nan, 1, 1, rads_noerr, &
-	0, 0, 0, 0, 0, 0, '', 0, null(), null(), null(), null(), null(), null(), null(), null())
+	0, 0, 0, 0, 0, 0, .false., '', 0, null(), null(), null(), null(), null(), null(), null(), null())
 end subroutine rads_init_sat_struct
 
 !***********************************************************************
@@ -1024,14 +1025,17 @@ do
 	noedit = 1
 	if (string(i1-1:i1-1) == rads_noedit) noedit = 2
 	var => rads_varptr(S, string(i0:i1-noedit))
-	if (associated(var)) then
-		S%nsel = S%nsel + 1
-		S%sel(S%nsel) = var
-		if (noedit == 2) S%sel(S%nsel)%noedit = .true.
-	else
+	if (.not.associated(var)) then
 		call rads_error (S, rads_err_var, 'Unknown variable "'//string(i0:i1-noedit)//'" removed from list of variables')
+		cycle
 	endif
+	S%nsel = S%nsel + 1
+	S%sel(S%nsel) = var
+	if (noedit == 2) S%sel(S%nsel)%noedit = .true.
+	! Switch on multi-Hz output when a variable is 2-dimensional
+	if (var%info%ndims > 1) S%n_hz_output = .true.
 enddo
+
 end subroutine rads_parse_varlist_0d
 
 subroutine rads_parse_varlist_1d (S, string)
@@ -1131,6 +1135,7 @@ logical, intent(in), optional :: rw
 !  S%error  : rads_noerr, rads_warn_nc_file, rads_err_nc_parse
 !-----------------------------------------------------------------------
 character(len=40) :: date
+character(len=5) :: hz
 character(len=rads_strl) :: string
 integer(fourbyteint) :: i,j1,j2,k,ascdes,cc,pp
 real(eightbytereal) :: d
@@ -1314,8 +1319,19 @@ enddo
 P%last_meas = i
 
 ! If subset is requested, reallocate appropriately sized time, lat, lon arrays
+! If multi-Hertz data: load multi-Hertz fields
 i = P%last_meas - P%first_meas + 1
-if (i /= P%ndata) then
+if (S%n_hz_output .and. P%n_hz > 0) then
+	P%first_meas = -P%first_meas ! This is done to force reading of the multi-Hz variables
+	P%ndata = i * P%n_hz
+	deallocate (P%tll)
+	allocate (P%tll(P%ndata,3))
+	write (hz, '("_",i2.2,"hz")') P%n_hz
+	call rads_get_var (S, P, 'time'//hz, P%tll(:,1))
+	call rads_get_var (S, P, 'lat' //hz, P%tll(:,2))
+	call rads_get_var (S, P, 'lon' //hz, P%tll(:,3))
+	P%first_meas = -P%first_meas
+else if (i /= P%ndata) then
 	P%ndata = i
 	allocate (temp(P%ndata,3))
 	temp = P%tll(P%first_meas:P%last_meas,:)
@@ -1603,11 +1619,11 @@ include "rads_tpj.f90"
 recursive subroutine rads_get_var_nc ! Get data variable from RADS netCDF file
 use netcdf
 use rads_netcdf
-integer(fourbyteint) :: start(1), e
+integer(fourbyteint) :: start(2), count(2), e, i, nf_get_vara_double
 real(eightbytereal) :: x
 
 ! If time, lat, lon are already read, return those arrays upon request
-if (P%first_meas == 0) then
+if (P%first_meas < 1) then
 else if (info%datatype == rads_type_time) then
 	data = P%tll(:,1)
 	return
@@ -1642,24 +1658,43 @@ endif
 e = nf90_inquire_variable (P%ncid, info%varid, ndims=info%ndims)
 
 ! Load the data
-select case (info%ndims)
-case (0) ! Constant to be converted to 1-dimensional array
+start(1) = max(1,abs(P%first_meas))
+if (info%ndims == 0) then
+	! Constant to be converted to 1-dimensional array
 	if (nft(nf90_get_var(P%ncid, info%varid, data(1)))) then
 		call rads_error (S, rads_err_nc_get, 'Error reading netCDF constant "'//trim(info%dataname)//'" in file', P)
 		return
 	endif
 	data = data(1)
 	info%ndims = 1
-case (1) ! 1-dimensional array
-	start = max(1,P%first_meas)
+else if (info%ndims == 1 .and. S%n_hz_output .and. P%n_hz > 0 .and. P%first_meas > 0) then
+	! 1-dimensional array with duplicated 1-Hz values
+	if (nft(nf90_get_var(P%ncid, info%varid, data(1:P%ndata:P%n_hz), start))) then
+		call rads_error (S, rads_err_nc_get, 'Error reading netCDF array "'//trim(info%dataname)//'" in file', P)
+		return
+	endif
+	forall (i = 1:P%ndata:P%n_hz) data(i+1:i+P%n_hz-1) = data(i)
+else if (info%ndims == 1) then
+	! 1-dimensional array of 1-Hz values
 	if (nft(nf90_get_var(P%ncid, info%varid, data, start))) then
 		call rads_error (S, rads_err_nc_get, 'Error reading netCDF array "'//trim(info%dataname)//'" in file', P)
 		return
 	endif
-case default
+else if (info%ndims == 2 .and. S%n_hz_output) then
+	! 2-dimensional array, read as single column
+	start(2) = start(1)
+	start(1) = 1
+	count(1) = P%n_hz
+	count(2) = P%ndata / P%n_hz
+	! We use the Fortran 77 routine here so that we can easily read a 2D field into a 1D array
+	if (nft(nf_get_vara_double(P%ncid, info%varid, start, count, data))) then
+		call rads_error (S, rads_err_nc_get, 'Error reading netCDF array "'//trim(info%dataname)//'" in file', P)
+		return
+	endif
+else
 	call rads_error (S, rads_err_nc_get, 'Too many dimensions for variable "'//trim(info%dataname)//'" in file', P)
 	return
-end select
+endif
 
 ! Set NaN values and apply optional scale_factor and add_offset
 ! If we read/write, we also store the scale factor and add_offset
