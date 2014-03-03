@@ -42,7 +42,7 @@ logical :: update = .false.
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('u update all')
+call rads_set_options ('mu multi-hz update all')
 call rads_init (S)
 
 ! Check all options
@@ -50,6 +50,8 @@ do j = 1,rads_nopt
 	select case (rads_opt(j)%opt)
 	case ('u', 'update')
 		update = .true.
+	case ('m', 'multi-hz')
+		S%n_hz_output = .true.
 	end select
 enddo
 
@@ -77,6 +79,7 @@ write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
 '  --all                     (Has no effect)'/ &
+'  -m, --multi-hz            Do multi-Hertz SLA (only)'/ &
 '  -u, --update              Update files only when there are changes')
 stop
 end subroutine synopsis
@@ -90,6 +93,7 @@ integer(fourbyteint), intent(in) :: n
 integer(fourbyteint) :: i
 real(eightbytereal) :: sla(n), tmp(n)
 real(eightbytereal), parameter :: dz = 1d-4
+character(len=5) :: hz
 
 ! Formats
 
@@ -100,12 +104,17 @@ write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
 
 ! Get sea level anomaly
 
-call rads_get_var (S, P, 'sla', sla)
+if (S%n_hz_output) then
+	write (hz, '("_",i2.2,"hz")') P%n_hz
+else
+	hz = ''
+endif
+call rads_get_var (S, P, 'sla'//hz, sla)
 
 ! If requested, check for changes first
 
 if (update) then
-	call rads_get_var (S, P, 'ssha', tmp, .true.)
+	call rads_get_var (S, P, 'ssha'//hz, tmp, .true.)
 	do i = 1,n
 		if (isnan_(tmp(i)) .and. isnan_(sla(i))) cycle
 		if (isnan_(tmp(i))) exit
@@ -121,10 +130,16 @@ endif
 
 call rads_put_history (S, P)
 
-call rads_def_var (S, P, 'ssha')
-call rads_put_var (S, P, 'ssha', sla)
+call rads_def_var (S, P, 'ssha'//hz)
+if (S%n_hz_output) then
+	i = n/P%n_hz
+	call rads_put_var (S, P, 'ssha'//hz, reshape(sla, (/P%n_hz,i/)))
+	write (*,552) i
+else
+	call rads_put_var (S, P, 'ssha', sla)
+	write (*,552) n
+endif
 
-write (*,552) n
 end subroutine process_pass
 
 end program rads_add_sla
