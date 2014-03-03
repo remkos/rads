@@ -45,6 +45,19 @@ Global RADS configuration file
 	<quality_flag sat="c2 n1 sa" action="append">peakiness</quality_flag>
 	<comment>Sea level determined from satellite altitude - range - all altimetric corrections</comment>
 </var>
+<var name="sla_20hz" sat="c2">
+	<long_name>20-Hz sea level anomaly</long_name>
+	<standard_name>sea_surface_height_above_sea_level</standard_name>
+	<units>m</units>
+	<limits>-3 3</limits>
+	<format>f8.4</format>
+	<compress>int2 1e-4</compress>
+	<dimensions>2</dimensions>
+	<data>alt_20hz range_20hz SUB dry_tropo SUB wet_tropo SUB iono SUB inv_bar SUB tide_solid SUB tide_ocean SUB tide_load SUB
+		tide_pole SUB ssb SUB mss SUB ref_frame_offset SUB</data>
+	<quality_flag>swh sig0 range_rms range_numval flags peakiness</quality_flag>
+	<comment>Sea level determined from satellite 20-Hz altitude - range - all altimetric corrections</comment>
+</var>
 
 <var name="ssha">
 	<long_name>sea surface height anomaly</long_name>
@@ -56,6 +69,18 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Sea level from satellite altitude - range - all altimetric corrections.
 		These values were computed when the data set was created, in contrast to the sla variable.</comment>
+</var>
+<var name="ssha_20hz" sat="c2">
+	<long_name>20-Hz sea surface height anomaly</long_name>
+	<standard_name>sea_surface_height_above_sea_level</standard_name>
+	<units>m</units>
+	<data>ssha_20hz</data>
+	<limits>-3 3</limits>
+	<format>f8.4</format>
+	<compress>int2 1e-4</compress>
+	<dimensions>2</dimensions>
+	<comment>Sea level from satellite 20-Hz altitude - range - all altimetric corrections.
+		These values were computed when the data set was created, in contrast to the sla_20hz variable.</comment>
 </var>
 
 <var name="time" field="101 1">
@@ -390,6 +415,7 @@ Global RADS configuration file
 	<dimensions>2</dimensions>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
+<alias name="alt_20hz" sat="c2">alt_cnes_20hz</alias>
 
 <var name="alt_rate" field="501 5">
 	<long_name>orbital altitude rate</long_name>
@@ -492,6 +518,7 @@ Global RADS configuration file
 	<compress>int4 1d-4 700d3</compress>
 	<dimensions>2</dimensions>
 </var>
+<alias name="range_20hz" sat="c2">range_20hz_ku</alias>
 
 <var name="range_used_20hz_ku" sat="c2">
 	<long_name>20-Hz flag for utilization in the computation of 1-Hz Ku-band range</long_name>
