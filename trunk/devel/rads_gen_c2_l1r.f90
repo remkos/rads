@@ -97,7 +97,7 @@ logical :: version_a, sar, fdm
 
 integer(fourbyteint), parameter :: mrec=6000, mvar=60
 integer(fourbyteint) :: nvar=0, ndata=0
-real(eightbytereal), allocatable :: a(:),b(:),c(:),d(:,:),t_1hz(:),t_20hz(:,:),alt(:),alt_20hz(:,:),dh(:)
+real(eightbytereal), allocatable :: a(:),b(:),c(:),d(:,:),w(:,:,:),t_1hz(:),t_20hz(:,:),alt(:),alt_20hz(:,:),dh(:)
 logical, allocatable :: t_valid(:,:),valid(:,:)
 integer(fourbyteint), allocatable :: nvalid(:)
 integer(twobyteint), allocatable :: flags(:)
@@ -105,7 +105,7 @@ type(rads_sat) :: S
 type(rads_pass) :: P
 type :: var_
 	type(rads_var), pointer :: v ! Pointer to rads_var struct
-	real(eightbytereal) :: d(mrec), d2(20,mrec) ! Data arrays
+	real(eightbytereal), allocatable :: d1(:), d2(:,:), d3(:,:,:) ! Data arrays
 	logical :: skip ! .true. if to be skipped
 endtype
 type(var_) :: var(mvar)
@@ -116,7 +116,7 @@ integer(fourbyteint), parameter :: maxint4=2147483647
 real(eightbytereal), parameter :: sec2000=473299200d0, rev_time = 5953.45d0, rev_long = -24.858d0
 real(eightbytereal), parameter :: pitch_bias = 0.096d0, roll_bias = 0.086d0, yaw_bias = 0d0	! Attitude biases to be added
 real(eightbytereal) :: uso_corr, dhellips
-integer(fourbyteint) :: i, j, m, oldcyc=0, oldpass=0, mle=3, nhz=0
+integer(fourbyteint) :: i, j, m, oldcyc=0, oldpass=0, mle=3, nhz=0, nwvf=0
 
 ! Initialise
 
@@ -128,7 +128,7 @@ t1 = nan
 ! Scan command line for options
 
 do
-	call getopt ('mvC:S: debug: sat: cycle: t: mjd: sec: ymd: doy: with-20hz', optopt, optarg)
+	call getopt ('mvwC:S: debug: sat: cycle: t: mjd: sec: ymd: doy: with-20hz with-wvf', optopt, optarg)
 	select case (optopt)
 	case ('!')
 		exit
@@ -143,6 +143,9 @@ do
 	case ('S', 'sat')
 		sat = optarg
 	case ('m', 'with-20hz')
+		nhz = 20
+	case ('w', 'with-wvf')
+		nwvf = 256
 		nhz = 20
 	case default
 		if (.not.dateopt (optopt, optarg, t0, t1)) then
@@ -236,7 +239,7 @@ do
 
 ! Allocate arrays
 
-	allocate (a(nrec),b(nrec),c(nrec),d(20,nrec), &
+	allocate (a(nrec),b(nrec),c(nrec),d(20,nrec),w(256,20,nrec), &
 		t_1hz(nrec),t_20hz(20,nrec),alt(nrec),alt_20hz(20,nrec),dh(nrec), &
 		t_valid(20,nrec),valid(20,nrec),nvalid(nrec),flags(nrec))
 
@@ -389,6 +392,7 @@ do
 	call cpy_var ('peakiness_20hz', 'peakiness_20hz_ku', 'peakiness_ku')
 	call cpy_var ('mqe_20hz', 'mqe_20hz_ku', 'mqe')
 	call cpy_var ('noise_20hz', 'noise_floor_20hz_ku', 'noise_floor_ku', 'noise_floor_rms_ku')
+	call cpy_var ('waveform_20hz', 'waveform_20hz')
 
 ! Geophysical corrections
 
@@ -419,7 +423,14 @@ do
 
 		! Move the data to be beginning
 		do i = 1,nvar
-			var(i)%d(1:recnr(2)) = var(i)%d(ndata+1:ndata+recnr(2))
+			select case (var(i)%v%info%ndims)
+			case (1)
+				var(i)%d1(1:recnr(2)) = var(i)%d1(ndata+1:ndata+recnr(2))
+			case (2)
+				var(i)%d2(:,1:recnr(2)) = var(i)%d2(:,ndata+1:ndata+recnr(2))
+			case default
+				var(i)%d3(:,:,1:recnr(2)) = var(i)%d3(:,:,ndata+1:ndata+recnr(2))
+			end select
 		enddo
 		j = index(filename, '/', .true.) + 1
 		filenames = filename(j:)
@@ -434,7 +445,7 @@ do
 	oldcyc = cycnr(2)
 	oldpass = passnr(2)
 
-	deallocate (a,b,c,d,t_1hz,t_20hz,alt,alt_20hz,dh,t_valid,valid,nvalid,flags)
+	deallocate (a,b,c,d,w,t_1hz,t_20hz,alt,alt_20hz,dh,t_valid,valid,nvalid,flags)
 
 	call nfs(nf90_close(ncid))
 
@@ -457,7 +468,8 @@ call synopsis_devel (' < list_of_L1R_file_names')
 write (*,1310)
 1310 format (/ &
 'Program specific [program_options] are:' / &
-'  -m, --with-20hz           Do dual satellite crossovers only'// &
+'  -m, --with-20hz           Include 20-Hz variables in addition to 1-Hz variables'/ &
+'  -w, --with-wvf            Include waveforms (implies --with-20hz)'// &
 'This program converts CryoSat-2 L1R files to RADS data' / &
 'files with the name $RADSDATAROOT/data/c2/F/pPPPP/c2pPPPPcCCC.nc.' / &
 'The directory is created automatically and old files are overwritten.')
@@ -471,10 +483,16 @@ end subroutine synopsis
 subroutine cpy_var (varin, varout, varmean, varrms)
 character(len=*), intent(in) :: varin, varout
 character(len=*), intent(in), optional :: varmean, varrms
-if (index(varin,'_20hz') == 0) then ! 1-Hz variable
+if (index(varin,'_20hz') == 0) then
+	! 1-Hz variable
 	call get_var (ncid, varin, a)
 	call new_var (varout, a) ! Copy 1-Hz data
-else if (present(varmean)) then ! 20-Hz variable to be averaged
+else if (varin == 'waveform_20hz') then
+	! Waveform data copied varbatim
+	call get_var (ncid, varin, w)
+	call new_var_3d (varout, w)
+else if (present(varmean)) then
+	! 20-Hz variable to be averaged
 	call get_var (ncid, varin, d)
 	where (.not.valid) d = nan
 	call new_var_2d (varout, d) ! Copy 20-Hz data
@@ -482,6 +500,7 @@ else if (present(varmean)) then ! 20-Hz variable to be averaged
 	call new_var (varmean, a)
 	if (present(varrms)) call new_var (varrms, b)
 else if (varout /= '' .and. nhz /= 0) then
+	! 20-Hz variable copied verbatim
 	call get_var (ncid, varin, d)
 	where (.not.valid) d = nan
 	call new_var_2d (varout, d) ! Copy 20-Hz data
@@ -499,8 +518,9 @@ real(eightbytereal), intent(in) :: data(:)
 if (varnm == '') return
 nvar = nvar + 1
 if (nvar > mvar) stop 'Too many variables'
+if (.not.allocated(var(nvar)%d1)) allocate(var(nvar)%d1(mrec))
 var(nvar)%v => rads_varptr (S, varnm)
-var(nvar)%d(ndata+1:ndata+nrec) = data(1:nrec)
+var(nvar)%d1(ndata+1:ndata+nrec) = data(1:nrec)
 end subroutine new_var
 
 subroutine new_var_2d (varnm, data)
@@ -510,9 +530,22 @@ real(eightbytereal), intent(in) :: data(:,:)
 if (varnm == '' .or. nhz == 0) return
 nvar = nvar + 1
 if (nvar > mvar) stop 'Too many variables'
+if (.not.allocated(var(nvar)%d2)) allocate(var(nvar)%d2(20,mrec))
 var(nvar)%v => rads_varptr (S, varnm)
 var(nvar)%d2(:,ndata+1:ndata+nrec) = data(:,1:nrec)
 end subroutine new_var_2d
+
+subroutine new_var_3d (varnm, data)
+! Store 20-Hz variables to be written later by put_var
+character(len=*), intent(in) :: varnm
+real(eightbytereal), intent(in) :: data(:,:,:)
+if (varnm == '' .or. nwvf==0) return
+nvar = nvar + 1
+if (nvar > mvar) stop 'Too many variables'
+if (.not.allocated(var(nvar)%d3)) allocate(var(nvar)%d3(256,20,mrec))
+var(nvar)%v => rads_varptr (S, varnm)
+var(nvar)%d3(:,:,ndata+1:ndata+nrec) = data(:,:,1:nrec)
+end subroutine new_var_3d
 
 !-----------------------------------------------------------------------
 ! Write content of memory to a single pass of RADS data
@@ -530,37 +563,46 @@ if (eq_time < t0 .or. eq_time > t1) return	! Skip equator times that are not of 
 call rads_init_pass_struct (S, P)
 P%cycle = cycnr
 P%pass = passnr
-P%start_time = var(1)%d(1)
-P%end_time = var(1)%d(ndata)
+P%start_time = var(1)%d1(1)
+P%end_time = var(1)%d1(ndata)
 P%equator_time = eq_time
 P%equator_lon = eq_long
 P%original = 'L1R ('//trim(l1r_version)//') from L1B ('// &
 	trim(l1b_version)//') data of '//trim(l1b_proc_time)//rads_linefeed//filenames
 
 ! Open output file
-call rads_create_pass (S, P, ndata, nhz)
+call rads_create_pass (S, P, ndata, nhz, nwvf)
 
 ! Check for variables we want to skip because they are empty
 do i = 1,nvar
-	var(i)%skip = (var(i)%v%name == 'inv_bar_mog2d' .and. all(var(i)%d(1:ndata) == 0d0))
+	if (var(i)%v%name == 'inv_bar_mog2d') then
+		var(i)%skip = all(var(i)%d1(1:ndata) == 0d0)
+	else
+		var(i)%skip = .false.
+	endif
 enddo
 
 ! Define all variables
 do i = 1,nvar
 	if (var(i)%skip) cycle
 	call rads_def_var (S, P, var(i)%v)
-	if (i == 1 .and. nhz == 20) call rads_def_var (S, P, 'meas_ind')
+	if (i == 1 .and. nhz > 0) call rads_def_var (S, P, 'meas_ind')
+	if (i == 1 .and. nwvf > 0) call rads_def_var (S, P, 'wvf_ind')
 enddo
 
 ! Fill all the data fields
 do i = 1,nvar
 	if (var(i)%skip) cycle
-	if (var(i)%v%info%ndims == 1) then
-		call rads_put_var (S, P, var(i)%v, var(i)%d(1:ndata))
-	else
+	select case (var(i)%v%info%ndims)
+	case (1)
+		call rads_put_var (S, P, var(i)%v, var(i)%d1(1:ndata))
+	case (2)
 		call rads_put_var (S, P, var(i)%v, var(i)%d2(:,1:ndata))
-	endif
-	if (i == 1 .and. nhz == 20) call rads_put_var (S, P, 'meas_ind', (/(j*1d0,j=0,19)/))
+	case default
+		call rads_put_var (S, P, var(i)%v, var(i)%d3(:,:,1:ndata))
+	end select
+	if (i == 1 .and. nhz > 0) call rads_put_var (S, P, 'meas_ind', (/(j*1d0,j=0,19)/))
+	if (i == 1 .and. nwvf > 0) call rads_put_var (S, P, 'wvf_ind', (/(j*1d0,j=0,255)/))
 enddo
 
 ! Close the data file

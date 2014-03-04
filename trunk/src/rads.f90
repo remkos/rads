@@ -148,7 +148,7 @@ type :: rads_pass
 	integer(fourbyteint) :: cycle, pass              ! Cycle and pass number
 	integer(fourbyteint) :: ncid                     ! NetCDF ID of pass file and number of dimensions
 	integer(fourbyteint) :: nlogs                    ! Number of RADS3 log entries
-	integer(fourbyteint) :: ndata, n_hz              ! Number of data points (1-Hz) and second dimension (n-Hz, 0=none)
+	integer(fourbyteint) :: ndata, n_hz, n_wvf       ! Number of data points (1-Hz) and second/third dimension (0=none)
 	integer(fourbyteint) :: first_meas, last_meas    ! Measurement index of first and last point in region
 	integer(fourbyteint) :: trkid                    ! Numerical track identifiers
 	character(len=2) :: sat                          ! 2-Letter satellite abbreviation
@@ -369,7 +369,8 @@ end interface rads_def_var
 private :: rads_put_var_helper, &
 	rads_put_var_by_var_0d, rads_put_var_by_name_0d, &
 	rads_put_var_by_var_1d, rads_put_var_by_var_1d_start, rads_put_var_by_name_1d, &
-	rads_put_var_by_var_2d, rads_put_var_by_var_2d_start, rads_put_var_by_name_2d
+	rads_put_var_by_var_2d, rads_put_var_by_var_2d_start, rads_put_var_by_name_2d, &
+	rads_put_var_by_var_3d, rads_put_var_by_var_3d_start, rads_put_var_by_name_3d
 interface rads_put_var
 	module procedure rads_put_var_by_var_0d
 	module procedure rads_put_var_by_name_0d
@@ -379,6 +380,9 @@ interface rads_put_var
 	module procedure rads_put_var_by_var_2d
 	module procedure rads_put_var_by_var_2d_start
 	module procedure rads_put_var_by_name_2d
+	module procedure rads_put_var_by_var_3d
+	module procedure rads_put_var_by_var_3d_start
+	module procedure rads_put_var_by_name_3d
 end interface rads_put_var
 
 !***********************************************************************
@@ -672,7 +676,7 @@ type(rads_pass), intent(inout) :: P
 !-----------------------------------------------------------------------
 ! gfortran 4.4.1 segfaults on the next line if this routine is made pure or elemental,
 ! so please leave it as a normal routine.
-P = rads_pass ('', '', null(), nan, nan, nan, nan, null(), null(), .false., 0, 0, 0, 0, 0, 0, 0, 0, 0, S%sat, S%satid, null())
+P = rads_pass ('', '', null(), nan, nan, nan, nan, null(), null(), .false., 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, S%sat, S%satid, null())
 end subroutine rads_init_pass_struct
 
 !***********************************************************************
@@ -3510,19 +3514,19 @@ end subroutine rads_progress_bar
 !***********************************************************************
 !*rads_create_pass -- Create RADS pass (data) file
 !+
-subroutine rads_create_pass (S, P, ndata, n_hz, name)
+subroutine rads_create_pass (S, P, ndata, n_hz, n_wvf, name)
 use netcdf
 use rads_netcdf
 use rads_time
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
-integer(fourbyteint), intent(in), optional :: ndata, n_hz
+integer(fourbyteint), intent(in), optional :: ndata, n_hz, n_wvf
 character(len=*), intent(in), optional :: name
 !
 ! This routine creates a new RADS netCDF data file. If one of the same
 ! file name already exists, it is removed.
 ! The file is initialized with the appropriate global attributes, and
-! the dimensions ('time' and optionally 'meas_ind') will be set up.
+! the dimensions ('time' and optionally 'meas_ind' and 'wvf_ind') will be set up.
 ! The primary dimension can either be fixed (ndata > 0) or unlimited (ndata == 0).
 ! If an unlimited dimension is selected, then the pass-related global
 ! attributes, like cycle, pass, equator_time, equator_lon will not be written
@@ -3550,6 +3554,8 @@ character(len=*), intent(in), optional :: name
 !  S        : Satellite/mission dependent structure
 !  P        : Pass structure
 !  ndata    : Length of the primary ('time') dimension (use 0 for unlimited)
+!  n_hz     : Number of multi-Hertz data per second
+!  n_wvf    : Number of waveform gates
 !  name     : Name of directory in which to store pass file, or file name
 !
 ! Error codes:
@@ -3563,6 +3569,7 @@ real(eightbytereal), parameter :: ellipsoid_axis = 6378136.3d0, ellipsoid_flatte
 S%error = rads_noerr
 if (present(ndata)) P%ndata = ndata
 if (present(n_hz)) P%n_hz = n_hz
+if (present(n_wvf)) P%n_wvf = n_wvf
 
 ! Build the file name, make directory if needed
 if (.not.present(name)) then
@@ -3594,10 +3601,15 @@ if (nft(nf90_def_dim (P%ncid, 'time', P%ndata, l))) then
 	return
 endif
 
-! Define second dimension (if requested)
+! Define second and third dimension (if requested)
 if (P%n_hz == 0) then ! Do nothing
 else if (nft(nf90_def_dim (P%ncid, 'meas_ind', P%n_hz, l))) then
 	call rads_error (S, rads_err_nc_create, 'Error creating dimension "meas_ind" in file', P)
+	return
+endif
+if (P%n_wvf == 0) then ! Do nothing
+else if (nft(nf90_def_dim (P%ncid, 'wvf_ind', P%n_wvf, l))) then
+	call rads_error (S, rads_err_nc_create, 'Error creating dimension "wvf_ind" in file', P)
 	return
 endif
 P%rw = .true.
@@ -3965,6 +3977,50 @@ end select
 if (e /= 0) call rads_error (S, rads_err_nc_put, &
 	'Error writing data for variable "'//trim(var%name)//'" to file', P)
 end subroutine rads_put_var_by_var_2d_start
+
+subroutine rads_put_var_by_var_3d (S, P, var, data)
+type(rads_sat), intent(inout) :: S
+type(rads_pass), intent(inout) :: P
+type(rads_var), intent(inout) :: var
+real(eightbytereal), intent(in) :: data(:,:,:)
+call rads_put_var_by_var_3d_start (S, P, var, data, (/1,1,1/))
+end subroutine rads_put_var_by_var_3d
+
+subroutine rads_put_var_by_name_3d (S, P, varname, data)
+type(rads_sat), intent(inout) :: S
+type(rads_pass), intent(inout) :: P
+character(len=*), intent(in) :: varname
+real(eightbytereal), intent(in) :: data(:,:,:)
+type(rads_var), pointer :: var
+var => rads_varptr (S, varname)
+if (S%error /= rads_noerr) return
+call rads_put_var_by_var_3d_start (S, P, var, data, (/1,1,1/))
+end subroutine rads_put_var_by_name_3d
+
+subroutine rads_put_var_by_var_3d_start (S, P, var, data, start)
+use netcdf
+use rads_netcdf
+use rads_misc
+type(rads_sat), intent(inout) :: S
+type(rads_pass), intent(inout) :: P
+type(rads_var), intent(inout) :: var
+real(eightbytereal), intent(in) :: data(:,:,:)
+integer(fourbyteint), intent(in) :: start(:)
+integer(fourbyteint) :: e
+if (rads_put_var_helper (S, P, var)) return
+select case (var%info%nctype)
+case (nf90_int1)
+	e = nf90_put_var (P%ncid, var%info%varid, nint1((data - var%info%add_offset) / var%info%scale_factor), start)
+case (nf90_int2)
+	e = nf90_put_var (P%ncid, var%info%varid, nint2((data - var%info%add_offset) / var%info%scale_factor), start)
+case (nf90_int4)
+	e = nf90_put_var (P%ncid, var%info%varid, nint4((data - var%info%add_offset) / var%info%scale_factor), start)
+case default
+	e = nf90_put_var (P%ncid, var%info%varid, (data - var%info%add_offset) / var%info%scale_factor, start)
+end select
+if (e /= 0) call rads_error (S, rads_err_nc_put, &
+	'Error writing data for variable "'//trim(var%name)//'" to file', P)
+end subroutine rads_put_var_by_var_3d_start
 
 logical function rads_put_var_helper (S, P, var)
 use netcdf

@@ -42,8 +42,9 @@ private get_var_1d, get_var_2d
 ! This routine takes into account the attributes scale_factor, add_offset, and
 ! _FillValue.
 !
-! One can also add or subtract a number of fields directly. For example:
-! 'alt-range'
+! One can also add or subtract a number of fields directly.
+! For example: varnm='alt-range'
+! This can be done for 1D or 2D variables, but not for 2D variables.
 !
 ! Arguments:
 !  ncid  : NetCDF ID
@@ -53,6 +54,7 @@ private get_var_1d, get_var_2d
 interface get_var
 	procedure get_var_1d
 	procedure get_var_2d
+	procedure get_var_3d
 end interface
 
 contains
@@ -296,6 +298,26 @@ do
 	endif
 enddo
 end subroutine get_var_2d
+
+subroutine get_var_3d (ncid, varnm, array)
+use netcdf
+integer(fourbyteint), intent(in) :: ncid
+character(len=*), intent(in) :: varnm
+real(eightbytereal), intent(out) :: array(:,:,:)
+real(eightbytereal) :: scale_factor, add_offset, fillvalue
+integer(fourbyteint) :: varid
+logical :: with_fillvalue
+if (nf90_inq_varid(ncid,varnm,varid) /= nf90_noerr) then
+	write (*,'("No such variable: ",a)') trim(varnm)
+	return
+endif
+if (nf90_get_att(ncid,varid,'scale_factor',scale_factor) /= nf90_noerr) scale_factor = 1d0
+if (nf90_get_att(ncid,varid,'add_offset',add_offset) /= nf90_noerr) add_offset = 0d0
+with_fillvalue = (nf90_get_att(ncid,varid,'_FillValue',fillvalue) == nf90_noerr)
+call nfs(nf90_get_var(ncid,varid,array))
+if (with_fillvalue) where (array == fillvalue) array = nan
+array = array * scale_factor + add_offset
+end subroutine get_var_3d
 
 !-----------------------------------------------------------------------
 end module rads_netcdf
