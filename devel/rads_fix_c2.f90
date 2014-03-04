@@ -55,12 +55,6 @@
 ! - Correct for error in L2 SWH algorithm
 ! - Adjust pseudo-LRM SWH to match LRM data (see notes of 16 Sep 2012)
 !
-! tbias:
-! - Apply timing bias according to Marco's table (different for SAR and LRM data)
-! - Account for the change in timing bias in SIR1FDM/2.4 (See Ruby's e-mail of 22 Apr 2013)
-! - Adjust altitude from the product accordingly (using altitude rate)
-! - Note that this does NOT change the equator time or longitude!
-!
 ! wind:
 ! - Add wind speed according to ECMWF model
 !
@@ -89,14 +83,14 @@ real(eightbytereal) :: sig0_drift_lrm = 0.22d0 / 365.25d0 / 86400d0, sig0_bias_l
 	sig0_drift_sar = 0.27d0 / 365.25d0 / 86400d0, sig0_bias_sar = -3.04d0, time_drift = 830822400d0
 integer(fourbyteint) :: i,cyc,pass
 integer(twobyteint) :: flag
-logical :: ldrift=.false.,lmeteo=.false.,lrange=.false.,lssb=.false.,lswh=.false.,ltbias=.false., &
-	lwind=.false.,lsig0=.false.,cswh,cmeteo,ciono,fdm_l1_v24
+logical :: ldrift=.false.,lmeteo=.false.,lrange=.false.,lssb=.false.,lswh=.false., &
+	lwind=.false.,lsig0=.false.,cswh,cmeteo,ciono
 type(grid) :: issb_hyb
 
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options (' drift meteo range sig0 ssb swh tbias wind all')
+call rads_set_options (' drift meteo range sig0 ssb swh wind all')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
@@ -112,8 +106,6 @@ do i = 1,rads_nopt
 		lssb = .true.
 	case ('swh')
 		lswh = .true.
-	case ('tbias')
-		ltbias = .true.
 	case ('wind')
 		lwind = .true.
 	case ('all')
@@ -123,7 +115,6 @@ do i = 1,rads_nopt
 		lsig0 = .true.
 		lssb = .true.
 		lswh = .true.
-		ltbias = .true.
 		lwind = .true.
 	end select
 enddo
@@ -169,7 +160,6 @@ write (*,1310)
 '  --sig0                    Correct sigma0 for biases and reversal' / &
 '  --ssb                     Add hybrid SSB model' / &
 '  --swh                     Correct SWH' / &
-'  --tbias                   Correct time and orbital altitude for timing bias' / &
 '  --wind                    Add wind speed' / &
 '  --all                     All of the above')
 stop
@@ -181,8 +171,8 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-real(eightbytereal) :: time(n),alt(n),alt_rate(n),dry(n),wet(n), &
-	iono(n),sig0(n),swh(n),ssb(n),wind(n),flagword(n),range(n),ib(n),x,y,tbias
+real(eightbytereal) :: time(n),dry(n),wet(n), &
+	iono(n),sig0(n),swh(n),ssb(n),wind(n),flagword(n),range(n),ib(n),x,y
 integer(fourbyteint) :: i
 logical :: lrm_l2,fdm_l2,old_version_a,version_a,sar
 character(len=4) :: l1r_ver
@@ -198,7 +188,6 @@ write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
 lrm_l2 = index(P%original,'IPF2LRM') > 0
 fdm_l2 = index(P%original,'IPF2FDM') > 0
 version_a = index(P%original,'_A00') > 0
-fdm_l1_v24 = index(P%original,'SIR1FDM/2.4') > 0
 
 old_version_a = (index(P%original,'-2010') > 0 .or. &
 	index(P%original,'-JAN-2011') > 0 .or. index(P%original,'-FEB-2011') > 0)
@@ -212,8 +201,6 @@ ciono = .false.
 cswh = lswh .and. (lrm_l2 .or. fdm_l2) .and. version_a
 
 call rads_get_var (S, P, 'time', time, .true.)
-call rads_get_var (S, P, 'alt_cnes', alt, .true.)
-call rads_get_var (S, P, 'alt_rate', alt_rate, .true.)
 call rads_get_var (S, P, 'range_ku', range, .true.)
 call rads_get_var (S, P, 'dry_tropo_ecmwf', dry, .true.)
 call rads_get_var (S, P, 'wet_tropo_ecmwf', wet, .true.)
@@ -239,22 +226,6 @@ do i = 1,n
 	if (lrange) then
 		if (.not.sar .and. l1r_ver < "2.03") range(i) = range(i) - 2*fai
 		if (lrm_l2 .and. old_version_a) range(i) = range(i) - 3.33d0
-	endif
-
-! Apply timing bias.
-! Different values apply for SAR and LRM separately.
-! See IPF1_datation_biases_v4.xlsx by Marco Fornari.
-
-	if (ltbias) then
-		if (sar) then
-			tbias = +0.520795d-3
-		else
-			tbias = -4.699112d-3
-			if (fdm_l1_v24) tbias = tbias + 4.4436d-3 ! Partial correction of timing bias (See Ruby's e-mail of 22 Apr 2013)
-		endif
-		tbias = tbias + 0.4d-3 ! Additional timing bias from my own research (1-Aug-2013)
-		time(i) = time(i) + tbias
-		alt(i) = alt(i) + tbias * alt_rate(i)
 	endif
 
 ! Set dry and wet to NaN when both are zero (not available)
@@ -358,7 +329,7 @@ endif
 
 ! If nothing changed, stop here
 
-if (.not.(ltbias .or. lrange .or. cmeteo .or. ciono .or. lssb .or. cswh .or. lsig0 .or. lwind)) then
+if (.not.(lrange .or. cmeteo .or. ciono .or. lssb .or. cswh .or. lsig0 .or. lwind)) then
 	write (*,552) 0
 	return
 endif
@@ -376,10 +347,6 @@ if (lssb) call rads_def_var (S, P, 'ssb_hyb')
 
 ! Write out all the data
 
-if (ltbias) then
-	call rads_put_var (S, P, 'time', time)
-	call rads_put_var (S, P, 'alt_cnes', alt)
-endif
 if (lrange) call rads_put_var (S, P, 'range_ku', range)
 if (cmeteo) then
 	call rads_put_var (S, P, 'dry_tropo', dry)
