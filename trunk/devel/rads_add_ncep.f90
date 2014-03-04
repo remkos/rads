@@ -210,7 +210,8 @@ subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
 integer(fourbyteint) :: i
 real(eightbytereal) :: time(n), lat(n), lon(n), topo(n), surface_type(n), dry(n), wet(n), ib(n), air(n), &
-	atten(n), wvc(n), lwc(n), sig0(n), u10(n), v10(n), f1, f2, g1, g2, slp, dslp, slp0, tmp, mtmp, rp, rt
+	atten_old(n), atten(n), wvc(n), lwc(n), sig0(n), sig0_20hz(20,n), u10(n), v10(n), &
+	f1, f2, g1, g2, slp, dslp, slp0, tmp, mtmp, rp, rt
 
 ! Formats
 
@@ -250,14 +251,10 @@ endif
 
 call globpres(4,P%equator_time,slp0)
 
-! If backscatter attenuation is computed, remove the old one here
+! Do not replace sigma0 on newer SARAL products
 
 if (sig0_on .and. saral .and. index(P%original, '(V5') > 0) sig0_on = .false.
-if (sig0_on) then
-	call rads_get_var (S, P, 'sig0_'//band, sig0, .true.)
-	call rads_get_var (S, P, 'dsig0_atmos_'//band, atten, .true.)
-	sig0 = sig0 - atten
-endif
+
 
 ! Process data records
 
@@ -374,6 +371,18 @@ if (.not.(dry_on .or. ib_on .or. wet_on .or. sig0_on .or. wind_on)) then
 	stop
 endif
 
+! If backscatter attenuation is computed, replace the old one here
+
+if (sig0_on) then
+	call rads_get_var (S, P, 'sig0_'//band, sig0, .true.)
+	call rads_get_var (S, P, 'dsig0_atmos_'//band, atten_old, .true.)
+	sig0 = sig0 - atten_old + atten
+	if (P%n_hz > 0) then
+		call rads_get_var (S, P, 'sig0_20hz_'//band, sig0_20hz, .true.)
+		forall (i=1:n) sig0_20hz(:,i) = sig0_20hz(:,i) - atten_old(i) + atten(i)
+	endif
+endif
+
 ! Store all data fields
 
 call rads_put_history (S, P)
@@ -397,7 +406,8 @@ if (wet_on) call rads_put_var (S, P, 'wet_tropo_'//source, wet)
 if (ib_on ) call rads_put_var (S, P, 'inv_bar_static', ib)
 if (air_on) call rads_put_var (S, P, 'dry_tropo_airtide', air)
 if (sig0_on) then
-	call rads_put_var (S, P, 'sig0_'//band, sig0+atten)
+	call rads_put_var (S, P, 'sig0_'//band, sig0)
+	if (P%n_hz > 0) call rads_put_var (S, P, 'sig0_20hz_'//band, sig0_20hz)
 	call rads_put_var (S, P, 'dsig0_atmos_'//band, atten)
 	call rads_put_var (S, P, 'water_vapor_content_gfs', wvc)
 	call rads_put_var (S, P, 'liquid_water_gfs', lwc)

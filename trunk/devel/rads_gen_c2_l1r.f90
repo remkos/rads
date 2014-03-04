@@ -66,12 +66,6 @@
 ! noise_floor_rms_ku - Std dev of noise floor
 ! flags_star_tracker - Star tracker flags
 ! tide_equil - Long-period tide
-!
-! tbias:
-! - Apply timing bias according to Marco's table (different for SAR and LRM data)
-! - Account for the change in timing bias in SIR1FDM/2.4 (See Ruby's e-mail of 22 Apr 2013)
-! - Adjust altitude from the product accordingly (using altitude rate)
-! - Note that this does NOT change the equator time or longitude!
 !-----------------------------------------------------------------------
 program rads_gen_c2_l1r
 
@@ -121,9 +115,8 @@ type(var_) :: var(mvar)
 integer(fourbyteint), parameter :: maxint4=2147483647
 real(eightbytereal), parameter :: sec2000=473299200d0, rev_time = 5953.45d0, rev_long = -24.858d0
 real(eightbytereal), parameter :: pitch_bias = 0.096d0, roll_bias = 0.086d0, yaw_bias = 0d0	! Attitude biases to be added
-real(eightbytereal) :: uso_corr, dhellips, tbias = 0d0
+real(eightbytereal) :: uso_corr, dhellips
 integer(fourbyteint) :: i, j, m, oldcyc=0, oldpass=0, mle=3, nhz=0, nwvf=0
-logical :: ltbias = .false., fdm_l1_v24
 
 ! Initialise
 
@@ -135,7 +128,7 @@ t1 = nan
 ! Scan command line for options
 
 do
-	call getopt ('mtvwC:S: debug: sat: cycle: t: mjd: sec: ymd: doy: with-20hz with-wvf tbias', optopt, optarg)
+	call getopt ('mvwC:S: debug: sat: cycle: t: mjd: sec: ymd: doy: with-20hz with-wvf', optopt, optarg)
 	select case (optopt)
 	case ('!')
 		exit
@@ -154,8 +147,6 @@ do
 	case ('w', 'with-wvf')
 		nwvf = 256
 		nhz = 20
-	case ('t', 'tbias')
-		ltbias = .true.
 	case default
 		if (.not.dateopt (optopt, optarg, t0, t1)) then
 			call synopsis ('--help')
@@ -245,7 +236,6 @@ do
 	version_a = index(l1r_product, '_A00') > 0
 	sar = index(l1r_product, '_SIR_SA') > 0 .or. index(l1r_product, '_SIR_FBR') > 0
 	fdm = index(l1r_product, '_SIR_FDM') > 0
-	fdm_l1_v24 = index(l1r_product, 'SIR1FDM/2.4') > 0
 
 ! Allocate arrays
 
@@ -253,29 +243,15 @@ do
 		t_1hz(nrec),t_20hz(20,nrec),alt(nrec),alt_20hz(20,nrec),dh(nrec), &
 		t_valid(20,nrec),valid(20,nrec),nvalid(nrec),flags(nrec))
 
-! Determine timing bias.
-! Different values apply for SAR and LRM separately.
-! See IPF1_datation_biases_v4.xlsx by Marco Fornari.
-
-	if (ltbias) then
-		if (sar) then
-			tbias = +0.520795d-3
-		else
-			tbias = -4.699112d-3
-			if (fdm_l1_v24) tbias = tbias + 4.4436d-3 ! Partial correction of timing bias (See Ruby's e-mail of 22 Apr 2013)
-		endif
-		tbias = tbias + 0.4d-3 ! Additional timing bias from my own research (1-Aug-2013)
-	endif
-
 ! Time information
 
 	call get_var (ncid, 'time', t_1hz)
-	call new_var ('time', t_1hz + tbias + sec2000 - tai_utc)
+	call new_var ('time', t_1hz + sec2000 - tai_utc)
 	call get_var (ncid, 'time_20hz', t_20hz)
 	t_valid = (t_20hz /= 0d0)
 	valid = t_valid
 	where (.not.t_valid) t_20hz = nan
-	call new_var_2d ('time_20hz', t_20hz + tbias + sec2000 - tai_utc)
+	call new_var_2d ('time_20hz', t_20hz + sec2000 - tai_utc)
 
 ! Location information
 
@@ -289,18 +265,15 @@ do
 	call cpy_var ('lon_20hz', 'lon_20hz')
 	call get_var (ncid, 'alt', alt)
 	call get_var (ncid, 'alt_20hz', alt_20hz)
-	call get_var (ncid, 'alt_rate_20hz', d)
-	where (.not.valid) d = nan
-	call mean_1hz (d, a, b)
 	! If input is FDM and there is no DORIS Navigator orbit (i.e. predicted orbit)
 	! we blank the orbit out entirely: it would be useless anyhow
 	if (fdm .and. doris_nav == 0) dh = nan
-	call new_var ('alt_cnes', alt + dh + tbias * a)
+	call new_var ('alt_cnes', alt + dh)
 	if (nhz /= 0) then
-		forall (i = 1:nrec) d(:,i) = alt_20hz(:,i) + dh(i) + tbias * d(:,i)
+		forall (i = 1:20) d(i,:) = alt_20hz(i,:) + dh(:)
 		call new_var_2d ('alt_cnes_20hz', d)
 	endif
-	call new_var ('alt_rate', a)
+	call cpy_var ('alt_rate_20hz', '', 'alt_rate')
 
 ! 20-Hz corrections
 
