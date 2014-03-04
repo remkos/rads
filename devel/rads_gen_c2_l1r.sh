@@ -39,7 +39,7 @@ for tar in $*; do
 		*)      cycle= ;;
 	esac
 
-	rads_gen_c2_l1r $options $cycle --tbias	< $lst	>> $log 2>&1
+	rads_gen_c2_l1r $options $cycle < $lst	>> $log 2>&1
 
 	case $tar in
 		*.t?z) chmod -R u+w $dir; rm -rf $dir ;;

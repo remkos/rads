@@ -55,6 +55,12 @@
 ! - Correct for error in L2 SWH algorithm
 ! - Adjust pseudo-LRM SWH to match LRM data (see notes of 16 Sep 2012)
 !
+! tbias:
+! - Apply timing bias according to Marco's table (different for SAR and LRM data)
+! - Account for the change in timing bias in SIR1FDM/2.4 (See Ruby's e-mail of 22 Apr 2013)
+! - Adjust altitude from the product accordingly (using altitude rate)
+! - Note that this does NOT change the equator time or longitude!
+!
 ! wind:
 ! - Add wind speed according to ECMWF model
 !
@@ -83,14 +89,14 @@ real(eightbytereal) :: sig0_drift_lrm = 0.22d0 / 365.25d0 / 86400d0, sig0_bias_l
 	sig0_drift_sar = 0.27d0 / 365.25d0 / 86400d0, sig0_bias_sar = -3.04d0, time_drift = 830822400d0
 integer(fourbyteint) :: i,cyc,pass
 integer(twobyteint) :: flag
-logical :: ldrift=.false.,lmeteo=.false.,lrange=.false.,lssb=.false.,lswh=.false., &
-	lwind=.false.,lsig0=.false.,cswh,cmeteo,ciono
+logical :: ldrift=.false.,lmeteo=.false.,lrange=.false.,lssb=.false.,lswh=.false.,ltbias=.false., &
+	lwind=.false.,lsig0=.false.,cswh,cmeteo,ciono,fdm_l1_v24
 type(grid) :: issb_hyb
 
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options (' drift meteo range sig0 ssb swh wind all')
+call rads_set_options (' drift meteo range sig0 ssb swh tbias wind all')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
@@ -106,6 +112,8 @@ do i = 1,rads_nopt
 		lssb = .true.
 	case ('swh')
 		lswh = .true.
+	case ('tbias')
+		ltbias = .true.
 	case ('wind')
 		lwind = .true.
 	case ('all')
@@ -115,6 +123,7 @@ do i = 1,rads_nopt
 		lsig0 = .true.
 		lssb = .true.
 		lswh = .true.
+		ltbias = .true.
 		lwind = .true.
 	end select
 enddo
@@ -160,6 +169,7 @@ write (*,1310)
 '  --sig0                    Correct sigma0 for biases and reversal' / &
 '  --ssb                     Add hybrid SSB model' / &
 '  --swh                     Correct SWH' / &
+'  --tbias                   Correct time and orbital altitude for timing bias' / &
 '  --wind                    Add wind speed' / &
 '  --all                     All of the above')
 stop
@@ -171,8 +181,9 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-real(eightbytereal) :: time(n),dry(n),wet(n), &
-	iono(n),sig0(n),swh(n),ssb(n),wind(n),flagword(n),range(n),ib(n),x,y
+real(eightbytereal) :: time(n),alt(n),alt_rate(n),dry(n),wet(n), &
+	iono(n),sig0(n),swh(n),ssb(n),wind(n),flagword(n),range(n),ib(n), &
+	time_20hz(20,n),alt_20hz(20,n),sig0_20hz(20,n),dsig0,x,y,tbias
 integer(fourbyteint) :: i
 logical :: lrm_l2,fdm_l2,old_version_a,version_a,sar
 character(len=4) :: l1r_ver
@@ -188,6 +199,7 @@ write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
 lrm_l2 = index(P%original,'IPF2LRM') > 0
 fdm_l2 = index(P%original,'IPF2FDM') > 0
 version_a = index(P%original,'_A00') > 0
+fdm_l1_v24 = index(P%original,'SIR1FDM/2.4') > 0
 
 old_version_a = (index(P%original,'-2010') > 0 .or. &
 	index(P%original,'-JAN-2011') > 0 .or. index(P%original,'-FEB-2011') > 0)
@@ -201,6 +213,8 @@ ciono = .false.
 cswh = lswh .and. (lrm_l2 .or. fdm_l2) .and. version_a
 
 call rads_get_var (S, P, 'time', time, .true.)
+call rads_get_var (S, P, 'alt_cnes', alt, .true.)
+call rads_get_var (S, P, 'alt_rate', alt_rate, .true.)
 call rads_get_var (S, P, 'range_ku', range, .true.)
 call rads_get_var (S, P, 'dry_tropo_ecmwf', dry, .true.)
 call rads_get_var (S, P, 'wet_tropo_ecmwf', wet, .true.)
@@ -209,6 +223,11 @@ call rads_get_var (S, P, 'iono_gim', iono, .true.)
 call rads_get_var (S, P, 'swh_ku', swh, .true.)
 call rads_get_var (S, P, 'sig0_ku', sig0, .true.)
 call rads_get_var (S, P, 'flags', flagword, .true.)
+if (P%n_hz > 0) then
+	call rads_get_var (S, P, 'time_20hz', time_20hz, .true.)
+	call rads_get_var (S, P, 'alt_cnes_20hz', alt_20hz, .true.)
+	call rads_get_var (S, P, 'sig0_20hz_ku', sig0_20hz, .true.)
+endif
 
 ! Process data records
 
@@ -226,6 +245,26 @@ do i = 1,n
 	if (lrange) then
 		if (.not.sar .and. l1r_ver < "2.03") range(i) = range(i) - 2*fai
 		if (lrm_l2 .and. old_version_a) range(i) = range(i) - 3.33d0
+	endif
+
+! Apply timing bias.
+! Different values apply for SAR and LRM separately.
+! See IPF1_datation_biases_v4.xlsx by Marco Fornari.
+
+	if (ltbias) then
+		if (sar) then
+			tbias = +0.520795d-3
+		else
+			tbias = -4.699112d-3
+			if (fdm_l1_v24) tbias = tbias + 4.4436d-3 ! Partial correction of timing bias (See Ruby's e-mail of 22 Apr 2013)
+		endif
+		tbias = tbias + 0.4d-3 ! Additional timing bias from my own research (1-Aug-2013)
+		time(i) = time(i) + tbias
+		alt(i) = alt(i) + tbias * alt_rate(i)
+		if (P%n_hz > 0) then
+			time_20hz(:,i) = time_20hz(:,i) + tbias
+			alt_20hz(:,i) = alt_20hz(:,i) + tbias * alt_rate(i)
+		endif
 	endif
 
 ! Set dry and wet to NaN when both are zero (not available)
@@ -257,6 +296,16 @@ do i = 1,n
 		endif
 	endif
 
+! Correct for sigma0 drift
+
+	if (.not.ldrift) then
+		dsig0 = 0
+	else if (sar) then
+		dsig0 = sig0_drift_sar * (time(i)-time_drift)
+	else
+		dsig0 = sig0_drift_lrm * (time(i)-time_drift)
+	endif
+
 ! For all data: Correct sigma0 for biases
 ! For L2 version A: Flip sigma around
 
@@ -284,23 +333,16 @@ do i = 1,n
 	else	! All L1 data (LRM and PLRM)
 		if ((time(i) > 808272000d0 .and. time(i) < 810086400d0) .or. &	! 2010-08-13 00:00 - 2010-09-03 00:00
 			 (time(i) > 812764800d0 .and. time(i) < 814233600d0)) &	! 2010-10-04 00:00 - 2010-10-21 00:00
-			sig0(i) = sig0(i) + 1.5d0 ! These data are biased low by 1.5 dB, so we add 1.5 dB
+			dsig0 = dsig0 + 1.5d0 ! These data are biased low by 1.5 dB, so we add 1.5 dB
 		if (sar) then
-			sig0(i) = sig0(i) + sig0_bias_sar
+			dsig0 = dsig0 + sig0_bias_sar
 		else
-			sig0(i) = sig0(i) + sig0_bias_lrm
+			dsig0 = dsig0 + sig0_bias_lrm
 		endif
 	endif
 
-! Correct for sigma0 drift
-
-	if (.not.ldrift) then
-		! skip
-	else if (sar) then
-		sig0(i) = sig0(i) + sig0_drift_sar * (time(i)-time_drift)
-	else
-		sig0(i) = sig0(i) + sig0_drift_lrm * (time(i)-time_drift)
-	endif
+	sig0(i) = sig0(i) + dsig0
+	if (P%n_hz > 0) sig0_20hz(:,i) = sig0_20hz(:,i) + dsig0
 
 ! Compute wind speed with ECMWF model
 
@@ -329,7 +371,7 @@ endif
 
 ! If nothing changed, stop here
 
-if (.not.(lrange .or. cmeteo .or. ciono .or. lssb .or. cswh .or. lsig0 .or. lwind)) then
+if (.not.(ltbias .or. lrange .or. cmeteo .or. ciono .or. lssb .or. cswh .or. lsig0 .or. lwind)) then
 	write (*,552) 0
 	return
 endif
@@ -347,6 +389,14 @@ if (lssb) call rads_def_var (S, P, 'ssb_hyb')
 
 ! Write out all the data
 
+if (ltbias) then
+	call rads_put_var (S, P, 'time', time)
+	call rads_put_var (S, P, 'alt_cnes', alt)
+	if (P%n_hz > 0) then
+		call rads_put_var (S, P, 'time_20hz', time_20hz)
+		call rads_put_var (S, P, 'alt_cnes_20hz', alt_20hz)
+	endif
+endif
 if (lrange) call rads_put_var (S, P, 'range_ku', range)
 if (cmeteo) then
 	call rads_put_var (S, P, 'dry_tropo', dry)
@@ -356,7 +406,10 @@ endif
 if (ciono) call rads_put_var (S, P, 'iono_gim', iono)
 if (lssb) call rads_put_var (S, P, 'ssb_hyb', ssb)
 if (cswh) call rads_put_var (S, P, 'swh_ku', swh)
-if (lsig0 .or. ldrift) call rads_put_var (S, P, 'sig0_ku', sig0)
+if (lsig0 .or. ldrift) then
+	call rads_put_var (S, P, 'sig0_ku', sig0)
+	if (P%n_hz > 0) call rads_put_var (S, P, 'sig0_20hz_ku', sig0_20hz)
+endif
 if (lwind) call rads_put_var (S, P, 'wind_speed_alt', wind)
 
 write (*,552) n

@@ -150,6 +150,7 @@ type :: rads_pass
 	integer(fourbyteint) :: nlogs                    ! Number of RADS3 log entries
 	integer(fourbyteint) :: ndata, n_hz, n_wvf       ! Number of data points (1-Hz) and second/third dimension (0=none)
 	integer(fourbyteint) :: first_meas, last_meas    ! Measurement index of first and last point in region
+	integer(fourbyteint) :: time_dims                ! Dimensions of time/lat/lon stored
 	integer(fourbyteint) :: trkid                    ! Numerical track identifiers
 	character(len=2) :: sat                          ! 2-Letter satellite abbreviation
 	integer(twobyteint) :: satid                     ! Numerical satellite identifier
@@ -284,11 +285,13 @@ end interface rads_end
 ! Error code:
 !  S%error  : rads_noerr, rads_err_var, rads_err_memory, rads_err_source
 !-----------------------------------------------------------------------
-private :: rads_get_var_by_name, rads_get_var_by_var, rads_get_var_by_number, rads_get_var_helper, rads_get_var_common
+private :: rads_get_var_by_name, rads_get_var_by_var, rads_get_var_by_number, &
+	rads_get_var_by_name_2d, rads_get_var_helper, rads_get_var_common
 interface rads_get_var
 	module procedure rads_get_var_by_name
 	module procedure rads_get_var_by_var
 	module procedure rads_get_var_by_number
+	module procedure rads_get_var_by_name_2d
 end interface rads_get_var
 
 !***********************************************************************
@@ -676,7 +679,8 @@ type(rads_pass), intent(inout) :: P
 !-----------------------------------------------------------------------
 ! gfortran 4.4.1 segfaults on the next line if this routine is made pure or elemental,
 ! so please leave it as a normal routine.
-P = rads_pass ('', '', null(), nan, nan, nan, nan, null(), null(), .false., 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, S%sat, S%satid, null())
+P = rads_pass ('', '', null(), nan, nan, nan, nan, null(), null(), .false., 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &
+	S%sat, S%satid, null())
 end subroutine rads_init_pass_struct
 
 !***********************************************************************
@@ -1297,6 +1301,7 @@ allocate (P%tll(P%ndata,3))
 call rads_get_var_common (S, P, S%time, P%tll(:,1), P%rw)
 call rads_get_var_common (S, P, S%lat, P%tll(:,2), P%rw)
 call rads_get_var_common (S, P, S%lon, P%tll(:,3), P%rw)
+P%time_dims = 1
 
 ! If requested, check for distance to centroid
 if (.not.P%rw .and. S%centroid(3) > 0d0) then
@@ -1326,7 +1331,6 @@ P%last_meas = i
 ! If multi-Hertz data: load multi-Hertz fields
 i = P%last_meas - P%first_meas + 1
 if (S%n_hz_output .and. P%n_hz > 0) then
-	P%first_meas = -P%first_meas ! This is done to force reading of the multi-Hz variables
 	P%ndata = i * P%n_hz
 	deallocate (P%tll)
 	allocate (P%tll(P%ndata,3))
@@ -1334,7 +1338,7 @@ if (S%n_hz_output .and. P%n_hz > 0) then
 	call rads_get_var (S, P, 'time'//hz, P%tll(:,1))
 	call rads_get_var (S, P, 'lat' //hz, P%tll(:,2))
 	call rads_get_var (S, P, 'lon' //hz, P%tll(:,3))
-	P%first_meas = -P%first_meas
+	P%time_dims = 2
 else if (i /= P%ndata) then
 	P%ndata = i
 	allocate (temp(P%ndata,3))
@@ -1482,9 +1486,7 @@ real(eightbytereal), intent(out) :: data(:)
 logical, intent(in), optional :: noedit
 !
 ! This routine loads the data from a single variable <varname>, addressed
-! by a character string into the buffer <data>. This version of rads_get_var
-! has an additional optional argument <varinfo>, which, if specified,
-! by-passes the need to search the list of variables.
+! by a character string into the buffer <data>.
 !-----------------------------------------------------------------------
 type(rads_var), pointer :: var
 integer(fourbyteint) :: l
@@ -1511,6 +1513,30 @@ if (.not.associated(var)) then
 endif
 call rads_get_var_common (S, P, var, data(:P%ndata), skip_edit)
 end subroutine rads_get_var_by_name
+
+!***********************************************************************
+!*rads_get_var_by_name -- Read 2D variable (data) from RADS by character
+!+
+recursive subroutine rads_get_var_by_name_2d (S, P, varname, data, noedit)
+type(rads_sat), intent(inout) :: S
+type(rads_pass), intent(inout) :: P
+character(len=*), intent(in) :: varname
+real(eightbytereal), intent(out) :: data(:,:)
+logical, intent(in), optional :: noedit
+!
+! This routine loads the data from a single variable <varname>, addressed
+! by a character string into the buffer <data>.
+!-----------------------------------------------------------------------
+real(eightbytereal), allocatable :: temp(:)
+integer(fourbyteint) :: k
+k = P%ndata
+P%ndata = P%ndata*P%n_hz
+allocate (temp(P%ndata))
+call rads_get_var_by_name (S, P, varname, temp, noedit)
+data(1:P%n_hz,1:k) = reshape(temp,(/P%n_hz,k/))
+deallocate(temp)
+P%ndata = k
+end subroutine rads_get_var_by_name_2d
 
 !***********************************************************************
 !*rads_get_var_helper -- Helper routine for all rads_get_var_by_* routines
@@ -1627,7 +1653,8 @@ integer(fourbyteint) :: start(2), count(2), e, i, nf_get_vara_double
 real(eightbytereal) :: x
 
 ! If time, lat, lon are already read, return those arrays upon request
-if (P%first_meas < 1) then
+if (P%time_dims /= info%ndims) then
+	! Read from netCDF file
 else if (info%datatype == rads_type_time) then
 	data = P%tll(:,1)
 	return
@@ -1684,7 +1711,7 @@ else if (info%ndims == 1) then
 		call rads_error (S, rads_err_nc_get, 'Error reading netCDF array "'//trim(info%dataname)//'" in file', P)
 		return
 	endif
-else if (info%ndims == 2 .and. S%n_hz_output) then
+else if (info%ndims == 2) then
 	! 2-dimensional array, read as single column
 	start(2) = start(1)
 	start(1) = 1

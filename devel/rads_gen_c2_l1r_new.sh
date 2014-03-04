@@ -40,7 +40,7 @@ date											>  $log 2>&1
 TZ=UTC touch -t ${d0}0000 $mrk
 find SIR_FDM_L1/LATEST -name "CS_*.nc" -a -newer $mrk | sort -r | sort -u -t_ -k8,8 > $lst
 
-rads_gen_c2_l1r  $options --ymd=$d0 --tbias $*	< $lst 	>> $log 2>&1
+rads_gen_c2_l1r  $options --ymd=$d0 $* < $lst 	>> $log 2>&1
 rads_add_ncep    $options -gs               	>> $log 2>&1
 rads_fix_c2      $options --all					>> $log 2>&1
 rads_add_orbit   $options -Valt_gdrd --dir=gdr-d-moe --equator --loc-7 --rate	>> $log 2>&1
