@@ -531,6 +531,7 @@ Global RADS configuration file
 
 <var name="range_used_20hz_ku" sat="c2">
 	<long_name>20-Hz flag for utilization in the computation of 1-Hz Ku-band range</long_name>
+	<standard_name>altimeter_range status_flag</standard_name>
 	<flag_values>yes no</flag_values>
 	<format>f11.3</format>
 	<data>range_used_20hz_ku</data>
@@ -1491,6 +1492,7 @@ Global RADS configuration file
 <if sat="sa">
 	<var name="range_numval_ka" field="2101">
 		<long_name>number of valid Ka-band measurements</long_name>
+		<standard_name>altimeter_range number_of_observations</standard_name>
 		<units>count</units>
 		<limits>32.5 40.5</limits>
 		<data>range_numval_ka</data>
@@ -1503,6 +1505,7 @@ Global RADS configuration file
 <else>
 	<var name="range_numval_ku" field="2101">
 		<long_name>number of valid Ku-band measurements</long_name>
+		<standard_name>altimeter_range number_of_observations</standard_name>
 		<units>count</units>
 		<limits>16.5 20.5</limits>
 		<limits sat="j1 j2">15.5 20.5</limits>
@@ -1517,6 +1520,7 @@ Global RADS configuration file
 
 <var name="range_numval_c" field="2102" sat="j1 j2">
 	<long_name>number of valid C-band measurements</long_name>
+	<standard_name>altimeter_range number_of_observations</standard_name>
 	<units>count</units>
 	<limits>16.5 20.5</limits>
 	<data>range_numval_c</data>
@@ -1525,6 +1529,7 @@ Global RADS configuration file
 </var>
 <var name="range_numval_ku_mle3" field="2101" sat="j2">
 	<long_name>number of valid Ku-band measurements (MLE3)</long_name>
+	<standard_name>altimeter_range number_of_observations</standard_name>
 	<units>count</units>
 	<limits>15.5 20.5</limits>
 	<data>range_numval_ku_mle3</data>
@@ -1825,6 +1830,7 @@ Global RADS configuration file
 
 <var name="qual_range" field="2511">
 	<long_name>quality of the range estimate</long_name>
+	<standard_name>altimeter_range status_flag</standard_name>
 	<flag_values>ok suspect</flag_values>
 	<flag_values sat="gs">ok some_10Hz_measurements_invalid</flag_values>
 	<data source="flags">11</data>
@@ -1834,6 +1840,7 @@ Global RADS configuration file
 
 <var name="qual_swh" field="2512" sat="!n1">
 	<long_name>quality of the wave height estimate</long_name>
+	<standard_name>sea_surface_wave_significant_height status_flag</standard_name>
 	<long_name sat="gs">quality of sea state bias</long_name>
 	<flag_values>ok suspect</flag_values>
 	<data source="flags">12</data>
@@ -1843,6 +1850,7 @@ Global RADS configuration file
 
 <var name="qual_sig0" field="2513">
 	<long_name>quality of the backscatter coefficient estimate</long_name>
+	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave status_flag</standard_name>
 	<long_name sat="gs">quality of wind speed estimate</long_name>
 	<flag_values>ok suspect</flag_values>
 	<data source="flags">13</data>
@@ -1852,6 +1860,7 @@ Global RADS configuration file
 
 <var name="flag_alt_track_mode" field="2514" sat="e1 e2 gs j1 pn tx">
 	<long_name>altimeter tracking mode</long_name>
+	<standard_name>altimeter_range status_flag</standard_name>
 	<flag_values>nominal preset</flag_values>
 	<flag_values sat="gs tx">nominal coarse_or_acquisition</flag_values>
 	<flag_values sat="j1">nominal c_band_coarse</flag_values>
@@ -1863,6 +1872,7 @@ Global RADS configuration file
 
 <var name="qual_orbit" field="2515 25" sat="c2 e1 e2 j1 pn sa">
 	<long_name>quality of the orbit determination</long_name>
+	<standard_name>height_above_reference_ellipsoid status_flag</standard_name>
 	<flag_values>ok degraded</flag_values>
 	<data source="flags">15</data>
 	<format>z1</format>
@@ -2546,7 +2556,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<parameters>0</parameters>
 	<parameters sat="gs">   0 -65  0  0 5</parameters>
-	<parameters sat="c2">-704   0  0  0 0</parameters>
+	<parameters sat="c2">-698   0  0  0 0</parameters>
 	<parameters sat="e1">  23  -7  0  0 0</parameters>
 	<parameters sat="e2">  61   2 12 12 0</parameters>
 	<parameters sat="g1">  70   0  0  0 0</parameters>
@@ -2554,7 +2564,7 @@ Global RADS configuration file
 	<parameters sat="j2"> -18   0  0  0 0</parameters>
 	<parameters sat="n1"> 448   0  0  0 0</parameters>
 	<parameters sat="pn"> -15   0  0  0 0</parameters>
-	<parameters sat="sa"> -51   0  0  0 0</parameters>
+	<parameters sat="sa"> -61   0  0  0 0</parameters>
 </var>
 <var name="ref_frame_offset_mle3" field="3811" sat="j2">
 	<long_name>reference frame offset (MLE3)</long_name>
