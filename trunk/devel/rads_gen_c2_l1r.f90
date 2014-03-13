@@ -392,7 +392,7 @@ do
 	call cpy_var ('peakiness_20hz', 'peakiness_20hz_ku', 'peakiness_ku')
 	call cpy_var ('mqe_20hz', 'mqe_20hz_ku', 'mqe')
 	call cpy_var ('noise_20hz', 'noise_floor_20hz_ku', 'noise_floor_ku', 'noise_floor_rms_ku')
-	call cpy_var ('waveform_20hz', 'waveform_20hz')
+	if (nwvf > 0) call cpy_var ('waveform_20hz', 'waveform_20hz')
 
 ! Geophysical corrections
 
