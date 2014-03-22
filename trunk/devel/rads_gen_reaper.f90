@@ -107,11 +107,9 @@ integer(fourbyteint) :: orbitnr(2), cyclenr(2), passnr(2), varid, com=999
 
 integer(fourbyteint), parameter :: mrec=15000, mvar=50
 integer(fourbyteint) :: nvar, ndata=0, nrec=0, nout=0, ncid, ers=0
-real(eightbytereal) :: start_time, end_time
-real(eightbytereal), allocatable :: a(:), b(:), c(:), d(:,:), dh(:), sum_c_applied(:), sum_d_applied(:)
-integer(twobyteint), allocatable :: flags(:)
-integer(fourbyteint), allocatable :: f_error(:), f_applied(:)
-logical, allocatable :: valid(:,:)
+real(eightbytereal) :: start_time, end_time, last_time = 0d0
+real(eightbytereal) :: sum_d_applied(mrec)
+integer(fourbyteint) :: f_error(mrec), f_applied(mrec)
 type(rads_sat) :: S
 type(rads_pass) :: P
 type :: var_
@@ -173,15 +171,12 @@ endif
 call get_reaper
 
 do
-	! If the start time is within the last file, get another file first
-	if (ios /= 0) then
-		if (ndata == 0) exit ! No more data left in memory and no more new files
-	else if (ndata == 0 .or. var(1)%d(1) >= start_time) then
-		! Read the next file
+	! Read the next file as long as buffer is empty or less than one pass in memory
+	do while (ndata == 0 .or. var(1)%d(ndata) - var(1)%d(1) < 3020d0)
 		read (*,550,iostat=ios) infile
-		if (ios == 0) call get_reaper
-		if (ndata == 0) cycle ! If still no data, try again
-	endif
+		if (ios /= 0) exit
+		call get_reaper
+	enddo
 
 	! Look where to split this chunk of data
 	new = erspass (ers, var(1)%d(1), orbitnr(1), phasenm(1), cyclenr(1), passnr(1), tnode(1), lnode(1))
@@ -229,9 +224,7 @@ end subroutine synopsis
 !-----------------------------------------------------------------------
 
 subroutine get_reaper
-real(eightbytereal) :: dhellips, t(3), last_time
-integer(fourbyteint) :: i, k, flag, ivar0, ivar1
-character(len=80) :: string
+integer(fourbyteint) :: i
 
 550 format (a)
 551 format (a,' ...')
@@ -292,13 +285,20 @@ endif
 call nfs(nf90_get_att(ncid,nf90_global,'l2_proc_time',l2_proc_time))
 call nfs(nf90_get_att(ncid,nf90_global,'l2_software_ver',l2_version))
 
-! Allocate arrays
+call get_reaper_data (nrec)
+call nfs(nf90_close(ncid))
+end subroutine get_reaper
 
-allocate (a(nrec),b(nrec),c(nrec),d(20,nrec),valid(20,nrec),f_error(nrec),f_applied(nrec), &
-	flags(nrec),dh(nrec),sum_c_applied(nrec),sum_d_applied(nrec))
-flags = 0
-sum_d_applied = 0d0
-nvar = 0
+subroutine get_reaper_data (nrec)
+integer(fourbyteint), intent(inout) :: nrec
+real(eightbytereal) :: a(nrec), b(nrec), c(nrec), d(20,nrec), dh(nrec), sum_c_applied(nrec)
+integer(twobyteint) :: flags(nrec)
+logical :: valid(20,nrec)
+integer(fourbyteint) :: i, k, flag, ivar0, ivar1
+real(eightbytereal) :: dhellips, t(3)
+character(len=80) :: string
+
+553 format (a,i5,3f18.3)
 
 ! Time and orbit: Low rate
 
@@ -307,14 +307,42 @@ call get_var (ncid, 'time_milsec_1hz', b)
 call get_var (ncid, 'time_micsec_1hz', c)
 a = a * 86400d0 + b * 1d-3 + c * 1d-6 + sec1990
 k = min(3,nrec)
+
 ! Because first and last time can be wrong, we use the minimum of the first 3 and
 ! last 3 measurements as boundaries.
-start_time = minval(a(1:k))
-end_time = maxval(a(nrec-k+1:nrec))
-! Discard measurements at the end of the stack that are newer than the beginning of this file
-do while (ndata > 0 .and. var(1)%d(ndata) > start_time - 0.5d0)
-	ndata = ndata - 1
+t(1) = last_time
+t(2) = minval(a(1:k))
+t(3) = maxval(a(nrec-k+1:nrec))
+
+! There are significant overlaps between files
+! Here we remove all new files that fall entirely before the end of the previous file, and
+if (t(3) < t(1) + 1) then
+	write (*,553) 'Warning: Removed file because of time reversal   :', nrec, t
+	return
+endif
+start_time = t(2)
+end_time = t(3)
+
+! Discard measurements at the end of the stack that are newer than the beginning of the
+! new file
+k = 0
+do while (ndata-k > 0 .and. var(1)%d(ndata-k) > start_time - 0.5d0)
+	k = k + 1
 enddo
+if (k > 0) then
+	write (*,553) 'Warning: Removed at end of buffer, time reversal :', k, &
+		var(1)%d(ndata-k+1), var(1)%d(ndata), start_time
+	ndata = ndata - k
+endif
+
+! Initialize
+
+flags = 0
+sum_d_applied = 0d0
+nvar = 0
+
+! Time and orbit: Low rate (cont'd)
+
 call new_var ('time', a)
 call get_var (ncid, 'latitude_1hz', a)
 a = a*1d-6
@@ -439,14 +467,14 @@ call new_var ('swh_rms_ku', b*1d-3)
 ! MWR Flags: Low rate
 
 call get_var (ncid, 'f_sea_ice_flag_1hz', a)
-call flag_set (a == 1, 8)
+call flag_set (a == 1, flags, 8)
 
 ! MWR: Low rate
 
 call get_var (ncid, 'tb_23_8_1hz', a)
 call get_var (ncid, 'tb_36_5_1hz', b)
 call get_var (ncid, 'f_mwr_srf_typ_1hz', c)
-call flag_set (c == 1, 6)
+call flag_set (c == 1, flags, 6)
 call get_var (ncid, 'f_mwr_interp_qual_1hz', c)
 call invalidate (c == 3, a)
 call invalidate (c == 3, b)
@@ -521,9 +549,9 @@ call new_var ('mss_ucl04', a*1d-3+dh, 27)
 ivar1 = nvar
 
 call get_var (ncid, 'f_srf_typ_1hz', a)
-call flag_set (a >= 3, 2)
-call flag_set (a >= 2, 4)
-call flag_set (a >= 1, 5)
+call flag_set (a >= 3, flags, 2)
+call flag_set (a >= 2, flags, 4)
+call flag_set (a >= 1, flags, 5)
 call new_var ('flags', flags*1d0)
 
 if (.not.alt_2m) then ! Only on (S)GDR
@@ -591,14 +619,9 @@ do i = 2,nrec-1
 	var(ivar1+1)%d(ndata+i) = var(ivar1+1)%d(ndata+i-1)
 enddo
 
-! Close this input file
-
-deallocate (a,b,c,d,valid,f_error,f_applied,flags,dh,sum_c_applied,sum_d_applied)
-
-call nfs(nf90_close(ncid))
-
 ndata = ndata + nrec
-end subroutine get_reaper
+
+end subroutine get_reaper_data
 
 !-----------------------------------------------------------------------
 ! Write content of memory to a single pass of RADS data
@@ -702,8 +725,9 @@ end subroutine new_var
 ! Set a bit in an array of flags
 !-----------------------------------------------------------------------
 
-subroutine flag_set (a, bit)
+subroutine flag_set (a, flags, bit)
 logical, intent(in) :: a(:)
+integer(twobyteint), intent(inout) :: flags(:)
 integer(fourbyteint), intent(in) :: bit
 integer(fourbyteint) :: i
 integer(twobyteint) :: j
