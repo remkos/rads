@@ -43,12 +43,13 @@ character(len=rads_cmdl) :: path
 integer(fourbyteint) :: i, cyc, pass
 real(eightbytereal) :: time_ptr, drange_ptr
 type(grid) :: issb_hyb
-logical :: lptr = .false., lssb = .false., ltide = .false., luso = .false.
+logical :: lptr = .false., lssb = .false., ltbias = .false., ltide = .false., luso = .false.
+real(eightbytereal), parameter :: tbias = 0.68d-3
 
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options ('pstu ptr ssb tide uso all')
+call rads_set_options ('bpstu ptr ssb tbias tide uso all')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
@@ -56,6 +57,8 @@ do i = 1,rads_nopt
 		lptr = .true.
 	case ('s', 'ssb')
 		lssb = .true.
+	case ('b', 'tbias')
+		ltbias = .true.
 	case ('t', 'tide')
 		ltide = .true.
 	case ('u', 'uso')
@@ -63,6 +66,7 @@ do i = 1,rads_nopt
 	case ('all')
 		lptr = .true.
 		lssb = .true.
+		ltbias = .true.
 		ltide = .true.
 		luso = .true.
 	end select
@@ -110,6 +114,7 @@ write (*,1310)
 'Additional [processing_options] are:' / &
 '  -p, --ptr                 Correct range for PTR error (use for pre-COM5 only)' / &
 '  -s, --ssb                 Add hybrid SSB model' / &
+'  -b, --tbias               Correct time and altitude for timing bias' / &
 '  -t, --tide                Fix the tide, subtracting load tide or adding long period tide' / &
 '  -u, --uso                 Correct range for USO drift' / &
 '  --all                     All of the above')
@@ -122,7 +127,8 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-real(eightbytereal) :: x, y, time(n), range_ku(n), drange_uso(n), sig0(n), swh(n), ssb(n), got47(n), fes04(n), a(n)
+real(eightbytereal) :: x, y, time(n), range_ku(n), drange_uso(n), sig0(n), swh(n), ssb(n), got47(n), fes04(n), &
+	a(n), alt_reaper(n)
 integer :: n_changed, i, com
 
 ! Formats
@@ -202,6 +208,16 @@ if (luso) then
 	n_changed = n
 endif
 
+! Apply time tag bias
+
+if (ltbias) then
+	call rads_get_var (S, P, 'alt_reaper', alt_reaper)
+	call rads_get_var (S, P, 'alt_rate', a)
+	time = time + tbias
+	alt_reaper = alt_reaper + tbias * a
+	n_changed = n
+endif
+
 ! If nothing changed, stop here
 
 if (n_changed == 0) then
@@ -220,6 +236,10 @@ endif
 if (lssb) then
 	call rads_def_var (S, P, 'ssb_hyb')
 	call rads_put_var (S, P, 'ssb_hyb', ssb)
+endif
+if (ltbias) then
+	call rads_put_var (S, P, 'time', time)
+	call rads_put_var (S, P, 'alt_reaper', alt_reaper)
 endif
 
 write (*,552) n_changed
