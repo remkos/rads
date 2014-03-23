@@ -143,18 +143,12 @@ com = 999
 i = index(P%original, '_COM')
 if (i > 0) read (P%original(i+4:i+4), *) com
 
+if (lptr .or. ltbias) call rads_get_var (S, P, 'time', time, .true.)
 if (lptr .or. luso) call rads_get_var (S, P, 'range_ku', range_ku, .true.)
 
 ! Apply PTR correction
 
 if (lptr) then
-
-! Process data records
-
-	call rads_get_var (S, P, 'time', time, .true.)
-
-! Match up PTR
-
 	do i = 1,n
 		do while (time_ptr + 0.5d0 < time(i))
 			call next_ptr
