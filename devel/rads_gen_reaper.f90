@@ -105,7 +105,7 @@ integer(fourbyteint) :: orbitnr(2), cyclenr(2), passnr(2), varid, com=999
 
 ! Data variables
 
-integer(fourbyteint), parameter :: mrec=15000, mvar=50
+integer(fourbyteint), parameter :: mrec=20000, mvar=50
 integer(fourbyteint) :: nvar, ndata=0, nrec=0, nout=0, ncid, ers=0
 real(eightbytereal) :: start_time, end_time, last_time = 0d0
 real(eightbytereal) :: sum_d_applied(mrec)
@@ -171,8 +171,9 @@ endif
 call get_reaper
 
 do
-	! Read the next file as long as buffer is empty or less than one pass in memory
-	do while (ndata == 0 .or. var(1)%d(ndata) - var(1)%d(1) < 3020d0)
+	! Read the next file as long as buffer is empty or less than one orbit in memory
+
+	do while (ndata == 0 .or. var(1)%d(ndata) - var(1)%d(1) < 6100d0)
 		read (*,550,iostat=ios) infile
 		if (ios /= 0) exit
 		call get_reaper
@@ -229,7 +230,7 @@ integer(fourbyteint) :: i
 550 format (a)
 551 format (a,' ...')
 552 format (i5,' records ...')
-553 format (a,i5,3f18.3)
+553 format (a,i6,3f18.3)
 
 ! Reduce file name to basename only
 
@@ -298,7 +299,7 @@ integer(fourbyteint) :: i, k, flag, ivar0, ivar1
 real(eightbytereal) :: dhellips, t(3)
 character(len=80) :: string
 
-553 format (a,i5,3f18.3)
+553 format (a,i6,3f18.3)
 
 ! Time and orbit: Low rate
 
@@ -325,14 +326,14 @@ end_time = t(3)
 
 ! Discard measurements at the end of the stack that are newer than the beginning of the
 ! new file
-k = 0
-do while (ndata-k > 0 .and. var(1)%d(ndata-k) > start_time - 0.5d0)
-	k = k + 1
+k = ndata
+do while (k > 0 .and. var(1)%d(k) > start_time - 0.5d0)
+	k = k - 1
 enddo
-if (k > 0) then
-	write (*,553) 'Warning: Removed at end of buffer, time reversal :', k, &
-		var(1)%d(ndata-k+1), var(1)%d(ndata), start_time
-	ndata = ndata - k
+if (k < ndata) then
+	write (*,553) 'Warning: Removed at end of buffer, time reversal :', ndata-k, &
+		var(1)%d(k+1), var(1)%d(ndata), start_time
+	ndata = k
 endif
 
 ! Initialize
