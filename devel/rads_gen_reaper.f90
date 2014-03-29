@@ -296,7 +296,7 @@ real(eightbytereal) :: a(nrec), b(nrec), c(nrec), d(20,nrec), dh(nrec), sum_c_ap
 integer(twobyteint) :: flags(nrec)
 logical :: valid(20,nrec)
 integer(fourbyteint) :: i, k, flag, ivar0, ivar1
-real(eightbytereal) :: dhellips, t(3)
+real(eightbytereal) :: dhellips, t(3), ice_percent
 character(len=80) :: string
 
 553 format (a,i6,3f18.3)
@@ -341,6 +341,12 @@ endif
 flags = 0
 sum_d_applied = 0d0
 nvar = 0
+
+! When more than 80% is in ice mode assume all is in ice mode
+! This is a TEMPORARY kludge to avoid ice mode data contaminating statistics
+! Flag bit 0 will NOT be an accurate representation of ice mode
+call nfs(nf90_get_att(ncid,nf90_global,'ra0_tracking_ice_percent',ice_percent))
+if (ice_percent > 80d0) flags = 1
 
 ! Time and orbit: Low rate (cont'd)
 
