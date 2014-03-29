@@ -110,6 +110,8 @@ endif
 ! Try any of the defined math commands
 select case (string)
 
+!! Note: a = NaN when x or y is NaN unless indicated otherwise
+
 ! Most commonly used first
 !! x y SUB a : a = x - y
 case ('SUB')
@@ -256,20 +258,28 @@ case ('ISNAN')
 	elsewhere
 		top%data = 0d0
 	endwhere
+!! x ISAN a : a = 0 if x is NaN; a = 1 otherwise
+case ('ISAN')
+	call math_check (1)
+	where (isnan_(top%data))
+		top%data = 0d0
+	elsewhere
+		top%data = 1d0
+	endwhere
 !! x RINT a : a is nearest integer to x
 !! x NINT a : a is nearest integer to x
 case ('RINT', 'NINT')
 	call math_check (1)
-	top%data = nint(top%data)
+	where (isan_(top%data)) top%data = nint(top%data)
 !! x CEIL a : a is nearest integer greater or equal to x
 !! x CEILING a : a is nearest integer greater or equal to x
 case ('CEIL', 'CEILING')
 	call math_check (1)
-	top%data = ceiling(top%data)
+	where (isan_(top%data)) top%data = ceiling(top%data)
 !! x FLOOR a : a is nearest integer less or equal to x
 case ('FLOOR')
 	call math_check (1)
-	top%data = floor(top%data)
+	where (isan_(top%data)) top%data = floor(top%data)
 !! x D2R a : convert x from degrees to radian
 case ('D2R')
 	call math_check (1)
@@ -281,15 +291,11 @@ case ('R2D')
 !! x YMDHMS a : convert seconds of 1985 to format YYYYMMDDHHMMSS
 case ('YMDHMS')
 	call math_check (1)
-	top%data = ymdhms_(top%data)
+	where (isan_(top%data)) top%data = ymdhms_(top%data)
 !! x SUM a : a(i) = x(1) + ... + x(i) while skipping all NaN
 case ('SUM')
 	call math_check (1)
-	x = 0d0
-	do i = 1,n
-		if (.not.isnan_(top%data(i))) x = x + top%data(i)
-		top%data(i) = x
-	enddo
+	x = sum(top%data, isan_(top%data))
 !! x DIF a : a(i) = x(i)-x(i-1); a(1) = NaN
 case ('DIF')
 	call math_check (1)
@@ -346,55 +352,67 @@ case ('R2')
 	call math_check (2)
 	top%prev%data = top%prev%data*top%prev%data + top%data*top%data
 	call math_pop (top)
-!! x y EQ a : a = 1 if x == y; a = 0 otherwise (incl x or y is NaN)
+!! x y EQ a : a = 1 if x == y; a = 0 otherwise
 case ('EQ')
 	call math_check (2)
-	where (top%prev%data == top%data)
+	where (isnan_(top%prev%data) .or. isnan_(top%data))
+		top%prev%data = nan
+	elsewhere (top%prev%data == top%data)
 		top%prev%data = 1d0
 	elsewhere
 		top%prev%data = 0d0
 	endwhere
 	call math_pop (top)
-!! x y NE a : a = 0 if x == y; a = 1 otherwise (incl x or y is NaN)
+!! x y NE a : a = 0 if x == y; a = 1 otherwise
 case ('NEQ', 'NE')
 	call math_check (2)
-	where (top%prev%data /= top%data)
+	where (isnan_(top%prev%data) .or. isnan_(top%data))
+		top%prev%data = nan
+	elsewhere (top%prev%data /= top%data)
 		top%prev%data = 1d0
 	elsewhere
 		top%prev%data = 0d0
 	endwhere
 	call math_pop (top)
-!! x y LT a : a = 1 if x < y; a = 0 otherwise (incl x or y is NaN)
+!! x y LT a : a = 1 if x < y; a = 0 otherwise
 case ('LT')
 	call math_check (2)
-	where (top%prev%data < top%data)
+	where (isnan_(top%prev%data) .or. isnan_(top%data))
+		top%prev%data = nan
+	elsewhere (top%prev%data < top%data)
 		top%prev%data = 1d0
 	elsewhere
 		top%prev%data = 0d0
 	endwhere
 	call math_pop (top)
-!! x y LE a : a = 1 if x <= y; a = 0 otherwise (incl x or y is NaN)
+!! x y LE a : a = 1 if x <= y; a = 0 otherwise
 case ('LE')
 	call math_check (2)
-	where (top%prev%data <= top%data)
+	where (isnan_(top%prev%data) .or. isnan_(top%data))
+		top%prev%data = nan
+	elsewhere (top%prev%data <= top%data)
 		top%prev%data = 1d0
 	elsewhere
 		top%prev%data = 0d0
 	endwhere
 	call math_pop (top)
-!! x y GT a : a = 1 if x > y; a = 0 otherwise (incl x or y is NaN)
+!! x y GT a : a = 1 if x > y; a = 0 otherwise
 case ('GT')
 	call math_check (2)
-	where (top%prev%data > top%data)
+	where (isnan_(top%prev%data) .or. isnan_(top%data))
+		top%prev%data = nan
+	elsewhere (top%prev%data > top%data)
 		top%prev%data = 1d0
 	elsewhere
 		top%prev%data = 0d0
 	endwhere
 	call math_pop (top)
-!! x y GE a : a = 1 if x >= y; a = 0 otherwise (incl x or y is NaN)
+!! x y GE a : a = 1 if x >= y; a = 0 otherwise
 case ('GE')
 	call math_check (2)
-	where (top%prev%data >= top%data)
+	where (isnan_(top%prev%data) .or. isnan_(top%data))
+		top%prev%data = nan
+	elsewhere (top%prev%data >= top%data)
 		top%prev%data = 1d0
 	elsewhere
 		top%prev%data = 0d0
@@ -449,7 +467,7 @@ case ('AVG')
 	call math_check (2)
 	where (isnan_(top%prev%data))
 		top%prev%data = top%data
-	elsewhere (.not.isnan_(top%data))
+	elsewhere (isan_(top%data))
 		top%prev%data = 0.5d0 * (top%prev%data + top%data)
 	endwhere
 	call math_pop (top)
@@ -467,7 +485,7 @@ case ('DXDY')
 	call math_pop (top)
 
 ! x y MATH x y (2 arguments to 2)
-!! x y EXCH a b : exchange the last two items on the stack
+!! x y EXCH a b : exchange the last two items on the stack (NaNs have no influence)
 case ('EXCH')
 	call math_check (2)
 	temp => top%prev
