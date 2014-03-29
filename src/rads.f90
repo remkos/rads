@@ -2745,8 +2745,8 @@ if (var%info%datatype == rads_type_lat .or. var%info%datatype == rads_type_lon) 
 	call rads_traxxing (S)
 else if (var%info%datatype == rads_type_time) then
 	! If time limits are changed, also limit the cycles
-	if (.not.isnan_(var%info%limits(1))) S%cycles(1) = max(S%cycles(1), rads_time_to_cycle (S, var%info%limits(1)))
-	if (.not.isnan_(var%info%limits(2))) S%cycles(2) = min(S%cycles(2), rads_time_to_cycle (S, var%info%limits(2)))
+	if (isan_(var%info%limits(1))) S%cycles(1) = max(S%cycles(1), rads_time_to_cycle (S, var%info%limits(1)))
+	if (isan_(var%info%limits(2))) S%cycles(2) = min(S%cycles(2), rads_time_to_cycle (S, var%info%limits(2)))
 else if (var%name == 'flags') then
 	call rads_set_limits_by_flagmask (S, var%info%limits)
 endif

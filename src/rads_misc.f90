@@ -572,19 +572,33 @@ endif
 end subroutine bit_transfer
 
 !***********************************************************************
-!*isnan_ -- Check if double precision number is a NaN
+!*isnan_ -- Check if double precision value is not a number
 !+
 elemental function isnan_ (x)
 real(eightbytereal), intent(in) :: x
 logical :: isnan_
 !
-! This elemental function checks if a 8-byte real is a NaN.
+! This elemental function checks if a 8-byte real is not a number (NaN).
 ! It is added here, since it is not standard Fortran 90, though GNU
 ! Fortran and HP Fortran have it.
 ! Since this function is elemental, it can be applied to arrays as well.
 !-----------------------------------------------------------------------
 isnan_ = (x /= x)
 end function isnan_
+
+!***********************************************************************
+!*isan -- Check if double precision value is a number
+!+
+elemental function isan_ (x)
+real(eightbytereal), intent(in) :: x
+logical :: isan_
+!
+! This elemental function checks if a 8-byte real is a number (i.e. it is
+! not a NaN).
+! Since this function is elemental, it can be applied to arrays as well.
+!-----------------------------------------------------------------------
+isan_ = (x == x)
+end function isan_
 
 !***********************************************************************
 !*cross_product -- Compute cross product of two 3-D vectors

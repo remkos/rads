@@ -501,7 +501,7 @@ if (reject < 0) then	! Reject if any is NaN
 		keep(i) = .not.any(isnan_(data(i,:)))
 	end forall
 else if (reject > 0) then
-	keep = .not.isnan_(data(:,reject))
+	keep = isan_(data(:,reject))
 else
 	keep = .true.
 endif
