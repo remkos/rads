@@ -1731,10 +1731,11 @@ Global RADS configuration file
 	<dimensions>2</dimensions>
 </var>
 
-<var name="flag_alt_oper_mode" field="2516" sat="c2 j1 j2 n1 pn tx">
+<var name="flag_alt_oper_mode" field="2516" sat="c2 e1 e2 j1 j2 n1 pn tx">
 	<long_name>altimeter operating mode</long_name>
 	<flag_values>nominal bad</flag_values>
 	<flag_values sat="c2">LRM SAR</flag_values>
+	<flag_values sat="e1 e2">ocean_mode ice_mode</flag_values>
 	<flag_values sat="j1 j2 n1">side_A side_B</flag_values>
 	<data source="flags">0</data>
 	<format>z1</format>
