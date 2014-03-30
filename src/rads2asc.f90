@@ -38,7 +38,7 @@ type(rads_pass) :: P
 type(rads_var), pointer :: var, temp(:)
 
 ! Local declarations, etc.
-integer(fourbyteint) :: outunit, listunit = -1, logunit = stdout
+integer(fourbyteint) :: outunit, listunit = -1, logunit = -1
 character(len=rads_cmdl) :: outname = ''
 character(len=640) :: format_string
 integer(fourbyteint) :: i, j, l, ios, cycle, pass, step = 1, nseltot = 0, nselmax = huge(0_fourbyteint)
@@ -57,7 +57,7 @@ real(eightbytereal), allocatable :: r(:), q(:)
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('r::fs:o: step: list: output: maxrec:')
+call rads_set_options ('r::fs:o: step: list: log: output: maxrec:')
 call rads_init (Sats)
 if (any(Sats%error /= rads_noerr)) call rads_exit ('Fatal error')
 
@@ -93,6 +93,9 @@ do i = 1,rads_nopt
 	case ('list')
 		listunit = getlun()
 		open (listunit, file=rads_opt(i)%arg, status='replace')
+	case ('log')
+		logunit = getlun()
+		open (logunit, file=rads_opt(i)%arg, status='replace')
 	end select
 enddo
 
@@ -134,11 +137,12 @@ do j = 1,msat
 	! Open single output file, if requested
 	if (outname == '-') then
 		outunit = stdout
-		logunit = stderr
+		if (logunit < 0) logunit = stderr
 	else if (outname /= '') then
 		outunit = getlun()
 		open (outunit, file=outname, status='replace')
 		if (listunit >= 0) write (listunit,'(a)') trim(outname)
+		if (logunit < 0) logunit = stdout
 	endif
 
 	! Determine format string for ASCII output
@@ -208,9 +212,10 @@ write (*,1300)
 '  -f                        Do not start with t,lat,lon in output'/ &
 '  -sp, -sc                  Include statistics per pass or per cycle'/ &
 '  --step=N                  Step through records with stride N (default = 1)'/ &
-'  --list=LISTNAME           Specify creation of list of output files'/ &
+'  --list=FILENAME           Specify file name in which to write list of output files'/ &
+'  --log=FILENAME            Specify file name in which to write log (statistics)'/ &
 '  --maxrec=N                Specify maximum number of output records (default = unlimited)'/ &
-'  -o, --out=OUTNAME         Specify name of a single output file (default is pass files, - is stdout)')
+'  -o, --output=FILENAME     Specify name of a single output file (default is pass files, - is stdout)')
 stop
 end subroutine synopsis
 
