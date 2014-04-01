@@ -102,7 +102,7 @@ call rads_init (S)
 
 ! Get template for path name
 
-call parseenv ('${ALTIM}/data/era-int-full/era-int.%Y.grb', path)
+call parseenv ('${ALTIM}/data/era-int-full/era-int.%Y%m.grb', path)
 
 ! Which corrections are to be provided?
 
