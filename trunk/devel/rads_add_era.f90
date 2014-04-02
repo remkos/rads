@@ -347,7 +347,7 @@ l = strf1985(filenm, path, hex*21600)
 if (filenm /= old_filenm) then
 	if (gribid /= -1) call grib_release(gribid)
 	if (fileid /= -1) call grib_close_file(fileid)
-	write (*,600,advance='no') filenm(l-15:l),hex
+	write (*,600,advance='no') filenm(l-17:l),hex
 
 	call grib_open_file(fileid,filenm,'r',status)
 	if (status /= grib_success) then
