@@ -115,13 +115,14 @@ call rads_get_var (S, P, 'surface_type', surface_type, .true.)
 !
 ! Bits and surface_type to be set when landmask contains any of the following values:
 !
-! landmask   | bit 4 | bit 5 | surface_type
+! landmask   | bit 2 | bit 4 | bit 5 | surface_type
 ! -----------------------------------------
-! 0 = ocean  |   0   |   0   |   0
-! 1 = land   |   1   |   1   |   2
-! 2 = lake   |   0   |   1   |   3
-! 3 = island |   1   |   1   |   2
-! 4 = pond   |   0   |   1   |   3
+! 0 = ocean  |   0   |   0   |   0   |   0
+! 1 = land   |   0   |   1   |   1   |   2
+! 2 = lake   |   0   |   0   |   1   |   3
+! 3 = island |   0   |   1   |   1   |   2
+! 4 = pond   |   0   |   0   |   1   |   3
+! cont. ice  |   1   |   1   |   1   |   4
 ! -----------------------------------------
 !
 ! However, never undo surface_type = 4 (continental ice)
