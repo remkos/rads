@@ -556,9 +556,9 @@ call new_var ('mss_ucl04', a*1d-3+dh, 27)
 ivar1 = nvar
 
 call get_var (ncid, 'f_srf_typ_1hz', a)
-call flag_set (a >= 3, flags, 2)
-call flag_set (a >= 2, flags, 4)
-call flag_set (a >= 1, flags, 5)
+call flag_set (a == 2, flags, 2)	! Bit 2: Continental ice
+call flag_set (a >= 2, flags, 4)	! Bit 4: Water/land
+call flag_set (a >= 1, flags, 5)	! Bit 5: Ocean/other
 call new_var ('flags', flags*1d0)
 
 if (.not.alt_2m) then ! Only on (S)GDR
