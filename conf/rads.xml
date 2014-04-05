@@ -1884,6 +1884,7 @@ Global RADS configuration file
 	<long_name>flag word</long_name>
 	<limits>65512 0</limits>
 	<limits sat="c2">32 0</limits>
+	<limits sat="e1 e2">65513 0</limits>
 	<limits sat="g1">65384 0</limits>
 	<limits sat="gs">51176 0</limits>
 	<limits sat="n1">36712 0</limits>
