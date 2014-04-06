@@ -18,6 +18,6 @@ GNU Lesser General Public License for more details.
 CryoSat-2: Use pseudo-LRM data only
 -->
 
-<var name="flags">
-	<limits sat="c2">48 1</limits>
+<var name="flags" sat="c2">
+	<limits>48 1</limits>
 </var>

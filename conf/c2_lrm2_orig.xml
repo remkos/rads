@@ -18,7 +18,9 @@ GNU Lesser General Public License for more details.
 CryoSat-2: Use original tide, SSB and MSS from LRM L2 products
 -->
 
-<alias name="tide_ocean">tide_ocean_fes04</alias>
-<alias name="tide_load">tide_load_fes04</alias>
-<alias name="ssb">ssb_bm3</alias>
-<alias name="mss">mss_ucl04</alias>
+<if sat="c2">
+	<alias name="tide_ocean">tide_ocean_fes04</alias>
+	<alias name="tide_load">tide_load_fes04</alias>
+	<alias name="ssb">ssb_bm3</alias>
+	<alias name="mss">mss_ucl04</alias>
+</if>
