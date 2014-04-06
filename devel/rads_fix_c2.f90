@@ -47,9 +47,6 @@
 ! - Reference time (time with no correction) is 2011-05-01, the middle of the period
 !   over which original sigma0 bias and SSB was determined
 !
-! ssb:
-! - Interpolate hybrid model
-!
 ! swh (FDM L2 and LRM L2 only):
 ! - Set SWH to NaN when SWH quality flag is raised (otherwise reports 0)
 ! - Correct for error in L2 SWH algorithm
@@ -61,18 +58,13 @@
 ! - Adjust altitude from the product accordingly (using altitude rate)
 ! - Note that this does NOT change the equator time or longitude!
 !
-! wind:
-! - Add wind speed according to ECMWF model
-!
 ! usage: rads_fix_c2 [data-selectors] [options]
 !-----------------------------------------------------------------------
 program rads_fix_c2
 
 use rads
 use rads_misc
-use rads_grid
 use rads_devel
-use meteo_subs
 
 ! Data variables
 
@@ -81,7 +73,6 @@ type(rads_pass) :: P
 
 ! Other local variables
 
-character(len=rads_cmdl) :: path
 real(eightbytereal), parameter :: fai = 7.3d-3, &
 	swh_adjustment = 1.8737**2 * (0.513**2 - 0.383**2) ! Adjustment to be added to SWH squared
  ! Sigma0 drift and bias with reference time 1-MAY-2011. See notes of 18-DEC-2013
@@ -89,14 +80,13 @@ real(eightbytereal) :: sig0_drift_lrm = 0.22d0 / 365.25d0 / 86400d0, sig0_bias_l
 	sig0_drift_sar = 0.27d0 / 365.25d0 / 86400d0, sig0_bias_sar = -3.04d0, time_drift = 830822400d0
 integer(fourbyteint) :: i,cyc,pass
 integer(twobyteint) :: flag
-logical :: ldrift=.false.,lmeteo=.false.,lrange=.false.,lssb=.false.,lswh=.false.,ltbias=.false., &
-	lwind=.false.,lsig0=.false.,cswh,cmeteo,ciono,fdm_l1_v24
-type(grid) :: issb_hyb
+logical :: ldrift=.false.,lmeteo=.false.,lrange=.false.,lswh=.false.,ltbias=.false., &
+	lsig0=.false.,cswh,cmeteo,ciono,fdm_l1_v24
 
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options (' drift meteo range sig0 ssb swh tbias wind all')
+call rads_set_options (' drift meteo range sig0 swh tbias all')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
@@ -108,37 +98,19 @@ do i = 1,rads_nopt
 		lrange = .true.
 	case ('sig0')
 		lsig0 = .true.
-	case ('ssb')
-		lssb = .true.
 	case ('swh')
 		lswh = .true.
 	case ('tbias')
 		ltbias = .true.
-	case ('wind')
-		lwind = .true.
 	case ('all')
 		ldrift = .true.
 		lmeteo = .true.
 		lrange = .true.
 		lsig0 = .true.
-		lssb = .true.
 		lswh = .true.
 		ltbias = .true.
-		lwind = .true.
 	end select
 enddo
-
-! Load SSB model if requested
-
-if (.not.lssb) then
-	! Do nothing
-else if (index(S%phase%dataroot, '/a.l2') > 0) then
-	call parseenv ('${ALTIM}/data/models/c2_l2i_hyb.nc?ssb_hyb', path)
-	if (grid_load(path,issb_hyb) /= 0) call rads_exit ('Error loading '//trim(path))
-else
-	call parseenv ('${ALTIM}/data/models/c2_l1c_hyb.nc?ssb_hyb', path)
-	if (grid_load(path,issb_hyb) /= 0) call rads_exit ('Error loading '//trim(path))
-endif
 
 ! Run process for all files
 
@@ -167,10 +139,8 @@ write (*,1310)
 '  --meteo                   Set dry, wet, IB (and iono) to NaN when zero' / &
 '  --range                   Correct range for biases' / &
 '  --sig0                    Correct sigma0 for biases and reversal' / &
-'  --ssb                     Add hybrid SSB model' / &
 '  --swh                     Correct SWH' / &
 '  --tbias                   Correct time and orbital altitude for timing bias' / &
-'  --wind                    Add wind speed' / &
 '  --all                     All of the above')
 stop
 end subroutine synopsis
@@ -182,8 +152,8 @@ end subroutine synopsis
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
 real(eightbytereal) :: time(n),alt(n),alt_rate(n),dry(n),wet(n), &
-	iono(n),sig0(n),swh(n),ssb(n),wind(n),flagword(n),range(n),ib(n), &
-	time_20hz(20,n),alt_20hz(20,n),sig0_20hz(20,n),dsig0,x,y,tbias
+	iono(n),sig0(n),swh(n),flagword(n),range(n),ib(n), &
+	time_20hz(20,n),alt_20hz(20,n),sig0_20hz(20,n),dsig0,x,tbias
 integer(fourbyteint) :: i
 logical :: lrm_l2,fdm_l2,old_version_a,version_a,sar
 character(len=4) :: l1r_ver
@@ -343,23 +313,6 @@ do i = 1,n
 
 	sig0(i) = sig0(i) + dsig0
 	if (P%n_hz > 0) sig0_20hz(:,i) = sig0_20hz(:,i) + dsig0
-
-! Compute wind speed with ECMWF model
-
-	if (lwind) wind(i) = wind_ecmwf(sig0(i))
-
-! Apply hybrid SSB
-
-	if (lssb) then
-		x = sig0(i)
-		if (x < issb_hyb%xmin) x = issb_hyb%xmin
-		if (x > issb_hyb%xmax) x = issb_hyb%xmax
-		y = swh(i)
-		if (y < issb_hyb%ymin) y = issb_hyb%ymin
-		if (y > issb_hyb%ymax) y = issb_hyb%ymax
-		ssb(i) = grid_lininter (issb_hyb, x, y)
-	endif
-
 enddo
 
 ! Prior to Cycle 5 pass 333 all iono is bogus
@@ -371,7 +324,7 @@ endif
 
 ! If nothing changed, stop here
 
-if (.not.(ltbias .or. lrange .or. cmeteo .or. ciono .or. lssb .or. cswh .or. lsig0 .or. lwind)) then
+if (.not.(ltbias .or. lrange .or. cmeteo .or. ciono .or. cswh .or. lsig0)) then
 	write (*,552) 0
 	return
 endif
@@ -382,10 +335,6 @@ P%start_time = time(1)
 P%end_time = time(n)
 call rads_put_passinfo (S, P)
 call rads_put_history (S, P)
-
-if (lssb) call rads_def_var (S, P, 'ssb_hyb')
-if (lwind) call rads_def_var (S, P, 'wind_speed_alt')
-if (lssb) call rads_def_var (S, P, 'ssb_hyb')
 
 ! Write out all the data
 
@@ -404,13 +353,11 @@ if (cmeteo) then
 	call rads_put_var (S, P, 'inv_bar_static', ib)
 endif
 if (ciono) call rads_put_var (S, P, 'iono_gim', iono)
-if (lssb) call rads_put_var (S, P, 'ssb_hyb', ssb)
 if (cswh) call rads_put_var (S, P, 'swh_ku', swh)
 if (lsig0 .or. ldrift) then
 	call rads_put_var (S, P, 'sig0_ku', sig0)
 	if (P%n_hz > 0) call rads_put_var (S, P, 'sig0_20hz_ku', sig0_20hz)
 endif
-if (lwind) call rads_put_var (S, P, 'wind_speed_alt', wind)
 
 write (*,552) n
 end subroutine process_pass

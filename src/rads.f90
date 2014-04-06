@@ -17,7 +17,7 @@
 
 module rads
 use typesizes
-use rads_grid
+use rads_grid, only: grid
 
 ! Dimensions
 integer(fourbyteint), parameter :: rads_var_chunk = 100, rads_varl = 40, rads_naml = 160, rads_cmdl = 320, &
@@ -687,6 +687,7 @@ end subroutine rads_init_pass_struct
 !*rads_free_var_struct -- Free all allocated memory from rads_var struct
 !+
 pure subroutine rads_free_var_struct (S, var, alias)
+use rads_grid
 type(rads_sat), intent(inout) :: S
 type(rads_var), intent(inout) :: var
 logical, intent(in) :: alias
@@ -1898,6 +1899,7 @@ endif
 end subroutine rads_get_var_math
 
 subroutine rads_get_var_grid ! Get data by interpolating a grid
+use rads_grid
 real (eightbytereal) :: x(P%ndata), y(P%ndata)
 integer(fourbyteint) :: i
 

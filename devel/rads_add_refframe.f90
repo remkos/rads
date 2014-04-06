@@ -29,6 +29,7 @@
 program rads_add_refframe
 
 use rads
+use rads_grid
 use rads_devel
 
 ! Data variables
