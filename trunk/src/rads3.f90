@@ -56,7 +56,7 @@ module rads3
 ! Using this module in an older RADS3 program should require only the addition
 ! of the line 'use rads3' before the first executable line.
 !-----------------------------------------------------------------------
-use rads
+use rads, only: rads_sat, rads_pass
 type(rads_sat), save, private :: S
 type(rads_pass), save, private :: P
 logical, save, private :: rads_init_done = .false.
@@ -64,6 +64,7 @@ logical, save, private :: rads_init_done = .false.
 contains
 
 subroutine getraw_init (mission, verbose)
+use rads
 character(len=*), intent(in) :: mission
 integer(fourbyteint), intent(in) :: verbose
 if (.not.rads_init_done) call rads_init (S, mission, debug=verbose)
@@ -72,6 +73,7 @@ end subroutine getraw_init
 
 subroutine getraw (cycle, pass, ncols, maxdata, select, time, dlat, dlon, &
 	data, ndata, eqtime, eqlon, metafile)
+use rads
 integer(fourbyteint), intent(in) :: cycle, pass, ncols, maxdata, select(ncols)
 integer(fourbyteint), intent(out) :: ndata
 real(eightbytereal), intent(out) :: time(maxdata), dlat(maxdata), dlon(maxdata), data(maxdata,ncols), eqtime, eqlon
@@ -101,6 +103,7 @@ call rads_close_pass (S, P)
 end subroutine getraw
 
 subroutine getraw_options (select, option)
+use rads
 integer(fourbyteint), intent(in) :: select, option
 character(len=4) :: name
 type(rads_var), pointer :: src, sla
@@ -122,6 +125,7 @@ if (associated(src)) call rads_set_alias (S, src%name, name)
 end subroutine getraw_options
 
 subroutine getraw_limits (select, lo, hi)
+use rads
 integer(fourbyteint), intent(in) :: select
 real(eightbytereal), intent(in) :: lo, hi
 character(len=4) :: name
@@ -133,6 +137,7 @@ src%info%limits = (/lo, hi/)
 end subroutine getraw_limits
 
 subroutine getraw_factors (select, fact)
+use rads
 integer(fourbyteint), intent(in) :: select
 real(eightbytereal), intent(in) :: fact
 real(eightbytereal) :: x
@@ -142,11 +147,13 @@ call rads_error (S, rads_err_incompat, &
 end subroutine getraw_factors
 
 subroutine getraw_stat (unit)
+use rads
 integer(fourbyteint), intent(in) :: unit
 call rads_stat (S, unit)
 end subroutine getraw_stat
 
 function radsargs1 (usage, sat, debug)
+use rads
 integer(fourbyteint), intent(in) :: usage
 character(len=*), intent(out) :: sat
 integer(fourbyteint), intent(out) :: debug
@@ -165,6 +172,7 @@ debug = S%debug
 end function radsargs1
 
 function radsargs2 (usage, cyc0, cyc1, pass0, pass1, dpass, nsel, sel)
+use rads
 integer(fourbyteint), intent(in) :: usage
 integer(fourbyteint), intent(out) :: cyc0, cyc1, pass0, pass1, dpass, sel(nsel)
 integer(fourbyteint), intent(inout) :: nsel
