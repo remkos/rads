@@ -454,7 +454,7 @@ integer(fourbyteint), intent(in), optional :: debug
 ! Arguments:
 !  S        : Satellite/mission dependent structure
 !  sat      : Satellite/mission abbreviation
-!  xml      : Additional XML file to be loaded
+!  xml      : Array of additional XML files to be loaded
 !  debug    : Optional: debug level (default = 0)
 !
 ! Error code:

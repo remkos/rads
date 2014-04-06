@@ -38,9 +38,9 @@ program rads_gen_reaper
 ! alt_reaper - Orbit altitude
 ! alt_rate - Orbit altitude rate
 ! range_ku - Ocean range (retracked)
-! dry_tropo_ecmwf - ECMWF dry tropospheric correction
+! dry_tropo_era - ERA dry tropospheric correction
 ! wet_tropo_rad - Radiometer wet tropo correction
-! wet_tropo_ecmwf - ECMWF wet tropo correction
+! wet_tropo_era - ERA wet tropo correction
 ! iono_gim - GIM ionosphetic correction
 ! iono_nic09 - NIC09 ionospheric correction
 ! inv_bar_static - Inverse barometer
@@ -261,10 +261,10 @@ endif
 ! Do not trust 'mission' attribute. It is always 'E1'.
 
 if (filenm(:2) == 'E1') then
-	if (ers == 0) call rads_init (S, 'e1/a.r', verbose)
+	if (ers == 0) call rads_init (S, 'e1/a.r', (/'reaper'/), verbose)
 	ers = 1
 else if (filenm(:2) == 'E2') then
-	if (ers == 0) call rads_init (S, 'e2/a.r', verbose)
+	if (ers == 0) call rads_init (S, 'e2/a.r', (/'reaper'/), verbose)
 	ers = 2
 else
 	write (*,550) 'Error: Unknown file type'
@@ -498,14 +498,14 @@ call new_var ('tb_365', b*1d-2)
 ! Atmospheric and geophysical: Low rate
 
 call get_var (ncid, 'dry_c_1hz', a)
-call new_var ('dry_tropo_ecmwf', a*1d-3, 1)
+call new_var ('dry_tropo_era', a*1d-3, 1)
 ivar0 = nvar
 call get_var (ncid, 'ib_c_1hz', a)
 call new_var ('inv_bar_static', a*1d-3, 2)
 call get_var (ncid, 'mog2d_c_1hz', a)
 call new_var ('inv_bar_mog2d', a*1d-3, 3)
 call get_var (ncid, 'wet_c_mod_1hz', a)
-call new_var ('wet_tropo_ecmwf', a*1d-3, 5)
+call new_var ('wet_tropo_era', a*1d-3, 5)
 call get_var (ncid, 'wet_c_mwr_1hz', a)
 call new_var ('wet_tropo_rad', a*1d-3, 6)
 call get_var (ncid, 'water_vapor_content_1hz', a)
