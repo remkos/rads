@@ -29,6 +29,7 @@
 program rads_add_tide
 
 use rads
+use rads_grid
 use rads_misc
 use rads_devel
 use tides
