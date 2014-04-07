@@ -189,6 +189,7 @@ write (stderr,1300)
 '  -r#                       Reject records if data item number # on -V specifier is NaN'/ &
 '                            (default: reject if SLA field is NaN)'/ &
 '  -r0, -r                   Do not reject measurement records with NaN values'/ &
+'                            In both cases above, all NaN values per variable are averaged'/ &
 '  -rn                       Reject measurement records if any value is NaN'/ &
 '  -c[N]                     Statistics per cycle or N cycles'/ &
 '  -d[N]                     Statistics per day (default) or N days'/ &
@@ -241,14 +242,26 @@ do i = 1,ndata
 	ky = floor((Pin%tll(i,2)-y0)/res(2) + 1d0)
 	kx = max(1,min(kx,nx))
 	ky = max(1,min(ky,ny))
-	box(:,kx,ky)%wgt  = box(:,kx,ky)%wgt  + 1d0
-	box(:,kx,ky)%mean = box(:,kx,ky)%mean + z(i,:)
-	box(:,kx,ky)%sum2 = box(:,kx,ky)%sum2 + z(i,:)*z(i,:)
-	box(:,kx,ky)%xmin = min(box(:,kx,ky)%xmin, z(i,:))
-	box(:,kx,ky)%xmax = max(box(:,kx,ky)%xmax, z(i,:))
+	do j = 0,nsel
+		call update_stat (box(j,kx,ky), z(i,j))
+	enddo
 	nr = nr + 1
 enddo
 end subroutine process_pass
+
+!***********************************************************************
+! Update statistics inside a given box
+
+subroutine update_stat (box, z)
+type(stat), intent(inout) :: box
+real(eightbytereal), intent(in) :: z
+if (isnan_(z)) return
+box%wgt  = box%wgt  + 1d0
+box%mean = box%mean + z
+box%sum2 = box%sum2 + z*z
+box%xmin = min(box%xmin, z)
+box%xmax = max(box%xmax, z)
+end subroutine update_stat
 
 !***********************************************************************
 ! Output statistics for one batch of data
