@@ -169,7 +169,7 @@ enddo
 cycle = S%cycles(2)
 pass = S%passes(2)
 call output_stat
-if (S%debug >= 1) call rads_stat (S)
+if (rads_verbose >= 1) call rads_stat (S)
 call rads_end (S)
 deallocate (box,tot,lat_w)
 

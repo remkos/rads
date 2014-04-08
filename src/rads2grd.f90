@@ -157,7 +157,7 @@ else
 endif
 
 ! Print statistics if requested
-if (any(S%debug >= 1)) call rads_stat (S)
+if (rads_verbose >= 1) call rads_stat (S)
 
 ! Deallocate memory
 deallocate (box)

@@ -381,7 +381,7 @@ if (equator) then
 		if (i == i1) write (*,550) 'error scanning for equator crossing'
 	enddo
 endif
-if (S%debug >= 1) write (*,*) 'eq:', P%equator_time, P%equator_lon
+if (rads_verbose >= 1) write (*,*) 'eq:', P%equator_time, P%equator_lon
 
 ! Update history and (re)define variables that may be new and will be written
 
@@ -431,7 +431,7 @@ if (var_old /= '') then
 	enddo
 	call rads_put_var (S, P, 'flags', flags)
 endif
-if (S%debug >= 1) write (*,*) 'rms:', pass, rms
+if (rads_verbose >= 1) write (*,*) 'rms:', pass, rms
 
 write (*,552) n
 end subroutine process_pass
