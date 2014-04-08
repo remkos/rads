@@ -111,6 +111,7 @@ endtype
 type :: rads_sat
 	character(len=rads_naml) :: userroot             ! Root directory of current user (i.e. $HOME)
 	character(len=rads_naml) :: dataroot             ! Root directory of RADS data directory
+	character(len=rads_varl) :: tree                 ! Satellite directory tree (e.g. 'e2' or 'e2.com6')
 	character(len=rads_cmdl) :: command              ! Command line
 	character(len=rads_naml), pointer :: glob_att(:) ! Global attributes
 	character(len=8) :: satellite                    ! Satellite name
@@ -122,7 +123,6 @@ type :: rads_sat
 	real(eightbytereal) :: xover_params(2)           ! Crossover parameters used in radsxoconv
 	integer(fourbyteint) :: cycles(3),passes(3)      ! Cycle and pass limits and steps
 	integer(fourbyteint) :: error                    ! Error code (positive is fatal, negative is warning)
-	integer(fourbyteint) :: debug                    ! Quiet (-1), normal (0), verbose (1), or debug level
 	integer(fourbyteint) :: pass_stat(7)             ! Statistics of rejection at start of rads_open_pass
 	integer(fourbyteint) :: total_read, total_inside ! Total number of measurements read and inside region
 	integer(fourbyteint) :: nvar, nsel               ! Number of available and selected variables and aliases
@@ -166,23 +166,26 @@ endtype
 ! Some private variables to keep
 
 character(len=*), parameter, private :: default_short_optlist = 'S:X:vqV:C:P:A:F:R:L:Q:', &
-	default_long_optlist = ' t: h: args: sat: xml: debug: quiet var: sel: cycle: pass: alias:' // &
+	default_long_optlist = ' t: h: args: sat: xml: debug: log: quiet var: sel: cycle: pass: alias:' // &
 	' fmt: format: lat: lon: time: sla: limits: opt: mjd: sec: ymd: doy: quality_flag: region:'
 character(len=rads_strl), save, private :: rads_optlist = default_short_optlist // default_long_optlist
 
 ! These options can be accessed by RADS programs
 
-type(rads_option), allocatable, target, save :: rads_opt(:)
-integer(fourbyteint), save :: rads_nopt = 0
+type(rads_option), allocatable, target, save :: &
+	rads_opt(:)                                      ! List of command line options
+integer(fourbyteint), save :: rads_nopt = 0          ! Number of command line options saved
+integer(fourbyteint) :: rads_verbose = 0             ! Verbosity level
+integer(fourbyteint) :: rads_log_unit = stdout       ! Unit number for statistics logging
 
 !***********************************************************************
 !*rads_init -- Initialize RADS4
 !+
-! subroutine rads_init (S, sat, xml, debug)
+! subroutine rads_init (S, sat, xml, verbose)
 ! type(rads_sat), intent(inout) :: S or S(:)
 ! character(len=*), intent(in), optional :: sat or sat(:)
 ! character(len=*), intent(in), optional :: xml(:)
-! integer, intent(in), optional :: debug
+! integer, intent(in), optional :: verbose
 !
 ! This routine initializes the <S> struct with the information pertaining
 ! to given satellite/mission phase <sat>, which is to be formed as 'e1',
@@ -218,7 +221,7 @@ integer(fourbyteint), save :: rads_nopt = 0
 ! Arguments:
 !  S        : Satellite/mission dependent structure
 !  sat      : Optional: Satellite/mission abbreviation
-!  debug    : Optional: Debug (verbose) level
+!  verbose  : Optional: Verbosity level
 !  xml      : Optional: Array of names of additional XML files to be loaded
 !  optlist  : Optional: list of command specific short and long options
 !-----------------------------------------------------------------------
@@ -391,18 +394,16 @@ end interface rads_put_var
 !***********************************************************************
 !*rads_stat -- Print the RADS statistics for a given satellite
 !+
-! subroutine rads_stat (S, unit)
+! subroutine rads_stat (S)
 ! type(rads_sat), intent(in) :: S <or> S(:)
 ! integer(fourbyteint), intent(in), optional :: unit
 !
 ! This routine prints out the statistics of all variables that were
 ! processed per mission (indicated by scalar or array <S>), to the output
-! on unit <unit>. If argument <unit> is not given, then standard output
-! is used.
+! on unit <rads_log_unit>.
 !
 ! Arguments:
 !  S        : Satellite/mission dependent structure
-!  unit     : Fortran output unit (6 = stdout (default), 0 = stderr)
 !-----------------------------------------------------------------------
 private :: rads_stat_0d, rads_stat_1d
 interface rads_stat
@@ -438,12 +439,12 @@ contains
 !***********************************************************************
 !*rads_init_sat_0d_xml -- Initialize RADS4 by satellite
 !+
-subroutine rads_init_sat_0d_xml (S, sat, xml, debug)
+subroutine rads_init_sat_0d_xml (S, sat, xml, verbose)
 use rads_misc
 type(rads_sat), intent(inout) :: S
 character(len=*), intent(in) :: sat
 character(len=*), intent(in) :: xml(:)
-integer(fourbyteint), intent(in), optional :: debug
+integer(fourbyteint), intent(in), optional :: verbose
 !
 ! This routine initializes the <S> struct with the information pertaining to satellite
 ! and mission phase <sat>, which is to be formed as 'e1', or 'e1g', or 'e1/g'.
@@ -455,13 +456,14 @@ integer(fourbyteint), intent(in), optional :: debug
 !  S        : Satellite/mission dependent structure
 !  sat      : Satellite/mission abbreviation
 !  xml      : Array of additional XML files to be loaded
-!  debug    : Optional: debug level (default = 0)
+!  verbose  : Optional: verbosity level (default = 0)
 !
 ! Error code:
 !  S%error  : rads_noerr, rads_err_xml_file, rads_err_xml_parse, rads_err_var
 !-----------------------------------------------------------------------
-integer(fourbyteint) :: i, l
+integer(fourbyteint) :: i, j, l
 
+if (present(verbose)) rads_verbose = verbose
 call rads_init_sat_struct (S)
 
 ! Decipher the satellite and phase
@@ -469,6 +471,18 @@ l = len_trim(sat)
 if (l < 2) call rads_exit ('Satellite/phase has fewer than 2 characters')
 S%sat = sat(:2)
 S%satellite = S%sat
+
+! Do we have a 'tree' specified? Note that we do not consider it if part of phase argument
+j = max(index(sat,'/'),index(sat,':'))
+if (l == 3) then ! <sat><phase>
+	S%tree = S%sat
+	j = 3
+else if (j == 0) then ! No separator
+	S%tree = sat
+else ! With separator
+	S%tree = sat(:j-1)
+	j = j + 1
+endif
 
 ! Set some global variables
 S%dataroot = radsdataroot
@@ -478,7 +492,6 @@ call get_command (S%command, status=i)
 if (i < 0) S%command (len(S%command)-2:) = '...'
 
 ! Set all values in <S> struct to default
-if (present(debug)) S%debug = debug
 allocate (S%var(rads_var_chunk))
 S%var = rads_var (null(), null(), null(), null(), null(), .false., rads_nofield)
 
@@ -507,18 +520,15 @@ enddo
 if (.not.associated(S%phases)) call rads_exit ('Satellite "'//S%sat//'" unknown')
 
 ! When a phase/mission is specifically given, load the appropriate settings
-if (l == 2) then
+if (j == 0 .or. sat(j:j) == ' ') then
 	! By default, use the largest possible cycle and pass range and set the first (default) phase
 	S%phase => S%phases(1)
 	S%cycles(1) = minval(S%phases%cycles(1))
 	S%cycles(2) = maxval(S%phases%cycles(2))
 	S%passes(2) = maxval(S%phases%passes)
 else
-	! Phase is given, maybe separated by '/' or ':'
-	i = 3
-	if (l > 3 .and. (sat(3:3) == '/' .or. sat(3:3) == ':')) i = 4
-	S%phase => rads_get_phase(S, sat(i:))
-	if (.not.associated(S%phase)) call rads_exit ('No such mission phase "'//sat(i:i)//'" of satellite "'//S%sat//'"')
+	S%phase => rads_get_phase(S, sat(j:))
+	if (.not.associated(S%phase)) call rads_exit ('No such mission phase "'//sat(j:j)//'" of satellite "'//S%sat//'"')
 	S%cycles(1:2) = S%phase%cycles
 	S%passes(2) = S%phase%passes
 endif
@@ -543,47 +553,47 @@ call rads_set_limits (S, 'time')
 call rads_set_limits (S, 'lon')
 
 ! List the variables
-if (S%debug >= 3) then
+if (rads_verbose >= 3) then
 	do i = 1,S%nvar
 		write (*,*) i,S%var(i)%name,S%var(i)%info%name,S%var(i)%field,S%var(i)%info%limits
 	enddo
 endif
 end subroutine rads_init_sat_0d_xml
 
-subroutine rads_init_sat_1d_xml (S, sat, xml, debug)
+subroutine rads_init_sat_1d_xml (S, sat, xml, verbose)
 type(rads_sat), intent(inout) :: S(:)
 character(len=*), intent(in) :: sat(:)
 character(len=*), intent(in) :: xml(:)
-integer(fourbyteint), intent(in), optional :: debug
+integer(fourbyteint), intent(in), optional :: verbose
 integer :: i
 if (size(S) /= size(sat)) call rads_exit ('Size of "S" and "sat" in rads_init should be the same')
 if (size(S) < 1) call rads_exit ('Size of "S" in rads_init should be at least 1')
 do i = 1,size(S)
-	call rads_init_sat_0d_xml (S(i), sat(i), xml, debug)
+	call rads_init_sat_0d_xml (S(i), sat(i), xml, verbose)
 enddo
 end subroutine rads_init_sat_1d_xml
 
-subroutine rads_init_sat_0d (S, sat, debug)
+subroutine rads_init_sat_0d (S, sat, verbose)
 type(rads_sat), intent(inout) :: S
 character(len=*), intent(in) :: sat
-integer(fourbyteint), intent(in), optional :: debug
+integer(fourbyteint), intent(in), optional :: verbose
 character(len=8) :: xml(0)
-call rads_init_sat_0d_xml (S, sat, xml, debug)
+call rads_init_sat_0d_xml (S, sat, xml, verbose)
 end subroutine rads_init_sat_0d
 
-subroutine rads_init_sat_1d (S, sat, debug)
+subroutine rads_init_sat_1d (S, sat, verbose)
 type(rads_sat), intent(inout) :: S(:)
 character(len=*), intent(in) :: sat(:)
-integer(fourbyteint), intent(in), optional :: debug
+integer(fourbyteint), intent(in), optional :: verbose
 character(len=8) :: xml(0)
-call rads_init_sat_1d_xml (S, sat, xml, debug)
+call rads_init_sat_1d_xml (S, sat, xml, verbose)
 end subroutine rads_init_sat_1d
 
 subroutine rads_init_cmd_0d (S)
 type(rads_sat), intent(inout) :: S
-integer :: sopt(1), nsat, debug
+integer :: sopt(1), nsat
 !
-call rads_load_options (nsat, debug)
+call rads_load_options (nsat)
 if (nsat < 1) call rads_exit ('Failed to find "-S" or "--sat=" on command line')
 if (nsat > 1) call rads_exit ('Too many "-S" or "--sat=" on command line')
 sopt = minloc (rads_opt%id, rads_opt%id==11) ! Position of the -S option
@@ -591,16 +601,16 @@ sopt = minloc (rads_opt%id, rads_opt%id==11) ! Position of the -S option
 ! The next three pack functions isolate the -X option arguments, the command line
 ! arguments associcated with the -S option, and  all -V option arguments.
 call rads_init_sat_0d_xml (S, rads_opt(sopt(1))%arg, &
-	pack(rads_opt%arg, mod(rads_opt%id,10)==2), debug)
+	pack(rads_opt%arg, mod(rads_opt%id,10)==2))
 call rads_parse_options (S, pack(rads_opt, mod(rads_opt%id,10)==3))
 call rads_parse_varlist (S, pack(rads_opt%arg, mod(rads_opt%id,10)==4))
 end subroutine rads_init_cmd_0d
 
 subroutine rads_init_cmd_1d (S)
 type(rads_sat), intent(inout) :: S(:)
-integer :: i, sopt(1), nsat, debug
+integer :: i, sopt(1), nsat
 !
-call rads_load_options (nsat, debug)
+call rads_load_options (nsat)
 if (nsat < 1) call rads_exit ('Failed to find "-S" or "--sat=" on command line')
 if (nsat > size(S)) call rads_exit ('Too many "-S" or "--sat=" on command line')
 !
@@ -609,7 +619,7 @@ do i = 1,nsat
 	! The next three pack functions isolate the -X option arguments, the command line
 	! arguments associcated with the i-th -S option, and  all -V option arguments.
 	call rads_init_sat_0d_xml (S(i), rads_opt(sopt(1))%arg, &
-		pack(rads_opt%arg, rads_opt%id==2 .or. rads_opt%id==i*10+2), debug)
+		pack(rads_opt%arg, rads_opt%id==2 .or. rads_opt%id==i*10+2))
 	call rads_parse_options (S(i), pack(rads_opt, rads_opt%id==3 .or. rads_opt%id==i*10+3))
 	call rads_parse_varlist (S(i), pack(rads_opt%arg, mod(rads_opt%id,10)==4))
 enddo
@@ -635,8 +645,8 @@ type(rads_sat), intent(inout) :: S
 !-----------------------------------------------------------------------
 ! gfortran 4.4.1 segfaults on the next line if this routine is made pure or elemental,
 ! so please leave it as a normal routine.
-S = rads_sat ('', '', '', null(), '', 1d0, (/13.8d0, nan/), 90d0, nan, nan, nan, 1, 1, rads_noerr, &
-	0, 0, 0, 0, 0, 0, .false., '', 0, null(), null(), null(), null(), null(), null(), null(), null())
+S = rads_sat ('', '', '', '', null(), '', 1d0, (/13.8d0, nan/), 90d0, nan, nan, nan, 1, 1, rads_noerr, &
+	0, 0, 0, 0, 0, .false., '', 0, null(), null(), null(), null(), null(), null(), null(), null())
 end subroutine rads_init_sat_struct
 
 !***********************************************************************
@@ -770,19 +780,15 @@ end subroutine rads_set_options
 !***********************************************************************
 !*rads_load_options -- Extract options from command line
 !+
-subroutine rads_load_options (nsat, debug)
+subroutine rads_load_options (nsat)
 use rads_misc
 integer, intent(out) :: nsat
-integer, intent(inout) :: debug
 !
 ! Scan the command line for all common RADS 4 command line options
 ! like --cycle, --sat, -P, etc, and store only these, not any other
 ! command line options, in an external array <rads_option>.
 ! In addition any arguments from a file pointed to by the --args=<file>
 ! option are loaded as well.
-!
-! The argument <debug> gives the result of the -v, --debug=, -q or
-! --quiet options. These options do not get stored in <rads_opt>.
 !
 ! The array <opt%id> will contain the identifiers of the various options.
 ! They are given as <nsat>*10+<type>, where <nsat> is 0 before the first
@@ -797,13 +803,11 @@ integer, intent(inout) :: debug
 !
 ! Arguments:
 !  nsat     : Number of '-S' or '--sat=' options
-!  debug    : Verbose level from '-v', '--debug=', '-q', or '--quiet'
 !-----------------------------------------------------------------------
 integer :: ios, iunit, i, nopt
 type(rads_option), pointer :: opt(:)
 
 ! Initialize
-debug = 0
 nopt = 1
 nsat = 0
 iunit = 0
@@ -842,12 +846,22 @@ do
 		call rads_message ('Unknown option: '//trim(opt(nopt)%arg))
 		cycle ! Skip unknown options
 	case ('q', 'quiet')
-		debug = -1
+		rads_verbose = -1
 	case ('v')
-		debug = debug + 1
+		rads_verbose = rads_verbose + 1
 	case ('debug')
-		debug = debug + 1
-		read (opt(nopt)%arg, *, iostat=ios) debug
+		rads_verbose = rads_verbose + 1
+		read (opt(nopt)%arg, *, iostat=ios) rads_verbose
+	case ('log')
+		if (opt(nopt)%arg == '-') then
+			rads_log_unit = stdout
+		else if (opt(nopt)%arg == '+') then
+			rads_log_unit = stderr
+		else
+			rads_log_unit = getlun()
+			open (rads_log_unit, file=opt(nopt)%arg, status='replace', iostat=ios)
+			if (ios /= 0) rads_log_unit = stdout
+		endif
 	case ('args')
 		! Open file with command line arguments. If not available, ignore
 		iunit = getlun()
@@ -874,7 +888,7 @@ do
 	end select
 enddo
 
-if (debug >= 2) then
+if (rads_verbose >= 2) then
 	write (*,*) nopt, ' command line options:'
 	do i = 1, nopt
 		write (*,*) i,'; optopt = ',trim(opt(i)%opt),'; optarg = ',trim(opt(i)%arg),'; optid = ',opt(i)%id
@@ -1071,8 +1085,8 @@ type(rads_sat), intent(inout) :: S
 !  S        : Satellite/mission dependent structure
 !  optlist  : Optional: list of command specific short and long options
 !-----------------------------------------------------------------------
-integer :: nsat, debug
-call rads_load_options (nsat, debug)
+integer :: nsat
+call rads_load_options (nsat)
 call rads_parse_options (S, rads_opt(1:rads_nopt))
 call rads_parse_varlist (S, pack(rads_opt%arg, mod(rads_opt%id,10)==4))
 end subroutine rads_parse_cmd
@@ -1085,6 +1099,7 @@ type(rads_sat), intent(inout) :: S
 integer :: ios
 deallocate (rads_opt, stat=ios)
 call rads_free_sat_struct (S)
+if (rads_log_unit > stdout) close (rads_log_unit)
 end subroutine rads_end_0d
 
 subroutine rads_end_1d (S)
@@ -1094,6 +1109,7 @@ deallocate (rads_opt, stat=ios)
 do i = 1,size(S)
 	call rads_free_sat_struct (S(i))
 enddo
+if (rads_log_unit > stdout) close (rads_log_unit)
 end subroutine rads_end_1d
 
 !***********************************************************************
@@ -1157,7 +1173,7 @@ P%cycle = cycle
 P%pass = pass
 ascdes = modulo(pass,2)	! 1 if ascending, 0 if descending
 
-if (S%debug >= 2) write (*,*) 'Checking cycle/pass : ',cycle,pass
+if (rads_verbose >= 2) write (*,*) 'Checking cycle/pass : ',cycle,pass
 
 ! Do checking on cycle limits
 if (cycle < S%cycles(1) .or. cycle > S%cycles(2)) then
@@ -1198,13 +1214,13 @@ P%start_time = P%equator_time - 0.5d0 * d
 P%end_time = P%equator_time + 0.5d0 * d
 d = -S%phase%repeat_nodal * 360d0 / S%phase%repeat_passes ! Longitude advance per pass due to precession of node and earth rotation
 P%equator_lon = modulo(S%phase%ref_lon + (pp - S%phase%ref_pass) * d + modulo(pp - S%phase%ref_pass,2) * 180d0, 360d0)
-if (S%debug >= 4) write (*,*) 'Estimated start/end/equator time/longitude = ', &
+if (rads_verbose >= 4) write (*,*) 'Estimated start/end/equator time/longitude = ', &
 	P%start_time, P%end_time, P%equator_time, P%equator_lon
 
 ! Do checking of pass ends on the time criteria (only when such are given)
 if (.not.all(isnan_(S%time%info%limits))) then
 	if (P%end_time + 300d0 < S%time%info%limits(1) .or. P%start_time - 300d0 > S%time%info%limits(2)) then ! Allow 5 minute slop
-		if (S%debug >= 2) write (*,*) 'Bail out on estimated time:', S%time%info%limits, P%start_time, P%end_time
+		if (rads_verbose >= 2) write (*,*) 'Bail out on estimated time:', S%time%info%limits, P%start_time, P%end_time
 		S%pass_stat(3) = S%pass_stat(3) + 1
 		return
 	endif
@@ -1214,7 +1230,7 @@ endif
 d = P%equator_lon
 if (S%eqlonlim(ascdes,2) - S%eqlonlim(ascdes,1) < 360d0) then
 	if (checklon(S%eqlonlim(ascdes,:),d)) then
-		if (S%debug >= 2) write (*,*) 'Bail out on estimated equator longitude:', S%eqlonlim(ascdes,:), P%equator_lon
+		if (rads_verbose >= 2) write (*,*) 'Bail out on estimated equator longitude:', S%eqlonlim(ascdes,:), P%equator_lon
 		S%pass_stat(4+ascdes) = S%pass_stat(4+ascdes) + 1
 		return
 	endif
@@ -1229,10 +1245,10 @@ else
 	P%rw = .false.
 endif
 if (P%rw) then
-	if (S%debug >= 2) write (*,*) 'Opening for read/write: '//trim(P%filename)
+	if (rads_verbose >= 2) write (*,*) 'Opening for read/write: '//trim(P%filename)
 	if (nft(nf90_open(P%filename,nf90_write,P%ncid))) return
 else
-	if (S%debug >= 2) write (*,*) 'Opening for read only: '//trim(P%filename)
+	if (rads_verbose >= 2) write (*,*) 'Opening for read only: '//trim(P%filename)
 	if (nft(nf90_open(P%filename,nf90_nowrite,P%ncid))) return
 endif
 
@@ -1250,7 +1266,7 @@ if (nft(nf90_get_att(P%ncid,nf90_global,'last_meas_time',date))) return
 P%end_time = strp1985f(date)
 if (nft(nf90_get_att(P%ncid,nf90_global,'cycle_number',i)) .or. i /= cycle) return
 if (nft(nf90_get_att(P%ncid,nf90_global,'pass_number',i)) .or. i /= pass) return
-if (S%debug >= 3) write (*,*) 'Start/end/equator time/longitude = ', P%equator_time, P%start_time, P%end_time, P%equator_lon
+if (rads_verbose >= 3) write (*,*) 'Start/end/equator time/longitude = ', P%equator_time, P%start_time, P%end_time, P%equator_lon
 
 S%error = rads_noerr
 
@@ -1579,7 +1595,7 @@ logical, intent(in) :: noedit
 type(rads_varinfo), pointer :: info
 integer :: i
 
-if (S%debug >= 4) write (*,*) 'rads_get_var_common: '//trim(var%name)
+if (rads_verbose >= 4) write (*,*) 'rads_get_var_common: '//trim(var%name)
 
 ! Check size of array
 if (size(data) < P%ndata) then
@@ -2058,7 +2074,7 @@ if (X%error) then
 	S%error = rads_err_xml_file
 	return
 endif
-if (S%debug >= 2) write (*,*) 'Parsing XML file '//trim(filename)
+if (rads_verbose >= 2) write (*,*) 'Parsing XML file '//trim(filename)
 call xml_options (X, ignore_whitespace = .true.)
 
 ! Parse XML file, store information in S struct
@@ -2116,9 +2132,9 @@ do
 			if (S%sat == '??') then
 				skip = -1
 			else if (attr(2,i)(:1) == '!') then
-				if (index(attr(2,i),S%sat) == 0) skip = -1
+				if (index(attr(2,i),S%sat//' ') == 0 .and. index(attr(2,i),trim(S%tree)//' ') == 0) skip = -1
 			else
-				if (index(attr(2,i),S%sat) > 0) skip = -1
+				if (index(attr(2,i),S%sat//' ') > 0 .or. index(attr(2,i),trim(S%tree)//' ') > 0) skip = -1
 			endif
 		endif
 	enddo
@@ -2578,7 +2594,7 @@ else
 		temp(n+1:n+rads_var_chunk) = rads_var (null(), null(), null(), null(), null(), .false., rads_nofield)
 		deallocate (S%var)
 		S%var => temp
-		if (S%debug >= 3) write (*,*) 'Increased S%var:',n,n+rads_var_chunk
+		if (rads_verbose >= 3) write (*,*) 'Increased S%var:',n,n+rads_var_chunk
 	endif
 	S%nvar = i
 	ptr => S%var(i)
@@ -2954,35 +2970,32 @@ end subroutine rads_long_name_and_units
 !***********************************************************************
 !*rads_stat_0d -- Print the RADS statistics for a given satellite
 !+
-subroutine rads_stat_0d (S, unit)
+subroutine rads_stat_0d (S)
 use rads_time
 type(rads_sat), intent(in) :: S
-integer(fourbyteint), intent(in), optional :: unit
 !
 ! This is the scalar version of rads_stat.
 !-----------------------------------------------------------------------
-integer(fourbyteint) :: iunit, i
-iunit = stdout
-if (present(unit)) iunit = unit
-write (iunit, 700)
-write (iunit, 710) trim(S%satellite), S%sat, timestamp(), trim(S%command)
+integer(fourbyteint) :: i
+write (rads_log_unit, 700)
+write (rads_log_unit, 710) trim(S%satellite), S%sat, timestamp(), trim(S%command)
 
-write (iunit, 720) 'PASSES QUERIED', sum(S%pass_stat)
-write (iunit, 724) 'REJECTED','SELECTED','LOWER','UPPER','STEP'
-write (iunit, 730) 'Cycle number limits', S%pass_stat(1), sum(S%pass_stat(2:7)), S%cycles
-write (iunit, 730) 'Pass number limits' , S%pass_stat(2), sum(S%pass_stat(3:7)), S%passes
-write (iunit, 731) 'Time limits' , S%pass_stat(3), sum(S%pass_stat(4:7)), datestring (S%time%info%limits)
-write (iunit, 732) 'Equator longitude limits (asc)' , S%pass_stat(5:7:2), S%eqlonlim(1,:)
-write (iunit, 732) 'Equator longitude limits (des)' , S%pass_stat(4:6:2), S%eqlonlim(0,:)
+write (rads_log_unit, 720) 'PASSES QUERIED', sum(S%pass_stat)
+write (rads_log_unit, 724) 'REJECTED','SELECTED','LOWER','UPPER','STEP'
+write (rads_log_unit, 730) 'Cycle number limits', S%pass_stat(1), sum(S%pass_stat(2:7)), S%cycles
+write (rads_log_unit, 730) 'Pass number limits' , S%pass_stat(2), sum(S%pass_stat(3:7)), S%passes
+write (rads_log_unit, 731) 'Time limits' , S%pass_stat(3), sum(S%pass_stat(4:7)), datestring (S%time%info%limits)
+write (rads_log_unit, 732) 'Equator longitude limits (asc)' , S%pass_stat(5:7:2), S%eqlonlim(1,:)
+write (rads_log_unit, 732) 'Equator longitude limits (des)' , S%pass_stat(4:6:2), S%eqlonlim(0,:)
 
-write (iunit, 721) 'PASSES AND MEASUREMENTS READ', sum(S%pass_stat(6:7)), S%total_read
-write (iunit, 724) 'REJECTED','SELECTED','LOWER','UPPER','MIN',' MAX','MEAN','STDDEV'
+write (rads_log_unit, 721) 'PASSES AND MEASUREMENTS READ', sum(S%pass_stat(6:7)), S%total_read
+write (rads_log_unit, 724) 'REJECTED','SELECTED','LOWER','UPPER','MIN',' MAX','MEAN','STDDEV'
 call rads_stat_line (S%time%info)
 call rads_stat_line (S%lat%info)
 call rads_stat_line (S%lon%info)
 
-write (iunit, 720) 'MEASUREMENTS IN REQUESTED PERIOD AND REGION', S%total_inside
-write (iunit, 724) 'REJECTED','SELECTED','LOWER','UPPER','MIN',' MAX','MEAN','STDDEV'
+write (rads_log_unit, 720) 'MEASUREMENTS IN REQUESTED PERIOD AND REGION', S%total_inside
+write (rads_log_unit, 724) 'REJECTED','SELECTED','LOWER','UPPER','MIN',' MAX','MEAN','STDDEV'
 do i = 1,S%nvar
 	if (.not.associated(S%var(i)%info)) then ! Skip undefined variables
 	else if (S%var(i)%info%selected + S%var(i)%info%rejected == 0) then ! Skip "unused" variables
@@ -2992,7 +3005,7 @@ do i = 1,S%nvar
 		call rads_stat_line (S%var(i)%info)
 	endif
 enddo
-write (iunit, 700)
+write (rads_log_unit, 700)
 
 700 format (134('#'))
 710 format ('# Editing statistics for ',a,' (',a,')'/'# Created: ',a,' UTC: ',a)
@@ -3008,16 +3021,16 @@ contains
 subroutine rads_stat_line (info)
 type(rads_varinfo), intent(in) :: info
 real(eightbytereal), parameter :: sec2000 = 473299200d0
-write (iunit, '("# ",a," [",a,"]",t43,2i10)', advance='no') trim(info%long_name), trim(info%units), &
+write (rads_log_unit, '("# ",a," [",a,"]",t43,2i10)', advance='no') trim(info%long_name), trim(info%units), &
 	info%rejected, info%selected
 if (info%units(:13) /= 'seconds since') then
-	write (iunit, '(6f12.3)') info%limits, info%xmin, info%xmax, info%mean, sqrt(info%sum2/(info%selected-1))
+	write (rads_log_unit, '(6f12.3)') info%limits, info%xmin, info%xmax, info%mean, sqrt(info%sum2/(info%selected-1))
 else if (info%units(15:18) == '1985') then
-	write (iunit, '(5a,f12.0)') datestring (info%limits), datestring(info%xmin), datestring(info%xmax), &
+	write (rads_log_unit, '(5a,f12.0)') datestring (info%limits), datestring(info%xmin), datestring(info%xmax), &
 		datestring(info%mean), sqrt(info%sum2/(info%selected-1))
 else
-	write (iunit, '(5a,f12.0)') datestring (info%limits+sec2000), datestring(info%xmin+sec2000), datestring(info%xmax+sec2000), &
-		datestring(info%mean+sec2000), sqrt(info%sum2/(info%selected-1))
+	write (rads_log_unit, '(5a,f12.0)') datestring (info%limits+sec2000), datestring(info%xmin+sec2000), &
+		datestring(info%xmax+sec2000), datestring(info%mean+sec2000), sqrt(info%sum2/(info%selected-1))
 endif
 end subroutine rads_stat_line
 
@@ -3037,12 +3050,11 @@ end function datestring
 
 end subroutine rads_stat_0d
 
-subroutine rads_stat_1d (S, unit)
+subroutine rads_stat_1d (S)
 type(rads_sat), intent(in) :: S(:)
-integer(fourbyteint), intent(in), optional :: unit
 integer :: i
 do i = 1,size(S)
-	if (S(i)%sat /= '') call rads_stat_0d (S(i), unit)
+	if (S(i)%sat /= '') call rads_stat_0d (S(i))
 enddo
 end subroutine rads_stat_1d
 
@@ -3074,7 +3086,7 @@ character(len=*), intent(in) :: string
 type(rads_pass), intent(in), optional :: P
 !
 ! This routine prints an error message and sets the error code.
-! The message is subpressed when -q is used (S%debug < 0)
+! The message is subpressed when -q is used (rads_verbose < 0)
 !
 ! Arguments:
 !  S        : Satellite/mission dependent structure
@@ -3085,7 +3097,7 @@ type(rads_pass), intent(in), optional :: P
 ! Error code:
 !  S%error  : Will be set to ierr when not rads_noerr
 !-----------------------------------------------------------------------
-if (S%debug >= 0) call rads_message (string, P)
+if (rads_verbose >= 0) call rads_message (string, P)
 if (ierr /= rads_noerr) S%error = ierr
 end subroutine rads_error
 
@@ -3256,7 +3268,8 @@ write (iunit, 1300) trim(progname)
 '  --h=H0,H1                 Specify range for SLA (m) (now --sla=H0,H1)'// &
 'Common [rads_options] are:'/ &
 '  -q, --quiet               Suppress warning messages (but keeps fatal error messages)' / &
-'  -v, --debug=LEVEL         Set debug level'/ &
+'  -v, --debug=LEVEL         Set debug/verbosity level'/ &
+'  --log=FILENAME            Send statistics to FILENAME (default is standard output)'/ &
 '  --args=FILENAME           Get any of the above arguments from FILENAME (one argument per line)'/ &
 '  --help                    Print this syntax massage'/ &
 '  --version                 Version info')
@@ -3294,7 +3307,7 @@ if (associated(S%phases)) n = size(S%phases)
 do i = 1,n
 	if (S%phases(i)%name(1:1) == name(1:1)) then
 		phase => S%phases(i)
-		phase%dataroot = trim(S%dataroot)//'/'//S%sat//'/'//trim(name)
+		phase%dataroot = trim(S%dataroot)//'/'//trim(S%tree)//'/'//trim(name)
 		return
 	endif
 enddo
@@ -3318,7 +3331,7 @@ endif
 ! Initialize the new phase information and direct the pointer
 S%phases(n) = rads_phase (name(1:1), '', '', (/999,0/), 0, nan, nan, nan, nan, 0, 0, nan, nan, nan, 0, 0, null())
 phase => S%phases(n)
-phase%dataroot = trim(S%dataroot)//'/'//S%sat//'/'//trim(name)
+phase%dataroot = trim(S%dataroot)//'/'//trim(S%tree)//'/'//trim(name)
 end function rads_get_phase
 
 !***********************************************************************
@@ -3470,18 +3483,17 @@ S%eqlonlim(1,2) = S%lon%info%limits(2) - min(l(1),l(2)) + 2d0
 S%eqlonlim(0,1) = S%lon%info%limits(1) + min(l(1),l(2)) - 2d0
 S%eqlonlim(0,2) = S%lon%info%limits(2) + max(l(1),l(2)) + 2d0
 
-if (S%debug >= 3) write (*,*) "Eqlonlim = ",S%eqlonlim
+if (rads_verbose >= 3) write (*,*) "Eqlonlim = ",S%eqlonlim
 
 end subroutine rads_traxxing
 
 !***********************************************************************
 !*rads_progress_bar -- Print and update progress of scanning cycles/passes
 !+
-subroutine rads_progress_bar (S, P, nselpass, unit)
+subroutine rads_progress_bar (S, P, nselpass)
 type(rads_sat), intent(in) :: S
 type(rads_pass), intent(in) :: P
 integer(fourbyteint), intent(in) :: nselpass
-integer(fourbyteint), intent(in), optional :: unit
 !
 ! This routine prints information on the progress of cycling through
 ! cycles and passes of satellite data. If used, it should preferably be
@@ -3491,9 +3503,8 @@ integer(fourbyteint), intent(in), optional :: unit
 !  S        : Satellite/mission dependent structure
 !  P        : Pass structure
 !  nselpass : Number of measurements selected in this pass
-!  unit     : Optional Fortran output unit (6 = stdout (default), 0 = stderr)
 !-----------------------------------------------------------------------
-integer :: pos_old = 50, lin_old = -1, cycle_old = -1, pos, lin, logunit, i
+integer :: pos_old = 50, lin_old = -1, cycle_old = -1, pos, lin, i
 
 ! Formats for printing progress report
 
@@ -3508,32 +3519,30 @@ integer :: pos_old = 50, lin_old = -1, cycle_old = -1, pos, lin, logunit, i
 720 format(/2i5,'  ')
 750 format(a)
 
-logunit = stdout
-if (present(unit)) logunit = unit
-if (cycle_old < 0) write (logunit,700) trim(S%satellite),trim(S%phase%name)
+if (cycle_old < 0) write (rads_log_unit,700) trim(S%satellite),trim(S%phase%name)
 pos = mod(P%pass-1,100)+1
 lin = int((P%pass-1)/100)
 if (P%cycle /= cycle_old) then
-	write (logunit,710,advance='no')     ! Print header
+	write (rads_log_unit,710,advance='no')     ! Print header
 	pos_old = 100
 	cycle_old = P%cycle
 endif
 if (pos_old == 100 .or. lin_old /= lin) then
-	write (logunit,720,advance='no') P%cycle,int((P%pass-1)/100)*100+1
+	write (rads_log_unit,720,advance='no') P%cycle,int((P%pass-1)/100)*100+1
 	! Start new line, print cycle nr and pass nr
 	pos_old = 0
 endif
 do i = pos_old+1,pos-1
-	write (logunit,750,advance='no') ' ' ! Fill up to current pass with ' '
+	write (rads_log_unit,750,advance='no') ' ' ! Fill up to current pass with ' '
 enddo
 if (S%error /= rads_noerr) then
-	write (logunit,750,advance='no') '-' ! Print - for non existing pass
+	write (rads_log_unit,750,advance='no') '-' ! Print - for non existing pass
 else if (P%ndata == 0) then
-	write (logunit,750,advance='no') 'x' ! Print x for empty pass
+	write (rads_log_unit,750,advance='no') 'x' ! Print x for empty pass
 else if (nselpass == 0) then
-	write (logunit,750,advance='no') 'o' ! Print o when no data is selected
+	write (rads_log_unit,750,advance='no') 'o' ! Print o when no data is selected
 else
-	write (logunit,750,advance='no') '#' ! Print # when data available
+	write (rads_log_unit,750,advance='no') '#' ! Print # when data available
 endif
 pos_old = pos
 lin_old = lin
@@ -3618,7 +3627,7 @@ else
 endif
 
 ! Create the (new) data file
-if (S%debug >= 2) write (*,*) 'Creating ',trim(P%filename),P%ndata
+if (rads_verbose >= 2) write (*,*) 'Creating ',trim(P%filename),P%ndata
 if (nft(nf90_create(P%filename, nf90_write+nf90_nofill, P%ncid))) then
 	call rads_error (S, rads_err_nc_create, 'Error creating file', P)
 	return

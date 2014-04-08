@@ -128,14 +128,14 @@ do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
 	do pass = S%passes(1), S%passes(2), S%passes(3)
 		call rads_open_pass (S, P, cycle, pass)
 		if (P%ndata > 0) call process_pass (P%ndata, S%nsel)
-		if (S%debug >= 1) call rads_progress_bar (S, P, nselpass)
+		if (rads_verbose >= 1) call rads_progress_bar (S, P, nselpass)
 		call rads_close_pass (S, P)
 	enddo
 enddo
 760 format(/'Maximum number of output records reached (',i0,' >= ',i0,')')
 
 ! Finish progress bar
-if (S%debug >= 1) write (*,*)
+if (rads_verbose >= 1) write (*,*)
 
 ! Close data file before exit
 if (outname /= '') call close_datafile

@@ -38,7 +38,7 @@ type(rads_pass) :: P
 type(rads_var), pointer :: var, temp(:)
 
 ! Local declarations, etc.
-integer(fourbyteint) :: outunit, listunit = -1, logunit = -1
+integer(fourbyteint) :: outunit, listunit = -1
 character(len=rads_cmdl) :: outname = ''
 character(len=640) :: format_string
 integer(fourbyteint) :: i, j, l, ios, cycle, pass, step = 1, nseltot = 0, nselmax = huge(0_fourbyteint)
@@ -57,7 +57,7 @@ real(eightbytereal), allocatable :: r(:), q(:)
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('r::fs:o: step: list: log: output: maxrec:')
+call rads_set_options ('r::fs:o: step: list: output: maxrec:')
 call rads_init (Sats)
 if (any(Sats%error /= rads_noerr)) call rads_exit ('Fatal error')
 
@@ -93,9 +93,6 @@ do i = 1,rads_nopt
 	case ('list')
 		listunit = getlun()
 		open (listunit, file=rads_opt(i)%arg, status='replace')
-	case ('log')
-		logunit = getlun()
-		open (logunit, file=rads_opt(i)%arg, status='replace')
 	end select
 enddo
 
@@ -137,12 +134,11 @@ do j = 1,msat
 	! Open single output file, if requested
 	if (outname == '-') then
 		outunit = stdout
-		if (logunit < 0) logunit = stderr
+		if (rads_log_unit == stdout) rads_log_unit = stderr
 	else if (outname /= '') then
 		outunit = getlun()
 		open (outunit, file=outname, status='replace')
 		if (listunit >= 0) write (listunit,'(a)') trim(outname)
-		if (logunit < 0) logunit = stdout
 	endif
 
 	! Determine format string for ASCII output
@@ -162,7 +158,7 @@ do j = 1,msat
 	do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
 		! Stop processing after too many output lines
 		if (nseltot >= nselmax) then
-			write (logunit,760) nseltot,nselmax
+			write (rads_log_unit,760) nseltot,nselmax
 			exit
 		endif
 
@@ -170,7 +166,7 @@ do j = 1,msat
 		do pass = S%passes(1), S%passes(2), S%passes(3)
 			call rads_open_pass (S, P, cycle, pass)
 			if (P%ndata > 0) call process_pass (P%ndata, S%nsel)
-			if (S%debug >= 1 .and. outunit /= logunit) call rads_progress_bar (S, P, nselpass, logunit)
+			if (rads_verbose >= 1 .and. outunit /= rads_log_unit) call rads_progress_bar (S, P, nselpass)
 			call rads_close_pass (S, P)
 		enddo
 
@@ -180,7 +176,7 @@ do j = 1,msat
 760 format(/'Maximum number of output records reached (',i0,' >= ',i0,')')
 
 	! Finish progress bar
-	if (S%debug >= 1 .and. outunit /= logunit) write (logunit,*)
+	if (rads_verbose >= 1 .and. outunit /= rads_log_unit) write (rads_log_unit,*)
 
 	! Close file before exit
 	if (outunit /= stdout) close (outunit)
@@ -192,7 +188,7 @@ do j = 1,msat
 enddo	! Next satellite
 
 ! Print overall statistics and close RADS
-call rads_stat (Sats, logunit)
+call rads_stat (Sats)
 call rads_end (Sats)
 
 contains
@@ -213,7 +209,6 @@ write (*,1300)
 '  -sp, -sc                  Include statistics per pass or per cycle'/ &
 '  --step=N                  Step through records with stride N (default = 1)'/ &
 '  --list=FILENAME           Specify file name in which to write list of output files'/ &
-'  --log=FILENAME            Specify file name in which to write log (statistics)'/ &
 '  --maxrec=N                Specify maximum number of output records (default = unlimited)'/ &
 '  -o, --output=FILENAME     Specify name of a single output file (default is pass files, - is stdout)')
 stop

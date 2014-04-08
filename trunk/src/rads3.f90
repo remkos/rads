@@ -45,7 +45,7 @@ module rads3
 ! subroutine getraw_stat (unit)
 ! - RADS4 library provides different output from RADS3
 !
-! function radsargs1 (usage, sat, debug)
+! function radsargs1 (usage, sat, verbose)
 ! - Runs rads_init based on command line arguments and prevends getraw_init from
 !   running a second time
 ! - Provides all common synopsis info, not just for sat=, debug=, -v
@@ -67,7 +67,7 @@ subroutine getraw_init (mission, verbose)
 use rads
 character(len=*), intent(in) :: mission
 integer(fourbyteint), intent(in) :: verbose
-if (.not.rads_init_done) call rads_init (S, mission, debug=verbose)
+if (.not.rads_init_done) call rads_init (S, mission, verbose)
 rads_init_done = .true.
 end subroutine getraw_init
 
@@ -149,14 +149,15 @@ end subroutine getraw_factors
 subroutine getraw_stat (unit)
 use rads
 integer(fourbyteint), intent(in) :: unit
-call rads_stat (S, unit)
+rads_log_unit = unit
+call rads_stat (S)
 end subroutine getraw_stat
 
-function radsargs1 (usage, sat, debug)
+function radsargs1 (usage, sat, verbose)
 use rads
 integer(fourbyteint), intent(in) :: usage
 character(len=*), intent(out) :: sat
-integer(fourbyteint), intent(out) :: debug
+integer(fourbyteint), intent(out) :: verbose
 logical :: radsargs1
 radsargs1 = .false.
 if (usage == 3) then
@@ -168,7 +169,7 @@ rads_init_done = .true.
 radsargs1 = (S%error /= rads_noerr)
 if ((radsargs1 .and. usage == 1) .or. usage == 2) call rads_synopsis
 sat = S%sat//'/'//trim(S%phase%name)
-debug = S%debug
+verbose = rads_verbose
 end function radsargs1
 
 function radsargs2 (usage, cyc0, cyc1, pass0, pass1, dpass, nsel, sel)

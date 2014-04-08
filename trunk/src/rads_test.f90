@@ -33,7 +33,7 @@ call cpu_time(cpu(1))
 
 write (*,*) 'Start rads_init'
 call rads_init (S)
-write (*,*) 'debug =',S%debug
+write (*,*) 'debug =',rads_verbose
 do cycle = S%cycles(1),S%cycles(2)
 	do pass = S%passes(1),S%passes(2)
 		call rads_open_pass (S, P, cycle, pass)
