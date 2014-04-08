@@ -3022,7 +3022,7 @@ Global RADS configuration file
 		<cycles>6 94</cycles>
 		<repeat>35.0 1002</repeat>
 		<ref_pass>2002-09-30T21:59:30 0.13 10 1</ref_pass>
-		<start_time>2002-09-24</start_time>
+		<start_time>2002-05-14</start_time>
 	</phase>
 	<phase name="c">
 		<mission>Extension Phase</mission>
