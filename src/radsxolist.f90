@@ -47,14 +47,15 @@ character(len=1) :: order = ''
 character(len=4) :: statname(5) = (/ 'min ', 'max ', 'mean', 'rms ', 'std ' /)
 integer(fourbyteint), parameter :: msat = 20
 type :: sat_
-	character(len=4) :: name
+	character(len=2) :: sat
 	real(eightbytereal) :: period, altsig, orberr, inclination
+	logical :: mask
 end type sat_
 type(sat_) :: sat(msat)
-character(len=3*msat) :: satlist = ''
+character(len=3*msat) :: satlist = '', use_sats = ''
 type(rads_sat) :: S
 character(len=*), parameter :: optlist = &
-	'e::b::o:r:dsnltp lon: lat: dt: edit:: bin:: order: replace: dual single nolist both-legs both-times ' // &
+	'S:e::b::o:r:dsnltp sat: lon: lat: dt: edit:: bin:: order: replace: dual single nolist both-legs both-times ' // &
 	' time: ymd: doy: sec: check-flag: full-year tbias:: pass-info'
 
 integer(fourbyteint) :: var0 = 0, check_flag = -1
@@ -87,6 +88,8 @@ do
 	case ('!') ! End of arguments
 		exit
 	case (':') ! Ignore unknown option
+	case ('S', 'sat')
+		use_sats = optarg(:3*msat)
 	case ('lon')
 		read (optarg, *, iostat=ios) lon0,lon1
 	case ('lat')
@@ -175,6 +178,7 @@ character(len=rads_naml) :: legs, varnm
 real(eightbytereal) :: mean, sigma
 real(eightbytereal), parameter :: day = 86400d0
 type(rads_var), pointer :: ptr
+logical :: old
 
 ! Open netCDF file
 write (*, 600) trim(filename)
@@ -220,21 +224,17 @@ if (nft (nf90_get_att (ncid, nf90_global, 'legs', legs))) legs = 'undetermined u
 
 ! Get essential satellite information
 ! Older files only have IDs, newer have the satellite abbreviations
-if (nf90_get_att (ncid, get_varid('satid'), 'flag_meanings', satlist) == nf90_noerr) then
-	do i = 1,len_trim(satlist)/3+1
-		call rads_init (S, satlist(i*3-2:i*3-1))
-		sat(S%satid) = sat_ (S%sat, 2*S%phase%pass_seconds, &
-			S%xover_params(1), S%xover_params(2), S%inclination)
-	enddo
-else
-	satlist = 'g3 ss gs e1 tx pn e2 g1 j1 n1 j2 c2 sa'
-	do i = 1,13
-		if (.not.any(trk%satid == i)) cycle
-		call rads_init (S, satlist(i*3-2:i*3-1))
-		sat(S%satid) = sat_ (S%sat, 2*S%phase%pass_seconds, &
-			S%xover_params(1), S%xover_params(2), S%inclination)
-	enddo
-endif
+old = nft (nf90_get_att (ncid, get_varid('satid'), 'flag_meanings', satlist))
+if (old) satlist = 'g3 ss gs e1 tx pn e2 g1 j1 n1 j2 c2 sa'
+do i = 1,len_trim(satlist),3
+	if (old) then
+		 if (.not.any(trk%satid == i/3+1)) cycle
+	endif
+	call rads_init (S, satlist(i:i+1))
+	sat(S%satid) = sat_ (S%sat, 2*S%phase%pass_seconds, &
+		S%xover_params(1), S%xover_params(2), S%inclination, .true.)
+	if (use_sats /= '') sat(S%satid)%mask = (index(use_sats, S%sat) > 0)
+enddo
 
 ! Start format string with lat, lon, time
 fmt_str = '(' // trim(S%lat%info%format) // ',1x,' // trim(S%lon%info%format) // ',1x,' // &
@@ -303,6 +303,10 @@ if (lon1 > lon0) where (var(2,:,-1) < lon0 .or. var(2,:,-1) > lon1) mask = .fals
 if (t1   > t0  ) where (var(1,:, 0) < t0   .or. var(1,:, 0) > t1   .or. &
 						var(2,:, 0) < t0   .or. var(2,:, 0) > t1  ) mask = .false.
 if (dt1  > dt0 ) where (abs(var(1,:,0)-var(2,:,0)) < dt0 .or. abs(var(1,:,0)-var(2,:,0)) > dt1) mask = .false.
+
+! Select only specified satellites
+if (use_sats /= '') &
+	where (.not.sat(trk(track(1,:))%satid)%mask .or. .not.sat(trk(track(2,:))%satid)%mask) mask = .false.
 
 ! Mask out based on data flag (for use with CryoSat)
 if (id_flag > 0) where (var(1,:,id_flag) /= check_flag) mask = .false.
@@ -510,6 +514,7 @@ endif
 'Required argument:' / &
 '  FILENAME                  Name of input netCDF xover file'// &
 'Optional arguments [options] are:'/ &
+'  -S, --sat=SAT1[,SAT2,..]  Comma-separeted list of satellites (default = all)' / &
 '  --lon=LON0,LON1           Specify longitude boundaries (deg)'/ &
 '  --lat=LAT0,LAT1           Specify latitude boundaries (deg)'/ &
 '  --t=T0,T1                 Specify time selection (optionally use --ymd=, --doy=,'/ &
