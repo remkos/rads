@@ -294,8 +294,8 @@ else
 endif
 
 ! Mask out ascending or descending passes on first satellite
-if (dual_asc) where (trk(track(1,:))%pass == 0) mask = .false.
-if (dual_des) where (trk(track(1,:))%pass == 1) mask = .false.
+if (dual_asc) where (modulo(trk(track(1,:))%pass,2) == 0) mask = .false.
+if (dual_des) where (modulo(trk(track(1,:))%pass,2) == 1) mask = .false.
 
 ! Mask out data not in specified range
 if (lat1 > lat0) where (var(1,:,-1) < lat0 .or. var(1,:,-1) > lat1) mask = .false.
