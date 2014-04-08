@@ -34,7 +34,8 @@ integer(fourbyteint) :: nsel = 0, reject = 9999, cycle, pass, i, j, ios, &
 	nbins, nsat = 0, ntrx = 0, ntrx1, ntrx2, type_sla = 1, step = 1, ncols
 real(eightbytereal) :: dt = 0.97d0
 character(len=rads_naml) :: prefix = 'radscolin_p', suffix = '.nc', satlist
-logical :: ascii = .true., out_data = .true., out_mean = .false., out_sdev = .false., force = .false., boz_format = .false.
+logical :: ascii = .true., out_data = .true., out_mean = .false., out_sdev = .false., out_diff = .false., &
+	force = .false., boz_format = .false.
 real(eightbytereal), allocatable :: data(:,:,:)
 logical, allocatable :: mask(:,:)
 integer(fourbyteint), allocatable :: nr_in_bin(:), idx(:)
@@ -52,7 +53,7 @@ type(info_), allocatable :: info(:)
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('adsnNfo::r:: step: dt: output:')
+call rads_set_options ('adhsnNfo::r:: step: dt: output:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 
@@ -97,6 +98,8 @@ do i = 1,rads_nopt
 		out_mean = .true.
 	case ('s')
 		out_sdev = .true.
+	case ('h')
+		out_diff = .true.
 	case ('d')
 		out_data = .false.
 	case ('f')
@@ -148,6 +151,7 @@ write (stderr,1300)
 '  --step=N                  Write out only every N points'/ &
 '  -a                        Output mean in addition to pass data'/ &
 '  -s                        Output standard deviation in addition to pass data'/ &
+'  -h                        Compute the collinear difference between the first and second half of selected tracks'/ &
 '  -d                        Do not output pass data'/ &
 '  -f                        Force comparison, even when missions are not collinear'/ &
 '  -o, --out[=OUTNAME]       Create netCDF output by pass. Optionally specify filename including "#", which'/ &
@@ -161,16 +165,16 @@ end subroutine synopsis
 subroutine process_pass
 real(eightbytereal), allocatable :: temp(:)
 integer, allocatable :: bin(:)
-integer :: i, j, k, m
+integer :: j, k, m, ndata
 type(rads_pass) :: P
 
 ! Initialize
 data = nan
-i = 0
 ntrx = 0
 nr_in_bin = 0
 mask = .false.
 stat = stat_ (0, 0d0, 0d0)
+ndata = 0
 
 ! Read in data
 do m = 1,nsat
@@ -183,9 +187,12 @@ do m = 1,nsat
 			call rads_exit ('Satellite missions '//S(m)%sat//'/'//trim(S(m)%phase%name)// &
 				' and '//S(1)%sat//'/'//trim(S(1)%phase%name)//' are not collinear')
 		endif
-		if (P%ndata > 0) then
+		if (P%ndata > 0 .or. out_diff) then
 			ntrx = ntrx + 1 ! track counter
+			ndata = ndata + P%ndata ! data counter
 			info(ntrx) = info_ ('    '//S(m)%sat, S(m)%satid, int(cycle,twobyteint), P%ndata)
+		endif
+		if (P%ndata > 0) then
 			allocate (temp(P%ndata),bin(P%ndata))
 			bin = nint((P%tll(:,1) - P%equator_time) / dt) ! Store bin nr associated with measurement
 			do j = 1,nsel
@@ -199,6 +206,20 @@ do m = 1,nsat
 		call rads_close_pass (S(m), P)
 	enddo
 enddo
+
+! Skip this pass if no data is found
+if (ndata == 0) return
+
+! If requested, do difference of first half and second half of tracks
+if (out_diff) then
+	ntrx = ntrx / 2
+	do j = 1,ntrx
+		data(j,:,:) = data(j,:,:) - data(j+ntrx,:,:)
+	enddo
+	do j = 2*ntrx,ntrx+1,-1
+		info(j+2) = info(j)
+	enddo
+endif
 
 ! Specify the columns for statistics
 ntrx1 = ntrx + 1
@@ -370,9 +391,10 @@ logical :: first = .true.
 integer :: i, j, k
 character(len=rads_strl) :: format_string
 
-600 format('# RADS collinear track file'/'# Created: ',a,' UTC: ',a)
-610 format('#'/'# Pass      = ',i4.4/'# Satellite =',999(1x,a6))
+600 format('# RADS collinear track file'/'# Created: ',a,' UTC: ',a/'#'/'# Pass      = ',i4.4)
+610 format('# Satellite =',999(1x,a6))
 615 format('# Cycles    =',999(4x,i3.3))
+618 format('# ... minus ...')
 620 format('#'/'# Column ranges for each variable:')
 622 format('# ',i4,' -',i4,' : ')
 625 format('# ',i4,7x,': ',a)
@@ -384,13 +406,18 @@ if (.not.first) write (*,*) ! Skip line between passes
 first = .false.
 
 ! Describe data set per variable
-write (*,600) timestamp(), trim(S(1)%command)
+write (*,600) timestamp(), trim(S(1)%command), pass
 if (out_data .or. out_mean .or. out_sdev) then
-	write (*,610) pass, info(1:ncols)%sat
+	write (*,610) info(1:ncols)%sat
 	write (*,615) info(1:ncols)%cycle
 else
-	write (*,610) pass, info(1:ntrx)%sat
+	write (*,610) info(1:ntrx)%sat
 	write (*,615) info(1:ntrx)%cycle
+endif
+if (out_diff .and. out_data) then
+	write (*,618)
+	write (*,610) info(ntrx+3:2*ntrx+2)%sat
+	write (*,615) info(ntrx+3:2*ntrx+2)%cycle
 endif
 
 ! Describe variables
