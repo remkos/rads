@@ -35,7 +35,7 @@ integer(fourbyteint) :: nsel = 0, reject = 9999, cycle, pass, i, j, ios, &
 real(eightbytereal) :: dt = 0.97d0
 character(len=rads_naml) :: prefix = 'radscolin_p', suffix = '.nc', satlist
 logical :: ascii = .true., out_data = .true., out_mean = .false., out_sdev = .false., out_diff = .false., &
-	out_track = .false., out_cumul = .false., force = .false., boz_format = .false.
+	out_track = .true., out_cumul = .false., force = .false., boz_format = .false.
 real(eightbytereal), allocatable :: data(:,:,:)
 logical, allocatable :: mask(:,:)
 integer(fourbyteint), allocatable :: nr_in_bin(:), idx(:)
