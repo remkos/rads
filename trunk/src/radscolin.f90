@@ -35,7 +35,7 @@ integer(fourbyteint) :: nsel = 0, reject = 9999, cycle, pass, i, j, ios, &
 real(eightbytereal) :: dt = 0.97d0
 character(len=rads_naml) :: prefix = 'radscolin_p', suffix = '.nc', satlist
 logical :: ascii = .true., out_data = .true., out_mean = .false., out_sdev = .false., out_diff = .false., &
-	out_cumul = .false., force = .false., boz_format = .false.
+	out_track = .false., out_cumul = .false., force = .false., boz_format = .false.
 real(eightbytereal), allocatable :: data(:,:,:)
 logical, allocatable :: mask(:,:)
 integer(fourbyteint), allocatable :: nr_in_bin(:), idx(:)
@@ -54,7 +54,7 @@ character(len=rads_strl) :: format_string
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('acdfhsnNo::r:: cumul diff dt: force mean no-data output:: stddev step:')
+call rads_set_options ('acdfhstnNo::r:: cumul diff dt: force mean no-pass no-track output:: stddev step:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 
@@ -101,8 +101,10 @@ do i = 1,rads_nopt
 		out_sdev = .true.
 	case ('h', 'diff')
 		out_diff = .true.
-	case ('d', 'no-data')
+	case ('d', 'no-pass')
 		out_data = .false.
+	case ('t', 'no-track')
+		out_track = .false.
 	case ('c', 'cumul')
 		out_cumul = .true.
 	case ('f', 'force')
@@ -175,7 +177,8 @@ write (stderr,1300)
 '  -a, --mean                Output mean in addition to pass data'/ &
 '  -s, --stddev              Output standard deviation in addition to pass data'/ &
 '  -h, --diff                Compute the collinear difference between the first and second half of selected tracks'/ &
-'  -d, --no-data             Do not output pass data'/ &
+'  -d, --no-pass             Do not output pass data'/ &
+'  -t, --no-track            Do not print along-track data (ascii output only)' / &
 '  -c, --cumul               Output cumulative statistics (ascii output only)' / &
 '  -f, --force               Force comparison, even when missions are not collinear'/ &
 '  -o, --out[=FILENAME]      Create netCDF output by pass (default is ascii output to stdout). Optionally specify'/ &
@@ -421,47 +424,50 @@ subroutine write_pass_ascii
 logical :: first = .true.
 integer :: i, j, k
 
-600 format('# RADS collinear track file'/'# Created: ',a,' UTC: ',a/'#'/'# Pass      = ',i4.4)
-610 format('# Satellite =',999(1x,a6))
-615 format('# Cycles    =',999(4x,i3.3))
-618 format('# ... minus ...')
-620 format('#'/'# Column ranges for each variable:')
-622 format('# ',i4,' -',i4,' : ')
-625 format('# ',i4,7x,': ',a)
-630 format('#')
+600 format ('# RADS collinear track file'/'# Created: ',a,' UTC: ',a/'#')
+601 format ('# Pass      = ',i4.4)
+610 format ('# Satellite =',999(1x,a6))
+615 format ('# Cycles    =',999(4x,i3.3))
+618 format ('# ... minus ...')
+620 format ('#'/'# Column ranges for each variable:')
+622 format ('# ',i4,' -',i4,' : ')
+625 format ('# ',i4,7x,': ',a)
+630 format ('#')
 
-if (.not.first) write (*,*) ! Skip line between passes
-first = .false.
+if (first .or. out_track) then
+	if (.not.first) write (*,*) ! Skip line between passes
 
-! Describe data set per variable
-write (*,600) timestamp(), trim(S(1)%command), pass
-if (out_data .or. out_mean .or. out_sdev) then
-	write (*,610) info(1:ncols)%sat
-	write (*,615) info(1:ncols)%cycle
-else
-	write (*,610) info(1:ntrx)%sat
-	write (*,615) info(1:ntrx)%cycle
-endif
-if (out_diff .and. out_data) then
-	write (*,618)
-	write (*,610) info(ntrx+3:2*ntrx+2)%sat
-	write (*,615) info(ntrx+3:2*ntrx+2)%cycle
-endif
+	! Describe data set per variable
+	write (*,600) timestamp(), trim(S(1)%command)
+	if (out_track) write (*,601) pass
+	if (out_data .or. out_mean .or. out_sdev) then
+		write (*,610) info(1:ncols)%sat
+		write (*,615) info(1:ncols)%cycle
+	else
+		write (*,610) info(1:ntrx)%sat
+		write (*,615) info(1:ntrx)%cycle
+	endif
+	if (out_diff .and. out_data) then
+		write (*,618)
+		write (*,610) info(ntrx+3:2*ntrx+2)%sat
+		write (*,615) info(ntrx+3:2*ntrx+2)%cycle
+	endif
 
-! Describe variables
-write (*,620)
-i = 1
-if (ncols > 0) then
-	do j = 1,nsel
-		write (*,622,advance='no') i,i+ncols-1
-		call rads_long_name_and_units(S(nsat)%sel(j))
-		i = i + ncols
-	enddo
+	! Describe variables
+	write (*,620)
+	i = 1
+	if (ncols > 0) then
+		do j = 1,nsel
+			write (*,622,advance='no') i,i+ncols-1
+			call rads_long_name_and_units(S(nsat)%sel(j))
+			i = i + ncols
+		enddo
+	endif
+	write (*,625) i,'number of measurements'
+	i = i + 1
+	write (*,625) i,'record number'
+	write (*,630)
 endif
-write (*,625) i,'number of measurements'
-i = i + 1
-write (*,625) i,'record number'
-write (*,630)
 
 ! Build format string
 if (ncols == 0) then
@@ -489,13 +495,17 @@ if (boz_format) then
 endif
 
 ! Print out data that are common to some passes
-do k = -nbins,nbins,step
-	if (nr_in_bin(k) == 0) cycle
-	write (*,format_string) ' ', data(1:ncols,:,k), nr_in_bin(k), k
-enddo
+if (out_track) then
+	do k = -nbins,nbins,step
+		if (nr_in_bin(k) == 0) cycle
+		write (*,format_string) ' ', data(1:ncols,:,k), nr_in_bin(k), k
+	enddo
+endif
 
 ! Write per-pass stats
 call write_pass_stat (stat(1:ncols,:), S(1)%cycles(1), pass, ' # ')
+
+first = .false.
 
 end subroutine write_pass_ascii
 
