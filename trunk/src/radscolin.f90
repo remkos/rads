@@ -35,25 +35,26 @@ integer(fourbyteint) :: nsel = 0, reject = 9999, cycle, pass, i, j, ios, &
 real(eightbytereal) :: dt = 0.97d0
 character(len=rads_naml) :: prefix = 'radscolin_p', suffix = '.nc', satlist
 logical :: ascii = .true., out_data = .true., out_mean = .false., out_sdev = .false., out_diff = .false., &
-	force = .false., boz_format = .false.
+	out_cumul = .false., force = .false., boz_format = .false.
 real(eightbytereal), allocatable :: data(:,:,:)
 logical, allocatable :: mask(:,:)
 integer(fourbyteint), allocatable :: nr_in_bin(:), idx(:)
 type :: stat_
 	integer(fourbyteint) :: nr
-	real(eightbytereal) :: mean,sum2
+	real(eightbytereal) :: mean,var
 end type
-type(stat_), allocatable :: stat(:,:)
+type(stat_), allocatable :: stat(:,:), cumul_stat(:,:)
 type :: info_
 	character(len=6) :: sat
 	integer(twobyteint) :: satid, cycle
 	integer(fourbyteint) :: ndata
 end type
 type(info_), allocatable :: info(:)
+character(len=rads_strl) :: format_string
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('adhsnNfo::r:: step: dt: output:')
+call rads_set_options ('acdfhsnNo::r:: cumul diff dt: force mean no-data output:: stddev step:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 
@@ -94,15 +95,17 @@ do i = 1,rads_nopt
 		read (rads_opt(i)%arg, *, iostat=ios) step
 	case ('dt')
 		read (rads_opt(i)%arg, *, iostat=ios) dt
-	case ('a')
+	case ('a', 'mean')
 		out_mean = .true.
-	case ('s')
+	case ('s', 'stddev')
 		out_sdev = .true.
-	case ('h')
+	case ('h', 'diff')
 		out_diff = .true.
-	case ('d')
+	case ('d', 'no-data')
 		out_data = .false.
-	case ('f')
+	case ('c', 'cumul')
+		out_cumul = .true.
+	case ('f', 'force')
 		force = .true.
 	case ('o', 'out')
 		ascii = .false.
@@ -115,17 +118,37 @@ do i = 1,rads_nopt
 	end select
 enddo
 
+! --cumul requires --diff or --r0 and not allowed together with --out
+if (.not.out_cumul) then
+	! Continue
+else if (.not.ascii) then
+	call rads_message ('--cumul cannot be used together with -o or --out')
+	stop
+else if  (.not.out_diff .and. reject /= 0) then
+	call rads_message ('--cumul requires either -h, --diff, or -r')
+	stop
+endif
+
 ! Allocate data arrays
 nbins = nint(S(1)%phase%pass_seconds/dt * 0.6d0) ! Number of bins on either side of equator (20% margin)
 allocate (data(ntrx+2,nsel,-nbins:nbins), mask(ntrx+2,-nbins:nbins), nr_in_bin(-nbins:nbins), &
-	idx(-nbins:nbins), stat(ntrx+2,nsel), info(ntrx+2))
+	idx(-nbins:nbins), stat(ntrx+2,nsel), cumul_stat(ntrx+2,nsel), info(ntrx+2))
 
 forall (i=-nbins:nbins)	idx(i) = i
+cumul_stat = stat_ (0, 0d0, 0d0)
 
 ! Read one pass for each satellites at a time
 do pass = S(1)%passes(1), S(1)%passes(2), S(1)%passes(3)
 	call process_pass
 enddo
+
+! Write out cumulative stats, if requested
+if (out_cumul) then
+	cumul_stat%mean = cumul_stat%mean / cumul_stat%nr
+	cumul_stat%var = sqrt((cumul_stat%var - cumul_stat%nr * cumul_stat%mean**2) / (cumul_stat%nr - 1))
+	call write_pass_stat (cumul_stat(1:ncols,:), &
+		S(1)%cycles(2)-S(1)%cycles(1)+1, S(1)%passes(2)-S(1)%passes(1)+1, ' # cumul_')
+endif
 
 ! End RADS
 call rads_end (S)
@@ -149,13 +172,14 @@ write (stderr,1300)
 '  -rn                       Reject stacked data when data on any track is NaN (default)'/ &
 '  --dt=DT                   Set minimum bin size in seconds (default is determined by satellite)'/ &
 '  --step=N                  Write out only every N points'/ &
-'  -a                        Output mean in addition to pass data'/ &
-'  -s                        Output standard deviation in addition to pass data'/ &
-'  -h                        Compute the collinear difference between the first and second half of selected tracks'/ &
-'  -d                        Do not output pass data'/ &
-'  -f                        Force comparison, even when missions are not collinear'/ &
-'  -o, --out[=OUTNAME]       Create netCDF output by pass. Optionally specify filename including "#", which'/ &
-'                            is to be replaced by the psss number. Default is "radscolin_p#.nc"')
+'  -a, --mean                Output mean in addition to pass data'/ &
+'  -s, --stddev              Output standard deviation in addition to pass data'/ &
+'  -h, --diff                Compute the collinear difference between the first and second half of selected tracks'/ &
+'  -d, --no-data             Do not output pass data'/ &
+'  -c, --cumul               Output cumulative statistics (ascii output only)' / &
+'  -f, --force               Force comparison, even when missions are not collinear'/ &
+'  -o, --out[=FILENAME]      Create netCDF output by pass (default is ascii output to stdout). Optionally specify'/ &
+'                            FILENAME including "#", to be replaced by the psss number. Default is "radscolin_p#.nc"')
 stop
 end subroutine synopsis
 
@@ -187,7 +211,7 @@ do m = 1,nsat
 			call rads_exit ('Satellite missions '//S(m)%sat//'/'//trim(S(m)%phase%name)// &
 				' and '//S(1)%sat//'/'//trim(S(1)%phase%name)//' are not collinear')
 		endif
-		if (P%ndata > 0 .or. out_diff) then
+		if (P%ndata > 0 .or. out_diff .or. reject == 0) then
 			ntrx = ntrx + 1 ! track counter
 			ndata = ndata + P%ndata ! data counter
 			info(ntrx) = info_ ('    '//S(m)%sat, S(m)%satid, int(cycle,twobyteint), P%ndata)
@@ -261,11 +285,18 @@ mask(ntrx1:ntrx2,:) = isan_(data(ntrx1:ntrx2,type_sla,:))
 ! Compute per-track statistics (vertically)
 do i = 1,ntrx2
 	do j = 1,nsel
-		call mean_variance (pack(data(i,j,:),mask(i,:)), stat(i,j)%mean, stat(i,j)%sum2)
+		call mean_variance (pack(data(i,j,:),mask(i,:)), stat(i,j)%mean, stat(i,j)%var)
 	enddo
 	stat(i,:)%nr = count(mask(i,:))
 enddo
-stat%sum2 = sqrt(stat%sum2) ! Variance to std dev
+stat%var = sqrt(stat%var) ! Variance to std dev
+
+! Do cumulative statistics, if requested
+if (out_cumul) then
+	cumul_stat%mean = cumul_stat%mean + stat%nr * stat%mean
+	cumul_stat%var = cumul_stat%var + stat%nr * stat%mean**2 + (stat%nr - 1) * stat%var**2
+	cumul_stat%nr = cumul_stat%nr + stat%nr
+endif
 
 ! Determine column ranges for output
 ncols = 0
@@ -389,7 +420,6 @@ end subroutine write_pass_netcdf
 subroutine write_pass_ascii
 logical :: first = .true.
 integer :: i, j, k
-character(len=rads_strl) :: format_string
 
 600 format('# RADS collinear track file'/'# Created: ',a,' UTC: ',a/'#'/'# Pass      = ',i4.4)
 610 format('# Satellite =',999(1x,a6))
@@ -399,8 +429,6 @@ character(len=rads_strl) :: format_string
 622 format('# ',i4,' -',i4,' : ')
 625 format('# ',i4,7x,': ',a)
 630 format('#')
-640 format('# ',a,': ')
-650 format('# nr : ',999i6)
 
 if (.not.first) write (*,*) ! Skip line between passes
 first = .false.
@@ -437,18 +465,18 @@ write (*,630)
 
 ! Build format string
 if (ncols == 0) then
-	format_string = '('
+	format_string = '(a1,'
 else if (ncols == 1) then
-	write (format_string,'("(",a,",")') trim(S(nsat)%sel(1)%info%format)
+	write (format_string,'("(a1,",a,",")') trim(S(nsat)%sel(1)%info%format)
 else
-	write (format_string,'("(",a,",",i3,"(1x,",a,"),")') &
+	write (format_string,'("(a1,",a,",",i3,"(1x,",a,"),")') &
 		trim(S(nsat)%sel(1)%info%format),ncols-1,trim(S(nsat)%sel(1)%info%format)
 endif
 do i = 2,nsel
 	write (format_string(len_trim(format_string)+1:),'(i3,"(1x,",a,"),")') &
 		ncols,trim(S(nsat)%sel(i)%info%format)
 enddo
-format_string(len_trim(format_string)+1:) = '2(1x,i5))'
+format_string(len_trim(format_string)+1:) = '2i9,a)'
 
 ! Do a transfer of bit patterns if needed
 if (boz_format) then
@@ -456,24 +484,34 @@ if (boz_format) then
 		if (.not.S(nsat)%sel(i)%info%boz_format) cycle
 		call bit_transfer (data(:,i,:))
 		call bit_transfer (stat(:,i)%mean)
-		call bit_transfer (stat(:,i)%sum2)
+		call bit_transfer (stat(:,i)%var)
 	enddo
 endif
 
 ! Print out data that are common to some passes
 do k = -nbins,nbins,step
 	if (nr_in_bin(k) == 0) cycle
-	write (*,format_string) data(1:ncols,:,k), nr_in_bin(k), k
+	write (*,format_string) ' ', data(1:ncols,:,k), nr_in_bin(k), k
 enddo
 
 ! Write per-pass stats
-write (*,640,advance='no') 'avg'
-write (*,format_string) stat(1:ncols,:)%mean, S(1)%cycles(1), pass
-write (*,640,advance='no') 'std'
-write (*,format_string) stat(1:ncols,:)%sum2, S(1)%cycles(1), pass
-write (*,650) stat(1:ncols,:)%nr, S(1)%cycles(1), pass
+call write_pass_stat (stat(1:ncols,:), S(1)%cycles(1), pass, ' # ')
 
 end subroutine write_pass_ascii
+
+!***********************************************************************
+! Write per-pass stats
+
+subroutine write_pass_stat (stat, cyc, pass, string)
+type(stat_) :: stat(:,:)
+integer(fourbyteint) :: cyc, pass
+character(len=*) :: string
+650 format('#',i8,999i9)
+write (*,format_string) '#', stat%mean, cyc, pass, string//'avg'
+write (*,format_string) '#', stat%var, cyc, pass, string//'std'
+write (*,650,advance='no') stat%nr, cyc, pass
+write (*,'(a)') string//'nr'
+end subroutine write_pass_stat
 
 !***********************************************************************
 
