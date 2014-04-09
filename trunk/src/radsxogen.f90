@@ -395,13 +395,16 @@ do cycle1 = S1%cycles(1), S1%cycles(2)
 	do pass1 = S1%passes(1), S1%passes(2), step
 
 		! Open a pass for S1, to be crossed with any pass of S2
+		if (rads_verbose > 2) write (*,*) 'open S1', cycle1, pass1
 		call rads_open_pass (S1, P1, cycle1, pass1)
 		if (P1%ndata <= 0) then
-			if (rads_verbose > 2) write (*,*) 'empty',P1%cycle,P1%pass
+			if (rads_verbose > 2) write (*,*) 'empty S1', P1%cycle, P1%pass
 			call rads_close_pass (S1, P1)
 			cycle
 		endif
 		call load_data (S1, P1)
+		if (rads_verbose > 2) write (*,*) 'close S1', P1%cycle, P1%pass, P1%ncid
+		call rads_close_pass (S1, P1, .true.) ! Close the pass file, but keep all its info
 
 		! Limit the time selection for P2 based on the time limits of P1
 		t0 = P1%start_time - dt
@@ -413,7 +416,7 @@ do cycle1 = S1%cycles(1), S1%cycles(2)
 			if (P2%end_time < t0) then ! Release passes that are far in the past
 				top => P2%next ! Reassign the top of the list to the next pass (if any)
 				nullify (prev)
-				if (rads_verbose > 2) write (*,*) 'release',P2%cycle,P2%pass
+				if (rads_verbose > 2) write (*,*) 'release S2', P2%cycle, P2%pass
 				call rads_close_pass (S2, P2)
 				deallocate (P2)
 				P2 => top
@@ -437,10 +440,10 @@ do cycle1 = S1%cycles(1), S1%cycles(2)
 				pass2 = S2%passes(1) - 1 + step ! Start with pass "1" or "2"
 			endif
 			allocate (P2)
-			if (rads_verbose > 2) write (*,*) 'open', cycle2, pass2
+			if (rads_verbose > 2) write (*,*) 'open S2', cycle2, pass2
 			call rads_open_pass (S2, P2, cycle2, pass2)
-			if (P2%end_time < t0) then
-				if (rads_verbose > 2) write (*,*) 'release', P2%cycle, P2%pass
+			if (P2%end_time < t0) then ! There seems to be a reason why P2%ndata == 0 is kept
+				if (rads_verbose > 2) write (*,*) 'release S2', P2%cycle, P2%pass
 				call rads_close_pass (S2, P2)
 				deallocate (P2)
 				cycle
@@ -451,6 +454,8 @@ do cycle1 = S1%cycles(1), S1%cycles(2)
 				top => P2
 			endif
 			call load_data (S2, P2)
+			if (rads_verbose > 2) write (*,*) 'close S2', P2%cycle, P2%pass, P2%ncid
+			call rads_close_pass (S2, P2, .true.) ! Close the pass file, but keep all its info
 			if (P2%start_time > t1) exit
 			if (P2%ndata > 0) call xogen_passes (S1, P1, S2, P2, dt)
 			! Point to next (empty) slot
@@ -459,6 +464,7 @@ do cycle1 = S1%cycles(1), S1%cycles(2)
 		enddo
 
 		! Clear any memory of pass P1
+		if (rads_verbose > 2) write (*,*) 'release S1', P1%cycle, P1%pass
 		call rads_close_pass (S1, P1)
 	enddo
 enddo
@@ -467,7 +473,7 @@ enddo
 
 do while (associated(top))
 	P2 => top
-	if (rads_verbose > 2) write (*,*) 'release', P2%cycle, P2%pass
+	if (rads_verbose > 2) write (*,*) 'release S2', P2%cycle, P2%pass
 	call rads_close_pass (S2, P2)
 	top => P2%next
 	deallocate (P2)
@@ -530,9 +536,6 @@ if (nr%trk > mtrk) call rads_exit ('Too many tracks')
 trk(nr%trk) = trk_ (P%equator_lon, P%equator_time, tll(1,1), tll(P%ndata,1), &
 	int(P%ndata,twobyteint), 0_twobyteint, S%satid, int(P%cycle,twobyteint), int(P%pass,twobyteint))
 P%trkid = nr%trk
-
-! Close the pass file, but keep all its info
-call rads_close_pass (S, P, .true.)
 end subroutine load_data
 
 !***********************************************************************

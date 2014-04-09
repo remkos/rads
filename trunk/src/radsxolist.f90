@@ -181,9 +181,12 @@ type(rads_var), pointer :: ptr
 logical :: old
 
 ! Open netCDF file
-write (*, 600) trim(filename)
 600 format (/'# File name     = ',a)
-call nfs (nf90_open (filename, nf90_write, ncid))
+if (nft (nf90_open (filename, nf90_write, ncid))) then
+	call rads_message ('error opening file '//trim(filename))
+	return
+endif
+write (*, 600) trim(filename)
 
 ! Get the number of xovers and number of tracks
 call nfs (nf90_inq_dimid (ncid, 'xover', i))
