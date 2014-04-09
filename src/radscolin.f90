@@ -296,9 +296,11 @@ stat%var = sqrt(stat%var) ! Variance to std dev
 
 ! Do cumulative statistics, if requested
 if (out_cumul) then
-	cumul_stat%mean = cumul_stat%mean + stat%nr * stat%mean
-	cumul_stat%var = cumul_stat%var + stat%nr * stat%mean**2 + (stat%nr - 1) * stat%var**2
-	cumul_stat%nr = cumul_stat%nr + stat%nr
+	where (stat%nr >= 2)
+		cumul_stat%mean = cumul_stat%mean + stat%nr * stat%mean
+		cumul_stat%var = cumul_stat%var + stat%nr * stat%mean**2 + (stat%nr - 1) * stat%var**2
+		cumul_stat%nr = cumul_stat%nr + stat%nr
+	endwhere
 endif
 
 ! Determine column ranges for output
