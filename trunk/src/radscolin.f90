@@ -54,7 +54,7 @@ character(len=rads_strl) :: format_string
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('acdfhstnNo::r:: cumul diff dt: force mean no-pass no-track output:: stddev step:')
+call rads_set_options ('acdfstnNo::r:: cumul diff dt: force mean no-pass no-track output:: stddev step:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 
@@ -99,7 +99,7 @@ do i = 1,rads_nopt
 		out_mean = .true.
 	case ('s', 'stddev')
 		out_sdev = .true.
-	case ('h', 'diff')
+	case ('diff')
 		out_diff = .true.
 	case ('d', 'no-pass')
 		out_data = .false.
@@ -127,7 +127,7 @@ else if (.not.ascii) then
 	call rads_message ('--cumul cannot be used together with -o or --out')
 	stop
 else if  (.not.out_diff .and. reject /= 0) then
-	call rads_message ('--cumul requires either -h, --diff, or -r')
+	call rads_message ('--cumul requires --diff or -r')
 	stop
 endif
 
@@ -176,13 +176,13 @@ write (stderr,1300)
 '  --step=N                  Write out only every N points'/ &
 '  -a, --mean                Output mean in addition to pass data'/ &
 '  -s, --stddev              Output standard deviation in addition to pass data'/ &
-'  -h, --diff                Compute the collinear difference between the first and second half of selected tracks'/ &
 '  -d, --no-pass             Do not output pass data'/ &
 '  -t, --no-track            Do not print along-track data (ascii output only)' / &
 '  -c, --cumul               Output cumulative statistics (ascii output only)' / &
 '  -f, --force               Force comparison, even when missions are not collinear'/ &
 '  -o, --out[=FILENAME]      Create netCDF output by pass (default is ascii output to stdout). Optionally specify'/ &
-'                            FILENAME including "#", to be replaced by the psss number. Default is "radscolin_p#.nc"')
+'                            FILENAME including "#", to be replaced by the psss number. Default is "radscolin_p#.nc"'/ &
+'  --diff                    Compute the collinear difference between the first and second half of selected tracks')
 stop
 end subroutine synopsis
 
