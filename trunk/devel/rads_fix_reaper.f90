@@ -204,9 +204,9 @@ if (lwet) then
 	call rads_get_var (S, P, 'sig0_ku', sig0)
 	call rads_get_var (S, P, 'dsig0_atmos_ku', dsig0)
 	if (S%sat == 'e1') then
-		d_tb_238 = -5.50d0; d_tb_365 = -5.10d0; d_sig0 = -0.76d0
+		d_tb_238 = -5.54d0; d_tb_365 = -7.52d0; d_sig0 =  0.01d0
 	else
-		d_tb_238 = -5.16d0; d_tb_365 = -4.28d0; d_sig0 =  0.06d0
+		d_tb_238 = -5.38d0; d_tb_365 = -6.68d0; d_sig0 = -0.10d0
 	endif
 	do i = 1,n
 		wet(i) = nn_l2_mwr (tb_238(i) + d_tb_238, tb_365(i) + d_tb_365, sig0(i)-dsig0(i)+d_sig0, 3)
