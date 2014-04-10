@@ -51,13 +51,13 @@ type(rads_pass) :: P
 character(len=rads_cmdl) :: path
 integer(fourbyteint) :: i, cyc, pass
 real(eightbytereal) :: time_ptr, drange_ptr
-logical :: lptr = .false., ltbias = .false., ltide = .false., luso = .false.
+logical :: lptr = .false., ltbias = .false., ltide = .false., luso = .false., lwet = .false.
 real(eightbytereal), parameter :: tbias = 0.68d-3
 
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options ('bpstu ptr tbias tide uso all')
+call rads_set_options ('bpstuw ptr tbias tide uso wet all')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
@@ -69,11 +69,14 @@ do i = 1,rads_nopt
 		ltide = .true.
 	case ('u', 'uso')
 		luso = .true.
+	case ('w', 'wet')
+		lwet = .true.
 	case ('all')
 		lptr = .true.
 		ltbias = .true.
 		ltide = .true.
 		luso = .true.
+		lwet = .true.
 	end select
 enddo
 
@@ -113,6 +116,7 @@ write (*,1310)
 '  -b, --tbias               Correct time and altitude for timing bias' / &
 '  -t, --tide                Fix the tide, subtracting load tide or adding long period tide' / &
 '  -u, --uso                 Correct range for USO drift' / &
+'  -w, --wet                 Fix radiometer wet tropo correction, taking into account TB biases' / &
 '  --all                     All of the above')
 stop
 end subroutine synopsis
@@ -122,8 +126,10 @@ end subroutine synopsis
 !-----------------------------------------------------------------------
 
 subroutine process_pass (n)
+use meteo_subs
 integer(fourbyteint), intent(in) :: n
-real(eightbytereal) :: time(n), range_ku(n), drange_uso(n), got47(n), fes04(n), a(n), alt_reaper(n)
+real(eightbytereal) :: time(n), range_ku(n), drange_uso(n), got47(n), fes04(n), a(n), alt_reaper(n), &
+	wet(n), sig0(n), dsig0(n), tb_238(n), tb_365(n), d_tb_238, d_tb_365, d_sig0
 integer :: n_changed, i, com
 
 ! Formats
@@ -190,6 +196,24 @@ if (ltbias) then
 	n_changed = n
 endif
 
+! Fix wet tropospheric correction
+
+if (lwet) then
+	call rads_get_var (S, P, 'tb_238', tb_238)
+	call rads_get_var (S, P, 'tb_365', tb_365)
+	call rads_get_var (S, P, 'sig0_ku', sig0)
+	call rads_get_var (S, P, 'dsig0_atmos_ku', dsig0)
+	if (S%sat == 'e1') then
+		d_tb_238 = -5.50d0; d_tb_365 = -5.10d0; d_sig0 = -0.76d0
+	else
+		d_tb_238 = -5.16d0; d_tb_365 = -4.28d0; d_sig0 =  0.06d0
+	endif
+	do i = 1,n
+		wet(i) = nn_l2_mwr (tb_238(i) + d_tb_238, tb_365(i) + d_tb_365, sig0(i)-dsig0(i)+d_sig0, 3)
+	enddo
+	n_changed = n
+endif
+
 ! If nothing changed, stop here
 
 if (n_changed == 0) then
@@ -209,6 +233,7 @@ if (ltbias) then
 	call rads_put_var (S, P, 'time', time)
 	call rads_put_var (S, P, 'alt_reaper', alt_reaper)
 endif
+if (lwet) call rads_put_var (S, P, 'wet_tropo_rad', wet)
 
 write (*,552) n_changed
 
