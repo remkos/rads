@@ -29,7 +29,7 @@
 !-----------------------------------------------------------------------
 !
 ! Variables to be written to RADS are:
-! time - Time since 1 Jan 85
+! time - Time since 1 Jan 85 (see note on timing bias below)
 ! lat - Latitude
 ! lon - Longitude
 ! alt_gdrd - Orbit altitude
@@ -66,6 +66,13 @@
 ! noise_floor_rms_ku - Std dev of noise floor
 ! flags_star_tracker - Star tracker flags
 ! tide_equil - Long-period tide
+!
+! tbias:
+! - Apply timing bias according to Marco's table (different for SAR and LRM data)
+! - Account for the change in timing bias in SIR1FDM/2.4 (and later) (See Ruby's e-mail of 22 Apr 2013)
+! - Adjust altitude from the product accordingly (using altitude rate)
+! - Note that this does NOT change the equator time or longitude!
+! - This is done here, because FDM and LRM can later no longer be distinguished from eachother
 !-----------------------------------------------------------------------
 program rads_gen_c2_l1r
 
@@ -91,7 +98,7 @@ character(len=14) :: l1b_version, l1r_version
 character(len=55) :: l1r_product
 real(eightbytereal) :: tai_utc, eq_time, eq_long
 integer(fourbyteint) :: passnr(2), cycnr(2), recnr(2), nrec, ncid, varid, doris_nav
-logical :: version_a, sar, fdm
+logical :: sar, fdm, lrm
 
 ! Data variables
 
@@ -115,7 +122,7 @@ type(var_) :: var(mvar)
 integer(fourbyteint), parameter :: maxint4=2147483647
 real(eightbytereal), parameter :: sec2000=473299200d0, rev_time = 5953.45d0, rev_long = -24.858d0
 real(eightbytereal), parameter :: pitch_bias = 0.096d0, roll_bias = 0.086d0, yaw_bias = 0d0	! Attitude biases to be added
-real(eightbytereal) :: uso_corr, dhellips
+real(eightbytereal) :: uso_corr, dhellips, tbias
 integer(fourbyteint) :: i, j, m, oldcyc=0, oldpass=0, mle=3, nhz=0, nwvf=0
 
 ! Initialise
@@ -230,12 +237,15 @@ do
 		cycle
 	endif
 
-! Determine if this is version A (filenames ending in A001.nc)
-! Determine if this originated from SAR
+! Determine if this originated from SAR, FDM or LRM
 
-	version_a = index(l1r_product, '_A00') > 0
-	sar = index(l1r_product, '_SIR_SA') > 0 .or. index(l1r_product, '_SIR_FBR') > 0
-	fdm = index(l1r_product, '_SIR_FDM') > 0
+	sar = (l1b_version(:7) == 'SIR1SAR')
+	fdm = (l1b_version(:7) == 'SIR1FDM')
+	lrm = (l1b_version(:7) == 'SIR1LRM')
+	if (.not.sar .and. .not.fdm .and. .not.lrm) then
+		write (*,550) 'Error: Unrecognised format'
+		cycle
+	endif
 
 ! Allocate arrays
 
@@ -243,19 +253,33 @@ do
 		t_1hz(nrec),t_20hz(20,nrec),alt(nrec),alt_20hz(20,nrec),dh(nrec), &
 		t_valid(20,nrec),valid(20,nrec),nvalid(nrec),flags(nrec))
 
+
+! Apply timing bias here, because they are different between between FDM, LRM, SAR
+! See IPF1_datation_biases_v4.xlsx by Marco Fornari.
+
+	if (sar) then
+		tbias = +0.520795d-3
+	else if (fdm .and. l1b_version(9:11) >= '2.4') then
+		tbias = -4.699112d-3 + 4.4436d-3 ! Partial correction of timing bias (See Ruby's e-mail of 22 Apr 2013)
+	else
+		tbias = -4.699112d-3
+	endif
+	tbias = tbias + 0.4d-3 ! Additional timing bias from my own research (1-Aug-2013)
+
 ! Time information
 
 	call get_var (ncid, 'time', t_1hz)
-	call new_var ('time', t_1hz + sec2000 - tai_utc)
+	call new_var ('time', t_1hz + sec2000 - tai_utc + tbias)
 	call get_var (ncid, 'time_20hz', t_20hz)
 	t_valid = (t_20hz /= 0d0)
 	valid = t_valid
 	where (.not.t_valid) t_20hz = nan
-	call new_var_2d ('time_20hz', t_20hz + sec2000 - tai_utc)
+	call new_var_2d ('time_20hz', t_20hz + sec2000 - tai_utc + tbias)
 
 ! Location information
 
 	call cpy_var ('lat', 'lat')
+
 	! Compute ellipsoid corrections
 	do i = 1,nrec
 		dh(i) = dhellips(1,a(i))
@@ -265,15 +289,18 @@ do
 	call cpy_var ('lon_20hz', 'lon_20hz')
 	call get_var (ncid, 'alt', alt)
 	call get_var (ncid, 'alt_20hz', alt_20hz)
+
 	! If input is FDM and there is no DORIS Navigator orbit (i.e. predicted orbit)
 	! we blank the orbit out entirely: it would be useless anyhow
 	if (fdm .and. doris_nav == 0) dh = nan
-	call new_var ('alt_cnes', alt + dh)
+
+	! Update altitude, taking into account ellipsoid correction and timing bias
+	call cpy_var ('alt_rate_20hz', '', 'alt_rate')
+	call new_var ('alt_cnes', alt + dh + tbias * a)
 	if (nhz /= 0) then
-		forall (i = 1:20) d(i,:) = alt_20hz(i,:) + dh(:)
+		forall (i = 1:20) d(i,:) = alt_20hz(i,:) + dh(:) + tbias * d(i,:)
 		call new_var_2d ('alt_cnes_20hz', d)
 	endif
-	call cpy_var ('alt_rate_20hz', '', 'alt_rate')
 
 ! 20-Hz corrections
 
@@ -481,6 +508,14 @@ end subroutine synopsis
 !-----------------------------------------------------------------------
 
 subroutine cpy_var (varin, varout, varmean, varrms)
+! Copy 1-Hz data to memory buffer, or
+! copy 20-Hz data or waveforms to memory buffer, optionally
+! making mean and standard deviation.
+! At return:
+! a = 1-Hz (mean)
+! b = 1-Hz stddev
+! d = 20-Hz
+! w = waveform
 character(len=*), intent(in) :: varin, varout
 character(len=*), intent(in), optional :: varmean, varrms
 if (index(varin,'_20hz') == 0) then
