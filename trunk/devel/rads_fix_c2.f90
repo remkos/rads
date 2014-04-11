@@ -169,7 +169,8 @@ write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
 lrm_l2 = index(P%original,'IPF2LRM') > 0
 fdm_l2 = index(P%original,'IPF2FDM') > 0
 version_a = index(P%original,'_A00') > 0
-fdm_l1_v24 = index(P%original,'SIR1FDM/2.4') > 0
+i = index(P%original,'SIR1FDM/2.')
+fdm_l1_v24 = (i > 0 .and. P%original(i+8:i+10) >= '2.4')
 
 old_version_a = (index(P%original,'-2010') > 0 .or. &
 	index(P%original,'-JAN-2011') > 0 .or. index(P%original,'-FEB-2011') > 0)
