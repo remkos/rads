@@ -17,6 +17,67 @@
 
 module rads_time
 
+!***********************************************************************
+!*sec85ymdhms -- Convert SEC85 to YY, MM, DD, HH, MN, SS
+!+
+! pure subroutine sec85ymdhms (sec, yy, mm, dd, hh, mn, ss)
+! use typesizes
+! real(eightbytereal) <or> integer(fourbyteint), intent(in) :: sec
+! integer(fourbyteint), intent(out) :: yy, mm, dd, hh, mn
+! real(eightbytereal) <or> integer(fourbyteint), intent(out) :: ss
+!
+! Converts SEC85 (seconds since 1985-01-01 00:00:00) to year, month,
+! day, hours, minutes, and seconds.
+!
+! The input <sec> can be either a floating point value (double) or an
+! integer. The return value for <ss> will be likewise a double or an
+! integer.
+!
+! Arguments:
+!  sec : Seconds since 1 Jan 1985 (double float or integer)
+!  yy  : 4-digit year (between 1901 and 2099)
+!  mm  : Month
+!  dd  : Day
+!  hh  : Hours
+!  mn  : Minutes
+!  ss  : Seconds (double float or integer)
+!-----------------------------------------------------------------------
+private :: sec85ymdhms_dble, sec85ymdhms_int4
+interface sec85ymdhms
+	module procedure sec85ymdhms_dble
+	module procedure sec85ymdhms_int4
+end interface sec85ymdhms
+
+!***********************************************************************
+!*strf1985f -- Construct date string from seconds since 1985
+!+
+! elemental function strf1985f (sec, sep, frac)
+! use typesizes
+! real(eightbytereal) <or> integer(fourbyteint), intent(in) :: sec
+! character(len=1), optional, intent(in) :: sep
+! logical, optional, intent(in) :: frac
+! character(len=26) <or> character(len=19) :: strf1985f
+!
+! This routine formats relative time in seconds since 1985 into a
+! character string of either:
+! 1) 26 bytes in the form YYYY-MM-DDxHH:MM:SS.SSSSSS (when <sec> is a float)
+! 2) 19 bytes in the form YYYY-MM-DDxHH:MM:SS (when <sec> is an integer)
+! where 'x' is a separator character given by the optional argument
+! <sep> (default is a space)
+!
+! Arguments:
+!  sec       : Seconds since 1.0 Jan 1985 (double float or integer)
+!  sep       : (Optional) Separator character (default is a space)
+!
+! Return value:
+!  strf1985f : Character string of time
+!-----------------------------------------------------------------------
+private :: strf1985f_dble, strf1985f_int4
+interface strf1985f
+	module procedure strf1985f_dble
+	module procedure strf1985f_int4
+end interface strf1985f
+
 contains
 
 !***********************************************************************
@@ -118,10 +179,9 @@ yy = j + 1901
 ddd = ddd - j*365 - j/4 + 1 ! Day of year
 end subroutine mjd2yd
 
-!***********************************************************************
-!*sec85ymdhms -- Convert SEC85 to YY, MM, DD, HH, MN, SS
+!*sec85ymdhms_dble -- Convert SEC85 to YY, MM, DD, HH, MN, SS
 !+
-pure subroutine sec85ymdhms (sec, yy, mm, dd, hh, mn, ss)
+pure subroutine sec85ymdhms_dble (sec, yy, mm, dd, hh, mn, ss)
 use typesizes
 real(eightbytereal), intent(in) :: sec
 integer(fourbyteint), intent(out) :: yy, mm, dd, hh, mn
@@ -129,15 +189,6 @@ real(eightbytereal), intent(out) :: ss
 !
 ! Converts SEC85 (seconds since 1985-01-01 00:00:00) to year, month,
 ! day, hours, minutes, and (floating point) seconds.
-!
-! Arguments:
-!  sec : Seconds since 1 Jan 1985
-!  yy  : 4-digit year (between 1901 and 2099)
-!  mm  : Month
-!  dd  : Day
-!  hh  : Hours
-!  mn  : Minutes
-!  ss  : Seconds (floating point)
 !-----------------------------------------------------------------------
 real(eightbytereal) :: tt
 ! First split off the day part
@@ -149,41 +200,73 @@ hh = floor(tt/3600d0)
 tt = tt - hh * 3600
 mn = floor(tt/60d0)
 ss = tt - mn * 60
-end subroutine sec85ymdhms
+end subroutine sec85ymdhms_dble
 
 !***********************************************************************
-!*strf1985f -- Construct date string from seconds since 1985
+!*sec85ymdhms_int -- Convert SEC85 to YY, MM, DD, HH, MN, SS
 !+
-elemental function strf1985f (sec, sep)
+pure subroutine sec85ymdhms_int4 (sec, yy, mm, dd, hh, mn, ss)
+use typesizes
+integer(fourbyteint), intent(in) :: sec
+integer(fourbyteint), intent(out) :: yy, mm, dd, hh, mn, ss
+!
+! Converts SEC85 (seconds since 1985-01-01 00:00:00) to year, month,
+! day, hours, minutes, and (floating point) seconds.
+!-----------------------------------------------------------------------
+integer(fourbyteint) :: tt
+! First split off the day part
+dd = sec / 86400
+tt = sec - dd * 86400
+call mjd2ymd (dd + 46066, yy, mm, dd)
+! Now handle the fractions of day
+hh = tt / 3600
+tt = tt - hh * 3600
+mn = tt / 60
+ss = tt - mn * 60
+end subroutine sec85ymdhms_int4
+
+!***********************************************************************
+!*strf1985f_dble -- Construct date string from seconds since 1985
+!+
+elemental function strf1985f_dble (sec, sep)
 use typesizes
 real(eightbytereal), intent(in) :: sec
 character(len=1), optional, intent(in) :: sep
-character(len=26) :: strf1985f
-!
-! This routine formats relative time in seconds since 1985 into a
-! character string of 26 bytes in the form YYYY-MM-DDxHH:MM:SS.SSSSSS,
-! where 'x' is a separator character given by the optional argument
-! <sep> (default is a space)
-!
-! Arguments:
-!  sec       : Seconds since 1.0 Jan 1985
-!  sep       : (Optional) Separator character (default is a space)
-!
-! Return value:
-!  strf1985f : Character string of time
+character(len=26) :: strf1985f_dble
 !-----------------------------------------------------------------------
 integer(fourbyteint) :: yy, mm, dd, hh, mn
 real(eightbytereal) :: ss
 character(len=1) :: x
-call sec85ymdhms (sec, yy, mm, dd, hh, mn, ss)
 if (present(sep)) then
 	x = sep
 else
 	x = ' '
 endif
-write (strf1985f, '(i4.4,2("-",i2.2),a1,2(i2.2,":"),i2.2,f7.6)') &
-	yy, mm, dd, x, hh, mn, floor(ss), modulo(ss,1d0)
-end function strf1985f
+call sec85ymdhms (sec, yy, mm, dd, hh, mn, ss)
+write (strf1985f_dble, '(i4.4,2("-",i2.2),a1,2(i2.2,":"),i2.2,f7.6)') &
+		yy, mm, dd, x, hh, mn, floor(ss), modulo(ss,1d0)
+end function strf1985f_dble
+
+!***********************************************************************
+!*strf1985f_int4 -- Construct date string from seconds since 1985
+!+
+elemental function strf1985f_int4 (sec, sep)
+use typesizes
+integer(fourbyteint), intent(in) :: sec
+character(len=1), optional, intent(in) :: sep
+character(len=19) :: strf1985f_int4
+!-----------------------------------------------------------------------
+integer(fourbyteint) :: yy, mm, dd, hh, mn, ss
+character(len=1) :: x
+if (present(sep)) then
+	x = sep
+else
+	x = ' '
+endif
+call sec85ymdhms (sec, yy, mm, dd, hh, mn, ss)
+write (strf1985f_int4, '(i4.4,2("-",i2.2),a1,2(i2.2,":"),i2.2)') &
+		yy, mm, dd, x, hh, mn, ss
+end function strf1985f_int4
 
 !***********************************************************************
 !*strp1985f -- Parse date string and convert it to seconds since 1985
