@@ -1,5 +1,5 @@
 <!--
-$Id: no_ssb.xml 582 2014-01-09 21:55:39Z remko@altimetrics.com $
+$Id$
 
 Copyright (c) 2011-2014  Remko Scharroo (Altimetrics LLC)
 See LICENSE.TXT file for copying and redistribution conditions.
@@ -14,7 +14,7 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Lesser General Public License for more details.
 
-** Desription **
+** Description **
 Special settings for REAPER data (ERS-1 and ERS-2 only)
 -->
 
