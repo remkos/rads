@@ -14,8 +14,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Lesser General Public License for more details.
 
-** Desription **
-Do not use any correction for reference frame offset
+** Description **
+Do not correct sea level anomaly for reference frame offset
 -->
 
 <var name="sla">

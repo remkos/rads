@@ -15,9 +15,9 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Lesser General Public License for more details.
 
 ** Description **
-CryoSat-2: Use pseudo-LRM data only
+Correct sea level anomaly for GIA
 -->
 
-<var name="flags" sat="c2">
-	<limits>48 1</limits>
+<var name="sla">
+	<data action="append">gia SUB</data>
 </var>
