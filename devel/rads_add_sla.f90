@@ -114,7 +114,9 @@ call rads_get_var (S, P, 'sla'//hz, sla)
 ! If requested, check for changes first
 
 if (update) then
+	i = rads_verbose; rads_verbose = -1 ! Temporarily suspend warning
 	call rads_get_var (S, P, 'ssha'//hz, tmp, .true.)
+	rads_verbose = i
 	do i = 1,n
 		if (isnan_(tmp(i)) .and. isnan_(sla(i))) cycle
 		if (isnan_(tmp(i))) exit

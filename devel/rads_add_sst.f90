@@ -49,7 +49,7 @@ use netcdf
 type(rads_sat) :: S
 type(rads_pass) :: P
 integer(fourbyteint) :: cyc, pass
-logical :: lice=.false., lsst=.false., lmean=.false.
+logical :: lice=.false., lsst=.false., lmean=.false., update=.false.
 
 ! Data variables
 
@@ -65,7 +65,7 @@ real(eightbytereal) :: meangrid(0:nx+1,ny)
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('ism ice sst mean all')
+call rads_set_options ('ismu ice sst mean all update')
 call rads_init (S)
 
 ! Get template for path name
@@ -86,8 +86,11 @@ do j = 1,rads_nopt
 		lsst = .true.
 		lmean = .true.
 		lice = .true.
+	case ('u', 'update')
+		update = .true.
 	end select
 enddo
+if (.not.lsst) update = .false.
 
 ! Load the mean SST model if requested
 
@@ -119,7 +122,8 @@ write (*,1310)
 '  -i, --ice                 Add sea ice concentration' / &
 '  -s, --sst                 Add sea surface temperature' / &
 '  -m, --mean                Add local mean sea surface temperature' / &
-'  --all                     All of the above')
+'  --all                     All of the above' / &
+'  -u, --update              Update files only when there are changes in SST (requires -s)')
 stop
 end subroutine synopsis
 
@@ -130,9 +134,10 @@ end subroutine synopsis
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
 integer(fourbyteint) :: i, ix, iy
-real(eightbytereal) :: time(n), lat(n), lon(n), ice(n), sst(n), meansst(n)
+real(eightbytereal) :: time(n), lat(n), lon(n), ice(n), sst(n), meansst(n), tmp(n)
 integer(fourbyteint) :: t1, t2
 real(eightbytereal) :: wx, wy, wt, f(2,2,2)
+real(eightbytereal), parameter :: dz=1d-2
 
 ! Formats
 
@@ -226,6 +231,23 @@ do i = 1,n
 	ice(i) = mat_product(grids(ix:ix+1,iy:iy+1,:,2),f)
 enddo
 
+! If requested, check for changes in sst first
+
+if (update) then
+	i = rads_verbose; rads_verbose = -1 ! Temporarily suspend warning
+	call rads_get_var (S, P, 'sst', tmp, .true.)
+	rads_verbose = i
+	do i = 1,n
+		if (isnan_(tmp(i)) .and. isnan_(sst(i))) cycle
+		if (isnan_(tmp(i))) exit
+		if (nint(tmp(i)/dz) /= nint(sst(i))) exit
+	enddo
+	if (i > n) then	! No changes
+		write (*,552) 0
+		return
+	endif
+endif
+
 ! Store all data fields
 
 call rads_put_history (S, P)
@@ -235,7 +257,7 @@ if (lsst)  call rads_def_var (S, P, 'sst')
 if (lmean) call rads_def_var (S, P, 'sst_mean')
 
 if (lice)  call rads_put_var (S, P, 'seaice_conc', ice)
-if (lsst)  call rads_put_var (S, P, 'sst', sst*1d-2)
+if (lsst)  call rads_put_var (S, P, 'sst', sst*dz)
 if (lmean) call rads_put_var (S, P, 'sst_mean', meansst)
 
 write (*,552) n
