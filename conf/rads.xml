@@ -2729,6 +2729,7 @@ Global RADS configuration file
 <var name="seaice_conc" field="4701 47">
 	<long_name>sea ice concentration</long_name>
 	<standard_name>sea_ice_area_fraction</standard_name>
+	<source>NOAA Optimal Interpolation Sea Surface Temperature v2</source>
 	<units>%</units>
 	<data>seaice_conc</data>
 	<format>f3.0</format>
@@ -2738,7 +2739,7 @@ Global RADS configuration file
 <var name="sst" field="4801 48">
 	<long_name>sea surface temperature</long_name>
 	<standard_name>sea_surface_temperature</standard_name>
-	<source>Reynolds SST</source>
+	<source>NOAA Optimal Interpolation Sea Surface Temperature v2</source>
 	<units>degC</units>
 	<data>sst</data>
 	<format>f5.2</format>
@@ -2746,6 +2747,7 @@ Global RADS configuration file
 </var>
 <var name="sst_mean" field="4802">
 	<long_name>local mean sea surface temperature</long_name>
+	<source>NOAA Optimal Interpolation Sea Surface Temperature v2</source>
 	<units>degC</units>
 	<data>sst_mean</data>
 	<format>f5.2</format>
