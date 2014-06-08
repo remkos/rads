@@ -20,8 +20,9 @@
 program rads_gen_reaper
 
 ! This program reads REAPER files and converts them to the RADS format,
-! written into files $RADSDATAROOT/data/eE/F.r/eEpPPPPcCCC.nc.
+! written into files $RADSDATAROOT/data/eE.VVVV/F/eEpPPPPcCCC.nc.
 !     E = 1 or 2
+!  VVVV = version ID
 !     F = mission phase
 !  PPPP = relative pass number
 !   CCC = cycle number
@@ -99,17 +100,17 @@ character(len=rads_varl) :: optopt, optarg
 
 character(len=1) :: phasenm(2)
 character(len=rads_varl) :: l2_proc_time, l2_version
+character(len=4) :: mle
 logical :: alt_2m
 real(eightbytereal) :: tnode(2), lnode(2)
-integer(fourbyteint) :: orbitnr(2), cyclenr(2), passnr(2), varid, com=999
+integer(fourbyteint) :: orbitnr(2), cyclenr(2), passnr(2), varid
 
 ! Data variables
 
 integer(fourbyteint), parameter :: mrec=20000, mvar=50
 integer(fourbyteint) :: nvar, ndata=0, nrec=0, nout=0, ncid, ers=0
 real(eightbytereal) :: start_time, end_time, last_time = 0d0
-real(eightbytereal) :: sum_d_applied(mrec)
-integer(fourbyteint) :: f_error(mrec), f_applied(mrec)
+real(eightbytereal), allocatable :: tmp(:)
 type(rads_sat) :: S
 type(rads_pass) :: P
 type :: var_
@@ -122,7 +123,7 @@ type(var_) :: var(mvar)
 ! Other local variables
 
 real(eightbytereal), parameter :: sec1990=157766400d0	! UTC seconds from 1 Jan 1985 to 1 Jan 1990
-real(eightbytereal), parameter :: picosec_to_m=0.5d-12*299792458d0	! picoseconds of 2-way range to mm 1-way
+real(eightbytereal), parameter :: sec_to_m=0.5d0*299792458d0	! seconds of 2-way range to meters 1-way
 real(eightbytereal), parameter :: uso_wap=15000000.05d0	! Nominal USO frequency used in WAP products
 integer :: i
 logical :: new
@@ -215,7 +216,7 @@ call synopsis_devel (' < list_of_REAPER_file_names')
 write (*,1310)
 1310 format (/ &
 'This program converts REAPER ERS_ALT_2 files to RADS data' / &
-'files with the name $RADSDATAROOT/data/eE/F.r/pPPPP/eEpPPPPcCCC.nc.' / &
+'files with the name $RADSDATAROOT/data/eE.VVVV/F/pPPPP/eEpPPPPcCCC.nc.' / &
 'The directory is created automatically and old files are overwritten.')
 stop
 end subroutine synopsis
@@ -226,6 +227,7 @@ end subroutine synopsis
 
 subroutine get_reaper
 integer(fourbyteint) :: i
+character(len=2) :: mission
 
 550 format (a)
 551 format (a,' ...')
@@ -247,8 +249,6 @@ if (i <= 0) then
 	return
 endif
 alt_2m = (filenm(i+10:i+10) == 'M')
-i = index(filenm, '_COM')
-if (i > 0) read (filenm(i+4:i+4), *) com
 
 ! Open input file
 
@@ -257,23 +257,22 @@ if (nf90_open(infile,nf90_nowrite,ncid) /= nf90_noerr) then
 	return
 endif
 
-! Check for ERS-1 or -2
-! Do not trust 'mission' attribute. It is always 'E1'.
+! Read header records
 
-if (filenm(:2) == 'E1') then
-	if (ers == 0) call rads_init (S, 'e1/a.r', (/'reaper'/), verbose)
+call nfs(nf90_get_att(ncid,nf90_global,'mission',mission))
+i = index(infile,'.nc')
+if (mission == 'E1') then
+	if (ers == 0) call rads_init (S, 'e1.' // strtolower(infile(i-4:i-1)), (/'reaper'/), verbose)
 	ers = 1
-else if (filenm(:2) == 'E2') then
-	if (ers == 0) call rads_init (S, 'e2/a.r', (/'reaper'/), verbose)
+else if (mission == 'E2') then
+	if (ers == 0) call rads_init (S, 'e2.' // strtolower(infile(i-4:i-1)), (/'reaper'/), verbose)
 	ers = 2
 else
 	write (*,550) 'Error: Unknown file type'
 	return
 endif
 
-! Read header records
-
-call nfs(nf90_inq_dimid(ncid,'Record',varid))
+call nfs(nf90_inq_dimid(ncid,'time',varid))
 call nfs(nf90_inquire_dimension(ncid,varid,len=nrec))
 write (*,552) nrec
 if (nrec == 0) then	! Skip empty input files
@@ -285,6 +284,7 @@ else if (ndata+nrec > mrec) then
 endif
 call nfs(nf90_get_att(ncid,nf90_global,'l2_proc_time',l2_proc_time))
 call nfs(nf90_get_att(ncid,nf90_global,'l2_software_ver',l2_version))
+call nfs(nf90_get_att(ncid,nf90_global,'ocean_retracker_version_for_ocean',mle))
 
 call get_reaper_data (nrec)
 call nfs(nf90_close(ncid))
@@ -292,21 +292,21 @@ end subroutine get_reaper
 
 subroutine get_reaper_data (nrec)
 integer(fourbyteint), intent(inout) :: nrec
-real(eightbytereal) :: a(nrec), b(nrec), c(nrec), d(20,nrec), dh(nrec), sum_c_applied(nrec)
+real(eightbytereal) :: a(nrec), b(nrec), c(nrec), d(20,nrec), dh(nrec)
 integer(twobyteint) :: flags(nrec)
 logical :: valid(20,nrec)
-integer(fourbyteint) :: i, k, flag, ivar0, ivar1
-real(eightbytereal) :: dhellips, t(3), ice_percent
-character(len=80) :: string
+integer(fourbyteint) :: k
+real(eightbytereal) :: dhellips, t(3)
 
 553 format (a,i6,3f18.3)
 
+! Make array for cpy_var
+allocate (tmp(nrec))
+
 ! Time and orbit: Low rate
 
-call get_var (ncid, 'time_day_1hz', a)
-call get_var (ncid, 'time_milsec_1hz', b)
-call get_var (ncid, 'time_micsec_1hz', c)
-a = a * 86400d0 + b * 1d-3 + c * 1d-6 + sec1990
+call get_var (ncid, 'time', a)
+a = a + sec1990
 k = min(3,nrec)
 
 ! Because first and last time can be wrong, we use the minimum of the first 3 and
@@ -339,243 +339,130 @@ endif
 ! Initialize
 
 flags = 0
-sum_d_applied = 0d0
 nvar = 0
-
-! When more than 80% is in ice mode assume all is in ice mode
-! This is a TEMPORARY kludge to avoid ice mode data contaminating statistics
-! Flag bit 0 will NOT be an accurate representation of ice mode
-call nfs(nf90_get_att(ncid,nf90_global,'ra0_tracking_ice_percent',ice_percent))
-if (ice_percent > 80d0) flags = 1
 
 ! Time and orbit: Low rate (cont'd)
 
 call new_var ('time', a)
-call get_var (ncid, 'latitude_1hz', a)
-a = a*1d-6
-call new_var ('lat', a)
+call cpy_var ('lat', 'lat')
 ! Compute ellipsoid corrections
 do i = 1,nrec
-	dh(i) = dhellips(1,a(i))
+	dh(i) = dhellips(1,tmp(i))
 enddo
-call get_var (ncid, 'longitude_1hz', a)
-call new_var ('lon', a*1d-6)
-call get_var (ncid, 'altitude_1hz', a)
-call new_var ('alt_reaper', a*1d-3+dh)
-call get_var (ncid, 'altitude_rate_1hz', a)
-call new_var ('alt_rate', a*1d-3)
-call get_var (ncid, 'wf_attitude_1hz', a)
-call new_var ('off_nadir_angle2_wf_ku', a*a*1d-4)
+call cpy_var ('lon', 'lon')
+call get_var (ncid, 'alt', a)
+call new_var ('alt_reaper', a+dh)
+call cpy_var ('orb_alt_rate', 'alt_rate')
 
 ! Range data: Low rate
 
-call get_var (ncid, 'ocean_range_1hz', a)
-call get_var (ncid, 'ocean_stdev_1hz', b)
-call get_var (ncid, 'ocean_valid_num_1hz', c)
-call invalidate (c == 0, a)
-call invalidate (c <= 1, b)
-call new_var ('range_ku', a*1d-3)
-call new_var ('range_rms_ku', b*1d-3)
-call new_var ('range_numval_ku', c)
-if (alt_2m) then ! Different name in Meteo product
-	call get_var (ncid, 'ocean_valid_bitmap_1hz', a)
-else
-	call get_var (ncid, 'f_ocean_valid_bitmap_1hz', a)
-endif
+call get_var (ncid, 'ocean_range_numval', c)
+call cpy_var ('ocean_range', 'range_ku')
+call cpy_var ('ocean_range_rms', 'range_rms_ku', c <= 1)
+call cpy_var ('ocean_range_numval', 'range_numval_ku')
 
-! Get USO frequency and convert to a range correction assuming WAP's
-! nominal USO frequency is 15000000.05 Hz
-call nfs(nf90_get_att(ncid,nf90_global,'uso_applied_1', string))
-i = index(string, '@')
-read (string(:i-1),*) a(1) ! Get frequency from headers
-a = -1d-4 * nint (795d7 * (a(1) - uso_wap) / uso_wap) ! Convert to meters and truncate at 4 decimals
-call new_var ('drange_uso', a, ndims=0)
+! Retracking info: Low rate
 
-! Set "valid" array based on bitmap
-! Bits are 0 when valid, 1 when invalid
-! However, when all are invalid, value is 0
-do i = 1,nrec
-	flag = nint(a(i))
-	if (c(i) == 0) then
-		valid(:,i) = .false.
-	else if (c(i) == 20) then
-		valid(:,i) = .true.
-	else
-		do k = 1,20
-			valid (k,i) = .not.btest(flag,k-1)
-		enddo
-	endif
-enddo
+if (mle == 'MLE4') call cpy_var ('off_nadir_angle_wf', 'off_nadir_angle2_wf_ku')
+call cpy_var ('peakiness', 'peakiness_ku')
 
-! For some reason Meteo product has 1-Hz peakiness
-! where (S)GDR have ocean_wind_1hz
-if (alt_2m) then
-	call get_var (ncid, 'wf_pk_1hz', a)
-	call invalidate (c == 0, a)
-	call new_var ('peakiness_ku', a*1d-3)
-else
-	call get_var (ncid, 'ocean_wind_1hz', a)
-	call invalidate (c == 0, a)
-	call new_var ('wind_speed_alt', a*1d-3)
-endif
-
-! Range data: High rate
+! Retracking info: High rate
 
 if (.not.alt_2m) then
-	call get_var (ncid, 'ocean_mean_quadratic_error', d)
+	call get_var (ncid, 'ocean_qual_flag_20hz', d)
+	valid = (d == 0)
+	call get_var (ncid, 'ocean_mqe_20hz', d)
 	where (.not.valid) d = nan
 	call mean_1hz (d, a, b)
-	call new_var ('mqe', a*1d-4)
-	call get_var (ncid, 'wf_pk', d)
-	where (.not.valid) d = nan
+	call new_var ('mqe', a)
+	call get_var (ncid, 'doppler_corr+delta_doppler_corr_20hz', d)
 	call mean_1hz (d, a, b)
-	call new_var ('peakiness_ku', a*1d-3)
-	call get_var (ncid, 'dop_c+delta_dop_c', d)
-	call mean_1hz (d, a, b)
-	call new_var ('drange_fm', a*1d-3)
-	call get_var (ncid, 'sptr_jumps_c', d)
-	call new_var ('drange_sptr', d(1,:) * picosec_to_m)
-	call get_var (ncid, 'sum_c_applied', d)
-	sum_c_applied = d(1,:)*1d-3
-	do i = 1,nrec
-		do k = 2,19
-			if (d(k,i) /= d(1,i)) write (*,*) 'Error: sum_c_applied changed:',i,k,d(1,i),d(k,i)
-		enddo
-	enddo
+	call new_var ('drange_fm', a)
+	call get_var (ncid, 'sptr_jumps_corr_20hz', d)
+	call new_var ('drange_sptr', d(1,:) * sec_to_m)
 endif
-
-! Get error and and correction flags first
-
-call get_var (ncid, 'f_corr_error_1hz', a)
-f_error = nint(a)
-call get_var (ncid, 'f_corr_applied_1hz', a)
-f_applied = nint(a)
 
 ! Sigma zero: Low rate
 
-call get_var (ncid, 'ocean_sig0_1hz', a)
-call get_var (ncid, 'ocean_sig0_stdev_1hz', b)
-call get_var (ncid, 'ocean_sig0_valid_num_1hz', c)
-call invalidate (c == 0, a)
-call invalidate (c <= 1, b)
-call new_var ('sig0_ku', a*1d-2)
-call new_var ('sig0_rms_ku', b*1d-2)
+call cpy_var ('ocean_sig0', 'sig0_ku')
+call get_var (ncid, 'ocean_sig0_numval', c)
+call cpy_var ('ocean_sig0_rms', 'sig0_rms_ku', c <= 1)
+call cpy_var ('wind_speed_alt', 'wind_speed_alt', c == 0)
 
 ! SWH: Low rate
 
-call get_var (ncid, 'swh_signed_1hz', a)
-call get_var (ncid, 'swh_stdev_1hz', b)
-call get_var (ncid, 'swh_valid_num_1hz', c)
-call invalidate (c == 0, a)
-call invalidate (c <= 1, b)
-call new_var ('swh_ku', a*1d-3)
-call new_var ('swh_rms_ku', b*1d-3)
-
-! MWR Flags: Low rate
-
-call get_var (ncid, 'f_sea_ice_flag_1hz', a)
-call flag_set (a == 1, flags, 8)
+call cpy_var ('swh_signed', 'swh_ku')
+call get_var (ncid, 'swh_numval', c)
+call cpy_var ('swh_rms', 'swh_rms_ku', c <= 1)
 
 ! MWR: Low rate
 
-call get_var (ncid, 'tb_23_8_1hz', a)
-call get_var (ncid, 'tb_36_5_1hz', b)
-call get_var (ncid, 'f_mwr_srf_typ_1hz', c)
-call flag_set (c == 1, flags, 6)
-call get_var (ncid, 'f_mwr_interp_qual_1hz', c)
-call invalidate (c == 3, a)
-call invalidate (c == 3, b)
-if (alt_2m) then
-	call get_var (ncid, 'f_mwr_valid_1hz', c)
-else ! Wrong name in (S)GDR
-	call get_var (ncid, 'f_MWR_valid_1hz', c)
-endif
-call invalidate (c == 1, a)
-call invalidate (c == 1, b)
-call new_var ('tb_238', a*1d-2)
-call new_var ('tb_365', b*1d-2)
+call get_var (ncid, 'rad_state_flag_orb_prop', a)
+call get_var (ncid, 'rad_stat_flag_orb_prop_init', b)
+call get_var (ncid, 'rad_state_flag_l2_proc_error+rad_state_validity+rad_state_flag+rad_state_bt_check', c)
+call cpy_var ('tb_238', 'tb_238', a == 2d0 .or. b == 2d0 .or. c > 0d0)
+call cpy_var ('tb_365', 'tb_365', a == 2d0 .or. b == 2d0 .or. c > 0d0)
 
 ! Atmospheric and geophysical: Low rate
 
-call get_var (ncid, 'dry_c_1hz', a)
-call new_var ('dry_tropo_era', a*1d-3, 1)
-ivar0 = nvar
-call get_var (ncid, 'ib_c_1hz', a)
-call new_var ('inv_bar_static', a*1d-3, 2)
-call get_var (ncid, 'mog2d_c_1hz', a)
-call new_var ('inv_bar_mog2d', a*1d-3, 3)
-call get_var (ncid, 'wet_c_mod_1hz', a)
-call new_var ('wet_tropo_era', a*1d-3, 5)
-call get_var (ncid, 'wet_c_mwr_1hz', a)
-call new_var ('wet_tropo_rad', a*1d-3, 6)
-call get_var (ncid, 'water_vapor_content_1hz', a)
-call new_var ('water_vapor_rad', a*1d-2, -6)
-call get_var (ncid, 'liquid_water_content_1hz', a)
-call new_var ('liquid_water_rad', a*1d-2, -6)
-call get_var (ncid, 'u_wind_1hz', a)
-call new_var ('wind_speed_ecmwf_u', a*1d-3, 7)
-call get_var (ncid, 'v_wind_1hz', a)
-call new_var ('wind_speed_ecmwf_v', a*1d-3, 8)
-call get_var (ncid, 'iono_c_mod_1hz', a)
-call new_var ('iono_nic09', a*1d-3, 9)
+call cpy_var ('model_dry_tropo_corr', 'dry_tropo_era')
+call cpy_var ('inv_bar_corr', 'inv_bar_static')
+call cpy_var ('hf_fluctuations_corr', 'inv_bar_mog2d')	! This is in contrast with standard_name, but supported by comment
+call cpy_var ('model_wet_tropo_corr', 'wet_tropo_era')
+call cpy_var ('rad_wet_tropo_corr', 'wet_tropo_rad')
+call cpy_var ('rad_water_vapor', 'water_vapor_rad')
+call cpy_var ('rad_liquid_water', 'liquid_water_rad')
+call cpy_var ('wind_speed_model_u', 'wind_speed_ecmwf_u')
+call cpy_var ('wind_speed_model_v', 'wind_speed_ecmwf_v')
+call cpy_var ('iono_corr_model', 'iono_nic09')
 if (start_time >= 430880400d0) then	! After 1998-08-28 01:00:00 get GIM iono
-	call get_var (ncid, 'iono_c_gps_1hz', a)
-	call new_var ('iono_gim', a*1d-3, 10)
+	call cpy_var ('iono_corr_gps', 'iono_gim')
 endif
-call get_var (ncid, 'h_mss_cls01_1hz', a)
-call new_var ('mss_cls01', a*1d-3+dh, 11)
-call get_var (ncid, 'h_geo_1hz', a)
-call new_var ('geoid_egm2008', a*1d-3+dh, 12)
-! Prior to COM5 ocean tide is OT+OLT+LPT
-! Since COM5 ocean tide is split up
-! Nonetheless we ignore that here and simply copy the values
-! This can be fixed with rads_fix_reaper --tide
-call get_var (ncid, 'h_ot_1hz', a)
-call new_var ('tide_ocean_got47', a*1d-3, 13)
-call get_var (ncid, 'h_ot2_1hz', a)
-call new_var ('tide_ocean_fes04', a*1d-3, 14)
-call get_var (ncid, 'h_olt_1hz', a)
-call new_var ('tide_load_got47', a*1d-3, 15)
-call get_var (ncid, 'h_olt2_1hz', a)
-call new_var ('tide_load_fes04', a*1d-3, 16)
-call get_var (ncid, 'h_lpt_1hz', a)
-call new_var ('tide_equil', a*1d-3, 17)
-call get_var (ncid, 'h_lptne_1hz', a)
-call new_var ('tide_non_equil', a*1d-3, 18)
-call get_var (ncid, 'h_set_1hz', a)
-call new_var ('tide_solid', a*1d-3, 19)
-call get_var (ncid, 'h_pol_1hz', a)
-call new_var ('tide_pole', a*1d-3, 20)
+call get_var (ncid, 'mean_sea_surface_1', a)
+call new_var ('mss_cls01', a+dh)
+call get_var (ncid, 'mean_sea_surface_2', a)
+call new_var ('mss_ucl04', a+dh)
+call get_var (ncid, 'geoid', a)
+call new_var ('geoid_egm2008', a+dh)
+! Need to recombine to OT+LPT
+call cpy_var ('ocean_tide_sol1+ocean_tide_equil', 'tide_ocean_got47')
+call cpy_var ('load_tide_sol1', 'tide_load_got47')
+call cpy_var ('ocean_tide_sol2+ocean_tide_equil', 'tide_ocean_fes04')
+call cpy_var ('load_tide_sol2', 'tide_load_fes04')
+call cpy_var ('ocean_tide_equil', 'tide_equil')
+call cpy_var ('ocean_tide_non_equil', 'tide_non_equil')
+call cpy_var ('solid_earth_tide', 'tide_solid')
+call cpy_var ('pole_tide', 'tide_pole')
 
-call get_var (ncid, 'h_odle_1hz', a)
-call new_var ('topo_macess', a*1d-3, 22)
-call get_var (ncid, 'em_bias_1hz', a)
-call new_var ('ssb_bm3', a*1d-3, 23)
-call get_var (ncid, 'h_mss_ucl04_1hz', a)
-call new_var ('mss_ucl04', a*1d-3+dh, 27)
-ivar1 = nvar
+call cpy_var ('bathymetry', 'topo_macess')
+call cpy_var ('sea_state_bias', 'ssb_hyb')
 
-call get_var (ncid, 'f_srf_typ_1hz', a)
+! Atmospheric correction is a factor 100 too small (wrong scale_factor)
+call get_var (ncid, 'atmos_corr_sig0', a)
+call new_var ('dsig0_atmos_ku', a*1d2)
+
+! Status flags
+
+call get_var (ncid, 'alt_state_flag', a)
+call flag_set (a <= 1, flags, 11) ! Invalid range etc.
+call flag_set (a <= 1, flags, 12)
+call flag_set (a <= 1, flags, 13)
+call flag_set (a == 3, flags, 14) ! Ice mode
+
+call get_var (ncid, 'surface_type', a)
 call flag_set (a == 2, flags, 2)	! Bit 2: Continental ice
 call flag_set (a >= 2, flags, 4)	! Bit 4: Water/land
 call flag_set (a >= 1, flags, 5)	! Bit 5: Ocean/other
+
+call get_var (ncid, 'ice_flag', a)
+call flag_set (a == 1, flags, 8)
+call get_var (ncid, 'rad_surf_type', a)
+call flag_set (a == 1, flags, 6)
+call get_var (ncid, 'rad_state_bt_check', a)
+call flag_set (a >= 2, flags, 9)
+call flag_set (modulo(a,2d0) == 1, flags, 10)
+
 call new_var ('flags', flags*1d0)
-
-if (.not.alt_2m) then ! Only on (S)GDR
-	call get_var (ncid, 'sig0_attn_c_1hz', a)
-	call new_var ('dsig0_atmos_ku', a*1d-2)
-endif
-
-! Prior to COM5: remove applied corrections from range
-
-if (com < 5) then
-	do i = 1,nrec
-		k = ndata + i
-		var(7)%d(k) = var(7)%d(k) - sum_d_applied(i)
-		if (.not.alt_2m .and. abs(sum_d_applied(i) - sum_c_applied(i)) > 1d-4) &
-			write (*,553) 'Warning: sum_c_applied wrong: ',i,sum_d_applied(i),sum_c_applied(i),sum_d_applied(i)-sum_c_applied(i)
-	enddo
-endif
 
 ! There may be measurements with invalid times.
 ! If so, weed them out.
@@ -605,28 +492,9 @@ if (k > 0) then
 	nrec = nrec - k
 endif
 
-! Another problem is that longitude at the dateline are incorrectly determined,
-! hence corrections at those points are wrong too.
-
-do i = 2,nrec-1
-	t = var(3)%d(ndata+i-1:ndata+i+1)
-	if (t(1) > -179d0 .or. t(3) < 179d0 .or. abs(abs(t(2))-179d0) < 1d0) cycle
-	write (*,553) 'Warning: Fixed incorrect longitude at date line  :', i, t
-	! Average the previous and next longitude properly
-	t(2) = 0.5d0 * (t(1) + t(3))
-	if (t(2) > 0d0) then
-		var(3)%d(ndata+i) = t(2) - 180d0
-	else
-		var(3)%d(ndata+i) = t(2) + 180d0
-	endif
-	! Average the previous and next corrections
-	var(ivar0:ivar1)%d(ndata+i) = &
-		0.5d0 * (var(ivar0:ivar1)%d(ndata+i-1)+var(ivar0:ivar1)%d(ndata+i+1))
-	! Copy the flag words one forward
-	var(ivar1+1)%d(ndata+i) = var(ivar1+1)%d(ndata+i-1)
-enddo
-
 ndata = ndata + nrec
+
+deallocate (tmp)
 
 end subroutine get_reaper_data
 
@@ -644,7 +512,7 @@ if (tnode(1) < t0 .or. tnode(1) > t1) return	! Skip equator times that are not o
 
 ! Update phase name if required
 phasenm(1) = strtolower(phasenm(1))
-if (S%phase%name /= phasenm(1)) S%phase => rads_get_phase (S, phasenm(1)//'.r')
+if (S%phase%name /= phasenm(1)) S%phase => rads_get_phase (S, phasenm(1))
 
 ! Store relevant info
 call rads_init_pass_struct (S, P)
@@ -700,32 +568,31 @@ call rads_close_pass (S, P)
 end subroutine put_rads
 
 !-----------------------------------------------------------------------
+! Copy variable to RADS
+!-----------------------------------------------------------------------
+
+subroutine cpy_var (varin, varout, invalid)
+character(len=*), intent(in) :: varin, varout
+logical, optional :: invalid(:)
+call get_var (ncid, varin, tmp)
+if (present(invalid)) where (invalid) tmp = nan
+call new_var (varout, tmp)
+end subroutine cpy_var
+
+!-----------------------------------------------------------------------
 ! Create new RADS variable
 !-----------------------------------------------------------------------
 
-subroutine new_var (varnm, data, bit, ndims)
+subroutine new_var (varnm, data, ndims)
 ! Store variables to be written later by put_var
 character(len=*), intent(in) :: varnm
 real(eightbytereal), intent(in) :: data(:)
-integer, optional, intent(in) :: bit
 integer, optional, intent(in) :: ndims
-integer :: i
 nvar = nvar + 1
 if (nvar > mvar) stop 'Too many variables'
 var(nvar)%v => rads_varptr (S, varnm)
 var(nvar)%d(ndata+1:ndata+nrec) = data
 if (present(ndims)) var(nvar)%v%info%ndims = ndims
-if (.not.present(bit)) return
-if (bit > 0) then
-	do i = 1,nrec
-		if (btest(f_applied(i),bit)) sum_d_applied(i) = sum_d_applied(i) + data(i)
-		if (btest(f_error(i),bit)) var(nvar)%d(ndata+i) = nan
-	enddo
-else
-	do i = 1,nrec
-		if (btest(f_error(i),-bit)) var(nvar)%d(ndata+i) = nan
-	enddo
-endif
 end subroutine new_var
 
 !-----------------------------------------------------------------------
@@ -744,16 +611,5 @@ do i = 1,size(a)
 	if (a(i)) flags(i) = ibset(flags(i),j)
 enddo
 end subroutine flag_set
-
-!-----------------------------------------------------------------------
-! Set to NaN elements of an array
-!-----------------------------------------------------------------------
-
-subroutine invalidate (a, b)
-logical, intent(in) :: a(:)
-real(eightbytereal), intent(inout) :: b(:)
-if (size(a) /= size(b)) stop "Error in invalidate"
-where (a) b = nan
-end subroutine invalidate
 
 end program rads_gen_reaper

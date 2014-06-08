@@ -22,9 +22,7 @@ Special settings for REAPER data (ERS-1 and ERS-2 only)
 	<var name="ssb_hyb">
 		<long_name>hybrid sea state bias</long_name>
 		<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
-		<source>REAPER hybrid model</source>
-		<parameters sat="e1">e1_ssb_hyb.nc?ssb_hyb</parameters>
-		<parameters sat="e2">e2_ssb_hyb.nc?ssb_hyb</parameters>
+		<source>Empirical solution fitted on REAPER commissioning data</source>
 		<units>m</units>
 		<limits>-1 1</limits>
 		<data>ssb_hyb</data>

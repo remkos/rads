@@ -1877,7 +1877,7 @@ Global RADS configuration file
 <var name="flag_alt_track_mode" field="2514" sat="e1 e2 gs j1 pn tx">
 	<long_name>altimeter tracking mode</long_name>
 	<standard_name>altimeter_range status_flag</standard_name>
-	<flag_values>nominal preset</flag_values>
+	<flag_values>ocean_mode ice_mode</flag_values>
 	<flag_values sat="gs tx">nominal coarse_or_acquisition</flag_values>
 	<flag_values sat="j1">nominal c_band_coarse</flag_values>
 	<flag_values sat="pn">nominal acquisition</flag_values>
