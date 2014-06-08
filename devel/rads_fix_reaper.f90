@@ -1,4 +1,4 @@
-!-----------------------------------------------------------------------
+ !-----------------------------------------------------------------------
 ! $Id$
 !
 ! Copyright (c) 2011-2014  Remko Scharroo (Altimetrics LLC)
@@ -28,7 +28,7 @@
 !
 ! tide (for all versions COM*):
 ! - Prior to COM5: remove load tide from ocean tide
-! - From COM5 onward: add long-period tide to ocean tide
+! - COM5 and COM6: add long-period tide to ocean tide
 !
 ! uso (for versions up to COM5 only):
 ! - Correct range for USO drift
@@ -130,7 +130,8 @@ use meteo_subs
 integer(fourbyteint), intent(in) :: n
 real(eightbytereal) :: time(n), range_ku(n), drange_uso(n), got47(n), fes04(n), a(n), alt_reaper(n), &
 	wet(n), sig0(n), dsig0(n), tb_238(n), tb_365(n), d_tb_238, d_tb_365, d_sig0
-integer :: n_changed, i, com
+integer :: n_changed, i
+character(len=5) :: l2_version
 
 ! Formats
 
@@ -140,9 +141,7 @@ integer :: n_changed, i, com
 write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
 
 n_changed = 0
-com = 999
-i = index(P%original, '_COM')
-if (i > 0) read (P%original(i+4:i+4), *) com
+l2_version = P%original(10:14)
 
 if (lptr .or. ltbias) call rads_get_var (S, P, 'time', time, .true.)
 if (lptr .or. luso) call rads_get_var (S, P, 'range_ku', range_ku, .true.)
@@ -165,17 +164,20 @@ endif
 if (ltide) then
 	call rads_get_var (S, P, 'tide_ocean_got47', got47)
 	call rads_get_var (S, P, 'tide_ocean_fes04', fes04)
-	if (com < 5) then	! Prior to COM5: remove load tide from ocean tide
+	if (l2_version < "01.06") then	! Prior to COM5: remove load tide from ocean tide
 		call rads_get_var (S, P, 'tide_load_got47', a)
 		got47 = got47 - a
 		call rads_get_var (S, P, 'tide_load_fes04', a)
 		fes04 = fes04 - a
-	else	! From COM5 onward: add long-period tide to ocean tide
+		n_changed = n
+	else if (l2_version < "01.08") then	! COM5 and COM6: add long-period tide to ocean tide
 		call rads_get_var (S, P, 'tide_equil', a)
 		got47 = got47 + a
 		fes04 = fes04 + a
+		n_changed = n
+	else
+		! Nothing
 	endif
-	n_changed = n
 endif
 
 ! Apply USO correction

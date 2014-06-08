@@ -2049,8 +2049,8 @@ character(len=*), intent(in) :: filename
 !-----------------------------------------------------------------------
 type(xml_parse) :: X
 integer, parameter :: max_lvl = 20
-character(len=rads_varl) :: tag, attr(2,max_lvl), name, tags(max_lvl)
-character(len=rads_naml) :: val(max_lvl)
+character(len=rads_varl) :: tag, name, tags(max_lvl)
+character(len=rads_naml) :: attr(2,max_lvl), val(max_lvl)
 character(len=6) :: src
 integer :: nattr, nval, i, ios, skip, skip_level
 integer(twobyteint) :: field(2)
@@ -2157,7 +2157,7 @@ do
 	case ('phase')
 		if (has_name()) then
 			phase => rads_get_phase (S, name, .true.)
-			phase%name = attr(2,1)
+			phase%name = attr(2,1)(:rads_varl)
 		endif
 
 	case ('mission')
@@ -2359,9 +2359,9 @@ do
 			do i = 1,nattr
 				select case (attr(1,i))
 				case ('x')
-					info%gridx = attr(2,i)
+					info%gridx = attr(2,i)(:rads_varl)
 				case ('y')
-					info%gridy = attr(2,i)
+					info%gridy = attr(2,i)(:rads_varl)
 				end select
 			enddo
 			allocate (info%grid)
@@ -2391,9 +2391,9 @@ do
 		do i = 1,nattr
 			select case (attr(1,i))
 			case ('x')
-				info%gridx = attr(2,i)
+				info%gridx = attr(2,i)(:rads_varl)
 			case ('y')
-				info%gridy = attr(2,i)
+				info%gridy = attr(2,i)(:rads_varl)
 			case ('inter')
 				if (attr(2,i)(:1) == 'c') info%datasrc = rads_src_grid_splinter
 				if (attr(2,i)(:1) == 'q') info%datasrc = rads_src_grid_query
@@ -2426,7 +2426,7 @@ name = ''
 if (present(field)) field = rads_nofield
 do i = 1,nattr
 	if (attr(1,i) == 'name') then
-		name = attr(2,i)
+		name = attr(2,i)(:rads_varl)
 	else if (present(field) .and. attr(1,i) == 'field') then
 		read (attr(2,i), *, iostat=ios) field
 	endif
