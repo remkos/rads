@@ -259,7 +259,8 @@ endif
 
 ! Read header records
 
-call nfs(nf90_get_att(ncid,nf90_global,'mission',mission))
+call nfs(nf90_get_att(ncid,nf90_global,'mission',mission)) ! Actually still is not correct -> bypass
+mission = filenm(i-7:i-6)
 i = index(infile,'.nc')
 if (mission == 'E1') then
 	if (ers == 0) call rads_init (S, 'e1.' // strtolower(infile(i-4:i-1)), (/'reaper'/), verbose)
@@ -268,7 +269,7 @@ else if (mission == 'E2') then
 	if (ers == 0) call rads_init (S, 'e2.' // strtolower(infile(i-4:i-1)), (/'reaper'/), verbose)
 	ers = 2
 else
-	write (*,550) 'Error: Unknown file type'
+	write (*,550) 'Error: Unknown file type: '//mission
 	return
 endif
 
