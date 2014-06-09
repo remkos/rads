@@ -300,9 +300,6 @@ real(eightbytereal) :: dhellips, t(3)
 
 553 format (a,i6,3f18.3)
 
-! Make array for cpy_var
-allocate (tmp(nrec))
-
 ! Time and orbit: Low rate
 
 call get_var (ncid, 'time', a)
@@ -340,6 +337,7 @@ endif
 
 flags = 0
 nvar = 0
+allocate (tmp(nrec))
 
 ! Time and orbit: Low rate (cont'd)
 
