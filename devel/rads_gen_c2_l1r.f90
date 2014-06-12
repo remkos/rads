@@ -352,11 +352,6 @@ do
 	call new_var ('range_rms_ku', b)
 	call new_var ('range_numval_ku', dble(nvalid))
 
-!	call get_var (ncid, 'drange_20hz', d)
-!	where (.not.valid) d = nan
-!	call trend_1hz (t_20hz, t_1hz, d, a, b)	! Temporary
-!	call new_var ('drange_ku', a)
-
 ! Waves and backscatter
 
 	call cpy_var ('swh_20hz', 'swh_20hz_ku', 'swh_ku', 'swh_rms_ku')
@@ -419,7 +414,17 @@ do
 	call cpy_var ('peakiness_20hz', 'peakiness_20hz_ku', 'peakiness_ku')
 	call cpy_var ('mqe_20hz', 'mqe_20hz_ku', 'mqe')
 	call cpy_var ('noise_20hz', 'noise_floor_20hz_ku', 'noise_floor_ku', 'noise_floor_rms_ku')
-	if (nwvf > 0) call cpy_var ('waveform_20hz', 'waveform_20hz')
+
+! We go back to using very limited editing now to dump waveforms
+
+	valid = t_valid
+	if (nwvf > 0) then
+		call get_var (ncid, 'range_20hz', d)
+		call new_var_2d ('range_tracker_20hz_ku', d + uso_corr)
+		call cpy_var ('agc_20hz', 'agc_20hz_ku')
+		call cpy_var ('echo_scale_20hz', 'waveform_scale_20hz')
+		call cpy_var ('waveform_20hz', 'waveform_20hz')
+	endif
 
 ! Geophysical corrections
 
@@ -460,7 +465,7 @@ do
 			end select
 		enddo
 		j = index(filename, '/', .true.) + 1
-		filenames = filename(j:)
+		filenames = rads_linefeed // filename(j:)
 
 		! Update equator crossing info to the next pass
 		eq_long = modulo (eq_long + 0.5d0 * rev_long + 180d0, 360d0)
@@ -603,7 +608,7 @@ P%end_time = var(1)%d1(ndata)
 P%equator_time = eq_time
 P%equator_lon = eq_long
 P%original = 'L1R ('//trim(l1r_version)//') from L1B ('// &
-	trim(l1b_version)//') data of '//trim(l1b_proc_time)//rads_linefeed//filenames
+	trim(l1b_version)//') data of '//trim(l1b_proc_time)//filenames
 
 ! Open output file
 call rads_create_pass (S, P, ndata, nhz, nwvf)
