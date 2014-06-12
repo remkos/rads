@@ -3852,11 +3852,11 @@ endif
 if (info%quality_flag /= '') e = e + nf90_put_att (P%ncid, info%varid, 'quality_flag', info%quality_flag)
 if (info%scale_factor /= 1d0) e = e + nf90_put_att (P%ncid, info%varid, 'scale_factor', info%scale_factor)
 if (info%add_offset /= 0d0)  e = e + nf90_put_att (P%ncid, info%varid, 'add_offset', info%add_offset)
-if (info%datatype >= rads_type_time .or. info%dataname(:1) == ':') then
-	! Do not add coordinate attribute for some data type
+if (info%datatype >= rads_type_time .or. info%dataname(:1) == ':' .or. info%ndims < 1) then
+	! Do not add coordinate attribute for some data types
 else if (info%ndims == 1) then
 	e = e + nf90_put_att (P%ncid, info%varid, 'coordinates', 'lon lat')
-else if (info%ndims == 2) then
+else
 	e = e + nf90_put_att (P%ncid, info%varid, 'coordinates', 'lon_20hz lat_20hz')
 endif
 if (var%field(1) /= rads_nofield) e = e + nf90_put_att (P%ncid, info%varid, 'field', var%field(1))
