@@ -232,7 +232,7 @@ character(len=2) :: mission
 550 format (a)
 551 format (a,' ...')
 552 format (i5,' records ...')
-553 format (a,i6,3f18.3)
+553 format (a,i6)
 
 ! Reduce file name to basename only
 
@@ -243,12 +243,11 @@ filenm = infile(i:)
 ! Check input file name
 
 write (*,551,advance='no') trim(infile)
-i = index(filenm, '_ERS_ALT_2')
-if (i <= 0) then
+if (filenm(8:17) /= '_ERS_ALT_2') then
 	write (*,550) 'Error: Wrong input file'
 	return
 endif
-alt_2m = (filenm(i+10:i+10) == 'M')
+alt_2m = (filenm(18:18) == 'M')
 
 ! Open input file
 
@@ -260,20 +259,19 @@ endif
 ! Read header records
 
 call nfs(nf90_get_att(ncid,nf90_global,'mission',mission)) ! Actually still is not correct -> bypass
-mission = filenm(i-7:i-6)
-i = index(infile,'.nc')
+mission = filenm(1:2)
 if (mission == 'E1') then
-	if (ers == 0) call rads_init (S, 'e1.' // strtolower(infile(i-4:i-1)), (/'reaper'/), verbose)
+	if (ers == 0) call rads_init (S, 'e1.' // strtolower(filenm(52:55)), (/'reaper'/), verbose)
 	ers = 1
 else if (mission == 'E2') then
-	if (ers == 0) call rads_init (S, 'e2.' // strtolower(infile(i-4:i-1)), (/'reaper'/), verbose)
+	if (ers == 0) call rads_init (S, 'e2.' // strtolower(filenm(52:55)), (/'reaper'/), verbose)
 	ers = 2
 else
 	write (*,550) 'Error: Unknown file type: '//mission
 	return
 endif
-start_time = strp1985f(filenm(i-20:i-6))
-end_time   = strp1985f(filenm(i-36:i-22)) + 1d0
+start_time = strp1985f (filenm(20:34), .false.)
+end_time   = strp1985f (filenm(36:50), .false.) + 2d0
 
 call nfs(nf90_inq_dimid(ncid,'time',varid))
 call nfs(nf90_inquire_dimension(ncid,varid,len=nrec))
@@ -301,7 +299,7 @@ logical :: valid(20,nrec)
 integer(fourbyteint) :: k
 real(eightbytereal) :: dhellips, t(3)
 
-553 format (a,i6,3f18.3)
+553 format (a,i6,4f18.3)
 
 ! Time and orbit: Low rate
 
@@ -318,7 +316,7 @@ t(3) = end_time
 ! There are significant overlaps between files
 ! Here we remove all new files that fall entirely before the end of the previous file, and
 if (end_time < last_time + 1) then
-	write (*,553) 'Warning: Removed file because of time reversal   :', nrec, t
+	write (*,553) 'Warning: Removed file because of time reversal   :', nrec, last_time, t
 	return
 endif
 
@@ -385,7 +383,7 @@ call cpy_var ('swh_rms', 'swh_rms_ku', c <= 1)
 ! MWR: Low rate
 
 call get_var (ncid, 'rad_state_flag_orb_prop', a)
-call get_var (ncid, 'rad_state_flag_orb_prop_init', b)
+call get_var (ncid, 'rad_state_flag_orb_init', b)
 call get_var (ncid, 'rad_state_flag_l2_proc_error+rad_state_validity+rad_state_flag+rad_state_bt_check', c)
 call cpy_var ('tb_238', 'tb_238', a == 2d0 .or. b == 2d0 .or. c > 0d0)
 call cpy_var ('tb_365', 'tb_365', a == 2d0 .or. b == 2d0 .or. c > 0d0)
@@ -463,15 +461,17 @@ do i = 1,nrec
 		t(2) = var(1)%d(ndata+i)
 	endif
 	if (t(2) < start_time .or. t(2) > end_time) then
-		write (*,553) 'Warning: Removed measurement out of time range   :', i, t
+		write (*,553) 'Warning: Removed measurement out of time range   :', i, last_time, t
 	else if (i > 1 .and. i < nrec .and. t(2) > max(t(1),t(3))+1d0) then
-		write (*,553) 'Warning: Removed measurement out of time sequence:', i, t
-	else if (t(2) < last_time+0.5d0) then
-		write (*,553) 'Warning: Removed measurement with time reversal  :', i, t
-	else
+		write (*,553) 'Warning: Removed measurement out of time sequence:', i, last_time, t
+	else if (t(2) > last_time+0.5d0) then
 		last_time = t(2)
 		valid(1,i) = .true.
 		k = k + 1
+	else if (k == 0) then
+		write (*,553) 'Warning: Removed measurement with time overlap   :', i, last_time, t
+	else
+		write (*,553) 'Warning: Removed measurement with time reversal  :', i, last_time, t
 	endif
 enddo
 if (k == 0) then
