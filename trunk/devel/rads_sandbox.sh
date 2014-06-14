@@ -15,7 +15,7 @@ rads_job=`basename $0 .sh`
 rads_open_sandbox () {
 rads_sat=$1
 rads_phase=$2
-SANDBOX=`mktemp -d $RADSROOT/sandbox/XXXXXX`
+SANDBOX=`mktemp -d ${TMPDIR:-/tmp}/rads.XXXXXX`
 ln -s $RADSDATAROOT/nml $RADSDATAROOT/conf $SANDBOX
 export RADSDATAROOT=$SANDBOX
 options=${options:-"-S$rads_sat/$rads_phase"}
