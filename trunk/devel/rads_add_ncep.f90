@@ -18,14 +18,17 @@
 !*rads_add_ncep -- Add NCEP meteo models to RADS data
 !+
 ! This program adjusts the contents of RADS altimeter data files
-! with values computed from NCEP meteorological models.
-! The models provide sea level pressure, columnal water vapour content
-! and surface temperature.
+! with values computed from NCEP operational analysis or GFS
+! meteorological models.
+! The models provide sea level pressure, columnal water vapour content,
+! liquid water content, and near-surface temperature.
 !
-! Input grids are found in directories ${ALTIM}/data/ncep
+! Input grids are found in directories ${ALTIM}/data/ncep and/or
+! ${ALTIM}/data/gfs
 !
-! Interpolation is performed in 6-hourly grids of 2.5x2.5 degree
-! spacing; bi-cubic in space, linear in time.
+! Interpolation is performed in 6-hourly grids of 2.5x2.5 degrees
+! (NCEP analysis) or 0.5x0.5 degrees (GFS) spacing; bi-cubic interpolation
+! in space, linear interpolation in time.
 !
 ! usage: rads_add_ncep [data-selectors] [options]
 !
@@ -53,6 +56,10 @@
 !
 ! Petit, G., and B. Luzum (Eds.) (2010), IERS Conventions (2010),
 ! IERS Technical Note 36, Verlag des Bundesamts für Kartographie und Geodäsie.
+!
+! Lillibridge, J. L., R. Scharroo, S. Abdalla, and D. C. Vandemark,
+! One- and two-dimensional wind speed models for Ka-band altimetry,
+! J. Atmos. Oceanic Technol., 31(3), 630–638, doi:10.1175/JTECH-D-13-00167.1, 2014.
 !-----------------------------------------------------------------------
 program rads_add_ncep
 
@@ -74,7 +81,7 @@ integer(fourbyteint) :: j, cyc, pass
 
 ! Data elements
 
-character(rads_naml) :: path
+character(len=rads_naml) :: path
 integer(fourbyteint) :: hex,hexold=-99999
 type(airtideinfo) :: airinfo
 real(eightbytereal), parameter :: rad2=2d0*atan(1d0)/45d0
@@ -342,9 +349,10 @@ do i = 1,n
 	if (sig0_on) then
 		lwc(i) = f1 * grid_lininter(m1%lwc,lon(i),lat(i)) + f2 * grid_lininter(m2%lwc,lon(i),lat(i))
 		! Compute attenuation due to dry troposphere, water vapour and liquid water content
+		! after Lillibridge et al. [2014]
 		rp = slp / 1013d0
 		rt = 288.15d0 / tmp
-		if (S%frequency(1) < 14d0) then	! Ku-band
+		if (band == 'ku') then	! Ku-band
 			atten(i) = 0.094d0 - 0.177d0 * rp - 0.145d0 * rt + 0.274d0 * rp * rt &
 				+ 1.45d-3 * wvc(i) + 0.66d-5 * wvc(i) * wvc(i) &
 				+ 0.169d0 * lwc(i)
