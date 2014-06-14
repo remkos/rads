@@ -272,6 +272,8 @@ else
 	write (*,550) 'Error: Unknown file type: '//mission
 	return
 endif
+start_time = strp1985f(filenm(i-20:i-6))
+end_time   = strp1985f(filenm(i-36:i-22)) + 1d0
 
 call nfs(nf90_inq_dimid(ncid,'time',varid))
 call nfs(nf90_inquire_dimension(ncid,varid,len=nrec))
@@ -307,31 +309,17 @@ call get_var (ncid, 'time', a)
 a = a + sec1990
 k = min(3,nrec)
 
-! Because first and last time can be wrong, we use the minimum of the first 3 and
-! last 3 measurements as boundaries.
+! Because first and last time record can be wrong, we use the ones from the file name, which
+! seem to be reliable
 t(1) = last_time
-t(2) = minval(a(1:k))
-t(3) = maxval(a(nrec-k+1:nrec))
+t(2) = start_time
+t(3) = end_time
 
 ! There are significant overlaps between files
 ! Here we remove all new files that fall entirely before the end of the previous file, and
-if (t(3) < t(1) + 1) then
+if (end_time < last_time + 1) then
 	write (*,553) 'Warning: Removed file because of time reversal   :', nrec, t
 	return
-endif
-start_time = t(2)
-end_time = t(3)
-
-! Discard measurements at the end of the stack that are newer than the beginning of the
-! new file
-k = ndata
-do while (k > 0 .and. var(1)%d(k) > start_time - 0.5d0)
-	k = k - 1
-enddo
-if (k < ndata) then
-	write (*,553) 'Warning: Removed at end of buffer, time reversal :', ndata-k, &
-		var(1)%d(k+1), var(1)%d(ndata), start_time
-	ndata = k
 endif
 
 ! Initialize
@@ -397,7 +385,7 @@ call cpy_var ('swh_rms', 'swh_rms_ku', c <= 1)
 ! MWR: Low rate
 
 call get_var (ncid, 'rad_state_flag_orb_prop', a)
-call get_var (ncid, 'rad_stat_flag_orb_prop_init', b)
+call get_var (ncid, 'rad_state_flag_orb_prop_init', b)
 call get_var (ncid, 'rad_state_flag_l2_proc_error+rad_state_validity+rad_state_flag+rad_state_bt_check', c)
 call cpy_var ('tb_238', 'tb_238', a == 2d0 .or. b == 2d0 .or. c > 0d0)
 call cpy_var ('tb_365', 'tb_365', a == 2d0 .or. b == 2d0 .or. c > 0d0)
@@ -467,28 +455,32 @@ call new_var ('flags', flags*1d0)
 ! If so, weed them out.
 
 k = 0
-valid(1,:) = .true.
-last_time = var(1)%d(ndata+1)
-do i = 2,nrec
-	t = var(1)%d(ndata+i-1:ndata+i+1)
+valid(1,:) = .false.
+do i = 1,nrec
+	if (i > 1 .and. i < nrec) then
+		t = var(1)%d(ndata+i-1:ndata+i+1)
+	else
+		t(2) = var(1)%d(ndata+i)
+	endif
 	if (t(2) < start_time .or. t(2) > end_time) then
 		write (*,553) 'Warning: Removed measurement out of time range   :', i, t
-	else if (i < nrec .and. t(2) > max(t(1),t(3))+1d0) then
+	else if (i > 1 .and. i < nrec .and. t(2) > max(t(1),t(3))+1d0) then
 		write (*,553) 'Warning: Removed measurement out of time sequence:', i, t
 	else if (t(2) < last_time+0.5d0) then
 		write (*,553) 'Warning: Removed measurement with time reversal  :', i, t
 	else
 		last_time = t(2)
-		cycle
+		valid(1,i) = .true.
+		k = k + 1
 	endif
-	valid(1,i) = .false.
-	k = k + 1
 enddo
-if (k > 0) then
+if (k == 0) then
+	nrec = 0
+else if (k < nrec) then
 	do i = 1,nvar
-		var(i)%d(ndata+1:ndata+nrec-k) = pack(var(i)%d(ndata+1:ndata+nrec),valid(1,:))
+		var(i)%d(ndata+1:ndata+k) = pack(var(i)%d(ndata+1:ndata+nrec),valid(1,:))
 	enddo
-	nrec = nrec - k
+	nrec = k
 endif
 
 ndata = ndata + nrec

@@ -271,27 +271,42 @@ end function strf1985f_int4
 !***********************************************************************
 !*strp1985f -- Parse date string and convert it to seconds since 1985
 !+
-elemental function strp1985f (string)
+elemental function strp1985f (string, sep)
 use typesizes
 character(len=*), intent(in) :: string
+logical, optional, intent(in) :: sep
 real(eightbytereal) :: strp1985f
 !
-! This routine reads a string of the form YYYY-MM-DDxHH:MM:SS.SSSSSS,
-! where x is any character, and converts it to a seconds since
-! 1.0 Jan 1985. Fractional seconds can be included or the HH:MM:SS
-! part can be omitted entirely (to produce 00:00:00)
+! This routine reads a string of the form YYYY-MM-DDxHH:MM:SS.SSSSSS
+! or YYYYMMDDxHHMMSS.SSSSSS, where x is any character, and converts it
+! to a seconds since 1.0 Jan 1985. Fractional seconds can be included or
+! the HH:MM:SS or HHMMSS part can be omitted entirely (to produce 00:00:00).
+!
+! The optional argument <sep> determines if there are separators between
+! the YYYY and MM (etc), so if sep=.false. then the expected format will be
+! YYYYMMDDxHHMMSS.SSSSSS. Default format is YYYY-MM-DDxHH:MM:SS.SSSSSS,
+! i.e. sep=.true.
 !
 ! Arguments:
 !  string    : Character string of time
+!  sep       : If .false. then do not expect separators in date and time
 !
 ! Return value:
 !  strp1985f : Seconds since 1.0 Jan 1985
 !-----------------------------------------------------------------------
 integer(fourbyteint) :: yy,mm,dd,hh,mn,ss,mjd,ios
 real(eightbytereal) :: fs
+logical :: long
 hh = 0 ; mn = 0 ; ss = 0 ; fs = 0d0
-read (string,'(i4,5(1x,i2))',iostat=ios) yy,mm,dd,hh,mn,ss
-if (len(string) > 19) read (string(20:),*,iostat=ios) fs
+long = .true.
+if (present(sep)) long = sep
+if (long) then
+	read (string,'(i4,5(1x,i2))',iostat=ios) yy,mm,dd,hh,mn,ss
+	if (len(string) > 19) read (string(20:),*,iostat=ios) fs
+else
+	read (string,'(i4,2i2,1x,3i2)',iostat=ios) yy,mm,dd,hh,mn,ss
+	if (len(string) > 15) read (string(20:),*,iostat=ios) fs
+endif
 call ymd2mjd(yy,mm,dd,mjd)
 strp1985f = (mjd - 46066) * 86400d0 + hh * 3600d0 + mn * 60d0 + ss + fs
 end function strp1985f
