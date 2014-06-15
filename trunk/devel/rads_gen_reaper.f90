@@ -232,7 +232,7 @@ character(len=2) :: mission
 550 format (a)
 551 format (a,' ...')
 552 format (i5,' records ...')
-553 format (a,i6,3f18.3)
+553 format (a,i6)
 
 ! Reduce file name to basename only
 
@@ -243,30 +243,33 @@ filenm = infile(i:)
 ! Check input file name
 
 write (*,551,advance='no') trim(infile)
-i = index(filenm, '_ERS_ALT_2')
-if (i <= 0) then
+if (filenm(8:17) /= '_ERS_ALT_2') then
 	write (*,550) 'Error: Wrong input file'
 	return
 endif
-alt_2m = (filenm(i+10:i+10) == 'M')
-mission = filenm(i-7:i-6)
+alt_2m = (filenm(18:18) == 'M')
 
-i = index(infile,'.nc')
+mission = filenm(1:2)
 if (mission == 'E1') then
-	if (ers == 0) call rads_init (S, 'e1.' // strtolower(infile(i-4:i-1)), (/'reaper'/), verbose)
+	if (ers == 0) call rads_init (S, 'e1.' // strtolower(filenm(52:55)), (/'reaper'/), verbose)
 	ers = 1
 else if (mission == 'E2') then
-	if (ers == 0) call rads_init (S, 'e2.' // strtolower(infile(i-4:i-1)), (/'reaper'/), verbose)
+	if (ers == 0) call rads_init (S, 'e2.' // strtolower(filenm(52:55)), (/'reaper'/), verbose)
 	ers = 2
 else
 	write (*,550) 'Error: Unknown file type: '//mission
 	return
 endif
 
+! Set start and end time from file name
+! Add a little bit of slop at the end because sometimes the times overrun the end time
+
+start_time = strp1985f (filenm(20:34))
+end_time   = strp1985f (filenm(36:50)) + 2d0
+
 ! Open input file
 
 i = nf90_open(infile,nf90_nowrite,ncid)
-write (*,*) 'ncid =',ncid
 if (i /= nf90_noerr) then
 	write (*,550) nf90_strerror (i)
 	stop
@@ -299,42 +302,32 @@ integer(fourbyteint), intent(inout) :: nrec
 real(eightbytereal) :: a(nrec), b(nrec), c(nrec), d(20,nrec), dh(nrec)
 integer(twobyteint) :: flags(nrec)
 logical :: valid(20,nrec)
-integer(fourbyteint) :: k
+integer(fourbyteint) :: k, kerr(4)
 real(eightbytereal) :: dhellips, t(3)
+character(len=34) :: strerr(4) = (/ &
+'measurements out of time range   ', &
+'measurements out of time sequence', &
+'measurements with time overlap   ', &
+'measurements with time reversal  ' /)
 
-553 format (a,i6,3f18.3)
+553 format ('Warning: Removed ',a,':',i6)
 
 ! Time and orbit: Low rate
 
 call get_var (ncid, 'time', a)
 a = a + sec1990
-k = min(3,nrec)
 
-! Because first and last time can be wrong, we use the minimum of the first 3 and
-! last 3 measurements as boundaries.
+! Because first and last time record can be wrong, we use the ones from the file name, which
+! seem to be reliable
 t(1) = last_time
-t(2) = minval(a(1:k))
-t(3) = maxval(a(nrec-k+1:nrec))
+t(2) = start_time
+t(3) = end_time
 
 ! There are significant overlaps between files
 ! Here we remove all new files that fall entirely before the end of the previous file, and
-if (t(3) < t(1) + 1) then
-	write (*,553) 'Warning: Removed file because of time reversal   :', nrec, t
+if (end_time < last_time + 1) then
+	write (*,553) 'file because of time reversal    ', nrec
 	return
-endif
-start_time = t(2)
-end_time = t(3)
-
-! Discard measurements at the end of the stack that are newer than the beginning of the
-! new file
-k = ndata
-do while (k > 0 .and. var(1)%d(k) > start_time - 0.5d0)
-	k = k - 1
-enddo
-if (k < ndata) then
-	write (*,553) 'Warning: Removed at end of buffer, time reversal :', ndata-k, &
-		var(1)%d(k+1), var(1)%d(ndata), start_time
-	ndata = k
 endif
 
 ! Initialize
@@ -466,37 +459,47 @@ call flag_set (modulo(a,2d0) == 1, flags, 10)
 
 call new_var ('flags', flags*1d0)
 
+deallocate (tmp)
+
 ! There may be measurements with invalid times.
 ! If so, weed them out.
 
 k = 0
-valid(1,:) = .true.
-last_time = var(1)%d(ndata+1)
-do i = 2,nrec
-	t = var(1)%d(ndata+i-1:ndata+i+1)
-	if (t(2) < start_time .or. t(2) > end_time) then
-		write (*,553) 'Warning: Removed measurement out of time range   :', i, t
-	else if (i < nrec .and. t(2) > max(t(1),t(3))+1d0) then
-		write (*,553) 'Warning: Removed measurement out of time sequence:', i, t
-	else if (t(2) < last_time+0.5d0) then
-		write (*,553) 'Warning: Removed measurement with time reversal  :', i, t
+kerr = 0
+valid(1,:) = .false.
+do i = 1,nrec
+	if (i > 1 .and. i < nrec) then
+		t = var(1)%d(ndata+i-1:ndata+i+1)
 	else
-		last_time = t(2)
-		cycle
+		t(2) = var(1)%d(ndata+i)
 	endif
-	valid(1,i) = .false.
-	k = k + 1
+	if (t(2) < start_time .or. t(2) > end_time) then
+		kerr(1) = kerr(1) + 1
+	else if (i > 1 .and. i < nrec .and. t(2) > max(t(1),t(3))+1d0) then
+		kerr(2) = kerr(2) + 1
+	else if (t(2) > last_time+0.5d0) then
+		last_time = t(2)
+		valid(1,i) = .true.
+		k = k + 1
+	else if (k == 0) then
+		kerr(3) = kerr(3) + 1
+	else
+		kerr(4) = kerr(4) + 1
+	endif
 enddo
-if (k > 0) then
+do i = 1,4
+	if (kerr(i) > 0) write (*,553) strerr(i),kerr(i)
+enddo
+if (k == 0) then
+	nrec = 0
+else if (k < nrec) then
 	do i = 1,nvar
-		var(i)%d(ndata+1:ndata+nrec-k) = pack(var(i)%d(ndata+1:ndata+nrec),valid(1,:))
+		var(i)%d(ndata+1:ndata+k) = pack(var(i)%d(ndata+1:ndata+nrec),valid(1,:))
 	enddo
-	nrec = nrec - k
+	nrec = k
 endif
 
 ndata = ndata + nrec
-
-deallocate (tmp)
 
 end subroutine get_reaper_data
 
@@ -561,7 +564,6 @@ enddo
 
 ! Close the data file
 write (*,552) nout,trim(P%filename(len_trim(S%dataroot)+2:))
-write (*,*) 'ncout =',P%ncid
 call rads_close_pass (S, P)
 
 ! Formats
