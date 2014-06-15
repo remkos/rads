@@ -232,7 +232,7 @@ character(len=2) :: mission
 550 format (a)
 551 format (a,' ...')
 552 format (i5,' records ...')
-553 format (a,i6)
+553 format (a,i6,3f18.3)
 
 ! Reduce file name to basename only
 
@@ -243,35 +243,37 @@ filenm = infile(i:)
 ! Check input file name
 
 write (*,551,advance='no') trim(infile)
-if (filenm(8:17) /= '_ERS_ALT_2') then
+i = index(filenm, '_ERS_ALT_2')
+if (i <= 0) then
 	write (*,550) 'Error: Wrong input file'
 	return
 endif
-alt_2m = (filenm(18:18) == 'M')
+alt_2m = (filenm(i+10:i+10) == 'M')
+mission = filenm(i-7:i-6)
 
-! Open input file
-
-if (nf90_open(infile,nf90_nowrite,ncid) /= nf90_noerr) then
-	write (*,550) 'Error opening file'
-	return
-endif
-
-! Read header records
-
-call nfs(nf90_get_att(ncid,nf90_global,'mission',mission)) ! Actually still is not correct -> bypass
-mission = filenm(1:2)
+i = index(infile,'.nc')
 if (mission == 'E1') then
-	if (ers == 0) call rads_init (S, 'e1.' // strtolower(filenm(52:55)), (/'reaper'/), verbose)
+	if (ers == 0) call rads_init (S, 'e1.' // strtolower(infile(i-4:i-1)), (/'reaper'/), verbose)
 	ers = 1
 else if (mission == 'E2') then
-	if (ers == 0) call rads_init (S, 'e2.' // strtolower(filenm(52:55)), (/'reaper'/), verbose)
+	if (ers == 0) call rads_init (S, 'e2.' // strtolower(infile(i-4:i-1)), (/'reaper'/), verbose)
 	ers = 2
 else
 	write (*,550) 'Error: Unknown file type: '//mission
 	return
 endif
-start_time = strp1985f (filenm(20:34), .false.)
-end_time   = strp1985f (filenm(36:50), .false.) + 2d0
+
+! Open input file
+
+i = nf90_open(infile,nf90_nowrite,ncid)
+write (*,*) 'ncid =',ncid
+if (i /= nf90_noerr) then
+	write (*,550) nf90_strerror (i)
+	stop
+	return
+endif
+
+! Read header records
 
 call nfs(nf90_inq_dimid(ncid,'time',varid))
 call nfs(nf90_inquire_dimension(ncid,varid,len=nrec))
@@ -286,6 +288,7 @@ endif
 call nfs(nf90_get_att(ncid,nf90_global,'l2_proc_time',l2_proc_time))
 call nfs(nf90_get_att(ncid,nf90_global,'l2_software_ver',l2_version))
 call nfs(nf90_get_att(ncid,nf90_global,'ocean_retracker_version_for_ocean',mle))
+!call nfs(nf90_get_att(ncid,nf90_global,'mission',mission)) ! Actually still is not correct -> bypass
 
 call get_reaper_data (nrec)
 call nfs(nf90_close(ncid))
@@ -299,7 +302,7 @@ logical :: valid(20,nrec)
 integer(fourbyteint) :: k
 real(eightbytereal) :: dhellips, t(3)
 
-553 format (a,i6,4f18.3)
+553 format (a,i6,3f18.3)
 
 ! Time and orbit: Low rate
 
@@ -307,17 +310,31 @@ call get_var (ncid, 'time', a)
 a = a + sec1990
 k = min(3,nrec)
 
-! Because first and last time record can be wrong, we use the ones from the file name, which
-! seem to be reliable
+! Because first and last time can be wrong, we use the minimum of the first 3 and
+! last 3 measurements as boundaries.
 t(1) = last_time
-t(2) = start_time
-t(3) = end_time
+t(2) = minval(a(1:k))
+t(3) = maxval(a(nrec-k+1:nrec))
 
 ! There are significant overlaps between files
 ! Here we remove all new files that fall entirely before the end of the previous file, and
-if (end_time < last_time + 1) then
-	write (*,553) 'Warning: Removed file because of time reversal   :', nrec, last_time, t
+if (t(3) < t(1) + 1) then
+	write (*,553) 'Warning: Removed file because of time reversal   :', nrec, t
 	return
+endif
+start_time = t(2)
+end_time = t(3)
+
+! Discard measurements at the end of the stack that are newer than the beginning of the
+! new file
+k = ndata
+do while (k > 0 .and. var(1)%d(k) > start_time - 0.5d0)
+	k = k - 1
+enddo
+if (k < ndata) then
+	write (*,553) 'Warning: Removed at end of buffer, time reversal :', ndata-k, &
+		var(1)%d(k+1), var(1)%d(ndata), start_time
+	ndata = k
 endif
 
 ! Initialize
@@ -453,34 +470,28 @@ call new_var ('flags', flags*1d0)
 ! If so, weed them out.
 
 k = 0
-valid(1,:) = .false.
-do i = 1,nrec
-	if (i > 1 .and. i < nrec) then
-		t = var(1)%d(ndata+i-1:ndata+i+1)
-	else
-		t(2) = var(1)%d(ndata+i)
-	endif
+valid(1,:) = .true.
+last_time = var(1)%d(ndata+1)
+do i = 2,nrec
+	t = var(1)%d(ndata+i-1:ndata+i+1)
 	if (t(2) < start_time .or. t(2) > end_time) then
-		write (*,553) 'Warning: Removed measurement out of time range   :', i, last_time, t
-	else if (i > 1 .and. i < nrec .and. t(2) > max(t(1),t(3))+1d0) then
-		write (*,553) 'Warning: Removed measurement out of time sequence:', i, last_time, t
-	else if (t(2) > last_time+0.5d0) then
-		last_time = t(2)
-		valid(1,i) = .true.
-		k = k + 1
-	else if (k == 0) then
-		write (*,553) 'Warning: Removed measurement with time overlap   :', i, last_time, t
+		write (*,553) 'Warning: Removed measurement out of time range   :', i, t
+	else if (i < nrec .and. t(2) > max(t(1),t(3))+1d0) then
+		write (*,553) 'Warning: Removed measurement out of time sequence:', i, t
+	else if (t(2) < last_time+0.5d0) then
+		write (*,553) 'Warning: Removed measurement with time reversal  :', i, t
 	else
-		write (*,553) 'Warning: Removed measurement with time reversal  :', i, last_time, t
+		last_time = t(2)
+		cycle
 	endif
+	valid(1,i) = .false.
+	k = k + 1
 enddo
-if (k == 0) then
-	nrec = 0
-else if (k < nrec) then
+if (k > 0) then
 	do i = 1,nvar
-		var(i)%d(ndata+1:ndata+k) = pack(var(i)%d(ndata+1:ndata+nrec),valid(1,:))
+		var(i)%d(ndata+1:ndata+nrec-k) = pack(var(i)%d(ndata+1:ndata+nrec),valid(1,:))
 	enddo
-	nrec = k
+	nrec = nrec - k
 endif
 
 ndata = ndata + nrec
@@ -550,6 +561,7 @@ enddo
 
 ! Close the data file
 write (*,552) nout,trim(P%filename(len_trim(S%dataroot)+2:))
+write (*,*) 'ncout =',P%ncid
 call rads_close_pass (S, P)
 
 ! Formats
