@@ -394,7 +394,7 @@ call cpy_var ('swh_rms', 'swh_rms_ku', c <= 1)
 
 call get_var (ncid, 'rad_state_flag_orb_prop', a)
 call get_var (ncid, 'rad_state_flag_orb_init', b)
-call get_var (ncid, 'rad_state_flag_l2_proc_error+rad_state_validity+rad_state_flag+rad_state_bt_check', c)
+call get_var (ncid, 'rad_state_flag_l2_proc_error+rad_state_validity+rad_state_bt_check', c)
 call cpy_var ('tb_238', 'tb_238', a == 2d0 .or. b == 2d0 .or. c > 0d0)
 call cpy_var ('tb_365', 'tb_365', a == 2d0 .or. b == 2d0 .or. c > 0d0)
 
