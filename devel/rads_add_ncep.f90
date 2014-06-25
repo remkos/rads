@@ -86,7 +86,7 @@ integer(fourbyteint) :: hex,hexold=-99999
 type(airtideinfo) :: airinfo
 real(eightbytereal), parameter :: rad2=2d0*atan(1d0)/45d0
 logical :: dry_on=.false., wet_on=.false., ib_on=.false., air_on=.false., sig0_on = .false., wind_on = .false., &
-	topo_on=.false., saral=.false., new=.false., air_plus=.false., error
+	topo_on=.false., saral=.false., saral_patch2, new=.false., air_plus=.false., error
 character(len=4) :: source = 'ncep', band
 
 ! Model data
@@ -200,11 +200,11 @@ write (*,1310)
 '  -w, --wet                 Add NCEP wet tropospheric correction' / &
 '  -a, --air                 Add air tide' / &
 '  -i, --ib                  Add static inverse barometer correction' / &
-'  -s, --sig0                Add sigma0 attenuation, lwc, wvc (with -g only)' / &
-'  --sig0-saral              Add sigma0 attenuation only to SARAL pre-patch 2 data' / &
+'  -s, --sig0                Add and apply sigma0 attenuation, and add lwc, wvc (with -g only)' / &
+'  --sig0-saral              As --sig0, but only apply to SARAL pre-patch 2 data' / &
 '  -u, --wind                Add GFS wind speed (with -g only)' / &
 '  --all                     All of the above' / &
-'  -g, --gfs                 Use GFS analysis instead of reanalysis' / &
+'  -g, --gfs                 Use GFS analysis instead of NCEP reanalysis' / &
 '  -n, --new                 Only add variables when not yet existing')
 stop
 end subroutine synopsis
@@ -260,8 +260,7 @@ call globpres(4,P%equator_time,slp0)
 
 ! Do not replace sigma0 on newer SARAL products
 
-if (sig0_on .and. saral .and. index(P%original, '(V5') > 0) sig0_on = .false.
-
+saral_patch2 = (saral .and. index(P%original, '(V5') > 0)
 
 ! Process data records
 
@@ -379,9 +378,10 @@ if (.not.(dry_on .or. ib_on .or. wet_on .or. sig0_on .or. wind_on)) then
 	stop
 endif
 
-! If backscatter attenuation is computed, replace the old one here
+! If backscatter attenuation is computed, replace the old backscatter here
+! (but not for SARAL Patch2 data and newer)
 
-if (sig0_on) then
+if (sig0_on .and. .not.saral_patch2) then
 	call rads_get_var (S, P, 'sig0_'//band, sig0, .true.)
 	call rads_get_var (S, P, 'dsig0_atmos_'//band, atten_old, .true.)
 	sig0 = sig0 - atten_old + atten
@@ -400,7 +400,11 @@ if (wet_on) call rads_def_var (S, P, 'wet_tropo_'//source)
 if (ib_on ) call rads_def_var (S, P, 'inv_bar_static')
 if (air_on) call rads_def_var (S, P, 'dry_tropo_airtide')
 if (sig0_on) then
-	call rads_def_var (S, P, 'dsig0_atmos_'//band)
+	if (saral_patch2) then
+		call rads_def_var (S, P, 'dsig0_atmos_gfs_'//band)
+	else
+		call rads_def_var (S, P, 'dsig0_atmos_'//band)
+	endif
 	call rads_def_var (S, P, 'water_vapor_content_gfs')
 	call rads_def_var (S, P, 'liquid_water_gfs')
 endif
@@ -414,9 +418,13 @@ if (wet_on) call rads_put_var (S, P, 'wet_tropo_'//source, wet)
 if (ib_on ) call rads_put_var (S, P, 'inv_bar_static', ib)
 if (air_on) call rads_put_var (S, P, 'dry_tropo_airtide', air)
 if (sig0_on) then
-	call rads_put_var (S, P, 'sig0_'//band, sig0)
-	if (P%n_hz > 0) call rads_put_var (S, P, 'sig0_20hz_'//band, sig0_20hz)
-	call rads_put_var (S, P, 'dsig0_atmos_'//band, atten)
+	if (saral_patch2) then ! Only add atmospheric correction from GFS model
+		call rads_put_var (S, P, 'dsig0_atmos_gfs_'//band, atten)
+	else ! Also replace sigma0
+		call rads_put_var (S, P, 'sig0_'//band, sig0)
+		if (P%n_hz > 0) call rads_put_var (S, P, 'sig0_20hz_'//band, sig0_20hz)
+		call rads_put_var (S, P, 'dsig0_atmos_'//band, atten)
+	endif
 	call rads_put_var (S, P, 'water_vapor_content_gfs', wvc)
 	call rads_put_var (S, P, 'liquid_water_gfs', lwc)
 endif
