@@ -2440,7 +2440,7 @@ Global RADS configuration file
 	<standard_name>atmosphere_mass_content_of_water_vapor</standard_name>
 	<source>NOAA Global Forecast System</source>
 	<units>kg/m^2</units>
-	<data>water_vapor_gfs</data>
+	<data>water_vapor_content_gfs</data>
 	<default>0</default>
 	<format>f6.2</format>
 	<compress>int2 1e-2</compress>
