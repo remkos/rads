@@ -281,8 +281,10 @@ do i = 1,n
 		if (error) then
 			write (*,'(a)') 'Model switched off.'
 			dry_on = .false.
-			ib_on = .false.
 			wet_on = .false.
+			ib_on = .false.
+			sig0_on = .false.
+			wind_on = .false.
 			exit
 		endif
 		hexold = hex
