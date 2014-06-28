@@ -37,7 +37,8 @@ type(rads_pass) :: P
 ! Command line arguments
 
 character(rads_cmdl) :: filename, arg, cause
-integer(fourbyteint) :: cyc, pass, pass0, pass1, bit, set, sel, ios
+integer(fourbyteint) :: cyc, pass, pass0, pass1, set, sel, ios
+integer(twobyteint) :: bit
 real(eightbytereal) :: val0, val1
 
 ! Formats
@@ -101,7 +102,8 @@ end subroutine synopsis
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
 real(eightbytereal) :: val(n), flags(n)
-integer(fourbyteint) :: flag, i, changed
+integer(fourbyteint) :: i, changed
+integer(twobyteint) :: flag
 
 ! Formats
 
@@ -121,7 +123,7 @@ changed = 0
 do i = 1,n
 	if (sel < 0 .or. (val(i) >= val0 .and. val(i) <= val1)) then
 		changed = changed + 1
-		flag = nint(flags(i))
+		flag = nint(flags(i),twobyteint)
 		if (set == 1) then
 			flag = ibset(flag, bit)
 		else
