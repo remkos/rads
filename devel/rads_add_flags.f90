@@ -37,7 +37,7 @@ type(rads_pass) :: P
 ! Command line arguments
 
 character(rads_cmdl) :: filename, arg, cause
-integer(fourbyteint) :: cyc, pass, pass0, pass1, set, sel, ios
+integer(fourbyteint) :: cyc, pass, pass0, pass1, set, sel, ios, j
 integer(twobyteint) :: bit
 real(eightbytereal) :: val0, val1
 
@@ -48,12 +48,23 @@ real(eightbytereal) :: val0, val1
 ! Initialise
 
 call synopsis ('--head')
+call rads_set_options (' file:')
 call rads_init (S)
-
-! Open the data file
 
 call parseenv ('${ALTIM}/data/tables/', filename)
 filename = trim(filename) // trim(S%sat) // '_flags.dat'
+
+! Check options
+
+do j = 1,rads_nopt
+	select case (rads_opt(j)%opt)
+	case ('file')
+		filename = rads_opt(j)%arg
+	end select
+enddo
+
+! Open the data file
+
 open (10,file=filename, status='old', iostat=ios)
 if (ios /= 0) then
 	write (*,550) 'Error opening data file ' // trim(filename)
