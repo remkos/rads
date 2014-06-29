@@ -52,8 +52,9 @@ character(len=1), intent(out) :: phasenm
 !  erspass : .TRUE. if the pass has changed
 !-----------------------------------------------------------------------
 logical :: new
-integer(fourbyteint) :: unit,freeunit,npass=0,pnt,olders=0,ios,yy,mm,dd,hh,mn,ss,mjd
-integer(fourbyteint), parameter :: mpass=170000
+integer(fourbyteint) :: unit,freeunit,npass=0,pnt,olders=0,ios
+integer(fourbyteint), parameter :: mpass=170000, mjd90=1826 ! Days from 1985 to 1990
+real(eightbytereal) :: mjd
 type :: passtable
 	integer(fourbyteint) :: orbitnr
 	character(len=1) :: phasenm
@@ -81,24 +82,21 @@ else
 		if (ios /= 0) exit
 
 		npass = npass + 1
-		read (line,600) yy, mm, dd, hh, mn, ss
-		call ymd2mjd (yy, mm, dd, mjd)
-		q(npass)%start = (mjd - 46066) * 86400d0 + hh * 3600d0 + mn * 60d0 + ss
+		read (line,600) mjd
+		q(npass)%start = (mjd + mjd90) * 86400d0
 
 		read (unit,'(a)',iostat=ios) line
 		if (ios /= 0) exit
 
-		read (line,600) yy, mm, dd, hh, mn, ss, &
-			q(npass)%phasenm, q(npass)%cyclenr, q(npass)%passnr, q(npass)%orbitnr, q(npass)%lnode
-		call ymd2mjd (yy, mm, dd, mjd)
-		q(npass)%tnode = (mjd - 46066) * 86400d0 + hh * 3600d0 + mn * 60d0 + ss
+		read (line,600) mjd, q(npass)%phasenm, q(npass)%cyclenr, q(npass)%passnr, q(npass)%orbitnr, q(npass)%lnode
+		q(npass)%tnode = (mjd + mjd90) * 86400d0
 	enddo
 	close (unit)
 	olders = ers
 	new = .true.
 	pnt = 1
 endif
-600 format (f11.6,i5,5i3,1x,a1,i4,i5,i6,2f8.3)
+600 format (f11.6,21x,a1,i4,i5,i6,2f8.3)
 610 format (a,'ER',i1,'_ORF.txt')
 
 ! Look for the table entry based on the utc time
