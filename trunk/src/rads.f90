@@ -3777,6 +3777,7 @@ real(eightbytereal), intent(in), optional :: scale_factor, add_offset
 type(rads_varinfo), pointer :: info
 integer(fourbyteint) :: e, n, xtype
 integer :: j=0, j0, j1
+character(len=5) :: hz
 S%error = rads_noerr
 
 ! Get some information on dimensions and scale factors
@@ -3854,10 +3855,13 @@ if (info%scale_factor /= 1d0) e = e + nf90_put_att (P%ncid, info%varid, 'scale_f
 if (info%add_offset /= 0d0)  e = e + nf90_put_att (P%ncid, info%varid, 'add_offset', info%add_offset)
 if (info%datatype >= rads_type_time .or. info%dataname(:1) == ':' .or. info%ndims < 1) then
 	! Do not add coordinate attribute for some data types
-else if (info%ndims == 1) then
-	e = e + nf90_put_att (P%ncid, info%varid, 'coordinates', 'lon lat')
+else if (info%ndims > 1 .and. S%n_hz_output .and. P%n_hz > 1) then
+	! For multi-Hz data: use 'lon_#hz lat_#hz'
+	write (hz, '("_",i2.2,"hz")') P%n_hz
+	e = e + nf90_put_att (P%ncid, info%varid, 'coordinates', 'lon'//hz//' lat'//hz)
 else
-	e = e + nf90_put_att (P%ncid, info%varid, 'coordinates', 'lon_20hz lat_20hz')
+	! All other types: use 'lon lat'
+	e = e + nf90_put_att (P%ncid, info%varid, 'coordinates', 'lon lat')
 endif
 if (var%field(1) /= rads_nofield) e = e + nf90_put_att (P%ncid, info%varid, 'field', var%field(1))
 if (info%comment /= '') e = e + nf90_put_att (P%ncid, info%varid, 'comment', info%comment)
