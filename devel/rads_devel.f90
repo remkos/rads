@@ -17,6 +17,8 @@
 
 module rads_devel
 use typesizes
+use rads_time
+use rads_misc
 
 contains
 
@@ -50,7 +52,7 @@ character(len=1), intent(out) :: phasenm
 !  erspass : .TRUE. if the pass has changed
 !-----------------------------------------------------------------------
 logical :: new
-integer(fourbyteint) :: unit,freeunit,npass=0,pnt,olders=0,ios
+integer(fourbyteint) :: unit,freeunit,npass=0,pnt,olders=0,ios,yy,mm,dd,hh,mn,ss,mjd
 integer(fourbyteint), parameter :: mpass=170000
 type :: passtable
 	integer(fourbyteint) :: orbitnr
@@ -68,25 +70,36 @@ save pnt,npass,olders,q
 if (ers == olders) then
 	new = .false.
 else
-	call getenv ('ALTIM', line)
+	call parseenv ('${RADSROOT}/ext/reaper/', line)
 	write (line,610) trim(line), ers
 	unit = freeunit()
 	npass = 0
-	open (unit,file=line,status='old')
+	open (unit, file=line, status='old')
+	read (unit, *, iostat=ios) ! Skip header
 	do
 		read (unit,'(a)',iostat=ios) line
 		if (ios /= 0) exit
-		if (line(:1) == '#') cycle
+
 		npass = npass + 1
-		read (line,600) q(npass)
+		read (line,600) yy, mm, dd, hh, mn, ss
+		call ymd2mjd (yy, mm, dd, mjd)
+		q(npass)%start = (mjd - 46066) * 86400d0 + hh * 3600d0 + mn * 60d0 + ss
+
+		read (unit,'(a)',iostat=ios) line
+		if (ios /= 0) exit
+
+		read (line,600) yy, mm, dd, hh, mn, ss, &
+			q(npass)%phasenm, q(npass)%cyclenr, q(npass)%passnr, q(npass)%orbitnr, q(npass)%lnode
+		call ymd2mjd (yy, mm, dd, mjd)
+		q(npass)%tnode = (mjd - 46066) * 86400d0 + hh * 3600d0 + mn * 60d0 + ss
 	enddo
 	close (unit)
 	olders = ers
 	new = .true.
 	pnt = 1
 endif
-600 format (i6,1x,a1,i4,i5,2f14.3,f11.6)
-610 format (a,'/data/tables/ers',i1,'passes.tab')
+600 format (f11.6,i5,5i3,1x,a1,i4,i5,i6,2f8.3)
+610 format ('ER',i1,'_ORF.txt')
 
 ! Look for the table entry based on the utc time
 
