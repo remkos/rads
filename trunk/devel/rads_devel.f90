@@ -99,7 +99,7 @@ else
 	pnt = 1
 endif
 600 format (f11.6,i5,5i3,1x,a1,i4,i5,i6,2f8.3)
-610 format ('ER',i1,'_ORF.txt')
+610 format (a,'ER',i1,'_ORF.txt')
 
 ! Look for the table entry based on the utc time
 
