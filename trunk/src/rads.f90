@@ -912,7 +912,7 @@ type(rads_option), intent(in) :: opt(:)
 ! The -S or --sat= option is ignored (it should be dealt with separately).
 ! The -V or --var= option is not parsed, but a pointer is returned to the element
 ! of the list of variables following -V or --var=. Same for --sel=, sel=, var=.
-
+!
 ! Arguments:
 !  S        : Satellite/mission dependent structure
 !  opt      : Array of options (usually command line arguments)
@@ -939,10 +939,18 @@ case ('C', 'cycle')
 	call read_val (opt%arg, S%cycles, '/-x')
 	if (S%cycles(2) < 0) S%cycles(2) = S%cycles(1)
 case ('P', 'pass')
-	S%passes(2) = -1
-	S%passes(3) = 1
-	call read_val (opt%arg, S%passes, '/-x')
-	if (S%passes(2) < 0) S%passes(2) = S%passes(1)
+	if (opt%arg(:1) == 'a') then ! Only ascending passes
+		S%passes(1) = 1
+		S%passes(3) = 2
+	else if (opt%arg(:1) == 'd') then ! Only descending passes
+		S%passes(1) = 2
+		S%passes(3) = 2
+	else
+		S%passes(2) = -1
+		S%passes(3) = 1
+		call read_val (opt%arg, S%passes, '/-x')
+		if (S%passes(2) < 0) S%passes(2) = S%passes(1)
+	endif
 case ('A', 'alias')
 	if (opt%arg(j+1:j+1) == ',' .or. opt%arg(j+1:j+1) == '/') then
 		! -Aalias=,var is processed as -Aalias=alias,var
@@ -3244,7 +3252,8 @@ write (iunit, 1300) trim(progname)
 'Optional [rads_dataselectors] are:'/ &
 '  -V, --var=VAR1,...        Select variables to be read'/ &
 '  -C, --cycle=C0[,C1[,DC]]  Specify first and last cycle and modulo'/ &
-'  -P, --pass=P0[,P1[,DP]]   Specify first and last pass and modulo'/ &
+'  -P, --pass=P0[,P1[,DP]]   Specify first and last pass and modulo; alternatively use -Pa (--pass=asc)'/ &
+'                            for ascending passes or -Pd (--pass=des) for descending passes' / &
 '  -R, --region=LON0,LON1,LAT0,LAT1'/ &
 '                            Specify rectangular region (deg)'/ &
 '  -R, --region=LON0,LAT0,RADIUS'/ &
