@@ -1662,8 +1662,8 @@ enddo ! End alias loop
 
 ! Edit this data if required and no error occurred
 if (.not.noedit .and. S%error == rads_noerr) then
-	if (any(info%limits == info%limits)) call rads_limits_check
-	if (info%quality_flag(:1) /= ' ') call rads_quality_check
+	if (any(info%limits == info%limits)) call rads_check_limits
+	if (info%quality_flag(:1) /= ' ') call rads_check_quality_flag
 endif
 call rads_update_stat	! Update statistics on variable
 
@@ -1962,7 +1962,7 @@ else
 endif
 end subroutine rads_get_var_constant
 
-subroutine rads_limits_check ! Edit the data based on limits
+subroutine rads_check_limits ! Edit the data based on limits
 integer(fourbyteint) :: mask(2)
 
 if (info%datatype == rads_type_lon) then
@@ -1982,9 +1982,9 @@ else
 	! Do editing of any other variable
 	where (data < info%limits(1) .or. data > info%limits(2)) data = nan
 endif
-end subroutine rads_limits_check
+end subroutine rads_check_limits
 
-recursive subroutine rads_quality_check
+recursive subroutine rads_check_quality_flag
 use rads_misc
 real(eightbytereal) :: qual(P%ndata)
 integer(fourbyteint) :: i0, i1
@@ -1998,7 +1998,7 @@ do
 	if (S%error /= rads_noerr) exit
 	where (isnan_(qual)) data = nan
 enddo
-end subroutine rads_quality_check
+end subroutine rads_check_quality_flag
 
 subroutine rads_update_stat ! Update the statistics for given var
 use rads_misc
