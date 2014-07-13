@@ -29,8 +29,8 @@ use rads_netcdf
 use rads_time
 integer(fourbyteint) :: ncid, i, icol, ios, nvar, nxo_in, nxo_out, ntrk, &
 	id_flag, id_satid, id_track, id_sla, id_new, id_old, id_offset, id_alt_rate, nvar_replace = 0
-real(eightbytereal), allocatable :: var(:,:,:), stat(:,:,:)
-integer(fourbyteint), allocatable :: track(:,:), binnr(:,:)
+real(eightbytereal), allocatable :: var(:,:,:), stat(:,:,:), binstat(:,:,:), tbiasstat(:,:)
+integer(fourbyteint), allocatable :: track(:,:), binnr(:,:), bincount(:)
 character(len=rads_naml), allocatable :: long_name(:)
 logical, allocatable :: boz(:), mask(:), binmask(:)
 type :: trk_
@@ -173,7 +173,7 @@ contains
 
 subroutine process (filename)
 character(len=*), intent(in) :: filename
-integer(fourbyteint) :: i, j, k, nr, yy, mm, dd, trkid(2)
+integer(fourbyteint) :: i, j, k, k1, k2, yy, mm, dd, trkid(2)
 character(len=rads_naml) :: legs, varnm
 real(eightbytereal) :: mean, sigma
 real(eightbytereal), parameter :: day = 86400d0
@@ -454,24 +454,29 @@ endif
 ! Print statistics
 if (bin > 0d0) then
 	! Statistics per bin
-	do i = minval(binnr),maxval(binnr)
-		binmask = mask .and. (binnr(1,:) == i .or. binnr(2,:) == i) ! Select single bin
-		nr = count(binmask)
-		if (nr == 0) cycle
-		call mjd2ymd (nint(i*bin)+46066,yy,mm,dd)
-		if (.not.fullyear) yy = modulo(yy,100)
-		write (*,630,advance='no') yy,mm,dd,nr
-		do j = -1,nvar
-			call mean_variance (pack(var(1,:,j),binmask), stat(1,j,1), stat(2,j,1))
-			stat(2,j,1) = sqrt(stat(2,j,1))
-			if (j < var0) call mean_variance (pack(var(2,:,j),binmask), stat(2,j,1), sigma)
-		enddo
-		call print_data (stat(:,:,1), ltbias)
-		if (ltbias) then
-			call solve_tbias (pack(var(1,:,id_sla),binmask),pack(var(1,:,id_alt_rate),binmask),mean,sigma)
-			write(*,631) mean*1d3, sigma*1d3
-		endif
+	k1 = minval(binnr)
+	k2 = maxval(binnr)
+	allocate (bincount(k1:k2),binstat(2,-1:nvar,k1:k2),tbiasstat(2,k1:k2))
+	bincount = 0
+	binstat = 0d0
+	tbiasstat = 0d0
+	do i = 1,nxo_in
+		if (.not.mask(i)) cycle
+		call update_stat (binnr(1,i),var(:,i,:))
+		if (binnr(1,i) /= binnr(2,i)) call update_stat (binnr(2,i),var(:,i,:))
 	enddo
+	do k = k1,k2
+		if (bincount(k) == 0) cycle
+		binstat(2,var0:nvar,k) = sqrt((binstat(2,var0:nvar,k) - binstat(1,var0:nvar,k)**2/bincount(k))/(bincount(k)-1))
+		binstat(1,:,k) = binstat(1,:,k) / bincount(k)
+		binstat(2,-1:var0-1,k) = binstat(2,-1:var0-1,k) / bincount(k)
+		call mjd2ymd (nint(k*bin)+46066,yy,mm,dd)
+		if (.not.fullyear) yy = modulo(yy,100)
+		write (*,630,advance='no') yy,mm,dd,bincount(k)
+		call print_data (binstat(:,:,k),ltbias)
+		if (ltbias) write(*,631) tbiasstat(2,k)/tbiasstat(1,k)*1d3, sqrt(1d0/tbiasstat(1,k))*1d3
+	enddo
+	deallocate (bincount,binstat,tbiasstat)
 else if (xostat) then
 	write (*,640) 'MIN','MAX','MEAN','RMS','STDDEV'
 	write (*,645) trim(long_name(-2)),stat(1,-1,:)
@@ -634,15 +639,14 @@ end subroutine reorder
 
 !***********************************************************************
 
-subroutine solve_tbias (sla, alt_rate, tbias, sig_tbias)
-real(eightbytereal), intent(in) :: sla(:), alt_rate(:)
-real(eightbytereal), intent(out) :: tbias, sig_tbias
-real(eightbytereal) :: atwa, atwb
+subroutine update_stat (k, val)
+integer(fourbyteint), intent(in) :: k
+real(eightbytereal), intent(in) :: val(2,-1:nvar)
 real(eightbytereal), parameter :: w = 1d2 ! Measurement sigma = 10 cm
-atwa = sum(alt_rate * w * alt_rate)
-atwb = sum(sla * w * alt_rate)
-tbias = atwb / atwa
-sig_tbias = sqrt(1d0/atwa)
-end subroutine solve_tbias
-
+binstat(1,:,k) = binstat(1,:,k) + val(1,:)
+binstat(2,-1:var0-1,k) = binstat(2,-1:var0-1,k) + val(2,-1:var0-1)
+binstat(2,var0:nvar,k) = binstat(2,var0:nvar,k) + val(1,var0:nvar) ** 2
+bincount(k) = bincount(k) + 1
+if (ltbias) tbiasstat(:,k) = tbiasstat(:,k) + w * val(1,id_alt_rate) * (/ val(1,id_alt_rate),val(1,id_sla) /)
+end subroutine update_stat
 end program radsxolist
