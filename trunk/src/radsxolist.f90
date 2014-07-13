@@ -639,6 +639,19 @@ end subroutine reorder
 
 !***********************************************************************
 
+subroutine solve_tbias (sla, alt_rate, tbias, sig_tbias)
+real(eightbytereal), intent(in) :: sla(:), alt_rate(:)
+real(eightbytereal), intent(out) :: tbias, sig_tbias
+real(eightbytereal) :: atwa, atwb
+real(eightbytereal), parameter :: w = 1d2 ! Measurement sigma = 10 cm
+atwa = sum(alt_rate * w * alt_rate)
+atwb = sum(sla * w * alt_rate)
+tbias = atwb / atwa
+sig_tbias = sqrt(1d0/atwa)
+end subroutine solve_tbias
+
+!***********************************************************************
+
 subroutine update_stat (k, val)
 integer(fourbyteint), intent(in) :: k
 real(eightbytereal), intent(in) :: val(2,-1:nvar)
