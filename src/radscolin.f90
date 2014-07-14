@@ -35,7 +35,7 @@ integer(fourbyteint) :: nsel = 0, reject = 9999, cycle, pass, i, j, ios, &
 real(eightbytereal) :: dt = 0.97d0
 character(len=rads_naml) :: prefix = 'radscolin_p', suffix = '.nc', satlist
 logical :: ascii = .true., out_data = .true., out_mean = .false., out_sdev = .false., out_diff = .false., &
-	out_track = .true., out_cumul = .false., force = .false., boz_format = .false.
+	out_track = .true., out_cumul = .false., keep = .false., force = .false., boz_format = .false.
 real(eightbytereal), allocatable :: data(:,:,:)
 logical, allocatable :: mask(:,:)
 integer(fourbyteint), allocatable :: nr_in_bin(:), idx(:)
@@ -54,7 +54,7 @@ character(len=rads_strl) :: format_string
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('acdfstnNo::r:: cumul diff dt: force mean no-pass no-track output:: stddev step:')
+call rads_set_options ('acdfkstnNo::r:: cumul diff keep dt: force mean no-pass no-track output:: stddev step:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 
@@ -101,12 +101,16 @@ do i = 1,rads_nopt
 		out_sdev = .true.
 	case ('diff')
 		out_diff = .true.
+		keep = .true.
 	case ('d', 'no-pass')
 		out_data = .false.
 	case ('t', 'no-track')
 		out_track = .false.
 	case ('c', 'cumul')
 		out_cumul = .true.
+		keep = .true.
+	case ('k', 'keep')
+		keep = .true.
 	case ('f', 'force')
 		force = .true.
 	case ('o', 'out')
@@ -168,18 +172,20 @@ call rads_synopsis
 write (stderr,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
+'  --dt=DT                   Set minimum bin size in seconds (default is determined by satellite)'/ &
+'  --step=N                  Write out only every N points along track'/ &
 '  -r#                       Reject stacked data when there are fewer than # tracks with valid SLA'/ &
 '                            (default: # = number of selected cycles)'/ &
 '  -r0, -r                   Keep all stacked data points, even NaN'/ &
 '  -rn                       Reject stacked data when data on any track is NaN (default)'/ &
-'  --dt=DT                   Set minimum bin size in seconds (default is determined by satellite)'/ &
-'  --step=N                  Write out only every N points'/ &
+'  -k, --keep                Keep all passes, even the ones that do not have data in the selected area'/ &
 '  -a, --mean                Output mean in addition to pass data'/ &
 '  -s, --stddev              Output standard deviation in addition to pass data'/ &
 '  -d, --no-pass             Do not output pass data'/ &
-'  -t, --no-track            Do not print along-track data (ascii output only)' / &
-'  -c, --cumul               Output cumulative statistics (ascii output only)' / &
-'  -f, --force               Force comparison, even when missions are not collinear'/ &
+'  -t, --no-track            Do not print along-track data (ascii output only)'/ &
+'  -c, --cumul               Output cumulative statistics (ascii output only) (implies --keep)'/ &
+'      --diff                Compute difference between first and second half of selected passes (implies --keep)'/ &
+'  -f, --force               Force comparison, even when missions are not considered collinear'/ &
 '  -o, --out[=FILENAME]      Create netCDF output by pass (default is ascii output to stdout). Optionally specify'/ &
 '                            FILENAME including "#", to be replaced by the psss number. Default is "radscolin_p#.nc"'/ &
 '  --diff                    Compute the collinear difference between the first and second half of selected tracks')
@@ -214,7 +220,7 @@ do m = 1,nsat
 			call rads_exit ('Satellite missions '//S(m)%sat//'/'//trim(S(m)%phase%name)// &
 				' and '//S(1)%sat//'/'//trim(S(1)%phase%name)//' are not collinear')
 		endif
-		if (P%ndata > 0 .or. out_diff .or. reject == 0) then
+		if (P%ndata > 0 .or. keep) then
 			ntrx = ntrx + 1 ! track counter
 			ndata = ndata + P%ndata ! data counter
 			info(ntrx) = info_ ('    '//S(m)%sat, S(m)%satid, int(cycle,twobyteint), P%ndata)
