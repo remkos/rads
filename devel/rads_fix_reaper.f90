@@ -28,7 +28,8 @@
 !
 ! tide (for all versions COM*):
 ! - Prior to COM5: remove load tide from ocean tide
-! - COM5 and COM6: add long-period tide to ocean tide
+! - COM5 and COM6: add long-period equilibrium tide to ocean tide
+! - RP01 only: add long-period non-equilibrium tide to ocean tide
 !
 ! uso (for versions up to COM5 only):
 ! - Correct range for USO drift
@@ -164,14 +165,19 @@ endif
 if (ltide) then
 	call rads_get_var (S, P, 'tide_ocean_got47', got47)
 	call rads_get_var (S, P, 'tide_ocean_fes04', fes04)
-	if (l2_version < "01.06") then	! Prior to COM5: remove load tide from ocean tide
+	if (l2_version < "01.06") then ! Prior to COM5: remove load tide from ocean tide
 		call rads_get_var (S, P, 'tide_load_got47', a)
 		got47 = got47 - a
 		call rads_get_var (S, P, 'tide_load_fes04', a)
 		fes04 = fes04 - a
 		n_changed = n
-	else if (l2_version < "01.08") then	! COM5 and COM6: add long-period tide to ocean tide
+	else if (l2_version < "01.08") then ! COM5 and COM6: add long-period equilibrium tide to ocean tide
 		call rads_get_var (S, P, 'tide_equil', a)
+		got47 = got47 + a
+		fes04 = fes04 + a
+		n_changed = n
+	else if (l2_version == "01.08") then ! RP01 only: add long-period non-equilibrium tide to ocean tide
+		call rads_get_var (S, P, 'tide_non_equil', a)
 		got47 = got47 + a
 		fes04 = fes04 + a
 		n_changed = n
