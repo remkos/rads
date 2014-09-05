@@ -105,7 +105,7 @@ do
 		call gottideinit('GOT4.9',.true.,gotinfo(4))
 	case ('got10')
 		do_got(5) = .true.
-		call gottideinit('GOT4.10',.true.,gotinfo(5))
+		call gottideinit('GOT4.10c',.true.,gotinfo(5))
 	end select
 enddo
 
