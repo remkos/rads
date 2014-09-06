@@ -959,12 +959,12 @@ Global RADS configuration file
 	<compress>int4 1e-4</compress>
 	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
 </var>
-<var name="tide_ocean_got410" field="1222">
+<var name="tide_ocean_got10" field="1222">
         <long_name>GOT4.10 ocean tide</long_name>
         <source>GOT4.10</source>
         <units>m</units>
         <limits>-5 5</limits>
-        <data>tide_ocean_got410</data>
+        <data>tide_ocean_got10</data>
         <format>f7.4</format>
         <compress>int4 1e-4</compress>
         <comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
@@ -1021,12 +1021,12 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Load tide variation to be added to ocean tide</comment>
 </var>
-<var name="tide_load_got410" field="1322">
+<var name="tide_load_got10" field="1322">
         <long_name>GOT4.10 load tide</long_name>
         <source>GOT4.10</source>
         <units>m</units>
         <limits>-0.5 0.5</limits>
-        <data>tide_load_got410</data>
+        <data>tide_load_got10</data>
         <format>f7.4</format>
         <compress>int2 1e-4</compress>
         <comment>Load tide variation to be added to ocean tide</comment>
