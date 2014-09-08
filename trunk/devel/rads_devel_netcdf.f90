@@ -15,6 +15,28 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
+module rads_devel_netcdf
+use netcdf
+use rads
+use rads_netcdf
+use rads_misc
+
+integer(fourbyteint), parameter :: mrec=3500, mvar=50
+integer(fourbyteint) :: nvar, nrec=0, ncid
+real(eightbytereal), allocatable :: a(:)
+integer(twobyteint), allocatable :: flags(:)
+type :: var_
+	type(rads_var), pointer :: v ! Pointer to rads_var struct
+	real(eightbytereal) :: d(mrec) ! Data array
+	logical :: empty ! .true. if all NaN
+endtype
+type(var_) :: var(mvar)
+
+type(rads_sat) :: S
+type(rads_pass) :: P
+
+contains
+
 !-----------------------------------------------------------------------
 ! Copy variable to RADS
 !-----------------------------------------------------------------------
@@ -98,7 +120,7 @@ character(*), intent(in) :: varnm
 integer(fourbyteint), intent(in) :: bit
 integer(fourbyteint), optional, intent(in) :: lim,val,neq
 integer(twobyteint) :: flag(mrec),flag2d(1:1,1:nrec)
-integer(fourbyteint) :: i,ival,ndims
+integer(fourbyteint) :: i,ival,ndims,varid
 
 if (nf90_inq_varid(ncid,varnm,varid) /= nf90_noerr) then
 	write (*,'("No such variable: ",a)') trim(varnm)
@@ -127,3 +149,5 @@ else
 	enddo
 endif
 end subroutine nc2f
+
+end module

@@ -53,6 +53,7 @@ man:	$(MAN)
 # Object dependencies
 #-----------------------------------------------------------------------
 
+rads_gen_j2 rads_gen_saral:	rads_devel_netcdf.o
 $(PROGS):	rads_devel.o $(LIB)
 rads_add_iono:	$(ALTIM)/lib/iono.a $(ALTIM)/lib/iri2007tec.a
 rads_add_ecmwf rads_add_era rads_add_ncep rads_add_tide rads_add_webtide:	$(ALTIM)/lib/tides.a
