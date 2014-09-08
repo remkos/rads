@@ -18,7 +18,7 @@
 !*rads_fix_c2 -- Patch RADS altimeter files of CryoSat for various anomalies
 !
 ! This program makes numerous patches to the CryoSat RADS data processed
-! by c2lrmraw. These patches include:
+! by rads_gen_c2_l1r. These patches include:
 !
 ! meteo:
 ! - Set dry tropo and wet tropo to NaN when both are zero
@@ -141,8 +141,8 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-real(eightbytereal) :: time(n), dry(n), wet(n), iono(n), sig0(n),swh(n),flagword(n),range(n),ib(n), &
-	time_20hz(20,n), alt_20hz(20,n), sig0_20hz(20,n), dsig0, x
+real(eightbytereal) :: time(n), dry(n), wet(n), iono(n), sig0(n), swh(n), flagword(n), &
+	range(n), ib(n), time_20hz(20,n), alt_20hz(20,n), sig0_20hz(20,n), dsig0, x
 integer(fourbyteint) :: i
 logical :: lrm_l2, fdm_l2, old_version_a, version_a, sar
 character(len=4) :: l1r_ver
