@@ -24,7 +24,7 @@ PROGS	= rads_add_ecmwf rads_add_era rads_add_flags rads_add_grid rads_add_ib rad
 		rads_add_ncep rads_add_orbit rads_add_refframe rads_add_sla rads_add_ssb rads_add_sst rads_add_surface \
 		rads_add_tide rads_add_webtide rads_add_ww3_222 rads_add_ww3_314 \
 		rads_fix_c2 rads_fix_reaper rads_fix_sa \
-		rads_gen_c2_l1r rads_gen_reaper rads_gen_saral \
+		rads_gen_c2_l1r rads_gen_j2 rads_gen_reaper rads_gen_saral \
 		ogdrsplit
 
 # RADS library and linked libraries
