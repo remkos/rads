@@ -75,11 +75,7 @@ program rads_gen_j2
 ! _ku_mle3: Ku-band retracked with MLE3
 ! _c:       C-band
 !-----------------------------------------------------------------------
-use netcdf
-use rads
-use rads_misc
-use rads_time
-use rads_netcdf
+use rads_devel_netcdf
 use rads_devel
 
 ! Command line arguments
@@ -97,18 +93,7 @@ logical :: ogdr
 
 ! Data variables
 
-integer(fourbyteint), parameter :: mrec=3500, mvar=50
-integer(fourbyteint) :: nvar, nrec=0, ncid
-real(eightbytereal), allocatable :: a(:)
-integer(twobyteint), allocatable :: flags(:), flags_mle3(:), flags_save(:)
-type(rads_sat) :: S
-type(rads_pass) :: P
-type :: var_
-	type(rads_var), pointer :: v ! Pointer to rads_var struct
-	real(eightbytereal) :: d(mrec) ! Data array
-	logical :: empty ! .true. if all NaN
-endtype
-type(var_) :: var(mvar)
+integer(twobyteint), allocatable :: flags_mle3(:), flags_save(:)
 
 ! Other local variables
 
@@ -351,7 +336,5 @@ write (*,1310)
 'The directory is created automatically and old files are overwritten.')
 stop
 end subroutine synopsis
-
-include "cpy_var.f90"
 
 end program rads_gen_j2
