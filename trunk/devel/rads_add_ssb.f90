@@ -42,21 +42,23 @@ type(rads_pass) :: P
 ! Other local variables
 
 character(len=rads_cmdl) :: path
+character(len=rads_varl) :: ssb_model = 'ssb_hyb'
 integer(fourbyteint) :: i, cyc, pass
-type(grid) :: issb_hyb
+type(grid) :: info
 type(rads_var), pointer :: var
 logical :: lssb = .false., lwind = .false., saral
 
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options ('sw ssb wind all')
+call rads_set_options ('s::w ssb:: wind all')
 call rads_init (S)
 saral = (S%sat == 'sa')
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
 	case ('s', 'ssb')
 		lssb = .true.
+		if (rads_opt(i)%arg /= '') ssb_model = rads_opt(i)%arg(:rads_varl)
 	case ('w', 'wind')
 		lwind = .true.
 	case ('all')
@@ -68,9 +70,9 @@ enddo
 ! Load SSB model
 
 if (lssb) then
-	var => rads_varptr (S, 'ssb_hyb')
+	var => rads_varptr (S, ssb_model)
 	call parseenv ('${ALTIM}/data/models/' // var%info%parameters, path)
-	if (grid_load(path,issb_hyb) /= 0) call rads_exit ('Error loading '//trim(path))
+	if (grid_load(path,info) /= 0) call rads_exit ('Error loading '//trim(path))
 endif
 
 ! Run process for all files
@@ -83,7 +85,7 @@ do cyc = S%cycles(1),S%cycles(2),S%cycles(3)
 	enddo
 enddo
 
-if (lssb) call grid_free (issb_hyb)
+if (lssb) call grid_free (info)
 
 contains
 
@@ -98,7 +100,7 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
-'  -s, --ssb                 Add/replace hybrid SSB model' / &
+'  -s, --ssb[=MODEL]         Add/replace hybrid SSB model (default: ssb_hyb)' / &
 '  -w, --wind                Compute altimeter wind speed from ECMWF model' / &
 '  --all                     All of the above')
 stop
@@ -110,7 +112,7 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-real(eightbytereal) :: x, y, sig0(n), swh(n), ssb(n), wind(n)
+real(eightbytereal) :: x, y, xval(n), yval(n), ssb(n), wind(n)
 integer :: i
 
 ! Formats
@@ -120,40 +122,46 @@ integer :: i
 
 write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
 
-! Load sig0 and swh always
+! Compute wind speed after loading sigma0
 
-call rads_get_var (S, P, 'sig0', sig0, .true.)
-call rads_get_var (S, P, 'swh', swh, .true.)
-
-! Compute SSB
-
-if (lssb) then
-	do i = 1,n
-		x = sig0(i)
-		if (x < issb_hyb%xmin) x = issb_hyb%xmin
-		if (x > issb_hyb%xmax) x = issb_hyb%xmax
-		y = swh(i)
-		if (y < issb_hyb%ymin) y = issb_hyb%ymin
-		if (y > issb_hyb%ymax) y = issb_hyb%ymax
-		ssb(i) = grid_lininter (issb_hyb, x, y)
-	enddo
+if (lwind) then
+	call rads_get_var (S, P, 'sig0', xval, .true.)
+	wind = wind_ecmwf (xval, saral)
 endif
 
-! Compute wind speed
+! To compute SSB:
+! load wind or sigma0 depending on the x-coordinate of the SSB grid, and load swh always
 
-if (lwind) wind = wind_ecmwf (sig0, saral)
+if (lssb) then
+	if (index(info%xname, 'backscatter') > 0 .or. index(info%xname, 'sigma0') > 0) then
+		if (.not.lwind) call rads_get_var (S, P, 'sig0', xval, .true.)
+	else if (lwind) then
+		xval = wind
+	else
+		call rads_get_var (S, P, 'wind_speed_alt', xval, .true.)
+	endif
+	call rads_get_var (S, P, 'swh', yval, .true.)
+	do i = 1,n
+		x = xval(i)
+		if (x < info%xmin) x = info%xmin
+		if (x > info%xmax) x = info%xmax
+		y = yval(i)
+		if (y < info%ymin) y = info%ymin
+		if (y > info%ymax) y = info%ymax
+		ssb(i) = grid_lininter (info, x, y)
+	enddo
+endif
 
 ! Write out all the data
 
 call rads_put_history (S, P)
-if (lssb) then
-	call rads_def_var (S, P, 'ssb_hyb')
-	call rads_put_var (S, P, 'ssb_hyb', ssb)
-endif
-if (lwind) then
-	call rads_def_var (S, P, 'wind_speed_alt')
-	call rads_put_var (S, P, 'wind_speed_alt', wind)
-endif
+
+if (lwind) call rads_def_var (S, P, 'wind_speed_alt')
+if (lssb)  call rads_def_var (S, P, ssb_model)
+
+if (lwind) call rads_put_var (S, P, 'wind_speed_alt', wind)
+if (lssb)  call rads_put_var (S, P, ssb_model, ssb)
+
 write (*,552) n
 
 end subroutine process_pass
