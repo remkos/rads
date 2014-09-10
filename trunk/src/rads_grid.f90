@@ -21,7 +21,7 @@
 module rads_grid
 use typesizes
 type grid
-	character(len=160) :: filenm
+	character(len=160) :: filenm, xname, yname, zname
 	integer(fourbyteint) :: nx, ny, ntype, nxwrap
 	real(eightbytereal) :: xmin, xmax, dx, ymin, ymax, dy, zmin, zmax, dz, z0, znan
 	integer(onebyteint), allocatable :: grid_int1(:,:)
@@ -268,6 +268,11 @@ if (nf90_get_att(ncid,x_id,'units',units) == 0 .and. units == 'degrees_east') th
 else
 	info%nxwrap = 0
 endif
+
+! Get variable names
+if (nf90_get_att(ncid,z_id,'long_name',info%xname) /= 0) info%xname = ''
+if (nf90_get_att(ncid,z_id,'long_name',info%yname) /= 0) info%yname = ''
+if (nf90_get_att(ncid,z_id,'long_name',info%zname) /= 0) info%zname = ''
 
 grid_load = 0
 end subroutine grid_load_nc
