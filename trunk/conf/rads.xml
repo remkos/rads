@@ -959,15 +959,25 @@ Global RADS configuration file
 	<compress>int4 1e-4</compress>
 	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
 </var>
-<var name="tide_ocean_got10" field="1222">
-        <long_name>GOT4.10 ocean tide</long_name>
-        <source>GOT4.10</source>
-        <units>m</units>
-        <limits>-5 5</limits>
-        <data>tide_ocean_got10</data>
-        <format>f7.4</format>
-        <compress>int4 1e-4</compress>
-        <comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
+<var name="tide_ocean_got410" field="1222">
+       <long_name>GOT4.10 ocean tide</long_name>
+       <source>GOT4.10</source>
+       <units>m</units>
+       <limits>-5 5</limits>
+       <data>tide_ocean_got10</data>
+       <format>f7.4</format>
+       <compress>int4 1d-4</compress>
+       <comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
+</var>
+<var name="tide_ocean_fes12" field="1223">
+       <long_name>FES2012 ocean tide</long_name>
+       <source>FES2012</source>
+       <units>m</units>
+       <limits>-5 5</limits>
+       <data>tide_ocean_fes12</data>
+       <format>f7.4</format>
+       <compress>int4 1e-4</compress>
+       <comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
 </var>
 <alias name="tide_ocean" field="12">tide_ocean_got48</alias>
 
@@ -1021,15 +1031,15 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Load tide variation to be added to ocean tide</comment>
 </var>
-<var name="tide_load_got10" field="1322">
-        <long_name>GOT4.10 load tide</long_name>
-        <source>GOT4.10</source>
-        <units>m</units>
-        <limits>-0.5 0.5</limits>
-        <data>tide_load_got10</data>
-        <format>f7.4</format>
-        <compress>int2 1e-4</compress>
-        <comment>Load tide variation to be added to ocean tide</comment>
+<var name="tide_load_got410" field="1322">
+       <long_name>GOT4.10 load tide</long_name>
+       <source>GOT4.10</source>
+       <units>m</units>
+       <limits>-0.5 0.5</limits>
+       <data>tide_load_got10</data>
+       <format>f7.4</format>
+       <compress>int2 1d-4</compress>
+       <comment>Load tide variation to be added to ocean tide</comment>
 </var>
 <alias name="tide_load" field="13">tide_load_got48</alias>
 
@@ -1115,6 +1125,18 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
+</var>
+<var name="ssb_tran2012" field="1513" sat="j1 j2">
+       <long_name>Tran et al. 2012 non-parametric sea state bias</long_name>
+       <standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+       <source sat="j1">Tran et al. 2012 (ssb_col_J1_1_111_v2012ostst.rs)</source>
+       <source sat="j2">Tran et al. 2012 (ssb_col_J2_Ku_mle4_1_36_v2012ostst.rs)</source>
+       <parameters sat="j1">models/ssb_col_J1_1_111_v2012ostst.nc</parameters>
+       <parameters sat="j2">models/ssb_col_J2_Ku_mle4_1_36_v2012ostst.nc</parameters>
+       <format>f7.4</format>
+       <data>ssb_tran2012</data>
+       <compress>int2 1e-4</compress>
+       <comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
 <alias name="ssb" field="15" sat="e1 e2 pn">ssb_bm3</alias>
 <alias name="ssb" field="15" sat="c2 g1 gs sa">ssb_hyb</alias>
@@ -1213,6 +1235,16 @@ Global RADS configuration file
 	<data>mss_dtu13</data>
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
+</var>
+<var name="geoid_eigen6" field="1617">
+       <long_name> geoid height</long_name>
+       <standard_name>geoid_height_above_reference_ellipsoid</standard_name>
+       <source>EIGEN6c3stat</source>
+       <parameters>EIGEN6/und_min1x1_eigen-6c3stat_Nmax1949_MeanTide_global.nc</parameters>
+       <units>m</units>
+       <data>geoid_eigen6</data>
+       <format>f10.4</format>
+       <compress>int4 1e-4</compress>
 </var>
 <alias name="mss" field="16">mss_dtu10</alias>
 
