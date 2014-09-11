@@ -38,10 +38,10 @@ use tides
 
 type(rads_sat) :: S
 type(rads_pass) :: P
-integer(fourbyteint), parameter :: mfes = 1, mgot = 5
+integer(fourbyteint), parameter :: mfes = 2, mgot = 5
 type(festideinfo) :: fesinfo(mfes)
 type(gottideinfo) :: gotinfo(mgot)
-character(len=5), parameter :: nfes(mfes) = (/'fes04'/)
+character(len=5), parameter :: nfes(mfes) = (/'fes04','fes12'/)
 character(len=5), parameter :: ngot(mgot) = (/'got00','got47','got48','got49','got10'/)
 type(grid) :: sininfo, cosinfo
 
@@ -50,6 +50,7 @@ type(grid) :: sininfo, cosinfo
 integer(fourbyteint) :: cyc, pass
 character(len=rads_cmdl) :: models = '', path
 logical :: do_ptide=.false., do_stide=.false., do_lptide=.false., do_annual=.false., do_fes(mfes)=.false., do_got(mgot)=.false.
+logical :: do_load=.true.
 
 ! Other variables
 
@@ -91,6 +92,10 @@ do
 	case ('fes04', 'fes2004')
 		do_fes(1) = .true.
 		call festideinit('FES2004',.true.,fesinfo(1))
+	case ('fes12', 'fes2012')
+		do_fes(2) = .true.
+		do_load = .false.
+		call festideinit('FES2012',.true.,fesinfo(2))
 	case ('got00')
 		do_got(1) = .true.
 		call gottideinit('GOT00.2',.true.,gotinfo(1))
@@ -149,6 +154,7 @@ write (*,1310)
 '  -m, --models=MODEL[,...]  Select tide models' // &
 'Currently available MODELs are:'/ &
 '  fes04 : FES2004 ocean and load tide'/ &
+'  fes12 : FES2012 ocean tide'/ &
 '  got00 : GOT00.2 ocean and load tide'/ &
 '  got47 : GOT4.7 ocean and load tide'/ &
 '  got48 : GOT4.8 ocean and load tide'/ &
@@ -203,8 +209,8 @@ if (do_stide) call rads_def_var (S, P, 'tide_solid')
 
 do j = 1,mfes
 	if (do_fes(j)) then
-		 call rads_def_var (S, P, 'tide_ocean_' // nfes(j))
-		 call rads_def_var (S, P, 'tide_load_' // nfes(j))
+		call rads_def_var (S, P, 'tide_ocean_' // nfes(j))
+		if (do_load) call rads_def_var (S, P, 'tide_load_' // nfes(j))
 	endif
 enddo
 
@@ -260,7 +266,7 @@ do j = 1,mfes
 		! FES2004: Remove equlibrium part from Mm,Mf,Mtm,MSqm
 		if (nfes(j) == 'fes04') otide_lp = otide_lp - lptide_mf
 		call rads_put_var (S, P, 'tide_ocean_'//nfes(j), otide_sp + otide_lp + lptide_eq)
-		call rads_put_var (S, P, 'tide_load_'//nfes(j), ltide_sp + ltide_lp)
+		if (do_load) call rads_put_var (S, P, 'tide_load_'//nfes(j), ltide_sp + ltide_lp)
 	endif
 enddo
 if (.not.any(do_fes)) then	! Just in case FES if not used
