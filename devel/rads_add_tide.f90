@@ -208,14 +208,14 @@ if (do_stide) call rads_def_var (S, P, 'tide_solid')
 do j = 1,mfes
 	if (do_fes(j)) then
 		call rads_def_var (S, P, 'tide_ocean_' // nfes(j))
-		if (fesload(j)%haveload) call rads_def_var (S, P, 'tide_load_' // nfes(j))
+		if (fesinfo(j)%haveload) call rads_def_var (S, P, 'tide_load_' // nfes(j))
 	endif
 enddo
 
 do j = 1,mgot
 	if (do_got(j)) then
 		call rads_def_var (S, P, 'tide_ocean_' // ngot(j))
-		if (gotload(j)%haveload) call rads_def_var (S, P, 'tide_load_' // ngot(j))
+		if (gotinfo(j)%haveload) call rads_def_var (S, P, 'tide_load_' // ngot(j))
 	endif
 enddo
 
