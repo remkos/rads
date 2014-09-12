@@ -41,8 +41,8 @@ type(rads_pass) :: P
 integer(fourbyteint), parameter :: mfes = 2, mgot = 5
 type(festideinfo) :: fesinfo(mfes)
 type(gottideinfo) :: gotinfo(mgot)
-character(len=5), parameter :: nfes(mfes) = (/'fes04','fes12'/)
-character(len=5), parameter :: ngot(mgot) = (/'got00','got47','got48','got49','got10'/)
+character(len=6), parameter :: nfes(mfes) = (/'fes04 ','fes12 '/)
+character(len=6), parameter :: ngot(mgot) = (/'got00 ','got47 ','got48 ','got49 ','got410'/)
 type(grid) :: sininfo, cosinfo
 
 ! Command line arguments
@@ -50,7 +50,6 @@ type(grid) :: sininfo, cosinfo
 integer(fourbyteint) :: cyc, pass
 character(len=rads_cmdl) :: models = '', path
 logical :: do_ptide=.false., do_stide=.false., do_lptide=.false., do_annual=.false., do_fes(mfes)=.false., do_got(mgot)=.false.
-logical :: do_load=.true.
 
 ! Other variables
 
@@ -94,8 +93,7 @@ do
 		call festideinit('FES2004',.true.,fesinfo(1))
 	case ('fes12', 'fes2012')
 		do_fes(2) = .true.
-		do_load = .false.
-		call festideinit('FES2012',.true.,fesinfo(2))
+		call festideinit('FES2012',.false.,fesinfo(2)) ! Note: no load tide
 	case ('got00')
 		do_got(1) = .true.
 		call gottideinit('GOT00.2',.true.,gotinfo(1))
@@ -108,7 +106,7 @@ do
 	case ('got49')
 		do_got(4) = .true.
 		call gottideinit('GOT4.9',.true.,gotinfo(4))
-	case ('got10')
+	case ('got410')
 		do_got(5) = .true.
 		call gottideinit('GOT4.10c',.true.,gotinfo(5))
 	end select
@@ -153,18 +151,18 @@ write (*,1310)
 'Additional [processing_options] are:'/ &
 '  -m, --models=MODEL[,...]  Select tide models' // &
 'Currently available MODELs are:'/ &
-'  fes04 : FES2004 ocean and load tide'/ &
-'  fes12 : FES2012 ocean tide'/ &
-'  got00 : GOT00.2 ocean and load tide'/ &
-'  got47 : GOT4.7 ocean and load tide'/ &
-'  got48 : GOT4.8 ocean and load tide'/ &
-'  got49 : GOT4.9 ocean and load tide'/ &
-'  got10 : GOT4.10 ocean and load tide'// &
+'  fes04  : FES2004 ocean and load tide'/ &
+'  fes12  : FES2012 ocean tide'/ &
+'  got00  : GOT00.2 ocean and load tide'/ &
+'  got47  : GOT4.7 ocean and load tide'/ &
+'  got48  : GOT4.8 ocean and load tide'/ &
+'  got49  : GOT4.9 ocean and load tide'/ &
+'  got410 : GOT4.10 ocean and load tide'// &
 'In addition, several of the following MODEL indicators can be used:'/ &
-'  ptide : Pole tide'/ &
-'  stide : Solid earth tide'/ &
-'  lptide: Long-period tides'/ &
-'  annual: Annual sea level variation')
+'  ptide  : Pole tide'/ &
+'  stide  : Solid earth tide'/ &
+'  lptide : Long-period tides'/ &
+'  annual : Annual sea level variation')
 stop
 end subroutine synopsis
 
@@ -210,14 +208,14 @@ if (do_stide) call rads_def_var (S, P, 'tide_solid')
 do j = 1,mfes
 	if (do_fes(j)) then
 		call rads_def_var (S, P, 'tide_ocean_' // nfes(j))
-		if (do_load) call rads_def_var (S, P, 'tide_load_' // nfes(j))
+		if (fesload(j)%haveload) call rads_def_var (S, P, 'tide_load_' // nfes(j))
 	endif
 enddo
 
 do j = 1,mgot
 	if (do_got(j)) then
 		call rads_def_var (S, P, 'tide_ocean_' // ngot(j))
-		call rads_def_var (S, P, 'tide_load_' // ngot(j))
+		if (gotload(j)%haveload) call rads_def_var (S, P, 'tide_load_' // ngot(j))
 	endif
 enddo
 
@@ -266,7 +264,7 @@ do j = 1,mfes
 		! FES2004: Remove equlibrium part from Mm,Mf,Mtm,MSqm
 		if (nfes(j) == 'fes04') otide_lp = otide_lp - lptide_mf
 		call rads_put_var (S, P, 'tide_ocean_'//nfes(j), otide_sp + otide_lp + lptide_eq)
-		if (do_load) call rads_put_var (S, P, 'tide_load_'//nfes(j), ltide_sp + ltide_lp)
+		if (fesinfo(j)%haveload) call rads_put_var (S, P, 'tide_load_'//nfes(j), ltide_sp + ltide_lp)
 	endif
 enddo
 if (.not.any(do_fes)) then	! Just in case FES if not used
@@ -288,7 +286,7 @@ do j = 1,mgot
 			ltide_sp = ltide_sp + ltide_lp
 		endif
 		call rads_put_var (S, P, 'tide_ocean_'//ngot(j), otide_sp + lptide_eq)
-		call rads_put_var (S, P, 'tide_load_'//ngot(j), ltide_sp)
+		if (gotinfo(j)%haveload) call rads_put_var (S, P, 'tide_load_'//ngot(j), ltide_sp)
 	endif
 enddo
 
