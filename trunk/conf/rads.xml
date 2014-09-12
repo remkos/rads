@@ -1131,8 +1131,8 @@ Global RADS configuration file
        <standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
        <source sat="j1">Tran et al. 2012 (ssb_col_J1_1_111_v2012ostst.rs)</source>
        <source sat="j2">Tran et al. 2012 (ssb_col_J2_Ku_mle4_1_36_v2012ostst.rs)</source>
-       <parameters sat="j1">models/ssb_col_J1_1_111_v2012ostst.nc</parameters>
-       <parameters sat="j2">models/ssb_col_J2_Ku_mle4_1_36_v2012ostst.nc</parameters>
+       <parameters sat="j1">ssb_col_J1_1_111_v2012ostst.nc</parameters>
+       <parameters sat="j2">ssb_col_J2_Ku_mle4_1_36_v2012ostst.nc</parameters>
        <format>f7.4</format>
        <data>ssb_tran2012</data>
        <compress>int2 1e-4</compress>
