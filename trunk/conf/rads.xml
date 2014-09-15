@@ -1237,7 +1237,7 @@ Global RADS configuration file
 	<compress>int4 1e-4</compress>
 </var>
 <var name="geoid_eigen6" field="1617">
-       <long_name> geoid height</long_name>
+       <long_name>EIGEN6 geoid height</long_name>
        <standard_name>geoid_height_above_reference_ellipsoid</standard_name>
        <source>EIGEN6c3stat</source>
        <parameters>EIGEN6/und_min1x1_eigen-6c3stat_Nmax1949_MeanTide_global.nc</parameters>
@@ -1644,16 +1644,15 @@ Global RADS configuration file
 	<format>f7.0</format>
 	<compress>int2</compress>
 </var>
-<!--
-<var name="topo_srtm30" field="2204">
-	<long_name>SRTM30 topography</long_name>
-	<source>SRTM30</source>
+<var name="topo_srtm30plus" field="2204">
+	<long_name>SRTM30_PLUS topography</long_name>
+	<source>SRTM30_PLUS V10</source>
+	<parameters>SRTM30/srtmplus_v10_topo30.nc</parameters>
 	<units>m</units>
-	<data>topo_srtm30</data>
+	<data>topo_srtm30plus</data>
 	<format>f7.0</format>
 	<compress>int2</compress>
 </var>
--->
 <var name="topo_dtu10" field="2205">
 	<long_name>DTU10 topography</long_name>
 	<source>DTU10</source>
