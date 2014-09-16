@@ -261,8 +261,8 @@ do j = 1,mfes
 			call festide(fesinfo(j),time(i),lat(i),lon(i),otide_sp(i),otide_lp(i),ltide_sp(i),ltide_lp(i))
 		enddo
 !$omp end parallel do
-		! FES2004: Remove equlibrium part from Mm,Mf,Mtm,MSqm
-		if (nfes(j) == 'fes04' || nfes(j) == 'fes12') otide_lp = otide_lp - lptide_mf
+		! FES2004 or FES2012: Remove equlibrium part from Mm,Mf,Mtm,MSqm
+		if (nfes(j) == 'fes04' .or. nfes(j) == 'fes12') otide_lp = otide_lp - lptide_mf
 		call rads_put_var (S, P, 'tide_ocean_'//nfes(j), otide_sp + otide_lp + lptide_eq)
 		if (fesinfo(j)%haveload) call rads_put_var (S, P, 'tide_load_'//nfes(j), ltide_sp + ltide_lp)
 	endif
