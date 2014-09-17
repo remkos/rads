@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# $Id$
+# $Id: rads_gen_saral.sh 682 2014-06-27 11:42:28Z remko@altimetrics.com $
 #
 # Copyright (c) 2011-2014  Remko Scharroo (Altimetrics LLC)
 # See LICENSE.TXT file for copying and redistribution conditions.
@@ -16,54 +16,47 @@
 # GNU Lesser General Public License for more details.
 #-----------------------------------------------------------------------
 #
-# Convert CryoSat-2 L1R files to RADS
+# Convert Jason-2 O/I/GDR files to RADS
 #
-# syntax: rads_gen_c2_l1r.sh <directories>
+# syntax: rads_gen_j2.sh <directories>
 #-----------------------------------------------------------------------
-
 . rads_sandbox.sh
 
-rads_open_sandbox c2 a
+rads_open_sandbox j2 a
+lst=$SANDBOX/rads_gen_j2.lst
 
-date							>  $log 2>&1
+date													>  $log 2>&1
 
 for tar in $*; do
 	case $tar in
+		*cycle[0-9][0-9][0-9]) dir=${tar/cycle/cycle_}; mv $tar $dir ;;
 		*.txz) tar -xJf $tar; dir=`basename $tar .txz` ;;
 		*.tgz) tar -xzf $tar; dir=`basename $tar .tgz` ;;
 		*) dir=$tar ;;
 	esac
-	find -L $dir -name "CS_*.nc" -print | sort -r | sort -u -t/ -k3.20,3.34 > $lst
-	case $dir in
-		*/c???) cycle="-C"`basename $dir | cut -c2-` ;;
-		*)      cycle= ;;
-	esac
-
-	rads_gen_c2_l1r $options $cycle < $lst	>> $log 2>&1
-
+	ls $dir/JA2_???_2P* > $lst
+	rads_gen_j2	$options < $lst							>> $log 2>&1
 	case $tar in
 		*.t?z) chmod -R u+w $dir; rm -rf $dir ;;
 	esac
 done
 
-case $dir in
-	*FDM*) orbit_opt="-Valt_gdrd --dir=gdr-d-moe" ;;
-	*LRM*) orbit_opt="-Valt_gdrd" ;;
-esac
+# Do the patches to all data
 
-rads_add_ncep    $options -gs               >> $log 2>&1
-rads_fix_c2      $options --all				>> $log 2>&1
-rads_add_ssb     $options --all				>> $log 2>&1
-rads_add_orbit   $options $orbit_opt --equator --loc-7 --rate	>> $log 2>&1
-rads_add_orbit   $options -Valt_eig6c		>> $log 2>&1
-rads_add_common  $options 					>> $log 2>&1
-rads_add_ecmwf   $options --all				>> $log 2>&1
-rads_add_iono    $options --all				>> $log 2>&1
-rads_add_mog2d   $options					>> $log 2>&1
-rads_add_ww3_222 $options --all -C36-99		>> $log 2>&1
-rads_add_ww3_314 $options --all -C1-36		>> $log 2>&1
-rads_add_sla     $options                   >> $log 2>&1
+rads_fix_j2      $options --all							>> $log 2>&1
+rads_add_iono    $options --all							>> $log 2>&1
+rads_add_common  $options								>> $log 2>&1
+rads_add_dual    $options								>> $log 2>&1
+rads_add_dual    $options --mle=3						>> $log 2>&1
+rads_add_ib      $options								>> $log 2>&1
+rads_add_orbit   $options -Valt_eig6					>> $log 2>&1
+rads_add_orbit   $options -Valt_gdrcp -C1-130			>> $log 2>&1
+rads_add_orbit   $options -Valt_gps   -C1-113			>> $log 2>&1
+rads_add_orbit   $options -Valt_std1204					>> $log 2>&1
+rads_add_ww3_222 $options --all	-C165-300				>> $log 2>&1
+rads_add_ww3_314 $options --all -C0-165					>> $log 2>&1
+rads_add_sla     $options           					>> $log 2>&1
 
-date										>> $log 2>&1
+date													>> $log 2>&1
 
 rads_close_sandbox

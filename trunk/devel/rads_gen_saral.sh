@@ -25,7 +25,7 @@
 rads_open_sandbox sa a
 lst=$SANDBOX/rads_gen_saral.lst
 
-date								>  $log 2>&1
+date													>  $log 2>&1
 
 for tar in $*; do
 	case $tar in
@@ -34,7 +34,7 @@ for tar in $*; do
 		*) dir=$tar ;;
 	esac
 	ls $dir/SRL_*.nc > $lst
-	rads_gen_saral < $lst			>> $log 2>&1
+	rads_gen_saral $options < $lst						>> $log 2>&1
 	case $tar in
 		*.t?z) chmod -R u+w $dir; rm -rf $dir ;;
 	esac

@@ -34,7 +34,8 @@ LDLIBS  = $(NETCDF_LIB) $(GRIB)
 
 # Shell scripts
 SCRIPTS = rads_add_common rads_gen_c2_l1r.sh rads_gen_c2_l1r_new.sh \
-		rads_gen_saral.sh rads_gen_saral_new.sh rads_sandbox.sh
+		rads_gen_j2.sh rads_gen_saral.sh rads_gen_saral_new.sh \
+		rads_sandbox.sh
 
 #-----------------------------------------------------------------------
 # What to create?
