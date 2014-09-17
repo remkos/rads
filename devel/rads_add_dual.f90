@@ -43,15 +43,15 @@ type(rads_pass) :: P
 
 integer(fourbyteint) :: ntot, cyc, pass, i
 integer(fourbyteint), parameter :: nmax = 3000000
-integer(twobyteint) :: mask = 0
+integer(twobyteint) :: mask = 2072 ! Bits 3, 4, 11
 character(len=5) :: mle = ''
 real(eightbytereal) :: twin = 35d0, iwin = 8d0
-real(eightbytereal) :: flags(nmax), utc(nmax), iono0(nmax), iono1(nmax), iono2(nmax), lat(nmax)
+real(eightbytereal) :: utc(nmax), lat(nmax), flags(nmax), iono1(nmax), iono2(nmax)
 
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options ('3 mark iwin twin')
+call rads_set_options ('b:i:m:t: mask: iwin: twin:')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
@@ -98,7 +98,7 @@ contains
 
 subroutine synopsis (flag)
 character(len=*), optional :: flag
-if (rads_version ('$Revision$', 'Smooth dual-frequency ionospheric delay', flag=flag)) return
+if (rads_version ('$Revision$', 'Smooth the dual-frequency ionospheric delay', flag=flag)) return
 call synopsis_devel (' [processing_options]')
 write (*,1310) mask, iwin, twin
 1310 format (/ &
@@ -136,19 +136,14 @@ integer(fourbyteint) :: i, j, k, j0, j1, nsum
 integer(twobyteint) :: flag
 real(eightbytereal) :: t0, t1, wsum
 
-! Exclude data based on bit mask and gross outliers
+! If any mask is specified: exclude data based on bit mask
 
-t0 = -1d0-1d-6
-t1 = iwin
-do i = 1,n
-	flag = nint(flags(i),twobyteint)
-	if (iand(flag,mask) /= 0 .or. iono1(i) < t0 .or. iono1(i) > t1) then
-		iono0(i) = iono1(i)
-		iono1(i) = nan
-	else
-		iono0(i) = nan
-	endif
-enddo
+if (mask /= 0) then
+	do i = 1,n
+		flag = nint(flags(i),twobyteint)
+		if (iand(flag,mask) /= 0) iono1(i) = nan
+	enddo
+endif
 
 ! Do box car filter for each measurement (i).
 
@@ -167,15 +162,18 @@ do i = 1,n
 
 	t1 = utc(i) + twin
 	j1 = max(i,j1)
-	do while (utc(j1+1) < t1 .and. j1 < n)
+	do while (j1 < n .and. utc(j1+1) < t1)
 		j1 = j1 + 1
 	enddo
 
 ! Now do the box car filter to compute average
-! First time without editing, second time with editing
+! First time with only rough outlier editing
+! Second time with editing based on +/-iwin
+! (This is a slight change from radsp_dual, because here in the second loop
+! a iono1 > iwin could be accepted. In radsp_dual those were permanently rejected.)
 
 	t0 = -1d0
-	t1 = 1d0
+	t1 = iwin
 	do k = 1,2
 		nsum = 0
 		wsum = 0d0
@@ -183,14 +181,12 @@ do i = 1,n
 			if (iono1(j) >= t0 .and. iono1(j) <= t1) then
 				nsum = nsum + 1
 				wsum = wsum + iono1(j)
-			else if (.not.isnan_(iono1(j))) then
-				iono0(j) = iono1(j)
 			endif
 		enddo
 		if (nsum == 0) exit
 		wsum = wsum / nsum
 		t0 = wsum - iwin
-		t1 = wsum + iwin
+		t1 = wsum + iwin ! Maybe this should be changed to min(wsum+iwin,iwin) conform radsp_dual
 	enddo
 
 ! Assign NaN in case nsum < 4
@@ -200,7 +196,7 @@ do i = 1,n
 	else
 		iono2(i) = wsum
 	endif
-	! write (*,'(f14.3,4f9.4,i3)') utc(i),lat(i),iono0(i),iono1(i),iono2(i),nsum
+	! write (*,'(f14.3,4f9.4,i3)') utc(i),lat(i),iono1(i),iono2(i),nsum
 
 enddo
 
@@ -229,7 +225,7 @@ call rads_put_history (S, P)
 
 call rads_def_var (S, P, 'iono_alt_smooth' // mle)
 call rads_put_var (S, P, 'iono_alt_smooth' // mle , iono2(ntot+1:ntot+n))
-
+ntot = ntot+n
 write (*,552) n
 end subroutine write_pass
 
