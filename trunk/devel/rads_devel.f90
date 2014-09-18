@@ -147,6 +147,7 @@ else
 endif
 1300 format (/a,' [rads_dataselectors]',a // &
 'Optional [rads_dataselectors] are:' / &
+'  -S, --sat=SAT[/PHASE]     Specify satellite [and phase] (e.g. e1/g, tx)' / &
 '  -C, --cycle=C0[,C1]       Select data for one or more cycles' / &
 '  --time=T0,T1              Specify time selection (optionally use --ymd=, --doy=,' / &
 '                            or --sec= for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)')
