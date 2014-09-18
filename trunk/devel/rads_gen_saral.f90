@@ -77,7 +77,7 @@ use rads_devel
 integer(fourbyteint) :: verbose=0, c0=0, c1=999, ios, i, j
 real(eightbytereal) :: t0, t1
 character(len=rads_cmdl) :: infile, arg
-character(len=rads_varl) :: optopt, optarg
+character(len=rads_varl) :: optopt, optarg, sat = 'sa'
 
 ! Header variables
 
@@ -103,7 +103,7 @@ t1 = nan
 ! Scan command line for options
 
 do
-	call getopt ('vC: debug: sat: cycle: t: mjd: sec: ymd: doy:', optopt, optarg)
+	call getopt ('vC:S: debug: sat: cycle: t: mjd: sec: ymd: doy:', optopt, optarg)
 	select case (optopt)
 	case ('!')
 		exit
@@ -115,6 +115,8 @@ do
 		c1 = -1
 		read (optarg,*,iostat=ios) c0,c1
 		if (c1 < c0) c1 = c0
+	case ('S', 'sat')
+		sat = optarg
 	case default
 		if (.not.dateopt (optopt, optarg, t0, t1)) then
 			call synopsis ('--help')
@@ -126,7 +128,7 @@ enddo
 ! Initialise
 
 call synopsis ('--head')
-call rads_init (S, 'sa', verbose)
+call rads_init (S, sat, verbose)
 
 !----------------------------------------------------------------------
 ! Read all file names from standard input

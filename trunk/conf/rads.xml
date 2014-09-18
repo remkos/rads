@@ -1417,7 +1417,7 @@ Global RADS configuration file
 	<limits>-1 30</limits>
 	<data>wind_speed_alt</data>
 	<format>f6.3</format>
-	<compress>int2 1e-3</compress>
+	<compress>int2 1e-2</compress>
 </var>
 <var name="wind_speed_rad" field="1902" sat="j1 j2 pn tx">
 	<long_name>radiometer wind speed</long_name>
@@ -1427,7 +1427,7 @@ Global RADS configuration file
 	<limits>0 30</limits>
 	<data>wind_speed_rad</data>
 	<format>f6.3</format>
-	<compress>int2 1e-3</compress>
+	<compress>int2 1e-2</compress>
 </var>
 <var name="wind_speed_ecmwf_u" field="1903" sat="!gs">
 	<long_name>ECMWF model zonal wind speed</long_name>
@@ -1437,7 +1437,7 @@ Global RADS configuration file
 	<limits>-30 30</limits>
 	<data>wind_speed_ecmwf_u</data>
 	<format>f7.3</format>
-	<compress>int2 1e-3</compress>
+	<compress>int2 1e-2</compress>
 </var>
 <var name="wind_speed_ecmwf_v" field="1904" sat="!gs">
 	<long_name>ECMWF model meridional wind speed</long_name>
@@ -1447,7 +1447,7 @@ Global RADS configuration file
 	<limits>-30 30</limits>
 	<data>wind_speed_ecmwf_v</data>
 	<format>f7.3</format>
-	<compress>int2 1e-3</compress>
+	<compress>int2 1e-2</compress>
 </var>
 <var name="wind_speed_ecmwf" sat="!gs">
 	<long_name>ECMWF model wind speed</long_name>
@@ -1457,7 +1457,7 @@ Global RADS configuration file
 	<limits>0 30</limits>
 	<data>wind_speed_ecmwf_u wind_speed_ecmwf_v HYPOT</data>
 	<format>f7.3</format>
-	<compress>int2 1e-3</compress>
+	<compress>int2 1e-2</compress>
 </var>
 <var name="wind_speed_gfs_u" sat="sa">
 	<long_name>NOAA/GFS model zonal wind speed</long_name>
@@ -1467,7 +1467,7 @@ Global RADS configuration file
 	<limits>-30 30</limits>
 	<data>wind_speed_gfs_u</data>
 	<format>f7.3</format>
-	<compress>int2 1e-3</compress>
+	<compress>int2 1e-2</compress>
 </var>
 <var name="wind_speed_gfs_v" sat="sa">
 	<long_name>NOAA/GFS model meridional wind speed</long_name>
@@ -1477,7 +1477,7 @@ Global RADS configuration file
 	<limits>-30 30</limits>
 	<data>wind_speed_gfs_v</data>
 	<format>f7.3</format>
-	<compress>int2 1e-3</compress>
+	<compress>int2 1e-2</compress>
 </var>
 <var name="wind_speed_gfs" sat="sa">
 	<long_name>NOAA/GFS model wind speed</long_name>
@@ -1487,7 +1487,7 @@ Global RADS configuration file
 	<limits>0 30</limits>
 	<data>wind_speed_gfs_u wind_speed_gfs_v HYPOT</data>
 	<format>f7.3</format>
-	<compress>int2 1e-3</compress>
+	<compress>int2 1e-2</compress>
 </var>
 <var name="wind_speed_cls" field="1905" sat="n1">
 	<long_name>altimeter wind speed (CLS algo)</long_name>
@@ -1497,7 +1497,7 @@ Global RADS configuration file
 	<limits>0 30</limits>
 	<data>wind_speed_cls</data>
 	<format>f6.3</format>
-	<compress>int2 1e-3</compress>
+	<compress>int2 1e-2</compress>
 </var>
 <var name="wind_speed_alt_mle3" field="1911" sat="j2">
 	<long_name>altimeter wind speed (MLE3)</long_name>
@@ -1507,7 +1507,7 @@ Global RADS configuration file
 	<limits>-1 30</limits>
 	<data>wind_speed_alt_mle3</data>
 	<format>f6.3</format>
-	<compress>int2 1e-3</compress>
+	<compress>int2 1e-2</compress>
 </var>
 <alias name="wind_speed" field="19">wind_speed_alt</alias>
 
