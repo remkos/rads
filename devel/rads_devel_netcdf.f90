@@ -21,7 +21,7 @@ use rads
 use rads_netcdf
 use rads_misc
 
-integer(fourbyteint), parameter :: mrec=3500, mvar=50
+integer(fourbyteint), parameter :: mrec=3500, mvar=60
 integer(fourbyteint) :: nvar, nrec=0, ncid
 real(eightbytereal), allocatable :: a(:)
 integer(twobyteint), allocatable :: flags(:)

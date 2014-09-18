@@ -83,7 +83,7 @@ use rads_devel
 integer(fourbyteint) :: verbose=0, c0=0, c1=999, ios
 real(eightbytereal) :: t0, t1
 character(len=rads_cmdl) :: infile, arg
-character(len=rads_varl) :: optopt, optarg
+character(len=rads_varl) :: optopt, optarg, sat = 'j2'
 
 ! Header variables
 
@@ -108,7 +108,7 @@ t1 = nan
 ! Scan command line for options
 
 do
-	call getopt ('vC: debug: sat: cycle: t: mjd: sec: ymd: doy:', optopt, optarg)
+	call getopt ('vC:S: debug: sat: cycle: t: mjd: sec: ymd: doy:', optopt, optarg)
 	select case (optopt)
 	case ('!')
 		exit
@@ -120,6 +120,8 @@ do
 		c1 = -1
 		read (optarg,*,iostat=ios) c0,c1
 		if (c1 < c0) c1 = c0
+	case ('S', 'sat')
+		sat = optarg
 	case default
 		if (.not.dateopt (optopt, optarg, t0, t1)) then
 			call synopsis ('--help')
@@ -131,7 +133,7 @@ enddo
 ! Initialise
 
 call synopsis ('--head')
-call rads_init (S, 'j2', verbose)
+call rads_init (S, sat, verbose)
 
 !----------------------------------------------------------------------
 ! Read all file names from standard input
@@ -249,11 +251,11 @@ do
 	call cpy_var ('range_ku_mle3')
 	call cpy_var ('range_c')
 	call cpy_var ('model_dry_tropo_corr', 'dry_tropo_ecmwf')
-	call cpy_var ('model_wet_tropo_corr', 'wet_tropo_ecmwf')
 	call cpy_var ('rad_wet_tropo_corr', 'wet_tropo_rad')
+	call cpy_var ('model_wet_tropo_corr', 'wet_tropo_ecmwf')
 	call cpy_var ('iono_corr_alt_ku', 'iono_alt')
 	call cpy_var ('iono_corr_alt_ku_mle3', 'iono_alt_mle3')
-	call cpy_var ('iono_corr_gim', 'iono_gim')
+	if (.not.ogdr) call cpy_var ('iono_corr_gim_ku', 'iono_gim')
 	call cpy_var ('inv_bar_corr', 'inv_bar_static')
 	if (ogdr) then
 		call cpy_var ('inv_bar_corr', 'inv_bar_mog2d')
@@ -303,7 +305,6 @@ do
 	call cpy_var ('sig0_rms_ku_mle3')
 	call cpy_var ('sig0_rms_c')
 	call cpy_var ('off_nadir_angle_wf_ku', 'off_nadir_angle2_wf_ku')
-	call cpy_var ('off_nadir_angle_pf', 'off_nadir_angle2_pf')
 	call cpy_var ('atmos_corr_sig0_ku', 'dsig0_atmos_ku')
 	call cpy_var ('atmos_corr_sig0_c', 'dsig0_atmos_c')
 	call cpy_var ('rad_liquid_water', 'liquid_water_rad')
