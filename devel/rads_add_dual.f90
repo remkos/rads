@@ -46,7 +46,7 @@ integer(fourbyteint), parameter :: nmax = 3000000
 integer(twobyteint) :: mask = 2072 ! Bits 3, 4, 11
 character(len=5) :: mle = ''
 real(eightbytereal) :: twin = 35d0, iwin = 8d0
-real(eightbytereal) :: utc(nmax), lat(nmax), flags(nmax), iono1(nmax), iono2(nmax)
+real(eightbytereal) :: time(nmax), lat(nmax), flags(nmax), iono1(nmax), iono2(nmax)
 
 ! Scan command line for options
 
@@ -119,10 +119,10 @@ integer(fourbyteint), intent(in) :: n
 
 ! Read all the required variables
 
-call rads_get_var (S, P, 'utc', utc(ntot+1:ntot+n))
-call rads_get_var (S, P, 'lat', lat(ntot+1:ntot+n))
-call rads_get_var (S, P, 'flags', flags(ntot+1:ntot+n))
-call rads_get_var (S, P, 'iono_alt' // mle, iono1(ntot+1:ntot+n))
+call rads_get_var (S, P, 'time', time(ntot+1:ntot+n), .true.)
+call rads_get_var (S, P, 'lat', lat(ntot+1:ntot+n), .true.)
+call rads_get_var (S, P, 'flags' // mle, flags(ntot+1:ntot+n), .true.)
+call rads_get_var (S, P, 'iono_alt' // mle, iono1(ntot+1:ntot+n), .true.)
 ntot = ntot + n
 end subroutine read_pass
 
@@ -153,16 +153,16 @@ do i = 1,n
 
 ! Find first measurement in window (starts at t0)
 
-	t0 = utc(i) - twin
-	do while (utc(j0) < t0)
+	t0 = time(i) - twin
+	do while (time(j0) < t0)
 		j0 = j0 + 1
 	enddo
 
 ! Find last measurement in window (ends at t1)
 
-	t1 = utc(i) + twin
+	t1 = time(i) + twin
 	j1 = max(i,j1)
-	do while (j1 < n .and. utc(j1+1) < t1)
+	do while (j1 < n .and. time(j1+1) < t1)
 		j1 = j1 + 1
 	enddo
 
@@ -196,7 +196,7 @@ do i = 1,n
 	else
 		iono2(i) = wsum
 	endif
-	! write (*,'(f14.3,4f9.4,i3)') utc(i),lat(i),iono1(i),iono2(i),nsum
+	! write (*,'(f14.3,i6,3f9.4,i3)') time(i),nint(flags(i)),lat(i),iono1(i),iono2(i),nsum
 
 enddo
 
