@@ -41,7 +41,7 @@ type(rads_pass) :: P
 
 ! Other local variables
 
-real(eightbytereal), parameter :: dsig0_ku = -2.4d0, dsig0_c = -0.725d0	! Ku- and C-band Sigma0 bias of Jason-1
+real(eightbytereal), parameter :: dsig0_ku = -2.40d0, dsig0_c = -0.73d0	! Ku- and C-band Sigma0 bias of Jason-1
 integer(fourbyteint) :: i, cyc, pass
 logical :: lsig0 = .false., lwind = .false.
 
@@ -109,9 +109,9 @@ write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
 ! Adjust backscatter for correlation with off-nadir angle (See Quartly)
 
 if (lsig0) then
-	call rads_get_var (S, P, 'off_nadir_angle2_ku', psi2)
-	call rads_get_var (S, P, 'sig0_ku', sig0_ku)
-	call rads_get_var (S, P, 'sig0_c', sig0_c)
+	call rads_get_var (S, P, 'off_nadir_angle2_wf_ku', psi2, .true.)
+	call rads_get_var (S, P, 'sig0_ku', sig0_ku, .true.)
+	call rads_get_var (S, P, 'sig0_c', sig0_c, .true.)
 	sig0_ku = sig0_ku - 11.34d0 * psi2 + dsig0_ku
 	sig0_c  = sig0_c  -  2.01d0 * psi2 + dsig0_c
 endif
@@ -119,13 +119,10 @@ endif
 ! Compute wind speed from Collard model
 
 if (lwind) then
-	call rads_get_var (S, P, 'swh_ku', swh_ku)
-	if (.not.lsig0) then
-		call rads_get_var (S, P, 'sig0_ku', sig0_ku)
-		sig0_ku = sig0_ku - dsig0_ku
-	endif
+	call rads_get_var (S, P, 'swh_ku', swh_ku, .true.)
+	if (.not.lsig0) call rads_get_var (S, P, 'sig0_ku', sig0_ku, .true.)
 	do i = 1,n
-		u(i) = wind_j1 (1, sig0_ku(i), swh_ku(i))
+		u(i) = wind_j1 (1, sig0_ku(i) - dsig0_ku, swh_ku(i))
 	enddo
 endif
 
