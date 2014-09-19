@@ -74,11 +74,10 @@ program rads_gen_j1
 ! _c:       C-band
 !-----------------------------------------------------------------------
 use rads_devel_netcdf
-use rads_devel
 
 ! Command line arguments
 
-integer(fourbyteint) :: verbose=0, c0=0, c1=999, ios, q, r
+integer(fourbyteint) :: verbose=0, c0=0, c1=999, ios, i, j, q, r
 real(eightbytereal) :: t0, t1
 character(len=rads_cmdl) :: infile, arg
 character(len=rads_varl) :: optopt, optarg, sat = 'j1'
@@ -88,6 +87,7 @@ character(len=1) :: phasenm = ''
 
 integer(fourbyteint) :: cyclenr, passnr, varid
 real(eightbytereal) :: equator_time
+logical :: cma92
 
 ! Other local variables
 
@@ -97,7 +97,6 @@ real(eightbytereal), parameter :: sec2000=473299200d0	! UTC seconds from 1 Jan 1
 
 t0 = nan
 t1 = nan
-550 format (a)
 
 ! Scan command line for options
 
@@ -134,19 +133,19 @@ call rads_init (S, sat, verbose)
 !----------------------------------------------------------------------
 
 do
-	read (*,550,iostat=ios) infile
+	read (*,'(a)',iostat=ios) infile
 	if (ios /= 0) exit
-	write (*,550,advance='no') trim(infile) // ' ...'
+	call print_log (trim(infile) // ' ...', advance=.false.)
 
 	if (nf90_open(infile,nf90_nowrite,ncid) /= nf90_noerr) then
-		write (*,550) 'error opening file'
+		call print_log ('error opening file')
 		cycle
 	endif
 
 ! Check if input is GDR-C
 
 	if (index(infile,'_2Pc') <= 0) then
-		write (*,550) 'Error: this is not GDR-C'
+		call print_log ('Error: this is not GDR-C')
 		cycle
 	endif
 
@@ -157,12 +156,12 @@ do
 	if (nrec == 0) then
 		cycle
 	else if (nrec > mrec) then
-		write (*,'("Error: Too many measurements:",i5)') nrec
+		call print_log ('Error: Too many measurements:', nrec)
 		cycle
 	endif
 	call nfs(nf90_get_att(ncid,nf90_global,'mission_name',arg))
-	if (arg /= 'OSTM/Jason-1') then
-		write (*,550) 'Error: Wrong misson-name found in header'
+	if (arg /= 'Jason-1') then
+		call print_log ('Error: Wrong misson-name found in header')
 		cycle
 	endif
 
@@ -176,7 +175,15 @@ do
 
 	if (equator_time < t0 .or. equator_time > t1 .or. cyclenr < c0 .or. cyclenr > c1) then
 		call nfs(nf90_close(ncid))
-		write (*,550) 'Skipped'
+		call print_log ('Skipped')
+		cycle
+	endif
+
+! Skip passes of which the cycle number or equator crossing time is outside the specified interval
+
+	if (equator_time < t0 .or. equator_time > t1 .or. cyclenr < c0 .or. cyclenr > c1) then
+		call nfs(nf90_close(ncid))
+		call print_log ('Skipped')
 		cycle
 	endif
 
@@ -214,6 +221,16 @@ do
 	P%start_time = strp1985f(arg)
 	call nfs(nf90_get_att(ncid,nf90_global,'last_meas_time',arg))
 	P%end_time = strp1985f(arg)
+
+! Determine L2 processing version
+
+	call nfs(nf90_get_att(ncid,nf90_global,'references',arg))
+	i = index(infile, '/', .true.) + 1
+	j = index(arg, 'CMA')
+	P%original = trim(infile(i:)) // ' (' // trim(arg(j:))
+	cma92 = index(arg(j:), '9.2') > 0
+	j = len_trim(P%original)
+	P%original(j+1:) = ')'
 
 ! Allocate variables
 
@@ -258,8 +275,8 @@ do
 	call cpy_var ('lon')
 	call cpy_var ('alt', 'alt_eiggl04s')
 	call cpy_var ('orb_alt_rate', 'alt_rate')
-	call cpy_var ('range_ku+pseudo_dat_bias_corr')
-	call cpy_var ('range_c+pseudo_dat_bias_corr')
+	call cpy_var ('range_ku+pseudo_dat_bias_corr', 'range_ku')
+	call cpy_var ('range_c+pseudo_dat_bias_corr', 'range_c')
 	call cpy_var ('model_dry_tropo_corr', 'dry_tropo_ecmwf')
 	call cpy_var ('rad_wet_tropo_corr', 'wet_tropo_rad')
 	call cpy_var ('model_wet_tropo_corr', 'wet_tropo_ecmwf')
@@ -296,15 +313,20 @@ do
 	call cpy_var ('tb_340')
 	a = flags
 	call new_var ('flags', a)
-	call cpy_var ('pseudo_dat_bias_corr', '???')
+	call cpy_var ('pseudo_dat_bias_corr', 'drange_dat')
 	call cpy_var ('swh_rms_ku')
 	call cpy_var ('swh_rms_c')
 	call cpy_var ('sig0_rms_ku')
 	call cpy_var ('sig0_rms_c')
 	call cpy_var ('off_nadir_angle_wf_ku', 'off_nadir_angle2_wf_ku')
-	call cpy_var ('off_nadir_angle_pf', 'off_nadir_angle2_pf')
-	call cpy_var ('atmos_sig0_corr_ku', 'dsig0_atmos_ku')
-	call cpy_var ('atmos_sig0_corr_c', 'dsig0_atmos_c')
+	!call cpy_var ('off_nadir_angle_pf', 'off_nadir_angle2_pf') (always 0, so no use)
+	if (cma92) then
+		call cpy_var ('atmos_sig0_corr_ku', 'dsig0_atmos_ku')
+		call cpy_var ('atmos_sig0_corr_c', 'dsig0_atmos_c')
+	else
+		call cpy_var ('atmos_corr_sig0_ku', 'dsig0_atmos_ku')
+		call cpy_var ('atmos_corr_sig0_c', 'dsig0_atmos_c')
+	endif
 	call cpy_var ('rad_liquid_water', 'liquid_water_rad')
 	call cpy_var ('rad_water_vapor', 'water_vapor_rad')
 

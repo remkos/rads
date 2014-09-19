@@ -16,9 +16,33 @@
 !-----------------------------------------------------------------------
 
 module rads_devel
-use typesizes
+use rads
 use rads_time
 use rads_misc
+
+!*print_log -- Print certain output to log (standard out)
+!+
+! subroutine print_log (S, P, string, count, advance)
+! subroutine print_log (string, count, advance)
+! type(rads_sat), optional :: S
+! type(rads_pass), optional :: P
+! character(len=*), intent(in), optional :: string
+! integer(fourbyteint), intent(in), optional :: count
+! logical, intent(in), optional :: advance
+!
+! This routine prints to standard output one of many versions of strings
+! depending on the availability of the optional variables.
+!
+! Argument:
+!   string : string to be printed
+!   count  : number to be printed
+!   advance: advance to next line (default = true)
+!-----------------------------------------------------------------------
+private :: print_log_1, print_log_2
+interface print_log
+	module procedure print_log_1
+	module procedure print_log_2
+end interface print_log
 
 contains
 
@@ -160,4 +184,70 @@ endif
 '  --time=T0,T1              Specify time selection (optionally use --ymd=, --doy=,' / &
 '                            or --sec= for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)')
 end subroutine synopsis_devel
+
+!*print_log -- Print certain output to log (standard out)
+!+
+subroutine print_log_1 (S, P, advance)
+type(rads_sat) :: S
+type(rads_pass) :: P
+logical, intent(in), optional :: advance
+!
+! This routine prints to standard output one of many versions of strings
+! depending on the availability of the optional variables.
+!
+! Argument:
+!   string : string to be printed
+!   count  : number to be printed
+!   advance: advance to next line (default = true)
+!-----------------------------------------------------------------------
+character(len=4) :: adv
+
+554 format (a, ' ...')
+555 format (i5, ' records changed')
+
+if (present(advance) .and. .not.advance) then
+	adv = 'no'
+else
+	adv = 'yes'
+endif
+if (adv == 'no') then
+	write (*,554,advance=adv) trim(P%filename(len_trim(S%dataroot)+2:))
+else
+	write (*,555) P%ndata
+endif
+end subroutine print_log_1
+
+subroutine print_log_2 (string, count, advance)
+character(len=*), intent(in), optional :: string
+integer(fourbyteint), intent(in), optional :: count
+logical, intent(in), optional :: advance
+!
+! This routine prints to standard output one of many versions of strings
+! depending on the availability of the optional variables.
+!
+! Argument:
+!   string : string to be printed
+!   count  : number to be printed
+!   advance: advance to next line (default = true)
+!-----------------------------------------------------------------------
+character(len=4) :: adv
+
+551 format (a,i5)
+552 format (a)
+553 format (i5)
+
+if (present(advance) .and. .not.advance) then
+	adv = 'no'
+else
+	adv = 'yes'
+endif
+if (present(string) .and. present(count)) then
+	write (*,551,advance=adv) string, count
+else if (present(string)) then
+	write (*,552,advance=adv) string
+else if (present(count)) then
+	write (*,553,advance=adv) count
+endif
+end subroutine print_log_2
+
 end module rads_devel

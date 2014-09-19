@@ -39,7 +39,6 @@
 !-----------------------------------------------------------------------
 program rads_fix_j1
 
-use rads
 use rads_devel
 use meteo_subs
 
@@ -58,7 +57,7 @@ logical :: ldry = .false., ljmre = .false., lrange = .false., lsig0 = .false., l
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options (' dry range sig0 all wind')
+call rads_set_options (' dry jmre range sig0 all wind')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
@@ -69,11 +68,11 @@ do i = 1,rads_nopt
 	case ('range')
 		lrange = .true.
 	case ('sig0')
+		lsig0 = .true.
+	case ('all')
 		ldry = .true.
 		ljmre = .true.
 		lrange = .true.
-		lsig0 = .true.
-	case ('all')
 		lsig0 = .true.
 	case ('wind')
 		lwind = .true.
@@ -126,13 +125,9 @@ real(eightbytereal) :: sig0_ku(n), sig0_c(n), swh_ku(n), range_c(n), dry_tropo_e
 	wet_tropo_rad(n), flags(n), u(n), iono_alt(n)
 integer(twobyteint) :: jmre(n,4), flag
 integer(fourbyteint) :: i
+logical :: cjmre
 
-! Formats
-
-551 format (a,' ...',$)
-552 format (i5,' records changed')
-
-write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
+call print_log (S, P, .false.)
 
 ! Adjust backscatter for bias
 
@@ -172,7 +167,8 @@ endif
 
 ! Add the enhanced JMR products (if available)
 
-if (ljmre .and. get_jmr(n,jmre)) then
+cjmre = ljmre .and. get_jmr(n,jmre)
+if (cjmre) then
 	call rads_get_var (S, P, 'flags', flags, .true.)
 	do i = 1,n
 		flag = nint(flags(i),twobyteint)
@@ -214,12 +210,12 @@ if (lrange) then
 	call rads_put_var (S, P, 'range_c', range_c)
 	call rads_put_var (S, P, 'iono_alt' , iono_alt)
 endif
-if (ljmre) then
+if (cjmre) then
 	call rads_put_var (S, P, 'flags', flags)
 	call rads_put_var (S, P, 'wet_tropo_rad', wet_tropo_rad)
 endif
 
-write (*,552) n
+call print_log (S, P)
 end subroutine process_pass
 
 function get_jmr (n, jmre)
@@ -229,30 +225,28 @@ integer(fourbyteint), intent(in) :: n
 integer(twobyteint), intent(out) :: jmre(:,:)
 logical :: get_jmr
 character(128) :: filenm
-character(16) :: s_end, s_start
-integer(fourbyteint) :: ncid
+integer(fourbyteint) :: ncid, i
 
 get_jmr = .false.
 
-! Get filename like JA1_GDR_2PcP300_093
+! Get filename like JA1_GPN_JMR_EXP_2PcP300_093_20100225_150810_20100225_160422.nc
 ! And convert to $RADSROOT/ext/j1/jmr_enh/c300/JA1_GPN_JMR_EXP_2PcP300_093_20100225_150810_20100225_160422.nc
 
-call strf1985 (s_start, '_%Y%m%d_%H%M%S', int(P%start_time))
-call strf1985 (s_end, '_%Y%m%d_%H%M%S', int(P%end_time))
-
-filenm = trim(S%dataroot)//'/ext/j1/jmr_enh/c'//P%original(12:14)// &
-    '/JA1_GPN_JMR_EXP_2PcP'//P%original(12:18)//s_start//s_end//'.nc'
+i = index(P%original, ' ') - 1
+call parseenv ('${RADSROOT}/ext/j1/jmr_enh/c'//P%original(13:15)// &
+    '/JA1_GPN_JMR_EXP_2PcP'//P%original(13:i), filenm)
 
 if (nf90_open(filenm,nf90_nowrite,ncid) /= nf90_noerr) return
+call print_log (' ' // trim(filenm) // ' ...', advance=.false.)
 
 ! Check file size
 
 call nfs(nf90_inquire_dimension(ncid,1,len=i))
 if (i /= n) then
-    write (*,552) trim(filenm),i
+	call print_log (' wrong size: ', i, .false.)
+	call print_log (' ...', advance=.false.)
     return
 endif
-552  format (' ',a,' (wrong size: ',i4,') ...',$)
 
 ! Now get variables
 
@@ -264,8 +258,6 @@ enddo
 
 i = nf90_close(ncid)
 get_jmr = .true.
-write (*,551) trim(filenm)
-551  format (a,' ... ',$)
 end function get_jmr
 
 end program rads_fix_j1
