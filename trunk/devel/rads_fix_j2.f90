@@ -48,7 +48,7 @@ logical :: lsig0 = .false., lwind = .false.
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options (' gps sig0 all wind')
+call rads_set_options (' sig0 all wind')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
@@ -60,6 +60,10 @@ do i = 1,rads_nopt
 		lwind = .true.
 	end select
 enddo
+
+! If nothing selected, stop here
+
+if (.not.(lsig0 .or. lwind)) stop
 
 ! Run process for all files
 
@@ -116,7 +120,7 @@ if (lsig0) then
 	sig0_c  = sig0_c  -  2.01d0 * psi2 + dsig0_c
 endif
 
-! Compute wind speed from Collard model
+! Compute wind speed from Collard model (using unadjusted sig0_ku)
 
 if (lwind) then
 	call rads_get_var (S, P, 'swh_ku', swh_ku, .true.)
@@ -124,13 +128,6 @@ if (lwind) then
 	do i = 1,n
 		u(i) = wind_j1 (1, sig0_ku(i) - dsig0_ku, swh_ku(i))
 	enddo
-endif
-
-! If nothing changed, stop here
-
-if (.not.(lsig0 .or. lwind)) then
-	write (*,552) 0
-	return
 endif
 
 ! Update history

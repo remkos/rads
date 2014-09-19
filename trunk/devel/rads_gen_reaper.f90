@@ -70,8 +70,8 @@ program rads_gen_reaper
 ! swh_rms_ku - Std dev of SWH
 ! sig0_rms_ku - Std dev of sigma0
 ! off_nadir_angle2_wf_ku - Mispointing from waveform squared
-! liquid_water - Liquid water content
-! water_vapor_content - Water vapor content
+! rad_liquid_water - Liquid water content
+! rad_water_vapor - Water vapor content
 ! tide_equil - Long-period equilibrium tide
 ! tide_non_equil - Long-period non-equilibrium tide
 !
