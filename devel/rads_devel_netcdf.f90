@@ -17,9 +17,8 @@
 
 module rads_devel_netcdf
 use netcdf
-use rads
+use rads_devel
 use rads_netcdf
-use rads_misc
 
 integer(fourbyteint), parameter :: mrec=3500, mvar=60
 integer(fourbyteint) :: nvar, nrec=0, ncid
@@ -78,10 +77,11 @@ do i = 1,nvar
 	var(i)%empty = all(isnan_(var(i)%d(1:nrec)))
 enddo
 if (any(var(1:nvar)%empty)) then
-	write (*,550,advance='no') '... No'
+	call print_log (' No', advance=.false.)
 	do i = 1,nvar
-		if (var(i)%empty) write (*,550,advance='no') trim(var(i)%v%name)
+		if (var(i)%empty) call print_log (trim(var(i)%v%name), advance=.false.)
 	enddo
+	call print_log (' ...', advance=.false.)
 endif
 
 ! Open output file
@@ -98,12 +98,9 @@ do i = 1,nvar
 enddo
 
 ! Close the data file
-write (*,552) nrec,trim(P%filename(len_trim(S%dataroot)+2:))
+call print_log (count=nrec, advance=.false.)
+call print_log (' records written to ' // trim(P%filename(len_trim(S%dataroot)+2:)))
 call rads_close_pass (S, P)
-
-! Formats
-550 format (a,1x)
-552 format ('...',i5,' records written to ',a)
 
 end subroutine put_rads
 

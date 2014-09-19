@@ -1105,7 +1105,7 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 </var>
-<var name="ssb_cls_c" field="1505" sat="j2">
+<var name="ssb_cls_c" field="1505" sat="j1 j2">
 	<long_name>CLS non-parametric sea state bias (C-band)</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<source>CLS</source>
@@ -2074,7 +2074,7 @@ Global RADS configuration file
 	<units>m</units>
 	<data>drange_dat</data>
 	<format>f6.3</format>
-	<compress>int2 1e-3</compress>
+	<compress>int2 1e-4</compress>
 	<comment>Range correction already added to range</comment>
 </var>
 <var name="drange_sptr" field="2709" sat="e1 e2">
@@ -2250,7 +2250,7 @@ Global RADS configuration file
 	</var>
 	<alias name="attitude" field="30">off_nadir_angle2_wf_ku</alias>
 </else>
-<var name="off_nadir_angle_pf" field="3003" sat="c2 j1 j2 pn">
+<var name="off_nadir_angle_pf" field="3003" sat="c2 j2 pn">
 	<long_name>off-nadir pointing angle from platform</long_name>
 	<units>degrees</units>
 	<data>off_nadir_angle2_pf SQRT</data>
@@ -2471,7 +2471,7 @@ Global RADS configuration file
 	<compress>int2 1e-2</compress>
 </var>
 
-<var name="water_vapor_rad" field="3302" sat="e1 e2 j2 sa">
+<var name="water_vapor_rad" field="3302" sat="e1 e2 j1 j2 sa">
 	<long_name>radiometer water vapor content</long_name>
 	<standard_name>atmosphere_mass_content_of_water_vapor</standard_name>
 	<units>kg/m^2</units>
