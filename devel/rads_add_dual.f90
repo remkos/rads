@@ -52,7 +52,7 @@ real(eightbytereal) :: time(nmax), lat(nmax), flags(nmax), iono1(nmax), iono2(nm
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options ('b:i:m:t: mask: iwin: twin:')
+call rads_set_options ('b:i:m:t: mle: mask: iwin: twin:')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
