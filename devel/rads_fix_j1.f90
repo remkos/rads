@@ -237,7 +237,8 @@ call parseenv ('${RADSROOT}/ext/j1/jmr_enh/c'//P%original(13:15)// &
     '/JA1_GPN_JMR_EXP_2PcP'//P%original(13:i), filenm)
 
 if (nf90_open(filenm,nf90_nowrite,ncid) /= nf90_noerr) return
-call log_string (filenm)
+i = index(filenm, '/j1/jmr_enh')
+call log_string (filenm(i+1:))
 
 ! Check file size
 
