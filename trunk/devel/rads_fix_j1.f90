@@ -127,7 +127,7 @@ integer(twobyteint) :: jmre(n,4), flag
 integer(fourbyteint) :: i
 logical :: cjmre
 
-call print_log (S, P, .false.)
+call log_pass (P)
 
 ! Adjust backscatter for bias
 
@@ -215,7 +215,7 @@ if (cjmre) then
 	call rads_put_var (S, P, 'wet_tropo_rad', wet_tropo_rad)
 endif
 
-call print_log (S, P)
+call log_records (n)
 end subroutine process_pass
 
 function get_jmr (n, jmre)
@@ -237,16 +237,16 @@ call parseenv ('${RADSROOT}/ext/j1/jmr_enh/c'//P%original(13:15)// &
     '/JA1_GPN_JMR_EXP_2PcP'//P%original(13:i), filenm)
 
 if (nf90_open(filenm,nf90_nowrite,ncid) /= nf90_noerr) return
-call print_log (' ' // trim(filenm) // ' ...', advance=.false.)
+call log_string (filenm)
 
 ! Check file size
 
 call nfs(nf90_inquire_dimension(ncid,1,len=i))
 if (i /= n) then
-	call print_log (' wrong size: ', i, .false.)
-	call print_log (' ...', advance=.false.)
+	write (rads_log_unit, 555, advance='no') i
     return
 endif
+555 format ('wrong file size:',i5,' ... ')
 
 ! Now get variables
 

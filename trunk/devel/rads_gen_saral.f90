@@ -70,7 +70,6 @@ program rads_gen_saral
 ! water_vapor_content - Water vapor content
 !-----------------------------------------------------------------------
 use rads_devel_netcdf
-use rads_devel
 
 ! Command line arguments
 
@@ -98,7 +97,6 @@ real(eightbytereal), parameter :: sec2000=473299200d0	! UTC seconds from 1 Jan 1
 
 t0 = nan
 t1 = nan
-550 format (a)
 
 ! Scan command line for options
 
@@ -135,12 +133,14 @@ call rads_init (S, sat, verbose)
 !----------------------------------------------------------------------
 
 do
-	read (*,550,iostat=ios) infile
+	read (*,'(a)',iostat=ios) infile
 	if (ios /= 0) exit
-	write (*,550,advance='no') trim(infile) // ' ...'
 
+! Open input file
+
+	call log_string (infile)
 	if (nf90_open(infile,nf90_nowrite,ncid) /= nf90_noerr) then
-		write (*,550) 'error opening file'
+		call log_string ('Error: failed to open input file', .true.)
 		cycle
 	endif
 
@@ -151,12 +151,12 @@ do
 	if (nrec == 0) then
 		cycle
 	else if (nrec > mrec) then
-		write (*,'("Error: Too many measurements:",i5)') nrec
+		call log_string ('Error: too many measurements', .true.)
 		cycle
 	endif
 	call nfs(nf90_get_att(ncid,nf90_global,'mission_name',arg))
 	if (arg /= 'SARAL') then
-		write (*,550) 'Error: Wrong misson-name found in header'
+		call log_string ('Error: wrong misson-name found in header', .true.)
 		cycle
 	endif
 
@@ -171,7 +171,7 @@ do
 
 	if (equator_time < t0 .or. equator_time > t1 .or. cyclenr < c0 .or. cyclenr > c1) then
 		call nfs(nf90_close(ncid))
-		write (*,550) 'Skipped'
+		call log_string ('Skipped', .true.)
 		cycle
 	endif
 

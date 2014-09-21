@@ -27,7 +27,6 @@
 !-----------------------------------------------------------------------
 program rads_fix_sa
 
-use rads
 use rads_devel
 
 ! Data variables
@@ -78,12 +77,7 @@ subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
 real(eightbytereal) :: wet(n)
 
-! Formats
-
-551 format (a,' ...',$)
-552 format (i5,' records changed')
-
-write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
+call log_pass (P)
 
 ! Shift MWR wet tropo prior to 2013-10-22 12:15:27 (pre-patch2 data only)
 
@@ -95,7 +89,7 @@ wet = wet - 6.4d-3
 call rads_put_history (S, P)
 call rads_put_var (S, P, 'wet_tropo_rad', wet)
 
-write (*,552) n
+call log_records (n)
 end subroutine process_pass
 
 end program rads_fix_sa
