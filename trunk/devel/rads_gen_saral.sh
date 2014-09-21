@@ -22,7 +22,7 @@
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
 
-rads_open_sandbox sa a
+rads_open_sandbox sa
 lst=$SANDBOX/rads_gen_saral.lst
 
 date													>  $log 2>&1

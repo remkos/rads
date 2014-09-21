@@ -26,7 +26,7 @@ program rads_gen_j2
 !
 ! syntax: rads_gen_j2 [options] < list_of_JASON2_file_names
 !
-! This program handles only OGDR, IGDR and GDR files in netCDF format,
+! This program handles Jason-2 OGDR, IGDR and GDR files in netCDF format,
 ! version D (also known as GDR-D).
 ! The format is described in:
 !

@@ -23,7 +23,7 @@
 
 . rads_sandbox.sh
 
-rads_open_sandbox c2 a
+rads_open_sandbox c2
 
 date							>  $log 2>&1
 
