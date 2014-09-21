@@ -73,7 +73,13 @@ program rads_gen_j1
 ! _ku:      Ku-band retracked with MLE4
 ! _c:       C-band
 !-----------------------------------------------------------------------
+use rads
+use rads_devel
 use rads_devel_netcdf
+use rads_misc
+use rads_netcdf
+use rads_time
+use netcdf
 
 ! Command line arguments
 

@@ -38,7 +38,9 @@
 !-----------------------------------------------------------------------
 program rads_fix_reaper
 
+use rads
 use rads_devel
+use rads_misc
 
 ! Data variables
 

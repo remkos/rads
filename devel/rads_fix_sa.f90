@@ -27,6 +27,7 @@
 !-----------------------------------------------------------------------
 program rads_fix_sa
 
+use rads
 use rads_devel
 
 ! Data variables

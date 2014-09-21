@@ -16,15 +16,13 @@
 !-----------------------------------------------------------------------
 
 module rads_devel
-use rads
-use rads_time
-use rads_misc
 
 contains
 
 !*erspass - Determine orbit nr, phase, cycle nr and pass nr for ERS-1/2
 !+
 logical function erspass (ers, utc, orbitnr, phasenm, cyclenr, passnr, tnode, lnode)
+use rads_misc
 real(eightbytereal), intent(in) :: utc
 integer(fourbyteint), intent(in) :: ers
 integer(fourbytereal), intent(out) :: orbitnr, cyclenr, passnr
@@ -164,6 +162,7 @@ end subroutine synopsis_devel
 !*log_string -- Print string to log output
 !+
 subroutine log_string (string, advance)
+use rads
 character(len=*), intent(in) :: string
 logical, intent(in), optional :: advance
 !
@@ -186,6 +185,7 @@ end subroutine log_string
 !*log_pass -- Print filename of pass to log output
 !+
 subroutine log_pass (P, advance)
+use rads
 type(rads_pass), intent(in) :: P
 logical, intent(in), optional :: advance
 !
@@ -202,6 +202,7 @@ end subroutine log_pass
 !*log_records -- Print string to log output
 !+
 subroutine log_records (count, P)
+use rads
 integer(fourbyteint), intent(in) :: count
 type(rads_pass), intent(in), optional :: P
 !

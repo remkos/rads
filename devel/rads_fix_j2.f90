@@ -30,6 +30,7 @@
 !-----------------------------------------------------------------------
 program rads_fix_j2
 
+use rads
 use rads_devel
 use meteo_subs
 
