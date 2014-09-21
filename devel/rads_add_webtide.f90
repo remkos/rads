@@ -115,10 +115,6 @@ integer(fourbyteint), intent(in) :: n
 real(eightbytereal) :: time(n), lon(n), lat(n), z(n), tide2, lptide_eq, lptide_mf
 integer(fourbyteint) :: i, j, nval
 
-! Formats
-
-551 format (a,' ...',i5,' records changed')
-
 ! Get time and location
 
 call rads_get_var (S, P, 'time', time, .true.)
@@ -152,7 +148,8 @@ call rads_put_history (S, P)
 call rads_def_var (S, P, var)
 call rads_put_var (S, P, var, z)
 
-write (*,551) trim(P%filename(len_trim(S%dataroot)+2:)), nval
+call log_pass (P)
+call log_records (nval)
 end subroutine process_pass
 
 end program rads_add_webtide

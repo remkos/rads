@@ -121,12 +121,7 @@ integer(fourbyteint) :: i, j, ii, iold
 real(eightbytereal) :: time(n), lat(n), lon(n), alt(n), tec1(n), z(n,nmod), tec2, dtime, d
 logical :: ok(nmod)
 
-! Formats
-
-551  format (a,' ...',$)
-552  format (i5,' records changed')
-
-write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
+call log_pass (P)
 
 ! Get time and position
 
@@ -171,7 +166,7 @@ do j = 1,nmod
 	ok(j) = model(j) .and. .not.all(isnan_(z(:,j)))
 enddo
 if (.not.any(ok)) then
-	write (*,552) 0
+	call log_records (0)
 	return
 endif
 
@@ -185,7 +180,7 @@ if (ok(1)) call rads_put_var (S, P, 'iono_gim', z(:,1))
 if (ok(2)) call rads_put_var (S, P, 'iono_iri2007', z(:,2))
 if (ok(3)) call rads_put_var (S, P, 'iono_nic09', z(:,3))
 
-write (*,552) n
+call log_records (n)
 end subroutine process_pass
 
 end program rads_add_iono

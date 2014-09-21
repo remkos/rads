@@ -179,12 +179,7 @@ real(eightbytereal) :: time(n), lon(n), lat(n), surface_type(n), &
 	otide_sp(n), otide_lp(n), ltide_sp(n), ltide_lp(n), lptide_eq(n), lptide_mf(n)
 integer(fourbyteint) :: i, j
 
-! Formats
-
-551 format (a,' ...',$)
-552 format (i5,' records changed')
-
-write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
+call log_pass (P)
 
 ! Get time, location, and surface_type
 
@@ -305,7 +300,7 @@ if (do_annual) then
 	call rads_put_var (S, P, 'mss_annual', otide_lp)
 endif
 
-write (*,552) n
+call log_records (n)
 
 end subroutine process_pass
 

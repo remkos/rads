@@ -115,12 +115,7 @@ integer(fourbyteint), intent(in) :: n
 real(eightbytereal) :: x, y, xval(n), yval(n), ssb(n), wind(n)
 integer :: i
 
-! Formats
-
-551 format (a,' ...',$)
-552 format (i5,' records changed')
-
-write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
+call log_pass (P)
 
 ! Compute wind speed after loading sigma0
 
@@ -162,7 +157,7 @@ if (lssb)  call rads_def_var (S, P, ssb_model)
 if (lwind) call rads_put_var (S, P, 'wind_speed_alt', wind)
 if (lssb)  call rads_put_var (S, P, ssb_model, ssb)
 
-write (*,552) n
+call log_records (n)
 
 end subroutine process_pass
 

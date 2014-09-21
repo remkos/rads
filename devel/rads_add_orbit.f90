@@ -47,11 +47,6 @@ real(eightbytereal) :: tbias=0d0,maxrms=1d30,loc=0d0,dt=1d0,chirp=0d0
 
 integer(fourbyteint) :: ellipse=0,ios
 
-! Formats
-
-550  format (a)
-551  format (a,' ...',$)
-
 ! Scan command line for options
 
 info%ntype = 0
@@ -147,14 +142,14 @@ end select
 ! Store limits. Set x-limits to mid-point +/- 180.
 
 if (gridnm /= '') then
-	write (*,551) 'Loading grid '//trim(gridnm)
+	call log_string ('Loading grid '//gridnm)
 	if (gridnm(:1) == '/' .or. gridnm(:2) == './') then
-		if (grid_load(gridnm,info) /= 0) call rads_exit ('Error loading grid.')
+		if (grid_load(gridnm,info) /= 0) call rads_exit ('Error loading grid')
 	else
 		call parseenv ('${ALTIM}/data/' // gridnm, arg)
-		if (grid_load(arg,info) /= 0) call rads_exit ('Error loading grid.')
+		if (grid_load(arg,info) /= 0) call rads_exit ('Error loading grid')
 	endif
-	write (*,550) 'done'
+	call log_string ('done', .true.)
 endif
 
 ! Determine factor for Doppler correction
@@ -226,13 +221,7 @@ real(eightbytereal) :: utc(n),lat(n),lon(n),alt(n),alt_old(n),alt_rate(n),flags(
 	range_c(n),drange_fm(n),dalt(-1:1),dlat(-1:1),dlon(-1:1),t,f,rms,xx,yy,zz,xx0,yy0,dhellips
 logical :: asc, cryofix
 
-! Formats
-
-550  format (a)
-551  format (a,' ...',$)
-552  format (i5,' records changed')
-
-write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
+call log_pass (P)
 
 ! Determine if we need to fix Cryosat data
 ! Only if original data is LRM L2 and this is the first radsp_orbit run
@@ -279,7 +268,7 @@ do i = 1,n
 
 	if (range) then
 		if (getorb(utc(i),yy,xx,zz,dir,.true.) > 0) then
-			write (*,552) 0
+			call log_records (0)
 			return
 		endif
 		range_ku(i) = zz - range_ku(i)
@@ -294,7 +283,7 @@ do i = 1,n
 
 	do k = -kstep,kstep
 		if (getorb(utc(i)+k*dt/2,dlat(k),dlon(k),dalt(k),dir,.true.) > 0) then
-			write (*,552) 0
+			call log_records (0)
 			return
 		endif
 	enddo
@@ -362,7 +351,7 @@ if (equator) then
 	do i = i0,i1
 		t = i
 		if (getorb(t,yy,xx,zz,dir,.true.) > 0) then
-			write (*,552) 0
+			call log_records (0)
 			return
 		endif
 		if (yy*yy0 >= 0) then
@@ -378,7 +367,7 @@ if (equator) then
 		endif
 		xx0 = xx
 		yy0 = yy
-		if (i == i1) write (*,550) 'error scanning for equator crossing'
+		if (i == i1) call log_string ('error scanning for equator crossing')
 	enddo
 endif
 if (rads_verbose >= 1) write (*,*) 'eq:', P%equator_time, P%equator_lon
@@ -433,7 +422,7 @@ if (var_old /= '') then
 endif
 if (rads_verbose >= 1) write (*,*) 'rms:', pass, rms
 
-write (*,552) n
+call log_records (n)
 end subroutine process_pass
 
 !-----------------------------------------------------------------------

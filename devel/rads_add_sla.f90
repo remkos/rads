@@ -95,12 +95,7 @@ real(eightbytereal) :: sla(n), tmp(n)
 real(eightbytereal), parameter :: dz = 1d-4
 character(len=5) :: hz
 
-! Formats
-
-551 format (a,' ...',$)
-552 format (i5,' records changed')
-
-write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
+call log_pass (P)
 
 ! Get sea level anomaly
 
@@ -123,7 +118,7 @@ if (update) then
 		if (nint(tmp(i)/dz) /= nint(sla(i)/dz)) exit
 	enddo
 	if (i > n) then	! No changes
-		write (*,552) 0
+		call log_records (0)
 		return
 	endif
 endif
@@ -136,10 +131,10 @@ call rads_def_var (S, P, 'ssha'//hz)
 if (S%n_hz_output) then
 	i = n/P%n_hz
 	call rads_put_var (S, P, 'ssha'//hz, reshape(sla, (/P%n_hz,i/)))
-	write (*,552) i
+	call log_records (i)
 else
 	call rads_put_var (S, P, 'ssha', sla)
-	write (*,552) n
+	call log_records (n)
 endif
 
 end subroutine process_pass

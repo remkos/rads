@@ -137,12 +137,7 @@ real(eightbytereal) :: time(n), lat(n), lon(n), tmp(n), z(nvar), w, x, y, &
 integer(fourbyteint) :: i, ix, iy, hex, var
 logical :: err
 
-! Formats
-
-551 format (a,' ...',$)
-552 format (i5,' records changed')
-
-write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
+call log_pass (P)
 
 ! Get time and location
 
@@ -179,8 +174,8 @@ do i = 1,n
 			err = get_ww3(mjd  ,grids(:,:,1:4,:)) .or. get_ww3(mjd+1,grids(:,:,5:8,:))
 		endif
 		if (err) then
-			write (*,'(a,$)') 'No WW3 data for current time ...'
-			write (*,552) 0
+			call log_string ('Warning: no WW3 data for current time')
+			call log_records (0)
 			stop
 		endif
 		mjdold = mjd
@@ -240,7 +235,7 @@ if (update) then
 		if (nint(tmp(i)/dz(var0)) /= nint(ww3(i,var0))) exit
 	enddo
 	if (i > n) then	! No changes
-		write (*,552) 0
+		call log_records (0)
 		return
 	endif
 endif
@@ -258,7 +253,7 @@ do var = 1,nvar
 	if (lvar(var)) call rads_put_var (S, P, 'wave_'//varnm(var), ww3(:,var)*dz(var))
 enddo
 
-write (*,552) n
+call log_records (n)
 end subroutine process_pass
 
 !-----------------------------------------------------------------------

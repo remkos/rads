@@ -51,11 +51,6 @@ integer(fourbyteint) :: i, j, k, ios, cyc, pass
 
 real(eightbytereal), parameter :: t_2000 = 473299200d0, t_year = 365.25d0 * 86400d0
 
-! Formats
-
-550   format (a)
-551   format (a,' ... ',$)
-
 ! Initialise
 
 call synopsis ('--head')
@@ -90,13 +85,13 @@ do k = 1,S%nsel
 	j = index(src(i+1:), ' ')
 	if (i > 0) grd(k)%yvar = src(i+3:i+j)
 
-	write (*,551) 'Loading grid '//trim(filename)
+	call log_string ('Loading grid '//filename)
 	if (filename(:1) == '/' .or. filename(:2) == './' .or. filename(:3) == '../') then
 		if (grid_load(filename,grd(k)%info) /= 0) call rads_exit ('Error loading grid')
 	else
 		if (grid_load(trim(path)//filename,grd(k)%info) /= 0) call rads_exit ('Error loading grid')
 	endif
-	write (*,550) 'done'
+	call log_string ('done', .true.)
 enddo
 
 ! Process all data files
@@ -144,12 +139,7 @@ integer(fourbyteint), intent(in) :: n, nmod
 integer(fourbyteint) :: i, k
 real(eightbytereal) :: x(n), y(n), z(n, nmod), years
 
-! Formats
-
-551  format (a,' ...',$)
-552  format (i5,' records changed')
-
-write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
+call log_pass (P)
 
 ! Determine time in years since 2000
 
@@ -187,7 +177,7 @@ do k = 1,nmod
 	call rads_put_var (S, P, S%sel(k), z(:,k))
 enddo
 
-write (*,552) n
+call log_records (n)
 end subroutine process_pass
 
 end program rads_add_grid
