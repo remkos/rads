@@ -30,7 +30,6 @@
 !-----------------------------------------------------------------------
 program rads_fix_j2
 
-use rads
 use rads_devel
 use meteo_subs
 
@@ -103,12 +102,7 @@ integer(fourbyteint), intent(in) :: n
 real(eightbytereal) :: sig0_ku(n), sig0_c(n), psi2(n), swh_ku(n), u(n)
 integer(fourbyteint) :: i
 
-! Formats
-
-551 format (a,' ...',$)
-552 format (i5,' records changed')
-
-write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
+call log_pass (P)
 
 ! Adjust backscatter for correlation with off-nadir angle (See Quartly)
 
@@ -143,7 +137,7 @@ if (lsig0) then
 endif
 if (lwind) call rads_put_var (S, P, 'wind_speed_alt', u)
 
-write (*,552) n
+call log_records (n)
 end subroutine process_pass
 
 end program rads_fix_j2

@@ -83,11 +83,9 @@ program rads_gen_reaper
 ! mqe - Mean quadratic error of waveform fit
 !-----------------------------------------------------------------------
 use netcdf
-use rads
-use rads_misc
+use rads_devel
 use rads_time
 use rads_netcdf
-use rads_devel
 
 ! Command line arguments
 
@@ -132,7 +130,6 @@ logical :: new
 
 t0 = nan
 t1 = nan
-550 format (a)
 
 ! Scan command line for options
 
@@ -163,7 +160,7 @@ enddo
 
 ! Start reading at least first file
 
-read (*,550,iostat=ios) infile
+read (*,'(a)',iostat=ios) infile
 if (ios /= 0) then
 	call synopsis ('--help')
 else
@@ -175,7 +172,7 @@ do
 	! Read the next file as long as buffer is empty or less than one orbit in memory
 
 	do while (ndata == 0 .or. var(1)%d(ndata) - var(1)%d(1) < 6100d0)
-		read (*,550,iostat=ios) infile
+		read (rads_log_unit,'(a)',iostat=ios) infile
 		if (ios /= 0) exit
 		call get_reaper
 	enddo
@@ -229,10 +226,7 @@ subroutine get_reaper
 integer(fourbyteint) :: i
 character(len=2) :: mission
 
-550 format (a)
-551 format (a,' ...')
-552 format (i5,' records ...')
-553 format (a,i6)
+552 format (i4,' records ...')
 
 ! Reduce file name to basename only
 
@@ -242,9 +236,9 @@ filenm = infile(i:)
 
 ! Check input file name
 
-write (*,551,advance='no') trim(infile)
+call log_string (infile)
 if (filenm(8:17) /= '_ERS_ALT_2') then
-	write (*,550) 'Error: Wrong input file'
+	call log_string ('Error: wrong input file type', .true.)
 	return
 endif
 alt_2m = (filenm(18:18) == 'M')
@@ -257,7 +251,7 @@ else if (mission == 'E2') then
 	if (ers == 0) call rads_init (S, 'e2.' // strtolower(filenm(52:55)), (/'reaper'/), verbose)
 	ers = 2
 else
-	write (*,550) 'Error: Unknown file type: '//mission
+	call log_string ('Error: Unknown file type: '//mission, .true.)
 	return
 endif
 
@@ -271,7 +265,7 @@ end_time   = strp1985f (filenm(36:50)) + 2d0
 
 i = nf90_open(infile,nf90_nowrite,ncid)
 if (i /= nf90_noerr) then
-	write (*,550) nf90_strerror (i)
+	call log_string (nf90_strerror(i), .true.)
 	stop
 	return
 endif
@@ -280,12 +274,12 @@ endif
 
 call nfs(nf90_inq_dimid(ncid,'time',varid))
 call nfs(nf90_inquire_dimension(ncid,varid,len=nrec))
-write (*,552) nrec
+write (rads_log_unit,552) nrec
 if (nrec == 0) then	! Skip empty input files
 	call nfs(nf90_close(ncid))
 	return
 else if (ndata+nrec > mrec) then
-	write (*,553) 'Error: Too many input measurements: ', ndata+nrec
+	call log_string ('Error: too many input measurements', .true.)
 	stop
 endif
 call nfs(nf90_get_att(ncid,nf90_global,'l2_proc_time',l2_proc_time))
@@ -326,7 +320,7 @@ t(3) = end_time
 ! There are significant overlaps between files
 ! Here we remove all new files that fall entirely before the end of the previous file, and
 if (end_time < last_time + 1) then
-	write (*,553) 'file because of time reversal    ', nrec
+	write (rads_log_unit,553) 'file because of time reversal    ', nrec
 	return
 endif
 
@@ -488,7 +482,7 @@ do i = 1,nrec
 	endif
 enddo
 do i = 1,4
-	if (kerr(i) > 0) write (*,553) strerr(i),kerr(i)
+	if (kerr(i) > 0) write (rads_log_unit,553) strerr(i),kerr(i)
 enddo
 if (k == 0) then
 	nrec = 0
@@ -543,10 +537,11 @@ do i = 1,nvar
 	var(i)%empty = all(isnan_(var(i)%d(1:nout)))
 enddo
 if (any(var(1:nvar)%empty)) then
-	write (*,550,advance='no') '... No'
+	write (rads_log_unit,551,advance='no') '... No'
 	do i = 1,nvar
-		if (var(i)%empty) write (*,550,advance='no') trim(var(i)%v%name)
+		if (var(i)%empty) write (rads_log_unit,551,advance='no') trim(var(i)%v%name)
 	enddo
+	write (rads_log_unit,551,advance='no') ' ...'
 endif
 
 ! Open output file
@@ -563,12 +558,11 @@ do i = 1,nvar
 enddo
 
 ! Close the data file
-write (*,552) nout,trim(P%filename(len_trim(S%dataroot)+2:))
+call log_records (nout, P)
 call rads_close_pass (S, P)
 
 ! Formats
-550 format (a,1x)
-552 format ('...',i5,' records written to ',a)
+551 format (a,1x)
 
 end subroutine put_rads
 

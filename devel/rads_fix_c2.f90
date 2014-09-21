@@ -56,8 +56,6 @@
 !-----------------------------------------------------------------------
 program rads_fix_c2
 
-use rads
-use rads_misc
 use rads_devel
 
 ! Data variables
@@ -147,12 +145,7 @@ integer(fourbyteint) :: i
 logical :: lrm_l2, fdm_l2, old_version_a, version_a, sar
 character(len=4) :: l1r_ver
 
-! Formats
-
-551 format (a,' ...',$)
-552 format (i5,' records changed')
-
-write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
+call log_pass (P)
 
 ! Do we have FDM or LRM? Do we have an older version?
 lrm_l2 = index(P%original,'IPF2LRM') > 0
@@ -291,7 +284,7 @@ endif
 ! If nothing changed, stop here
 
 if (.not.(lrange .or. cmeteo .or. ciono .or. cswh .or. lsig0)) then
-	write (*,552) 0
+	call log_records (0)
 	return
 endif
 
@@ -317,7 +310,7 @@ if (lsig0 .or. ldrift) then
 	if (P%n_hz > 0) call rads_put_var (S, P, 'sig0_20hz_ku', sig0_20hz)
 endif
 
-write (*,552) n
+call log_records (n)
 end subroutine process_pass
 
 end program rads_fix_c2

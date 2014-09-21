@@ -129,8 +129,6 @@ integer(fourbyteint) :: i, j, m, oldcyc=0, oldpass=0, mle=3, nhz=0, nwvf=0
 
 t0 = nan
 t1 = nan
-550 format (a)
-551 format (a,' ...')
 
 ! Scan command line for options
 
@@ -172,14 +170,14 @@ call rads_init (S, sat, verbose)
 !----------------------------------------------------------------------
 
 do
-	read (*,550,iostat=ios) filename
+	read (*,'(a)',iostat=ios) filename
 	if (ios /= 0) exit
 
 ! Open input file
 
-	write (*,551) trim(filename)
+	call log_string (filename)
 	if (nf90_open(filename,nf90_nowrite,ncid) /= nf90_noerr) then
-		write (*,550) 'Error opening file'
+		call log_string ('Error: failed to open input file', .true.)
 		cycle
 	endif
 
@@ -187,7 +185,7 @@ do
 
 	call nfs(nf90_get_att(ncid,nf90_global,'title',arg))
 	if (arg /= 'CryoSat-2 Level-1 Retracked') then
-		write (*,550) 'Error: Wrong input file'
+		call log_string ('Error: wrong input file type', .true.)
 		cycle
 	endif
 
@@ -203,10 +201,10 @@ do
 	call nfs(nf90_inquire_dimension(ncid,varid,len=nrec))
 	if ((cycnr(1) == cycnr(2) .and. passnr(1) > passnr(2)) .or. &
 		(passnr(1) == passnr(2) .and. nrec > 4000)) then
-		write (*,550) 'Error: File too long (covers 3 passes)'
+		call log_string ('Error: file too long (covers 3 passes)', .true.)
 		cycle
 	else if (nrec > mrec) then
-		write (*,'("Error: Too many measurements:",i5)') nrec
+		call log_string ('Error: too many measurements', .true.)
 		cycle
 	endif
 
@@ -233,7 +231,7 @@ do
 	if (nf90_get_att(ncid,nf90_global,'mle_params',mle) /= nf90_noerr) mle = 3
 	eq_time = eq_time + sec2000	! Equator time is already in UTC, other times are in TAI
 	if (ndata + nrec > mrec) then
-		write (*,'("Error: Too many accumulated measurements:",i5)') ndata+nrec
+		call log_string ('Error: too many accumulated measurements', .true.)
 		cycle
 	endif
 
@@ -243,7 +241,7 @@ do
 	fdm = (l1b_version(:7) == 'SIR1FDM')
 	lrm = (l1b_version(:7) == 'SIR1LRM')
 	if (.not.sar .and. .not.fdm .and. .not.lrm) then
-		write (*,550) 'Error: Unrecognised format'
+		call log_string ('Error: unrecognised file format', .true.)
 		cycle
 	endif
 
@@ -646,11 +644,8 @@ do i = 1,nvar
 enddo
 
 ! Close the data file
-write (*,552) ndata,trim(P%filename(len_trim(S%dataroot)+2:))
+call log_records (ndata, P)
 call rads_close_pass (S, P)
-
-! Formats
-552 format ('...',i5,' records written to ',a)
 
 end subroutine put_rads
 

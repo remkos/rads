@@ -77,12 +77,13 @@ do i = 1,nvar
 	var(i)%empty = all(isnan_(var(i)%d(1:nrec)))
 enddo
 if (any(var(1:nvar)%empty)) then
-	call print_log (' No', advance=.false.)
+	write (rads_log_unit,551,advance='no') 'No'
 	do i = 1,nvar
-		if (var(i)%empty) call print_log (trim(var(i)%v%name), advance=.false.)
+		if (var(i)%empty) write (rads_log_unit,551,advance='no') trim(var(i)%v%name)
 	enddo
-	call print_log (' ...', advance=.false.)
+	write (rads_log_unit,551,advance='no') '... '
 endif
+551 format (1x,a)
 
 ! Open output file
 call rads_create_pass (S, P, nrec)
@@ -98,8 +99,7 @@ do i = 1,nvar
 enddo
 
 ! Close the data file
-call print_log (count=nrec, advance=.false.)
-call print_log (' records written to ' // trim(P%filename(len_trim(S%dataroot)+2:)))
+call log_records (nrec, P)
 call rads_close_pass (S, P)
 
 end subroutine put_rads

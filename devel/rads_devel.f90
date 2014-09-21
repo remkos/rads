@@ -20,30 +20,6 @@ use rads
 use rads_time
 use rads_misc
 
-!*print_log -- Print certain output to log (standard out)
-!+
-! subroutine print_log (S, P, string, count, advance)
-! subroutine print_log (string, count, advance)
-! type(rads_sat), optional :: S
-! type(rads_pass), optional :: P
-! character(len=*), intent(in), optional :: string
-! integer(fourbyteint), intent(in), optional :: count
-! logical, intent(in), optional :: advance
-!
-! This routine prints to standard output one of many versions of strings
-! depending on the availability of the optional variables.
-!
-! Argument:
-!   string : string to be printed
-!   count  : number to be printed
-!   advance: advance to next line (default = true)
-!-----------------------------------------------------------------------
-private :: print_log_1, print_log_2
-interface print_log
-	module procedure print_log_1
-	module procedure print_log_2
-end interface print_log
-
 contains
 
 !*erspass - Determine orbit nr, phase, cycle nr and pass nr for ERS-1/2
@@ -185,69 +161,69 @@ endif
 '                            or --sec= for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)')
 end subroutine synopsis_devel
 
-!*print_log -- Print certain output to log (standard out)
+!*log_string -- Print string to log output
 !+
-subroutine print_log_1 (S, P, advance)
-type(rads_sat) :: S
-type(rads_pass) :: P
+subroutine log_string (string, advance)
+character(len=*), intent(in) :: string
 logical, intent(in), optional :: advance
 !
-! This routine prints to standard output one of many versions of strings
-! depending on the availability of the optional variables.
+! This routine prints to the log output (rads_log_unit) a trimmed string
+! followed by ' ... ' or by a carriage return if <advance> is true.
 !
 ! Argument:
 !   string : string to be printed
-!   count  : number to be printed
-!   advance: advance to next line (default = true)
+!   advance: (optional) add carriage return if .true. (default is .false.)
 !-----------------------------------------------------------------------
-character(len=4) :: adv
-
-554 format (a, ' ...')
-555 format (i5, ' records changed')
-
-if (present(advance) .and. .not.advance) then
-	adv = 'no'
+550 format (a)
+552 format (a, ' ... ')
+if (present(advance) .and. advance) then
+	write (rads_log_unit,550) trim(string)
 else
-	adv = 'yes'
+	write (rads_log_unit,552,advance='no') trim(string)
 endif
-if (adv == 'no') then
-	write (*,554,advance=adv) trim(P%filename(len_trim(S%dataroot)+2:))
-else
-	write (*,555) P%ndata
-endif
-end subroutine print_log_1
+end subroutine log_string
 
-subroutine print_log_2 (string, count, advance)
-character(len=*), intent(in), optional :: string
-integer(fourbyteint), intent(in), optional :: count
+!*log_pass -- Print filename of pass to log output
+!+
+subroutine log_pass (P, advance)
+type(rads_pass), intent(in) :: P
 logical, intent(in), optional :: advance
 !
-! This routine prints to standard output one of many versions of strings
-! depending on the availability of the optional variables.
+! This routine prints to the log output (rads_log_unit) the name of the
+! pass file, followed by ' ... ' by a carriage return if <advance> is true.
 !
 ! Argument:
-!   string : string to be printed
-!   count  : number to be printed
-!   advance: advance to next line (default = true)
+!   P      : pass structure
+!   advance: (optional) add carriage return if .true. (default is .false.)
 !-----------------------------------------------------------------------
-character(len=4) :: adv
+call log_string (P%filename(len_trim(P%S%dataroot)+2:), advance)
+end subroutine log_pass
 
-551 format (a,i5)
-552 format (a)
-553 format (i5)
+!*log_records -- Print string to log output
+!+
+subroutine log_records (count, P)
+integer(fourbyteint), intent(in) :: count
+type(rads_pass), intent(in), optional :: P
+!
+! This routine prints to the log output (rads_log_unit) one of two
+! strings, depending on whether <P> is supplied.
+! Without <P>: xxxx records changed
+! With <P>   : xxxx records written to <pass_file_name>
+! The <pass_file_name> is trimmed and the output is followed by a
+! carriage return.
+!
+! Argument:
+!   count  : number to be printed
+!   string : string to be printed (optional)
+!-----------------------------------------------------------------------
+551 format (i4,' records written to ',a)
+553 format (i4,' records changed')
 
-if (present(advance) .and. .not.advance) then
-	adv = 'no'
+if (present(P)) then
+	write (rads_log_unit,551) count, trim(P%filename(len_trim(P%S%dataroot)+2:))
 else
-	adv = 'yes'
+	write (rads_log_unit,553) count
 endif
-if (present(string) .and. present(count)) then
-	write (*,551,advance=adv) string, count
-else if (present(string)) then
-	write (*,552,advance=adv) string
-else if (present(count)) then
-	write (*,553,advance=adv) count
-endif
-end subroutine print_log_2
+end subroutine log_records
 
 end module rads_devel

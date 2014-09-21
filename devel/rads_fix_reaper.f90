@@ -38,8 +38,6 @@
 !-----------------------------------------------------------------------
 program rads_fix_reaper
 
-use rads
-use rads_misc
 use rads_devel
 
 ! Data variables
@@ -134,12 +132,7 @@ real(eightbytereal) :: time(n), range_ku(n), drange_uso(n), got47(n), fes04(n), 
 integer :: n_changed, i
 character(len=5) :: l2_version
 
-! Formats
-
-551 format (a,' ...',$)
-552 format (i5,' records changed')
-
-write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
+call log_pass (P)
 
 n_changed = 0
 l2_version = P%original(10:14)
@@ -225,7 +218,7 @@ endif
 ! If nothing changed, stop here
 
 if (n_changed == 0) then
-	write (*,552) 0
+	call log_records (0)
 	return
 endif
 
@@ -243,7 +236,7 @@ if (ltbias) then
 endif
 if (lwet) call rads_put_var (S, P, 'wet_tropo_rad', wet)
 
-write (*,552) n_changed
+call log_records (n_changed)
 
 end subroutine process_pass
 

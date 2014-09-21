@@ -135,17 +135,19 @@ call rads_init (S, sat, verbose)
 do
 	read (*,'(a)',iostat=ios) infile
 	if (ios /= 0) exit
-	call print_log (trim(infile) // ' ...', advance=.false.)
 
+! Open input file
+
+	call log_string (infile)
 	if (nf90_open(infile,nf90_nowrite,ncid) /= nf90_noerr) then
-		call print_log ('error opening file')
+		call log_string ('Error: failed to open input file', .true.)
 		cycle
 	endif
 
 ! Check if input is GDR-C
 
 	if (index(infile,'_2Pc') <= 0) then
-		call print_log ('Error: this is not GDR-C')
+		call log_string ('Error: this is not GDR-C', .true.)
 		cycle
 	endif
 
@@ -156,12 +158,12 @@ do
 	if (nrec == 0) then
 		cycle
 	else if (nrec > mrec) then
-		call print_log ('Error: Too many measurements:', nrec)
+		call log_string ('Error: too many measurements', .true.)
 		cycle
 	endif
 	call nfs(nf90_get_att(ncid,nf90_global,'mission_name',arg))
 	if (arg /= 'Jason-1') then
-		call print_log ('Error: Wrong misson-name found in header')
+		call log_string ('Error: wrong misson-name found in header', .true.)
 		cycle
 	endif
 
@@ -175,7 +177,7 @@ do
 
 	if (equator_time < t0 .or. equator_time > t1 .or. cyclenr < c0 .or. cyclenr > c1) then
 		call nfs(nf90_close(ncid))
-		call print_log ('Skipped')
+		call log_string ('Skipped', .true.)
 		cycle
 	endif
 
@@ -183,7 +185,7 @@ do
 
 	if (equator_time < t0 .or. equator_time > t1 .or. cyclenr < c0 .or. cyclenr > c1) then
 		call nfs(nf90_close(ncid))
-		call print_log ('Skipped')
+		call log_string ('Skipped', .true.)
 		cycle
 	endif
 
