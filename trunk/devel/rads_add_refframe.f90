@@ -115,12 +115,7 @@ real(eightbytereal) :: lon(n), lat(n), cor(n)
 real(eightbytereal), parameter :: rad=atan(1d0)/45d0
 integer(fourbyteint) :: i
 
-! Formats
-
-551 format (a,' ...',$)
-552 format (i5,' records changed')
-
-write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
+call log_pass (P)
 
 ! Get lat, lon
 
@@ -150,7 +145,7 @@ if (S%sat == 'j2') call rads_def_var (S, P, 'ref_frame_offset_mle3')
 call rads_put_var (S, P, var, cor)
 if (S%sat == 'j2') call rads_put_var (S, P, 'ref_frame_offset_mle3', cor+28.5d-3)
 
-write (*,552) n
+call log_records (n)
 end subroutine process_pass
 
 !-----------------------------------------------------------------------

@@ -139,12 +139,7 @@ integer(fourbyteint) :: t1, t2
 real(eightbytereal) :: wx, wy, wt, f(2,2,2)
 real(eightbytereal), parameter :: dz=1d-2
 
-! Formats
-
-551 format (a,' ...',$)
-552 format (i5,' records changed')
-
-write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
+call log_pass (P)
 
 ! Get time and location
 
@@ -176,16 +171,16 @@ do i = 1,n
 
 	if (t1 /= t1old) then
 		if (get_sst(t1,grids(:,:,1,:)) /= 0) then
-			write (*,551,advance='no') 'Warning: No SST for current time.'
-			write (*,552) 0
+			call log_string ('Warning: no SST for current time')
+			call log_records (0)
 			return
 		endif
 		t1old = t1
 	endif
 	if (t2 /= t2old) then
 		if (get_sst(t2,grids(:,:,2,:)) /= 0) then
-			write (*,551,advance='no') 'Warning: No SST for current time.'
-			write (*,552) 0
+			call log_string ('Warning: no SST for current time')
+			call log_records (0)
 			return
 		endif
 		t2old = t2
@@ -243,7 +238,7 @@ if (update) then
 		if (nint(tmp(i)/dz) /= nint(sst(i))) exit
 	enddo
 	if (i > n) then	! No changes
-		write (*,552) 0
+		call log_records (0)
 		return
 	endif
 endif
@@ -260,7 +255,7 @@ if (lice)  call rads_put_var (S, P, 'seaice_conc', ice)
 if (lsst)  call rads_put_var (S, P, 'sst', sst*dz)
 if (lmean) call rads_put_var (S, P, 'sst_mean', meansst)
 
-write (*,552) n
+call log_records (n)
 end subroutine process_pass
 
 !-----------------------------------------------------------------------

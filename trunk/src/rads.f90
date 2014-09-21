@@ -152,8 +152,7 @@ type :: rads_pass
 	integer(fourbyteint) :: first_meas, last_meas    ! Measurement index of first and last point in region
 	integer(fourbyteint) :: time_dims                ! Dimensions of time/lat/lon stored
 	integer(fourbyteint) :: trkid                    ! Numerical track identifiers
-	character(len=2) :: sat                          ! 2-Letter satellite abbreviation
-	integer(twobyteint) :: satid                     ! Numerical satellite identifier
+	type (rads_sat), pointer :: S                    ! Pointer to satellite/mission structure
 	type (rads_pass), pointer :: next                ! Pointer to next pass in linked list
 endtype
 
@@ -677,7 +676,7 @@ end subroutine rads_free_sat_struct
 !*rads_init_pass_struct -- Initialize empty rads_pass struct
 !+
 subroutine rads_init_pass_struct (S, P)
-type(rads_sat), intent(in) :: S
+type(rads_sat), target, intent(in) :: S
 type(rads_pass), intent(inout) :: P
 !
 ! This routine initializes the <P> struct with the bare minimum.
@@ -690,7 +689,8 @@ type(rads_pass), intent(inout) :: P
 ! gfortran 4.4.1 segfaults on the next line if this routine is made pure or elemental,
 ! so please leave it as a normal routine.
 P = rads_pass ('', '', null(), nan, nan, nan, nan, null(), null(), .false., 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &
-	S%sat, S%satid, null())
+	null(), null())
+P%S => S
 end subroutine rads_init_pass_struct
 
 !***********************************************************************

@@ -120,12 +120,7 @@ real(eightbytereal) :: time(n), lat(n), lon(n), cor(n), tmp(n)
 real(eightbytereal) :: f1, f2, f(2,2), z1, z2, x, y
 logical :: err
 
-! Formats
-
-551 format (a,' ...',$)
-552 format (i5,' records changed')
-
-write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
+call log_pass (P)
 
 ! Get time and location
 
@@ -153,8 +148,8 @@ do i = 1,n
 			err = get_mog2d(hex,grids(:,:,1)) .or. get_mog2d(hex+1,grids(:,:,2))
 		endif
 		if (err) then
-			write (*,551,advance='no') 'Warning: No MOG2D field for current time.'
-			write (*,552) 0
+			call log_string ('Warning: No MOG2D field for current time')
+			call log_records (0)
 			stop
 		endif
 		hexold = hex
@@ -196,7 +191,7 @@ if (update) then
 		if (nint(tmp(i)/dz) /= nint(cor(i)/dz)) exit
 	enddo
 	if (i > n) then	! No changes
-		write (*,552) 0
+		call log_records (0)
 		return
 	endif
 endif
@@ -207,7 +202,7 @@ call rads_put_history (S, P)
 call rads_def_var (S, P, var)
 call rads_put_var (S, P, var, cor)
 
-write (*,552) n
+call log_records (n)
 end subroutine process_pass
 
 !-----------------------------------------------------------------------

@@ -118,12 +118,7 @@ real(eightbytereal) :: time(n), lat(n), lon(n), tmp(n), ww3(n), z, w, x, y, &
 	f1, f2, f(2,2,2)
 integer(fourbyteint) :: i, ix, iy, it
 
-! Formats
-
-551 format (a,' ...',$)
-552 format (i5,' records changed')
-
-write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
+call log_pass (P)
 
 ! Get time and location
 
@@ -142,8 +137,8 @@ do i = 1,n
 	call mjd2ymd (mjd+46066, yy, mm, dd)
 	if (yy*100+mm /= yymm) then
 		if (get_ww3(mjd)) then
-			write (*,'(a,$)') 'No WW3 data for current time ...'
-			write (*,552) 0
+			call log_string ('Warning: no WW3 data for current time')
+			call log_records (0)
 			stop
 		endif
 		call ymd2mjd (yy, mm, 01, mjd)
@@ -165,8 +160,8 @@ do i = 1,n
 	it = int(f2)
 
 	if (it >= nt) then
-		write (*,'(a,$)') 'No WW3 data for current time ...'
-		write (*,552) 0
+		call log_string ('Warning: no WW3 data for current time')
+		call log_records (0)
 		stop
 	endif
 
@@ -223,7 +218,7 @@ if (update) then
 		if (nint(tmp(i)/dz) /= nint(ww3(i))) exit
 	enddo
 	if (i > n) then	! No changes
-		write (*,552) 0
+		call log_records (0)
 		return
 	endif
 endif
@@ -234,7 +229,7 @@ call rads_put_history (S, P)
 call rads_def_var (S, P, 'swh_ww3')
 call rads_put_var (S, P, 'swh_ww3', ww3*dz)
 
-write (*,552) n
+call log_records (n)
 end subroutine process_pass
 
 !-----------------------------------------------------------------------

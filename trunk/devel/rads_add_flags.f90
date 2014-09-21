@@ -41,10 +41,6 @@ integer(fourbyteint) :: cyc, pass, pass0, pass1, set, sel, ios, j
 integer(twobyteint) :: bit
 real(eightbytereal) :: val0, val1
 
-! Formats
-
-550 format (a)
-
 ! Initialise
 
 call synopsis ('--head')
@@ -66,10 +62,7 @@ enddo
 ! Open the data file
 
 open (10,file=filename, status='old', iostat=ios)
-if (ios /= 0) then
-	write (*,550) 'Error opening data file ' // trim(filename)
-	stop
-endif
+if (ios /= 0) call rads_exit ('Error opening data file ' // filename)
 
 ! Read the flags.dat file and execute data flagging if required
 
@@ -116,12 +109,7 @@ real(eightbytereal) :: val(n), flags(n)
 integer(fourbyteint) :: i, changed
 integer(twobyteint) :: flag
 
-! Formats
-
-551 format (a,' ...',$)
-552 format (i5,' records changed')
-
-write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
+call log_pass (P)
 
 ! Get lat, lon, flags, surface_type
 
@@ -147,14 +135,15 @@ enddo
 ! Store all data fields.
 
 if (changed == 0) then
-	write (*,552) 0
+	call log_records (0)
 	return
 endif
 
 call rads_put_history (S, P)
 call rads_def_var (S, P, 'flags')
 call rads_put_var (S, P, 'flags', flags)
-write (*,552) n
+
+call log_records (n)
 end subroutine process_pass
 
 end program rads_add_flags

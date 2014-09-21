@@ -152,18 +152,13 @@ integer(fourbyteint) :: i
 real(eightbytereal) :: time(n), lat(n), lon(n), h(n), surface_type(n), dry(n), wet(n), ib(n), air(n), &
 	f1, f2, g1, g2, slp, dslp, slp0
 
-! Formats
-
-551  format (a,' ...',$)
-552  format (i5,' records changed')
-
-write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
+call log_pass (P)
 
 ! If "new" option is used, write only when fields are not yet available
 
 if (new .and. nff(nf90_inq_varid(P%ncid,'dry_tropo_ecmwf',i)) .and. &
 	nff(nf90_inq_varid(P%ncid,'wet_tropo_ecmwf',i))) then
-	write (*,552) 0
+	call log_records (0)
 	return
 endif
 
@@ -267,7 +262,7 @@ enddo
 ! If no more fields are determined, abort.
 
 if (.not.(dry_on .or. ib_on .or. wet_on)) then
-	write (*,552) 0
+	call log_records (0)
 	stop
 endif
 
@@ -285,7 +280,7 @@ if (wet_on) call rads_put_var (S, P, 'wet_tropo_ecmwf', wet)
 if (ib_on ) call rads_put_var (S, P, 'inv_bar_static', ib)
 if (air_on) call rads_put_var (S, P, 'dry_tropo_airtide', air)
 
-write (*,552) n
+call log_records (n)
 end subroutine process_pass
 
 !-----------------------------------------------------------------------

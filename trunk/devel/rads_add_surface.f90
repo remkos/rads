@@ -41,11 +41,6 @@ type(grid) :: info
 character(rads_cmdl) :: filename
 integer(fourbyteint) :: cyc, pass
 
-! Formats
-
-550 format (a)
-551 format (a,' ... ',$)
-
 ! Initialise
 
 call synopsis ('--head')
@@ -54,9 +49,9 @@ call rads_init (S)
 ! Load the surface_type grid
 
 call parseenv ('${ALTIM}/data/landmask.nc', filename)
-write (*,551) 'Loading mask '//trim(filename)
-if (grid_load (filename, info) /= 0) call rads_exit ('Error loading landmask.')
-write (*,550) 'done'
+call log_string ('Loading mask '//filename)
+if (grid_load (filename, info) /= 0) call rads_exit ('Error loading landmask')
+call log_string ('done', .true.)
 
 ! Process all data files
 
@@ -97,12 +92,7 @@ integer(fourbyteint), intent(in) :: n
 real(eightbytereal) :: lon(n), lat(n), flags(n), surface_type(n)
 integer(fourbyteint) :: flag, surf, i
 
-! Formats
-
-551 format (a,' ...',$)
-552 format (i5,' records changed')
-
-write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
+call log_pass (P)
 
 ! Get lat, lon, flags, surface_type
 
@@ -161,7 +151,7 @@ call rads_def_var (S, P, 'surface_type')
 call rads_put_var (S, P, 'flags', flags)
 call rads_put_var (S, P, 'surface_type', surface_type)
 
-write (*,552) n
+call log_records (n)
 end subroutine process_pass
 
 end program rads_add_surface

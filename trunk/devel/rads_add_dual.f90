@@ -209,12 +209,7 @@ end subroutine process_cycle
 subroutine write_pass (n)
 integer(fourbyteint), intent(in) :: n
 
-! Formats
-
-551 format (a,' ...',$)
-552 format (i5,' records changed')
-
-write (*,551) trim(P%filename(len_trim(S%dataroot)+2:))
+call log_pass (P)
 
 ! Update history
 
@@ -226,7 +221,7 @@ call rads_put_history (S, P)
 call rads_def_var (S, P, 'iono_alt_smooth' // mle)
 call rads_put_var (S, P, 'iono_alt_smooth' // mle , iono2(ntot+1:ntot+n))
 ntot = ntot+n
-write (*,552) n
+call log_records (n)
 end subroutine write_pass
 
 end program rads_add_dual
