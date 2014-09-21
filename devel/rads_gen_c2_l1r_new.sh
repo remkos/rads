@@ -26,7 +26,7 @@
 
 . rads_sandbox.sh
 
-rads_open_sandbox c2 a
+rads_open_sandbox c2
 
 mrk=$SANDBOX/bookmark
 

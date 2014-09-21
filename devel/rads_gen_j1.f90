@@ -19,14 +19,15 @@
 !+
 program rads_gen_j1
 
-! This program reads Jason-1 (O/I)GDR files and converts them to the RADS format,
+! This program reads Jason-1 (I)GDR files and converts them to the RADS format,
 ! written into files $RADSDATAROOT/data/j1/a/j1pPPPPcCCC.nc.
 !  PPPP = relative pass number
 !   CCC = cycle number
 !
 ! syntax: rads_gen_j1 [options] < list_of_JASON1_file_names
 !
-! This program handles only GDR files in netCDF format, version C (also known as GDR-C).
+! This program handles Jason-1 IGDR and GDR files in netCDF format,
+! version C (also known as GDR-C).
 ! The format is described in:
 !
 ! [1] IGDR and GDR Jason Products, AVISO and PODAAC User Handbook,

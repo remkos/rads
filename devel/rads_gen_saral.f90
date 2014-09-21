@@ -26,7 +26,7 @@ program rads_gen_saral
 !
 ! syntax: rads_gen_saral [options] < list_of_SARAL_file_names
 !
-! This program handles only OGDR, IGDR and GDR files in netCDF format.
+! This program handles SARAL OGDR, IGDR and GDR files in netCDF format.
 !-----------------------------------------------------------------------
 !
 ! Variables array fields to be filled are:

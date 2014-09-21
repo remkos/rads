@@ -14,11 +14,10 @@ rads_job=`basename $0 .sh`
 
 rads_open_sandbox () {
 rads_sat=$1
-rads_phase=$2
 SANDBOX=`mktemp -d ${TMPDIR:-/tmp}/rads.XXXXXX`
 ln -s $RADSDATAROOT/nml $RADSDATAROOT/conf $SANDBOX
 export RADSDATAROOT=$SANDBOX
-options=${options:-"-S$rads_sat/$rads_phase"}
+options=${options:-"-S$rads_sat"}
 log=$RADSDATAROOT/${rads_job}-`date -u +%Y%m%d-%H%M%S`.log
 lst=$RADSDATAROOT/${rads_job}-`date -u +%Y%m%d-%H%M%S`.lst
 }
@@ -31,5 +30,5 @@ rsync -aW --remove-source-files $* $SANDBOX/$rads_sat/ $RADSDATAROOT/$rads_sat/
 mv -f $log.gz $RADSDATAROOT/$rads_sat/log
 rm -rf $SANDBOX
 cd $RADSROOT/tables
-make $rads_sat$rads_phase web
+make $rads_sat web
 }
