@@ -69,7 +69,13 @@ program rads_gen_saral
 ! liquid_water - Liquid water content
 ! water_vapor_content - Water vapor content
 !-----------------------------------------------------------------------
+use rads
+use rads_misc
+use rads_netcdf
+use rads_time
+use rads_devel
 use rads_devel_netcdf
+use netcdf
 
 ! Command line arguments
 

@@ -32,6 +32,7 @@ program rads_add_dual
 
 use rads
 use rads_devel
+use rads_misc
 use meteo_subs
 
 ! Data variables

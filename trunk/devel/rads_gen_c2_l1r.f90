@@ -76,12 +76,12 @@
 !-----------------------------------------------------------------------
 program rads_gen_c2_l1r
 
-use netcdf
 use rads
-use rads_netcdf
-use rads_misc
-use rads_time
 use rads_devel
+use rads_misc
+use rads_netcdf
+use rads_time
+use netcdf
 
 ! Command line arguments
 

@@ -16,9 +16,8 @@
 !-----------------------------------------------------------------------
 
 module rads_devel_netcdf
-use netcdf
-use rads_devel
-use rads_netcdf
+use typesizes
+use rads, only: rads_sat, rads_pass, rads_var
 
 integer(fourbyteint), parameter :: mrec=3500, mvar=60
 integer(fourbyteint) :: nvar, nrec=0, ncid
@@ -41,6 +40,8 @@ contains
 !-----------------------------------------------------------------------
 
 subroutine cpy_var (varin, varout)
+use rads_devel
+use rads_netcdf
 character(len=*), intent(in) :: varin
 character(len=*), intent(in), optional :: varout
 call get_var (ncid, varin, a)
@@ -56,6 +57,7 @@ end subroutine cpy_var
 !-----------------------------------------------------------------------
 
 subroutine new_var (varnm, data)
+use rads
 ! Write variables one after the other to the output file
 character(len=*), intent(in) :: varnm
 real(eightbytereal), intent(in) :: data(:)
@@ -70,6 +72,9 @@ end subroutine new_var
 !-----------------------------------------------------------------------
 
 subroutine put_rads
+use rads
+use rads_misc
+use rads_devel
 integer(fourbyteint) :: i
 
 ! Check which variables are empty
@@ -113,6 +118,8 @@ end subroutine put_rads
 ! neq   : set bit when value /= val (optional)
 
 subroutine nc2f (varnm, bit, lim, val, neq)
+use rads_netcdf
+use netcdf
 character(*), intent(in) :: varnm
 integer(fourbyteint), intent(in) :: bit
 integer(fourbyteint), optional, intent(in) :: lim,val,neq

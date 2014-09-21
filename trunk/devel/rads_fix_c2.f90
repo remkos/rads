@@ -56,7 +56,9 @@
 !-----------------------------------------------------------------------
 program rads_fix_c2
 
+use rads
 use rads_devel
+use rads_misc
 
 ! Data variables
 

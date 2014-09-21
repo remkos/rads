@@ -39,7 +39,9 @@
 !-----------------------------------------------------------------------
 program rads_fix_j1
 
+use rads
 use rads_devel
+use rads_misc
 use meteo_subs
 
 ! Data variables
