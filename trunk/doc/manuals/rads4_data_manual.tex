@@ -668,7 +668,7 @@ Notes:
 \item For Geosat, GFO, ERS-1 and ERS-2, the wind speed is based on the Modified Chelton-Wentz (MCW) algorithm \citep{witter1991}. In case of GFO 0.63 dB was subtracted from the backscatter coefficient before feeding it into the MCW algorithm.\label{item:wind_speed_mcw}
 \item The CryoSat and Envisat wind speed is based on the ECMWF 1-parameter algorithm tailored to Envisat \citep{abdalla2007}. A special version of this is used for SARAL.\label{item:wind_speed_abdalla}
 \item The TOPEX/Poseidon wind speed is based on the 2-parameter model by \citet{gourrion2002b}.\label{item:wind_speed_topex}
-\item For Jason-1 and Jason-2, a variant of the 2-parameter model by \citet{gourrion2002b} tailored to Jason-1 is used to derive wind speed \citep{collard2004}.\label{item:wind_speed_jason}
+\item For Jason-1 and Jason-2, a variant of the 2-parameter model by \citet{gourrion2002b} tailored to Jason-1 is used to derive wind speed \citep{collard2005}.\label{item:wind_speed_jason}
 \item The U (towards east) and V (towards north) components of the wind speed according to ECMWF model data. The absolute magnitude can be computed on-the-fly.\label{item:wind_speed_ecmwf}
 \item The U (towards east) and V (towards north) components of the wind speed according to 0.5$\deg\times$0.5$\deg\times$6h model grids from NOAA's Global Forecast System. The absolute magnitude can be computed on-the-fly. \emph{The inclusion of these fields is experimental, and may be removed in the future.}\label{item:wind_speed_gfs}
 \end{enumerate}
@@ -726,7 +726,7 @@ Variable & field & name & values & sat \\
 \var{qual_dh}            & 2502 & bit 2: dH status & 1 = suspect & gs \\       
 \var{flag_rad_oper_mode} & 2502 & bit 2: TMP 21 GHz Channel status & 0 = A, 1 = B & pn tx \\
 \var{qual_iono_alt}      & 2503 & bit 3: quality of dual-frequency iono corr & 0 = ok, 1 = bad & j1 j2 n1 tx \\
-\var{surface_type}       & 2504 & surface type & 0 = open_ocean, 2 = enclosed_sea_or_lake, 3 = land, 4 = continental_ice & all \\
+\var{surface_type}       & 2504 & surface type & 0 = open ocean, 2 = enclosed sea or lake, 3 = land, 4 = continental ice & all \\
 \var{surface_type_rad}   & 2506 & bit 6: radiometer land flag & 0 = water, 1 = land & all but c2 gs \\
 \var{qual_alt_rain_ice}  & 2507 & bit 7: altimeter rain/ice flag & 0 = no rain/ice, 1 = rain/ice & all but c2 gs \\
 \var{qual_rad_rain_ice}  & 2508 & bit 8: radiometer rain/ice flag & 0 = no rain/ice, 1 = rain/ice & e1 e2 j1 j2 n1 pn tx \\
@@ -743,9 +743,9 @@ Variable & field & name & values & sat \\
                          &      & & 0 = nominal, 1 = coarse or acquisition & gs tx \\
                          &      & & 0 = nominal, 1 = C-band coarse & j1 \\
                          &      & & 0 = nominal, 1 = acquisition & pn \\
-\var{qual_orbit}         & 
-\var{flag_land}     & 2504 & bit 4: water/land flag & 0 = water, 1 = land & all \\
-\var{flag_ocean}    & 2505 & bit 5: ocean/non-ocean flag & 0 = ocean, 1 = non-ocean & all \\
+\var{qual_orbit}         & 2515 & bit 15: orbital quality flag & 0 = ok, 1 = suspect & all \\
+\var{flag_land}          & 2504 & bit 4: water/land flag & 0 = water, 1 = land & all \\
+\var{flag_ocean}         & 2505 & bit 5: ocean/non-ocean flag & 0 = ocean, 1 = non-ocean & all \\
 \hline
 \end{tabular}
 \end{sideways}
