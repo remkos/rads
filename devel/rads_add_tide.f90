@@ -44,6 +44,7 @@ type(gottideinfo) :: gotinfo(mgot)
 character(len=6), parameter :: nfes(mfes) = (/'fes04 ','fes12 '/)
 character(len=6), parameter :: ngot(mgot) = (/'got00 ','got47 ','got48 ','got49 ','got410'/)
 type(grid) :: sininfo, cosinfo
+type(fes) :: fesinfo1
 
 ! Command line arguments
 
@@ -53,7 +54,7 @@ logical :: do_ptide=.false., do_stide=.false., do_lptide=.false., do_annual=.fal
 
 ! Other variables
 
-integer(fourbyteint) :: j, i0, i1
+integer(fourbyteint) :: j, jdum, i0, i1
 
 ! Initialise
 
@@ -93,7 +94,9 @@ do
 		call festideinit('FES2004',.true.,fesinfo(1))
 	case ('fes12', 'fes2012')
 		do_fes(2) = .true.
-		call festideinit('FES2012',.false.,fesinfo(2)) ! Note: no load tide
+!		call festideinit('FES2012',.false.,fesinfo(2)) ! Note: no load tide
+                jdum = fes_init(fesinfo1,fes_tide,fes_mem,'FES2012/all')
+		fesinfo(j)%haveload=.false.
 	case ('got00')
 		do_got(1) = .true.
 		call gottideinit('GOT00.2',.true.,gotinfo(1))
@@ -250,12 +253,20 @@ endif
 
 do j = 1,mfes
 	if (do_fes(j)) then
-		call festide(fesinfo(j),time(1),lat(1),lon(1),otide_sp(1),otide_lp(1),ltide_sp(1),ltide_lp(1))
+		if (nfes(j) == 'fes04') then
+			call festide(fesinfo(j),time(1),lat(1),lon(1),otide_sp(1),otide_lp(1),ltide_sp(1),ltide_lp(1))
 !$omp parallel do shared(fesinfo,time,lat,lon,otide_sp,otide_lp,ltide_sp,ltide_lp,n) private(i)
-		do i = 2,n
-			call festide(fesinfo(j),time(i),lat(i),lon(i),otide_sp(i),otide_lp(i),ltide_sp(i),ltide_lp(i))
-		enddo
+			do i = 2,n
+				call festide(fesinfo(j),time(i),lat(i),lon(i),otide_sp(i),otide_lp(i),ltide_sp(i),ltide_lp(i))
+			enddo
 !$omp end parallel do
+		endif
+		if (nfes(j) == 'fes12') then
+			jdum = fes_eval(fesinfo1,time(1),lat(1),lon(1),otide_sp(1),otide_lp(1))
+			do i = 2,n
+				jdum = fes_eval(fesinfo1,time(i),lat(i),lon(i),otide_sp(i),otide_lp(i))
+	                enddo
+		endif
 		! FES2004 or FES2012: Remove equlibrium part from Mm,Mf,Mtm,MSqm
 		if (nfes(j) == 'fes04' .or. nfes(j) == 'fes12') otide_lp = otide_lp - lptide_mf
 		call rads_put_var (S, P, 'tide_ocean_'//nfes(j), otide_sp + otide_lp + lptide_eq)
