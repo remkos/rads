@@ -17,8 +17,8 @@
 
 !*rads_add_ib -- Add global inverse barometer correction to RADS data
 !+
-! This program adjusts the contents of RADS altimeter data files
-! with values of global inverse barometer correction.
+! This program adds the global inverse barometer correction field
+! to the contents of RADS altimeter data files
 !
 ! Note: The values for the global inverse barometer correction are
 ! based on tables of the mean global pressure over oceans based on
@@ -40,11 +40,9 @@ use rads_devel
 
 type(rads_sat) :: S
 type(rads_pass) :: P
-type(grid) :: info
 
 ! Command line arguments
 
-character(rads_cmdl) :: filename
 integer(fourbyteint) :: cyc, pass, type
 
 ! Initialise
@@ -61,13 +59,6 @@ else
 	type = 2
 endif
 
-! Load the surface_type grid
-
-call parseenv ('${ALTIM}/data/landmask.nc', filename)
-call log_string ('Loading mask '//filename)
-if (grid_load (filename, info) /= 0) call rads_exit ('Error loading landmask')
-call log_string ('done', .true.)
-
 ! Process all data files
 
 do cyc = S%cycles(1), S%cycles(2), S%cycles(3)
@@ -78,9 +69,9 @@ do cyc = S%cycles(1), S%cycles(2), S%cycles(3)
 	enddo
 enddo
 
-! Free the allocated grid
+! Cleanup
 
-call grid_free(info)
+call rads_end (S)
 
 contains
 
@@ -114,7 +105,7 @@ call rads_get_var (S, P, 'time', time, .true.)
 
 do i = 1,n
 
-! Get mean pressure at equator time
+! Get mean pressure at present time
 
 	call globpres (type, time(i), z(i))
 	if (z(i) == 1013.3d0) call globpres (6-type, time(i), z(i))
