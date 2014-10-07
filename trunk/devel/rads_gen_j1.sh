@@ -49,11 +49,11 @@ rads_add_dual    $options								>> $log 2>&1
 rads_add_ib      $options								>> $log 2>&1
 rads_add_ssb     $options --ssb=ssb_tran2012				>> $log 2>&1
 rads_add_orbit   $options -Valt_gdrd					>> $log 2>&1
-rads_add_orbit   $options -Valt_eig6					>> $log 2>&1
+rads_add_orbit   $options -Valt_eig6c					>> $log 2>&1
 rads_add_orbit   $options -Valt_gdrcp   -C1-255			>> $log 2>&1
 rads_add_orbit   $options -Valt_std1204	-C1-259			>> $log 2>&1
 rads_add_orbit   $options -Valt_gps     -C9-161			>> $log 2>&1
-rads_add_ww3_314 $options --all	-C1-406					>> $log 2>&1
+rads_add_ww3_314 $options --ww3	-C1-406					>> $log 2>&1
 rads_add_sla     $options           					>> $log 2>&1
 
 date													>> $log 2>&1
