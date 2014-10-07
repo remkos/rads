@@ -47,6 +47,7 @@ rads_add_iono    $options --all							>> $log 2>&1
 rads_add_common  $options								>> $log 2>&1
 rads_add_dual    $options								>> $log 2>&1
 rads_add_ib      $options								>> $log 2>&1
+rads_add_ssb     $options --ssb=ssb_tran2012				>> $log 2>&1
 rads_add_orbit   $options -Valt_gdrd					>> $log 2>&1
 rads_add_orbit   $options -Valt_eig6					>> $log 2>&1
 rads_add_orbit   $options -Valt_gdrcp   -C1-255			>> $log 2>&1
