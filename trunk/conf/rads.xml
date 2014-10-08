@@ -307,7 +307,7 @@ Global RADS configuration file
 <var name="alt_gps" field="416" sat="j1 j2">
 	<long_name>GPS orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
-	<source>JPL GPS orbits</source>
+	<source>JPL GPS orbits (jas1_gps/rlse11a and jas2_gps/rlse14a)</source>
 	<parameters>jpl_gps</parameters>
 	<units>m</units>
 	<data>alt_gps</data>
