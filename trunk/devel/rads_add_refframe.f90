@@ -135,7 +135,7 @@ endif
 
 ! If Jason-1 phase C, subtract 5 mm
 
-if (S%sat == 'j1' .and. S%phase%name == 'c') cor = cor - 5d0
+if (S%sat == 'j1' .and. S%phase%name == 'c') cor = cor + 5d0
 
 ! Store all data fields.
 
