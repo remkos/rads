@@ -101,7 +101,7 @@ write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
 ' --coef=C00,C10,C11,S11,C20 Set reference frame offset coefficients (mm)' / &
-'                            (default values come from rads.xml')
+'                            (default values come from rads.xml)')
 stop
 end subroutine synopsis
 
@@ -133,9 +133,9 @@ else
 	enddo
 endif
 
-! If Jason-1 phase C, subtract 5 mm
+! If Jason-1 phase C, add 5 mm
 
-if (S%sat == 'j1' .and. S%phase%name == 'c') cor = cor + 5d0
+if (S%sat == 'j1' .and. S%phase%name == 'c') cor = cor + 5d-3
 
 ! Store all data fields.
 
