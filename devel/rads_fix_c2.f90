@@ -80,7 +80,7 @@ logical :: ldrift = .false., lmeteo = .false., lrange = .false., lswh = .false.,
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options (' drift meteo range sig0 swh all')
+call rads_set_options (' drift meteo range sig0 swh all tbias')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
@@ -274,7 +274,7 @@ do i = 1,n
 	sig0(i) = sig0(i) + dsig0
 	if (P%n_hz > 0) sig0_20hz(:,i) = sig0_20hz(:,i) + dsig0
 
-! Before r725 all SAR times were late by 0.4 ms.
+! Until r739 all SAR times were late by 0.4 ms.
 ! Set the time tag bias here, and correct the time tags and altitudes below.
 ! The location is not corrected.
 
