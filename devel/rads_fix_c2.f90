@@ -75,7 +75,7 @@ real(eightbytereal) :: sig0_drift_lrm = 0.22d0 / 365.25d0 / 86400d0, sig0_bias_l
 integer(fourbyteint) :: i, cyc, pass
 integer(twobyteint) :: flag
 logical :: ldrift = .false., lmeteo = .false., lrange = .false., lswh = .false., &
-	lsig0=.false., cswh, cmeteo, ciono
+	lsig0 = .false., ltbias = .false.
 
 ! Scan command line for options
 
@@ -100,6 +100,8 @@ do i = 1,rads_nopt
 		lrange = .true.
 		lsig0 = .true.
 		lswh = .true.
+	case ('tbias') ! Temporary fix for SAR timing bias
+		ltbias = .true.
 	end select
 enddo
 
@@ -142,9 +144,10 @@ end subroutine synopsis
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
 real(eightbytereal) :: time(n), dry(n), wet(n), iono(n), sig0(n), swh(n), flagword(n), &
-	range(n), ib(n), time_20hz(20,n), alt_20hz(20,n), sig0_20hz(20,n), dsig0, x
+	range(n), ib(n), tbias(n), alt_rate(n), alt(n), time_20hz(20,n), alt_20hz(20,n), sig0_20hz(20,n), &
+	dsig0, x
 integer(fourbyteint) :: i
-logical :: lrm_l2, fdm_l2, old_version_a, version_a, sar
+logical :: lrm_l2, fdm_l2, old_version_a, version_a, sar, cswh, cmeteo, ciono, ctbias
 character(len=4) :: l1r_ver
 
 call log_pass (P)
@@ -174,11 +177,7 @@ call rads_get_var (S, P, 'iono_gim', iono, .true.)
 call rads_get_var (S, P, 'swh_ku', swh, .true.)
 call rads_get_var (S, P, 'sig0_ku', sig0, .true.)
 call rads_get_var (S, P, 'flags', flagword, .true.)
-if (P%n_hz > 0) then
-	call rads_get_var (S, P, 'time_20hz', time_20hz, .true.)
-	call rads_get_var (S, P, 'alt_cnes_20hz', alt_20hz, .true.)
-	call rads_get_var (S, P, 'sig0_20hz_ku', sig0_20hz, .true.)
-endif
+if (P%n_hz > 0) call rads_get_var (S, P, 'sig0_20hz_ku', sig0_20hz, .true.)
 
 ! Process data records
 
@@ -274,7 +273,36 @@ do i = 1,n
 
 	sig0(i) = sig0(i) + dsig0
 	if (P%n_hz > 0) sig0_20hz(:,i) = sig0_20hz(:,i) + dsig0
+
+! Before r725 all SAR times were late by 0.4 ms.
+! Set the time tag bias here, and correct the time tags and altitudes below.
+! The location is not corrected.
+
+	if (ltbias .and. sar) then
+		tbias(i) = -0.4d-3
+	else
+		tbias(i) = 0d0
+	endif
 enddo
+
+! Now correct time[_20hz] and alt_cnes[_20hz]
+
+ctbias = ltbias .and. any(tbias /= 0d0)
+if (ctbias) then
+	call rads_get_var (S, P, 'alt_rate', alt_rate, .true.)
+	call rads_get_var (S, P, 'alt_cnes', alt, .true.)
+	time = time + tbias
+	alt_rate = alt_rate * tbias
+	alt = alt + alt_rate
+	if (P%n_hz > 0) then
+		call rads_get_var (S, P, 'time_20hz', time_20hz, .true.)
+		call rads_get_var (S, P, 'alt_cnes_20hz', alt_20hz, .true.)
+		do i = 1,n
+			time_20hz(:,i) = time_20hz(:,i) + tbias(i)
+			alt_20hz(:,i) = alt_20hz(:,i) + alt_rate(i)
+		enddo
+	endif
+endif
 
 ! Prior to Cycle 5 pass 333 all iono is bogus
 
@@ -285,7 +313,7 @@ endif
 
 ! If nothing changed, stop here
 
-if (.not.(lrange .or. cmeteo .or. ciono .or. cswh .or. lsig0)) then
+if (.not.(lrange .or. cmeteo .or. ciono .or. cswh .or. lsig0 .or. ctbias)) then
 	call log_records (0)
 	return
 endif
@@ -310,6 +338,14 @@ if (cswh) call rads_put_var (S, P, 'swh_ku', swh)
 if (lsig0 .or. ldrift) then
 	call rads_put_var (S, P, 'sig0_ku', sig0)
 	if (P%n_hz > 0) call rads_put_var (S, P, 'sig0_20hz_ku', sig0_20hz)
+endif
+if (ctbias) then
+	call rads_put_var (S, P, 'time', time)
+	call rads_put_var (S, P, 'alt_cnes', alt)
+	if (P%n_hz > 0) then
+		call rads_put_var (S, P, 'time_20hz', time_20hz)
+		call rads_put_var (S, P, 'alt_20hz', alt_20hz)
+	endif
 endif
 
 call log_records (n)
