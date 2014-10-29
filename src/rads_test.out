@@ -58,100 +58,106 @@
           49 tide_ocean_got47                        tide_ocean_got47                           1217     -1  -5.0000000000000000        5.0000000000000000     
           50 tide_ocean_got48                        tide_ocean_got48                           1219     -1  -5.0000000000000000        5.0000000000000000     
           51 tide_ocean_got49                        tide_ocean_got49                           1221     -1  -5.0000000000000000        5.0000000000000000     
-          52 tide_ocean                              tide_ocean_got48                             12     -1  -5.0000000000000000        5.0000000000000000     
-          53 tide_load_fes04                         tide_load_fes04                            1313     -1 -0.50000000000000000       0.50000000000000000     
-          54 tide_load_got47                         tide_load_got47                            1317     -1 -0.50000000000000000       0.50000000000000000     
-          55 tide_load_got48                         tide_load_got48                            1319     -1 -0.50000000000000000       0.50000000000000000     
-          56 tide_load_got49                         tide_load_got49                            1321     -1 -0.50000000000000000       0.50000000000000000     
-          57 tide_load                               tide_load_got48                              13     -1 -0.50000000000000000       0.50000000000000000     
-          58 tide_pole                               tide_pole                                  1401     14 -0.10000000000000001       0.10000000000000001     
-          59 ssb_bm3                                 ssb_bm3                                    1501     -1  -1.0000000000000000        1.0000000000000000     
-          60 ssb                                     ssb_bm3                                      15     -1  -1.0000000000000000        1.0000000000000000     
-          61 mss_cls01                               mss_cls01                                  1605     -1                       NaN                       NaN
-          62 geoid_egm2008                           geoid_egm2008                              1610     -1                       NaN                       NaN
-          63 geoid                                   geoid_egm2008                                -1     -1                       NaN                       NaN
-          64 mss_egm2008                             mss_egm2008                                1611     -1                       NaN                       NaN
-          65 mss_dnsc08                              mss_dnsc08                                 1612     -1                       NaN                       NaN
-          66 mss_ucl04                               mss_ucl04                                  1613     -1                       NaN                       NaN
-          67 mss_dtu10                               mss_dtu10                                  1614     -1                       NaN                       NaN
-          68 mss_cnescls11                           mss_cnescls11                              1615     -1                       NaN                       NaN
-          69 mss                                     mss_dtu10                                    16     -1                       NaN                       NaN
-          70 swh_ku                                  swh_ku                                     1701     -1   0.0000000000000000        8.0000000000000000     
-          71 swh                                     swh_ku                                       17     -1   0.0000000000000000        8.0000000000000000     
-          72 sig0_ku                                 sig0_ku                                    1801     -1   6.0000000000000000        27.000000000000000     
-          73 sig0                                    sig0_ku                                      18     -1   6.0000000000000000        27.000000000000000     
-          74 wind_speed_alt                          wind_speed_alt                             1901     -1  -1.0000000000000000        30.000000000000000     
-          75 wind_speed_ecmwf_u                      wind_speed_ecmwf_u                         1903     -1  -30.000000000000000        30.000000000000000     
-          76 wind_speed_ecmwf_v                      wind_speed_ecmwf_v                         1904     -1  -30.000000000000000        30.000000000000000     
-          77 wind_speed_ecmwf                        wind_speed_ecmwf                             -1     -1   0.0000000000000000        30.000000000000000     
-          78 wind_speed                              wind_speed_alt                               19     -1  -1.0000000000000000        30.000000000000000     
-          79 range_rms_norm                          range_rms_norm                             2001     -1   0.0000000000000000       0.40000000000000002     
-          80 range_rms_ku                            range_rms_ku                               2002     -1   0.0000000000000000       0.40000000000000002     
-          81 range_rms                               range_rms_ku                                 20     -1   0.0000000000000000       0.40000000000000002     
-          82 range_numval_ku                         range_numval_ku                            2101     -1   16.500000000000000        20.500000000000000     
-          83 range_numval                            range_numval_ku                              21     -1   16.500000000000000        20.500000000000000     
-          84 topo_dnsc08                             topo_dnsc08                                2203     -1                       NaN                       NaN
-          85 topo_dtu10                              topo_dtu10                                 2205     -1                       NaN                       NaN
-          86 topo_macess                             topo_macess                                2206     -1                       NaN                       NaN
-          87 topo                                    topo_dtu10                                   22     -1                       NaN                       NaN
-          88 tb_238                                  tb_238                                     2302     -1                       NaN                       NaN
-          89 tb2                                     tb_238                                       23     -1                       NaN                       NaN
-          90 tb_365                                  tb_365                                     2303     -1                       NaN                       NaN
-          91 tb3                                     tb_365                                       -1     -1                       NaN                       NaN
-          92 peakiness_ku                            peakiness_ku                               2401     -1                       NaN                       NaN
-          93 peakiness                               peakiness_ku                                 24     -1                       NaN                       NaN
-          94 flag_alt_oper_mode                      flag_alt_oper_mode                         2516     -1                       NaN                       NaN
-          95 qual_sptr                               qual_sptr                                  2516     -1                       NaN                       NaN
-          96 surface_type                            surface_type                               2504     -1   0.0000000000000000        1.0000000000000000     
-          97 surface_type_rad                        surface_type_rad                           2506     -1   0.0000000000000000        0.0000000000000000     
-          98 qual_rad_rain_ice                       qual_rad_rain_ice                          2508     -1   0.0000000000000000        0.0000000000000000     
-          99 qual_rad_tb                             qual_rad_tb                                2509     -1   3.0000000000000000        0.0000000000000000     
-         100 qual_range                              qual_range                                 2511     -1   0.0000000000000000        0.0000000000000000     
-         101 qual_swh                                qual_swh                                   2512     -1   0.0000000000000000        0.0000000000000000     
-         102 qual_sig0                               qual_sig0                                  2513     -1   0.0000000000000000        0.0000000000000000     
-         103 flag_alt_track_mode                     flag_alt_track_mode                        2514     -1   0.0000000000000000        0.0000000000000000     
-         104 qual_orbit                              qual_orbit                                 2515     25   0.0000000000000000        0.0000000000000000     
-         105 flags                                   flags                                      2601     26   65512.000000000000        0.0000000000000000     
-         106 drange_ku                               drange_ku                                  2701     -1                       NaN                       NaN
-         107 drange_cal                              drange_cal                                 2702     -1                       NaN                       NaN
-         108 drange_uso                              drange_uso                                 2703     -1                       NaN                       NaN
-         109 drange_fm                               drange_fm                                  2704     -1                       NaN                       NaN
-         110 drange_sptr                             drange_sptr                                2709     -1                       NaN                       NaN
-         111 drange                                  drange_ku                                    27     -1                       NaN                       NaN
-         112 swh_rms_norm                            swh_rms_norm                               2801     -1   0.0000000000000000        2.1000000000000001     
-         113 swh_rms_ku                              swh_rms_ku                                 2802     -1   0.0000000000000000        2.1000000000000001     
-         114 swh_rms                                 swh_rms_ku                                   28     -1   0.0000000000000000        2.1000000000000001     
-         115 sig0_rms_norm                           sig0_rms_norm                              2901     -1                       NaN                       NaN
-         116 sig0_rms_ku                             sig0_rms_ku                                2902     -1   0.0000000000000000        1.0000000000000000     
-         117 sig0_rms                                sig0_rms_ku                                  29     -1   0.0000000000000000        1.0000000000000000     
-         118 off_nadir_angle_wf_ku                   off_nadir_angle_wf_ku                      3001     -1                       NaN                       NaN
-         119 off_nadir_angle2_wf_ku                  off_nadir_angle2_wf_ku                     3002     -1                       NaN                       NaN
-         120 attitude                                off_nadir_angle2_wf_ku                       30     -1                       NaN                       NaN
-         121 dsig0_ku                                dsig0_ku                                   3201     -1                       NaN                       NaN
-         122 dsig0_atmos_ku                          dsig0_atmos_ku                             3203     -1                       NaN                       NaN
-         123 dsig0                                   dsig0_ku                                     32     -1                       NaN                       NaN
-         124 liquid_water_rad                        liquid_water_rad                           3301     33                       NaN                       NaN
-         125 water_vapor_rad                         water_vapor_rad                            3302     -1                       NaN                       NaN
-         126 mqe                                     mqe                                        3409     -1                       NaN                       NaN
-         127 basin                                   basin                                      3601     36                       NaN                       NaN
-         128 ref_frame_offset                        ref_frame_offset                           3801     38                       NaN                       NaN
-         129 tide_equil                              tide_equil                                 3901     39                       NaN                       NaN
-         130 tide_non_equil                          tide_non_equil                             3902     -1                       NaN                       NaN
-         131 tide_lunar_nodal                        tide_lunar_nodal                             -1     -1                       NaN                       NaN
-         132 dist_coast                              dist_coast                                 4501     45                       NaN                       NaN
-         133 seaice_class                            seaice_class                               4601     46                       NaN                       NaN
-         134 seaice_conc                             seaice_conc                                4701     47                       NaN                       NaN
-         135 sst                                     sst                                        4801     48                       NaN                       NaN
-         136 sst_mean                                sst_mean                                   4802     -1                       NaN                       NaN
-         137 dry_tropo_airtide                       dry_tropo_airtide                          4901     49                       NaN                       NaN
-         138 mss_annual                              mss_annual                                 5001     50                       NaN                       NaN
-         139 gia                                     gia                                        5101     51                       NaN                       NaN
-         140 first_meas_time                         first_meas_time                            9901     99                       NaN                       NaN
-         141 last_meas_time                          last_meas_time                             9902     -1                       NaN                       NaN
-         142 eqtime                                  eqtime                                     9903     -1                       NaN                       NaN
-         143 eqlon                                   eqlon                                      9904     -1                       NaN                       NaN
-         144 cycle                                   cycle                                      9905     -1                       NaN                       NaN
-         145 pass                                    pass                                       9906     -1                       NaN                       NaN
+          52 tide_ocean_got410                       tide_ocean_got410                          1222     -1  -5.0000000000000000        5.0000000000000000     
+          53 tide_ocean_fes12                        tide_ocean_fes12                           1223     -1  -5.0000000000000000        5.0000000000000000     
+          54 tide_ocean                              tide_ocean_got48                             12     -1  -5.0000000000000000        5.0000000000000000     
+          55 tide_load_fes04                         tide_load_fes04                            1313     -1 -0.50000000000000000       0.50000000000000000     
+          56 tide_load_got47                         tide_load_got47                            1317     -1 -0.50000000000000000       0.50000000000000000     
+          57 tide_load_got48                         tide_load_got48                            1319     -1 -0.50000000000000000       0.50000000000000000     
+          58 tide_load_got49                         tide_load_got49                            1321     -1 -0.50000000000000000       0.50000000000000000     
+          59 tide_load_got410                        tide_load_got410                           1322     -1 -0.50000000000000000       0.50000000000000000     
+          60 tide_load                               tide_load_got48                              13     -1 -0.50000000000000000       0.50000000000000000     
+          61 tide_pole                               tide_pole                                  1401     14 -0.10000000000000001       0.10000000000000001     
+          62 ssb_bm3                                 ssb_bm3                                    1501     -1  -1.0000000000000000        1.0000000000000000     
+          63 ssb                                     ssb_bm3                                      15     -1  -1.0000000000000000        1.0000000000000000     
+          64 mss_cls01                               mss_cls01                                  1605     -1                       NaN                       NaN
+          65 geoid_egm2008                           geoid_egm2008                              1610     -1                       NaN                       NaN
+          66 geoid                                   geoid_egm2008                                -1     -1                       NaN                       NaN
+          67 mss_egm2008                             mss_egm2008                                1611     -1                       NaN                       NaN
+          68 mss_dnsc08                              mss_dnsc08                                 1612     -1                       NaN                       NaN
+          69 mss_ucl04                               mss_ucl04                                  1613     -1                       NaN                       NaN
+          70 mss_dtu10                               mss_dtu10                                  1614     -1                       NaN                       NaN
+          71 mss_cnescls11                           mss_cnescls11                              1615     -1                       NaN                       NaN
+          72 mss_dtu13                               mss_dtu13                                  1616     -1                       NaN                       NaN
+          73 geoid_eigen6                            geoid_eigen6                               1617     -1                       NaN                       NaN
+          74 mss                                     mss_dtu10                                    16     -1                       NaN                       NaN
+          75 swh_ku                                  swh_ku                                     1701     -1   0.0000000000000000        8.0000000000000000     
+          76 swh                                     swh_ku                                       17     -1   0.0000000000000000        8.0000000000000000     
+          77 sig0_ku                                 sig0_ku                                    1801     -1   6.0000000000000000        27.000000000000000     
+          78 sig0                                    sig0_ku                                      18     -1   6.0000000000000000        27.000000000000000     
+          79 wind_speed_alt                          wind_speed_alt                             1901     -1  -1.0000000000000000        30.000000000000000     
+          80 wind_speed_ecmwf_u                      wind_speed_ecmwf_u                         1903     -1  -30.000000000000000        30.000000000000000     
+          81 wind_speed_ecmwf_v                      wind_speed_ecmwf_v                         1904     -1  -30.000000000000000        30.000000000000000     
+          82 wind_speed_ecmwf                        wind_speed_ecmwf                             -1     -1   0.0000000000000000        30.000000000000000     
+          83 wind_speed                              wind_speed_alt                               19     -1  -1.0000000000000000        30.000000000000000     
+          84 range_rms_norm                          range_rms_norm                             2001     -1   0.0000000000000000       0.40000000000000002     
+          85 range_rms_ku                            range_rms_ku                               2002     -1   0.0000000000000000       0.40000000000000002     
+          86 range_rms                               range_rms_ku                                 20     -1   0.0000000000000000       0.40000000000000002     
+          87 range_numval_ku                         range_numval_ku                            2101     -1   16.500000000000000        20.500000000000000     
+          88 range_numval                            range_numval_ku                              21     -1   16.500000000000000        20.500000000000000     
+          89 topo_dnsc08                             topo_dnsc08                                2203     -1                       NaN                       NaN
+          90 topo_srtm30plus                         topo_srtm30plus                            2204     -1                       NaN                       NaN
+          91 topo_dtu10                              topo_dtu10                                 2205     -1                       NaN                       NaN
+          92 topo_macess                             topo_macess                                2206     -1                       NaN                       NaN
+          93 topo                                    topo_dtu10                                   22     -1                       NaN                       NaN
+          94 tb_238                                  tb_238                                     2302     -1                       NaN                       NaN
+          95 tb2                                     tb_238                                       23     -1                       NaN                       NaN
+          96 tb_365                                  tb_365                                     2303     -1                       NaN                       NaN
+          97 tb3                                     tb_365                                       -1     -1                       NaN                       NaN
+          98 peakiness_ku                            peakiness_ku                               2401     -1                       NaN                       NaN
+          99 peakiness                               peakiness_ku                                 24     -1                       NaN                       NaN
+         100 flag_alt_oper_mode                      flag_alt_oper_mode                         2516     -1                       NaN                       NaN
+         101 qual_sptr                               qual_sptr                                  2516     -1                       NaN                       NaN
+         102 surface_type                            surface_type                               2504     -1   0.0000000000000000        1.0000000000000000     
+         103 surface_type_rad                        surface_type_rad                           2506     -1   0.0000000000000000        0.0000000000000000     
+         104 qual_rad_rain_ice                       qual_rad_rain_ice                          2508     -1   0.0000000000000000        0.0000000000000000     
+         105 qual_rad_tb                             qual_rad_tb                                2509     -1   3.0000000000000000        0.0000000000000000     
+         106 qual_range                              qual_range                                 2511     -1   0.0000000000000000        0.0000000000000000     
+         107 qual_swh                                qual_swh                                   2512     -1   0.0000000000000000        0.0000000000000000     
+         108 qual_sig0                               qual_sig0                                  2513     -1   0.0000000000000000        0.0000000000000000     
+         109 flag_alt_track_mode                     flag_alt_track_mode                        2514     -1   0.0000000000000000        0.0000000000000000     
+         110 qual_orbit                              qual_orbit                                 2515     25   0.0000000000000000        0.0000000000000000     
+         111 flags                                   flags                                      2601     26   65512.000000000000        0.0000000000000000     
+         112 drange_ku                               drange_ku                                  2701     -1                       NaN                       NaN
+         113 drange_cal                              drange_cal                                 2702     -1                       NaN                       NaN
+         114 drange_uso                              drange_uso                                 2703     -1                       NaN                       NaN
+         115 drange_fm                               drange_fm                                  2704     -1                       NaN                       NaN
+         116 drange_sptr                             drange_sptr                                2709     -1                       NaN                       NaN
+         117 drange                                  drange_ku                                    27     -1                       NaN                       NaN
+         118 swh_rms_norm                            swh_rms_norm                               2801     -1   0.0000000000000000        2.1000000000000001     
+         119 swh_rms_ku                              swh_rms_ku                                 2802     -1   0.0000000000000000        2.1000000000000001     
+         120 swh_rms                                 swh_rms_ku                                   28     -1   0.0000000000000000        2.1000000000000001     
+         121 sig0_rms_norm                           sig0_rms_norm                              2901     -1                       NaN                       NaN
+         122 sig0_rms_ku                             sig0_rms_ku                                2902     -1   0.0000000000000000        1.0000000000000000     
+         123 sig0_rms                                sig0_rms_ku                                  29     -1   0.0000000000000000        1.0000000000000000     
+         124 off_nadir_angle_wf_ku                   off_nadir_angle_wf_ku                      3001     -1                       NaN                       NaN
+         125 off_nadir_angle2_wf_ku                  off_nadir_angle2_wf_ku                     3002     -1                       NaN                       NaN
+         126 attitude                                off_nadir_angle2_wf_ku                       30     -1                       NaN                       NaN
+         127 dsig0_ku                                dsig0_ku                                   3201     -1                       NaN                       NaN
+         128 dsig0_atmos_ku                          dsig0_atmos_ku                             3203     -1                       NaN                       NaN
+         129 dsig0                                   dsig0_ku                                     32     -1                       NaN                       NaN
+         130 liquid_water_rad                        liquid_water_rad                           3301     33                       NaN                       NaN
+         131 water_vapor_rad                         water_vapor_rad                            3302     -1                       NaN                       NaN
+         132 mqe                                     mqe                                        3409     -1                       NaN                       NaN
+         133 basin                                   basin                                      3601     36                       NaN                       NaN
+         134 ref_frame_offset                        ref_frame_offset                           3801     38                       NaN                       NaN
+         135 tide_equil                              tide_equil                                 3901     39                       NaN                       NaN
+         136 tide_non_equil                          tide_non_equil                             3902     -1                       NaN                       NaN
+         137 tide_lunar_nodal                        tide_lunar_nodal                             -1     -1                       NaN                       NaN
+         138 dist_coast                              dist_coast                                 4501     45                       NaN                       NaN
+         139 seaice_class                            seaice_class                               4601     46                       NaN                       NaN
+         140 seaice_conc                             seaice_conc                                4701     47                       NaN                       NaN
+         141 sst                                     sst                                        4801     48                       NaN                       NaN
+         142 sst_mean                                sst_mean                                   4802     -1                       NaN                       NaN
+         143 dry_tropo_airtide                       dry_tropo_airtide                          4901     49                       NaN                       NaN
+         144 mss_annual                              mss_annual                                 5001     50                       NaN                       NaN
+         145 gia                                     gia                                        5101     51                       NaN                       NaN
+         146 first_meas_time                         first_meas_time                            9901     99                       NaN                       NaN
+         147 last_meas_time                          last_meas_time                             9902     -1                       NaN                       NaN
+         148 eqtime                                  eqtime                                     9903     -1                       NaN                       NaN
+         149 eqlon                                   eqlon                                      9904     -1                       NaN                       NaN
+         150 cycle                                   cycle                                      9905     -1                       NaN                       NaN
+         151 pass                                    pass                                       9906     -1                       NaN                       NaN
  Eqlonlim =   -99.092603426953190       -105.85137415828184        135.85137415828183        129.09260342695319     
  debug =           3
  Checking cycle/pass :           19           1
@@ -729,7 +735,7 @@ drange                                  data(1), data(ndata) =   0.409  0.409
  Start rads_end
 ######################################################################################################################################
 # Editing statistics for ERS-1 (e1)
-# Created: 2014-04-06 19:06:43 UTC: rads_test -vvv -Se1/a --ymd=19910924,19910925 -R-90/120/-50/30 -Vtime,lat,lon,sla,12_,tide_ocean_,flags_,pass,drange
+# Created: 2014-10-29 16:58:14 UTC: rads_test -vvv -Se1/a --ymd=19910924,19910925 -R-90/120/-50/30 -Vtime,lat,lon,sla,12_,tide_ocean_,flags_,pass,drange
 #
 # PASSES QUERIED                                           172
 #
@@ -775,4 +781,4 @@ drange                                  data(1), data(ndata) =   0.409  0.409
 # pass number []                                   0     16852         NaN         NaN       1.000      85.000      62.645      25.165
 ######################################################################################################################################
  End of program
-CLOCK, CPU =   0.1100   0.0644
+CLOCK, CPU =   0.0440   0.0435

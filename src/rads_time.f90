@@ -271,33 +271,48 @@ end function strf1985f_int4
 !***********************************************************************
 !*strp1985f -- Parse date string and convert it to seconds since 1985
 !+
-elemental function strp1985f (string)
+elemental function strp1985f (string, sep)
 use typesizes
 character(len=*), intent(in) :: string
+character(len=1), intent(in), optional :: sep
 real(eightbytereal) :: strp1985f
 !
 ! This routine reads a string of the form YYYY-MM-DDxHH:MM:SS.SSSSSS
-! or YYYYMMDDxHHMMSS.SSSSSS, where x is any character, and converts it
+! or YYYYMMDDxHHMMSS.SSSSSS, where x is any/some character, and converts it
 ! to a seconds since 1.0 Jan 1985. Fractional seconds can be included or
 ! the HH:MM:SS or HHMMSS part can be omitted entirely (to produce 00:00:00).
+! Also specifying only part of the time string is allowed, however the
+! date has to be complete.
+!
+! If <sep> is specified, then the character between the date and time
+! part of the string has to be the character specified by <sep>.
 !
 ! Arguments:
 !  string    : Character string of time
-!  sep       : If .false. then do not expect separators in date and time
+!  sep       : (Optional) Required separator between date and time
 !
 ! Return value:
 !  strp1985f : Seconds since 1.0 Jan 1985
 !-----------------------------------------------------------------------
 integer(fourbyteint) :: yy,mm,dd,hh,mn,ss,mjd,ios,l
 real(eightbytereal) :: fs
-hh = 0 ; mn = 0 ; ss = 0 ; fs = 0d0
+real(eightbytereal), parameter :: nan = transfer ((/not(0_fourbyteint),not(0_fourbyteint)/),0d0)
+! Set defaults
+hh = 0 ; mn = 0 ; ss = 0 ; fs = 0d0 ; strp1985f = nan
 l = len_trim(string)
-if (l == 8 .or. l == 15 .or. (l > 16 .and. string(16:16) == '.')) then ! No separators
-	read (string,'(i4,2i2,1x,3i2)',iostat=ios) yy,mm,dd,hh,mn,ss
-	if (l > 16) read (string(16:),*,iostat=ios) fs
-else ! With separators
+! There have to be at least eight characters
+if (l < 8) return
+! Do we use separators?
+if (string(5:5) == '-') then
+	if (l < 10) return
+	if (present(sep) .and. (l < 11 .or. string(11:11) /= sep)) return	! sep has to be there
 	read (string,'(i4,5(1x,i2))',iostat=ios) yy,mm,dd,hh,mn,ss
 	if (l > 20) read (string(20:),*,iostat=ios) fs
+else
+	if (l < 8) return
+	if (present(sep) .and. (l < 9 .or. string(9:9) /= sep)) return	! sep has to be there
+	read (string,'(i4,2i2,1x,3i2)',iostat=ios) yy,mm,dd,hh,mn,ss
+	if (l > 16) read (string(16:),*,iostat=ios) fs
 endif
 call ymd2mjd(yy,mm,dd,mjd)
 strp1985f = (mjd - 46066) * 86400d0 + hh * 3600d0 + mn * 60d0 + ss + fs

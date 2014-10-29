@@ -2317,9 +2317,15 @@ do
 
 	case ('limits') ! Do not use routine rads_set_limits here!
 		if (all(val == '')) info%limits = nan ! Reset limits to none if none given
-		read (val(:nval), *, iostat=ios) info%limits
-		! If we have an old-fashioned flagword, convert it to limits of single flags
-		if (var%name == 'flags') call rads_set_limits_by_flagmask (S, info%limits)
+		if (var%name == 'time') then
+			i = index(val(1),' ') ! Position of first space
+			info%limits(1) = strp1985f(val(1)(:i-1))
+			info%limits(2) = strp1985f(val(1)(i+1:))
+		else
+			read (val(:nval), *, iostat=ios) info%limits
+			! If we have an old-fashioned flagword, convert it to limits of single flags
+			if (var%name == 'flags') call rads_set_limits_by_flagmask (S, info%limits)
+		endif
 
 	case ('data')
 		call assign_or_append (info%dataname)
