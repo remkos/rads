@@ -488,11 +488,11 @@ character(len=*), intent(in) :: filenm
 integer(fourbyteint), intent(in) :: hex
 type(grid), intent(out) :: info
 logical :: get_grid
-character(len=rads_cmdl) :: fn
+character(len=rads_cmdl) :: fn, arg
 integer(fourbyteint) :: ncid,x_id,y_id,t_id,v_id,i,h1985,tmin,tmax,start(3)=1,l,strf1985
 real(eightbytereal) :: time(2)
 integer(fourbyteint) :: nx,ny,nt,hour
-integer(twobyteint), allocatable :: tmp(:,:)
+real(eightbytereal), allocatable :: tmp(:,:)
 
 600 format ('(',a,1x,i0,')')
 get_grid = .true.
@@ -555,7 +555,12 @@ endif
 
 ! Convert time range to hours since 1985
 
-h1985 = 17391432
+if (nft(nf90_get_att(ncid,t_id,'units',arg))) arg=''
+if (index(arg,'1800-01-01') > 0) then
+	h1985 = 1621680
+else
+	h1985 = 17391432
+endif
 tmin = nint(time(1)) - h1985
 tmax = nint(time(2)) - h1985
 
@@ -574,7 +579,7 @@ if (nft(nf90_get_att(ncid,v_id,'missing_value',info%znan))) info%znan = nan
 ! Determine other header values and allocate buffer
 
 if (info%ntype == 0) then
-	info%ntype = nf90_int2
+	info%ntype = nf90_double
 	info%nx = nx
 	info%dx = 360d0 / nx
 	info%xmin = 0d0
@@ -584,7 +589,7 @@ if (info%ntype == 0) then
 	info%ymin = -90d0
 	info%ymax = 90d0
 	info%nxwrap = nx
-	allocate (info%grid_int2(nx,ny))
+	allocate (info%grid_dble(nx,ny))
 endif
 
 ! Read only the required grid
@@ -595,7 +600,7 @@ if (nft(nf90_get_var(ncid,v_id,tmp,start))) call fin('Error reading data grid')
 
 ! Reverse the order of the latitudes
 
-info%grid_int2(:,1:ny) = tmp(:,ny:1:-1)
+info%grid_dble(:,1:ny) = tmp(:,ny:1:-1)
 deallocate (tmp)
 
 i = nf90_close(ncid)
