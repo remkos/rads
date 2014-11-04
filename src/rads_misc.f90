@@ -1092,11 +1092,10 @@ character(len=*), intent(in) :: string
 real(eightbytereal), intent(out) :: val(:)
 character(len=*), intent(in), optional :: translate
 character(len=len(string)) :: temp
-integer :: i,j
+integer :: i
 if (present(translate)) then
 	do i = 1,len(string)
-		j = index(translate, string(i:i))
-		if (j > 0) then
+		if (index(translate, string(i:i)) > 0) then
 			temp(i:i) = ','
 		else
 			temp(i:i) = string(i:i)

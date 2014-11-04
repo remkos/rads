@@ -164,9 +164,9 @@ endtype
 
 ! Some private variables to keep
 
-character(len=*), parameter, private :: default_short_optlist = 'S:X:vqV:C:P:A:F:R:L:Q:', &
+character(len=*), parameter, private :: default_short_optlist = 'S:X:vqV:C:P:A:F:R:L:Q:Z:', &
 	default_long_optlist = ' t: h: args: sat: xml: debug: log: quiet var: sel: cycle: pass: alias:' // &
-	' fmt: format: lat: lon: time: sla: limits: opt: mjd: sec: ymd: doy: quality_flag: region:'
+	' cmp: compress: fmt: format: lat: lon: time: sla: limits: opt: mjd: sec: ymd: doy: quality_flag: region:'
 character(len=rads_strl), save, private :: rads_optlist = default_short_optlist // default_long_optlist
 
 ! These options can be accessed by RADS programs
@@ -960,6 +960,8 @@ case ('A', 'alias')
 	endif
 case ('F', 'fmt', 'format')
 	call rads_set_format (S, opt%arg(:j-1), opt%arg(j+1:))
+case ('cmp', 'compress')
+	call rads_set_compress (S, opt%arg(:j-1), opt%arg(j+1:))
 case ('R', 'region')
 	call rads_set_region (S, opt%arg)
 case ('lat', 'lon', 'sla')
@@ -2296,24 +2298,10 @@ do
 		call assign_or_append (info%quality_flag)
 
 	case ('format')
-		info%format = val(1)(:rads_varl)
-		info%boz_format = (index('bozBOZ',info%format(:1)) > 0)
+		call rads_set_format (S, var%name, val(1))
 
 	case ('compress')
-		i = index(val(1), ' ')
-		select case (val(1)(:i-1))
-		case ('int1', 'byte')
-			info%nctype = nf90_int1
-		case ('int2', 'short')
-			info%nctype = nf90_int2
-		case ('int4', 'int')
-			info%nctype = nf90_int4
-		case ('real', 'real4', 'float')
-			info%nctype = nf90_real
-		case default
-			info%nctype = nf90_double
-		end select
-		read (val(1)(i+1:), *, iostat=ios) info%scale_factor, info%add_offset
+		call rads_set_compress (S, var%name, val(1))
 
 	case ('limits') ! Do not use routine rads_set_limits here!
 		if (all(val == '')) info%limits = nan ! Reset limits to none if none given
@@ -2883,7 +2871,7 @@ call rads_traxxing (S)
 end subroutine rads_set_region
 
 !***********************************************************************
-!*rads_set_format -- Set output format for given variable
+!*rads_set_format -- Set print format for ASCII output of given variable
 !+
 subroutine rads_set_format (S, varname, format)
 type(rads_sat), intent(inout) :: S
@@ -2906,6 +2894,62 @@ if (.not.associated(var)) return
 var%info%format = format
 var%info%boz_format = (index('bozBOZ',var%info%format(:1)) > 0)
 end subroutine rads_set_format
+
+!***********************************************************************
+!*rads_set_compress -- Set format for binary storage of given variable
+!+
+subroutine rads_set_compress (S, varname, format)
+use netcdf
+type(rads_sat), intent(inout) :: S
+character(len=*), intent(in) :: varname, format
+!
+! This routine set the format specification for binary storage of a
+! variable in RADS. The specification has the form: type[,scale[,offset]]
+! where
+! - 'type' is one of: int1, byte, int2, short, int4, int, real, real4,
+! dble, double
+! - 'scale' is the scale to revert the binary back to a float (optional)
+! - 'offset' is the offset to add to the result when unpacking (optional)
+! Instead of commas, spaces or slashes can be used as separators.
+!
+! Arguments:
+!  S        : Satellite/mission dependent structure
+!  varname  : Variable name
+!  format   : Binary storage specification (e.g. int2,1e-3)
+!
+! Error code:
+!  S%error  : rads_noerr, rads_err_var
+!-----------------------------------------------------------------------
+character(len=len(format)) :: temp
+integer :: i, ios
+type(rads_var), pointer :: var
+
+var => rads_varptr(S, varname)
+var%info%scale_factor = 1d0
+var%info%add_offset = 0d0
+
+do i = 1,len(format)
+	if (format(i:i) == ',' .or. format(i:i) == '/') then
+		temp(i:i) = ' '
+	else
+		temp(i:i) = format(i:i)
+	endif
+enddo
+i = index(temp, ' ')
+select case (temp(:i-1))
+case ('int1', 'byte')
+	var%info%nctype = nf90_int1
+case ('int2', 'short')
+	var%info%nctype = nf90_int2
+case ('int4', 'int')
+	var%info%nctype = nf90_int4
+case ('real', 'real4', 'float')
+	var%info%nctype = nf90_real
+case default
+	var%info%nctype = nf90_double
+end select
+read (temp(i+1:), *, iostat=ios) var%info%scale_factor, var%info%add_offset
+end subroutine rads_set_compress
 
 !***********************************************************************
 !*rads_set_quality_flag -- Set quality flag(s) for given variable
@@ -3256,37 +3300,40 @@ write (iunit, 1300) trim(progname)
 'Required argument is:'/ &
 '  -S, --sat=SAT[/PHASE]     Specify satellite [and phase] (e.g. e1/g, tx)'// &
 'Optional [rads_dataselectors] are:'/ &
-'  -V, --var=VAR1,...        Select variables to be read'/ &
+'  -A, --alias:VAR1=VAR2     Use variable VAR2 when VAR1 is requested'/ &
 '  -C, --cycle=C0[,C1[,DC]]  Specify first and last cycle and modulo'/ &
+'  -F, --fmt, --format:VAR=FMT'/ &
+'                            Specify the Fortran format used to print VAR (for ASCII output only)'/ &
+'  -L, --limits:VAR=MIN,MAX  Specify edit data range for variable VAR'/ &
+'  --lon=LON0,LON1           Specify longitude boundaries (deg)'/ &
+'  --lat=LAT0,LAT1           Specify latitude  boundaries (deg)'/ &
 '  -P, --pass=P0[,P1[,DP]]   Specify first and last pass and modulo; alternatively use -Pa (--pass=asc)'/ &
 '                            for ascending passes or -Pd (--pass=des) for descending passes' / &
+'  -Q, --quality_flag:VAR=FLAG'/&
+'                            Check variable FLAG when validating variable VAR'/ &
 '  -R, --region=LON0,LON1,LAT0,LAT1'/ &
 '                            Specify rectangular region (deg)'/ &
 '  -R, --region=LON0,LAT0,RADIUS'/ &
 '                            Specify circular region (deg)' / &
-'  --lon=LON0,LON1           Specify longitude boundaries (deg)'/ &
-'  --lat=LAT0,LAT1           Specify latitude  boundaries (deg)'/ &
+'  --sla=SLA0,SLA1           Specify range for SLA (m)'/ &
 '  --time=T0,T1              Specify time selection (optionally use --ymd=, --doy=,'/ &
 '                            or --sec= for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)'/ &
-'  --sla=SLA0,SLA1           Specify range for SLA (m)'/ &
-'  -A, --alias:VAR1=VAR2     Use variable VAR2 when VAR1 is requested'/ &
-'  -L, --limits:VAR=MIN,MAX  Specify edit data range for variable VAR'/ &
-'  -Q, --quality_flag:VAR=FLAG'/&
-'                            Check variable FLAG when validating variable VAR'/ &
-'  -F, --fmt, --format:VAR=FMT'/ &
-'                            Specify the Fortran format used to print VAR'/ &
-'  -X, --xml=XMLFILE         Load XMLFILE in addition to defaults'// &
+'  -V, --var=VAR1,...        Select variables to be read'/ &
+'  -X, --xml=XMLFILE         Load XMLFILE in addition to defaults'/ &
+'  -Z, --cmp, --compress=type[,scale[,offset]]'/ &
+'                            Specify binary output format (for netCDF out); type is one of:'/ &
+'                            int1, int2, int4, real, dble; scale and offset are optional (def: 1,0)'// &
 'Still working for backwards Compatibility with RADS 3 are options:'/ &
-'  --sel=VAR1,...            Select variables to read'/ &
+'  --h=H0,H1                 Specify range for SLA (m) (now --sla=H0,H1)'/ &
 '  --opt=J                   Use selection code J when J/100 requested (now -AVAR1=VAR2)'/ &
 '  --opt:I=J                 Set option for data item I to J (now -AVAR1=VAR2)'/ &
-'  --h=H0,H1                 Specify range for SLA (m) (now --sla=H0,H1)'// &
+'  --sel=VAR1,...            Select variables to read'// &
 'Common [rads_options] are:'/ &
-'  -q, --quiet               Suppress warning messages (but keeps fatal error messages)' / &
-'  -v, --debug=LEVEL         Set debug/verbosity level'/ &
-'  --log=FILENAME            Send statistics to FILENAME (default is standard output)'/ &
 '  --args=FILENAME           Get any of the above arguments from FILENAME (one argument per line)'/ &
 '  --help                    Print this syntax massage'/ &
+'  --log=FILENAME            Send statistics to FILENAME (default is standard output)'/ &
+'  -q, --quiet               Suppress warning messages (but keeps fatal error messages)' / &
+'  -v, --debug=LEVEL         Set debug/verbosity level'/ &
 '  --version                 Version info')
 end subroutine rads_synopsis
 
