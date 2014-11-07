@@ -270,8 +270,8 @@ else
 endif
 
 ! Get variable names
-if (nf90_get_att(ncid,z_id,'long_name',info%xname) /= 0) info%xname = ''
-if (nf90_get_att(ncid,z_id,'long_name',info%yname) /= 0) info%yname = ''
+if (nf90_get_att(ncid,x_id,'long_name',info%xname) /= 0) info%xname = ''
+if (nf90_get_att(ncid,y_id,'long_name',info%yname) /= 0) info%yname = ''
 if (nf90_get_att(ncid,z_id,'long_name',info%zname) /= 0) info%zname = ''
 
 grid_load = 0
