@@ -257,12 +257,15 @@ do
 
 	if (sar) then
 		tbias = +0.520795d-3
-	else if (fdm .and. l1b_version(9:11) >= '2.4') then
-		tbias = -4.699112d-3 + 4.4436d-3 ! Partial correction of timing bias (See Ruby's e-mail of 22 Apr 2013)
 	else
 		tbias = -4.699112d-3
 	endif
-	tbias = tbias + 0.4d-3 ! Additional timing bias from my own research (1-Aug-2013)
+
+	! Partial correction of timing bias (See Ruby's e-mail of 22 Apr 2013)
+	if (fdm .and. l1b_version(9:11) >= '2.4') tbias = tbias + 4.4436d-3
+	! Additional timing bias from my own research (1-Aug-2013)
+	! 5-Nov-2014: this applies ONLY to FDM/LRM data; CP4O demonstrated that this does not apply to PLRM/SAR!
+	if (.not.sar) tbias = tbias + 0.4d-3
 
 ! Time information
 
