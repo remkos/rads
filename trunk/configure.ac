@@ -84,6 +84,11 @@ AC_SUBST(DEVEL)
 AC_SUBST(DEVEL_OBJS)
 
 # -----------------------------------------------------------------
+# Default settings come from nf-config
+# -----------------------------------------------------------------
+AC_PATH_PROG([nf_config], [nf-config], [$with_nf_config])
+
+# -----------------------------------------------------------------
 # Find Fortran 90 compilers.
 # -----------------------------------------------------------------
 # If F90 is set, and FC isn't, then set FC to whatever F90 was set to.
@@ -221,10 +226,8 @@ AC_FC_FUNC("FC_name",FC_name)
 AC_SUBST(FC_name)
 
 # -----------------------------------------------------------------
-# Default settings come from nf-config
 # Allow user to set --with-netcdf-inc and/or --with-netcdf-lib
 # -----------------------------------------------------------------
-AC_PATH_PROG([nf_config], [nf-config], [$with_nf_config])
 AC_MSG_CHECKING([for netCDF includes])
 if ! test "x$with_netcdf_inc" = "x" ; then
 	NETCDF_INC=$MOD_FLAG$with_netcdf_inc
