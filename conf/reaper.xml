@@ -23,6 +23,8 @@ Special settings for REAPER data (ERS-1 and ERS-2 only)
 		<long_name>hybrid sea state bias</long_name>
 		<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 		<source>Empirical solution fitted on REAPER commissioning data</source>
+		<parameters sat="e1">e1_ssb_hyb.nc?ssb_hyb</parameters>
+		<parameters sat="e2">e2_ssb_hyb.nc?ssb_hyb</parameters>
 		<units>m</units>
 		<limits>-1 1</limits>
 		<data>ssb_hyb</data>
@@ -30,13 +32,16 @@ Special settings for REAPER data (ERS-1 and ERS-2 only)
 		<compress>int2 1e-4</compress>
 	</var>
 	<alias name="ssb" field="15">ssb_hyb</alias>
+
 	<var name="flags">
 		<limits>65513 0</limits>
 	</var>
+
 	<var name="ref_frame_offset">
-		<parameters sat="e1">220 0 0 0 0</parameters>
-		<parameters sat="e2">210 0 0 0 0</parameters>
+		<parameters sat="e1">651 0 0 0 0</parameters>
+		<parameters sat="e2">655 0 0 0 0</parameters>
 	</var>
+
 	<var name="flag_alt_oper_mode" field="2516">
 		<long_name>altimeter operating mode</long_name>
 		<flag_values>ocean_mode ice_mode</flag_values>
@@ -44,5 +49,6 @@ Special settings for REAPER data (ERS-1 and ERS-2 only)
 		<format>z1</format>
 		<compress>int1</compress>
 	</var>
+
 	<alias name="dry_tropo">dry_tropo_era</alias>
 </if>
