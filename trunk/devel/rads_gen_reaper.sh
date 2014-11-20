@@ -20,22 +20,23 @@
 #
 # syntax: rads_gen_reaper.sh <directories>
 #-----------------------------------------------------------------------
-. rads_sandbox.sh
-
-rads_open_sandbox j2
-lst=$SANDBOX/rads_gen_reaper.lst
-
-date											>  $log 2>&1
-
 case $1 in
 	*ers1*) ers=1 ;;
 	*ers2*) ers=2 ;;
 	*) echo "Unknown satellite" ; exit ;;
 esac
 case $1 in
-	RP01) prod=RP01 ;;
-	   *) echo "Unknown product" ; exit ;;
+	*RP01*) prod=RP01 ;;
+	*) echo "Unknown product" ; exit ;;
 esac
+
+. rads_sandbox.sh
+
+rads_open_sandbox e$ers
+lst=$SANDBOX/rads_gen_reaper.lst
+
+date											>  $log 2>&1
+
 find $1 -name "E${ers}_REAP_ERS_ALT_2M_*_${prod}.nc" > $lst
 
 rads_gen_reaper  < $lst							>  $log 2>&1
@@ -45,7 +46,7 @@ rads_gen_reaper  < $lst							>  $log 2>&1
 rads_fix_reaper  $options --tide --tbias		>> $log 2>&1
 rads_add_flags   $options --file=$RADSROOT/ext/reaper/e${1}_flags.dat	>> $log 2>&1
 rads_add_orbit   $options -Valt_reaper_deos		>> $log 2>&1
-rads_add_ssb     $options --ssb=ssb_tran2012	>> $log 2>&1
+rads_add_ssb     $options --ssb=ssb_hyb			>> $log 2>&1
 case $ers in
 1) rads_add_iono $options --nic09				>> $log 2>&1 ;;
 2) rads_add_iono $options -C0-34 --nic09		>> $log 2>&1
