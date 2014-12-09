@@ -94,9 +94,8 @@ do
 		call festideinit('FES2004',.true.,fesinfo(1))
 	case ('fes12', 'fes2012')
 		do_fes(2) = .true.
-!		call festideinit('FES2012',.false.,fesinfo(2)) ! Note: no load tide
-                jdum = fes_init(fesinfo1,fes_tide,fes_mem,'FES2012/all')
-		fesinfo(j)%haveload=.false.
+		jdum = fes_init(fesinfo1,fes_tide,fes_mem,'FES2012/all')
+		fesinfo(2)%haveload = .false. ! No load tide in FES2012
 	case ('got00')
 		do_got(1) = .true.
 		call gottideinit('GOT00.2',.true.,gotinfo(1))
@@ -195,6 +194,7 @@ call rads_get_var (S, P, 'surface_type', surface_type, .true.)
 
 fesinfo(:)%t_nodal = 1d30
 gotinfo(:)%t_nodal = 1d30
+if (do_fes(2)) call fes_set_nodal_time (fesinfo1, 1d30)
 
 ! Define output variables
 
@@ -219,7 +219,7 @@ enddo
 
 if (do_lptide) then
 	call rads_def_var (S, P, 'tide_equil')
-	call rads_def_var (S, P, 'tide_non_equil')
+	if (any(do_fes)) call rads_def_var (S, P, 'tide_non_equil')
 endif
 
 if (do_annual) call rads_def_var (S, P, 'mss_annual')
@@ -251,55 +251,55 @@ if (do_stide) then
 	call rads_put_var (S, P, 'tide_solid', otide_sp)
 endif
 
+! FES models
 do j = 1,mfes
-	if (do_fes(j)) then
-		if (nfes(j) == 'fes04') then
-			call festide(fesinfo(j),time(1),lat(1),lon(1),otide_sp(1),otide_lp(1),ltide_sp(1),ltide_lp(1))
+	if (.not.do_fes(j)) cycle
+	if (j == 1) then ! FES2014
+! In order to allow parallelisation we do one measurement first (which initialises), then do the next n-1 in parallel
+		call festide(fesinfo(j),time(1),lat(1),lon(1),otide_sp(1),otide_lp(1),ltide_sp(1),ltide_lp(1))
 !$omp parallel do shared(fesinfo,time,lat,lon,otide_sp,otide_lp,ltide_sp,ltide_lp,n) private(i)
-			do i = 2,n
-				call festide(fesinfo(j),time(i),lat(i),lon(i),otide_sp(i),otide_lp(i),ltide_sp(i),ltide_lp(i))
-			enddo
-!$omp end parallel do
-		endif
-		if (nfes(j) == 'fes12') then
-			jdum = fes_eval(fesinfo1,time(1),lat(1),lon(1),otide_sp(1),otide_lp(1))
-			do i = 2,n
-				jdum = fes_eval(fesinfo1,time(i),lat(i),lon(i),otide_sp(i),otide_lp(i))
-	                enddo
-		endif
-		! FES2004 or FES2012: Remove equlibrium part from Mm,Mf,Mtm,MSqm
-		if (nfes(j) == 'fes04' .or. nfes(j) == 'fes12') otide_lp = otide_lp - lptide_mf
-		call rads_put_var (S, P, 'tide_ocean_'//nfes(j), otide_sp + otide_lp + lptide_eq)
-		if (fesinfo(j)%haveload) call rads_put_var (S, P, 'tide_load_'//nfes(j), ltide_sp + ltide_lp)
-	endif
-enddo
-if (.not.any(do_fes)) then	! Just in case FES if not used
-	otide_lp = 0d0
-	ltide_lp = 0d0
-endif
-
-do j = 1,mgot
-	if (do_got(j)) then
-		call gottide(gotinfo(j),time(1),lat(1),lon(1),otide_sp(1),ltide_sp(1))
-!$omp parallel do shared(gotinfo,time,lat,lon,otide_sp,ltide_sp,n) private(i)
 		do i = 2,n
-			call gottide(gotinfo(j),time(i),lat(i),lon(i),otide_sp(i),ltide_sp(i))
+			call festide(fesinfo(j),time(i),lat(i),lon(i),otide_sp(i),otide_lp(i),ltide_sp(i),ltide_lp(i))
 		enddo
 !$omp end parallel do
-		! GOT4.7: Take long-period non-equilibrium tide from FES2004 (for consistency with old practices only)
-		if (ngot(j) == 'got47') then
-			otide_sp = otide_sp + otide_lp
-			ltide_sp = ltide_sp + ltide_lp
-		endif
+		! FES2004: First remove equilibrium part of Mm,Mf,Mtm,MSqm from long-period tides, then add equilibrium part
+		otide_lp = otide_lp - lptide_mf + lptide_eq
+		if (fesinfo(j)%haveload) call rads_put_var (S, P, 'tide_load_'//nfes(j), ltide_sp + ltide_lp)
+	else ! Other
+		do i = 1,n
+			jdum = fes_eval(fesinfo1,time(i),lat(i),lon(i),otide_sp(i),otide_lp(i))
+		enddo
+		! FES2012: otide_lp already includes both non-equilibrium and equilibrium tide
+	endif
+	call rads_put_var (S, P, 'tide_ocean_'//nfes(j), otide_sp + otide_lp)
+enddo
+
+! Write equilibrium and non-equilibrium long-period tides (from FES solution)
+if (do_lptide) then
+	call rads_put_var (S, P, 'tide_equil', lptide_eq)
+	if (any(do_fes)) call rads_put_var (S, P, 'tide_non_equil', otide_lp - lptide_eq)
+endif
+
+! GOT models
+do j = 1,mgot
+	if (.not.do_got(j)) cycle
+! In order to allow parallelisation we do one measurement first (which initialises), then do the next n-1 in parallel
+	call gottide(gotinfo(j),time(1),lat(1),lon(1),otide_sp(1),ltide_sp(1))
+!$omp parallel do shared(gotinfo,time,lat,lon,otide_sp,ltide_sp,n) private(i)
+	do i = 2,n
+		call gottide(gotinfo(j),time(i),lat(i),lon(i),otide_sp(i),ltide_sp(i))
+	enddo
+!$omp end parallel do
+	if (j == 2 .and. any(do_fes)) then ! GOT4.7
+		! GOT4.7: Take long-period ocean and load tide from FES2004 (for consistency with old practices only)
+		call rads_put_var (S, P, 'tide_ocean_'//ngot(j), otide_sp + otide_lp)
+		if (gotinfo(j)%haveload) call rads_put_var (S, P, 'tide_load_'//ngot(j), ltide_sp + ltide_lp)
+	else
+		! Other: just add equilibrium tide
 		call rads_put_var (S, P, 'tide_ocean_'//ngot(j), otide_sp + lptide_eq)
 		if (gotinfo(j)%haveload) call rads_put_var (S, P, 'tide_load_'//ngot(j), ltide_sp)
 	endif
 enddo
-
-if (do_lptide) then
-	call rads_put_var (S, P, 'tide_equil', lptide_eq)
-	call rads_put_var (S, P, 'tide_non_equil', otide_lp)
-endif
 
 if (do_annual) then
 	phase = (P%equator_time - t_2000) / t_year * 2d0 * pi
