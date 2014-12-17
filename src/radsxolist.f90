@@ -27,7 +27,7 @@ use rads
 use rads_misc
 use rads_netcdf
 use rads_time
-integer(fourbyteint) :: ncid, i, icol, ios, nvar, nxo_in, nxo_out, ntrk, &
+integer(fourbyteint) :: ncid, i, icol, ios, nvar, nxo_in, nxo_out, ntrk, nxml = 0, &
 	id_flag, id_satid, id_track, id_sla, id_new, id_old, id_offset, id_alt_rate, nvar_replace = 0
 real(eightbytereal), allocatable :: var(:,:,:), stat(:,:,:), binstat(:,:,:), tbiasstat(:,:)
 integer(fourbyteint), allocatable :: track(:,:), binnr(:,:), bincount(:)
@@ -42,7 +42,7 @@ character(len=640) :: fmt_str
 
 character(len=rads_varl) :: optopt
 character(len=rads_naml) :: optarg, str_replace(10)
-character(len=rads_cmdl) :: command
+character(len=rads_cmdl) :: command, xml(10)
 character(len=1) :: order = ''
 character(len=4) :: statname(5) = (/ 'min ', 'max ', 'mean', 'rms ', 'std ' /)
 integer(fourbyteint), parameter :: msat = 20
@@ -55,7 +55,7 @@ type(sat_) :: sat(msat)
 character(len=3*msat) :: satlist = '', use_sats = ''
 type(rads_sat) :: S
 character(len=*), parameter :: optlist = &
-	'S:e::b::o:r:dsnltp sat: lon: lat: dt: edit:: bin:: order: replace: dual single nolist both-legs both-times ' // &
+	'S:X:e::b::o:r:dsnltp sat: xml: lon: lat: dt: edit:: bin:: order: replace: dual single nolist both-legs both-times ' // &
 	' time: ymd: doy: sec: check-flag: full-year tbias:: pass-info'
 
 integer(fourbyteint) :: var0 = 0, check_flag = -1
@@ -71,6 +71,7 @@ stat_only = xostat
 
 ! Initialize RADS or issue help
 call synopsis
+xml = ''
 
 ! Write header
 call get_command (command, status = i)
@@ -90,6 +91,9 @@ do
 	case (':') ! Ignore unknown option
 	case ('S', 'sat')
 		use_sats = optarg(:3*msat)
+	case ('X', 'xml')
+		nxml = nxml + 1
+		xml(nxml) = optarg
 	case ('lon')
 		read (optarg, *, iostat=ios) lon0,lon1
 	case ('lat')
@@ -233,7 +237,7 @@ do i = 1,len_trim(satlist),3
 	if (old) then
 		 if (.not.any(trk%satid == i/3+1)) cycle
 	endif
-	call rads_init (S, satlist(i:i+1))
+	call rads_init (S, satlist(i:i+1), xml(1:nxml))
 	sat(S%satid) = sat_ (S%sat, 2*S%phase%pass_seconds, &
 		S%xover_params(1), S%xover_params(2), S%inclination, .true.)
 	if (use_sats /= '') sat(S%satid)%mask = (index(use_sats, S%sat) > 0)
@@ -522,7 +526,8 @@ endif
 'Required argument:' / &
 '  FILENAME                  Name of input netCDF xover file'// &
 'Optional arguments [options] are:'/ &
-'  -S, --sat=SAT1[,SAT2,..]  Comma-separeted list of satellites (default = all)' / &
+'  -S, --sat=SAT1[,SAT2,..]  Comma-separated list of satellites (default = all)'/ &
+'  -X, --xml=XMLFILE         Load XMLFILE in addition to RADS defaults'/ &
 '  --lon=LON0,LON1           Specify longitude boundaries (deg)'/ &
 '  --lat=LAT0,LAT1           Specify latitude boundaries (deg)'/ &
 '  --t=T0,T1                 Specify time selection (optionally use --ymd=, --doy=,'/ &
