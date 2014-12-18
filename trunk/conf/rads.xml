@@ -402,6 +402,17 @@ Global RADS configuration file
 	<compress>int4 1e-4 700e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
+<var name="alt_std1404" field="424" sat="j2">
+	<long_name>GSFC/Std1404 orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>GSFC/Std1404</source>
+	<parameters>gsfc_std1404</parameters>
+	<units>m</units>
+	<data>alt_std1404</data>
+	<format>f12.4</format>
+	<compress>int4 1e-4 1300e3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
 <alias name="alt" field="4" sat="c2">alt_gdrd alt_cnes</alias>
 <alias name="alt" field="4" sat="e1 e2">alt_reaper alt_gfz</alias>
 <alias name="alt" field="4" sat="g1">alt_pgs7777</alias>
