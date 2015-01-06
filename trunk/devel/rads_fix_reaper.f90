@@ -1,7 +1,7 @@
  !-----------------------------------------------------------------------
 ! $Id$
 !
-! Copyright (c) 2011-2014  Remko Scharroo (Altimetrics LLC)
+! Copyright (c) 2011-2015  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -23,10 +23,10 @@
 ! ptr (for versions up to COM3 only):
 ! - Correct range for erroneous PTR
 !
-! tbias (for all versions COM*):
+! tbias (for all versions):
 ! - Add 0.68 ms to the time tags
 !
-! tide (for all versions COM*):
+! tide (for all versions):
 ! - Prior to COM5: remove load tide from ocean tide
 ! - COM5 and COM6: add long-period equilibrium tide to ocean tide
 ! - RP01 only: add long-period non-equilibrium tide to ocean tide
@@ -199,7 +199,7 @@ if (ltbias) then
 	n_changed = n
 endif
 
-! Fix wet tropospheric correction
+! Fix radiometer wet tropospheric correction (tentative)
 
 if (lwet) then
 	call rads_get_var (S, P, 'tb_238', tb_238)
