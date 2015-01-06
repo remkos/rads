@@ -18,6 +18,7 @@
 include ../../config.mk
 PDFLATEX = pdflatex
 BIBTEX = bibtex
+MAKEINDEX = makeindex
 MAN = rads4_data_manual.pdf
 
 #-----------------------------------------------------------------------
@@ -30,4 +31,6 @@ all:	$(MAN)
 	$(PDFLATEX) $*
 	$(BIBTEX) $*
 	$(PDFLATEX) $*
+	$(PDFLATEX) $*
+	$(MAKEINDEX) $*
 	$(PDFLATEX) $*
