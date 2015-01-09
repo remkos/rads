@@ -316,13 +316,28 @@ Global RADS configuration file
 	<compress>int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_eig6c" field="417" sat="c2 j1 j2 n1 sa">
+<var name="alt_eig6c" field="417" sat="c2 n1">
 	<long_name>ESOC EIGEN-6C orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>ESOC, EIGEN-6C</source>
 	<parameters>eigen-6c-esoc</parameters>
 	<units>m</units>
 	<data>alt_eig6c</data>
+	<compress>int4 1e-3</compress>
+	<format>f11.3</format>
+	<if sat="j1 j2">
+		<format>f12.4</format>
+		<compress>int4 1e-4 1300e3</compress>
+	</if>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<var name="alt_eig6s2" field="417" sat="j1 j2">
+	<long_name>ESOC EIGEN-6S2 orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>ESOC, EIGEN-6S2</source>
+	<parameters>eigen-6s2-esoc</parameters>
+	<units>m</units>
+	<data>alt_eig6s2</data>
 	<compress>int4 1e-3</compress>
 	<format>f11.3</format>
 	<if sat="j1 j2">
