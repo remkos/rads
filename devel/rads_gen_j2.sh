@@ -50,7 +50,7 @@ rads_add_common  $options						>> $log 2>&1
 rads_add_dual    $options						>> $log 2>&1
 rads_add_dual    $options --mle=3				>> $log 2>&1
 rads_add_ib      $options						>> $log 2>&1
-rads_add_orbit   $options -Valt_eig6			>> $log 2>&1
+rads_add_orbit   $options -Valt_eig6s2  -C0-219	>> $log 2>&1
 rads_add_orbit   $options -Valt_gdrcp   -C1-130	>> $log 2>&1
 rads_add_orbit   $options -Valt_gps     -C1-225	>> $log 2>&1
 rads_add_orbit   $options -Valt_std1204 -C0-188	>> $log 2>&1
