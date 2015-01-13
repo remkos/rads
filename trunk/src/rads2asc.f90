@@ -73,6 +73,7 @@ do i = 1,rads_nopt
 		else
 			reject = 0
 			read (rads_opt(i)%arg, *, iostat=ios) reject
+			if (reject < 0 .or. reject > Sats(1)%nsel) call rads_exit ('-r# used with invalid value')
 		endif
 	case ('f')
 		has_f = .true.
