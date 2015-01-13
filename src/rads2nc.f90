@@ -60,6 +60,7 @@ do i = 1,rads_nopt
 		else
 			reject = 0
 			read (rads_opt(i)%arg, *, iostat=ios) reject
+			if (reject < 0 .or. reject > S%nsel) call rads_exit ('-r# used with invalid value')
 		endif
 	case ('maxrec')
 		read (rads_opt(i)%arg, *, iostat=ios) nselmax
@@ -73,9 +74,7 @@ if (S%nsel == 0) call rads_exit ('No variables are selected')
 
 ! If SLA is among the results, remember which index that is
 do i = 1,S%nsel
-	if (S%sel(i)%info%datatype == rads_type_sla) then
-		if (reject == -1) reject = i
-	endif
+	if (reject == -1 .and. S%sel(i)%info%datatype == rads_type_sla) reject = i
 enddo
 
 ! Now loop through all cycles and passes
@@ -116,7 +115,7 @@ call rads_synopsis
 write (*,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
-'  -r#                       Reject lines if data item number # on sel= specifier is NaN'/ &
+'  -r#                       Reject lines if data item number # on -V specifier is NaN'/ &
 '                            (default: reject if SLA field is NaN)'/ &
 '  -r0, -r                   Do not reject lines with NaN values'/ &
 '  -rn                       Reject lines if any value is NaN'/ &
