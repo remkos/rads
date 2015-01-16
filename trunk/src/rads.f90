@@ -565,8 +565,8 @@ character(len=*), intent(in) :: sat(:)
 character(len=*), intent(in) :: xml(:)
 integer(fourbyteint), intent(in), optional :: verbose
 integer :: i
-if (size(S) /= size(sat)) call rads_exit ('Size of "S" and "sat" in rads_init should be the same')
-if (size(S) < 1) call rads_exit ('Size of "S" in rads_init should be at least 1')
+if (size(S) /= size(sat)) call rads_exit ('Size of arguments "S" and "sat" in routine rads_init should be the same')
+if (size(S) < 1) call rads_exit ('Size of argument "S" in routine rads_init should be at least 1')
 do i = 1,size(S)
 	call rads_init_sat_0d_xml (S(i), sat(i), xml, verbose)
 enddo
@@ -593,8 +593,8 @@ type(rads_sat), intent(inout) :: S
 integer :: sopt(1), nsat
 !
 call rads_load_options (nsat)
-if (nsat < 1) call rads_exit ('Failed to find "-S" or "--sat=" on command line')
-if (nsat > 1) call rads_exit ('Too many "-S" or "--sat=" on command line')
+if (nsat < 1) call rads_exit ('Failed to find any "-S" or "--sat" options on command line')
+if (nsat > 1) call rads_exit ('Too many "-S" or "--sat" options on command line')
 sopt = minloc (rads_opt%id, rads_opt%id==11) ! Position of the -S option
 !
 ! The next three pack functions isolate the -X option arguments, the command line
@@ -610,8 +610,8 @@ type(rads_sat), intent(inout) :: S(:)
 integer :: i, sopt(1), nsat
 !
 call rads_load_options (nsat)
-if (nsat < 1) call rads_exit ('Failed to find "-S" or "--sat=" on command line')
-if (nsat > size(S)) call rads_exit ('Too many "-S" or "--sat=" on command line')
+if (nsat < 1) call rads_exit ('Failed to find any "-S" or "--sat" options on command line')
+if (nsat > size(S)) call rads_exit ('Too many "-S" or "--sat" options on command line')
 !
 do i = 1,nsat
 	sopt = minloc (rads_opt%id, rads_opt%id==i*10+1) ! Position of i-th -S option
@@ -802,7 +802,7 @@ integer, intent(out) :: nsat
 ! The value <nsat> returns the total amount of -S options.
 !
 ! Arguments:
-!  nsat     : Number of '-S' or '--sat=' options
+!  nsat     : Number of '-S' or '--sat' options
 !-----------------------------------------------------------------------
 integer :: ios, iunit, i, nopt
 type(rads_option), pointer :: opt(:)
@@ -826,13 +826,12 @@ do
 	! Get next option and its argument
 	call getopt (rads_optlist, opt(nopt)%opt, opt(nopt)%arg, iunit)
 
-! Now hunt for '-S', --sat=', '-v', '--debug=', '-X', and '--xml=' in command line options
+! Now hunt for '-S', --sat', '-v', '--debug', '-X', and '--xml' among the command line options
 ! The array opt%id is filled to indicate where to find -S, -X, -v|q, -V and other options
-! Also look for '--args=' option to load arguments fro file
+! Also look for '--args' option to load arguments from file
 
 	select case (opt(nopt)%opt)
-	! End of argument list
-	case ('!')
+	case ('!') ! End of argument list
 		if (iunit == 0) then
 			nopt = nopt - 1 ! Because we count always one ahead
 			exit ! Done with command line
@@ -843,8 +842,10 @@ do
 
 	! We do not save any of the next options
 	case (':')
-		call rads_message ('Unknown option: '//trim(opt(nopt)%arg))
+		call rads_message ('Unknown option '//trim(opt(nopt)%arg)//' skipped')
 		cycle ! Skip unknown options
+	case ('::')
+		call rads_exit ('Option '//trim(opt(nopt)%arg)//' should be followed by required argument')
 	case ('q', 'quiet')
 		rads_verbose = -1
 	case ('v')
@@ -960,7 +961,7 @@ case ('A', 'alias')
 	endif
 case ('F', 'fmt', 'format')
 	call rads_set_format (S, opt%arg(:j-1), opt%arg(j+1:))
-case ('cmp', 'compress')
+case ('Z', 'cmp', 'compress')
 	call rads_set_compress (S, opt%arg(:j-1), opt%arg(j+1:))
 case ('R', 'region')
 	call rads_set_region (S, opt%arg)
@@ -3610,6 +3611,50 @@ pos_old = pos
 lin_old = lin
 
 end subroutine rads_progress_bar
+
+!***********************************************************************
+!*rads_parse_r_option -- Parse the -r option
+!+
+subroutine rads_parse_r_option (S, opt, arg, idx)
+type(rads_sat), intent(in) :: S
+character(len=*), intent(in) :: opt, arg
+integer(fourbyteint), intent(out) :: idx
+!
+! This routine is used generally with the -r option, but can also be
+! associated with any other command line option.
+! The routine parses the argument of the option and returns the index
+! value (position) of the associated variable on the -V option argument.
+!
+! The following cases are recognised
+! Argument                Value of idx
+! 'n' or 'any'            -2
+! '' or '0' or 'none'     0
+! 1 <= integer <= nsel    value of integer
+! name of variable on -V  positional index of variable on -V option
+! any other value         quit program with error message
+!-----------------------------------------------------------------------
+integer(fourbyteint) :: i
+select case (arg)
+case ('n', 'any')
+	idx = -2
+case ('', '0', 'none')
+	idx = 0
+case default
+	if (arg(1:1) >= '0' .and. arg(1:1) <= '9') then
+		idx = 0
+		read (arg, *, iostat=i) idx
+		if (idx < 1 .or. idx > S%nsel) call rads_exit ('Option -'//trim(opt)//'# used with invalid value')
+	else
+		do i = 1,S%nsel
+			if (arg == S%sel(i)%name .or. arg == S%sel(i)%info%name) then
+				idx = i
+				return
+			endif
+		enddo
+		call rads_exit ('Option -'//trim(opt)//'<varname> does not refer to variable specified on -V option')
+	endif
+end select
+end subroutine rads_parse_r_option
 
 !***********************************************************************
 !*rads_create_pass -- Create RADS pass (data) file

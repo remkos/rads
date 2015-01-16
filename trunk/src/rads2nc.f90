@@ -72,7 +72,7 @@ enddo
 ! Check if there is at least one variable specified
 if (S%nsel == 0) call rads_exit ('No variables are selected')
 
-! If SLA is among the results, remember which index that is
+! If no -r option was used and SLA is among the selected variables, remember its index
 do i = 1,S%nsel
 	if (reject == -1 .and. S%sel(i)%info%datatype == rads_type_sla) reject = i
 enddo
@@ -115,10 +115,11 @@ call rads_synopsis
 write (*,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
-'  -r#                       Reject lines if data item number # on -V specifier is NaN'/ &
-'                            (default: reject if SLA field is NaN)'/ &
-'  -r0, -r                   Do not reject lines with NaN values'/ &
-'  -rn                       Reject lines if any value is NaN'/ &
+'  -rVARNAME                 Reject records if variable VARNAME on -V specifier is NaN'/ &
+'  -r#                       Reject records if data item number # on -V specifier is NaN'/ &
+'  -r0, -rnone, -r           Do not reject records with NaN values'/ &
+'  -rn, -rany                Reject records if any value is NaN'/ &
+'                      Note: If no -r option is given -rsla is assumed'/ &
 '  --step=N                  Step through records with stride n (default = 1)'/ &
 '  --maxrec=N                Specify maximum number of output records (default = unlimited)'/ &
 '  -o, --out=OUTNAME         Specify name of a single output file (default is pass files)')

@@ -68,13 +68,7 @@ do i = 1,rads_nopt
 		outname = rads_opt(i)%arg
 		if (outname == '') outname = '-'
 	case ('r')
-		if (rads_opt(i)%arg == 'n') then
-			reject = -2
-		else
-			reject = 0
-			read (rads_opt(i)%arg, *, iostat=ios) reject
-			if (reject < 0 .or. reject > Sats(1)%nsel) call rads_exit ('-r# used with invalid value')
-		endif
+		call rads_parse_r_option (Sats(1), rads_opt(i)%opt, rads_opt(i)%arg, reject)
 	case ('f')
 		has_f = .true.
 	case ('sel')
@@ -112,6 +106,7 @@ do j = 1,msat
 		temp(3) = S%lon
 		if (S%nsel > 0) temp(4:S%nsel+3) = S%sel(1:S%nsel)
 		S%nsel = S%nsel + 3
+		if (reject > 0) reject = reject + 3
 		deallocate (S%sel, stat=ios)
 		S%sel => temp
 	endif
@@ -125,7 +120,7 @@ do j = 1,msat
 		stat_mode = no_stat
 	endif
 
-	! If SLA is among the selected variables, remember index
+	! If no -r option was used and SLA is among the selected variables, remember its index
 	! Also check if we have boz-formats
 	do i = 1,S%nsel
 		if (reject == -1 .and. S%sel(i)%info%datatype == rads_type_sla) reject = i
@@ -202,10 +197,11 @@ call rads_synopsis
 write (*,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
+'  -rVARNAME                 Reject records if variable VARNAME on -V specifier is NaN'/ &
 '  -r#                       Reject records if data item number # on -V specifier is NaN'/ &
-'                            (default: reject if SLA field is NaN)'/ &
-'  -r0, -r                   Do not reject records with NaN values'/ &
-'  -rn                       Reject records if any value is NaN'/ &
+'  -r0, -rnone, -r           Do not reject records with NaN values'/ &
+'  -rn, -rany                Reject records if any value is NaN'/ &
+'                      Note: If no -r option is given -rsla is assumed'/ &
 '  -f                        Do not start with t,lat,lon in output'/ &
 '  -sp, -sc                  Include statistics per pass or per cycle'/ &
 '  --step=N                  Step through records with stride N (default = 1)'/ &
