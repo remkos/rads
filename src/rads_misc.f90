@@ -20,7 +20,6 @@ use typesizes
 
 ! These are used by getopt
 integer, save :: getopt_ind = 1, getopt_chr = 2
-logical, save :: getopt_err = .true.
 character(len=320), private, save :: getopt_arg
 logical, private, save :: getopt_new = .true.
 
@@ -99,8 +98,9 @@ integer, intent(in), optional :: unit
 ! The argument <optlist> may contain both short options (i.e. '-f') or long
 ! options (i.e. '--file'), in the following way.
 ! 1) Start with a string of single character short options
-! 2) Append, each separated by a space the long options
-! 3) Append ':' when an option requires an argument, or '::' when the
+! 2) Level a space
+! 3) Append the long options, each separated by a space
+! 4) Append ':' when an option requires an argument, or '::' when the
 !    argument is optional
 !
 ! Example:
@@ -125,7 +125,7 @@ integer, intent(in), optional :: unit
 ! * An option with a required argument was found, but there was no
 !   required argument, because of reaching the end of the input or
 !   because the option was followed by another option.
-!   <optopt> returns the option, <optarg> returns ''.
+!   <optopt> returns '::', <optarg> the full argument.
 ! * An argument starts with '--' and no match with an option is found.
 !   <optopt> returns ':' and <optarg> the full argument.
 ! * An argument starts with '-' and no match with an option is found.
@@ -144,6 +144,7 @@ integer, intent(in), optional :: unit
 ! -f FILE      optopt = 'f', optarg = 'FILE' (Two arguments joined)
 ! --file FILE  optopt = 'file', optarg = 'FILE' (Separate by space ...)
 ! --file=FILE  optopt = 'file', optarg = 'FILE' (... or by equal sign)
+! --file       optopt = '::', optarg = '--file' (Required argument missing)
 ! --output -q  optopt = 'output', optarg = '' (Optional argument)
 ! file.txt     optopt = ' ', optarg = 'file.txt' (No match)
 !
@@ -167,6 +168,7 @@ endif
 if (.not.getopt_new) then
 else if (nextarg()) then
 	optopt = '!'
+	optarg = ''
 	return ! Return on error
 endif
 
@@ -180,14 +182,14 @@ endif
 ! Default is no option argument
 optarg = ''
 
-l = len(optlist)
+l = len_trim(optlist)
 
 ! Handle double-dash options
 if (getopt_arg(1:2) == '--') then
 	getopt_new = .true.
 	! Find end of option or first : or =
 	i = len_trim(getopt_arg)
-	j = scan (getopt_arg, ' :=')
+	j = scan(getopt_arg, ' :=')
 	if (j > 3) i = j - 1
 	n = index(optlist, ' ' // getopt_arg(3:i)) ! Scan for space + option without the double-dash
 	if (n == 0) then ! Not a recognised option
@@ -206,20 +208,20 @@ if (getopt_arg(1:2) == '--') then
 	optopt = optlist(n:k)
 	if (optopt(2:2) == ' ') optopt(2:2) = ':' ! Distinguish 1-letter option by adding ':'
 	if (optlist(k+1:k+1) /= ':') return ! No argument to this option
-	if (j > 3) then ! Return the remainder of this argument
+	if (getopt_arg(j:j) /= ' ') then ! Return the remainder of this argument
 		optarg = adjustl(getopt_arg(j+1:))
 		return
 	endif
 	optional_arg = (k+2 <= l .and. optlist(k+2:k+2) == ':')
 	if (nextarg()) then
 		if (optional_arg) return ! Argument was optional
-		if (getopt_err) print '(a,a,a)', &
-			'Warning: option "',trim(getopt_arg),'" should contain argument, but end reached'
+		optarg = '--'//optopt
+		optopt = '::'
 	else if (getopt_arg(1:1) == '-' .and. getopt_arg(2:2) /= ' ') then
 		getopt_new = .false.
 		if (optional_arg) return ! Argument was optional
-		if (getopt_err) print '(a,a,a)', &
-			'Warning: option "',trim(getopt_arg),'" should contain argument, but new option reached'
+		optarg = '--'//optopt
+		optopt = '::'
 	else
 		optarg = getopt_arg
 	endif
@@ -232,7 +234,7 @@ if (getopt_arg(1:1) == '-') then
 	optopt = getopt_arg(getopt_chr:getopt_chr)
 	getopt_chr = getopt_chr + 1
 	if (getopt_arg(getopt_chr:) == '') getopt_new = .true.
-	n = scan (optlist, optopt(1:1)//' ') ! Scan for the actual option or a space
+	n = scan(optlist, optopt(1:1)//' ') ! Scan for the actual option or a space
 	if (n == 0 .or. optlist(n:n) == ' ') then ! Not a recognised option
 		optarg = '-'//optopt(1:1)
 		optopt = ':'
@@ -247,13 +249,13 @@ if (getopt_arg(1:1) == '-') then
 	optional_arg = (n+2 <= l .and. optlist(n+2:n+2) == ':')
 	if (nextarg()) then
 		if (optional_arg) return ! Argument was optional
-		if (getopt_err) print '(a,a,a)', &
-			'Warning: option "-',trim(optopt),'" should contain argument, but end reached'
+		optarg = '-'//optopt
+		optopt = '::'
 	else if (getopt_arg(1:1) == '-' .and. getopt_arg(2:2) /= ' ') then
 		getopt_new = .false.
 		if (optional_arg) return ! Argument was optional
-		if (getopt_err) print '(a,a,a)', &
-			'Warning: option "-',trim(optopt),'" should contain argument, but new option reached'
+		optarg = '-'//optopt
+		optopt = '::'
 	else
 		optarg = getopt_arg
 		getopt_new = .true.

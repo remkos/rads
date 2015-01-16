@@ -76,18 +76,18 @@ do i = 2,nsat
 	satlist = trim(satlist) // ' ' // S(i)%sat
 enddo
 
-! Determine which column to check for NaN (default: 1st)
+! Determine which column has the SLA (if any)
 ! Also check for boz_format
 do j = 1,nsel
-	if (S(nsat)%sel(j)%info%boz_format) boz_format = .true.
 	if (S(nsat)%sel(j)%info%datatype == rads_type_sla) type_sla = j
+	if (S(nsat)%sel(j)%info%boz_format) boz_format = .true.
 enddo
 
 ! Scan command line arguments
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
 	case ('r')
-		if (rads_opt(i)%arg /= 'n') then
+		if (rads_opt(i)%arg /= 'n' .and. rads_opt(i)%arg /= 'any') then
 			reject = 0
 			read (rads_opt(i)%arg, *, iostat=ios) reject
 		endif
@@ -176,8 +176,8 @@ write (stderr,1300)
 '  --step=N                  Write out only every N points along track'/ &
 '  -r#                       Reject stacked data when there are fewer than # tracks with valid SLA'/ &
 '                            (default: # = number of selected cycles)'/ &
-'  -r0, -r                   Keep all stacked data points, even NaN'/ &
-'  -rn                       Reject stacked data when data on any track is NaN (default)'/ &
+'  -r0, -rnone, -r           Keep all stacked data points, even NaN'/ &
+'  -rn, -rany                Reject stacked data when data on any track is NaN (default)'/ &
 '  -k, --keep                Keep all passes, even the ones that do not have data in the selected area'/ &
 '  -a, --mean                Output mean in addition to pass data'/ &
 '  -s, --stddev              Output standard deviation in addition to pass data'/ &
