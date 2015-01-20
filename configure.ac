@@ -202,9 +202,10 @@ FCFLAGS=$FCFLAGS$opt
 AC_MSG_RESULT($opt)
 
 # -----------------------------------------------------------------
-# Additional flags for GNU compilers
+# Additional flags for GNU compilers (for developers only)
 # -----------------------------------------------------------------
-AC_MSG_CHECKING([for additional compiler flags])
+if test "x$enable_devel" = "xyes"; then
+AC_MSG_CHECKING([for additional compiler flags (for developers)])
 opt=
 if test "x$ac_cv_f77_compiler_gnu" = "xyes" ; then
 	opt=" -Wall -Wimplicit"
@@ -212,12 +213,11 @@ fi
 if test "x$FC" = "xgfortran" ; then
 	opt=" -Wall -Wtabs -fimplicit-none"
 fi
-if test "x$enable_devel" = "xyes"; then
-	DEVEL_FLAGS=" -I../devel $MOD_FLAG"'${ALTIM}/include'
-fi
+DEVEL_FLAGS=" -I../devel $MOD_FLAG"'${ALTIM}/include'
 FCFLAGS=$FCFLAGS$opt
 AC_MSG_RESULT($opt$DEVEL_FLAGS)
 AC_SUBST(DEVEL_FLAGS)
+fi
 
 # -----------------------------------------------------------------
 # How are Fortran subroutine names translated?
