@@ -82,23 +82,23 @@ This manual is intended to explain the details about the many variables availabl
 The variables are organised various chapters. Consult the table of contents to find the variables you are looking for, or go to the index at the end of the manual, where all variables are listed.
 
 \begin{table}
-\begin{tabular}{lcc}
+\begin{tabular}{lccl}
 \hline
-Altimeter & Abbreviation & Number \\
+Altimeter & Abbr. & Nr & References \\
 \hline
-GEOS 3    & g3           & 1      \\
-Seasat    & ss           & 2      \\
-Geosat    & gs           & 3      \\
-ERS-1     & e1           & 4      \\
-TOPEX     & tx           & 5      \\
-Poseidon  & pn           & 6      \\
-ERS-2     & e2           & 7      \\
-GFO       & g1           & 8      \\
-JASON-1   & j1           & 9      \\
-Envisat   & n1           & 10     \\
-JASON-2   & j2           & 11     \\
-CRYOSAT-2 & c2           & 12     \\
-SARAL     & sa           & 13     \\
+GEOS 3    & g3           & 1      & \\
+Seasat    & ss           & 2      & \\
+Geosat    & gs           & 3      & \\
+ERS-1     & e1           & 4      & \citep{francis1990a,francis1991a} \\
+TOPEX     & tx           & 5      & \citep{fu1994} \\
+Poseidon  & pn           & 6      & \\
+ERS-2     & e2           & 7      & \citep{francis1995a} \\
+GFO       & g1           & 8      & \\
+JASON-1   & j1           & 9      & \citep{menard2003} \\
+Envisat   & n1           & 10     & \\
+JASON-2   & j2           & 11     & \citep{lambin2010} \\
+CRYOSAT-2 & c2           & 12     & \citep{wingham2006} \\
+SARAL     & sa           & 13     & \\
 \hline
 \end{tabular}
 \caption{Abbreviation and numbers used for the various altimeter missions.}
@@ -186,10 +186,10 @@ If the time tags on the original GDR data include a bias, the orbit is either (r
 
 Notes:
 \begin{enumerate}
-\item JGM-3 was the original gravity field solutions used by NASA for the orbit determination of Geosat and TOPEX/Poseidon that featured on the GDR products. Though the gravity field was tailored to the TOPEX orbit, it was generally regarded the best at the time and was hence also used more widely than just for TOPEX/Poseidon. The radial orbit accuracy of about 3 cm for TOPEX/Poseidon and 8 cm for Geosat has since been superseded by more up-to-date orbit solutions.\label{item:alt_jgm3}
-\item DGM-E04 was a gravity field model developed at the Delft University of Technology tailored to the ERS-1 and ERS-2 orbits and derived from the JGM-3 model. The model significantly improved the radial orbit accuracy to about 3.5 cm, better than any general purpose models available at the time.\label{item:alt_dgme04}
-\item CNES produces the operational and precise orbits for a number of satellites. Unfortunately, in RADS the CNES orbits are based on mix of gravity field solutions. The CNES orbits for the TOPEX/Poseidon mission feature on the GDRs and are based on the JGM-3 gravity field model. The CNES orbits for CryoSat and Envisat are obtained from their respective GDR products and are based on the EIGEN-GL04c gravity field model.\label{item:alt_cnes}
-\item PGS7777 is a NASA preliminary gravity field solution tailored to the Geosat and GFO satellite orbits. The NASA PGS7777 orbit solution for GFO is based on SLR data only as the GPS tracking system on GFO failed.\label{item:alt_pgs7777}
+\item JGM-3 \citep{tapley1996} was the original gravity field solutions used by NASA for the orbit determination of Geosat and TOPEX/Poseidon that featured on the GDR products. Though the gravity field was tailored to the TOPEX orbit, it was generally regarded the best at the time and was hence also used more widely than just for TOPEX/Poseidon. The radial orbit accuracy of about 3 cm for TOPEX/Poseidon and 8 cm for Geosat has since been superseded by more up-to-date orbit solutions.\label{item:alt_jgm3}
+\item DGM-E04 was a gravity field model developed at the Delft University of Technology tailored to the ERS-1 and ERS-2 orbits and derived from the JGM-3 model. The model significantly improved the radial orbit accuracy to about 3.5 cm, better than any general purpose models available at the time \citep{scharroo1998a}.\label{item:alt_dgme04}
+\item CNES produces the operational and precise orbits for a number of satellites. Unfortunately, in RADS the CNES orbits are based on mix of gravity field solutions. The CNES orbits for the TOPEX/Poseidon mission feature on the GDRs and are based on the JGM-3 gravity field model \citep{tapley1996}. The CNES orbits for CryoSat and Envisat are obtained from their respective GDR products and are based on the EIGEN-GL04c gravity field model \citep{ablain2008}.\label{item:alt_cnes}
+\item PGS7777 is a NASA preliminary gravity field solution tailored to the Geosat and GFO satellite orbits. The NASA PGS7777 orbit solution for GFO \citep{lemoine2006a} is based on SLR data only as the GPS tracking system on GFO failed.\label{item:alt_pgs7777}
 \item Orbit solutions created at NASA using the GGM02c gravity field and station coordinates in the ITRF2000 or ITRF2005 reference frame.\label{item:alt_ggm02c}
 \item Orbits produced with the EIGEN-GL04c or EIGEN-GL04s gravity fields.\label{item:alt_eiggl04s}
 \item Orbits produced under strict Jason GDR-C' standards.\label{item:alt_gdrcp}
@@ -541,9 +541,9 @@ Notes:
 \begin{enumerate}
 \item One-, three- or four-term polynomials of SWH and wind speed \citep{gaspar1994a}.\label{item:ssb_bm3}
 \item Non-parametric sea state bias models by CLS \citep{gaspar2002,labroue2004}.\label{item:ssb_cls}
-\item For Jason-2 data retracked by MLE3, a separate non-parametric model is available.\label{item:ssb_cls_mle3}
 \item Four-term sea state bias model for TOPEX (different model for side A and side B altimeters) \citep{chambers2003a}.\label{item:ssb_csr}
 \item Hybrid (mix between parametric and non-parametric techniques) sea state bias models produced at NOAA \citep{scharroo2005e}.\label{item:ssb_hyb}
+\item For Jason-2 data retracked by MLE3, a separate non-parametric model is available.\label{item:ssb_cls_mle3}
 \end{enumerate}
 
 \section{Geoid and mean sea surface}
@@ -556,8 +556,9 @@ Another reference surface is the geoid (the theoretical mean sea surface in abse
 \var{mss_cls01} & 1605 & CLS01 mean sea surface & m & all & -200 200 & \ref{item:mss_cls01} \\
 \var{mss_egm2008} & 1610 & EGM2008 mean sea surface & m & all & -200 200 & \ref{item:mss_egm2008} \\
 \var{mss_dncs2008} & 1612 & DNSC08 mean sea surface & m & all & -200 200 & \ref{item:mss_dnsc2008} \\
-\var{mss_dtu10} & 1613 & DTU10 mean sea surface & m &  & -200 200 & \ref{item:mss_dtu10} \\
-\var{mss_cls11} & 1614 & CLS11 mean sea surface & m &  & -200 200 & \ref{item:mss_cls11} \\
+\var{mss_dtu10} & 1613 & DTU10 mean sea surface & m & all & -200 200 & \ref{item:mss_dtu10} \\
+\var{mss_cls11} & 1614 & {CNES-CLS11} mean sea surface & m &  & -200 200 & \ref{item:mss_cls11} \\
+\var{mss_dtu13} & 1616 & DTU13 mean sea surface & m & j1 j2 pn sa tx & -200 200 & \ref{item:mss_dtu13} \\
 \var{geoid_egm2008} & 1611 & EGM2008 geoid & m & all & -200 200 & \ref{item:geoid_egm2008} \\ 
 \hline
 \var{mss} & 16 & \alias{mss_dtu10} && all && \\
@@ -569,8 +570,9 @@ Notes:
 \item Widely used, but outdated, mean sea surface model based on ERS-1/2 and TOPEX data created at CLS \citep{hernandez2001}.\label{item:mss_cls01}
 \item Combined geoid and mean sea surface solution \citep{pavlis2008}.\label{item:mss_egm2008}\label{item:geoid_egm2008}
 \item Older version a mean sea surface model based on RADS data created at DNSC (now DTU) \citep{andersen2009}.\label{item:mss_dnsc2008}
-\item Most up-to-date mean sea surface model based on RADS data created at DTU \citep{andersen2010}.\label{item:mss_dtu10}
-\item Newest iteration of mean sea surface models at CNES/CLS \citep{schaeffer2010}.\label{item:mss_cls11}
+\item The DTU10 mean sea surface model created at DTU based on RADS data \citep{andersen2010}.\label{item:mss_dtu10}
+\item Newest iteration of mean sea surface models at CNES/CLS \citep{schaeffer2012}.\label{item:mss_cls11}
+\item The DTU13 mean sea surface model is the up-to-date mean sea surface model created at DTU from RADS data \citep{andersen2013a}.\label{item:mss_dtu13}
 \end{enumerate}
 
 \chapter{Wind speed and wave height variables}

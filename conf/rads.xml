@@ -267,17 +267,6 @@ Global RADS configuration file
 	<compress>int4 1e-3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_eiggc03c" field="412" sat="n1">
-	<long_name>EIGEN-GC03c orbital altitude</long_name>
-	<standard_name>height_above_reference_ellipsoid</standard_name>
-	<source>EIGEN-GC03c</source>
-	<parameters>eigen-cg03c</parameters>
-	<units>m</units>
-	<data>alt_eiggc03c</data>
-	<format>f11.3</format>
-	<compress>int4 1e-3</compress>
-	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
-</var>
 <var name="alt_eiggl04s" field="414" sat="j1 n1">
 	<long_name>EIGEN-GL04c orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
