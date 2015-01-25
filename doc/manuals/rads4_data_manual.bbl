@@ -1,4 +1,4 @@
-\begin{thebibliography}{62}
+\begin{thebibliography}{66}
 \providecommand{\natexlab}[1]{#1}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
@@ -103,6 +103,11 @@ Feng, H., S.~Yao, L.~Li, N.~Tran, D.~Vandemark, and S.~Labroue (2010),
   Spline-based nonparametric estimation of the altimeter sea state bias
   correction, \textit{IEEE Geosci.\ Rem.\ Sens.\ Lett.}, \textit{7}(3),
   577--581.
+
+\bibitem[{\textit{F{\"o}rste et~al.}(2013)}]{forste2013}
+F{\"o}rste, C., et~al. (2013), {EIGEN-6C3stat} -- the newest high resolution
+  global combined gravity field model based on the 4th release of the {GOCE}
+  direct approach, \textit{Tech. rep.}, ICGEM/GFZ Postdam.
 
 \bibitem[{\textit{Francis}(1990)}]{francis1990a}
 Francis, C.~R. (1990), The {ERS-1} radar altimeter, paper presented at the 2nd
@@ -258,6 +263,11 @@ Queffeulou, P. (2004), Long-term validation of wave height measurements from
   altimeters, \textit{Mar.\ Geod.}, \textit{27}, 495--510,
   \doi{10.1080/01490410490883478}.
 
+\bibitem[{\textit{Ray}(2013)}]{ray2013}
+Ray, R.~D. (2013), Precise comparisons of bottom-pressure and altimetric ocean
+  tides, \textit{J.\ Geophys.\ Res.}, \textit{118}(4570-4584),
+  \doi{10.1002/jgrc.20336}.
+
 \bibitem[{\textit{Ray et~al.}(2011)\textit{Ray, Egbert, and
   Erofeeva}}]{ray2011}
 Ray, R.~D., G.~D. Egbert, and S.~Y. Erofeeva (2011), Tide predictions in shelf
@@ -313,6 +323,16 @@ Scharroo, R., and P.~N. A.~M. Visser (1998), Precise orbit determination and
   gravity field improvement for the {ERS} satellites, \textit{J.\ Geophys.\
   Res.}, \textit{103}(C4), 8113--8127, \doi{10.1029/97JC03179}.
 
+\bibitem[{\textit{Shako et~al.}(2014)\textit{Shako, F{\"o}rste, Abrikosov,
+  Bruinsma, Marty, Lemoine, Flechtner, Neumayer, and Dahle}}]{shako2014}
+Shako, R., C.~F{\"o}rste, O.~Abrikosov, S.~Bruinsma, J.~C. Marty, J.-M.
+  Lemoine, F.~Flechtner, K.~H. Neumayer, and C.~Dahle (2014), {EIGEN-6C}: A
+  high-resolution global gravity combination model including {GOCE} data, in
+  \textit{Observation of the System Earth from Space - CHAMP, GRACE, GOCE and
+  future missions}, edited by F.~Flechtner, N.~Sneeuw, and W.-D. Schuh,
+  Advanced Technologies in Earth Sciences, pp. 155--161, Springer Berlin
+  Heidelberg, \doi{10.1007/978-3-642-32135-1_20}.
+
 \bibitem[{\textit{Stum et~al.}(1998)\textit{Stum, Ogor, Le~Traon, Dorandeu,
   Gaspar, and Dumont}}]{stum1998a}
 Stum, J., F.~Ogor, P.-Y. Le~Traon, J.~Dorandeu, P.~Gaspar, and J.-P. Dumont
@@ -337,6 +357,12 @@ Tran, N., D.~Vandemark, S.~Labroue, H.~Feng, B.~Chapron, H.~L. Tolman,
   J.~Lambin, and N.~Picot (2010), The sea state bias in altimeter sea level
   estimates determined by combining wave model and satellite data, \textit{J.\
   Geophys.\ Res.}, \textit{115}, C03020, \doi{10.1029/2009JC005534}.
+
+\bibitem[{\textit{Tran et~al.}(2012)\textit{Tran, Philipps, Poisson, Urien,
+  Bronner, and Picot}}]{tran2012}
+Tran, N., S.~Philipps, J.~C. Poisson, S.~Urien, E.~Bronner, and N.~Picot
+  (2012), Impact of {GDR-D} standards on {SSB} correction, Ocean Science
+  Topography Science Team Meeting, Venice, Italy, 27-29 September 2012.
 
 \bibitem[{\textit{Wahr}(1985)}]{wahr1985}
 Wahr, J.~M. (1985), Deformation of the {Earth} induced by polar motion,
