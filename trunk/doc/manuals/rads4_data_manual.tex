@@ -486,15 +486,18 @@ Although the FES and GOT models are global, they are limited in scope. Over land
 \begin{vartable}
 \var{tide_ocean_fes04} & 1213 & FES2004 ocean tide & m & all & -5 5 & \ref{item:tide_ocean_fes04} \\
 \var{tide_load_fes04}  & 1313 & FES2004 load  tide & m & all & -0.5 0.5 & \ref{item:tide_load_fes04} \\
-\var{tide_ocean_got47} & 1217 & GOT4.7  ocean tide & m & all & -5 5 & \ref{item:tide_ocean_got47} \\
-\var{tide_load_got47}  & 1317 & GOT4.7  load  tide & m & all & -0.5 0.5 & \ref{item:tide_load_got47} \\
-\var{tide_ocean_got47} & 1217 & GOT4.8  ocean tide & m & all & -5 5 & \ref{item:tide_ocean_got48} \\
-\var{tide_load_got47}  & 1317 & GOT4.8  load  tide & m & all & -0.5 0.5 & \ref{item:tide_load_got48} \\
-\var{tide_ocean_got49} & 1219 & GOT4.9  ocean tide & m & & -5 5 & \ref{item:tide_ocean_got49} \\
-\var{tide_load_got49}  & 1319 & GOT4.9  load  tide & m & & -0.5 0.5 & \ref{item:tide_load_got49} \\
-\var{tide_ocean_webtide} & 1215 & WebTide ocean tide & m & all & -5 5 & \ref{item:tide_ocean_webtide} \\
-\var{tide_equil}       & 3901 & long-period equilibrium tide & m & all & -1 1 & \ref{item:tide_equil} \\
-\var{tide_non_equil}   & 3902 & long-period non-equil tide & m & all & -1 1 & \ref{item:tide_non_equil} \\
+\var{tide_ocean_webtide}&1215 & WebTide ocean tide & m & all & -5 5 & \ref{item:tide_ocean_webtide} \\
+\var{tide_ocean_got47} & 1217 & GOT4.7  ocean tide & m & e1 e2 g1 gs pn tx & -5 5 & \ref{item:tide_ocean_got47} \\
+\var{tide_load_got47}  & 1317 & GOT4.7  load  tide & m & e1 e2 g1 gs pn tx & -0.5 0.5 & \ref{item:tide_load_got47} \\
+\var{tide_ocean_got48} & 1219 & GOT4.8  ocean tide & m & all & -5 5 & \ref{item:tide_ocean_got48} \\
+\var{tide_load_got48}  & 1319 & GOT4.8  load  tide & m & all & -0.5 0.5 & \ref{item:tide_load_got48} \\
+\var{tide_ocean_got49} & 1221 & GOT4.9  ocean tide & m & e1 j1 n1 pn tx & -5 5 & \ref{item:tide_ocean_got49} \\
+\var{tide_load_got49}  & 1321 & GOT4.9  load  tide & m & e1 j1 n1 pn tx & -0.5 0.5 & \ref{item:tide_load_got49} \\
+\var{tide_ocean_got410}& 1222 & GOT4.10 ocean tide & m & c2 j1 j2 pn sa tx & -5 5 & \ref{item:tide_ocean_got410} \\
+\var{tide_load_got410} & 1322 & GOT4.10 load  tide & m & c2 j1 j2 pn sa tx & -0.5 0.5 & \ref{item:tide_load_got410} \\
+\var{tide_ocean_fes12} & 1223 & FES2012 ocean tide & m & c2 j1 j2 pn sa tx & -5 5 & \ref{item:tide_ocean_fes12} \\
+\var{tide_equil}       & 3901 & long-period equilib.\ tide & m & all & -1 1 & \ref{item:tide_equil} \\
+\var{tide_non_equil}   & 3902 & long-period non-equil.\ tide & m & all & -1 1 & \ref{item:tide_non_equil} \\
 \hline
 \var{tide_ocean} & 12 & \alias{tide_ocean_got48} && all && \\
 \var{tide_load}  & 13 & \alias{tide_load_got48} && all && \\
@@ -504,10 +507,17 @@ Although the FES and GOT models are global, they are limited in scope. Over land
 Notes:
 \begin{enumerate}
 \item The Finite Element Solution (FES2004) includes 9 short-period waves (Q1, O1, K1, P1, 2N2, N2, M2, K2, and S2) plus 24 additional short-period waves determined by admittance, and 4 long-period waves (Mf, Mm, Mtm and MSqm) \citep{lyard2006}. Long-period equilibrium tides (not yet included in FES2004) are added to these.\label{item:tide_ocean_fes04}\label{item:tide_load_fes04}
-\item The Goddard Ocean Tide model (GOT 4.7) includes 10 short-period waves (K1, O1, P1, Q1, S1, K2, M2, N2, S2, and M4) plus 17 additional short-period waves determined by admittance \citep{ray2011}. The 4 long-period waves from FES2004 and additional long-period equilibrium tides are added to these.\label{item:tide_ocean_got47}\label{item:tide_load_got47}
-\item The Goddard Ocean Tide model (GOT 4.8) differs from GOT 4.7 only in its S2 component.\label{item:tide_ocean_got48}\label{item:tide_load_got48}
-\item The Goddard Ocean Tide model (GOT 4.9) differs from GOT 4.7 only in its S2 component.\label{item:tide_ocean_got49}\label{item:tide_load_got49}
 \item WebTide is a collection of regional tide models along the Canadian coast, made available on the web by the Bedford Institute of Oceanography \url{http://www.bio.gc.ca/research-recherche/WebTide-MareeWeb/webtide-eng.htm}. In RADS, a single value is presented in \var{tide_ocean_webtide}, determined from (in order of decreasing preference) the regional models for: Scotia/Fundy/Maine, Northeast Pacific, Arctic, Hudson Bay. Each of these models has a very limited amount of constituents, does not include admittance to infer others, and also does not include any long-period tides (equilibrium or non-equilibrium).\label{item:tide_ocean_webtide}
+\item The Goddard Ocean Tide model GOT 4.7 includes 10 short-period waves (K1, O1, P1, Q1, S1, K2, M2, N2, S2, and M4) plus 17 additional short-period waves determined by admittance \citep{ray2011}. The 4 long-period waves from FES2004 and additional long-period equilibrium tides are added to these.\label{item:tide_ocean_got47}\label{item:tide_load_got47}
+\textbf{This field is slated to be removed.}
+\item The Goddard Ocean Tide model GOT 4.8 differs from GOT 4.7 only in its S2 component.\label{item:tide_ocean_got48}\label{item:tide_load_got48}
+\item The Goddard Ocean Tide model GOT 4.9 differs from GOT 4.7 only in its S2 component.\label{item:tide_ocean_got49}\label{item:tide_load_got49}
+\textbf{This field is slated to be removed.}
+\item The Goddard Ocean Tide model GOT4.10c differs from the current default in RADS, GOT4.8, in two ways. First, GOT4.10c is based only on Jason data, whereas 4.8 was from only TOPEX data. Second, it includes an adjustment for the geocenter. (Hence the 'c' in the name.) The processing for 4.8 and 4.10 was largely identical; one exception involved an improvement to P1 alone. GOT4.10c is an update of \citet{ray2013}.\label{item:tide_ocean_got410}\label{item:tide_load_got410}
+\textbf{This model will soon become the default ocean and load tide model.}
+\item FES2012 (Finite Element Solution 2012) takes advantage of longer altimeter time series, improved modelling, and data assimilation techniques, and more accurate and higher resolution ocean bathymetry. A new global finite element grid (with approx.\ 1.5 million nodes) was used to create a  'free' solution (independent of in situ and remote-sensing data) that has twice accuracy of the FES2004 version. The 'free' solution was assimilated with long-term altimetry data from TOPEX/POSEIDON, Jason-1, Jason-2, ERS-1, ERS-2, and ENVISAT. The FES2012 solution shows particular improvement in coastal and shelf regions.
+
+Please note that tide loading effects have not yet been computed for FES2012, and therefore you should use the load tide from one the GOT load tide models with the ocean tide from FES2012. Since the load tide models are global, this would not limit the area for which you can determine geocentric tides (ocean plus load tides). \url{http://www.aviso.oceanobs.com/en/data/products/auxiliary-products/global-tide-fes2004-fes99/description-fes2012.html}\label{item:tide_ocean_fes12}
 \item The equilibrium ocean tide includes 15 tidal spectrum lines from the Cartwright-Tayler-Edden tables \citep{cartwright1971,cartwright1973} plus an additional 123 second and third order waves \citep{tamura1987}.\label{item:tide_equil}
 \item The four long-period non-equlibrium ocean tidal components (Mm, Mf, Mtm, and MSqm) from the FES2004 model are represented in \var{tide_non_equil}. The equilibrium parts of those have been removed to avoid double accounting.\label{item:tide_non_equil}
 \end{enumerate}
@@ -530,7 +540,9 @@ In the earlier days of altimetry the sea state bias was generally considered as 
 \var{ssb_cls} & 1502 & CLS non-parametric SSB & m & j1 j2 n1 tx       & -1 1 & \ref{item:ssb_cls} \\
 \var{ssb_csr} & 1503 & CSR BM4 sea state bias & m & tx                & -1 1 & \ref{item:ssb_csr} \\
 \var{ssb_hyb} & 1504 & NOAA hybrid sea state bias & m & g1 gs n1 pn sa & -1 1 & \ref{item:ssb_hyb} \\
+\var{ssb_cls_c} & 1505 & CLS non-parametric SSB (C-band) & m & j1 j2 & -1 1 & \ref{item:ssb_cls_c} \\
 \var{ssb_cls_mle3} & 1512 & CLS non-parametric SSB (MLE3) & m & j2      & -1 1 & \ref{item:ssb_cls_mle3} \\
+\var{ssb_tran2012} & 1513 & Tran et al. 2012 non-parametric sea state bias & m & j2 & -1 1 & \ref{item:ssb_tran2012} \\
 \hline
 \var{ssb}     &   15 & \alias{ssb_bm3} && e1 e2 pn && \\
 \var{ssb}     &   15 & \alias{ssb_cls} && j1 j2 n1 tx && \\
@@ -540,13 +552,14 @@ In the earlier days of altimetry the sea state bias was generally considered as 
 Notes:
 \begin{enumerate}
 \item One-, three- or four-term polynomials of SWH and wind speed \citep{gaspar1994a}.\label{item:ssb_bm3}
-\item Non-parametric sea state bias models by CLS \citep{gaspar2002,labroue2004}.\label{item:ssb_cls}
+\item Non-parametric sea state bias models for Ku-band and C-band by CLS \citep{gaspar2002,labroue2004}.\label{item:ssb_cls}\label{item:ssb_cls_c}
 \item Four-term sea state bias model for TOPEX (different model for side A and side B altimeters) \citep{chambers2003a}.\label{item:ssb_csr}
 \item Hybrid (mix between parametric and non-parametric techniques) sea state bias models produced at NOAA \citep{scharroo2005e}.\label{item:ssb_hyb}
 \item For Jason-2 data retracked by MLE3, a separate non-parametric model is available.\label{item:ssb_cls_mle3}
+\item The non-parametric SSB model developed by \citet{tran2012} will be part of the upcoming GDR-D standards.\label{item:ssb_tran2012}
 \end{enumerate}
 
-\section{Geoid and mean sea surface}
+\section{Mean sea surface and geoid}
 \label{var:geoid}\label{var:mss}
 The sea level anomaly (SLA) is expressed as the difference of the instantaneous tide-corrected sea surface with respect to a well-established mean. Over the years several (more or less) global mean sea surface models have been developed from the compilation of satellite altimeter (and sometimes gravity) data. Generally, the more altimeter data collected, the more precise the model. But also the resolution of the model counts. Each model has been referenced to the TOPEX reference ellipsoid, just as the satellite orbits (Section~\ref{var:alt}).
 
@@ -558,8 +571,9 @@ Another reference surface is the geoid (the theoretical mean sea surface in abse
 \var{mss_dncs2008} & 1612 & DNSC08 mean sea surface & m & all & -200 200 & \ref{item:mss_dnsc2008} \\
 \var{mss_dtu10} & 1613 & DTU10 mean sea surface & m & all & -200 200 & \ref{item:mss_dtu10} \\
 \var{mss_cls11} & 1614 & {CNES-CLS11} mean sea surface & m &  & -200 200 & \ref{item:mss_cls11} \\
-\var{mss_dtu13} & 1616 & DTU13 mean sea surface & m & j1 j2 pn sa tx & -200 200 & \ref{item:mss_dtu13} \\
+\var{mss_dtu13} & 1616 & DTU13 mean sea surface & m & c2 j1 j2 pn sa tx & -200 200 & \ref{item:mss_dtu13} \\
 \var{geoid_egm2008} & 1611 & EGM2008 geoid & m & all & -200 200 & \ref{item:geoid_egm2008} \\ 
+\var{geoid_eigen6} & 1617 & EIGEN6c3stat geoid & m & c2 j1 j2 pn sa tx & -200 200 & \ref{item:geoid_eigen6} \\
 \hline
 \var{mss} & 16 & \alias{mss_dtu10} && all && \\
 \var{geoid} && \alias{geoid_egm2008} && all && \\
@@ -572,7 +586,10 @@ Notes:
 \item Older version a mean sea surface model based on RADS data created at DNSC (now DTU) \citep{andersen2009}.\label{item:mss_dnsc2008}
 \item The DTU10 mean sea surface model created at DTU based on RADS data \citep{andersen2010}.\label{item:mss_dtu10}
 \item Newest iteration of mean sea surface models at CNES/CLS \citep{schaeffer2012}.\label{item:mss_cls11}
-\item The DTU13 mean sea surface model is the up-to-date mean sea surface model created at DTU from RADS data \citep{andersen2013a}.\label{item:mss_dtu13}
+\item The DTU13MSS is the latest release of the global high-resolution mean sea surface from DTU Space, which includes two major advances over DTU10MSS. First, the time series have been extended to 20 years from 17 years. Second, the DTU13MSS ingests Cryosat-2 SAR lead data in order to map the high latitude parts of the Arctic Ocean. In high-latitude regions a combination of joint ERS-1/ERS-2/ENVISAT and Cryosat-2 altimetry have been used. Also, the Jason-1 geodetic mission has been used for the DTU13MSS. \citep{andersen2013a}.\label{item:mss_dtu13}
+\textbf{This will soon become the default MSS model, replacing DTU10.}
+\item The EIGEN?6C3stat geoid model has been generated in preparation for the final release of EIGEN?6C4. It was computed from a combination of LAGEOS, GRACE, and GOCE data, augmented with DTU13 surface gravity data to degree and order 1949 (corresponding to approximately 10 km spatial resolution). \citep{forste2013,shako2014}.\label{item:geoid_eigen6}
+\textbf{This will soon become the default geoid model, replacing EGM2008.} 
 \end{enumerate}
 
 \chapter{Wind speed and wave height variables}
@@ -771,6 +788,19 @@ Variable & field & name & values & sat \\
 
 \section{Radiometer brightness temperatures}
 \label{var:tb}
+
+\section{Bathymetry and topography}
+\label{var:topo}
+
+SRTM30PLUS topography/bathymetry
+\var{topo_srtm30plus}
+
+V10 of SRTM30\_PLUS was released in May 2014. Ocean data are based on the Smith and Sandwell global 1-minute grid between latitudes +/- 81 degrees. Higher resolution grids have been added from the LDEO Ridge Multibeam Synthesis Project, the JAMSTEC Data Site for Research Cruises, and the NGDC Coastal Relief Model. Arctic bathymetry is from the International Bathymetric Chart of the Oceans (IBCAO) [Jakobsson et al., 2003].
+
+Land data are based on the 1-km averages of topography derived from the USGS SRTM30 grided DEM data product created with data from the NASA Shuttle Radar Topography Mission. GTOPO30 data are used for high latitudes where SRTM data are not available.
+
+For more information about SRTM30\_PLUS, please see:
+\url{http://topex.ucsd.edu/WWW_html/srtm30_plus.html}
 
 \bibliography{altim}
 
