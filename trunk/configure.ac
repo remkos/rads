@@ -40,8 +40,8 @@ AC_CANONICAL_SYSTEM
 # Specify user options
 # -----------------------------------------------------------------
 AC_ARG_WITH(nf-config,  [  --with-nf-config=dir       Full path to nf-config [[auto]]])
-AC_ARG_WITH(netcdf-inc, [  --with-netcdf-inc=dir      Specify location of netCDF include file [[auto]]])
-AC_ARG_WITH(netcdf-lib, [  --with-netcdf-lib=dir:dir  Specify location of netCDF library.  Use colon-separator if Fortran library is in separate directory [[auto]]])
+AC_ARG_WITH(netcdf-inc, [  --with-netcdf-inc=dir      Specify location of the netCDF include file [[auto]]])
+AC_ARG_WITH(netcdf-lib, [  --with-netcdf-lib=dir:dir  Specify location of the netCDF library.  Use colon-separator if Fortran library is in separate directory [[auto]]])
 AC_ARG_ENABLE(debug,    [  --enable-debug             Compile with debugging options [[off]]])
 AC_ARG_ENABLE(devel,    [  --enable-devel             Compile developer tools [[off]]])
 
@@ -72,17 +72,6 @@ if ! test "x$enable_devel" = "xyes" ; then
 fi
 AC_MSG_RESULT([$enable_devel])
 
-if test "x$enable_devel" = "xno"; then
-	DEVEL=
-	DEVEL_OBJS=
-else
-	DEVEL=devel
-	DEVEL_OBJS='${ALTIM}/src/rssubs/tpj_subs.o ${ALTIM}/src/rssubs/solar_subs.o'
-fi
-AC_SUBST(ALTIM)
-AC_SUBST(DEVEL)
-AC_SUBST(DEVEL_OBJS)
-
 # -----------------------------------------------------------------
 # Default settings come from nf-config
 # -----------------------------------------------------------------
@@ -92,6 +81,7 @@ AC_PATH_PROG([nf_config], [nf-config], [$with_nf_config])
 # Find Fortran 90 compilers.
 # -----------------------------------------------------------------
 # If F90 is set, and FC isn't, then set FC to whatever F90 was set to.
+# Otherwise set it to what netCDF was compiled with
 AC_MSG_CHECKING([for Fortran 90 compiler])
 if test "${F90+set}" = "set"; then
 	F90=$F90
@@ -114,30 +104,36 @@ F90S="xlf90 fort xlf95 ifort ifc efc pgf95 lf95 $F90G xlf90 pgf90 epcf90"
 AC_MSG_NOTICE([finding Fortran 90 compiler])
 AC_PROG_FC($F90 $F90S)
 F90=$FC
-
 if test "${FC+set}" = set && test "x$FC" = x; then
 	AC_MSG_ERROR([Cannot find F90 compiler. Cannot continue.])
 fi
 
+# -----------------------------------------------------------------
 # Learn more about the Fortran 90 compiler
+# -----------------------------------------------------------------
 AC_MSG_NOTICE([setting up Fortran 90])
-
-# Some f90 compilers change the case of the mod file names. Others
-# require special flags to be set to deal with .f90 files. Find out
-# about this compiler.
+# Find out various additions needed to FCFLAGS to make the compiler
+# run with .f90, free-form, 132-byte length, or module inclusion.
 AC_LANG_PUSH(Fortran)
 AC_FC_SRCEXT(f90)
+AC_FC_FREEFORM
+AC_FC_LINE_LENGTH(132)
+AC_FC_MODULE_FLAG
+AC_FC_FUNC("FC_name",FC_name)
 AC_LANG_POP(Fortran)
+MOD_FLAG="$ac_cv_fc_module_flag"
+echo $MOD_FLAG
+AC_SUBST(MOD_FLAG)
+AC_SUBST(FC_name)
 
-# Check the fortran 90 compiler to make sure it can compile a
-# little test file.
+
+# Check if the fortran 90 compiler can compile a simple test file.
 AC_MSG_CHECKING([if $FC can handle Fortran 90])
 cat <<EOF >conftest.f90
 program foo
 real, parameter :: pi = 3.141592654
 end program
 EOF
-
 doit='$FC $FCFLAGS conftest.f90 -o conftest.exe'
 if AC_TRY_EVAL(doit); then
 	AC_MSG_RESULT([yes])
@@ -146,84 +142,38 @@ else
 fi
 rm -rf conftest.*
 
-# Check which flag to use for modules
-AC_MSG_CHECKING([Fortran 90 modules inclusion flag])
-mkdir -p conftest.dir
-cat <<EOF >conftest.dir/confmod.f90
-module confmod
-contains
-subroutine conftest_routine
-stop
-end subroutine conftest_routine
-end module confmod
-EOF
-doit='(cd conftest.dir;$FC $FCFLAGS confmod.f90 -c)'
-if ! AC_TRY_EVAL(doit); then
-	AC_MSG_ERROR([Could not compile module at all])
-fi
-
-cat <<EOF >conftest.f90
-program conftest
-use confmod
-end program conftest
-EOF
-
-MOD_FLAG="none"
-for flag in "-I" "-M" "-p"; do
-	doit='$FC $FCFLAGS ${flag}conftest.dir conftest.f90 -o conftest.exe'
-	if AC_TRY_EVAL(doit); then
-		MOD_FLAG=$flag
-		break
-	fi
-done
-if test "x$MOD_FLAG" = xnone; then
-	AC_MSG_ERROR([Could not find flag to include modules])
-else
-	AC_MSG_RESULT($MOD_FLAG)
-fi
-rm -rf conftest.*
-AC_SUBST(MOD_FLAG)
-
 # -----------------------------------------------------------------
-# How to specify extended (i.e. 132-byte) record length
+# Additional flags for GNU compilers (for developers only)
 # -----------------------------------------------------------------
-AC_MSG_CHECKING([how to allow lines longer than 72 characters])
+AC_MSG_CHECKING([for additional compiler flags (for developers)])
 opt=
-if test "x$ac_cv_f77_compiler_gnu" = "xyes" ; then
-	opt=" -ffixed-line-length-none"
-fi
-if test "x$FC" = "xifort"; then
-	opt=" -extend-source"
-fi
-if test "x$FC" = "xpgf77" || test "x$FC" = "xpgf90" ; then
-	opt=" -Mextend"
+if test "x$enable_devel" = "xyes"; then
+	if test "x$ac_cv_f77_compiler_gnu" = "xyes" ; then
+		opt=" -Wall -Wimplicit"
+	fi
+	if test "x$FC" = "xgfortran" ; then
+		opt=" -Wall -Wtabs -fimplicit-none"
+	fi
 fi
 FCFLAGS=$FCFLAGS$opt
 AC_MSG_RESULT($opt)
 
-# -----------------------------------------------------------------
-# Additional flags for GNU compilers (for developers only)
-# -----------------------------------------------------------------
-if test "x$enable_devel" = "xyes"; then
-AC_MSG_CHECKING([for additional compiler flags (for developers)])
-opt=
-if test "x$ac_cv_f77_compiler_gnu" = "xyes" ; then
-	opt=" -Wall -Wimplicit"
+if test "x$enable_devel" = "xno"; then
+	ALTIM=
+	DEVEL=
+	DEVEL_OBJS=
+	DEVEL_FLAGS=
+	INSTALL_C=
+else
+	DEVEL=devel
+	DEVEL_OBJS='${ALTIM}/src/rssubs/tpj_subs.o ${ALTIM}/src/rssubs/solar_subs.o'
+	DEVEL_FLAGS=" -I../devel $MOD_FLAG"'${ALTIM}/include'
+	INSTALL_C=" -C"
 fi
-if test "x$FC" = "xgfortran" ; then
-	opt=" -Wall -Wtabs -fimplicit-none"
-fi
-DEVEL_FLAGS=" -I../devel $MOD_FLAG"'${ALTIM}/include'
-FCFLAGS=$FCFLAGS$opt
-AC_MSG_RESULT($opt$DEVEL_FLAGS)
+AC_SUBST(ALTIM)
+AC_SUBST(DEVEL)
+AC_SUBST(DEVEL_OBJS)
 AC_SUBST(DEVEL_FLAGS)
-fi
-
-# -----------------------------------------------------------------
-# How are Fortran subroutine names translated?
-# -----------------------------------------------------------------
-AC_FC_FUNC("FC_name",FC_name)
-AC_SUBST(FC_name)
 
 # -----------------------------------------------------------------
 # Allow user to set --with-netcdf-inc and/or --with-netcdf-lib
@@ -294,13 +244,16 @@ else
 fi
 
 # -----------------------------------------------------------------
-# Where to find lapack
+# Allow user to set --with-lapack-lib
 # -----------------------------------------------------------------
-AC_MSG_CHECKING([for lapack library options])
-case $build_os in
-*darwin*) LAPACK_LIB="-Wl,-framework,Accelerate" ;;
-       *) LAPACK_LIB="-llapack -lblas" ;;
-esac
+AC_MSG_CHECKING([for lapack options (for developers)])
+LAPACK_LIB=
+if test "x$with_devel" = "xyes" ; then
+	case $build_os in
+	*darwin*) LAPACK_LIB="-Wl,-framework,Accelerate" ;;
+	*) LAPACK_LIB="-llapack -lblas" ;;
+	esac
+fi
 AC_MSG_RESULT($LAPACK_LIB)
 AC_SUBST(LAPACK_LIB)
 
@@ -308,12 +261,12 @@ AC_SUBST(LAPACK_LIB)
 # Do we have big or little endian
 # -----------------------------------------------------------------
 AC_C_BIGENDIAN
-if test "X$ac_cv_c_bigendian" = "Xyes"; then
-	BYTE_ORDER="big-endian"
+if test "x$ac_cv_c_bigendian" = "xyes"; then
+	LITTLE_ENDIAN="false"
 else
-	BYTE_ORDER="little-endian"
+	LITTLE_ENDIAN="true"
 fi
-AC_SUBST(BYTE_ORDER)
+AC_SUBST(LITTLE_ENDIAN)
 
 # -----------------------------------------------------------------
 # Find other utilities
@@ -324,18 +277,11 @@ AC_PROG_RANLIB
 AC_PROG_INSTALL
 
 # -----------------------------------------------------------------
-# Does install allow -C option?
+# Add -C option to install (developers only)
 # -----------------------------------------------------------------
-AC_MSG_CHECKING([if install allows -C option])
-${INSTALL} --version 2>&1|egrep "GNU|bCcp" > /dev/null
-if test $?; then
-	INSTALL_DATA="${INSTALL_DATA} -C"
-	INSTALL_PROGRAM="${INSTALL_PROGRAM} -C"
-	INSTALL_SCRIPT="${INSTALL_SCRIPT} -C"
-	AC_MSG_RESULT([yes])
-else
-	AC_MSG_RESULT([no])
-fi
+INSTALL_DATA="${INSTALL_DATA}${INSTALL_C}"
+INSTALL_PROGRAM="${INSTALL_PROGRAM}${INSTALL_C}"
+INSTALL_SCRIPT="${INSTALL_SCRIPT}${INSTALL_C}"
 INSTALL_DIR='${INSTALL} -d'
 AC_SUBST(INSTALL_DIR)
 

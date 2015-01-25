@@ -36,18 +36,23 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_DIR = @INSTALL_DIR@
 
 #-----------------------------------------------------------------------
+# Are we little endian?
+#-----------------------------------------------------------------------
+LITTLE_ENDIAN = @LITTLE_ENDIAN@
+
+#-----------------------------------------------------------------------
 # Environments for developers only
 #-----------------------------------------------------------------------
 ALTIM = @ALTIM@
 DEVEL = @DEVEL@
 DEVEL_OBJS = @DEVEL_OBJS@
+LAPACK_LIB = @LAPACK_LIB@
 
 #-----------------------------------------------------------------------
-# Include and load option for NetCDF (and LAPACK, for developers only)
+# Include and load option for NetCDF
 #-----------------------------------------------------------------------
 NETCDF_INC = @NETCDF_INC@
 NETCDF_LIB = @NETCDF_LIB@
-LAPACK_LIB = @LAPACK_LIB@
 
 #-----------------------------------------------------------------------
 # Additional tools
@@ -75,6 +80,6 @@ FFLAGS = @FCFLAGS@@DEVEL_FLAGS@ -I../include @MOD_FLAG@../src $(NETCDF_INC)
 %.o:	%.mod
 
 # Create new .mod rule
-# Do not add %.f90 dependency because %.mod retain timestamp when not altered
+# Do not add %.f90 dependency because %.mod retains timestamp when not altered
 %.mod:
 	$(COMPILE.f) -o $*.o $*.f90
