@@ -77,7 +77,8 @@ radsxogen:		spline.o
 #-----------------------------------------------------------------------
 
 config.f90:	../config.mk
-	printf "character(len=rads_naml) :: radsdataroot = '%s'\n" $(datadir) > $@
+	printf "character(len=rads_naml), parameter :: radsdataroot = '%s'\n" $(datadir) > $@
+	printf "logical, parameter :: little_endian = .%s.\n" $(LITTLE_ENDIAN) >> $@
 
 rads-config:	rads-config.in
 	@echo "Error: Need to run configure in main directory first"
