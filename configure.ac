@@ -39,11 +39,11 @@ AC_CANONICAL_SYSTEM
 # -----------------------------------------------------------------
 # Specify user options
 # -----------------------------------------------------------------
-AC_ARG_WITH(nf-config,  [  --with-nf-config=dir       Full path to nf-config [[auto]]])
-AC_ARG_WITH(netcdf-inc, [  --with-netcdf-inc=dir      Specify location of the netCDF include file [[auto]]])
-AC_ARG_WITH(netcdf-lib, [  --with-netcdf-lib=dir:dir  Specify location of the netCDF library.  Use colon-separator if Fortran library is in separate directory [[auto]]])
-AC_ARG_ENABLE(debug,    [  --enable-debug             Compile with debugging options [[off]]])
-AC_ARG_ENABLE(devel,    [  --enable-devel             Compile developer tools [[off]]])
+AC_ARG_WITH([nf-config],  [  --with-nf-config=dir       Full path to nf-config [[auto]]])
+AC_ARG_WITH([netcdf-inc], [  --with-netcdf-inc=dir      Specify location of the netCDF include file [[auto]]])
+AC_ARG_WITH([netcdf-lib], [  --with-netcdf-lib=dir:dir  Specify location of the netCDF library.  Use colon-separator if Fortran library is in separate directory [[auto]]])
+AC_ARG_ENABLE([debug],    [  --enable-debug             Compile with debugging options [[off]]])
+AC_ARG_ENABLE([devel],    [  --enable-devel             Compile developer tools [[off]]])
 
 # -----------------------------------------------------------------
 # Process user options
@@ -121,11 +121,8 @@ AC_FC_LINE_LENGTH(132)
 AC_FC_MODULE_FLAG
 AC_FC_FUNC("FC_name",FC_name)
 AC_LANG_POP(Fortran)
-MOD_FLAG="$ac_cv_fc_module_flag"
-echo $MOD_FLAG
-AC_SUBST(MOD_FLAG)
+AC_SUBST(MOD_FLAG, ${ac_cv_fc_module_flag})
 AC_SUBST(FC_name)
-
 
 # Check if the fortran 90 compiler can compile a simple test file.
 AC_MSG_CHECKING([if $FC can handle Fortran 90])
