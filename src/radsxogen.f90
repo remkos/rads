@@ -390,20 +390,22 @@ cycle2 = max(S2%cycles(1), rads_time_to_cycle (S2, t0))
 ! Nullify all pointers
 nullify (P2, top, prev)
 
+600 format (a,3i6)
+
 ! Cycle through cycles and passes for S1
 do cycle1 = S1%cycles(1), S1%cycles(2)
 	do pass1 = S1%passes(1), S1%passes(2), step
 
 		! Open a pass for S1, to be crossed with any pass of S2
-		if (rads_verbose > 2) write (*,*) 'open S1', cycle1, pass1
+		if (rads_verbose > 2) write (*,600) 'open S1', cycle1, pass1
 		call rads_open_pass (S1, P1, cycle1, pass1)
 		if (P1%ndata <= 0) then
-			if (rads_verbose > 2) write (*,*) 'empty S1', P1%cycle, P1%pass
+			if (rads_verbose > 2) write (*,600) 'empty S1', P1%cycle, P1%pass
 			call rads_close_pass (S1, P1)
 			cycle
 		endif
 		call load_data (S1, P1)
-		if (rads_verbose > 2) write (*,*) 'close S1', P1%cycle, P1%pass, P1%ncid
+		if (rads_verbose > 2) write (*,600) 'close S1', P1%cycle, P1%pass, P1%ncid
 		call rads_close_pass (S1, P1, .true.) ! Close the pass file, but keep all its info
 
 		! Limit the time selection for P2 based on the time limits of P1
@@ -416,7 +418,7 @@ do cycle1 = S1%cycles(1), S1%cycles(2)
 			if (P2%end_time < t0) then ! Release passes that are far in the past
 				top => P2%next ! Reassign the top of the list to the next pass (if any)
 				nullify (prev)
-				if (rads_verbose > 2) write (*,*) 'release S2', P2%cycle, P2%pass
+				if (rads_verbose > 2) write (*,600) 'release S2', P2%cycle, P2%pass
 				call rads_close_pass (S2, P2)
 				deallocate (P2)
 				P2 => top
@@ -440,10 +442,10 @@ do cycle1 = S1%cycles(1), S1%cycles(2)
 				pass2 = S2%passes(1) - 1 + step ! Start with pass "1" or "2"
 			endif
 			allocate (P2)
-			if (rads_verbose > 2) write (*,*) 'open S2', cycle2, pass2
+			if (rads_verbose > 2) write (*,600) 'open S2', cycle2, pass2
 			call rads_open_pass (S2, P2, cycle2, pass2)
 			if (P2%end_time < t0) then ! There seems to be a reason why P2%ndata == 0 is kept
-				if (rads_verbose > 2) write (*,*) 'release S2', P2%cycle, P2%pass
+				if (rads_verbose > 2) write (*,600) 'release S2', P2%cycle, P2%pass
 				call rads_close_pass (S2, P2)
 				deallocate (P2)
 				cycle
@@ -454,7 +456,7 @@ do cycle1 = S1%cycles(1), S1%cycles(2)
 				top => P2
 			endif
 			call load_data (S2, P2)
-			if (rads_verbose > 2) write (*,*) 'close S2', P2%cycle, P2%pass, P2%ncid
+			if (rads_verbose > 2) write (*,600) 'close S2', P2%cycle, P2%pass, P2%ncid
 			call rads_close_pass (S2, P2, .true.) ! Close the pass file, but keep all its info
 			if (P2%start_time > t1) exit
 			if (P2%ndata > 0) call xogen_passes (S1, P1, S2, P2, dt)
@@ -464,7 +466,7 @@ do cycle1 = S1%cycles(1), S1%cycles(2)
 		enddo
 
 		! Clear any memory of pass P1
-		if (rads_verbose > 2) write (*,*) 'release S1', P1%cycle, P1%pass
+		if (rads_verbose > 2) write (*,600) 'release S1', P1%cycle, P1%pass
 		call rads_close_pass (S1, P1)
 	enddo
 enddo
@@ -473,7 +475,7 @@ enddo
 
 do while (associated(top))
 	P2 => top
-	if (rads_verbose > 2) write (*,*) 'release S2', P2%cycle, P2%pass
+	if (rads_verbose > 2) write (*,600) 'release S2', P2%cycle, P2%pass
 	call rads_close_pass (S2, P2)
 	top => P2%next
 	deallocate (P2)
@@ -580,10 +582,12 @@ else
 	shiftlon = 0d0
 endif
 
+600 format (a,6f12.6)
+
 if (rads_verbose > 2) then
-	write (*,*) 'processing',P1%cycle,P1%pass,P2%cycle,P2%pass
-	write (*,*) 'equator',P1%equator_lon,P2%equator_lon,shiftlon
-	write (*,*) 'x-ranges',P1%tll(1,3),P1%tll(P1%ndata,3),P2%tll(1,3)+shiftlon,P2%tll(P2%ndata,3)+shiftlon
+	write (*,'(a,4i6)') 'processing',P1%cycle,P1%pass,P2%cycle,P2%pass
+	write (*,600) 'equator',P1%equator_lon,P2%equator_lon,shiftlon
+	write (*,600) 'x-ranges',P1%tll(1,3),P1%tll(P1%ndata,3),P2%tll(1,3)+shiftlon,P2%tll(P2%ndata,3)+shiftlon
 endif
 
 ! Determine if the passes have common longitudes
@@ -606,16 +610,16 @@ if (x < S1%lon%info%limits(1)) x = x + 360d0
 if (x > S1%lon%info%limits(2)) x = x - 360d0
 
 if (rads_verbose > 2) then
-	write (*,*) 'time',P1%tll(i1,1),t1,P1%tll(j1,1),P2%tll(i2,1),t2,P2%tll(j2,1)
-	write (*,*) 'lat ',P1%tll(i1,2),y ,P1%tll(j1,2),P2%tll(i2,2),y ,P2%tll(j2,2)
-	write (*,*) 'lon ',P1%tll(i1,3),x ,P1%tll(j1,3),P2%tll(i2,3),x ,P2%tll(j2,3)
+	write (*,'(a,6f15.3)') 'time',P1%tll(i1,1),t1,P1%tll(j1,1),P2%tll(i2,1),t2,P2%tll(j2,1)
+	write (*,600) 'lat ',P1%tll(i1,2),y ,P1%tll(j1,2),P2%tll(i2,2),y ,P2%tll(j2,2)
+	write (*,600) 'lon ',P1%tll(i1,3),x ,P1%tll(j1,3),P2%tll(i2,3),x ,P2%tll(j2,3)
 endif
 
 ! See if time interval exceeds limits
 if (abs(t1-t2) <= dt) then
 	! Continue only for small time interval, not if NaN
 else
-	if (rads_verbose > 2) write (*,*) 'rejected: dt: ',t1,t2,abs(t1-t2),dt
+	if (rads_verbose > 2) write (*,'(a,4f15.3)') 'rejected: dt: ',t1,t2,abs(t1-t2),dt
 	nr%xdt = nr%xdt + 1
 	return
 endif
@@ -777,7 +781,7 @@ do
 		cycle
 	endif
 	if (intersect(x1(i1),y1(i1),t1(i1),x1(j1),y1(j1),t1(j1),x2(i2),y2(i2),t2(i2),x2(j2),y2(j2),t2(j2),xc,yc,tc1,tc2)) then
-		if (rads_verbose > 2) write (*,*) 'crossing',i1,j1,i2,j2,xc,yc,tc1,tc2
+		if (rads_verbose > 2) write (*,'(a,4i6,2f12.6,2f15.3)') 'crossing',i1,j1,i2,j2,xc,yc,tc1,tc2
 		return
 	endif
 
@@ -788,7 +792,7 @@ do
 		i2 = j2
 	endif
 enddo
-if (rads_verbose > 2) write (*,*) 'no crossing'
+if (rads_verbose > 2) write (*,'(a)') 'no crossing'
 i1 = 0
 i2 = 0
 j1 = 0
