@@ -44,7 +44,7 @@ do cycle = S%cycles(1),S%cycles(2)
 			do i = 1,S%nsel
 				call rads_get_var (S, P, S%sel(i), data)
 				if (S%sel(i)%info%boz_format) call bit_transfer (data)
-				write (*,'(a,2(1x,'//S%sel(i)%info%format//'))' ) S%sel(i)%name//'data(1), data(ndata) = ',data(1),data(P%ndata)
+				write (*,'(2a,2(1x,'//S%sel(i)%info%format//'))' ) S%sel(i)%name,'data(1), data(ndata) = ',data(1),data(P%ndata)
 			enddo
 			deallocate (data)
 		endif

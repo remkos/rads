@@ -175,8 +175,8 @@ end function radsargs1
 function radsargs2 (usage, cyc0, cyc1, pass0, pass1, dpass, nsel, sel)
 use rads
 integer(fourbyteint), intent(in) :: usage
-integer(fourbyteint), intent(out) :: cyc0, cyc1, pass0, pass1, dpass, sel(nsel)
 integer(fourbyteint), intent(inout) :: nsel
+integer(fourbyteint), intent(out) :: cyc0, cyc1, pass0, pass1, dpass, sel(nsel)
 logical :: radsargs2
 radsargs2 = .false.
 if (usage == 3) then

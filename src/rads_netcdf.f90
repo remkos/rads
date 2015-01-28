@@ -52,9 +52,9 @@ private get_var_1d, get_var_2d
 !  array : Array of data values
 !-
 interface get_var
-	procedure get_var_1d
-	procedure get_var_2d
-	procedure get_var_3d
+	module procedure get_var_1d
+	module procedure get_var_2d
+	module procedure get_var_3d
 end interface
 
 contains

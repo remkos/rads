@@ -541,7 +541,7 @@ character(len=10) :: datestamp
 ! This function produces the current date (in UTC) in the form
 ! 2012-06-15
 !-----------------------------------------------------------------------
-integer :: values(9)
+integer :: values(9), time
 call gmtime(time(),values)
 write (datestamp, '(i4.4,2("-",i2.2))') values(6)+1900,values(5)+1,values(4)
 end function datestamp
@@ -557,7 +557,7 @@ character(len=19) :: timestamp
 ! 2012-06-15x02:58:15, where x is a separator character indicated
 ! by the optional argument <sep>. Default is a space.
 !-----------------------------------------------------------------------
-integer :: values(9)
+integer :: values(9), time
 character(len=1) :: x
 if (present(sep)) then
 	x = sep
