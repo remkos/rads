@@ -1,0 +1,67 @@
+Modules
+-------
+
+Modules are treated differently between compilers
+
+gfortran:
+- Needs -I flag for search.
+- When a module is "use"d in another module it becomes part of the new module.
+  Hence only the encapsulating module needs to be "use"d in another program,
+  and only the encapsulating module needs to be made available.
+  This behaviour is thus different from include files in both C and Fortran.
+
+ifort:
+- Needs -I flag for search. -module is available but has slightly different
+  meaning. Avoid using -module.
+- When a module is "use"d in another module it does not become part of the new module.
+  This is simlar to include files in both C and Fortran.
+  While only the encapsulating module needs to be "use"d in another program,
+  all the modules needs to be made available.
+
+
+Warning flags
+-------------
+
+gfortran:
+- -Wall -Wtabs -fimplicit-none
+  The -Wtabs is needed to *avoid* warning about tabs
+
+ifort:
+- -warn -nogen-interfaces
+  The -warn is the same as "-warn all". This will also generate modules for
+  traditional Fortran 77 files, which is probablematic as we use sometimes
+  call routines with deviating arguments (integer*4 and integer*1 for example)
+  Hence to avoid errors and warning, we need -nogen-interfaces
+
+
+Free-form and extended source
+-----------------------------
+
+gfortran:
+- *.f90 is automatically free-form.
+  Add -ffixed-line-length-132 for 132 character in fixed form (*.f).
+  Because ifort and others have only up the 132 characters, we need to set
+  this limit.
+  It is not needed for free-form files.
+
+ifort:
+- *.f90 is automatically free-form. Add -extend-source for 132 character
+  lines in fixed-form (only).
+  It is not needed for free-form files.
+ 
+Optimisation
+------------
+
+gfortran:
+- Add -O2 flag. Is default in autoconf.
+
+ifort:
+- Standard optimisation is -O2. Flag not needed. Is not added by autoconf.
+
+Fortran specifics
+-----------------
+gfortran:
+- Allowed "procedure" instead of "module procedure". Needed to fix that for ifort.
+
+ifort:
+- Requires to define some intrinsic functions like time()

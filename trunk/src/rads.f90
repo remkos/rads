@@ -554,7 +554,7 @@ call rads_set_limits (S, 'lon')
 ! List the variables
 if (rads_verbose >= 3) then
 	do i = 1,S%nvar
-		write (*,*) i,S%var(i)%name,S%var(i)%info%name,S%var(i)%field,S%var(i)%info%limits
+		write (*,'(i3,1x,a,a,2i5,2f14.4)') i,S%var(i)%name,S%var(i)%info%name,S%var(i)%field,S%var(i)%info%limits
 	enddo
 endif
 end subroutine rads_init_sat_0d_xml
@@ -892,9 +892,9 @@ do
 enddo
 
 if (rads_verbose >= 2) then
-	write (*,*) nopt, ' command line options:'
+	write (*,'(i6,1x,a)') nopt, ' command line options:'
 	do i = 1, nopt
-		write (*,*) i,'; optopt = ',trim(opt(i)%opt),'; optarg = ',trim(opt(i)%arg),'; optid = ',opt(i)%id
+		write (*,'(i6,5a,i6)') i,' optopt = ',trim(opt(i)%opt),'; optarg = ',trim(opt(i)%arg),'; optid = ',opt(i)%id
 	enddo
 endif
 rads_nopt = nopt
@@ -1186,7 +1186,7 @@ P%cycle = cycle
 P%pass = pass
 ascdes = modulo(pass,2)	! 1 if ascending, 0 if descending
 
-if (rads_verbose >= 2) write (*,*) 'Checking cycle/pass : ',cycle,pass
+if (rads_verbose >= 2) write (*,'(a,2i5)') 'Checking cycle/pass : ',cycle,pass
 
 ! Do checking on cycle limits
 if (cycle < S%cycles(1) .or. cycle > S%cycles(2)) then
@@ -1227,13 +1227,13 @@ P%start_time = P%equator_time - 0.5d0 * d
 P%end_time = P%equator_time + 0.5d0 * d
 d = -S%phase%repeat_nodal * 360d0 / S%phase%repeat_passes ! Longitude advance per pass due to precession of node and earth rotation
 P%equator_lon = modulo(S%phase%ref_lon + (pp - S%phase%ref_pass) * d + modulo(pp - S%phase%ref_pass,2) * 180d0, 360d0)
-if (rads_verbose >= 4) write (*,*) 'Estimated start/end/equator time/longitude = ', &
+if (rads_verbose >= 4) write (*,'(a,3f15.3,f12.6)') 'Estimated start/end/equator time/longitude = ', &
 	P%start_time, P%end_time, P%equator_time, P%equator_lon
 
 ! Do checking of pass ends on the time criteria (only when such are given)
 if (.not.all(isnan_(S%time%info%limits))) then
 	if (P%end_time + 300d0 < S%time%info%limits(1) .or. P%start_time - 300d0 > S%time%info%limits(2)) then ! Allow 5 minute slop
-		if (rads_verbose >= 2) write (*,*) 'Bail out on estimated time:', S%time%info%limits, P%start_time, P%end_time
+		if (rads_verbose >= 2) write (*,'(a,4f15.3)') 'Bail out on estimated time:', S%time%info%limits, P%start_time, P%end_time
 		S%pass_stat(3) = S%pass_stat(3) + 1
 		return
 	endif
@@ -1243,7 +1243,8 @@ endif
 d = P%equator_lon
 if (S%eqlonlim(ascdes,2) - S%eqlonlim(ascdes,1) < 360d0) then
 	if (checklon(S%eqlonlim(ascdes,:),d)) then
-		if (rads_verbose >= 2) write (*,*) 'Bail out on estimated equator longitude:', S%eqlonlim(ascdes,:), P%equator_lon
+		if (rads_verbose >= 2) write (*,'(a,3f12.6)') 'Bail out on estimated equator longitude:', &
+			S%eqlonlim(ascdes,:), P%equator_lon
 		S%pass_stat(4+ascdes) = S%pass_stat(4+ascdes) + 1
 		return
 	endif
@@ -1258,10 +1259,10 @@ else
 	P%rw = .false.
 endif
 if (P%rw) then
-	if (rads_verbose >= 2) write (*,*) 'Opening for read/write: '//trim(P%filename)
+	if (rads_verbose >= 2) write (*,'(2a)') 'Opening for read/write: ',trim(P%filename)
 	if (nft(nf90_open(P%filename,nf90_write,P%ncid))) return
 else
-	if (rads_verbose >= 2) write (*,*) 'Opening for read only: '//trim(P%filename)
+	if (rads_verbose >= 2) write (*,'(2a)') 'Opening for read only: ',trim(P%filename)
 	if (nft(nf90_open(P%filename,nf90_nowrite,P%ncid))) return
 endif
 
@@ -1279,7 +1280,8 @@ if (nft(nf90_get_att(P%ncid,nf90_global,'last_meas_time',date))) return
 P%end_time = strp1985f(date)
 if (nft(nf90_get_att(P%ncid,nf90_global,'cycle_number',i)) .or. i /= cycle) return
 if (nft(nf90_get_att(P%ncid,nf90_global,'pass_number',i)) .or. i /= pass) return
-if (rads_verbose >= 3) write (*,*) 'Start/end/equator time/longitude = ', P%equator_time, P%start_time, P%end_time, P%equator_lon
+if (rads_verbose >= 3) write (*,'(a,3f15.3,f12.6)') 'Start/end/equator time/longitude = ', &
+	P%equator_time, P%start_time, P%end_time, P%equator_lon
 
 S%error = rads_noerr
 
@@ -1608,7 +1610,7 @@ logical, intent(in) :: noedit
 type(rads_varinfo), pointer :: info
 integer :: i
 
-if (rads_verbose >= 4) write (*,*) 'rads_get_var_common: '//trim(var%name)
+if (rads_verbose >= 4) write (*,'(2a)') 'rads_get_var_common: ',trim(var%name)
 
 ! Check size of array
 if (size(data) < P%ndata) then
@@ -2087,7 +2089,7 @@ if (X%error) then
 	S%error = rads_err_xml_file
 	return
 endif
-if (rads_verbose >= 2) write (*,*) 'Parsing XML file '//trim(filename)
+if (rads_verbose >= 2) write (*,'(2a)') 'Parsing XML file ',trim(filename)
 call xml_options (X, ignore_whitespace = .true.)
 
 ! Parse XML file, store information in S struct
@@ -2599,7 +2601,7 @@ else
 		temp(n+1:n+rads_var_chunk) = rads_var (null(), null(), null(), null(), null(), .false., rads_nofield)
 		deallocate (S%var)
 		S%var => temp
-		if (rads_verbose >= 3) write (*,*) 'Increased S%var:',n,n+rads_var_chunk
+		if (rads_verbose >= 3) write (*,'(a,2i5)') 'Increased S%var:',n,n+rads_var_chunk
 	endif
 	S%nvar = i
 	ptr => S%var(i)
@@ -3550,7 +3552,7 @@ S%eqlonlim(1,2) = S%lon%info%limits(2) - min(l(1),l(2)) + 2d0
 S%eqlonlim(0,1) = S%lon%info%limits(1) + min(l(1),l(2)) - 2d0
 S%eqlonlim(0,2) = S%lon%info%limits(2) + max(l(1),l(2)) + 2d0
 
-if (rads_verbose >= 3) write (*,*) "Eqlonlim = ",S%eqlonlim
+if (rads_verbose >= 3) write (*,'(a,4f12.6)') "Eqlonlim = ",S%eqlonlim
 
 end subroutine rads_traxxing
 
@@ -3738,7 +3740,7 @@ else
 endif
 
 ! Create the (new) data file
-if (rads_verbose >= 2) write (*,*) 'Creating ',trim(P%filename),P%ndata
+if (rads_verbose >= 2) write (*,'(a,i10)') 'Creating ',trim(P%filename),P%ndata
 if (nft(nf90_create(P%filename, nf90_write+nf90_nofill, P%ncid))) then
 	call rads_error (S, rads_err_nc_create, 'Error creating file', P)
 	return

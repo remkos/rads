@@ -99,7 +99,7 @@ $(LIB):	$(OBJS) $(DEVEL_OBJS)
 TEST=rads_test -vvv -Se1/a --ymd=19910924,19910925 -R-90/120/-50/30 -Vtime,lat,lon,sla,12_,tide_ocean_,flags_,pass,drange
 test:	rads_test
 	$(TEST) | diff - rads_test.out
-rads_test.out:
+rads_test.out:	rads_test
 	$(TEST) > $@
 
 #-----------------------------------------------------------------------
