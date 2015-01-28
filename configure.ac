@@ -150,6 +150,8 @@ if test "x$enable_devel" = "xyes"; then
 	fi
 	if test "x$FC" = "xgfortran" ; then
 		opt=" -Wall -Wtabs -fimplicit-none"
+	elif test "x$FC" = "xifort" ; then
+		opt=" -warn"
 	fi
 fi
 FCFLAGS=$FCFLAGS$opt
