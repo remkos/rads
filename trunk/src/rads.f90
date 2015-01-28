@@ -712,8 +712,10 @@ logical, intent(in) :: alias
 !  alias    : .true. if called to create alias
 !-----------------------------------------------------------------------
 integer(fourbyteint) :: i,n,ios
+type(rads_varinfo), pointer :: info
+info => var%info ! This is needed to make the associated () work later on
 if (.not.associated(var%info)) return
-if (alias .and. associated(var%name,var%info%name)) then
+if (alias .and. associated(var%name,info%name)) then
 	! This is an original variable. Do not alias it if it is used more than once
 	n = 0
 	do i = 1,S%nvar
@@ -728,14 +730,14 @@ if (alias .and. associated(var%name,var%info%name)) then
 endif
 
 ! Unassociate or deallocate long_name
-if (associated(var%long_name,var%info%long_name)) then
+if (associated(var%long_name,info%long_name)) then
 	nullify (var%long_name)
 else
 	deallocate (var%long_name, stat=ios)
 endif
 
 ! Unassociate or deallocate name and info struct
-if (associated(var%name,var%info%name)) then
+if (associated(var%name,info%name)) then
 	if (associated(var%info%grid)) call grid_free(var%info%grid)
 	nullify (var%name)
 	deallocate (var%info, stat=ios)
@@ -3049,9 +3051,9 @@ write (rads_log_unit, 732) 'Equator longitude limits (des)' , S%pass_stat(4:6:2)
 
 write (rads_log_unit, 721) 'PASSES AND MEASUREMENTS READ', sum(S%pass_stat(6:7)), S%total_read
 write (rads_log_unit, 724) 'REJECTED','SELECTED','LOWER','UPPER','MIN',' MAX','MEAN','STDDEV'
-call rads_stat_line (S%time%info)
-call rads_stat_line (S%lat%info)
-call rads_stat_line (S%lon%info)
+call rads_stat_line (S%time)
+call rads_stat_line (S%lat)
+call rads_stat_line (S%lon)
 
 write (rads_log_unit, 720) 'MEASUREMENTS IN REQUESTED PERIOD AND REGION', S%total_inside
 write (rads_log_unit, 724) 'REJECTED','SELECTED','LOWER','UPPER','MIN',' MAX','MEAN','STDDEV'
@@ -3061,7 +3063,7 @@ do i = 1,S%nvar
 	else if (S%var(i)%info%datatype >= rads_type_time) then ! Skip time, lat, lon
 	else if (S%var(i)%name /= S%var(i)%info%name) then ! Skip aliases
 	else ! Print statistics line for whatever remains
-		call rads_stat_line (S%var(i)%info)
+		call rads_stat_line (S%var(i))
 	endif
 enddo
 write (rads_log_unit, 700)
@@ -3077,10 +3079,12 @@ write (rads_log_unit, 700)
 
 contains
 
-subroutine rads_stat_line (info)
-type(rads_varinfo), intent(in) :: info
+subroutine rads_stat_line (var)
+type(rads_var), intent(in) :: var
 real(eightbytereal), parameter :: sec2000 = 473299200d0
-write (rads_log_unit, '("# ",a," [",a,"]",t43,2i10)', advance='no') trim(info%long_name), trim(info%units), &
+type(rads_varinfo), pointer :: info
+info => var%info
+write (rads_log_unit, '("# ",a," [",a,"]",t43,2i10)', advance='no') trim(var%long_name), trim(info%units), &
 	info%rejected, info%selected
 if (info%units(:13) /= 'seconds since') then
 	write (rads_log_unit, '(6f12.3)') info%limits, info%xmin, info%xmax, info%mean, sqrt(info%sum2/(info%selected-1))
