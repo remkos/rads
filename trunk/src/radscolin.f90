@@ -31,17 +31,17 @@ use rads_time
 integer(fourbyteint), parameter :: msat = 20
 type(rads_sat) :: S(msat)
 integer(fourbyteint) :: nsel = 0, reject = 9999, cycle, pass, i, j, ios, &
-	nbins, nsat = 0, ntrx = 0, ntrx1, ntrx2, type_sla = 1, step = 1, ncols
+	nbins, nsat = 0, ntrx = 0, ntrx1, ntrx2, ntrx3, ntrx4, type_sla = 1, step = 1, ncols
 real(eightbytereal) :: dt = 0.97d0
 character(len=rads_naml) :: prefix = 'radscolin_p', suffix = '.nc', satlist
-logical :: ascii = .true., out_data = .true., out_mean = .false., out_sdev = .false., out_diff = .false., &
+logical :: ascii = .true., out_data = .true., out_mean = .false., out_sdev = .false., out_extr = .false., out_diff = .false., &
 	out_track = .true., out_cumul = .false., keep = .false., force = .false., boz_format = .false.
 real(eightbytereal), allocatable :: data(:,:,:)
 logical, allocatable :: mask(:,:)
 integer(fourbyteint), allocatable :: nr_in_bin(:), idx(:)
 type :: stat_
 	integer(fourbyteint) :: nr
-	real(eightbytereal) :: mean,var
+	real(eightbytereal) :: mean, var
 end type
 type(stat_), allocatable :: stat(:,:), cumul_stat(:,:)
 type :: info_
@@ -54,7 +54,7 @@ character(len=rads_strl) :: format_string
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('acdfkstnNo::r:: cumul diff keep dt: force mean no-pass no-track output:: stddev step:')
+call rads_set_options ('acdefknNo::r::st cumul diff dt: extremes force keep mean no-pass no-track output:: stddev step:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 
@@ -99,6 +99,8 @@ do i = 1,rads_nopt
 		out_mean = .true.
 	case ('s', 'stddev')
 		out_sdev = .true.
+	case ('e', 'extremes')
+		out_extr = .true.
 	case ('diff')
 		out_diff = .true.
 		keep = .true.
@@ -137,8 +139,8 @@ endif
 
 ! Allocate data arrays
 nbins = nint(S(1)%phase%pass_seconds/dt * 0.6d0) ! Number of bins on either side of equator (20% margin)
-allocate (data(ntrx+2,nsel,-nbins:nbins), mask(ntrx+2,-nbins:nbins), nr_in_bin(-nbins:nbins), &
-	idx(-nbins:nbins), stat(ntrx+2,nsel), cumul_stat(ntrx+2,nsel), info(ntrx+2))
+allocate (data(ntrx+4,nsel,-nbins:nbins), mask(ntrx+4,-nbins:nbins), nr_in_bin(-nbins:nbins), &
+	idx(-nbins:nbins), stat(ntrx+4,nsel), cumul_stat(ntrx+4,nsel), info(ntrx+4))
 
 forall (i=-nbins:nbins)	idx(i) = i
 cumul_stat = stat_ (0, 0d0, 0d0)
@@ -181,6 +183,7 @@ write (stderr,1300)
 '  -k, --keep                Keep all passes, even the ones that do not have data in the selected area'/ &
 '  -a, --mean                Output mean in addition to pass data'/ &
 '  -s, --stddev              Output standard deviation in addition to pass data'/ &
+'  -e, --extremes            Output minimum and maximum in addition to pass data'/ &
 '  -d, --no-pass             Do not output pass data'/ &
 '  -t, --no-track            Do not print along-track data (ascii output only)'/ &
 '  -c, --cumul               Output cumulative statistics (ascii output only) (implies --keep)'/ &
@@ -257,8 +260,12 @@ endif
 ! Specify the columns for statistics
 ntrx1 = ntrx + 1
 ntrx2 = ntrx + 2
+ntrx3 = ntrx + 3
+ntrx4 = ntrx + 4
 info(ntrx1) = info_ ('  mean', 0, 9001, 9999)
 info(ntrx2) = info_ ('stddev', 0, 9002, 9999)
+info(ntrx3) = info_ ('   min', 0, 9003, 9999)
+info(ntrx4) = info_ ('   max', 0, 9004, 9999)
 
 ! If reject == 0, count number of SLA measurements per bin, also the NaNs
 ! Else, count the number of non-NaN SLA measurements per bin
@@ -284,15 +291,16 @@ enddo
 ! Compute per-bin statistics (horizonally)
 do k = -nbins,nbins
 	do j = 1,nsel
-		call mean_variance (pack(data(1:ntrx,j,k),mask(1:ntrx,k)), data(ntrx1,j,k), data(ntrx2,j,k))
+		call mean_variance (pack(data(1:ntrx,j,k),mask(1:ntrx,k)), data(ntrx1,j,k), data(ntrx2,j,k), &
+			data(ntrx3,j,k), data(ntrx4,j,k))
 	enddo
 enddo
 data(ntrx2,:,:) = sqrt(data(ntrx2,:,:)) ! Variance to std dev
 ! Mask out NaN statistics
-mask(ntrx1:ntrx2,:) = isan_(data(ntrx1:ntrx2,type_sla,:))
+mask(ntrx1:ntrx4,:) = isan_(data(ntrx1:ntrx4,type_sla,:))
 
 ! Compute per-track statistics (vertically)
-do i = 1,ntrx2
+do i = 1,ntrx4
 	do j = 1,nsel
 		call mean_variance (pack(data(i,j,:),mask(i,:)), stat(i,j)%mean, stat(i,j)%var)
 	enddo
@@ -314,12 +322,20 @@ ncols = 0
 if (out_data) ncols = ntrx
 if (out_mean) ncols = ncols + 1
 if (out_sdev) ncols = ncols + 1
+if (out_extr) ncols = ncols + 2
 
-! If printing standard deviation but not mean, put std dev in place of mean
-if (out_sdev.and..not.out_mean) then
-	data (ntrx1,:,:) = data(ntrx2,:,:)
-	info(ntrx1) = info(ntrx2)
-	stat(ntrx1,:) = stat(ntrx2,:)
+! If not printing standard dev, move the rest of the stats forward
+if (.not.out_sdev) then
+	data(ntrx2:ntrx3,:,:) = data(ntrx3:ntrx4,:,:)
+	info(ntrx2:ntrx3) = info(ntrx3:ntrx4)
+	stat(ntrx2:ntrx3,:) = stat(ntrx3:ntrx4,:)
+endif
+
+! If not printing mean, move the rest of the stats forward
+if (.not.out_mean) then
+	data(ntrx1:ntrx3,:,:) = data(ntrx2:ntrx4,:,:)
+	info(ntrx1:ntrx3) = info(ntrx2:ntrx4)
+	stat(ntrx1:ntrx3,:) = stat(ntrx2:ntrx4,:)
 endif
 
 ! If not printing data, move statistics forward

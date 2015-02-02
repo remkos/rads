@@ -77,6 +77,42 @@ interface read_val
 	module procedure read_val_dble
 end interface read_val
 
+!***********************************************************************
+!*mean_variance -- Compute mean and standard deviation of a series
+!+
+! pure subroutine mean_variance (x, mean, variance, nr)
+! pure subroutine mean_variance (x, mean, variance, min, max)
+! real(eightbytereal), intent(in) :: x(:)
+! real(eightbytereal), intent(out) :: mean, variance
+! real(eightbytereal), intent(out), optional :: min, max
+! integer(fourbyteint), intent(out), optional :: nr
+!
+! This routine computes the mean and variance (and optionally the
+! minimum and maximum) of a series of values <x> using the method proposed
+! by West (1979), since it is more stable in the way it computes the variance.
+!
+! If <nr> is used in the subroutine call, all NaN values will be skipped
+! and <nr> will return the number of non-NaN values.
+! If <nr> is omitted, no check is made for NaN values.
+!
+! Reference:
+!  West, D. H. D
+!  Updating mean and variance estimates: an improved method
+!  Communications of the ACM, 22(9), 532-535, 1979
+!
+! Arguments:
+!  x        : Series of values
+!  mean     : Mean of series <x>
+!  variance : Variance of series <x>
+!  nr       : Number of valid values in series <x>
+!-----------------------------------------------------------------------
+private :: mean_variance_only, mean_variance_nr, mean_variance_minmax
+interface mean_variance
+	module procedure mean_variance_only
+	module procedure mean_variance_nr
+	module procedure mean_variance_minmax
+end interface mean_variance
+
 contains
 
 !***********************************************************************
@@ -765,66 +801,6 @@ end subroutine swap_if
 
 end subroutine iqsort
 
-!***********************************************************************
-!*mean_variance -- Compute mean and standard deviation of a series
-!+
-pure subroutine mean_variance (x, mean, variance, nr)
-real(eightbytereal), intent(in) :: x(:)
-real(eightbytereal), intent(out) :: mean, variance
-integer(fourbyteint), intent(out), optional :: nr
-!
-! This routine computes the mean and variance of a series
-! of values <x> using the method proposed by West (1979), since it is
-! more stable in the way it computes the variance.
-!
-! If <nr> is used in the subroutine call, all NaN values will be skipped
-! and <nr> will return the number of non-NaN values.
-! If <nr> is omitted, no check is made for NaN values.
-!
-! Reference:
-!  West, D. H. D
-!  Updating mean and variance estimates: an improved method
-!  Communications of the ACM, 22(9), 532-535, 1979
-!
-! Arguments:
-!  x        : Series of values
-!  mean     : Mean of series <x>
-!  variance : Variance of series <x>
-!  nr       : Number of valid values in series <x>
-!-----------------------------------------------------------------------
-real(eightbytereal) :: q, r, sum2
-integer(fourbyteint) :: i, n
-n = size(x)
-mean = 0d0
-sum2 = 0d0
-if (present(nr)) then
-	nr = 0
-	do i = 1,n
-		if (isnan_(x(i))) cycle
-		nr = nr + 1
-		q = x(i) - mean
-		r = q / nr
-		mean = mean + r
-		sum2 = sum2 + r * q * (nr-1)
-	enddo
-	n = nr
-else
-	do i = 1,n
-		q = x(i) - mean
-		r = q / i
-		mean = mean + r
-		sum2 = sum2 + r * q * (i-1)
-	enddo
-endif
-if (n == 0) then
-	mean = nan
-	variance = nan
-else if (n == 1) then
-	variance = nan
-else
-	variance = sum2/(n-1)
-endif
-end subroutine mean_variance
 
 !***********************************************************************
 !*regression -- Compute best fitting linear regression
@@ -1129,5 +1105,86 @@ else
 	read (string, *, iostat=i) val
 endif
 end subroutine read_val_int
+
+pure subroutine mean_variance_only (x, mean, variance)
+real(eightbytereal), intent(in) :: x(:)
+real(eightbytereal), intent(out) :: mean, variance
+real(eightbytereal) :: q, r, sum2
+integer(fourbyteint) :: i, n
+n = size(x)
+mean = 0d0
+sum2 = 0d0
+do i = 1,n
+	q = x(i) - mean
+	r = q / i
+	mean = mean + r
+	sum2 = sum2 + r * q * (i-1)
+enddo
+if (n == 0) then
+	mean = nan
+	variance = nan
+else if (n == 1) then
+	variance = nan
+else
+	variance = sum2/(n-1)
+endif
+end subroutine mean_variance_only
+
+pure subroutine mean_variance_nr (x, mean, variance, nr)
+real(eightbytereal), intent(in) :: x(:)
+real(eightbytereal), intent(out) :: mean, variance
+integer(fourbyteint), intent(out) :: nr
+real(eightbytereal) :: q, r, sum2
+integer(fourbyteint) :: i
+mean = 0d0
+sum2 = 0d0
+nr = 0
+do i = 1,size(x)
+	if (isnan_(x(i))) cycle
+	nr = nr + 1
+	q = x(i) - mean
+	r = q / nr
+	mean = mean + r
+	sum2 = sum2 + r * q * (nr-1)
+enddo
+if (nr == 0) then
+	mean = nan
+	variance = nan
+else if (nr == 1) then
+	variance = nan
+else
+	variance = sum2/(nr-1)
+endif
+end subroutine mean_variance_nr
+
+pure subroutine mean_variance_minmax (x, mean, variance, minimum, maximum)
+real(eightbytereal), intent(in) :: x(:)
+real(eightbytereal), intent(out) :: mean, variance, minimum, maximum
+real(eightbytereal) :: q, r, sum2
+integer(fourbyteint) :: i, n
+n = size(x)
+mean = 0d0
+sum2 = 0d0
+minimum = huge(0d0)
+maximum = -huge(0d0)
+do i = 1,n
+	q = x(i) - mean
+	r = q / i
+	mean = mean + r
+	sum2 = sum2 + r * q * (i-1)
+	if (x(i) < minimum) minimum = x(i)
+	if (x(i) > maximum) maximum = x(i)
+enddo
+if (n == 0) then
+	mean = nan
+	variance = nan
+	minimum = nan
+	maximum = nan
+else if (n == 1) then
+	variance = nan
+else
+	variance = sum2/(n-1)
+endif
+end subroutine mean_variance_minmax
 
 end module rads_misc
