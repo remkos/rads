@@ -54,7 +54,7 @@ character(len=rads_strl) :: format_string
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('acdefknNo::r::st cumul diff dt: extremes force keep mean no-pass no-track output:: stddev step:')
+call rads_set_options ('acdefklnNo::r::st cumul diff dt: extremes force keep mean minmax no-pass no-track output:: stddev step:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 
@@ -100,6 +100,9 @@ do i = 1,rads_nopt
 	case ('s', 'stddev')
 		out_sdev = .true.
 	case ('e', 'extremes')
+		call rads_message ('warning: option -e|--extremes has been replaced by -l|--minmax')
+		out_extr = .true.
+	case ('l', 'minmax')
 		out_extr = .true.
 	case ('diff')
 		out_diff = .true.
@@ -183,7 +186,7 @@ write (stderr,1300)
 '  -k, --keep                Keep all passes, even the ones that do not have data in the selected area'/ &
 '  -a, --mean                Output mean in addition to pass data'/ &
 '  -s, --stddev              Output standard deviation in addition to pass data'/ &
-'  -e, --extremes            Output minimum and maximum in addition to pass data'/ &
+'  -l, --minmax              Output minimum and maximum in addition to pass data'/ &
 '  -d, --no-pass             Do not output pass data'/ &
 '  -t, --no-track            Do not print along-track data (ascii output only)'/ &
 '  -c, --cumul               Output cumulative statistics (ascii output only) (implies --keep)'/ &
