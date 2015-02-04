@@ -614,6 +614,8 @@ The 1-Hz standard deviation of SWH is determined from the individual 10-, 20-, o
 \var{swh_s} & 1702 & S-band significant wave height & m & n1 & -0.5 8 & \ref{item:swh_1},\ref{item:swh_3} \\
 \var{swh_ku_mle3} & 1711 & Ku-band significant wave height (MLE3) & m & j2 & 0 8 & \ref{item:swh_ku_mle3} \\
 \hline
+\var{swh_ww3} & 1712 & WaveWatch3 significant wave height & m & c2 j2 sa & & \ref{item:swh_ww3} \\
+\hline
 \var{swh_rms_ka} & 2802 & std dev of Ku-band SWH & m & sa & 0 2.1 & \\
 \var{swh_rms_ku} & 2802 & std dev of Ku-band SWH & m & g1 & 0 0.5 & \\
 & & & & j1 j2 & 0 1.5 & \\
@@ -635,6 +637,7 @@ Notes:
 \item During the degradation of the TOPEX SWH measurements (cycles 98-235) the SWH values are corrected according to \citet{queffeulou2004}. Thereafter 32 mm was added.\label{item:swh_2}
 \item S-band SWH for Envisat is only until the loss of the S-band signal.\label{item:swh_3}
 \item For Jason-2, significant wave heights from the MLE3 retracker are available as well.\label{item:swh_ku_mle3}
+\item The SWH in this field is based on wave hindcasts done by NOAA using the WaveWatch III model and GFS analysis winds \citep{chawla2011}. The hindcasts cover the entire globe and are carried out in monthly installments, so they are only available on delay-time data in RADS. The original resolution of these model grids is 1\deg\ by 1\deg\ by 6 hours. For other WaveWatch 3 fields see Section~\ref{var:wave}.\label{item:swh_ww3}
 \end{enumerate}
 
 \section{Altimeter backscatter coefficient}
@@ -708,7 +711,10 @@ Notes:
 \end{enumerate}
 
 \section{Other wave model data}
-For calibration and validation purposes, and to support further studies that include wind and wave processes (like swell and their effect on sea state bias) a number of variables from the WaveWatch 3 models. These variables are currently only available during the year 2000 to 2011 (inclusive).
+\label{var:wave}
+For calibration and validation purposes, and to support further studies that include wind and wave processes (like swell and their effect on sea state bias) a number of variables from the WaveWatch 3 models. These variables are currently only available during the year 2000 to 2012 (inclusive). The original resolution of the model grids is 1\deg\ by 1\deg\ by 6 hours.
+
+In addition, SWH from the WaveWatch 3 model is made available as \var{swh_ww3} (see Section~\ref{var:swh}).
 
 \begin{vartable}
 \var{wave_m0} & 4001 & WaveWatch3 wave height variance & m$^2$ & all & & \\
