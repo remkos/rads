@@ -55,7 +55,7 @@ rads_add_orbit   $options -Valt_gdrcp   -C1-130	>> $log 2>&1
 rads_add_orbit   $options -Valt_gps     -C1-225	>> $log 2>&1
 rads_add_orbit   $options -Valt_std1204 -C0-188	>> $log 2>&1
 rads_add_orbit   $options -Valt_std1404			>> $log 2>&1
-rads_add_ww3_222 $options --all	-C165-300		>> $log 2>&1
+rads_add_ww3_222 $options --all					>> $log 2>&1
 rads_add_ww3_314 $options --all -C0-165			>> $log 2>&1
 rads_add_sla     $options           			>> $log 2>&1
 
