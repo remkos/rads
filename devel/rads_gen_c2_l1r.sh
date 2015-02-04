@@ -60,7 +60,7 @@ rads_add_common  $options 					>> $log 2>&1
 rads_add_ecmwf   $options --all				>> $log 2>&1
 rads_add_iono    $options --all				>> $log 2>&1
 rads_add_mog2d   $options					>> $log 2>&1
-rads_add_ww3_222 $options --all -C36-99		>> $log 2>&1
+rads_add_ww3_222 $options --all				>> $log 2>&1
 rads_add_ww3_314 $options --all -C1-36		>> $log 2>&1
 rads_add_sla     $options                   >> $log 2>&1
 
