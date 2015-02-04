@@ -1,4 +1,4 @@
-\begin{thebibliography}{66}
+\begin{thebibliography}{67}
 \providecommand{\natexlab}[1]{#1}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
@@ -75,6 +75,12 @@ Cartwright, D.~E., and R.~J. Taylor (1971), New computations of the
 Chambers, D.~P., S.~A. Hayes, J.~C. Ries, and T.~J. Urban (2003), New {TOPEX}
   sea state bias models and their effect on global mean sea level, \textit{J.\
   Geophys.\ Res.}, \textit{108}(C10).
+
+\bibitem[{\textit{Chawla et~al.}(2011)\textit{Chawla, Spindler, and
+  Tolman}}]{chawla2011}
+Chawla, A., D.~Spindler, and H.~L. Tolman (2011), {WAVEWATCH III} hindcasts
+  with re-analysis winds: {Initial} report on model setup, \textit{MMAB
+  Contribution No. 291}, NOAA National Weather Service, Camp Springs, Maryland.
 
 \bibitem[{\textit{Chelton}(1994)}]{chelton1994}
 Chelton, D.~B. (1994), The sea state bias in altimeter estimates of sea lvel
