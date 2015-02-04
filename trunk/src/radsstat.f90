@@ -64,7 +64,7 @@ logical :: ascii = .true., fullyear = .false., boz_format = .false.
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('c::d::p::b::maslo::r:: full-year min: res: output::')
+call rads_set_options ('c::d::p::b::maslo::r:: full-year min: minmax res: output::')
 call rads_init (S)
 if (S%error /= rads_noerr) call rads_exit ('Fatal error')
 
@@ -199,7 +199,7 @@ write (stderr,1300)
 '  -m                        Give all measurements equal weight'/ &
 '  -a                        Weight measurements by cosine of latitude'/ &
 '  -s                        Use inclination-dependent weight'/ &
-'  -l                        Output min and max in addition to mean and stddev'/ &
+'  -l, --minmax              Output min and max in addition to mean and stddev'/ &
 '  --full-year               Write date as YYYYMMDD instead of the default YYMMDD'/ &
 '  --min=MINNR               Minimum number of measurements per statistics record (default = 2)'/ &
 '  --res=DX,DY               Size of averaging boxes (default = 3x1 degrees)'/ &
