@@ -38,7 +38,7 @@ d2=20`tail -n 1 $RADSROOT/tables/c2a.cyc | cut -c34-39`
 date											>  $log 2>&1
 
 TZ=UTC touch -t ${d0}0000 $mrk
-find SIR_FDM_L1/LATEST -name "CS_*.nc" -a -newer $mrk | sort -r | sort -u -t_ -k8,8 > $lst
+find SIR_FDM_L1/LATEST -name "CS_*_[B-Z]???.nc" -a -newer $mrk | sort -r | sort -u -t_ -k8,8 > $lst
 
 rads_gen_c2_l1r  $options --ymd=$d0 $* < $lst 	>> $log 2>&1
 rads_add_ncep    $options -gs               	>> $log 2>&1
