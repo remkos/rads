@@ -33,7 +33,7 @@ for tar in $*; do
 		*.tgz) tar -xzf $tar; dir=`basename $tar .tgz` ;;
 		*) dir=$tar ;;
 	esac
-	find -L $dir -name "CS_*.nc" -print | sort -r | sort -u -t/ -k3.20,3.34 > $lst
+	find -L $dir -name "CS_*_[B-Z]???.nc" -print | sort -r | sort -u -t/ -k3.20,3.34 > $lst
 	case $dir in
 		*/c???) cycle="-C"`basename $dir | cut -c2-` ;;
 		*)      cycle= ;;
