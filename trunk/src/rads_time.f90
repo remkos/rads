@@ -278,11 +278,12 @@ character(len=1), intent(in), optional :: sep
 real(eightbytereal) :: strp1985f
 !
 ! This routine reads a string of the form YYYY-MM-DDxHH:MM:SS.SSSSSS
-! or YYYYMMDDxHHMMSS.SSSSSS, where x is any/some character, and converts it
-! to a seconds since 1.0 Jan 1985. Fractional seconds can be included or
-! the HH:MM:SS or HHMMSS part can be omitted entirely (to produce 00:00:00).
+! or YYYYMMDDxHHMMSS.SSSSSS or YYYY-DDDxHH:MM:SS.SSSSSS, where x is
+! any character, and converts it to a seconds since 1.0 Jan 1985.
+! Fractional seconds can be included or the HH:MM:SS or HHMMSS part can
+! be omitted entirely (to produce 00:00:00).
 ! Also specifying only part of the time string is allowed, however the
-! date has to be complete.
+! date (first 8 characters) has to be complete.
 !
 ! If <sep> is specified, then the character between the date and time
 ! part of the string has to be the character specified by <sep>.
@@ -302,13 +303,19 @@ hh = 0 ; mn = 0 ; ss = 0 ; fs = 0d0 ; strp1985f = nan
 l = len_trim(string)
 ! There have to be at least eight characters
 if (l < 8) return
-! Do we use separators?
-if (string(5:5) == '-') then
+! Which format do we have?
+if (string(8:8) == '-') then ! YYYY-MM-DD
 	if (l < 10) return
 	if (present(sep) .and. (l < 11 .or. string(11:11) /= sep)) return	! sep has to be there
 	read (string,'(i4,5(1x,i2))',iostat=ios) yy,mm,dd,hh,mn,ss
 	if (l > 20) read (string(20:),*,iostat=ios) fs
-else
+else if (string(5:5) == '-') then ! YYYY-DDD
+	if (l < 8) return
+	if (present(sep) .and. (l < 9 .or. string(9:9) /= sep)) return	! sep has to be there
+	read (string,'(i4,1x,i3,3(1x,i2))',iostat=ios) yy,dd,hh,mn,ss
+	mm = 1 ! You can actually use 2000-01-DDD in ymd2mjd
+	if (l > 16) read (string(16:),*,iostat=ios) fs
+else ! YYYYMMDD (probably)
 	if (l < 8) return
 	if (present(sep) .and. (l < 9 .or. string(9:9) /= sep)) return	! sep has to be there
 	read (string,'(i4,2i2,1x,3i2)',iostat=ios) yy,mm,dd,hh,mn,ss

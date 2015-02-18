@@ -112,19 +112,20 @@ end subroutine put_rads
 !-----------------------------------------------------------------------
 ! nc2f: Load flag field, then set corresponding bit in RADS
 ! varnm : source variable name
-! bit   : RADS bit to be set when value is val
+! bit   : RADS bit to be set when value == 1
 ! lim   : set bit when value >= lim (optional)
 ! val   : set bit when value == val (optional, default = 1)
 ! neq   : set bit when value /= val (optional)
+! mask  : set bit when iand(value,mask) /= 0
 
-subroutine nc2f (varnm, bit, lim, val, neq)
+subroutine nc2f (varnm, bit, lim, val, neq, mask)
 use rads_netcdf
 use netcdf
 character(*), intent(in) :: varnm
 integer(fourbyteint), intent(in) :: bit
-integer(fourbyteint), optional, intent(in) :: lim,val,neq
-integer(twobyteint) :: flag(mrec),flag2d(1:1,1:nrec)
-integer(fourbyteint) :: i,ival,ndims,varid
+integer(fourbyteint), optional, intent(in) :: lim, val, neq, mask
+integer(twobyteint) :: flag(mrec), flag2d(1:1,1:nrec)
+integer(fourbyteint) :: i, ival, ndims, varid
 
 if (nf90_inq_varid(ncid,varnm,varid) /= nf90_noerr) then
 	write (*,'("No such variable: ",a)') trim(varnm)
@@ -144,6 +145,10 @@ if (present(lim)) then
 else if (present(neq)) then
 	do i = 1,nrec
 		if (flag(i) /= neq) flags(i) = ibset(flags(i),bit)
+	enddo
+else if (present(mask)) then
+	do i = 1,nrec
+		if (iand(flag(i),mask)) /= 0) flags(i) = ibset(flags(i),bit)
 	enddo
 else
 	ival = 1
