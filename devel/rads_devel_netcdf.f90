@@ -148,7 +148,7 @@ else if (present(neq)) then
 	enddo
 else if (present(mask)) then
 	do i = 1,nrec
-		if (iand(flag(i),mask)) /= 0) flags(i) = ibset(flags(i),bit)
+		if (iand(flag(i),mask) /= 0) flags(i) = ibset(flags(i),bit)
 	enddo
 else
 	ival = 1
