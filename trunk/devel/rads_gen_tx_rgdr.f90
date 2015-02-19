@@ -20,7 +20,7 @@
 program rads_gen_tx_rgdr
 
 ! This program reads TOPEX Retracked GDR files and converts them to the
-! RADS format, written into files $RADSDATAROOT/data/tx.r/a/txpPPPPcCCC.nc.
+! RADS format, written into files $RADSDATAROOT/data/tx.r50/a/txpPPPPcCCC.nc.
 !  PPPP = relative pass number
 !   CCC = cycle number
 !
@@ -89,7 +89,7 @@ use netcdf
 integer(fourbyteint) :: verbose=0, c0=0, c1=999, ios, i
 real(eightbytereal) :: t0, t1
 character(len=rads_cmdl) :: infile, arg
-character(len=rads_varl) :: optopt, optarg, sat = 'tx.r'
+character(len=rads_varl) :: optopt, optarg, sat = 'tx.r50'
 
 ! Header variables
 
@@ -259,63 +259,102 @@ do
 	call get_var (ncid, 'sat_alt_hi_rate', d)
 	a = d(10,:) - d(1,:)
 	call get_var (ncid, 'dtim_pac', d)
-	call new_var ('orb_alt_rate', a / d(1,:) / 9d0)
+	call new_var ('alt_rate', a / d(1,:) / 9d0)
+	call cpy_var ('off_nadir_angle_wf_ku')
 
-! Range
+! Altimeter range (on-board tracker)
 
 	call cpy_var ('range_ku')
+	call get_var (ncid, 'iono_corr_alt_ku', b)
+	call new_var ('range_c', a - b / 0.17984d0) ! Compute range_c from range_ku and iono_corr
 	call cpy_var ('range_rms_ku')
-	call cpy_var ('range_numval_ku')
-!	call cpy_var ('model_dry_tropo_corr', 'dry_tropo_ecmwf')
-!	call cpy_var ('rad_wet_tropo_corr', 'wet_tropo_rad')
-!	call cpy_var ('model_wet_tropo_corr', 'wet_tropo_ecmwf')
-!	call cpy_var ('iono_corr_alt_ku', 'iono_alt')
-!	call cpy_var ('iono_corr_alt_ku_mle3', 'iono_alt_mle3')
-!	if (.not.ogdr) call cpy_var ('iono_corr_gim_ku', 'iono_gim')
-!	call cpy_var ('inv_bar_corr', 'inv_bar_static')
-!	if (ogdr) then
-!		call cpy_var ('inv_bar_corr', 'inv_bar_mog2d')
-!	else
-!		call cpy_var ('inv_bar_corr+hf_fluctuations_corr', 'inv_bar_mog2d')
-!	endif
-!	call cpy_var ('solid_earth_tide', 'tide_solid')
-!	call cpy_var ('ocean_tide_sol1-load_tide_sol1', 'tide_ocean_got00')
-!	call cpy_var ('ocean_tide_sol2-load_tide_sol2', 'tide_ocean_fes04')
-!	call cpy_var ('load_tide_sol1', 'tide_load_got00')
-!	call cpy_var ('load_tide_sol2', 'tide_load_fes04')
-!	call cpy_var ('pole_tide', 'tide_pole')
-!	call cpy_var ('sea_state_bias_ku', 'ssb_cls')
-!	call cpy_var ('sea_state_bias_ku_mle3', 'ssb_cls_mle3')
-!	call cpy_var ('sea_state_bias_c', 'ssb_cls_c')
-!	call cpy_var ('geoid', 'geoid_egm96')
-!	call cpy_var ('mean_sea_surface', 'mss_cls01')
-!	call cpy_var ('swh_ku')
-!	call cpy_var ('swh_c')
-!	call cpy_var ('sig0_ku')
-!	call cpy_var ('sig0_c')
-!	call cpy_var ('wind_speed_alt')
-!	call cpy_var ('wind_speed_rad')
-!	call cpy_var ('wind_speed_model_u', 'wind_speed_ecmwf_u')
-!	call cpy_var ('wind_speed_model_v', 'wind_speed_ecmwf_v')
-!	call cpy_var ('range_rms_c')
-!	call cpy_var ('range_numval_c')
-!	call cpy_var ('bathymetry', 'topo_dtm2000')
-!	call cpy_var ('tb_187')
-!	call cpy_var ('tb_238')
-!	call cpy_var ('tb_340')
+	call cpy_var ('net_instr_corr_range_ku', 'drange_ku')
+	call cpy_var ('net_instr_corr_range_c', 'drange_c')
+	call cpy_var ('cog_corr', 'drange_cg')
+	call cpy_var ('range_numval', 'range_numval_ku')
+
+! Atmospheric corrections
+
+	call cpy_var ('model_dry_tropo_corr', 'dry_tropo_ecmwf')
+	call cpy_var ('inv_bar_corr', 'inv_bar_static')
+	call cpy_var ('model_wet_tropo_corr', 'wet_tropo_ecmwf')
+	call cpy_var ('rad_wet_tropo_corr', 'wet_tropo_rad')
+	call cpy_var ('iono_corr_alt_ku', 'iono_alt')
+	call cpy_var ('iono_corr_dor_ku', 'iono_doris')
+
+! SWH and sigma0 (on-board tracker)
+
+	call cpy_var ('swh_ku')
+	call cpy_var ('swh_c')
+	call cpy_var ('swh_rms_ku')
+	call cpy_var ('swh_rms_c')
+!	call cpy_var ('swh_numval_ku')
+	call cpy_var ('net_instr_corr_swh_ku', 'dswh_ku')
+	call cpy_var ('net_instr_corr_swh_c', 'dswh_c')
+	call cpy_var ('dr_swh_att_ku', 'drange_swh_att_ku')
+	call cpy_var ('dr_swh_att_c', 'drange_swh_att_c')
+	call cpy_var ('sea_state_bias_ku', 'ssb_cls')
+	call cpy_var ('sea_state_bias_ku_walsh', 'ssb_walsh')
+	call cpy_var ('sig0_ku')
+	call cpy_var ('sig0_c')
+!	call cpy_var ('agc_numval_ku', 'sig0_numval_ku')
+	call cpy_var ('atmos_sig0_corr_ku', 'dsig0_atmos_ku')
+
+! Geophysical quantities
+
+	call cpy_var ('mss', 'mss_cls01')
+	call cpy_var ('geoid', 'geoid_egm96')
+	call cpy_var ('ocean_tide_sol2-load_tide_sol2', 'tide_ocean_got47')
+	call cpy_var ('load_tide_sol2', 'tide_load_got47')
+	call cpy_var ('ocean_tide_non_equil', 'tide_non_equil')
+	call cpy_var ('solid_earth_tide', 'tide_solid')
+	call cpy_var ('pole_tide', 'tide_pole')
+	call cpy_var ('bathymetry', 'topo_dtm2000')
+	call cpy_var ('inv_bar_corr+hf_fluctuations_corr', 'inv_bar_mog2d')
+	call cpy_var ('wind_speed_alt')
+
+! TMR
+
+	call cpy_var ('tb18', 'tb_180')
+	call cpy_var ('tb21', 'tb_210')
+	call cpy_var ('tb37', 'tb_370')
+
+! Retracker
+
+	call cpy_var ('h_retrk1_ku', 'range_ku_retrk')
+	call cpy_var ('h_retrk1_ku_rms', 'range_rms_ku_retrk')
+	call cpy_var ('att_retrk1_ku', 'off_nadir_angle2_wf_ku_retrk')
+	call cpy_var ('swh_retrk1_ku', 'swh_ku_retrk')
+	call cpy_var ('numval_retrk1_ku', 'range_numval_ku_retrk')
+	call cpy_var ('h_retrk1_c', 'range_c_retrk')
+	call cpy_var ('h_retrk1_c_rms', 'range_rms_c_retrk')
+	call cpy_var ('swh_retrk1_c', 'swh_c_retrk')
+	call cpy_var ('att_retrk1_c', 'off_nadir_angle2_wf_c_retrk')
+	call cpy_var ('numval_retrk1_c', 'range_numval_c_retrk')
+	call cpy_var ('net_instr_corr_retrk_ku', 'drange_ku_retrk')
+	call cpy_var ('net_instr_corr_retrk_c', 'drange_c_retrk')
+	call cpy_var ('iono_retrk', 'iono_alt_retrk')
+
+! TMR replacement product
+
+	call cpy_var ('rad_wet_tropo_corr_tmrcp', 'wet_tropo_rad_retrk')
+	call cpy_var ('tb18_corr', 'tb_180_retrk')
+	call cpy_var ('tb21_corr', 'tb_210_retrk')
+	call cpy_var ('tb37_corr', 'tb_370_retrk')
+	call cpy_var ('atmos_sig0_corr_ku_tmrcp', 'dsig0_atmos_ku_retrk')
+	call cpy_var ('atmos_sig0_corr_c_tmrcp', 'dsig0_atmos_c_retrk')
+	call cpy_var ('rad_water_vapor', 'water_vapor_rad')
+	call cpy_var ('rad_liquid_water', 'liquid_water_rad')
+
+! Derived from retracking and TMR update
+
+	call cpy_var ('wind_speed_retrk', 'wind_speed_alt_retrk')
+	call cpy_var ('sea_state_bias_retrk_ku', 'ssb_retrk')
+
+! Flags
+
 	a = flags
 	call new_var ('flags', a)
-!	call cpy_var ('swh_rms_ku')
-!	call cpy_var ('swh_rms_ku_mle3')
-!	call cpy_var ('swh_rms_c')
-!	call cpy_var ('sig0_rms_ku')
-!	call cpy_var ('sig0_rms_ku_mle3')
-!	call cpy_var ('sig0_rms_c')
-!	call cpy_var ('off_nadir_angle_wf_ku', 'off_nadir_angle2_wf_ku')
-!	call cpy_var ('atmos_corr_sig0_ku', 'dsig0_atmos_ku')
-!	call cpy_var ('atmos_corr_sig0_c', 'dsig0_atmos_c')
-!	call cpy_var ('rad_liquid_water', 'liquid_water_rad')
-!	call cpy_var ('rad_water_vapor', 'water_vapor_rad')
 
 ! Dump the data
 
@@ -340,7 +379,7 @@ call synopsis_devel (' < list_of_RGDR_file_names')
 write (*,1310)
 1310 format (/ &
 'This program converts TOPEX Retracked GDR files to RADS data' / &
-'files with the name $RADSDATAROOT/data/tx.r/a/pPPPP/txpPPPPcCCC.nc.' / &
+'files with the name $RADSDATAROOT/data/tx.r50/a/pPPPP/txpPPPPcCCC.nc.' / &
 'The directory is created automatically and old files are overwritten.')
 stop
 end subroutine synopsis

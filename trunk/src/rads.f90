@@ -2133,12 +2133,21 @@ do
 	! b) The attribute value contains the satellite abbreviaton, or
 	!    the attribute value starts with "!" and does not contain the satellite abbreviation
 	! c) The satellite abbreviation is not set to "??"
-	! Examples: for Envisat (n1)
-	! sat="n1" => pass
+	!
+	! Example 1: for original TOPEX (tx)
+	! sat="tx" => pass
 	! sat="j1" => skip
-	! sat="j1 n1" => pass
+	! sat="j1 tx" => pass
 	! sat="!j1" => pass
-	! sat="!j1 n1" => skip
+	! sat="!j1 tx" => skip
+	!
+	! Example 2: for TOPEX Retracked (tx.r)
+	! sat="tx" => pass
+	! sat="tx.r" => pass
+	! sat="!j1" => pass
+	! sat="!tx" => skip
+	! sat="!tx.r" => skip
+
 	skip = 0
 	skip_level = 0
 	do i = 1,nattr
