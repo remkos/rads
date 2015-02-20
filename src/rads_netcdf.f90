@@ -27,7 +27,6 @@ module rads_netcdf
 use typesizes
 integer, parameter, private :: stderr = 0
 real(eightbytereal), parameter, private :: nan = transfer ((/not(0_fourbyteint),not(0_fourbyteint)/),0d0)
-private get_var_1d, get_var_2d
 
 !-----------------------------------------------------------------------
 !*get_var -- Load variable from netCDF file into memory
@@ -51,6 +50,7 @@ private get_var_1d, get_var_2d
 !  varnm : Variable name
 !  array : Array of data values
 !-
+private get_var_1d, get_var_2d, get_var_3d
 interface get_var
 	module procedure get_var_1d
 	module procedure get_var_2d
@@ -58,6 +58,63 @@ interface get_var
 end interface
 
 contains
+
+!-----------------------------------------------------------------------
+!*nf90_message -- Print message to standard error
+!+
+subroutine nf90_message (string, ncid)
+use netcdf
+character(len=*), intent(in) :: string
+integer(fourbyteint), optional :: ncid
+!
+! This routine prints a message to standard error, while prepending
+! the program name.
+! Optionally, it adds the file name (based on the netCDF ID) to which
+! the error pertains.
+!
+! Examples:
+! call nf90_message ('hello world')
+!     output => program: hello word
+! call nf90_message ('error occurred in', ncid)
+!     output => program: error occurred in filename
+!
+! Arguments:
+!  string   : Error message string
+!  ncid     : Optional: netCDF ID providing the filename
+!-----------------------------------------------------------------------
+character(len=160) :: progname, filename
+integer :: i, l
+call getarg (0, progname)
+if (present(ncid)) then
+	i = nf90_inq_path (ncid, l, filename)
+	write (stderr, '(a,": ",a,1x,a)') trim(progname), trim(string), filename(:l)
+else
+	write (stderr, '(a,": ",a)') trim(progname), trim(string)
+endif
+end subroutine nf90_message
+
+!-----------------------------------------------------------------------
+!*nf90_inq_varid_warn -- Get the netCDF ID for a variable, with warning
+!+
+function nf90_inq_varid_warn (ncid, varnm, varid)
+use netcdf
+integer, intent(in) :: ncid
+character(len=*), intent(in) :: varnm
+integer, intent(out) :: varid
+integer :: nf90_inq_varid_warn
+!
+! This function is an extension of the standard netCDF-Fortran routine
+! nf90_inq_varid. It works the same, except that when nf90_inq_varid
+! fails, nf90_inq_varid_warn will return a warning message, to stdout
+! with the variable name and the file name.
+!
+! ncid    : NetCDF file ID
+! varnm   : Name of variable to be inquired
+! varid   : NetCDF variable ID
+!-----------------------------------------------------------------------
+nf90_inq_varid_warn = nf90_inq_varid (ncid, varnm, varid)
+if (nf90_inq_varid_warn /= nf90_noerr) call nf90_message ('No such variable "'//trim(varnm)//'" in file', ncid)
+end function nf90_inq_varid_warn
 
 !-----------------------------------------------------------------------
 !*nf90_def_axis -- Define dimension as a coordinate axis
@@ -104,8 +161,8 @@ else
 	call nfs(nf90_def_var(ncid,varnm,nf90_double,dimid,varid))
 endif
 if (units == '[]' .or. units == '()') then
-	i=index(longname,units(1:1))
-	j=index(longname,units(2:2))
+	i = index(longname,units(1:1))
+	j = index(longname,units(2:2))
 	if (i > 0) then
 		call nfs(nf90_put_att(ncid,varid,'long_name',longname(:i-2)))
 	else if (longname /= ' ') then
@@ -240,10 +297,7 @@ do
 	i0 = i1
 	i1 = scan(varnm(i0+1:), '+-') + i0
 	if (i1 == i0) i1 = l + 1
-	if (nf90_inq_varid(ncid,varnm(i0+1:i1-1),varid) /= nf90_noerr) then
-		write (*,'("No such variable: ",a)') varnm(i0+1:i1-1)
-		return
-	endif
+	if (nf90_inq_varid_warn(ncid,varnm(i0+1:i1-1),varid) /= nf90_noerr) return
 	if (nf90_get_att(ncid,varid,'scale_factor',scale_factor) /= nf90_noerr) scale_factor = 1d0
 	if (nf90_get_att(ncid,varid,'add_offset',add_offset) /= nf90_noerr) add_offset = 0d0
 	with_fillvalue = (nf90_get_att(ncid,varid,'_FillValue',fillvalue) == nf90_noerr)
@@ -277,10 +331,7 @@ do
 	i0 = i1
 	i1 = scan(varnm(i0+1:), '+-') + i0
 	if (i1 == i0) i1 = l + 1
-	if (nf90_inq_varid(ncid,varnm(i0+1:i1-1),varid) /= nf90_noerr) then
-		write (*,'("No such variable: ",a)') varnm(i0+1:i1-1)
-		return
-	endif
+	if (nf90_inq_varid_warn(ncid,varnm(i0+1:i1-1),varid) /= nf90_noerr) return
 	if (nf90_get_att(ncid,varid,'scale_factor',scale_factor) /= nf90_noerr) scale_factor = 1d0
 	if (nf90_get_att(ncid,varid,'add_offset',add_offset) /= nf90_noerr) add_offset = 0d0
 	with_fillvalue = (nf90_get_att(ncid,varid,'_FillValue',fillvalue) == nf90_noerr)
@@ -307,10 +358,7 @@ real(eightbytereal), intent(out) :: array(:,:,:)
 real(eightbytereal) :: scale_factor, add_offset, fillvalue
 integer(fourbyteint) :: varid
 logical :: with_fillvalue
-if (nf90_inq_varid(ncid,varnm,varid) /= nf90_noerr) then
-	write (*,'("No such variable: ",a)') trim(varnm)
-	return
-endif
+if (nf90_inq_varid_warn(ncid,varnm,varid) /= nf90_noerr) return
 if (nf90_get_att(ncid,varid,'scale_factor',scale_factor) /= nf90_noerr) scale_factor = 1d0
 if (nf90_get_att(ncid,varid,'add_offset',add_offset) /= nf90_noerr) add_offset = 0d0
 with_fillvalue = (nf90_get_att(ncid,varid,'_FillValue',fillvalue) == nf90_noerr)

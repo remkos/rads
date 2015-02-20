@@ -19,7 +19,7 @@ module rads_devel_netcdf
 use typesizes
 use rads, only: rads_sat, rads_pass, rads_var
 
-integer(fourbyteint), parameter :: mrec=3500, mvar=60
+integer(fourbyteint), parameter :: mrec=3500, mvar=70
 integer(fourbyteint) :: nvar, nrec=0, ncid
 real(eightbytereal), allocatable :: a(:)
 integer(twobyteint), allocatable :: flags(:)
@@ -62,7 +62,7 @@ use rads
 character(len=*), intent(in) :: varnm
 real(eightbytereal), intent(in) :: data(:)
 nvar = nvar + 1
-if (nvar > mvar) stop 'Too many variables'
+if (nvar > mvar) stop 'Too many variables allocated by new_var'
 var(nvar)%v => rads_varptr (S, varnm)
 var(nvar)%d = data
 end subroutine new_var
@@ -121,16 +121,13 @@ end subroutine put_rads
 subroutine nc2f (varnm, bit, lim, val, neq, mask)
 use rads_netcdf
 use netcdf
-character(*), intent(in) :: varnm
+character(len=*), intent(in) :: varnm
 integer(fourbyteint), intent(in) :: bit
 integer(fourbyteint), optional, intent(in) :: lim, val, neq, mask
 integer(twobyteint) :: flag(mrec), flag2d(1:1,1:nrec)
 integer(fourbyteint) :: i, ival, ndims, varid
 
-if (nf90_inq_varid(ncid,varnm,varid) /= nf90_noerr) then
-	write (*,'("No such variable: ",a)') trim(varnm)
-	return
-endif
+if (nf90_inq_varid_warn(ncid,varnm,varid) /= nf90_noerr) return
 call nfs(nf90_inquire_variable(ncid,varid,ndims=ndims))
 if (ndims == 2) then
 	call nfs(nf90_get_var(ncid,varid,flag2d(1:1,1:nrec)))
