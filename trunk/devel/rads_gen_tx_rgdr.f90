@@ -202,7 +202,8 @@ do
 	P%cycle = cyclenr
 	P%pass = passnr
 	P%equator_time = equator_time
-	call nfs(nf90_get_att(ncid,nf90_global,'equator_longitude',P%equator_lon))
+	call nfs(nf90_get_att(ncid,nf90_global,'equator_longitude',arg))
+	read (arg,*) P%equator_lon
 	call nfs(nf90_get_att(ncid,nf90_global,'first_meas_time',arg))
 	P%start_time = strp1985f(arg)
 	call nfs(nf90_get_att(ncid,nf90_global,'last_meas_time',arg))
@@ -245,10 +246,10 @@ do
 ! Convert all the necessary fields to RADS
 ! Time
 
-	call get_var (ncid, 'tim_moy_1', a)
-	call get_var (ncid, 'tim_moy_2', b)
-	call get_var (ncid, 'tim_moy_3', c)
-	call new_var ('time', a * 86400d0 + b * 1d-3 + c * 1d-6 + sec1992)
+	call get_var (ncid, 'tim_moy_1', a)	! in days from 1992
+	call get_var (ncid, 'tim_moy_2', b)	! in seconds
+	call get_var (ncid, 'tim_moy_3', c)	! in seconds
+	call new_var ('time', a * 86400d0 + b + c + sec1992)
 
 ! Lat, lon, alt
 
@@ -257,16 +258,16 @@ do
 	call cpy_var ('sat_alt_1', 'alt_cnes')
 	call cpy_var ('sat_alt_2', 'alt_gdrd')
 	call get_var (ncid, 'sat_alt_hi_rate', d)
-	a = d(10,:) - d(1,:)
+	c = d(10,:) - d(1,:)
 	call get_var (ncid, 'dtim_pac', d)
-	call new_var ('alt_rate', a / d(1,:) / 9d0)
+	call new_var ('alt_rate', c / d(1,:) / 9d0)
 	call cpy_var ('off_nadir_angle_wf_ku')
 
 ! Altimeter range (on-board tracker)
 
 	call cpy_var ('range_ku')
-	call get_var (ncid, 'iono_corr_alt_ku', b)
-	call new_var ('range_c', a - b / 0.17984d0) ! Compute range_c from range_ku and iono_corr
+	call get_var (ncid, 'iono_corr_alt_ku', c)
+	call new_var ('range_c', a - c / 0.17984d0) ! Compute range_c from range_ku and iono_corr
 	call cpy_var ('range_rms_ku')
 	call cpy_var ('net_instr_corr_range_ku', 'drange_ku')
 	call cpy_var ('net_instr_corr_range_c', 'drange_c')
@@ -306,22 +307,22 @@ do
 	call cpy_var ('geoid', 'geoid_egm96')
 	call cpy_var ('ocean_tide_sol2-load_tide_sol2', 'tide_ocean_got47')
 	call cpy_var ('load_tide_sol2', 'tide_load_got47')
-	call cpy_var ('ocean_tide_non_equil', 'tide_non_equil')
+!	call cpy_var ('ocean_tide_non_equil', 'tide_non_equil')
 	call cpy_var ('solid_earth_tide', 'tide_solid')
 	call cpy_var ('pole_tide', 'tide_pole')
 	call cpy_var ('bathymetry', 'topo_dtm2000')
-	call cpy_var ('inv_bar_corr+hf_fluctuations_corr', 'inv_bar_mog2d')
+!	call cpy_var ('inv_bar_corr+hf_fluctuations_corr', 'inv_bar_mog2d')
 	call cpy_var ('wind_speed_alt')
 
 ! TMR
 
-	call cpy_var ('tb18', 'tb_180')
-	call cpy_var ('tb21', 'tb_210')
-	call cpy_var ('tb37', 'tb_370')
+	call cpy_var ('tb_18', 'tb_180')
+	call cpy_var ('tb_21', 'tb_210')
+	call cpy_var ('tb_37', 'tb_370')
 
 ! Retracker
 
-	call cpy_var ('h_retrk1_ku', 'range_ku_retrk')
+	call cpy_var ('range_ku+h_retrk1_ku-net_instr_corr_retrk_ku', 'range_ku_retrk')
 	call cpy_var ('h_retrk1_ku_rms', 'range_rms_ku_retrk')
 	call cpy_var ('att_retrk1_ku', 'off_nadir_angle2_wf_ku_retrk')
 	call cpy_var ('swh_retrk1_ku', 'swh_ku_retrk')
@@ -337,10 +338,10 @@ do
 
 ! TMR replacement product
 
-	call cpy_var ('rad_wet_tropo_corr_tmrcp', 'wet_tropo_rad_retrk')
-	call cpy_var ('tb18_corr', 'tb_180_retrk')
-	call cpy_var ('tb21_corr', 'tb_210_retrk')
-	call cpy_var ('tb37_corr', 'tb_370_retrk')
+	call cpy_var ('rad_wet_tropo_corr_tmrcp', 'wet_tropo_rad_retrk')	! Scale factor was wrong (fixed with ncks)
+	call cpy_var ('tb_18_corr', 'tb_180_retrk')
+	call cpy_var ('tb_21_corr', 'tb_210_retrk')
+	call cpy_var ('tb_37_corr', 'tb_370_retrk')
 	call cpy_var ('atmos_sig0_corr_ku_tmrcp', 'dsig0_atmos_ku_retrk')
 	call cpy_var ('atmos_sig0_corr_c_tmrcp', 'dsig0_atmos_c_retrk')
 	call cpy_var ('rad_water_vapor', 'water_vapor_rad')

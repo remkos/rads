@@ -1471,7 +1471,7 @@ do i = 1,S%nvar
 	endif
 enddo
 write (name,'(i0)') field
-call rads_error (S, rads_err_var, 'No variable with field number '//name//' was defined')
+call rads_error (S, rads_err_var, 'No variable with field number "'//name//'" was defined')
 data(:P%ndata) = nan
 end subroutine rads_get_var_by_number
 
@@ -2505,7 +2505,7 @@ end subroutine assign_or_append
 
 subroutine xmlparse_error (string)
 ! Issue error message with file name and line number
-character(*), intent(in) :: string
+character(len=*), intent(in) :: string
 character(rads_naml) :: text
 write (text, 1300) trim(filename), X%lineno, string
 call rads_error (S, rads_err_xml_parse, text)
@@ -3151,7 +3151,7 @@ call exit (10)
 end subroutine rads_exit
 
 !***********************************************************************
-!*rads_error -- Print error message
+!*rads_error -- Print error message and store error code
 !+
 subroutine rads_error (S, ierr, string, P)
 type(rads_sat), intent(inout) :: S
@@ -3171,29 +3171,31 @@ type(rads_pass), intent(in), optional :: P
 ! Error code:
 !  S%error  : Will be set to ierr when not rads_noerr
 !-----------------------------------------------------------------------
-if (rads_verbose >= 0) call rads_message (string, P)
+call rads_message (string, P)
 if (ierr /= rads_noerr) S%error = ierr
 end subroutine rads_error
 
 !***********************************************************************
-!*rads_message -- Print message to standard error
+!*rads_message -- Print warning message
 !+
 subroutine rads_message (string, P)
+use rads_netcdf
 character(len=*), intent(in) :: string
 type(rads_pass), intent(in), optional :: P
 !
 ! This routine prints a message to standard error.
+! The message is subpressed when -q is used (rads_verbose < 0)
 !
 ! Arguments:
 !  string   : Error message
 !  P        : If used, it will add the pass file name at the end of <string>
 !-----------------------------------------------------------------------
-character(len=rads_naml) :: progname
-call getarg (0, progname)
-if (present(P)) then
-	write (stderr, '(a,": ",a,1x,a)') trim(progname),trim(string),trim(P%filename)
+if (rads_verbose < 0) then
+	! Remain quiet
+else if (present(P)) then
+	call nf90_message (string, P%ncid)
 else
-	write (stderr, '(a,": ",a)') trim(progname),trim(string)
+	call nf90_message (string)
 endif
 end subroutine rads_message
 
@@ -3749,7 +3751,7 @@ else
 endif
 
 ! Create the (new) data file
-if (rads_verbose >= 2) write (*,'(a,i10)') 'Creating ',trim(P%filename),P%ndata
+if (rads_verbose >= 2) write (*,'(2a,i10)') 'Creating ',trim(P%filename),P%ndata
 if (nft(nf90_create(P%filename, nf90_write+nf90_nofill, P%ncid))) then
 	call rads_error (S, rads_err_nc_create, 'Error creating file', P)
 	return

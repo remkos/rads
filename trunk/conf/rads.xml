@@ -425,6 +425,7 @@ Global RADS configuration file
 <alias name="alt" field="4" sat="j2 sa">alt_gdrd</alias>
 <alias name="alt" field="4" sat="n1">alt_gdrd alt_gdrcp</alias>
 <alias name="alt" field="4" sat="pn tx">alt_gdrcp alt_jgm3</alias>
+<alias name="alt" field="4" sat="tx.r50">alt_gdrd</alias>
 <var name="alt_cnes_20hz" sat="c2">
 	<long_name>20-Hz CNES orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
@@ -483,7 +484,7 @@ Global RADS configuration file
 		<data>range_ku</data>
 		<format>f11.3</format>
 		<compress>int4 1e-4 700e3</compress>
-		<if sat="j1 j2">
+		<if sat="j1 j2 pn tx">
 			<format>f12.4</format>
 			<compress>int4 1e-4 1300e3</compress>
 		</if>
