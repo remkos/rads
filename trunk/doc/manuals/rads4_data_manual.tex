@@ -169,6 +169,7 @@ If the time tags on the original GDR data include a bias, the orbit is either (r
 \var{alt_gps}      & 416 & GPS altitude & m & j1 j2 && \ref{item:alt_gps} \\
 \var{alt_eig6}     & 417 & EIGEN-6C altitude & m & j1 j2 n1 && \ref{item:alt_eig6} \\
 \var{alt_gdrd}     & 418 & GDR-D altitude & m & c2 j1 j2 n1 sa && \ref{item:alt_gdrd} \\
+\var{alt_std1204}  & 419 & GSFC/Std1204 altitude & m & j1 j2 tx && \ref{item:alt_std1204} \\
 \var{alt_reaper}   & 420 & REAPER/COMBI altitude & m & e1 e2 && \ref{item:alt_reaper} \\
 \var{alt_reaper_deos} & 421 & REAPER/DEOS altitude & m & e1 e2 && \ref{item:alt_reaper} \\
 \var{alt_reaper_gfz}  & 422 & REAPER/GFZ altitude & m & e1 e2 && \ref{item:alt_reaper} \\
@@ -196,6 +197,7 @@ Notes:
 \item Reduced-dynamic (fast-delivery) orbits based on GPS tracking data only.\label{item:alt_gps}
 \item Orbits provided by ESOC using the EIGEN-6C gravity field.\label{item:alt_eig6}
 \item Orbits produced under strict Jason GDR-D standards (current baseline).\label{item:alt_gdrd}
+\item Orbits provided by GSFC using their standards "Std1204". They are "GDR-D comparable" and use the goce2s\_fit2 gravity field \citep{lemoine2013}.\label{item:alt_std1204}
 \item Orbits produced by the REAPER project. A combined solution and individual solutions created by DEOS (TU Delft), GFZ and ESOC are available \citep{rudenko2011}.\label{item:alt_reaper}
 \item The variable \var{alt} refers to the preferred (best) orbit solution for each satellite. If two variable names are mentioned, RADS picks the first one by preference; it that is not available, the second variable is used.\label{item:alt}
 \end{enumerate}
