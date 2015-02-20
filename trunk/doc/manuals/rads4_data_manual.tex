@@ -703,7 +703,8 @@ Atmospheric models, like those at ECMWF also provide wind speed and wind directi
 Notes:
 \begin{enumerate}
 \item For Geosat, GFO, ERS-1 and ERS-2, the wind speed is based on the Modified Chelton-Wentz (MCW) algorithm \citep{witter1991}. In case of GFO 0.63 dB was subtracted from the backscatter coefficient before feeding it into the MCW algorithm.\label{item:wind_speed_mcw}
-\item The CryoSat and Envisat wind speed is based on the ECMWF 1-parameter algorithm tailored to Envisat \citep{abdalla2007}. A special version of this is used for SARAL.\label{item:wind_speed_abdalla}
+\item The CryoSat and Envisat wind speed is based on the ECMWF 1-parameter algorithm tailored to Envisat \citep{abdalla2007}.\label{item:wind_speed_abdalla}
+\item The Ka-band altimeter of SARAL required a new 1-parameter algorithm, similar to Envisat's, again matching ECWMF wind fields \citep{lillibridge2014}.\label{item:wind_speed_saral}
 \item The TOPEX/Poseidon wind speed is based on the 2-parameter model by \citet{gourrion2002b}.\label{item:wind_speed_topex}
 \item For Jason-1 and Jason-2, a variant of the 2-parameter model by \citet{gourrion2002b} tailored to Jason-1 is used to derive wind speed \citep{collard2005}.\label{item:wind_speed_jason}
 \item The U (towards east) and V (towards north) components of the wind speed according to ECMWF model data. The absolute magnitude can be computed on-the-fly.\label{item:wind_speed_ecmwf}

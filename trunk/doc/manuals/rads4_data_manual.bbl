@@ -1,4 +1,4 @@
-\begin{thebibliography}{67}
+\begin{thebibliography}{68}
 \providecommand{\natexlab}[1]{#1}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
@@ -214,6 +214,13 @@ Lemoine, F.~G., N.~P. Zelensky, D.~S. Chinn, B.~D. Beckley, and J.~L.
   determination goals of high accuracy and near-real-time processing, paper
   2006-6402, AIAA/AAS Astrodynamics Specialist Conference, August 21--24, 2006,
   Keystone, Colorado.
+
+\bibitem[{\textit{Lillibridge et~al.}(2014)\textit{Lillibridge, Scharroo,
+  Abdalla, and Vandemark}}]{lillibridge2014}
+Lillibridge, J.~L., R.~Scharroo, S.~Abdalla, and D.~C. Vandemark (2014), One-
+  and two-dimensional wind speed models for {Ka}-band altimetry, \textit{J.\
+  Atmos.\ Oceanic Technol.}, \textit{31}(3), 630--638,
+  \doi{10.1175/JTECH-D-13-00167.1}.
 
 \bibitem[{\textit{Llewellyn and Bent}(1973)}]{llewellyn1973}
 Llewellyn, S.~K., and R.~B. Bent (1973), Documentation and description of the
