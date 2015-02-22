@@ -164,10 +164,11 @@ If the time tags on the original GDR data include a bias, the orbit is either (r
 \var{alt_pgs7777}  & 410 & PGS7777 altitude  & m & g1 && \ref{item:alt_pgs7777} \\
 \var{alt_ggm02c_itrf2000}& 411 & GGM02c(ITRF2000) altitude  & m & gs pn tx && \ref{item:alt_ggm02c} \\
 \var{alt_ggm02c_itrf2005}& 413 & GGM02c(ITRF2005) altitude  & m & pn tx && \ref{item:alt_ggm02c} \\
-\var{alt_eiggl04s} & 414 & EIGEN-GL04c altitude & m & c2 j1 j2 n1 pn tx && \ref{item:alt_eiggl04s} \\
-\var{alt_gdrcp}    & 415 & GDR-C' altitude & m & g1 gs j1 j2 pn tx && \ref{item:alt_gdrcp} \\
+\var{alt_eiggl04s} & 414 & EIGEN-GL04c altitude & m & j1 && \ref{item:alt_eiggl04s} \\
+\var{alt_gdrcp}    & 415 & GDR-C' altitude & m & g1 gs j1 j2 n1 pn tx && \ref{item:alt_gdrcp} \\
 \var{alt_gps}      & 416 & GPS altitude & m & j1 j2 && \ref{item:alt_gps} \\
-\var{alt_eig6}     & 417 & EIGEN-6C altitude & m & j1 j2 n1 && \ref{item:alt_eig6} \\
+\var{alt_eig6c}    & 417 & EIGEN-6C altitude & m & c2 n1 && \ref{item:alt_eig6} \\
+\var{alt_eig6s2}   & 417 & EIGEN-6S2 altitude & m & j1 j2 && \ref{item:alt_eig6} \\
 \var{alt_gdrd}     & 418 & GDR-D altitude & m & c2 j1 j2 n1 sa && \ref{item:alt_gdrd} \\
 \var{alt_std1204}  & 419 & GSFC/Std1204 altitude & m & j1 j2 tx && \ref{item:alt_std1204} \\
 \var{alt_reaper}   & 420 & REAPER/COMBI altitude & m & e1 e2 && \ref{item:alt_reaper} \\
@@ -195,7 +196,7 @@ Notes:
 \item Orbits produced with the EIGEN-GL04c or EIGEN-GL04s gravity fields.\label{item:alt_eiggl04s}
 \item Orbits produced under strict Jason GDR-C' standards.\label{item:alt_gdrcp}
 \item Reduced-dynamic (fast-delivery) orbits based on GPS tracking data only.\label{item:alt_gps}
-\item Orbits provided by ESOC using the EIGEN-6C gravity field.\label{item:alt_eig6}
+\item Orbits provided by ESOC using the EIGEN-6C or EIGEN-6S2 gravity field.\label{item:alt_eig6}
 \item Orbits produced under strict Jason GDR-D standards (current baseline).\label{item:alt_gdrd}
 \item Orbits provided by GSFC using their standards "Std1204". They are "GDR-D comparable" and use the goce2s\_fit2 gravity field \citep{lemoine2013}.\label{item:alt_std1204}
 \item Orbits produced by the REAPER project. A combined solution and individual solutions created by DEOS (TU Delft), GFZ and ESOC are available \citep{rudenko2011}.\label{item:alt_reaper}

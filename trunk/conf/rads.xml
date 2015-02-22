@@ -267,7 +267,7 @@ Global RADS configuration file
 	<compress>int4 1e-3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_eiggl04s" field="414" sat="j1 n1">
+<var name="alt_eiggl04s" field="414" sat="j1">
 	<long_name>EIGEN-GL04c orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>EIGEN-GL04c</source>
@@ -314,10 +314,6 @@ Global RADS configuration file
 	<data>alt_eig6c</data>
 	<compress>int4 1e-3</compress>
 	<format>f11.3</format>
-	<if sat="j1 j2">
-		<format>f12.4</format>
-		<compress>int4 1e-4 1300e3</compress>
-	</if>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_eig6s2" field="417" sat="j1 j2">
@@ -327,12 +323,8 @@ Global RADS configuration file
 	<parameters>eigen-6s2-esoc</parameters>
 	<units>m</units>
 	<data>alt_eig6s2</data>
-	<compress>int4 1e-3</compress>
-	<format>f11.3</format>
-	<if sat="j1 j2">
-		<format>f12.4</format>
-		<compress>int4 1e-4 1300e3</compress>
-	</if>
+	<format>f12.4</format>
+	<compress>int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_gdrd" field="418" sat="c2 j1 j2 n1 sa tx.r50">
@@ -344,7 +336,7 @@ Global RADS configuration file
 	<data>alt_gdrd</data>
 	<format>f12.4</format>
 	<compress>int4 1e-4 700e3</compress>
-	<compress sat="j1 j2">int4 1e-4 1300e3</compress>
+	<compress sat="j1 j2 tx">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_std1204" field="419" sat="pn tx j1 j2">
@@ -354,12 +346,8 @@ Global RADS configuration file
 	<parameters>gsfc_std1204</parameters>
 	<units>m</units>
 	<data>alt_std1204</data>
-	<format>f11.3</format>
-	<compress>int4 1e-3</compress>
-	<if sat="j1 j2">
-		<format>f12.4</format>
-		<compress>int4 1e-4 1300e3</compress>
-	</if>
+	<format>f12.4</format>
+	<compress>int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_reaper" field="420" sat="e1 e2">
