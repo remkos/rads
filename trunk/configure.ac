@@ -243,25 +243,6 @@ else
 fi
 
 # -----------------------------------------------------------------
-# Try to compile simple program with netCDF
-# -----------------------------------------------------------------
-AC_MSG_CHECKING([netCDF version])
-vers=`echo "$NETCDF_VERS" | cut -d" " -f1`
-case "$vers" in
-	0.* | 1.* | 2.* | 3.* | 4.0* | 4.1*)
-		AC_MSG_WARN([$vers])
-		echo "========================================================"
-		echo "Your netCDF library is of version [$vers]."
-		echo "This version is too old to compile RADS with."
-		echo "Please upgrade your netCDF library to at least version 4.2."
-		echo "========================================================"
-		exit 1 ;;
-	*)
-		AC_MSG_RESULT([$vers])
-		;;
-esac
-
-# -----------------------------------------------------------------
 # Allow user to set --with-lapack-lib
 # -----------------------------------------------------------------
 AC_MSG_CHECKING([for lapack options (for developers)])

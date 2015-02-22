@@ -3193,7 +3193,7 @@ type(rads_pass), intent(in), optional :: P
 if (rads_verbose < 0) then
 	! Remain quiet
 else if (present(P)) then
-	call nf90_message (string, P%ncid)
+	call nf90_message (trim(string) // ' ' // P%filename)
 else
 	call nf90_message (string)
 endif
