@@ -258,17 +258,23 @@ do
 	call cpy_var ('sat_alt_2', 'alt_gdrd')
 	call get_var (ncid, 'sat_alt_hi_rate', d)
 	call get_var (ncid, 'dtim_pac', a)
-	call new_var ('alt_rate', (d(10,:) - d(1,:)) / a / 9d0) ! alt_rate = (orbit diff over 9*10Hz) / (time diff 10Hz) / 9
+	call new_var ('alt_rate', (d(10,:) - d(1,:)) / a / 18d0) ! alt_rate = (orbit diff over 9*10Hz) / (time diff 20Hz) / 18
 	call cpy_var ('off_nadir_angle_wf_ku')
 
 ! Altimeter range (on-board tracker)
 
-	call cpy_var ('range_ku')
+	call get_var (ncid, 'alt_bad_1', a)
 	call get_var (ncid, 'iono_corr_alt_ku', b)
+	! Set iono_alt to NaN when iono_corr_alt_ku is zero AND bit 6 of alt_bad_1 is set
+	do i = 1,nrec
+		if (b(i) == 0 .and. btest(nint(a(i)),6)) b(i) = nan
+	enddo
+	call new_var ('iono_alt', b)
+	call cpy_var ('range_ku+cog_corr', 'range_ku')	! Explicitly add COG correction
 	call new_var ('range_c', a - b / 0.17984d0) ! Compute range_c from range_ku and iono_corr
 	call cpy_var ('range_rms_ku')
-	call cpy_var ('net_instr_corr_range_ku', 'drange_ku')
-	call cpy_var ('net_instr_corr_range_c', 'drange_c')
+	call cpy_var ('net_instr_corr_range_ku+cog_corr', 'drange_ku')
+	call cpy_var ('net_instr_corr_range_c+cog_corr', 'drange_c')
 	call cpy_var ('cog_corr', 'drange_cg')
 	call cpy_var ('range_numval', 'range_numval_ku')
 
@@ -276,15 +282,29 @@ do
 
 	call cpy_var ('model_dry_tropo_corr', 'dry_tropo_ecmwf')
 	call cpy_var ('inv_bar_corr', 'inv_bar_static')
-	call cpy_var ('model_wet_tropo_corr', 'wet_tropo_ecmwf')
-	call cpy_var ('rad_wet_tropo_corr', 'wet_tropo_rad')
-	call cpy_var ('iono_corr_alt_ku', 'iono_alt')
 	call cpy_var ('iono_corr_dor_ku', 'iono_doris')
+
+	call get_var (ncid, 'model_wet_tropo_corr', a)
+	a = a * 1d1 ! Fix error in scale_factor in RGDR files
+	if (equator_time < 407548800d0) then
+		! Correct model wet tropo as recommended in ERS-2 Validation Report 27,
+		! for all ECMWF wet tropos prior to 1 December 1997.
+		! This holds also for ERS-1, TOPEX and Poseidon!
+		a = 0.85d0 * a - 6d-3
+	else if (equator_time > 538261200d0) then
+		! Data after 22-Jan-2002 are affected by a modification in the ECMWF modelling at that time.
+		! The newer grids are underestimating water vapour by about 4.6%
+		! The correction is:  new_wet_corr = -0.4 [mm] + 1.0442 * wet_corr
+		a = 1.0442d0 * a - 0.4d-3
+	endif
+	call new_var ('wet_tropo_ecmwf', a)
 
 ! SWH and sigma0 (on-board tracker)
 
-	call cpy_var ('swh_ku')
-	call cpy_var ('swh_c')
+	call get_var (ncid, 'swh_ku', a)
+	call new_var ('swh_ku', a*1d-1)	! Fix scale_factor error
+	call get_var (ncid, 'swh_c', a)
+	call new_var ('swh_c', a*1d-1) ! Fix scale_factor error
 	call cpy_var ('swh_rms_ku')
 	call cpy_var ('swh_rms_c')
 !	call cpy_var ('swh_numval_ku')
@@ -292,31 +312,24 @@ do
 	call cpy_var ('net_instr_corr_swh_c', 'dswh_c')
 	call cpy_var ('dr_swh_att_ku', 'drange_swh_att_ku')
 	call cpy_var ('dr_swh_att_c', 'drange_swh_att_c')
-	call cpy_var ('sea_state_bias_ku', 'ssb_cls')
+	call cpy_var ('sea_state_bias_ku', 'ssb_bm3')
 	call cpy_var ('sea_state_bias_ku_walsh', 'ssb_walsh')
 	call cpy_var ('sig0_ku')
 	call cpy_var ('sig0_c')
 !	call cpy_var ('agc_numval_ku', 'sig0_numval_ku')
-	call cpy_var ('atmos_sig0_corr_ku', 'dsig0_atmos_ku')
 
 ! Geophysical quantities
 
-	call cpy_var ('mss', 'mss_cls01')
+	call cpy_var ('mss', 'mss_cnescls11')
 	call cpy_var ('geoid', 'geoid_egm96')
-	call cpy_var ('ocean_tide_sol2-load_tide_sol2', 'tide_ocean_got47')
-	call cpy_var ('load_tide_sol2', 'tide_load_got47')
-!	call cpy_var ('ocean_tide_non_equil', 'tide_non_equil')
+	call cpy_var ('ocean_tide_sol2-load_tide_sol2', 'tide_ocean_got410')
+	call cpy_var ('load_tide_sol2', 'tide_load_got410')
+!	call cpy_var ('ocean_tide_non_equil', 'tide_non_equil')	! Always NaN
 	call cpy_var ('solid_earth_tide', 'tide_solid')
 	call cpy_var ('pole_tide', 'tide_pole')
 	call cpy_var ('bathymetry', 'topo_dtm2000')
-!	call cpy_var ('inv_bar_corr+hf_fluctuations_corr', 'inv_bar_mog2d')
+!	call cpy_var ('inv_bar_corr+hf_fluctuations_corr', 'inv_bar_mog2d')	! Always NaN
 	call cpy_var ('wind_speed_alt')
-
-! TMR
-
-	call cpy_var ('tb_18', 'tb_180')
-	call cpy_var ('tb_21', 'tb_210')
-	call cpy_var ('tb_37', 'tb_370')
 
 ! Retracker
 
@@ -336,12 +349,12 @@ do
 
 ! TMR replacement product
 
-	call cpy_var ('rad_wet_tropo_corr_tmrcp', 'wet_tropo_rad_retrk')	! Scale factor was wrong (fixed with ncks)
-	call cpy_var ('tb_18_corr', 'tb_180_retrk')
-	call cpy_var ('tb_21_corr', 'tb_210_retrk')
-	call cpy_var ('tb_37_corr', 'tb_370_retrk')
-	call cpy_var ('atmos_sig0_corr_ku_tmrcp', 'dsig0_atmos_ku_retrk')
-	call cpy_var ('atmos_sig0_corr_c_tmrcp', 'dsig0_atmos_c_retrk')
+	call cpy_var ('rad_wet_tropo_corr_tmrcp', 'wet_tropo_rad')	! Scale factor was wrong (fixed with ncks)
+	call cpy_var ('tb_18_corr', 'tb_180')
+	call cpy_var ('tb_21_corr', 'tb_210')
+	call cpy_var ('tb_37_corr', 'tb_370')
+	call cpy_var ('atmos_sig0_corr_ku_tmrcp', 'dsig0_atmos_ku')
+	call cpy_var ('atmos_sig0_corr_c_tmrcp', 'dsig0_atmos_c')
 	call cpy_var ('rad_water_vapor', 'water_vapor_rad')
 	call cpy_var ('rad_liquid_water', 'liquid_water_rad')
 
