@@ -494,12 +494,8 @@ Global RADS configuration file
 	<units>m</units>
 	<limits>1300e3 1400e3</limits>
 	<data>range_c</data>
-	<format>f11.3</format>
-	<compress>int3 1e-4</compress>
-	<if sat="j1 j2">
-		<format>f12.4</format>
-		<compress>int4 1e-4 1300e3</compress>
-	</if>
+	<format>f12.4</format>
+	<compress>int4 1e-4 1300e3</compress>
 </var>
 <var name="range_c_retrk" sat="tx.r50">
 	<long_name>C-band retracked range corrected for instr. effects</long_name>
@@ -525,12 +521,12 @@ Global RADS configuration file
 	<units>m</units>
 	<data>range_corrected</data>
 	<format>f11.3</format>
+	<compress>int3 1e-3</compress>
 </var>
 <var name="range_ku_mle3" field="611" sat="j2">
 	<long_name>Ku-band range corrected for instr. effects (MLE3)</long_name>
 	<standard_name>altimeter_range</standard_name>
 	<units>m</units>
-	<format>f11.3</format>
 	<data>range_ku_mle3</data>
 	<format>f12.4</format>
 	<compress>int4 1e-4 1300e3</compress>

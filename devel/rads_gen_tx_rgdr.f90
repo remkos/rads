@@ -98,7 +98,7 @@ real(eightbytereal) :: equator_time
 
 ! Data variables
 
-real(eightbytereal), allocatable :: b(:), c(:), d(:,:)
+real(eightbytereal), allocatable :: b(:), d(:,:)
 
 ! Other local variables
 
@@ -213,7 +213,7 @@ do
 
 ! Allocate variables
 
-	allocate (a(nrec), b(nrec), c(nrec), d(10,nrec), flags(nrec))
+	allocate (a(nrec), b(nrec), d(10,nrec), flags(nrec))
 	nvar = 0
 
 ! Compile flag bits
@@ -246,10 +246,9 @@ do
 ! Convert all the necessary fields to RADS
 ! Time
 
-	call get_var (ncid, 'tim_moy_1', a)	! in days from 1992
-	call get_var (ncid, 'tim_moy_2', b)	! in seconds
-	call get_var (ncid, 'tim_moy_3', c)	! in seconds
-	call new_var ('time', a * 86400d0 + b + c + sec1992)
+	call get_var (ncid, 'tim_moy_1', a)	! in days from 1958
+	call get_var (ncid, 'tim_moy_2+tim_moy_3', b)	! in seconds of day
+	call new_var ('time', (a - 9862d0) * 86400d0 + b)
 
 ! Lat, lon, alt
 
@@ -258,16 +257,15 @@ do
 	call cpy_var ('sat_alt_1', 'alt_cnes')
 	call cpy_var ('sat_alt_2', 'alt_gdrd')
 	call get_var (ncid, 'sat_alt_hi_rate', d)
-	c = d(10,:) - d(1,:)
-	call get_var (ncid, 'dtim_pac', d)
-	call new_var ('alt_rate', c / d(1,:) / 9d0)
+	call get_var (ncid, 'dtim_pac', a)
+	call new_var ('alt_rate', (d(10,:) - d(1,:)) / a / 9d0) ! alt_rate = (orbit diff over 9*10Hz) / (time diff 10Hz) / 9
 	call cpy_var ('off_nadir_angle_wf_ku')
 
 ! Altimeter range (on-board tracker)
 
 	call cpy_var ('range_ku')
-	call get_var (ncid, 'iono_corr_alt_ku', c)
-	call new_var ('range_c', a - c / 0.17984d0) ! Compute range_c from range_ku and iono_corr
+	call get_var (ncid, 'iono_corr_alt_ku', b)
+	call new_var ('range_c', a - b / 0.17984d0) ! Compute range_c from range_ku and iono_corr
 	call cpy_var ('range_rms_ku')
 	call cpy_var ('net_instr_corr_range_ku', 'drange_ku')
 	call cpy_var ('net_instr_corr_range_c', 'drange_c')
@@ -361,7 +359,7 @@ do
 
 	call nfs(nf90_close(ncid))
 	call put_rads
-	deallocate (a, b, c, d, flags)
+	deallocate (a, b, d, flags)
 
 enddo
 
