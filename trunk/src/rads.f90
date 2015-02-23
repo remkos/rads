@@ -1471,7 +1471,7 @@ do i = 1,S%nvar
 	endif
 enddo
 write (name,'(i0)') field
-call rads_error (S, rads_err_var, 'No variable with field number "'//name//'" was defined')
+call rads_error (S, rads_err_var, 'No variable with field number "'//name//'" was defined for "'//trim(S%tree)//'"')
 data(:P%ndata) = nan
 end subroutine rads_get_var_by_number
 
@@ -2599,7 +2599,7 @@ if (i <= S%nvar) then
 else if (.not.present(tgt)) then
 	! No match found, and none should be created: return null pointer and error
 	nullify (ptr)
-	call rads_error (S, rads_err_var, 'No variable "'//trim(varname)//'" was defined')
+	call rads_error (S, rads_err_var, 'No variable "'//trim(varname)//'" was defined for "'//trim(S%tree)//'"')
 	return
 else
 	! If we got here, we need to make a new variable. Do we also need to allocate more space?

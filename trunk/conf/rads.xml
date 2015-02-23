@@ -626,17 +626,6 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
 </var>
-<var name="wet_tropo_rad_retrk" sat="tx.r50">
-	<long_name>radiometer wet tropospheric correction on retracked product</long_name>
-	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
-	<source>radiometer</source>
-	<units>m</units>
-	<limits>-0.6 0.0</limits>
-	<data>wet_tropo_rad_retrk</data>
-	<format>f7.4</format>
-	<compress>int2 1e-4</compress>
-	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
-</var>
 <var name="wet_tropo_ecmwf" field="802" sat="!g1 gs">
 	<long_name>ECMWF wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
@@ -1169,24 +1158,30 @@ Global RADS configuration file
 	<source sat="j2 j3">Tran et al. 2012 (ssb_col_J2_Ku_mle4_1_36_v2012ostst.rs)</source>
 	<parameters sat="j1">ssb_col_J1_1_111_v2012ostst.nc</parameters>
 	<parameters sat="j2 j3">ssb_col_J2_Ku_mle4_1_36_v2012ostst.nc</parameters>
-	<format>f7.4</format>
+	<units>m</units>
+	<limits>-1 1</limits>
 	<data>ssb_tran2012</data>
+	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
 <var name="ssb_walsh" sat="tx.r50">
 	<long_name>Walsh sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
-	<format>f6.3</format>
+	<units>m</units>
+	<limits>-1 1</limits>
 	<data>ssb_walsh</data>
+	<format>f6.3</format>
 	<compress>int2 1e-3</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
 <var name="ssb_retrk" sat="tx.r50">
 	<long_name>sea state bias for retracked range</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
-	<format>f6.3</format>
+	<units>m</units>
+	<limits>-1 1</limits>
 	<data>ssb_retrk</data>
+	<format>f6.3</format>
 	<compress>int2 1e-3</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
@@ -1801,16 +1796,6 @@ Global RADS configuration file
 	</var>
 	<alias name="tb1">tb_180</alias>
 </if>
-<var name="tb_180_retrk" sat="tx.r50">
-	<long_name>radiometer brightness temperature on retracked product (18.0 GHz)</long_name>
-	<standard_name>surface_brightness_temperature</standard_name>
-	<source>radiometer</source>
-	<units>K</units>
-	<data>tb_180_retrk</data>
-	<format>f6.2</format>
-	<compress>int2 1e-2</compress>
-	<comment>Brightness temperatures are unsmoothed</comment>
-</var>
 <if sat="j1 j2 j3">
 	<var name="tb_187" field="2301">
 		<long_name>radiometer brightness temperature (18.7 GHz)</long_name>
@@ -1838,16 +1823,6 @@ Global RADS configuration file
 	</var>
 	<alias name="tb2" field="23">tb_210</alias>
 </if>
-<var name="tb_210_retrk" sat="tx.r50">
-	<long_name>radiometer brightness temperature on retracked product (21.0 GHz)</long_name>
-	<standard_name>surface_brightness_temperature</standard_name>
-	<source>radiometer</source>
-	<units>K</units>
-	<data>tb_210_retrk</data>
-	<format>f6.2</format>
-	<compress>int2 1e-2</compress>
-	<comment>Brightness temperatures are unsmoothed</comment>
-</var>
 <if sat="g1">
 		<var name="tb_222" field="2302" sat="g1">
 		<long_name>radiometer brightness temperature (22.2 GHz)</long_name>
@@ -1914,16 +1889,6 @@ Global RADS configuration file
 	</var>
 	<alias name="tb3">tb_370</alias>
 </if>
-<var name="tb_370_retrk" sat="tx.r50">
-	<long_name>radiometer brightness temperature on retracked product (37.0 GHz)</long_name>
-	<standard_name>surface_brightness_temperature</standard_name>
-	<source>radiometer</source>
-	<units>K</units>
-	<data>tb_370_retrk</data>
-	<format>f6.2</format>
-	<compress>int2 1e-2</compress>
-	<comment>Brightness temperatures are unsmoothed</comment>
-</var>
 
 <if sat="c2 e1 e2 n1">
 	<var name="peakiness_ku" field="2401">
@@ -2579,27 +2544,10 @@ Global RADS configuration file
 	<compress sat="c2 j2 j3">int2 1e-2</compress>
 	<comment>Correction already added to backscatter coefficient</comment>
 </var>
-<var name="dsig0_atmos_ku_retrk" sat="tx.r50">
-	<long_name>Ku-band backscatter coefficient correction due to atmosphere/attitude on retracked product</long_name>
-	<units>dB</units>
-	<data>dsig0_atmos_ku_retrk</data>
-	<default>0.22</default>
-	<format>f4.2</format>
-	<compress>int1 1e-2</compress>
-	<comment>Correction already added to backscatter coefficient</comment>
-</var>
 <var name="dsig0_atmos_c" field="3204" sat="j1 j2 j3 tx">
 	<long_name>C-band backscatter coefficient correction due to atmosphere/attitude</long_name>
 	<units>dB</units>
 	<data>dsig0_atmos_c</data>
-	<format>f4.2</format>
-	<compress>int1 1e-2</compress>
-	<comment>Correction already added to backscatter coefficient</comment>
-</var>
-<var name="dsig0_atmos_c_retrk" sat="tx.r50">
-	<long_name>C-band backscatter coefficient correction due to atmosphere/attitude on retracked product</long_name>
-	<units>dB</units>
-	<data>dsig0_atmos_c_retrk</data>
 	<format>f4.2</format>
 	<compress>int1 1e-2</compress>
 	<comment>Correction already added to backscatter coefficient</comment>
