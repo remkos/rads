@@ -63,6 +63,7 @@ do
 			array = array * scale_factor + add_offset
 		else
 			call nfs(nf90_get_var(ncid,varid,temp))
+			if (with_fillvalue) where (array == fillvalue) temp = nan
 			temp = temp * scale_factor + add_offset
 		endif
 	end select
