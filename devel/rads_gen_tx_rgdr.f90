@@ -99,10 +99,11 @@ real(eightbytereal) :: equator_time
 ! Data variables
 
 real(eightbytereal), allocatable :: b(:), d(:,:)
+integer(fourbyteint) :: nvar_range_c, nvar_range_ku_retrk, nvar_range_c_retrk
 
 ! Other local variables
 
-real(eightbytereal), parameter :: sec1992=220838400d0	! UTC seconds from 1 Jan 1985 to 1 Jan 1992
+real(eightbytereal), parameter :: sec1992 = 220838400d0	! UTC seconds from 1 Jan 1985 to 1 Jan 1992
 
 ! Initialise
 
@@ -246,9 +247,7 @@ do
 ! Convert all the necessary fields to RADS
 ! Time
 
-	call get_var (ncid, 'tim_moy_1', a)	! in days from 1958
-	call get_var (ncid, 'tim_moy_2+tim_moy_3', b)	! in seconds of day
-	call new_var ('time', (a - 9862d0) * 86400d0 + b)
+	call cpy_var ('tim_moy_1 9862 SUB 86400 MUL tim_moy_2 ADD tim_moy_3 ADD', 'time')
 
 ! Lat, lon, alt
 
@@ -270,11 +269,12 @@ do
 		if (b(i) == 0 .and. btest(nint(a(i)),6)) b(i) = nan
 	enddo
 	call new_var ('iono_alt', b)
-	call cpy_var ('range_ku+cog_corr', 'range_ku')	! Explicitly add COG correction
+	call cpy_var ('range_ku cog_corr ADD', 'range_ku')	! Explicitly add COG correction
 	call new_var ('range_c', a - b / 0.17984d0) ! Compute range_c from range_ku and iono_corr
+	nvar_range_c = nvar
 	call cpy_var ('range_rms_ku')
-	call cpy_var ('net_instr_corr_range_ku+cog_corr', 'drange_ku')
-	call cpy_var ('net_instr_corr_range_c+cog_corr', 'drange_c')
+	call cpy_var ('cog_corr net_instr_corr_range_ku SUB', 'drange_ku')
+	call cpy_var ('cog_corr net_instr_corr_range_c SUB', 'drange_c')
 	call cpy_var ('cog_corr', 'drange_cg')
 	call cpy_var ('range_numval', 'range_numval_ku')
 
@@ -285,26 +285,26 @@ do
 	call cpy_var ('iono_corr_dor_ku', 'iono_doris')
 
 	call get_var (ncid, 'model_wet_tropo_corr', a)
-	a = a * 1d1 ! Fix error in scale_factor in RGDR files
 	if (equator_time < 407548800d0) then
 		! Correct model wet tropo as recommended in ERS-2 Validation Report 27,
 		! for all ECMWF wet tropos prior to 1 December 1997.
 		! This holds also for ERS-1, TOPEX and Poseidon!
-		a = 0.85d0 * a - 6d-3
+		call cpy_var ('model_wet_tropo_corr 8.5 MUL 0.006 SUB', 'wet_tropo_ecmwf')
 	else if (equator_time > 538261200d0) then
 		! Data after 22-Jan-2002 are affected by a modification in the ECMWF modelling at that time.
 		! The newer grids are underestimating water vapour by about 4.6%
 		! The correction is:  new_wet_corr = -0.4 [mm] + 1.0442 * wet_corr
-		a = 1.0442d0 * a - 0.4d-3
+		call cpy_var ('model_wet_tropo_corr 10.442 MUL 0.0004 SUB', 'wet_tropo_ecmwf')
+	else
+		! Fix error in scale_factor in RGDR files
+		call cpy_var ('model_wet_tropo_corr 10 MUL', 'wet_tropo_ecmwf')
 	endif
 	call new_var ('wet_tropo_ecmwf', a)
 
 ! SWH and sigma0 (on-board tracker)
 
-	call get_var (ncid, 'swh_ku', a)
-	call new_var ('swh_ku', a*1d-1)	! Fix scale_factor error
-	call get_var (ncid, 'swh_c', a)
-	call new_var ('swh_c', a*1d-1) ! Fix scale_factor error
+	call cpy_var ('swh_ku 0.1 MUL', 'swh_ku')	! Fix scale_factor error
+	call cpy_var ('swh_c 0.1 MUL', 'swh_c') ! Fix scale_factor error
 	call cpy_var ('swh_rms_ku')
 	call cpy_var ('swh_rms_c')
 !	call cpy_var ('swh_numval_ku')
@@ -322,30 +322,35 @@ do
 
 	call cpy_var ('mss', 'mss_cnescls11')
 	call cpy_var ('geoid', 'geoid_egm96')
-	call cpy_var ('ocean_tide_sol2-load_tide_sol2', 'tide_ocean_got410')
+	call cpy_var ('ocean_tide_sol2 load_tide_sol2 SUB', 'tide_ocean_got410')
 	call cpy_var ('load_tide_sol2', 'tide_load_got410')
 !	call cpy_var ('ocean_tide_non_equil', 'tide_non_equil')	! Always NaN
 	call cpy_var ('solid_earth_tide', 'tide_solid')
 	call cpy_var ('pole_tide', 'tide_pole')
 	call cpy_var ('bathymetry', 'topo_dtm2000')
-!	call cpy_var ('inv_bar_corr+hf_fluctuations_corr', 'inv_bar_mog2d')	! Always NaN
+!	call cpy_var ('inv_bar_corr hf_fluctuations_corr ADD', 'inv_bar_mog2d')	! Always NaN
 	call cpy_var ('wind_speed_alt')
 
 ! Retracker
 
-	call cpy_var ('range_ku+h_retrk1_ku-net_instr_corr_retrk_ku', 'range_ku_retrk')
-	call cpy_var ('h_retrk1_ku_rms', 'range_rms_ku_retrk')
+	call cpy_var ('range_ku net_instr_corr_range_ku SUB h_retrk1_ku ADD cog_corr ADD', 'range_ku_retrk')
+	nvar_range_ku_retrk = nvar
+	call cpy_var ('h_retrk1_ku_rms 0.001 MUL', 'range_rms_ku_retrk')	! Fix scale_factor
 	call cpy_var ('att_retrk1_ku', 'off_nadir_angle2_wf_ku_retrk')
 	call cpy_var ('swh_retrk1_ku', 'swh_ku_retrk')
 	call cpy_var ('numval_retrk1_ku', 'range_numval_ku_retrk')
-	call cpy_var ('h_retrk1_c', 'range_c_retrk')
+	call get_var (ncid, 'h_retrk1_c net_instr_corr_range_c SUB cog_corr ADD', a)
+	call new_var ('range_c_retrk', var(nvar_range_c)%d(1:nrec) + a)
+	nvar_range_c_retrk = nvar
 	call cpy_var ('h_retrk1_c_rms', 'range_rms_c_retrk')
 	call cpy_var ('swh_retrk1_c', 'swh_c_retrk')
 	call cpy_var ('att_retrk1_c', 'off_nadir_angle2_wf_c_retrk')
 	call cpy_var ('numval_retrk1_c', 'range_numval_c_retrk')
-	call cpy_var ('net_instr_corr_retrk_ku', 'drange_ku_retrk')
-	call cpy_var ('net_instr_corr_retrk_c', 'drange_c_retrk')
-	call cpy_var ('iono_retrk', 'iono_alt_retrk')
+	call cpy_var ('net_instr_corr_retrk_ku -0.001 MUL cog_corr ADD', 'drange_ku_retrk')	! Fix scale_factor and sign
+	call cpy_var ('net_instr_corr_retrk_c -0.001 MUL cog_corr ADD', 'drange_c_retrk')	! Fix scale_factor and sign
+!	call cpy_var ('iono_retrk 0.001 MUL', 'iono_alt_retrk')
+	call cpy_var ('net_instr_corr_range_c net_instr_corr_range_ku SUB h_retrk1_ku ADD h_retrk1_c SUB 0.17984 MUL ' // &
+		'iono_corr_alt_ku ADD', 'iono_alt_retrk')
 
 ! TMR replacement product
 

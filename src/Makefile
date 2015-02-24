@@ -67,6 +67,7 @@ man:	$(MAN)
 #-----------------------------------------------------------------------
 
 rads_math.o:	rads_misc.mod rads_time.mod
+rads_netcdf.o:	rads_netcdf_get_var.f90 ../include/nf90_message.f90 ../devel/nf90_message.f90
 rads.o:			$(MODS1) $(INCLUDES) ../include/rads_tpj.f90 ../devel/rads_tpj.f90
 rads3.o:		rads.mod
 $(PROGS):		$(LIB)

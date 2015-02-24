@@ -37,17 +37,21 @@ real(eightbytereal), parameter, private :: nan = transfer ((/not(0_fourbyteint),
 !real(eightbytereal), intent(out) :: array(:) <or> array(:,:)
 !
 ! This routine looks for a variable named <varnm> in the file associated with
-! <ncid> and loads it into the 1- or 2-dimensional array <array>.
+! <ncid> and loads it into the 1-, 2-, or 3-dimensional array <array>.
 ! This routine takes into account the attributes scale_factor, add_offset, and
 ! _FillValue.
 !
-! One can also add or subtract a number of fields directly.
-! For example: varnm='alt-range'
-! This can be done for 1D or 2D variables, but not for 2D variables.
+! One can also use RPN notation to combine a number of variables and/or
+! numerical constants directly.
+! For example: varnm='alt range SUB'.
+! Note that only the RPN commands ADD, SUB, MUL, DIV and NEG are available
+! and that only 2 buffers can be used, so the computation has to remain
+! relatively simple.
+! This can be done for 1D or 2D variables, but not for 3D variables.
 !
 ! Arguments:
 !  ncid  : NetCDF ID
-!  varnm : Variable name
+!  varnm : Variable name, or RPN combination of variable names
 !  array : Array of data values
 !-
 private get_var_1d, get_var_2d, get_var_3d
@@ -253,33 +257,8 @@ use netcdf
 integer(fourbyteint), intent(in) :: ncid
 character(len=*), intent(in) :: varnm
 real(eightbytereal), intent(out) :: array(:)
-real(eightbytereal) :: temp(size(array)), scale_factor, add_offset, fillvalue
-integer(fourbyteint) :: i0, i1, l, varid, constant
-logical :: with_fillvalue
-i1 = 0
-l = len_trim(varnm)
-do
-	if (i1 > l) exit
-	i0 = i1
-	i1 = scan(varnm(i0+1:), '+-') + i0
-	if (i1 == i0) i1 = l + 1
-	if (nf90_inq_varid_warn(ncid,varnm(i0+1:i1-1),varid) /= nf90_noerr) return
-	if (nf90_get_att(ncid,varid,'scale_factor',scale_factor) /= nf90_noerr) scale_factor = 1d0
-	if (nf90_get_att(ncid,varid,'add_offset',add_offset) /= nf90_noerr) add_offset = 0d0
-	with_fillvalue = (nf90_get_att(ncid,varid,'_FillValue',fillvalue) == nf90_noerr)
-	if (i0 == 0) then
-		call nfs(nf90_get_var(ncid,varid,array))
-		if (with_fillvalue) where (array == fillvalue) array = nan
-		array = array * scale_factor + add_offset
-	else
-		call nfs(nf90_get_var(ncid,varid,temp))
-		if (with_fillvalue) where (temp == fillvalue) temp = nan
-		constant = 0
-		if (varnm(i0:i0) == '-') constant = -1
-		if (varnm(i0:i0) == '+') constant = 1
-		array = array + constant * (temp * scale_factor + add_offset)
-	endif
-enddo
+real(eightbytereal) :: temp(size(array))
+include "rads_netcdf_get_var.f90"
 end subroutine get_var_1d
 
 subroutine get_var_2d (ncid, varnm, array)
@@ -287,33 +266,8 @@ use netcdf
 integer(fourbyteint), intent(in) :: ncid
 character(len=*), intent(in) :: varnm
 real(eightbytereal), intent(out) :: array(:,:)
-real(eightbytereal) :: temp(size(array,1),size(array,2)), scale_factor, add_offset, fillvalue
-integer(fourbyteint) :: i0, i1, l, varid, constant
-logical :: with_fillvalue
-i1 = 0
-l = len_trim(varnm)
-do
-	if (i1 > l) exit
-	i0 = i1
-	i1 = scan(varnm(i0+1:), '+-') + i0
-	if (i1 == i0) i1 = l + 1
-	if (nf90_inq_varid_warn(ncid,varnm(i0+1:i1-1),varid) /= nf90_noerr) return
-	if (nf90_get_att(ncid,varid,'scale_factor',scale_factor) /= nf90_noerr) scale_factor = 1d0
-	if (nf90_get_att(ncid,varid,'add_offset',add_offset) /= nf90_noerr) add_offset = 0d0
-	with_fillvalue = (nf90_get_att(ncid,varid,'_FillValue',fillvalue) == nf90_noerr)
-	if (i0 == 0) then
-		call nfs(nf90_get_var(ncid,varid,array))
-		if (with_fillvalue) where (array == fillvalue) array = nan
-		array = array * scale_factor + add_offset
-	else
-		call nfs(nf90_get_var(ncid,varid,temp))
-		if (with_fillvalue) where (temp == fillvalue) temp = nan
-		constant = 0
-		if (varnm(i0:i0) == '-') constant = -1
-		if (varnm(i0:i0) == '+') constant = 1
-		array = array + constant * (temp * scale_factor + add_offset)
-	endif
-enddo
+real(eightbytereal) :: temp(size(array,1),size(array,2))
+include "rads_netcdf_get_var.f90"
 end subroutine get_var_2d
 
 subroutine get_var_3d (ncid, varnm, array)
