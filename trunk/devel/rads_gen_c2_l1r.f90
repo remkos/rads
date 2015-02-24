@@ -340,7 +340,7 @@ do
 	call get_var (ncid, 'uso_corr_20hz', d)
 	uso_corr = 730d3 * d(1,1)
 
-	call get_var (ncid, 'range_20hz+drange_20hz', d)
+	call get_var (ncid, 'range_20hz drange_20hz ADD', d)
 	where (.not.valid) d = nan
 	call trend_1hz (t_20hz, t_1hz, d - alt_20hz, a, b)
 	call new_var ('range_ku', a + alt + uso_corr)
@@ -357,7 +357,8 @@ do
 
 	call cpy_var ('swh_20hz', 'swh_20hz_ku', 'swh_ku', 'swh_rms_ku')
 	call cpy_var ('agc_20hz', '', 'agc_ku')
-	call cpy_var ('agc_amp_20hz+dagc_eta_20hz+dagc_alt_20hz+dagc_xi_20hz+dagc_swh_20hz', 'sig0_20hz_ku', 'sig0_ku', 'sig0_rms_ku')
+	call cpy_var ('agc_amp_20hz dagc_eta_20hz ADD dagc_alt_20hz ADD dagc_xi_20hz ADD dagc_swh_20hz ADD', &
+		'sig0_20hz_ku', 'sig0_ku', 'sig0_rms_ku')
 
 	if (mle == 4) call cpy_var ('xi_sq_20hz', '', 'off_nadir_angle2_wf_ku', 'off_nadir_angle2_wf_rms_ku')
 
@@ -435,7 +436,7 @@ do
 	call cpy_var ('iono_gim', 'iono_gim')
 	call cpy_var ('inv_baro', 'inv_bar_static')
 
-	if (.not.fdm) call cpy_var ('inv_baro+dac','inv_bar_mog2d')
+	if (.not.fdm) call cpy_var ('inv_baro dac ADD','inv_bar_mog2d')
 	call cpy_var ('tide_solid', 'tide_solid')
 	call cpy_var ('tide_ocean', 'tide_ocean_got00')
 	call cpy_var ('tide_load', 'tide_load_got00')

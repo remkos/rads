@@ -274,11 +274,11 @@ do
 	if (ogdr) then
 		call cpy_var ('inv_bar_corr', 'inv_bar_mog2d')
 	else
-		call cpy_var ('inv_bar_corr+hf_fluctuations_corr', 'inv_bar_mog2d')
+		call cpy_var ('inv_bar_corr hf_fluctuations_corr ADD', 'inv_bar_mog2d')
 	endif
 !	call cpy_var ('solid_earth_tide', 'tide_solid')
-!	call cpy_var ('ocean_tide_sol1-load_tide_sol1', 'tide_ocean_got00')
-!	call cpy_var ('ocean_tide_sol2-load_tide_sol2', 'tide_ocean_fes04')
+!	call cpy_var ('ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got00')
+!	call cpy_var ('ocean_tide_sol2 load_tide_sol2 SUB', 'tide_ocean_fes04')
 !	call cpy_var ('load_tide_sol1', 'tide_load_got00')
 !	call cpy_var ('load_tide_sol2', 'tide_load_fes04')
 !	call cpy_var ('pole_tide', 'tide_pole')
