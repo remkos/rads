@@ -210,7 +210,8 @@ do
 	call nfs(nf90_get_att(ncid,nf90_global,'last_meas_time',arg))
 	P%end_time = strp1985f(arg)
 	i = index(infile, '/', .true.) + 1
-	P%original = trim(infile(i:))
+	call nfs(nf90_get_att(ncid,nf90_global,'version',arg))
+	P%original = trim(infile(i:)) // ' (' // trim(arg) // ')'
 
 ! Allocate variables
 
@@ -284,27 +285,25 @@ do
 	call cpy_var ('inv_bar_corr', 'inv_bar_static')
 	call cpy_var ('iono_corr_dor_ku', 'iono_doris')
 
-	call get_var (ncid, 'model_wet_tropo_corr', a)
 	if (equator_time < 407548800d0) then
 		! Correct model wet tropo as recommended in ERS-2 Validation Report 27,
 		! for all ECMWF wet tropos prior to 1 December 1997.
 		! This holds also for ERS-1, TOPEX and Poseidon!
-		call cpy_var ('model_wet_tropo_corr 8.5 MUL 0.006 SUB', 'wet_tropo_ecmwf')
+		call cpy_var ('model_wet_tropo_corr 0.85 MUL 0.006 SUB', 'wet_tropo_ecmwf')
 	else if (equator_time > 538261200d0) then
 		! Data after 22-Jan-2002 are affected by a modification in the ECMWF modelling at that time.
 		! The newer grids are underestimating water vapour by about 4.6%
 		! The correction is:  new_wet_corr = -0.4 [mm] + 1.0442 * wet_corr
-		call cpy_var ('model_wet_tropo_corr 10.442 MUL 0.0004 SUB', 'wet_tropo_ecmwf')
+		call cpy_var ('model_wet_tropo_corr 1.0442 MUL 0.0004 SUB', 'wet_tropo_ecmwf')
 	else
-		! Fix error in scale_factor in RGDR files
-		call cpy_var ('model_wet_tropo_corr 10 MUL', 'wet_tropo_ecmwf')
+		call cpy_var ('model_wet_tropo_corr', 'wet_tropo_ecmwf')
 	endif
 	call new_var ('wet_tropo_ecmwf', a)
 
 ! SWH and sigma0 (on-board tracker)
 
-	call cpy_var ('swh_ku 0.1 MUL', 'swh_ku')	! Fix scale_factor error
-	call cpy_var ('swh_c 0.1 MUL', 'swh_c') ! Fix scale_factor error
+	call cpy_var ('swh_ku')	! scale_factor fixed by ncatted
+	call cpy_var ('swh_c') ! scale_factor fixed by ncatted
 	call cpy_var ('swh_rms_ku')
 	call cpy_var ('swh_rms_c')
 !	call cpy_var ('swh_numval_ku')
@@ -335,7 +334,7 @@ do
 
 	call cpy_var ('range_ku net_instr_corr_range_ku SUB h_retrk1_ku ADD cog_corr ADD', 'range_ku_retrk')
 	nvar_range_ku_retrk = nvar
-	call cpy_var ('h_retrk1_ku_rms 0.001 MUL', 'range_rms_ku_retrk')	! Fix scale_factor
+	call cpy_var ('h_retrk1_ku_rms', 'range_rms_ku_retrk')	! scale_factor fixed by ncatted
 	call cpy_var ('att_retrk1_ku', 'off_nadir_angle2_wf_ku_retrk')
 	call cpy_var ('swh_retrk1_ku', 'swh_ku_retrk')
 	call cpy_var ('numval_retrk1_ku', 'range_numval_ku_retrk')
@@ -346,15 +345,15 @@ do
 	call cpy_var ('swh_retrk1_c', 'swh_c_retrk')
 	call cpy_var ('att_retrk1_c', 'off_nadir_angle2_wf_c_retrk')
 	call cpy_var ('numval_retrk1_c', 'range_numval_c_retrk')
-	call cpy_var ('net_instr_corr_retrk_ku -0.001 MUL cog_corr ADD', 'drange_ku_retrk')	! Fix scale_factor and sign
-	call cpy_var ('net_instr_corr_retrk_c -0.001 MUL cog_corr ADD', 'drange_c_retrk')	! Fix scale_factor and sign
-!	call cpy_var ('iono_retrk 0.001 MUL', 'iono_alt_retrk')
+	call cpy_var ('net_instr_corr_retrk_ku NEG cog_corr ADD', 'drange_ku_retrk')	! scale_factor fixed by ncatted, flipped sign
+	call cpy_var ('net_instr_corr_retrk_c NEG cog_corr ADD', 'drange_c_retrk')	! scale_factor fixed by ncatted, flipped sign
+!	call cpy_var ('iono_retrk', 'iono_alt_retrk')
 	call cpy_var ('net_instr_corr_range_c net_instr_corr_range_ku SUB h_retrk1_ku ADD h_retrk1_c SUB 0.17984 MUL ' // &
 		'iono_corr_alt_ku ADD', 'iono_alt_retrk')
 
 ! TMR replacement product
 
-	call cpy_var ('rad_wet_tropo_corr_tmrcp', 'wet_tropo_rad')	! Scale factor was wrong (fixed with ncks)
+	call cpy_var ('rad_wet_tropo_corr_tmrcp', 'wet_tropo_rad')	! scale_factor fixed by ncatted
 	call cpy_var ('tb_18_corr', 'tb_180')
 	call cpy_var ('tb_21_corr', 'tb_210')
 	call cpy_var ('tb_37_corr', 'tb_370')
