@@ -3345,7 +3345,7 @@ Global RADS configuration file
 <if sat="sa">
 	<satellite>SARAL</satellite>
 	<satid>13</satid>
-	<dt1hz>1</dt1hz>
+	<dt1hz>1.033824</dt1hz>
 	<inclination>98.54</inclination>
 	<frequency>35.75</frequency>
 	<xover_params>0.05 0.05</xover_params>
