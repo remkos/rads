@@ -42,6 +42,7 @@ egrep -Hi "fault|error" $log
 gzip -f $log
 export RADSDATAROOT=$RADSROOT/data
 rsync -aW --remove-source-files $* $SANDBOX/$rads_sat/ $RADSDATAROOT/$rads_sat/
+mkdir -p $RADSDATAROOT/$rads_sat/log
 mv -f $log.gz $RADSDATAROOT/$rads_sat/log
 rm -rf $SANDBOX
 cd $RADSROOT/tables
