@@ -96,6 +96,7 @@ character(len=rads_varl) :: optopt, optarg, sat = 'c2'
 character(len=19) :: l1b_proc_time
 character(len=14) :: l1b_version, l1r_version
 character(len=55) :: l1r_product
+character(len=1) :: baseline
 real(eightbytereal) :: tai_utc, eq_time, eq_long
 integer(fourbyteint) :: passnr(2), cycnr(2), recnr(2), nrec, ncid, varid, doris_nav
 logical :: sar, fdm, lrm
@@ -235,6 +236,10 @@ do
 		cycle
 	endif
 
+! Determine baseline version
+
+	baseline = l1r_product(52:52)
+
 ! Determine if this originated from SAR, FDM or LRM
 
 	sar = (l1b_version(:7) == 'SIR1SAR')
@@ -253,16 +258,20 @@ do
 
 
 ! Apply timing bias here, because they are different between between FDM, LRM, SAR
-! See IPF1_datation_biases_v4.xlsx by Marco Fornari.
+! See IPF1_datation_biases_v4.xlsx by Marco Fornari for Baseline B data.
+! These have been accounted for in Baseline C.
 
-	if (sar) then
+	if (baseline >= 'C') then
+		tbias = 0d0
+	else if (sar) then
 		tbias = +0.520795d-3
 	else
 		tbias = -4.699112d-3
 	endif
 
 	! Partial correction of timing bias (See Ruby's e-mail of 22 Apr 2013)
-	if (fdm .and. l1b_version(9:11) >= '2.4') tbias = tbias + 4.4436d-3
+	if (baseline < 'C' .and. fdm .and. l1b_version(9:11) >= '2.4') tbias = tbias + 4.4436d-3
+
 	! Additional timing bias from my own research (1-Aug-2013)
 	! 5-Nov-2014: this applies ONLY to FDM/LRM data; CP4O demonstrated that this does not apply to PLRM/SAR!
 	if (.not.sar) tbias = tbias + 0.4d-3
