@@ -2808,6 +2808,10 @@ Global RADS configuration file
 	<parameters>0</parameters>
 	<parameters sat="gs">   0 -65  0  0 5</parameters>
 	<parameters sat="c2">-698   0  0  0 0</parameters>
+	<parameters sat="c2.lrm_l1">-25   0  0  0 0</parameters>
+	<parameters sat="c2.lrm_l1_0">-25   0  0  0 0</parameters>
+	<parameters sat="c2.lrm_l1_4">-25   0  0  0 0</parameters>
+	<parameters sat="c2.fdm_l1">-25   0  0  0 0</parameters>
 	<parameters sat="e1">  23  -7  0  0 0</parameters>
 	<parameters sat="e2">  61   2 12 12 0</parameters>
 	<parameters sat="g1">  70   0  0  0 0</parameters>

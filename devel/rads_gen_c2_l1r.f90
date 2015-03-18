@@ -73,6 +73,7 @@
 ! - Adjust altitude from the product accordingly (using altitude rate)
 ! - Note that this does NOT change the equator time or longitude!
 ! - This is done here, because FDM and LRM can later no longer be distinguished from eachother
+! - No longer needed for Baseline C
 !-----------------------------------------------------------------------
 program rads_gen_c2_l1r
 
@@ -267,14 +268,13 @@ do
 		tbias = +0.520795d-3
 	else
 		tbias = -4.699112d-3
+		! Partial correction of timing bias (See Ruby's e-mail of 22 Apr 2013)
+		if (fdm .and. l1b_version(9:11) >= '2.4') tbias = tbias + 4.4436d-3
+		! Additional timing bias from my own research (1-Aug-2013)
+		!  5-Nov-2014: This applies ONLY to FDM/LRM data; CP4O demonstrated that this does not apply to PLRM/SAR!
+		! 18-Mar-2015: The TDS_Nov2010 suggests that there is no more timing bias in Baseline C; Marco supports that idea.
+		tbias = tbias + 0.4d-3
 	endif
-
-	! Partial correction of timing bias (See Ruby's e-mail of 22 Apr 2013)
-	if (baseline < 'C' .and. fdm .and. l1b_version(9:11) >= '2.4') tbias = tbias + 4.4436d-3
-
-	! Additional timing bias from my own research (1-Aug-2013)
-	! 5-Nov-2014: this applies ONLY to FDM/LRM data; CP4O demonstrated that this does not apply to PLRM/SAR!
-	if (.not.sar) tbias = tbias + 0.4d-3
 
 ! Time information
 
