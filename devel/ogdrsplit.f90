@@ -1,6 +1,4 @@
 !-----------------------------------------------------------------------
-! $Id$
-!
 ! Copyright (c) 2011-2015  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
@@ -75,6 +73,8 @@ case ('JA1')
 	call parseenv ('${RADSROOT}/ext/j1/JA1_ORF.txt', orf)
 case ('JA2')
 	call parseenv ('${RADSROOT}/ext/j2/JA2_ORF.txt', orf)
+case ('JA3')
+        call parseenv ('${RADSROOT}/ext/j3/JA3_ORF.txt', orf)
 case ('SRL')
 	call parseenv ('${RADSROOT}/ext/sa/SRL_ORF.txt', orf)
 case default
