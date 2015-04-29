@@ -1,6 +1,4 @@
 !-----------------------------------------------------------------------
-! $Id$
-!
 ! Copyright (c) 2011-2015  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
@@ -210,7 +208,7 @@ contains
 
 subroutine synopsis (flag)
 character(len=*), optional :: flag
-if (rads_version ('$Revision$', 'Write REAPER data to RADS', flag=flag)) return
+if (rads_version ('Write REAPER data to RADS', flag=flag)) return
 call synopsis_devel (' < list_of_REAPER_file_names')
 write (*,1310)
 1310 format (/ &

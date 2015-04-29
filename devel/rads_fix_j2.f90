@@ -1,6 +1,4 @@
 !-----------------------------------------------------------------------
-! $Id$
-!
 ! Copyright (c) 2011-2015  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
@@ -83,7 +81,7 @@ contains
 
 subroutine synopsis (flag)
 character(len=*), optional :: flag
-if (rads_version ('$Revision$', 'Patch Jason-2 data for several anomalies', flag=flag)) return
+if (rads_version ('Patch Jason-2 data for several anomalies', flag=flag)) return
 call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &

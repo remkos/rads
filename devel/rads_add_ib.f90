@@ -1,6 +1,4 @@
 !-----------------------------------------------------------------------
-! $Id$
-!
 ! Copyright (c) 2011-2015  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
@@ -81,7 +79,7 @@ contains
 
 subroutine synopsis (flag)
 character(len=*), optional :: flag
-if (rads_version ('$Revision$', 'Add global average inverse barometer correction to RADS data', flag=flag)) return
+if (rads_version ('Add global average inverse barometer correction to RADS data', flag=flag)) return
 call synopsis_devel ('')
 stop
 end subroutine synopsis

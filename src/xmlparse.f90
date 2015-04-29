@@ -1,6 +1,5 @@
 !-----------------------------------------------------------------------
-! $Id$
-! - Simple, limited XML parser in Fortran
+! xlmparse - Simple, limited XML parser in Fortran
 !
 ! General information:
 ! The module reads XML files by:

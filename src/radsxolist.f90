@@ -1,6 +1,4 @@
 !-----------------------------------------------------------------------
-! $Id$
-!
 ! Copyright (c) 2011-2015  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
@@ -514,7 +512,7 @@ end subroutine process
 !***********************************************************************
 
 subroutine synopsis
-if (rads_version ('$Revision$','RADS crossover file lister')) return
+if (rads_version ('RADS crossover file lister')) return
 if (xostat) then
 	write (stderr,1300) 'stat'
 else

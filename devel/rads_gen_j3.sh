@@ -1,7 +1,5 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# $Id$
-#
 # Copyright (c) 2011-2015  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #

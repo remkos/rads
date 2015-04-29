@@ -1,6 +1,4 @@
 !-----------------------------------------------------------------------
-! $Id$
-!
 ! Copyright (c) 2011-2015  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
@@ -179,7 +177,7 @@ contains
 !***********************************************************************
 
 subroutine synopsis
-if (rads_version ('$Revision$','Quickly grid RADS data to xyz or netCDF grid')) return
+if (rads_version ('Quickly grid RADS data to xyz or netCDF grid')) return
 call rads_synopsis
 write (*,1300)
 1300 format (/ &

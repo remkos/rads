@@ -1,6 +1,4 @@
 !-----------------------------------------------------------------------
-! $Id$
-!
 ! Copyright (c) 2011-2015  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
@@ -78,7 +76,7 @@ dt = nan
 dt(1) = -0.5d0
 
 ! Start with this-is message
-l = rads_version ('$Revision$')
+l = rads_version ()
 
 ! If no sat= is given, exit
 if (S(1)%sat == '') call rads_exit ('Need at least one sat= option')
@@ -295,7 +293,7 @@ contains
 !***********************************************************************
 
 subroutine synopsis
-if (rads_version ('$Revision$','Generate altimeter crossovers from RADS')) return
+if (rads_version ('Generate altimeter crossovers from RADS')) return
 call rads_synopsis
 write (stderr,1300)
 1300 format (/ &

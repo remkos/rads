@@ -1,6 +1,4 @@
 !-----------------------------------------------------------------------
-! $Id$
-!
 ! Copyright (c) 2011-2015  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
@@ -62,7 +60,7 @@ t = prod_ ('', 0)
 x = prod_ ('', 0)
 
 ! Start with this-is message
-l = rads_version ('$Revision$')
+l = rads_version ()
 
 ! Scan command line arguments
 do
@@ -194,7 +192,7 @@ end subroutine process
 !***********************************************************************
 
 subroutine synopsis
-if (rads_version ('$Revision$','RADS crossover file converter')) return
+if (rads_version ('RADS crossover file converter')) return
 write (stderr,1300)
 1300 format (/ &
 'usage: radsxoconv [options] FILENAME ...' // &

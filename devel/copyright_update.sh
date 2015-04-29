@@ -1,7 +1,5 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# $Id: rads_gen_c2_l1r.sh 759 2015-01-06 13:22:05Z remko@altimetrics.com $
-#
 # Copyright (c) 2011-2015  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #

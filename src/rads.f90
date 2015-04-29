@@ -1,6 +1,4 @@
 !-----------------------------------------------------------------------
-! $Id$
-!
 ! Copyright (c) 2011-2015  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
@@ -50,6 +48,7 @@ character(len=1), parameter :: rads_linefeed = char(10), rads_noedit = '_'
 integer, parameter :: stderr = 0, stdin = 5, stdout = 6
 
 include 'config.f90'
+include 'rads_version.f90'
 
 private :: rads_traxxing, rads_free_sat_struct, rads_free_var_struct, rads_set_limits_by_flagmask
 
@@ -3200,40 +3199,9 @@ endif
 end subroutine rads_message
 
 !***********************************************************************
-!*rads_rev -- Get the library or program revision number
-!+
-function rads_rev (string)
-character(len=*), optional :: string
-integer(fourbyteint) :: rads_rev
-!
-! This function returns the revision number given by string (which needs
-! to be an SVN rev-tag) or the revision number of the RADS library (when
-! string is not given).
-!
-! Argument:
-!  string   : SVN revision tag
-!
-! Return value:
-!  rads_rev : Revision number of SVN revision tag, or of library
-!-----------------------------------------------------------------------
-character(len=20) :: libversion = '$Revision$' ! Cannot be a parameter, otherwise the read() does not work
-integer :: l, ios
-save libversion
-ios = 1
-if (present(string)) then
-	l = len_trim(string)-1
-	if (string(2:10) == 'Revision:') read (string(11:l), *, iostat=ios) rads_rev
-	if (ios == 0) return
-endif
-l = len_trim(libversion)-1
-read (libversion(11:l), *, iostat=ios) rads_rev
-end function rads_rev
-
-!***********************************************************************
 !*rads_version -- Print message about current program and version
 !+
-function rads_version (revision, description, unit, flag)
-character(len=*), intent(in) :: revision
+function rads_version (description, unit, flag)
 character(len=*), intent(in), optional :: description, flag
 integer(fourbyteint), intent(in), optional :: unit
 logical :: rads_version
@@ -3241,23 +3209,22 @@ logical :: rads_version
 ! This routine prints out a message in one of the following forms,
 ! on the first argument on the command line or the optional argument <flag>.
 ! 1) When first command line argument or <flag> is --version:
-!    "rads_program: revision <number>, library revision <number>"
+!    "rads_program, version <number>"
 !    The program then terminates here.
 ! 2) When no <description> is given:
-!    "rads_program (r<number>)"
+!    "rads_program (v<number>)"
 !    Return value is .true.
 ! 3) When first command line argument or <flag> is -? or --help:
-!    "rads_program (r<number>): <description>"
+!    "rads_program (v<number>): <description>"
 !    Return value is .false.
 ! 4) When first command line argument of <flag> is --head:
-!    "rads_program (r<number>): <description>"
+!    "rads_program (v<number>): <description>"
 !    Return value is .true.
 ! 5) Otherwise:
 !    No output
 !    Return value is .true.
 !
 ! Arguments:
-!  revision    : SVN revision tag
 !  description : One-line description of program
 !  unit        : Fortran output unit (6 = stdout (default), 0 = stderr)
 !  flag        : Use string in replacement of first command line argument
@@ -3277,19 +3244,19 @@ else
 	iunit = stdout
 endif
 if (arg == '--version') then
-	write (iunit, 1320) trim(progname), rads_rev(revision), rads_rev()
+	write (iunit, 1320) trim(progname), trim(rads_version_id)
 	stop
 else if (.not.present(description)) then
-	write (iunit, 1300) trim(progname), max(rads_rev(),rads_rev(revision))
+	write (iunit, 1300) trim(progname), trim(rads_version_id)
 else if (arg == '--help' .or. arg == '-?') then
-	write (iunit, 1310) trim(progname), max(rads_rev(),rads_rev(revision)), trim(description)
+	write (iunit, 1310) trim(progname), trim(rads_version_id), trim(description)
 	rads_version = .false.
 else if (arg == '--head') then
-	write (iunit, 1310) trim(progname), max(rads_rev(),rads_rev(revision)), trim(description)
+	write (iunit, 1310) trim(progname), trim(rads_version_id), trim(description)
 endif
-1300 format (a,' (r',i0,')')
-1310 format (a,' (r',i0,'): ',a)
-1320 format (a,': revision ',i0,', library revision ',i0)
+1300 format (a,' (',a,')')
+1310 format (a,' (',a,'): ',a)
+1320 format (a,', version ',a)
 end function rads_version
 
 !***********************************************************************
