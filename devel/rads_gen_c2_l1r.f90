@@ -1,6 +1,4 @@
 !-----------------------------------------------------------------------
-! $Id$
-!
 ! Copyright (c) 2011-2015  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
@@ -74,6 +72,11 @@
 ! - Note that this does NOT change the equator time or longitude!
 ! - This is done here, because FDM and LRM can later no longer be distinguished from eachother
 ! - No longer needed for Baseline C
+!
+! range:
+! - Supposedly we need to add 7 mm (1/64 of a range gate) to FDM/LRM L1 and
+!   FDM/LRM L2 range because of error in CAL1 (fixed after L1R version 2.03)
+! - Subtract 673 mm from range in Baseline B products
 !-----------------------------------------------------------------------
 program rads_gen_c2_l1r
 
@@ -122,9 +125,10 @@ type(var_) :: var(mvar)
 ! Other local variables
 
 integer(fourbyteint), parameter :: maxint4=2147483647
+real(eightbytereal), parameter :: fai = 7.3d-3
 real(eightbytereal), parameter :: sec2000=473299200d0, rev_time = 5953.45d0, rev_long = -24.858d0
 real(eightbytereal), parameter :: pitch_bias = 0.096d0, roll_bias = 0.086d0, yaw_bias = 0d0	! Attitude biases to be added
-real(eightbytereal) :: uso_corr, dhellips, tbias
+real(eightbytereal) :: uso_corr, dhellips, tbias, range_bias
 integer(fourbyteint) :: i, j, m, oldcyc=0, oldpass=0, mle=3, nhz=0, nwvf=0
 
 ! Initialise
@@ -343,6 +347,20 @@ do
 
 	call new_var ('flags', dble(flags))
 
+! Determine range bias, prior to Baseline C only
+! 1) According to Marco Fornari:
+!    Before Baselince C, all FDM/LRM L1/L2 data have a CAL1 which is off by 1 FAI (1/64 gate).
+!    Marco suggested to ADD 7.3 mm to range, which is done in retracking at the moment, but I feel it needs to be
+!    subtracted from range afterall. Hence subtract 2 FAI here before the change was made in cs2_l1b_to_l1r
+! 2) Baseline C is corrected for 673 mm bias. We do that here to Baseline B as well.
+
+	if (baseline >= 'C') then
+		range_bias = 0d0
+	else
+		range_bias = -673d-3
+		if (.not.sar .and. l1r_version < "2.03") range_bias = range_bias - 2*fai
+	endif
+
 ! Range measurements
 
 	! USO factor = (nominal USO freq) / (measured USO freq)
@@ -352,9 +370,9 @@ do
 	call get_var (ncid, 'range_20hz drange_20hz ADD', d)
 	where (.not.valid) d = nan
 	call trend_1hz (t_20hz, t_1hz, d - alt_20hz, a, b)
-	call new_var ('range_ku', a + alt + uso_corr)
+	call new_var ('range_ku', a + alt + uso_corr + range_bias)
 	if (nhz /= 0) then
-		call new_var_2d ('range_20hz_ku', d + uso_corr)
+		call new_var_2d ('range_20hz_ku', d + uso_corr + range_bias)
 		d = 1
 		where (valid) d = 0
 		call new_var_2d ('range_used_20hz_ku', d)
@@ -431,7 +449,7 @@ do
 	valid = t_valid
 	if (nwvf > 0) then
 		call get_var (ncid, 'range_20hz', d)
-		call new_var_2d ('range_tracker_20hz_ku', d + uso_corr)
+		call new_var_2d ('range_tracker_20hz_ku', d + uso_corr + range_bias)
 		call cpy_var ('agc_20hz', 'agc_20hz_ku')
 		call cpy_var ('echo_scale_20hz', 'waveform_scale_20hz')
 		call cpy_var ('waveform_20hz', 'waveform_20hz')
@@ -506,7 +524,7 @@ contains
 
 subroutine synopsis (flag)
 character(len=*), optional :: flag
-if (rads_version ('$Revision$', 'Write CryoSat-2 L1R data to RADS', flag=flag)) return
+if (rads_version ('Write CryoSat-2 L1R data to RADS', flag=flag)) return
 call synopsis_devel (' < list_of_L1R_file_names')
 write (*,1310)
 1310 format (/ &

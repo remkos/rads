@@ -1,6 +1,4 @@
 !-----------------------------------------------------------------------
-! $Id$
-!
 ! Copyright (c) 2011-2015  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
@@ -24,11 +22,6 @@
 ! - Set dry tropo and wet tropo to NaN when both are zero
 ! - Set iono to NaN when it is zero as well
 !
-! range:
-! - Add -3.33 m range bias for LRM L2 data prior to Feb 2011
-! - Supposedly we need to add 7 mm (1/64 of a range gate) to FDM/LRM L1 and
-!   FDM/LRM L2 range because of error in CAL1
-!
 ! sig0 (FDM L2 and LRM L2 only):
 ! - Reduce backscatter by 1.4 dB during period 2010-08-13 00:00 to 2010-09-03 00:00
 ! - Reduce backscatter by 1.4 dB during period 2010-10-04 00:00 to 2010-10-21 00:00
@@ -47,11 +40,6 @@
 ! - Reference time (time with no correction) is 2011-05-01, the middle of the period
 !   over which original sigma0 bias and SSB was determined
 !
-! swh (FDM L2 and LRM L2 only):
-! - Set SWH to NaN when SWH quality flag is raised (otherwise reports 0)
-! - Correct for error in L2 SWH algorithm
-! - Adjust pseudo-LRM SWH to match LRM data (see notes of 16 Sep 2012)
-!
 ! usage: rads_fix_c2 [data-selectors] [options]
 !-----------------------------------------------------------------------
 program rads_fix_c2
@@ -67,20 +55,18 @@ type(rads_pass) :: P
 
 ! Other local variables
 
-real(eightbytereal), parameter :: fai = 7.3d-3, &
-	swh_adjustment = 1.8737**2 * (0.513**2 - 0.383**2) ! Adjustment to be added to SWH squared
- ! Sigma0 drift and bias with reference time 1-MAY-2011. See notes of 18-DEC-2013
+! Sigma0 drift and bias with reference time 1-MAY-2011. See notes of 18-DEC-2013
 real(eightbytereal) :: sig0_drift_lrm = 0.22d0 / 365.25d0 / 86400d0, sig0_bias_lrm = -3.02d0, &
 	sig0_drift_sar = 0.27d0 / 365.25d0 / 86400d0, sig0_bias_sar = -3.04d0, time_drift = 830822400d0
 integer(fourbyteint) :: i, cyc, pass
 integer(twobyteint) :: flag
-logical :: ldrift = .false., lmeteo = .false., lrange = .false., lswh = .false., &
-	lsig0 = .false., ltbias = .false.
+logical :: ldrift = .false., lmeteo = .false., lsig0 = .false.
+character(len=1) :: baseline
 
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options (' drift meteo range sig0 swh all tbias')
+call rads_set_options (' drift meteo sig0 all')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
@@ -88,20 +74,12 @@ do i = 1,rads_nopt
 		ldrift = .true.
 	case ('meteo')
 		lmeteo = .true.
-	case ('range')
-		lrange = .true.
 	case ('sig0')
 		lsig0 = .true.
-	case ('swh')
-		lswh = .true.
 	case ('all')
 		ldrift = .true.
 		lmeteo = .true.
-		lrange = .true.
 		lsig0 = .true.
-		lswh = .true.
-	case ('tbias') ! Temporary fix for SAR timing bias
-		ltbias = .true.
 	end select
 enddo
 
@@ -123,16 +101,14 @@ contains
 
 subroutine synopsis (flag)
 character(len=*), optional :: flag
-if (rads_version ('$Revision$', 'Patch CryoSat-2 data for several anomalies', flag=flag)) return
+if (rads_version ('Patch CryoSat-2 data for several anomalies', flag=flag)) return
 call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
-'  --drift                   Correct sigma0 for apparent drift' / &
+'  --drift                   Correct sigma0 for apparent drift (Baseline B only)' / &
 '  --meteo                   Set dry, wet, IB (and iono) to NaN when zero' / &
-'  --range                   Correct range for biases' / &
-'  --sig0                    Correct sigma0 for biases and reversal' / &
-'  --swh                     Correct SWH' / &
+'  --sig0                    Correct sigma0 for biases' / &
 '  --all                     All of the above')
 stop
 end subroutine synopsis
@@ -143,38 +119,31 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-real(eightbytereal) :: time(n), dry(n), wet(n), iono(n), sig0(n), swh(n), flagword(n), &
-	range(n), ib(n), tbias(n), alt_rate(n), alt(n), time_20hz(20,n), alt_20hz(20,n), sig0_20hz(20,n), &
-	dsig0, x
+real(eightbytereal) :: time(n), dry(n), wet(n), iono(n), sig0(n), flagword(n), &
+	ib(n), sig0_20hz(20,n), dsig0
 integer(fourbyteint) :: i
-logical :: lrm_l2, fdm_l2, old_version_a, version_a, sar, cswh, cmeteo, ciono, ctbias
-character(len=4) :: l1r_ver
+logical :: lrm_l2, fdm_l2, sar, cmeteo, ciono, cdrift
 
 call log_pass (P)
 
 ! Do we have FDM or LRM? Do we have an older version?
 lrm_l2 = index(P%original,'IPF2LRM') > 0
 fdm_l2 = index(P%original,'IPF2FDM') > 0
-version_a = index(P%original,'_A00') > 0
 
-old_version_a = (index(P%original,'-2010') > 0 .or. &
-	index(P%original,'-JAN-2011') > 0 .or. index(P%original,'-FEB-2011') > 0)
-l1r_ver = P%original(6:9)
+! Determine baseline version
+i = index(P%original,'CS_')
+baseline = P%original(i+51:i+51)
 
 ! These may be set to true later on
 cmeteo = .false.
 ciono = .false.
-
-! SWH corrections that apply to LRM L2 and FDM L2 (version A)
-cswh = lswh .and. (lrm_l2 .or. fdm_l2) .and. version_a
+cdrift = ldrift .and. baseline < 'C'
 
 call rads_get_var (S, P, 'time', time, .true.)
-call rads_get_var (S, P, 'range_ku', range, .true.)
 call rads_get_var (S, P, 'dry_tropo_ecmwf', dry, .true.)
 call rads_get_var (S, P, 'wet_tropo_ecmwf', wet, .true.)
 call rads_get_var (S, P, 'inv_bar_static', ib, .true.)
 call rads_get_var (S, P, 'iono_gim', iono, .true.)
-call rads_get_var (S, P, 'swh_ku', swh, .true.)
 call rads_get_var (S, P, 'sig0_ku', sig0, .true.)
 call rads_get_var (S, P, 'flags', flagword, .true.)
 if (P%n_hz > 0) call rads_get_var (S, P, 'sig0_20hz_ku', sig0_20hz, .true.)
@@ -184,18 +153,6 @@ if (P%n_hz > 0) call rads_get_var (S, P, 'sig0_20hz_ku', sig0_20hz, .true.)
 do i = 1,n
 	flag = nint(flagword(i),twobyteint)
 	sar = btest(flag,0)
-
-! Apply range bias
-! All LRM L2 data processed prior to MAR-2011 have a 3.33 m range bias
-! According to Marco Fornari:
-! All FDM/LRM L1/L2 data have a CAL1 which is off by 1 FAI (1/64 gate).
-! Marco suggested to ADD 7.3 mm to range, which is done in retracking at the moment, but I feel it needs to be
-! subtracted from range afterall. Hence subtract 2 FAI here.
-
-	if (lrange) then
-		if (.not.sar .and. l1r_ver < "2.03") range(i) = range(i) - 2*fai
-		if (lrm_l2 .and. old_version_a) range(i) = range(i) - 3.33d0
-	endif
 
 ! Set dry and wet to NaN when both are zero (not available)
 
@@ -210,25 +167,9 @@ do i = 1,n
 		endif
 	endif
 
-! For LRM/FDM L2 version A data:
-! Set SWH to NaN when SWH quality flag (bit 12) is on. Is always zero in product.
-! Correct SWH for error in L2 computation. See notes 4 Oct 2011.
-! Analysed for LRM L2 data only. Could not be done for FDM, where SWH = NaN always.
-
-	if (cswh) then
-		if (btest(flag,12)) then
-			swh(i) = nan
-		else
-			x = swh(i) * abs(swh(i))
-			x = (x + 2.7124d0) / 0.5777d0
-			swh(i) = sign(sqrt(abs(x)), x)
-			if (x < 0d0) swh(i) = -swh(i)
-		endif
-	endif
-
 ! Correct for sigma0 drift
 
-	if (.not.ldrift) then
+	if (.not.cdrift) then
 		dsig0 = 0
 	else if (sar) then
 		dsig0 = sig0_drift_sar * (time(i)-time_drift)
@@ -237,29 +178,13 @@ do i = 1,n
 	endif
 
 ! For all data: Correct sigma0 for biases
-! For L2 version A: Flip sigma around
 
 	if (.not.lsig0) then
 		! Skip
 	else if (fdm_l2) then
-		if (version_a) then
-			sig0(i) = sig0(i) + 4.8d0
-			sig0(i) = 21d0 - sig0(i)
-		else
-			sig0(i) = sig0(i) - 1.4d0
-		endif
+		sig0(i) = sig0(i) - 1.4d0
 	else if (lrm_l2) then
-		if (version_a) then
-			if ((time(i) > 808272000d0 .and. time(i) < 810086400d0) .or. &	! 2010-08-13 00:00 - 2010-09-03 00:00
-				(time(i) > 812764800d0 .and. time(i) < 814233600d0)) then	! 2010-10-04 00:00 - 2010-10-21 00:00
-				sig0(i) = sig0(i) - 1.4d0
-			else if (time(i) > 822787200d0 .and. time(i) < 825464280d0) then! 2011-01-28 00:00 - 2011-02-27 23:38
-				sig0(i) = sig0(i) - 40d0
-			endif
-			sig0(i) = 21d0 - sig0(i)
-		else
-			sig0(i) = sig0(i) - 7.0d0
-		endif
+		sig0(i) = sig0(i) - 7.0d0
 	else	! All L1 data (LRM and PLRM)
 		if ((time(i) > 808272000d0 .and. time(i) < 810086400d0) .or. &	! 2010-08-13 00:00 - 2010-09-03 00:00
 			 (time(i) > 812764800d0 .and. time(i) < 814233600d0)) &	! 2010-10-04 00:00 - 2010-10-21 00:00
@@ -273,36 +198,7 @@ do i = 1,n
 
 	sig0(i) = sig0(i) + dsig0
 	if (P%n_hz > 0) sig0_20hz(:,i) = sig0_20hz(:,i) + dsig0
-
-! Until r739 all SAR times were late by 0.4 ms.
-! Set the time tag bias here, and correct the time tags and altitudes below.
-! The location is not corrected.
-
-	if (ltbias .and. sar) then
-		tbias(i) = -0.4d-3
-	else
-		tbias(i) = 0d0
-	endif
 enddo
-
-! Now correct time[_20hz] and alt_cnes[_20hz]
-
-ctbias = ltbias .and. any(tbias /= 0d0)
-if (ctbias) then
-	call rads_get_var (S, P, 'alt_rate', alt_rate, .true.)
-	call rads_get_var (S, P, 'alt_cnes', alt, .true.)
-	time = time + tbias
-	alt_rate = alt_rate * tbias
-	alt = alt + alt_rate
-	if (P%n_hz > 0) then
-		call rads_get_var (S, P, 'time_20hz', time_20hz, .true.)
-		call rads_get_var (S, P, 'alt_cnes_20hz', alt_20hz, .true.)
-		do i = 1,n
-			time_20hz(:,i) = time_20hz(:,i) + tbias(i)
-			alt_20hz(:,i) = alt_20hz(:,i) + alt_rate(i)
-		enddo
-	endif
-endif
 
 ! Prior to Cycle 5 pass 333 all iono is bogus
 
@@ -313,7 +209,7 @@ endif
 
 ! If nothing changed, stop here
 
-if (.not.(lrange .or. cmeteo .or. ciono .or. cswh .or. lsig0 .or. ctbias)) then
+if (.not.(cmeteo .or. ciono .or. lsig0 .or. cdrift)) then
 	call log_records (0)
 	return
 endif
@@ -327,25 +223,15 @@ call rads_put_history (S, P)
 
 ! Write out all the data
 
-if (lrange) call rads_put_var (S, P, 'range_ku', range)
 if (cmeteo) then
 	call rads_put_var (S, P, 'dry_tropo', dry)
 	call rads_put_var (S, P, 'wet_tropo', wet)
 	call rads_put_var (S, P, 'inv_bar_static', ib)
 endif
 if (ciono) call rads_put_var (S, P, 'iono_gim', iono)
-if (cswh) call rads_put_var (S, P, 'swh_ku', swh)
-if (lsig0 .or. ldrift) then
+if (lsig0 .or. cdrift) then
 	call rads_put_var (S, P, 'sig0_ku', sig0)
 	if (P%n_hz > 0) call rads_put_var (S, P, 'sig0_20hz_ku', sig0_20hz)
-endif
-if (ctbias) then
-	call rads_put_var (S, P, 'time', time)
-	call rads_put_var (S, P, 'alt_cnes', alt)
-	if (P%n_hz > 0) then
-		call rads_put_var (S, P, 'time_20hz', time_20hz)
-		call rads_put_var (S, P, 'alt_20hz', alt_20hz)
-	endif
 endif
 
 call log_records (n)
