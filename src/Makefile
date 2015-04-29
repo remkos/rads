@@ -1,6 +1,4 @@
 #-----------------------------------------------------------------------
-# $Id$
-#
 # Copyright (c) 2011-2015  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
@@ -18,7 +16,7 @@
 include ../config.mk
 
 # Include file
-INCLUDES= config.f90
+INCLUDES= config.f90 rads_version.f90
 
 # Objects
 OBJS1   = rads_netcdf.o rads_time.o rads_misc.o rads_grid.o rads_geo.o rads_math.o xmlparse.o
@@ -84,6 +82,10 @@ config.f90:	../config.mk
 rads-config:	rads-config.in
 	@echo "Error: Need to run configure in main directory first"
 	@exit 1
+
+rads_version.f90:	$(GIT_INDEX)
+	printf "character(len=rads_varl), parameter :: rads_version_id = '%s'\n" \
+	`if test -f ../.git/index; then git describe --tags; else echo "$(PACKAGE_VERSION)"; fi` > $@
 
 #-----------------------------------------------------------------------
 # How to create the library

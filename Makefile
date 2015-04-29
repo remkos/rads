@@ -1,6 +1,4 @@
 #-----------------------------------------------------------------------
-# $Id$
-#
 # Copyright (c) 2011-2015  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
@@ -14,6 +12,18 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
 #-----------------------------------------------------------------------
+#
+# This Makefile provides the following targets:
+# all      : Compile code
+# install  : Install executables and scripts
+# clean    : Remove compiled code
+# spotless : Remove compiled code and configuration files
+# gitclean : Remove all files not in git repository
+# test     : Test the code
+# update   : Pull update from git repository
+# refresh  : Pull update and install if needed
+#
+#-----------------------------------------------------------------------
 
 include config.mk
 
@@ -22,7 +32,7 @@ CONFIG    = $(CONFIG_IN:.in=)
 SUBDIRS   = src conf $(DEVEL)
 
 #-----------------------------------------------------------------------
-# Rules for making and installing
+# Rules for making, installing, and cleaning
 #-----------------------------------------------------------------------
 
 all install clean spotless test::	$(CONFIG)
@@ -30,6 +40,9 @@ all install clean spotless test::	$(CONFIG)
 
 clean spotless::
 	$(RM) $(CONFIG)
+
+gitclean:
+	git clean -fdx
 
 #-----------------------------------------------------------------------
 # To make configuration files
@@ -54,8 +67,11 @@ configure:	configure.ac
 tar:
 
 #-----------------------------------------------------------------------
-# To update from SVN
+# To update from GitHub
 #-----------------------------------------------------------------------
 
 update:
-	svn --non-interactive --trust-server-cert update
+	git pull origin master
+
+refresh:
+	git pull origin master | grep -q "Already up-to-date." ; if test $$? -eq 1 ; then $(MAKE) install ; fi

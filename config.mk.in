@@ -1,6 +1,5 @@
 #-----------------------------------------------------------------------
 # @configure_input@
-# $Id$
 #
 # Copyright (c) 2011-2015  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
@@ -15,6 +14,12 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
 #-----------------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+# Package information
+#-----------------------------------------------------------------------
+PACKAGE_TARNAME = @PACKAGE_TARNAME@
+PACKAGE_VERSION = @PACKAGE_VERSION@
 
 #-----------------------------------------------------------------------
 # Object locations: Library, Manuals, Binaries
@@ -83,3 +88,6 @@ FFLAGS = @FCFLAGS@@DEVEL_FLAGS@ -I../include @MOD_FLAG@../src $(NETCDF_INC)
 # Do not add %.f90 dependency because %.mod retains timestamp when not altered
 %.mod:
 	$(COMPILE.f) -o $*.o $*.f90
+
+# In case of Git only
+GIT_INDEX	= @GIT_INDEX@

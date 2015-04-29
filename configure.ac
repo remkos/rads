@@ -1,6 +1,4 @@
 # -----------------------------------------------------------------------
-#  $Id$
-#
 #  Copyright (c) 2011-2015  Remko Scharroo
 #  See LICENSE.TXT file for copying and redistribution conditions.
 #
@@ -14,7 +12,6 @@
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU Lesser General Public License for more details.
 # -----------------------------------------------------------------------
-AC_REVISION([$Id$])
 #
 # Run GNU autoconf to produce a configure script from this input.
 # -----------------------------------------------------------------
@@ -22,8 +19,8 @@ AC_REVISION([$Id$])
 # -----------------------------------------------------------------
 # Define and show package version
 # -----------------------------------------------------------------
-AC_INIT(RADS, 4.0, remko@altimetrics.com)
-AC_MSG_NOTICE([RADS AC_PACKAGE_VERSION])
+AC_INIT([RADS], [4.0.1], [remko@altimetrics.com])
+AC_MSG_NOTICE([AC_PACKAGE_NAME, version AC_PACKAGE_VERSION])
 
 # -----------------------------------------------------------------
 # Check for this file before proceeding
@@ -73,6 +70,20 @@ fi
 AC_MSG_RESULT([$enable_devel])
 
 # -----------------------------------------------------------------
+# Are you a git repository?
+# -----------------------------------------------------------------
+AC_MSG_CHECKING([whether this is a git repository])
+if test -f .git/index ; then
+	GIT_INDEX='../.git/index'
+	have_git='yes'
+else
+	GIT_INDEX=''
+	have_git='no'
+fi
+AC_MSG_RESULT([$have_git])
+AC_SUBST(GIT_INDEX)
+
+# -----------------------------------------------------------------
 # Default settings come from nf-config
 # -----------------------------------------------------------------
 AC_PATH_PROG([nf_config], [nf-config], [$with_nf_config])
@@ -91,7 +102,7 @@ elif ! test "x$nf_config" = "x"; then
 	F90=`$nf_config --fc`
 	F90=`basename $F90`
 fi
-AC_MSG_RESULT($F90)
+AC_MSG_RESULT([$F90])
 
 # On solaris, f95 comes before gfortran.
 case "$host" in
@@ -155,7 +166,7 @@ if test "x$enable_devel" = "xyes"; then
 	fi
 fi
 FCFLAGS=$FCFLAGS$opt
-AC_MSG_RESULT($opt)
+AC_MSG_RESULT([$opt])
 
 if test "x$enable_devel" = "xno"; then
 	ALTIM=
@@ -185,7 +196,7 @@ elif test -x "$nf_config" ; then
 else
 	NETCDF_INC=$MOD_FLAG/usr/local/inc
 fi
-AC_MSG_RESULT($NETCDF_INC)
+AC_MSG_RESULT([$NETCDF_INC])
 AC_SUBST(NETCDF_INC)
 
 AC_MSG_CHECKING([for netCDF libraries])
@@ -200,7 +211,7 @@ elif test -x "$nf_config" ; then
 else
 	NETCDF_LIB=-L/usr/local/lib -lnetcdf -lnetcdff
 fi
-AC_MSG_RESULT($NETCDF_LIB)
+AC_MSG_RESULT([$NETCDF_LIB])
 AC_SUBST(NETCDF_LIB)
 
 # -----------------------------------------------------------------
@@ -253,7 +264,7 @@ if test "x$with_devel" = "xyes" ; then
 	*) LAPACK_LIB="-llapack -lblas" ;;
 	esac
 fi
-AC_MSG_RESULT($LAPACK_LIB)
+AC_MSG_RESULT([$LAPACK_LIB])
 AC_SUBST(LAPACK_LIB)
 
 # -----------------------------------------------------------------
