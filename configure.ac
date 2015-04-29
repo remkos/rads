@@ -160,7 +160,12 @@ if test "x$enable_devel" = "xyes"; then
 		opt=" -Wall -Wimplicit"
 	fi
 	if test "x$FC" = "xgfortran" ; then
-		opt=" -Wall -Wtabs -fimplicit-none"
+		gfortran --version | grep -q "(GCC) 4"
+		if test $? == 1 ; then
+			opt=" -Wall -Wno-tabs -fimplicit-none"
+		else
+			opt=" -Wall -Wtabs -fimplicit-none"
+		fi
 	elif test "x$FC" = "xifort" ; then
 		opt=" -warn"
 	fi
