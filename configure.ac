@@ -159,8 +159,9 @@ if test "x$enable_devel" = "xyes"; then
 	if test "x$ac_cv_f77_compiler_gnu" = "xyes" ; then
 		opt=" -Wall -Wimplicit"
 	fi
+	# Version 4.* uses -Wtabs, Version 5.* (and later?) uses -Wno-tabs
 	if test "x$FC" = "xgfortran" ; then
-		gfortran --version | grep -q "(GCC) 4"
+		gfortran --version | grep -q " 4."
 		if test $? == 1 ; then
 			opt=" -Wall -Wno-tabs -fimplicit-none"
 		else
