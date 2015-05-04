@@ -275,8 +275,6 @@ call grib_get(gribid,'latitudeOfFirstGridPointInDegrees',y1,status)
 call grib_get(gribid,'latitudeOfLastGridPointInDegrees',y0,status)
 call grib_get(gribid,'jDirectionIncrementInDegrees',dy,status)
 
-dt = 21600d0 * dy ! This happens to be the case now
-
 deallocate (grids,stat=k)
 allocate (grids(nx,ny,mt),tmp(nx*ny))
 
@@ -300,6 +298,15 @@ do
 	if (status /= grib_success) exit
 enddo
 deallocate(tmp)
+
+! The time step varies between 3 and 6 hours. It depends on the number of
+! time layers found. If more than 31*4 (124), then it must be 3 hours.
+
+if (nt > 31*4) then
+	dt = 3 * 3600d0
+else
+	dt = 6 * 3600d0
+endif
 
 ! Close file
 
