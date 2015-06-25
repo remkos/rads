@@ -45,8 +45,8 @@ for tar in $*; do
 done
 
 case $dir in
-	*FDM*) orbit_opt="-Valt_gdrd --dir=gdr-d-moe" ;;
-	*LRM*) orbit_opt="-Valt_gdrd" ;;
+	*FDM*) orbit_opt="-Valt_gdre --dir=gdr-e-moe" ;;
+	*LRM*) orbit_opt="-Valt_gdre" ;;
 esac
 
 rads_add_ncep    $options -gs               >> $log 2>&1

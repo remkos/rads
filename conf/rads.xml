@@ -403,7 +403,19 @@ Global RADS configuration file
 	<compress>int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<alias name="alt" field="4" sat="c2">alt_gdrd alt_cnes</alias>
+<var name="alt_gdre" field="425" sat="c2">
+	<long_name>GDR-E orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>GDR-E standards</source>
+	<parameters>gdr-e</parameters>
+	<units>m</units>
+	<data>alt_gdre</data>
+	<format>f12.4</format>
+	<compress>int4 1e-4 700e3</compress>
+	<compress sat="j1 j2 j3 tx">int4 1e-4 1300e3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<alias name="alt" field="4" sat="c2">alt_gdre alt_cnes</alias>
 <alias name="alt" field="4" sat="e1 e2">alt_reaper alt_gfz</alias>
 <alias name="alt" field="4" sat="g1">alt_pgs7777</alias>
 <alias name="alt" field="4" sat="gs">alt_gdrcp</alias>
