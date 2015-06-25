@@ -267,16 +267,18 @@ do
 ! These have been accounted for in Baseline C.
 
 	if (baseline >= 'C') then
+		! 18-Mar-2015: The TDS_Nov2010 suggests that there is no more timing bias in Baseline C; Marco supports that idea.
 		tbias = 0d0
 	else if (sar) then
+		! Timing bias for baseline B, in SAR mode (also PLRM)
 		tbias = +0.520795d-3
 	else
+		! Timing bias for baseline B, in LRM mode
 		tbias = -4.699112d-3
 		! Partial correction of timing bias (See Ruby's e-mail of 22 Apr 2013)
 		if (fdm .and. l1b_version(9:11) >= '2.4') tbias = tbias + 4.4436d-3
-		! Additional timing bias from my own research (1-Aug-2013)
+		!  1-Aug-2013: Additional timing bias from my own research
 		!  5-Nov-2014: This applies ONLY to FDM/LRM data; CP4O demonstrated that this does not apply to PLRM/SAR!
-		! 18-Mar-2015: The TDS_Nov2010 suggests that there is no more timing bias in Baseline C; Marco supports that idea.
 		tbias = tbias + 0.4d-3
 	endif
 
