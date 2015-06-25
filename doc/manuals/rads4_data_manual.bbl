@@ -1,4 +1,4 @@
-\begin{thebibliography}{69}
+\begin{thebibliography}{71}
 \providecommand{\natexlab}[1]{#1}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
@@ -177,6 +177,16 @@ Hernandez, F., and P.~Schaeffer (2001), The {CLS01} mean sea surface: A
 \bibitem[{\textit{Imel}(1994)}]{imel1994}
 Imel, D.~A. (1994), Evaluation of the {TOPEX} dual-frequency ionosphere
   correction, \textit{J.\ Geophys.\ Res.}, \textit{99}(C12), 24,895--24,906.
+
+\bibitem[{\textit{{International DORIS Service}}(2011)}]{ids2011}
+{International DORIS Service} (2011), New {GDR-D} orbit standards,
+  \url{ftp://ftp.ids-doris.org/pub/ids/data/POD_configuration_GDRD.pdf}
+  (retrieved 25 June 2015).
+
+\bibitem[{\textit{{International DORIS Service}}(2015)}]{ids2015}
+{International DORIS Service} (2015), New {GDR-E} orbit standards,
+  \url{ftp://ftp.ids-doris.org/pub/ids/data/POD_configuration_GDRE.pdf}
+  (retrieved 25 June 2015).
 
 \bibitem[{\textit{Keihm et~al.}(1995)\textit{Keihm, Janssen, and
   Ruf}}]{ruf1995c}
