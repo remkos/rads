@@ -19,7 +19,7 @@
 # -----------------------------------------------------------------
 # Define and show package version
 # -----------------------------------------------------------------
-AC_INIT([RADS], [4.0.1], [remko@altimetrics.com])
+AC_INIT([RADS], [4.0.2], [remko@altimetrics.com])
 AC_MSG_NOTICE([AC_PACKAGE_NAME, version AC_PACKAGE_VERSION])
 
 # -----------------------------------------------------------------

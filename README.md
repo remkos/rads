@@ -18,8 +18,11 @@ The code is currently still under major development. When released, it will be m
 ## Version History
 Following is a history of releases on GitHub, newest to oldest.
 
-### v4.0.0
-* Import from GoogleCode into GitHub.
+### v4.0.2
+* Prepared for GCC and GFortran version 5.
+* rads_add_ww3_222 did not properly identify 6-hourly time step for recent grids.
+* Improve module dependencies in Makefiles.
+* Introduced GDR-E orbit for CryoSat-2.
 
 ### v4.0.1
 * Updated the way the version number is determined, using either the version tag in configure.ac or "git describe --tags" when using a git repository.
@@ -27,9 +30,6 @@ Following is a history of releases on GitHub, newest to oldest.
 * Updates for future Jason-3 processing.
 * Updates for processing of CryoSat-2 Baseline C.
 
-### v4.0.2
-* Prepared for GCC and GFortran version 5.
-* rads_add_ww3_222 did not properly identify 6-hourly time step for recent grids.
-* Improve module dependencies in Makefiles.
-* Introduced GDR-E orbit for CryoSat-2.
+### v4.0.0
+* Import from GoogleCode into GitHub.
 
