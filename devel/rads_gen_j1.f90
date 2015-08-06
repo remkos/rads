@@ -327,7 +327,7 @@ do
 	call cpy_var ('sig0_rms_c')
 	call cpy_var ('off_nadir_angle_wf_ku', 'off_nadir_angle2_wf_ku')
 	!call cpy_var ('off_nadir_angle_pf', 'off_nadir_angle2_pf') (always 0, so no use)
-	if (cma92) then
+	if (cma92) then	! Variable name change between CMA9.2 and CMA9.3
 		call cpy_var ('atmos_sig0_corr_ku', 'dsig0_atmos_ku')
 		call cpy_var ('atmos_sig0_corr_c', 'dsig0_atmos_c')
 	else
@@ -335,7 +335,15 @@ do
 		call cpy_var ('atmos_corr_sig0_c', 'dsig0_atmos_c')
 	endif
 	call cpy_var ('rad_liquid_water', 'liquid_water_rad')
-	call cpy_var ('rad_water_vapor', 'water_vapor_rad')
+
+	! In CMA9.2 rad_water_vapor in the GDRs is in 0.01 gram/m^2 which is equivalent to 0.1 kg/m^2
+	! To do the scaling right, we cannot use cpy_var.
+	if (cma92) then
+		call get_var (ncid, 'rad_water_vapor', a)
+		call new_var ('water_vapor_rad', a*1d1)
+	else
+		call cpy_var ('rad_water_vapor', 'water_vapor_rad')
+	endif
 
 ! Dump the data
 
