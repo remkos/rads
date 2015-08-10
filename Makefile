@@ -71,7 +71,7 @@ tar:
 #-----------------------------------------------------------------------
 
 update:
-	git pull origin master
+	git pull -t origin master
 
 refresh:
-	git pull origin master | grep -q "Already up-to-date." ; if test $$? -eq 1 ; then $(MAKE) install ; fi
+	git pull -t origin master | grep -q "Already up-to-date." ; if test $$? -eq 1 ; then $(MAKE) install ; fi

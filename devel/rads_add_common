@@ -21,6 +21,7 @@ rads_add_grid     $* -Vgeoid_egm2008
 rads_add_grid     $* -Vmss_egm2008
 rads_add_grid     $* -Vmss_dtu10,topo_dtu10,mss_dtu13
 rads_add_grid     $* -Vgeoid_eigen6,topo_srtm30plus
+rads_add_grid     $* -Vprox_coast
 rads_add_surface  $*
 rads_add_tide     $* --models=stide,ptide,fes04,fes12,got48,got410,lptide,annual
 rads_add_webtide  $*
