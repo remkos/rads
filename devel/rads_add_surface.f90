@@ -106,14 +106,14 @@ call rads_get_var (S, P, 'surface_type', surface_type, .true.)
 ! landmask   | bit 2 | bit 4 | bit 5 | surface_type
 ! -----------------------------------------
 ! 0 = ocean  |   0   |   0   |   0   |   0
-! 1 = land   |   0   |   1   |   1   |   2
-! 2 = lake   |   0   |   0   |   1   |   3
-! 3 = island |   0   |   1   |   1   |   2
-! 4 = pond   |   0   |   0   |   1   |   3
+! 1 = land   |   0   |   1   |   1   |   3
+! 2 = lake   |   0   |   0   |   1   |   2
+! 3 = island |   0   |   1   |   1   |   3
+! 4 = pond   |   0   |   0   |   1   |   2
 ! cont. ice  |   1   |   1   |   1   |   4
 ! -----------------------------------------
 !
-! However, never undo surface_type = 4 (continental ice)
+! However, never undo surface_type = 4 or bit 2 = set (continental ice)
 
 do i = 1,n
 
@@ -122,23 +122,30 @@ do i = 1,n
 	flag = nint(flags(i))
 	surf = nint(surface_type(i))
 
-	select case (nint(grid_query (info, lon(i), lat(i))))
-	case (0) ! ocean
-		flag = ibclr (flag, 4)
-		flag = ibclr (flag, 5)
-		surf = 0
-	case (1, 3) ! land, island
+	if (btest(flag,2) .or. surf == 4) then	! Continental ice
+		flag = ibset (flag, 2)
 		flag = ibset (flag, 4)
 		flag = ibset (flag, 5)
-		surf = 2
-	case default ! lake, pond
-		flag = ibclr (flag, 4)
-		flag = ibset (flag, 5)
-		surf = 3
-	end select
+		surf = 4
+	else
+		select case (nint(grid_query (info, lon(i), lat(i))))
+		case (0) ! ocean
+			flag = ibclr (flag, 4)
+			flag = ibclr (flag, 5)
+			surf = 0
+		case (1, 3) ! land, island
+			flag = ibset (flag, 4)
+			flag = ibset (flag, 5)
+			surf = 3
+		case default ! lake, pond
+			flag = ibclr (flag, 4)
+			flag = ibset (flag, 5)
+			surf = 2
+		end select
+	endif
 
 	flags(i) = flag
-	if (surface_type(i) /= 4) surface_type(i) = surf
+	surface_type(i) = surf
 enddo
 
 ! Store all data fields.
