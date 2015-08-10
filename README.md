@@ -18,10 +18,15 @@ The code is currently still under major development. When released, it will be m
 ## Version History
 Following is a history of releases on GitHub, newest to oldest.
 
+### v4.0.3
+* Improvements to rads_add_surface; new landmask based on GSHHG 2.3.4 introduced.
+* Fixed scaling of water_vapor_rad in rads_gen_j1; affected only cycles 1-283.
+* Updated data manual with GDR-D/E references.
+
 ### v4.0.2
 * Prepared for GCC and GFortran version 5.
 * rads_add_ww3_222 did not properly identify 6-hourly time step for recent grids.
-* Improve module dependencies in Makefiles.
+* Improved module dependencies in Makefiles.
 * Introduced GDR-E orbit for CryoSat-2.
 
 ### v4.0.1
