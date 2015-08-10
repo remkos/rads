@@ -337,7 +337,7 @@ Global RADS configuration file
 	<compress sat="j1 j2 j3 tx">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_std1204" field="419" sat="pn tx j1 j2">
+<var name="alt_std1204" field="419" sat="j1 j2 pn tx">
 	<long_name>GSFC/Std1204 orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>GSFC/Std1204</source>
@@ -413,6 +413,18 @@ Global RADS configuration file
 	<format>f12.4</format>
 	<compress>int4 1e-4 700e3</compress>
 	<compress sat="j1 j2 j3 tx">int4 1e-4 1300e3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<var name="alt_slcci" field="426" sat="n1 pn tx">
+	<long_name>GFZ/SLCCI orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>ESA SLCCI project</source>
+	<parameters>gfz_slcci</parameters>
+	<units>m</units>
+	<data>alt_slcci</data>
+	<format>f12.4</format>
+	<compress>int4 1e-4 700e3</compress>
+	<compress sat="pn tx">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <alias name="alt" field="4" sat="c2">alt_gdre alt_cnes</alias>
