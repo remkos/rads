@@ -2965,6 +2965,7 @@ Global RADS configuration file
 	<data>dist_coast</data>
 	<format>f6.0</format>
 	<compress>int2</compress>
+	<comment>Negative numbers are inland, positive numbers are offshore</comment>
 </var>
 
 <var name="prox_coast" field="4502" sat="c2 j1 j2 j3 n1 pn sa tx">
@@ -2974,6 +2975,7 @@ Global RADS configuration file
 	<data>prox_coast</data>
 	<format>f4.2</format>
 	<compress>int1 1e-2</compress>
+	<comment>Dimensionless measure of the effect of land over altimetric waveforms, where -1 means unaffected by land (open-ocean) and 1 means totally affected by land (inland); can be used for screening purposes in place of distance from coast</comment>
 </var>
 
 <var name="seaice_class" field="4601 46" sat="e1 e2 n1">
