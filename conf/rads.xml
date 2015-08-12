@@ -415,7 +415,7 @@ Global RADS configuration file
 	<compress sat="j1 j2 j3 tx">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_slcci" field="426" sat="n1 pn tx">
+<var name="alt_slcci" field="426" sat="e1 e2 n1 pn tx">
 	<long_name>GFZ/SLCCI orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>ESA SLCCI project</source>
@@ -2003,10 +2003,18 @@ Global RADS configuration file
 	<compress>int1</compress>
 </var>
 
-<var name="surface_type" field="2504">
-	<long_name>surface type</long_name>
-	<flag_values>open_ocean unused enclosed_sea_or_lake land continental_ice</flag_values>
-	<data source="flags">surface_type</data>
+<var name="flag_water" field="2504">
+	<long_name>altimeter water/dry flag</long_name>
+	<flag_values>open_ocean_or_enclosed_sea_or_lake land</flag_values>
+	<data source="flags">4</data>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+
+<var name="flag_ocean" field="2505">
+	<long_name>altimeter ocean/land flag</long_name>
+	<flag_values>open_ocean land_or_enclosed_sea_or_lake</flag_values>
+	<data source="flags">5</data>
 	<format>z1</format>
 	<compress>int1</compress>
 </var>
@@ -2098,6 +2106,14 @@ Global RADS configuration file
 	<standard_name>height_above_reference_ellipsoid status_flag</standard_name>
 	<flag_values>ok degraded</flag_values>
 	<data source="flags">15</data>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+
+<var name="surface_type" field="2517">
+	<long_name>surface type</long_name>
+	<flag_values>open_ocean unused enclosed_sea_or_lake land continental_ice</flag_values>
+	<data source="flags">surface_type</data>
 	<format>z1</format>
 	<compress>int1</compress>
 </var>
