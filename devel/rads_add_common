@@ -17,8 +17,7 @@
 # Add/overwrite numerous fields in the RADS data base
 #
 rads_add_grid     $* -Vdist_coast,inv_bar_mog2d_mean,gia,mss_cnescls11,basin
-rads_add_grid     $* -Vgeoid_egm2008
-rads_add_grid     $* -Vmss_egm2008
+rads_add_grid     $* -Vgeoid_egm2008,mss_egm2008
 rads_add_grid     $* -Vmss_dtu10,topo_dtu10,mss_dtu13
 rads_add_grid     $* -Vgeoid_eigen6,topo_srtm30plus
 rads_add_grid     $* -Vprox_coast
