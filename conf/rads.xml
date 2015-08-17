@@ -2844,15 +2844,15 @@ Global RADS configuration file
 	<default>0</default>
 	<compress>int2 1e-4</compress>
 	<parameters>0</parameters>
+	<parameters sat="c2"> -26   0  0  0 0</parameters>
+	<parameters sat="e1">  22  -5  0  0 0</parameters>
+	<parameters sat="e2">  61  -5  0  0 0</parameters>
 	<parameters sat="gs">   0 -65  0  0 5</parameters>
-	<parameters sat="c2"> -25   0  0  0 0</parameters>
-	<parameters sat="e1">  23  -7  0  0 0</parameters>
-	<parameters sat="e2">  61   2 12 12 0</parameters>
 	<parameters sat="g1">  70   0  0  0 0</parameters>
 	<parameters sat="j1">  83   0  0  0 0</parameters>
 	<parameters sat="j2"> -18   0  0  0 0</parameters>
 	<parameters sat="j3">   0   0  0  0 0</parameters>
-	<parameters sat="n1"> 448   0  0  0 0</parameters>
+	<parameters sat="n1"> 449   0  0  0 0</parameters>
 	<parameters sat="pn"> -15   0  0  0 0</parameters>
 	<parameters sat="sa"> -61   0  0  0 0</parameters>
 </var>
