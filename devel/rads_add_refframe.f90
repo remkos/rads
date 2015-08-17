@@ -22,6 +22,17 @@
 !
 ! In practice we will use a zero offset for TOPEX.
 !
+! Special provisions are made for the following missions:
+! C2: In order to keep on properly patching baseline B data, there is
+!     a special provision made to update reference frame offsets that
+!     were previously < -500 mm (C00 term only). If so, then we use a value
+!     673 mm less than the configured value.
+! J1: The reference frame offset for Phase A and B is given in the
+!     configuration. For Phase C, 5 mm is added to the C00 term.
+! J2: The reference frame offset for the SLA from MLE4 measurements is
+!     given in the configuration. For MLE3 measurements 28.5 mm is added
+!     to the C00 term.
+!
 ! usage: rads_add_refframe [data-selectors] [options]
 !-----------------------------------------------------------------------
 program rads_add_refframe
@@ -109,7 +120,7 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-real(eightbytereal) :: lon(n), lat(n), cor(n)
+real(eightbytereal) :: lon(n), lat(n), cor(n), ref_frame_offset(n)
 real(eightbytereal), parameter :: rad=atan(1d0)/45d0
 integer(fourbyteint) :: i
 
@@ -129,6 +140,13 @@ else
 		call get_spharm(lat(i)*rad,lon(i)*rad,a)
 		cor(i) = dot_product(coef,a)
 	enddo
+endif
+
+! If CryoSat-2 and we had values less than -500 mm, then use C00 - 673 mm.
+
+if (S%sat == 'c2' .and. cyc < 63) then
+	call rads_get_var (S, P, var, ref_frame_offset, .true.)
+	if (ref_frame_offset(1) < -500d-3) cor = cor - 673d-3
 endif
 
 ! If Jason-1 phase C, add 5 mm
