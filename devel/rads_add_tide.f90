@@ -252,7 +252,7 @@ endif
 ! FES models
 do j = 1,mfes
 	if (.not.do_fes(j)) cycle
-	if (j == 1) then ! FES2014
+	if (j == 1) then ! FES2004
 ! In order to allow parallelisation we do one measurement first (which initialises), then do the next n-1 in parallel
 		call festide(fesinfo(j),time(1),lat(1),lon(1),otide_sp(1),otide_lp(1),ltide_sp(1),ltide_lp(1))
 !$omp parallel do shared(fesinfo,time,lat,lon,otide_sp,otide_lp,ltide_sp,ltide_lp,n) private(i)

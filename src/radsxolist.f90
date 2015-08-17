@@ -283,7 +283,7 @@ enddo
 id_flag = 0
 if (check_flag >= 0) id_flag = get_varid('flag_alt_oper_mode') - id_offset
 
-! Apply a timing bias, if requested
+! Remove the effect of a timing bias (tbias in ms) on SLA, if requested
 if (tbias /= 0d0) var(:,:,id_sla) = var(:,:,id_sla) - tbias * 1d-3 * var(:,:,id_alt_rate)
 
 ! Close netCDF file

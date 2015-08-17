@@ -187,7 +187,7 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:'/ &
-'  --var=NAME                Set variable name for output orbit (required)'/ &
+'  -V, --var=NAME            Set variable name for output orbit (required)'/ &
 '  --name=STR                Specify name of orbit'/ &
 '  --dir=STR                 Specify orbit directory path'/ &
 '  --tbias[=VAL]             Add timing bias (ms) (defaults for various satellites)'/ &
