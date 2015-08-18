@@ -187,10 +187,10 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:'/ &
-'  -V, --var=NAME            Set variable name for output orbit (required)'/ &
-'  --name=STR                Specify name of orbit'/ &
-'  --dir=STR                 Specify orbit directory path'/ &
-'  --tbias[=VAL]             Add timing bias (ms) (defaults for various satellites)'/ &
+'  -V, --var NAME            Set variable name for output orbit (required)'/ &
+'  --name STR                Specify name of orbit'/ &
+'  --dir STR                 Specify orbit directory path'/ &
+'  --tbias [VAL]             Add timing bias (ms) (defaults for various satellites)'/ &
 '  --rate                    Compute and store orbital altitude rate'/ &
 '  --loc-6                   Change latitude/longtitude (10^-6 deg)'/ &
 '  --loc-7                   Change latitude/longtitude (10^-7 deg)'/ &
@@ -198,12 +198,12 @@ write (*,1310)
 '  --range                   Change field 601 from SSH to range'/ &
 '  --doppler                 Correct range for Doppler, based on altitude rate and chirp parameter'/ &
 '  --grid                    Use EGM96 grid to add slope-induced Doppler'/ &
-'  --grid=NAME               Use named grid to add slope-induced Doppler'/ &
-'  --chirp=F                 Specify chirp parameter other than default (ms)'/ &
-'  --dt=DT                   Specify time interval for rate, etc (s), default: 1'/ &
+'  --grid NAME               Use named grid to add slope-induced Doppler'/ &
+'  --chirp F                 Specify chirp parameter other than default (ms)'/ &
+'  --dt DT                   Specify time interval for rate, etc (s), default: 1'/ &
 '  --all                     Same as: --tbias --rate --loc-6 --equator'// &
-'The orbit error flag can be set using the --flag= option:'/ &
-'  --flag=VAR,RMS            Specify variable of reference orbit and maximum rms with new orbit (cm)')
+'The orbit error flag can be set using the --flag option:'/ &
+'  --flag VAR,RMS            Specify variable of reference orbit and maximum rms with new orbit (cm)')
 stop
 end subroutine synopsis
 

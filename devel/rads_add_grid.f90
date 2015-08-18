@@ -122,7 +122,7 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
-'  -V, --var=NAME[,...]      Select variable name(s) for interpolation (required)'// &
+'  -V, --var NAME[,...]      Select variable name(s) for interpolation (required)'// &
 'All information about the grids and interpolation options are given by'/ &
 'the <parameters> tags in the RADS configuration file.')
 stop

@@ -143,18 +143,18 @@ else
 endif
 1300 format (/a,' [rads_dataselectors]',a // &
 'Optional [rads_dataselectors] are:' / &
-'  -S, --sat=SAT[/PHASE]     Specify satellite [and phase] (e.g. e1/g, tx)' / &
-'  -C, --cycle=C0[,C1]       Select data for one or more cycles' / &
-'  --time=T0,T1              Specify time selection (optionally use --ymd=, --doy=,' / &
-'                            or --sec= for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)')
+'  -S, --sat SAT[/PHASE]     Specify satellite [and phase] (e.g. e1/g, tx)' / &
+'  -C, --cycle C0[,C1]       Select data for one or more cycles' / &
+'  --time T0,T1              Specify time selection (optionally use --ymd, --doy,' / &
+'                            or --sec for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)')
 1301 format (/a,' [rads_dataselectors]',a // &
 'Required argument is:' / &
-'  -S, --sat=SAT[/PHASE]     Specify satellite [and phase] (e.g. e1/g, tx)' // &
+'  -S, --sat SAT[/PHASE]     Specify satellite [and phase] (e.g. e1/g, tx)' // &
 'Optional [rads_dataselectors] are:' / &
-'  -C, --cycle=C0[,C1[,DC]]  Specify first and last cycle and modulo' / &
-'  -P, --pass=P0[,P1[,DP]]   Specify first and last pass and modulo' / &
-'  --time=T0,T1              Specify time selection (optionally use --ymd=, --doy=,' / &
-'                            or --sec= for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)')
+'  -C, --cycle C0[,C1[,DC]]  Specify first and last cycle and modulo' / &
+'  -P, --pass P0[,P1[,DP]]   Specify first and last pass and modulo' / &
+'  --time T0,T1              Specify time selection (optionally use --ymd, --doy,' / &
+'                            or --sec for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)')
 end subroutine synopsis_devel
 
 !*log_string -- Print string to log output

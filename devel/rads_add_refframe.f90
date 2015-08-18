@@ -109,7 +109,7 @@ call synopsis_devel ('')
 write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
-' --coef=C00,C10,C11,S11,C20 Set reference frame offset coefficients (mm)' / &
+' --coef C00,C10,C11,S11,C20 Set reference frame offset coefficients (mm)' / &
 '                            (default values come from rads.xml)')
 stop
 end subroutine synopsis

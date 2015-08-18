@@ -98,7 +98,7 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
-'  -s, --ssb[=MODEL]         Add/replace hybrid SSB model (default: ssb_hyb)' / &
+'  -s, --ssb [MODEL]         Add/replace hybrid SSB model (default: ssb_hyb)' / &
 '  -w, --wind                Compute altimeter wind speed from ECMWF model' / &
 '  --all                     All of the above')
 stop

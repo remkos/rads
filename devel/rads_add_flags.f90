@@ -92,7 +92,7 @@ call synopsis_devel ('')
 write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
-'  --file=name               Set the name of the flag data base to be used' / &
+'  --file NAME               Set the name of the flag database to be used' / &
 '                            (default is ${ALTIM}/data/tables/${SAT}_flags.dat)')
 stop
 end subroutine synopsis

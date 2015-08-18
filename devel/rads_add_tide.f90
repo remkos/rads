@@ -149,7 +149,7 @@ call synopsis_devel ('')
 write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
-'  -m, --models=MODEL[,...]  Select tide models' // &
+'  -m, --models MODEL[,...]  Select tide models' // &
 'Currently available MODELs are:'/ &
 '  fes04  : FES2004 ocean and load tide'/ &
 '  fes12  : FES2012 ocean tide'/ &

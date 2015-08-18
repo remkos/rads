@@ -102,10 +102,10 @@ call synopsis_devel (' [processing_options]')
 write (*,1310) mask, iwin, twin
 1310 format (/ &
 'Additional [processing_options] are:' / &
-'  -b, --mask=MASK           Exclude data based on bitmap MASK (default:',i5,')' / &
-'  -i, --iwin=IWIN           Set editing range for iono data [cm] (default:',f4.0,')' / &
-'  -t, --twin=TWIN           Set box car filter length [sec] (default:' f4.0,')' / &
-'  -m3, --mle=3              Use MLE3 parameters (Jason-2 specific)')
+'  -b, --mask MASK           Exclude data based on bitmap MASK (default:',i5,')' / &
+'  -i, --iwin IWIN           Set editing range for iono data [cm] (default:',f4.0,')' / &
+'  -t, --twin TWIN           Set box car filter length [sec] (default:' f4.0,')' / &
+'  -m, --mle 3               Use MLE3 parameters (Jason-2 specific)')
 stop
 end subroutine synopsis
 

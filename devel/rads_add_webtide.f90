@@ -99,7 +99,7 @@ call synopsis_devel ('')
 write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
-'  -m, --models=MODEL[,...]  Select WebTide models' / &
+'  -m, --models MODEL[,...]  Select WebTide models' / &
 '                            (default models are defined in rads.xml)')
 stop
 end subroutine synopsis
