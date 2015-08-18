@@ -69,7 +69,7 @@ integer(fourbyteint), allocatable :: key(:), idx(:), trkid(:,:)
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('dsbi:g:r:: dual single batch interpolant: gap: dt:')
+call rads_set_options ('dsbi:g:r:: dual single batch interpolant: gap: reject-on-nan:: dt:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 dt = nan
@@ -86,7 +86,7 @@ if (S(1)%sat == '') call rads_exit ('Need at least one sat= option')
 do i = 1,msat
 	if (S(i)%sat == '') exit
 	if (S(i)%nsel == 0) call rads_parse_varlist (S(i), 'sla')
-	if (S(i)%nsel /= S(1)%nsel) call rads_exit ('Unequal amount of variables on sel= for different satellites')
+	if (S(i)%nsel /= S(1)%nsel) call rads_exit ('Unequal amount of variables on -V for different satellites')
 	nsat = i
 enddo
 nsel = S(1)%nsel
@@ -94,13 +94,8 @@ nsel = S(1)%nsel
 ! Scan command line arguments
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
-	case ('r')
-		if (rads_opt(i)%arg == 'n') then
-			reject = -2
-		else
-			reject = 0
-			read (rads_opt(i)%arg, *, iostat=ios) reject
-		endif
+	case ('r', 'reject-on-nan')
+		call rads_parse_r_option (S(1), rads_opt(i)%opt, rads_opt(i)%arg, reject)
 	case ('s', 'single')
 		duals = .false.
 	case ('d', 'dual')
@@ -301,18 +296,19 @@ write (stderr,1300)
 '  -d, --dual                Do dual satellite crossovers only'/ &
 '  -s, --single              Do single satellite crossovers only'/ &
 '  -b, --batch               Do crossovers between different batches only'/ &
-'  -i, --interpolant=[n|s|a|l|q|c][N]'/ &
+'  -i, --interpolant [n|s|a|l|q|c][N]'/ &
 '                            Interpolate 2N along-track values to crossover by picking (n)earest neighbor,'/ &
 '                            or by cubic (s)pline, or by (a)veraging, or by (l)inear, (q)uadratic or (c)ubic'/ &
 '                            polynomial fit; optionally add number of points N required on BOTH sides of the'/ &
 '                            crossover for interpolation. Default: q3'/ &
-'  -g, --gap=GAP             Specify the maximum gap between two nearest points to crossover, in 1-Hz intervals;' / &
+'  -g, --gap GAP             Specify the maximum gap between two nearest points to crossover, in 1-Hz intervals;' / &
 '                            also sets maximum gaps between 1st and last point of interpolation window to (2N+1)*GAP' / &
-'  -rITEM                    Reject xovers if data item number ITEM on --var= specifier is NaN'/ &
-'                            (default: reject if SLA field is NaN)'/ &
-'  -r0, -r                   Do not reject xovers with NaN values'/ &
-'  -rn                       Reject xovers if any value is NaN'/ &
-'  --dt=DT                   Limit crossover time interval to number of days'/ &
+'  -r, --reject-on-nan VAR   Reject xovers if variable VAR on -V specifier is NaN'/ &
+'  -r #                      Reject xovers if data item number # on -V specifier is NaN'/ &
+'  -r 0, -r none, -r         Do not reject xovers with NaN values'/ &
+'  -r n, -r any              Reject xovers if any value is NaN'/ &
+'                      Note: If no -r option is given -r sla is assumed'/ &
+'  --dt DT                   Limit crossover time interval to number of days'/ &
 '                            use negative number to specify interval in fraction of cycles (default = -0.5)'/ &
 '  FILENAME                  Specify output FILENAME (default: radsxogen.nc)')
 stop

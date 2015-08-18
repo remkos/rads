@@ -44,6 +44,7 @@ integer(onebyteint), parameter, private :: flag_values(0:15) = &
 	int((/0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15/), onebyteint)
 integer(twobyteint), parameter, private :: flag_masks (0:15) = &
 	int((/1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,-32768/),twobyteint)
+integer(fourbyteint), parameter, private :: id_sat = 1, id_xml = 2, id_alias = 3, id_misc = 4, id_var = 5
 character(len=1), parameter :: rads_linefeed = char(10), rads_noedit = '_'
 integer, parameter :: stderr = 0, stdin = 5, stdout = 6
 
@@ -196,9 +197,9 @@ integer(fourbyteint) :: rads_log_unit = stdout       ! Unit number for statistic
 !
 ! Only if the <sat> argument is omitted, then the routine will parse
 ! the command line for arguments in the form:
-! --sat=<sat> --cycle=<lo>,<hi>,<step> --pass=<lo>,<hi>,<step> --lim:<var>=<lo>,<hi>
-! --lat=<lo>,<hi> --lon=<lo>,<hi> --alias:<var>=<var> --opt:<value>=<value>
-! --opt=<value>,... --fmt:<var>=<value>
+! --sat <sat> --cycle <lo>,<hi>,<step> --pass <lo>,<hi>,<step> --lim <var>=<lo>,<hi>
+! --lat <lo>,<hi> --lon <lo>,<hi> --alias <var>=<var> --opt <value>=<value>
+! --opt <value>,... --fmt <var>=<value>
 ! or their equivalents without the --, or the short options -S, -C, -P, -L, -F
 !
 ! The routine will read the satellite/mission specific setup XML files and store
@@ -594,14 +595,15 @@ integer :: sopt(1), nsat
 call rads_load_options (nsat)
 if (nsat < 1) call rads_exit ('Failed to find any "-S" or "--sat" options on command line')
 if (nsat > 1) call rads_exit ('Too many "-S" or "--sat" options on command line')
-sopt = minloc (rads_opt%id, rads_opt%id==11) ! Position of the -S option
+sopt = minloc (rads_opt%id, rads_opt%id==10+id_sat) ! Position of the first (only) -S option
 !
 ! The next three pack functions isolate the -X option arguments, the command line
 ! arguments associcated with the -S option, and  all -V option arguments.
 call rads_init_sat_0d_xml (S, rads_opt(sopt(1))%arg, &
-	pack(rads_opt%arg, mod(rads_opt%id,10)==2))
-call rads_parse_options (S, pack(rads_opt, mod(rads_opt%id,10)==3))
-call rads_parse_varlist (S, pack(rads_opt%arg, mod(rads_opt%id,10)==4))
+	pack(rads_opt%arg, mod(rads_opt%id,10)==id_xml))
+call rads_parse_options (S, pack(rads_opt, mod(rads_opt%id,10)==id_alias))
+call rads_parse_options (S, pack(rads_opt, mod(rads_opt%id,10)==id_misc))
+call rads_parse_varlist (S, pack(rads_opt%arg, mod(rads_opt%id,10)==id_var))
 end subroutine rads_init_cmd_0d
 
 subroutine rads_init_cmd_1d (S)
@@ -613,13 +615,14 @@ if (nsat < 1) call rads_exit ('Failed to find any "-S" or "--sat" options on com
 if (nsat > size(S)) call rads_exit ('Too many "-S" or "--sat" options on command line')
 !
 do i = 1,nsat
-	sopt = minloc (rads_opt%id, rads_opt%id==i*10+1) ! Position of i-th -S option
+	sopt = minloc (rads_opt%id, rads_opt%id==i*10+id_sat) ! Position of i-th -S option
 	! The next three pack functions isolate the -X option arguments, the command line
 	! arguments associcated with the i-th -S option, and  all -V option arguments.
 	call rads_init_sat_0d_xml (S(i), rads_opt(sopt(1))%arg, &
-		pack(rads_opt%arg, rads_opt%id==2 .or. rads_opt%id==i*10+2))
-	call rads_parse_options (S(i), pack(rads_opt, rads_opt%id==3 .or. rads_opt%id==i*10+3))
-	call rads_parse_varlist (S(i), pack(rads_opt%arg, mod(rads_opt%id,10)==4))
+		pack(rads_opt%arg, rads_opt%id==id_xml .or. rads_opt%id==i*10+id_xml))
+	call rads_parse_options (S(i), pack(rads_opt, rads_opt%id==id_alias .or. rads_opt%id==i*10+id_alias))
+	call rads_parse_options (S(i), pack(rads_opt, rads_opt%id==id_misc .or. rads_opt%id==i*10+id_misc))
+	call rads_parse_varlist (S(i), pack(rads_opt%arg, mod(rads_opt%id,10)==id_var))
 enddo
 !
 ! Blank out the rest
@@ -788,7 +791,7 @@ integer, intent(out) :: nsat
 ! Scan the command line for all common RADS 4 command line options
 ! like --cycle, --sat, -P, etc, and store only these, not any other
 ! command line options, in an external array <rads_option>.
-! In addition any arguments from a file pointed to by the --args=<file>
+! In addition any arguments from a file pointed to by the --args <file>
 ! option are loaded as well.
 !
 ! The array <opt%id> will contain the identifiers of the various options.
@@ -870,22 +873,26 @@ do
 		open (iunit, file=opt(nopt)%arg, status='old', iostat=ios)
 		if (ios /= 0) iunit = 0
 
-	! The following options we memorise
+	! The following options we memorise. They will later be parsed in the order:
+	! id_sat, id_xml, id_alias, id_misc, id_var
 	case (' ') ! Non-option arguments
 		opt(nopt)%id = nsat*10
 		nopt = nopt + 1
 	case ('S', 'sat')
 		nsat = nsat + 1
-		opt(nopt)%id = nsat*10+1
+		opt(nopt)%id = nsat*10+id_sat
 		nopt = nopt + 1
 	case ('X', 'xml')
-		opt(nopt)%id = nsat*10+2
+		opt(nopt)%id = nsat*10+id_xml
+		nopt = nopt + 1
+	case ('A', 'alias')
+		opt(nopt)%id = nsat*10+id_alias
 		nopt = nopt + 1
 	case ('V', 'var', 'sel')
-		opt(nopt)%id = nsat*10+4
+		opt(nopt)%id = nsat*10+id_var
 		nopt = nopt + 1
 	case default ! Here for other known options to be parsed in rads_parse_options
-		opt(nopt)%id = nsat*10+3
+		opt(nopt)%id = nsat*10+id_misc
 		nopt = nopt + 1
 	end select
 enddo
@@ -911,9 +918,10 @@ type(rads_option), intent(in) :: opt(:)
 ! This routine fills the <S> struct with the information pertaining
 ! to a given satellite and mission as read from the options in the
 ! array <opt>.
-! The -S or --sat= option is ignored (it should be dealt with separately).
-! The -V or --var= option is not parsed, but a pointer is returned to the element
-! of the list of variables following -V or --var=. Same for --sel=, sel=, var=.
+! The -S or --sat option is ignored (it should be dealt with separately).
+! The -V or --var option is not parsed, but a pointer is returned to the element
+! of the list of variables following -V or --var. Same for --sel, and the
+! backward compatible options sel= and var=.
 !
 ! Arguments:
 !  S        : Satellite/mission dependent structure
@@ -1091,7 +1099,7 @@ type(rads_sat), intent(inout) :: S
 ! After initialising RADS for a single satellite using rads_init_sat (S,sat)
 ! this routine can be used to update the <S> struct with information from
 ! the command line options. In contrast to rads_init_sat (S) this does not
-! require that -S or --sat= is one of the command line options.
+! require that -S or --sat is one of the command line options.
 !
 ! Arguments:
 !  S        : Satellite/mission dependent structure
@@ -1100,7 +1108,7 @@ type(rads_sat), intent(inout) :: S
 integer :: nsat
 call rads_load_options (nsat)
 call rads_parse_options (S, rads_opt(1:rads_nopt))
-call rads_parse_varlist (S, pack(rads_opt%arg, mod(rads_opt%id,10)==4))
+call rads_parse_varlist (S, pack(rads_opt%arg, mod(rads_opt%id,10)==id_var))
 end subroutine rads_parse_cmd
 
 !***********************************************************************
@@ -3283,42 +3291,42 @@ write (iunit, 1300) trim(progname)
 1300 format (/ &
 'usage: ',a,' [required_arguments] [rads_dataselectors] [rads_options] [program_options]' // &
 'Required argument is:'/ &
-'  -S, --sat=SAT[/PHASE]     Specify satellite [and phase] (e.g. e1/g, tx)'// &
+'  -S, --sat SAT[/PHASE]     Specify satellite [and phase] (e.g. e1/g, tx)'// &
 'Optional [rads_dataselectors] are:'/ &
-'  -A, --alias:VAR1=VAR2     Use variable VAR2 when VAR1 is requested'/ &
-'  -C, --cycle=C0[,C1[,DC]]  Specify first and last cycle and modulo'/ &
-'  -F, --fmt, --format:VAR=FMT'/ &
+'  -A, --alias VAR1=VAR2     Use variable VAR2 when VAR1 is requested'/ &
+'  -C, --cycle C0[,C1[,DC]]  Specify first and last cycle and modulo'/ &
+'  -F, --fmt, --format VAR=FMT'/ &
 '                            Specify the Fortran format used to print VAR (for ASCII output only)'/ &
-'  -L, --limits:VAR=MIN,MAX  Specify edit data range for variable VAR'/ &
-'  --lon=LON0,LON1           Specify longitude boundaries (deg)'/ &
-'  --lat=LAT0,LAT1           Specify latitude  boundaries (deg)'/ &
-'  -P, --pass=P0[,P1[,DP]]   Specify first and last pass and modulo; alternatively use -Pa (--pass=asc)'/ &
-'                            for ascending passes or -Pd (--pass=des) for descending passes' / &
-'  -Q, --quality_flag:VAR=FLAG'/&
+'  -L, --limits VAR=MIN,MAX  Specify edit data range for variable VAR'/ &
+'  --lon LON0,LON1           Specify longitude boundaries (deg)'/ &
+'  --lat LAT0,LAT1           Specify latitude  boundaries (deg)'/ &
+'  -P, --pass P0[,P1[,DP]]   Specify first and last pass and modulo; alternatively use -Pa (--pass asc)'/ &
+'                            for ascending passes or -Pd (--pass des) for descending passes' / &
+'  -Q, --quality_flag VAR=FLAG'/&
 '                            Check variable FLAG when validating variable VAR'/ &
-'  -R, --region=LON0,LON1,LAT0,LAT1'/ &
+'  -R, --region LON0,LON1,LAT0,LAT1'/ &
 '                            Specify rectangular region (deg)'/ &
-'  -R, --region=LON0,LAT0,RADIUS'/ &
+'  -R, --region LON0,LAT0,RADIUS'/ &
 '                            Specify circular region (deg)' / &
-'  --sla=SLA0,SLA1           Specify range for SLA (m)'/ &
-'  --time=T0,T1              Specify time selection (optionally use --ymd=, --doy=,'/ &
-'                            or --sec= for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)'/ &
-'  -V, --var=VAR1,...        Select variables to be read'/ &
-'  -X, --xml=XMLFILE         Load XMLFILE in addition to defaults'/ &
-'  -Z, --cmp, --compress=type[,scale[,offset]]'/ &
+'  --sla SLA0,SLA1           Specify range for SLA (m)'/ &
+'  --time T0,T1              Specify time selection (optionally use --ymd, --doy,'/ &
+'                            or --sec for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)'/ &
+'  -V, --var VAR1,...        Select variables to be read'/ &
+'  -X, --xml XMLFILE         Load XMLFILE in addition to defaults'/ &
+'  -Z, --cmp, --compress type[,scale[,offset]]'/ &
 '                            Specify binary output format (for netCDF out); type is one of:'/ &
 '                            int1, int2, int4, real, dble; scale and offset are optional (def: 1,0)'// &
 'Still working for backwards Compatibility with RADS 3 are options:'/ &
-'  --h=H0,H1                 Specify range for SLA (m) (now --sla=H0,H1)'/ &
-'  --opt=J                   Use selection code J when J/100 requested (now -AVAR1=VAR2)'/ &
-'  --opt:I=J                 Set option for data item I to J (now -AVAR1=VAR2)'/ &
-'  --sel=VAR1,...            Select variables to read'// &
+'  --h H0,H1                 Specify range for SLA (m) (now --sla H0,H1)'/ &
+'  --opt J                   Use selection code J when J/100 requested (now -A VAR1=VAR2)'/ &
+'  --opt I=J                 Set option for data item I to J (now -A VAR1=VAR2)'/ &
+'  --sel VAR1,...            Select variables to read'// &
 'Common [rads_options] are:'/ &
-'  --args=FILENAME           Get any of the above arguments from FILENAME (one argument per line)'/ &
+'  --args FILENAME           Get any of the above arguments from FILENAME (one argument per line)'/ &
 '  --help                    Print this syntax massage'/ &
-'  --log=FILENAME            Send statistics to FILENAME (default is standard output)'/ &
+'  --log FILENAME            Send statistics to FILENAME (default is standard output)'/ &
 '  -q, --quiet               Suppress warning messages (but keeps fatal error messages)' / &
-'  -v, --debug=LEVEL         Set debug/verbosity level'/ &
+'  -v, --debug LEVEL         Set debug/verbosity level'/ &
 '  --version                 Version info')
 end subroutine rads_synopsis
 

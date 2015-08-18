@@ -55,7 +55,7 @@ real(eightbytereal), allocatable :: r(:), q(:)
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('r::fs:o: step: list: output: maxrec:')
+call rads_set_options ('r::fs:o: reject-on-nan:: step: list: output: maxrec:')
 call rads_init (Sats)
 if (any(Sats%error /= rads_noerr)) call rads_exit ('Fatal error')
 
@@ -65,7 +65,7 @@ do i = 1,rads_nopt
 	case ('o', 'output')
 		outname = rads_opt(i)%arg
 		if (outname == '') outname = '-'
-	case ('r')
+	case ('r', 'reject-on-nan')
 		call rads_parse_r_option (Sats(1), rads_opt(i)%opt, rads_opt(i)%arg, reject)
 	case ('f')
 		has_f = .true.
@@ -195,17 +195,17 @@ call rads_synopsis
 write (*,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
-'  -rVARNAME                 Reject records if variable VARNAME on -V specifier is NaN'/ &
-'  -r#                       Reject records if data item number # on -V specifier is NaN'/ &
-'  -r0, -rnone, -r           Do not reject records with NaN values'/ &
-'  -rn, -rany                Reject records if any value is NaN'/ &
-'                      Note: If no -r option is given -rsla is assumed'/ &
-'  -f                        Do not start with t,lat,lon in output'/ &
+'  -r, --reject-on-nan VAR   Reject records if variable VAR on -V specifier is NaN'/ &
+'  -r #                      Reject records if data item number # on -V specifier is NaN'/ &
+'  -r 0, -r none, -r         Do not reject records with NaN values'/ &
+'  -r n, -r any              Reject records if any value is NaN'/ &
+'                      Note: If no -r option is given -r sla is assumed'/ &
+'  -f                        Do not start with time,lat,lon in output'/ &
 '  -sp, -sc                  Include statistics per pass or per cycle'/ &
-'  --step=N                  Step through records with stride N (default = 1)'/ &
-'  --list=FILENAME           Specify file name in which to write list of output files'/ &
-'  --maxrec=N                Specify maximum number of output records (default = unlimited)'/ &
-'  -o, --output=FILENAME     Specify name of a single output file (default is pass files, - is stdout)')
+'  --step N                  Step through records with stride N (default = 1)'/ &
+'  --list FILENAME           Specify file name in which to write list of output files'/ &
+'  --maxrec N                Specify maximum number of output records (default = unlimited)'/ &
+'  -o, --output FILENAME     Specify name of a single output file (default is pass files, - is stdout)')
 stop
 end subroutine synopsis
 

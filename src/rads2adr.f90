@@ -52,7 +52,7 @@ character(len=4) :: suffix
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('o:r:: output: maxrec: step:')
+call rads_set_options ('o:r:: output: reject-on-nan:: maxrec: step:')
 call rads_init (S)
 if (S%error /= rads_noerr) call rads_exit ('Fatal error')
 
@@ -61,13 +61,8 @@ do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
 	case ('o', 'output')
 		outname = rads_opt(i)%arg
-	case ('r')
-		if (rads_opt(i)%arg == 'n') then
-			reject = -2
-		else
-			reject = 0
-			read (rads_opt(i)%arg, *, iostat=ios) reject
-		endif
+	case ('r', 'reject-on-nan')
+		call rads_parse_r_option (S, rads_opt(i)%opt, rads_opt(i)%arg, reject)
 	case ('maxrec')
 		read (rads_opt(i)%arg, *, iostat=ios) nselmax
 	case ('step')
@@ -152,12 +147,13 @@ call rads_synopsis
 write (*,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
-'  -r#                       Reject lines if data item number # on sel= specifier is NaN'/ &
-'                            (default: reject if SLA field is NaN)'/ &
-'  -r0, -r                   Do not reject lines with NaN values'/ &
-'  -rn                       Reject lines if any value is NaN'/ &
-'  --step=N                  Step through records with stride N (default = 1)'/ &
-'  -o, --out=OUTNAME         Specify name of a single output file (default is pass files)')
+'  -r, --reject-on-nan VAR   Reject records if variable VAR on -V specifier is NaN'/ &
+'  -r #                      Reject lines if data item number # on -V specifier is NaN'/ &
+'  -r 0, -r none, -r         Do not reject lines with NaN values'/ &
+'  -r n, -r any              Reject lines if any value is NaN'/ &
+'                      Note: If no -r option is given -r sla is assumed'/ &
+'  --step N                  Step through records with stride N (default = 1)'/ &
+'  -o, --output FILENAME     Specify name of a single output file (default is pass files)')
 stop
 end subroutine synopsis
 

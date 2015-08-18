@@ -524,28 +524,28 @@ endif
 'Required argument:' / &
 '  FILENAME                  Name of input netCDF xover file'// &
 'Optional arguments [options] are:'/ &
-'  -S, --sat=SAT1[,SAT2,..]  Comma-separated list of satellites (default = all)'/ &
-'  -X, --xml=XMLFILE         Load XMLFILE in addition to RADS defaults'/ &
-'  --lon=LON0,LON1           Specify longitude boundaries (deg)'/ &
-'  --lat=LAT0,LAT1           Specify latitude boundaries (deg)'/ &
-'  --t=T0,T1                 Specify time selection (optionally use --ymd=, --doy=,'/ &
-'                            or --sec= for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)'/ &
-'  --dt=[DTMIN,]DTMAX        Use only xovers with [DTMIN <] dt < DTMAX (days)'/ &
+'  -S, --sat SAT1[,SAT2,..]  Comma-separated list of satellites (default: all)'/ &
+'  -X, --xml XMLFILE         Load XMLFILE in addition to RADS defaults'/ &
+'  --lon LON0,LON1           Specify longitude boundaries (deg)'/ &
+'  --lat LAT0,LAT1           Specify latitude boundaries (deg)'/ &
+'  --t T0,T1                 Specify time selection (optionally use --ymd, --doy,'/ &
+'                            or --sec for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)'/ &
+'  --dt [DTMIN,]DTMAX        Use only xovers with [DTMIN <] dt < DTMAX (days)'/ &
 '  -d, --dual                Select duals satellite crossovers only'/ &
 '  -s, --single              Select single satellite crossovers only'/ &
 '  -l, --both-legs           Write out both xover values (default is differences)'/ &
 '  -t, --both-times          Write out both times (default is difference)'/ &
-'  --tbias[=VAL]             Remove timing bias and/or estimate timing bias (when possible)'/ &
-'  -oTYPE, --order=TYPE      Order of the xover values (or difference), where TYPE is one of:'/ &
+'  --tbias [VAL]             Remove timing bias and/or estimate timing bias (when possible)'/ &
+'  -oTYPE, --order TYPE      Order of the xover values (or difference), where TYPE is one of:'/ &
 '                              A|a = ascending-descending or vv'/ &
 '                              H|h = higher-lower satellite or vv'/ &
 '                              S|s = higher-lower satellite ID or vv'/ &
 '                              T|t = later-earlier measurement or vv'/ &
 '  --dual-asc                Select only ascending passes on first satellite'/ &
 '  --dual-des                Select only descending passes on first satellite'/ &
-'  -e, --edit[=VAL]          Edit the data beyond VAL [3.5] times the std dev of the 1st variable')
+'  -e, --edit [VAL]          Edit the data beyond VAL [3.5] times the std dev of the 1st variable')
 1301 format ( &
-'  -b, --bin[=DAYS]          Bin data by number of DAYS [1] and print mean and std dev.'/ &
+'  -b, --bin [DAYS]          Bin data by number of DAYS [1] and print mean and std dev.'/ &
 '  --full-year               Print data as YYYYMMDD instead of YYMMDD'/ &
 '  -p, --pass-info           Write out satellite ID, cycle and pass number for every record'/ &
 '  -n, --no-list             Do not print listing (print overall statistics only)')

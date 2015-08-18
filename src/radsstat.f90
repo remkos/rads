@@ -199,9 +199,9 @@ write (stderr,1300)
 '  -s                        Use inclination-dependent weight'/ &
 '  -l, --minmax              Output min and max in addition to mean and stddev'/ &
 '  --full-year               Write date as YYYYMMDD instead of the default YYMMDD'/ &
-'  --min=MINNR               Minimum number of measurements per statistics record (default = 2)'/ &
-'  --res=DX,DY               Size of averaging boxes (default = 3x1 degrees)'/ &
-'  -o, --out[=OUTNAME]       Create netCDF output instead of ASCII (default filename is "radsstat.nc")')
+'  --min MINNR               Minimum number of measurements per statistics record (default: 2)'/ &
+'  --res DX,DY               Size of averaging boxes in degrees (default: 3,1)'/ &
+'  -o, --output [OUTNAME]    Create netCDF output instead of ASCII (default filename is "radsstat.nc")')
 stop
 end subroutine synopsis
 

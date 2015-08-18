@@ -116,7 +116,7 @@ do i = 1,rads_nopt
 		keep = .true.
 	case ('f', 'force')
 		force = .true.
-	case ('o', 'out')
+	case ('o', 'output')
 		ascii = .false.
 		if (rads_opt(i)%arg == '') cycle
 		j = index (rads_opt(i)%arg, '#')
@@ -175,12 +175,12 @@ call rads_synopsis
 write (stderr,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
-'  --dt=DT                   Set minimum bin size in seconds (default is determined by satellite)'/ &
-'  --step=N                  Write out only every N points along track'/ &
-'  -r#                       Reject stacked data when there are fewer than # tracks with valid SLA'/ &
-'                            (default: # = number of selected cycles)'/ &
-'  -r0, -rnone, -r           Keep all stacked data points, even NaN'/ &
-'  -rn, -rany                Reject stacked data when data on any track is NaN (default)'/ &
+'  --dt DT                   Set minimum bin size in seconds (default is determined by satellite)'/ &
+'  --step N                  Write out only every N points along track'/ &
+'  -r #                      Reject stacked data when there are fewer than # tracks with valid SLA'/ &
+'  -r 0, -r none, -r         Keep all stacked data points, even NaN'/ &
+'  -r n, -r any              Reject stacked data when data on any track is NaN (default)'/ &
+'                      Note: If no -r option is given, -r any is assumed'/ &
 '  -k, --keep                Keep all passes, even the ones that do not have data in the selected area'/ &
 '  -a, --mean                Output mean in addition to pass data'/ &
 '  -s, --stddev              Output standard deviation in addition to pass data'/ &
@@ -190,7 +190,7 @@ write (stderr,1300)
 '  -c, --cumul               Output cumulative statistics (ascii output only) (implies --keep)'/ &
 '      --diff                Compute difference between first and second half of selected passes (implies --keep)'/ &
 '  -f, --force               Force comparison, even when missions are not considered collinear'/ &
-'  -o, --out[=FILENAME]      Create netCDF output by pass (default is ascii output to stdout). Optionally specify'/ &
+'  -o, --output [FILENAME]   Create netCDF output by pass (default is ascii output to stdout). Optionally specify'/ &
 '                            FILENAME including "#", to be replaced by the psss number. Default is "radscolin_p#.nc"'/ &
 '  --diff                    Compute the collinear difference between the first and second half of selected tracks')
 stop

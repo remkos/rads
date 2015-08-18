@@ -19,7 +19,7 @@ use typesizes
 ! These are used by getopt
 integer, save :: getopt_ind = 1, getopt_chr = 2
 character(len=320), private, save :: getopt_arg
-logical, private, save :: getopt_new = .true.
+logical, private, save :: getopt_new = .true., getopt_end = .false., getopt_opt = .false.
 
 ! Provide a NaN parameter
 real(eightbytereal), parameter :: nan = transfer ((/not(0_fourbyteint),not(0_fourbyteint)/),0d0)
@@ -181,6 +181,8 @@ integer, intent(in), optional :: unit
 ! --file       optopt = '::', optarg = '--file' (Required argument missing)
 ! --output -q  optopt = 'output', optarg = '' (Optional argument)
 ! file.txt     optopt = ' ', optarg = 'file.txt' (No match)
+! -            optopt = ' ', optarg = '-' (regarded normal argument)
+! --           (Will be skipped, and will stop option parsing)
 !
 ! Arguments:
 !  optlist  : list of short and long options
@@ -189,7 +191,7 @@ integer, intent(in), optional :: unit
 !  unit     : (Optional) input unit number, otherwise command line
 !-----------------------------------------------------------------------
 integer :: input, i, j, k, n, l
-logical :: optional_arg
+logical :: optional_arg, err
 
 ! Select input unit
 if (.not.present(unit)) then
@@ -199,15 +201,29 @@ else
 endif
 
 ! Read next argument when needed
-if (.not.getopt_new) then
-else if (nextarg()) then
-	optopt = '!'
-	optarg = ''
-	return ! Return on error
+if (getopt_new) then
+	err = nextarg()
+else
+	err = .false.
 endif
 
-! Arguments '-' and '--' by itself should be regarded as normal arguments
-if (getopt_arg(1:2) == '- ' .or. getopt_arg(1:3) == '-- ') then
+! Argument '--' by itself should switch off option scanning and get next argument
+if (.not.err .and. getopt_arg(1:3) == '-- ') then
+	getopt_end = .true.
+	err = nextarg()
+endif
+
+! Return on error
+if (err) then
+	optopt = '!'
+	optarg = ''
+	return
+endif
+
+! Argument '-' by itself should be regarded as normal arguments
+! When getopt_end, then treat everything as normal arguments
+if (getopt_end .or. getopt_arg(1:2) == '- ') then
+	getopt_new = .true.
 	optopt = ' '
 	optarg = getopt_arg
 	return
@@ -251,7 +267,7 @@ if (getopt_arg(1:2) == '--') then
 		if (optional_arg) return ! Argument was optional
 		optarg = '--'//optopt
 		optopt = '::'
-	else if (getopt_arg(1:1) == '-' .and. getopt_arg(2:2) /= ' ') then
+	else if (getopt_opt) then ! Next argument is an option
 		getopt_new = .false.
 		if (optional_arg) return ! Argument was optional
 		optarg = '--'//optopt
@@ -285,7 +301,7 @@ if (getopt_arg(1:1) == '-') then
 		if (optional_arg) return ! Argument was optional
 		optarg = '-'//optopt
 		optopt = '::'
-	else if (getopt_arg(1:1) == '-' .and. getopt_arg(2:2) /= ' ') then
+	else if (getopt_opt) then ! Next argument is an option
 		getopt_new = .false.
 		if (optional_arg) return ! Argument was optional
 		optarg = '-'//optopt
@@ -335,6 +351,13 @@ else
 	nextarg = .false.
 endif
 getopt_chr = 2
+! Now determine if this is likely to be an option
+getopt_opt = .false.
+if (getopt_arg(1:1) /= '-') return
+select case (getopt_arg(2:2))
+case ('-', 'a' : 'z', 'A' : 'Z')
+	getopt_opt = .true.
+end select
 end function nextarg
 
 end subroutine getopt
@@ -359,6 +382,8 @@ else
 endif
 getopt_chr = 2
 getopt_new = .true.
+getopt_end = .false.
+getopt_opt = .false.
 end subroutine getopt_reset
 
 !***********************************************************************

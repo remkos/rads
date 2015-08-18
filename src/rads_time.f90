@@ -454,15 +454,15 @@ real(eightbytereal), intent(out), optional :: t1, dt
 ! This function processes standard datation arguments of either of the
 ! following forms:
 !
-!   --mjd=t0[,t1][,dt] : Modified Julian Dates
-!   --sec=t0[,t1][,dt] : Seconds since 1.0 Jan 1985
-!   --ymd=t0[,t1][,dt] : [YY]YYMMDD.DDD or [YY]YYMMDDHHMMSS.SSS
-!   --doy=t0[,t1][,dt] : YYDDD.DDD
-!  --time=t0[,t1][,dt] : MJD.DDD or [YY]YYMMDD.DDD or [YY]YYMMDDHHMMSS.SSS
+!   --mjd[=]t0[,t1][,dt] : Modified Julian Dates
+!   --sec[=]t0[,t1][,dt] : Seconds since 1.0 Jan 1985
+!   --ymd[=]t0[,t1][,dt] : [YY]YYMMDD.DDD or [YY]YYMMDDHHMMSS.SSS
+!   --doy[=]t0[,t1][,dt] : YYDDD.DDD
+!  --time[=]t0[,t1][,dt] : MJD.DDD or [YY]YYMMDD.DDD or [YY]YYMMDDHHMMSS.SSS
 !
 ! At input, these arguments have already been split up in an option part
-! (without the --) and an argument part (after the =). This can be the
-! result of the <getopt> routine, for example.
+! (without the --) and an argument part (after the optional =). This can
+! be the ! result of the <getopt> routine, for example.
 !
 ! When <optopt> is parsed through to <dateopt> it checks whether <optopt> is
 ! of one of the above forms. If not, <dateopt> gets the value .false., and

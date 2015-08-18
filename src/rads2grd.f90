@@ -55,7 +55,7 @@ do j = 1,msat
 	if (S(j)%nsel == 0) then
 		call rads_parse_varlist (S(j), 'lon,lat,sla')
 	else if (S(j)%nsel < 3) then
-		call rads_exit ('-V|--var= needs at least three elements')
+		call rads_exit ('-V|--var needs at least three elements')
 	endif
 	nsat = nsat + 1
 enddo
@@ -182,14 +182,14 @@ call rads_synopsis
 write (*,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
-'  -V, --var=X,Y,Z           Variables for x, y and z (default = lon,lat,sla); multiple z''s may be specified' / &
-'  --x=X0,X1[,DX]            Set x-range and interval (default: as set by default limits and --res=)'/ &
-'  --y=Y0,Y1[,DY]            Set y-range and interval (default: as set by default limits and --res=)'/ &
-'  --res=DX[,DY]             Set resolution in x and y (default = 1)'/ &
-'  --min=MINNR               Minimum number of points per grid cell (default = 2)'/ &
-'  -o, --output=GRIDNAME, --grd=GRIDNAME'/ &
+'  -V, --var X,Y,Z[,...]     Variables for x, y and z (default: lon,lat,sla); multiple z''s may be specified' / &
+'  --x X0,X1[,DX]            Set x-range and interval (default: as set by default limits and --res)'/ &
+'  --y Y0,Y1[,DY]            Set y-range and interval (default: as set by default limits and --res)'/ &
+'  --res DX[,DY]             Set resolution in x and y (default: 1)'/ &
+'  --min MINNR               Minimum number of points per grid cell (default: 2)'/ &
+'  -o, --output, --grd GRIDNAME'/ &
 '                            Create netCDF grid (suppresses ASCII)'/ &
-'  --fmt=FORMAT              Format to be used for ASCII output (default is determined by variables)'/ &
+'  --fmt FORMAT              Format to be used for ASCII output (default is determined by variables)'/ &
 '  -c                        Boundaries are cell oriented'/ &
 '  -c[x|y]                   Only [x|y]-boundaries are cell oriented')
 stop

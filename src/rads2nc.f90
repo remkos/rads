@@ -43,7 +43,7 @@ integer(fourbyteint) :: nselpass = 0
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('r::o: step: output:')
+call rads_set_options ('r::o: reject-on-nan:: output: step:')
 call rads_init (S)
 if (S%error /= rads_noerr) call rads_exit ('Fatal error')
 
@@ -52,14 +52,8 @@ do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
 	case ('o', 'output')
 		outname = rads_opt(i)%arg
-	case ('r')
-		if (rads_opt(i)%arg == 'n') then
-			reject = -2
-		else
-			reject = 0
-			read (rads_opt(i)%arg, *, iostat=ios) reject
-			if (reject < 0 .or. reject > S%nsel) call rads_exit ('-r# used with invalid value')
-		endif
+	case ('r', 'recect-on-nan')
+		call rads_parse_r_option (S, rads_opt(i)%opt, rads_opt(i)%arg, reject)
 	case ('maxrec')
 		read (rads_opt(i)%arg, *, iostat=ios) nselmax
 	case ('step')
@@ -113,14 +107,14 @@ call rads_synopsis
 write (*,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
-'  -rVARNAME                 Reject records if variable VARNAME on -V specifier is NaN'/ &
-'  -r#                       Reject records if data item number # on -V specifier is NaN'/ &
-'  -r0, -rnone, -r           Do not reject records with NaN values'/ &
-'  -rn, -rany                Reject records if any value is NaN'/ &
+'  -r, --reject-on-nan VAR   Reject records if variable VAR on -V specifier is NaN'/ &
+'  -r #                      Reject records if data item number # on -V specifier is NaN'/ &
+'  -r 0, -r none, -r         Do not reject records with NaN values'/ &
+'  -r n, -r any              Reject records if any value is NaN'/ &
 '                      Note: If no -r option is given -rsla is assumed'/ &
-'  --step=N                  Step through records with stride n (default = 1)'/ &
-'  --maxrec=N                Specify maximum number of output records (default = unlimited)'/ &
-'  -o, --out=OUTNAME         Specify name of a single output file (default is pass files)')
+'  --step N                  Step through records with stride n (default: 1)'/ &
+'  --maxrec N                Specify maximum number of output records (default: unlimited)'/ &
+'  -o, --out OUTNAME         Specify name of a single output file (default is pass files)')
 stop
 end subroutine synopsis
 
