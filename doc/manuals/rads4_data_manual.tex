@@ -15,12 +15,14 @@
 
 \documentclass[a4paper,11pt,openany,natbib]{thesis}
 \usepackage{palatino}
+\usepackage{newpxmath}
 \usepackage{verbatim}
 \usepackage{graphicx}
 \usepackage{rads}
 \usepackage{makeidx}
 \usepackage{url}\urlstyle{sf}
 \usepackage{rotating}
+\usepackage{placeins}
 \bibliographystyle{agu08}
 
 \makeindex
@@ -30,7 +32,8 @@ Data Manual}
 \author{Remko Scharroo}
 \date{\today}
 
-\DeclareUrlCommand\cmd{}
+\DeclareUrlCommand\cmd{\urlstyle{tt}}
+\renewcommand\deg{\ensuremath{^\circ}}
 \newcommand\prog[1]{\url{#1}\index{programs!#1@\protect\url{#1}}}
 \DeclareUrlCommand\code{\urlstyle{tt}}
 \newcommand\Code[1]{\textbf{\code{#1}}}
@@ -63,6 +66,7 @@ Variable & field & name & units & sat & range & note \\
 }
 
 \newenvironment{smallverb}{\small\verbatim}{\endverbatim}
+\newenvironment{notes}[1][Notes:]{\FloatBarrier\paragraph{#1}\begin{enumerate}}{\end{enumerate}}
 
 
 \begin{document}
@@ -115,10 +119,11 @@ Near the bottom of each variable table a number of "aliases" are provided. These
 \label{ch:time and location}
 
 \section{Time}
+\label{var:time}
 Time in the RADS data sets is stored as 8-byte floats in UTC seconds since a given epoch (normally 1 January 1985 or 1 January 2000). RADS will automatically convert these values into a few common time scales, depending on which time variable is selected.
 However, irrespective of the time scale, the clock references to UTC, rather than an atomic clock, meaning that leap seconds may result in a duplication of measurement times. No provision has been made to avoid confusion between measurements made before and after a leap second.
 
-The time corresponds to the moment of reflection of the radar pulse on the sea surface and is corrected for biases.
+The time corresponds to the moment of reflection of the radar pulse on the sea surface and is corrected for time tag biases.
 
 \begin{vartable}
 \var{time_1985} & 101 & time since 1985-01-01 00:00:00 & s & all & & \\
@@ -131,14 +136,14 @@ The time corresponds to the moment of reflection of the radar pulse on the sea s
 \var{time} & 1 & \alias{time_1985} & & all & & \ref{item:time} \\
 \end{vartable}
 
-Notes:
-\begin{enumerate}
+\begin{notes}
 \item Time is negative prior to equator crossing, positive thereafter.\label{item:time_rel_eq}
 \item The local solar time is expressed as seconds since the start of the day.\label{item:time_local_solar}
 \item Time in Modified Julian Days.\label{item:time_mjd}
 \item The variable \var{time_ymdhms} will produce a floating value of the type 20110908135001.536 for 8 Sep 2011 13:50:01.536 UTC.\label{item:time_ymdhms}
-\item No time limit is set by default. Can be controlled by the \cmd{t=} or \cmd{ymd=} flags on the command line.\label{item:time}
-\end{enumerate}
+\item No time limit is set by default. Can be controlled by the \cmd{--t} or \cmd{--ymd} flags on the command line.\label{item:time}
+\item A time tag bias (surplus) of 1.8 ms was removed from the time tags of ERS-1 as they occurred on the ESA OPR (Ocean Product) data product. Likewise, all time tags of ERS-2 were decreased by 1.3 ms. The orbital altitude and location has been adjusted accordingly.
+\end{notes}
 
 \section{Latitude and longitude}
 The position of the centre of the footprint of the measurement is given by its geographical longitude and latitude relative the TOPEX reference ellipsoid. Longitude is in degrees relative to the Greenwich meridian, positive measuring east. Latitude is in degrees relative to the equator, positive measuring north.
@@ -147,17 +152,17 @@ The position of the centre of the footprint of the measurement is given by its g
 \var{lat} & 2, 201 & latitude & degrees north & all & -90 90 & \\
 \var{lon} & 3, 301 & longitude & degrees east & all & -180 180 & 1 \\
 \end{vartable}
-Note:
-\begin{enumerate}
+
+\begin{notes}[Note:]
 \item RADS will automatically adjust the values to be within the range specified. So, by default, longitudes are kept within the -180 to +180 range.
-\end{enumerate}
+\end{notes}
 
 \section{Orbital altitude}\label{var:alt}
-The orbital altitude is the height of the centre-of-mass of the satellite above the TOPEX reference ellipsoid (semi-major axis = 6378136.3 m, inverse flattening = 298.257) as computed by satellite orbit determination. Numerous solutions exist, based on varying combinations of tracking data or gravity field solutions, or computed at shorter or longer latency. Some ``legacy solutions'' (those that were provided on the original data products) are included for reference even when they have been long replaced by more accurate solutions.
+The orbital altitude is the height of the centre-of-mass of the satellite above the TOPEX reference ellipsoid (semi-major axis = 6378136.3 m, inverse flattening = 298.257) as computed by satellite orbit determination. Numerous solutions exist, based on varying combinations of tracking data or gravity field solutions, or computed at shorter or longer latency. Some "legacy solutions" (those that were provided on the original data products) are included for reference even when they have been long replaced by more accurate solutions.
 
 The altitude is that of the centre-of-mass of the spacecraft, so corrections from the tracking devices (DORIS, GPS, PRARE, SLR) to the centre-of-mass, as well as motion of the centre-of-mass within the spacecraft are accounted for, and should also be accounted for when later subtracting the altimeter range referenced to the same point.
 
-If the time tags on the original GDR data include a bias, the orbit is either (re)interpolated at the \emph{corrected} time tag, or a correction proportional to the orbital altitude rate is applied.
+If the time tags on the original GDR data include a bias, the orbit has either been (re)interpolated at the \emph{corrected} time tag, or a correction proportional to the orbital altitude rate has been applied.
 
 \begin{vartable}
 \var{alt_jgm3}     & 401 & JGM-3 altitude   & m & gs pn tx && \ref{item:alt_jgm3} \\
@@ -172,13 +177,14 @@ If the time tags on the original GDR data include a bias, the orbit is either (r
 \var{alt_eig6c}    & 417 & EIGEN-6C altitude & m & c2 n1 && \ref{item:alt_eig6} \\
 \var{alt_eig6s2}   & 417 & EIGEN-6S2 altitude & m & j1 j2 && \ref{item:alt_eig6} \\
 \var{alt_gdrd}     & 418 & GDR-D altitude & m & c2 j1 j2 n1 sa && \ref{item:alt_gdrd} \\
-\var{alt_std1204}  & 419 & GSFC/Std1204 altitude & m & j1 j2 tx && \ref{item:alt_std1204} \\
+\var{alt_std1204}  & 419 & GSFC/Std1204 altitude & m & j1 j2 pn tx && \ref{item:alt_std1204} \\
 \var{alt_reaper}   & 420 & REAPER/COMBI altitude & m & e1 e2 && \ref{item:alt_reaper} \\
 \var{alt_reaper_deos} & 421 & REAPER/DEOS altitude & m & e1 e2 && \ref{item:alt_reaper} \\
 \var{alt_reaper_gfz}  & 422 & REAPER/GFZ altitude & m & e1 e2 && \ref{item:alt_reaper} \\
 \var{alt_reaper_esoc} & 423 & REAPER/ESOC altitude & m & e1 e2 && \ref{item:alt_reaper} \\
 \var{alt_std1404}  & 424 & GSFC/Std1404 altitude & m & j2 && \ref{item:alt_std1404} \\
 \var{alt_gdre}     & 425 & GDR-E altitude & m & c2 && \ref{item:alt_gdre} \\
+\var{alt_slcci}    & 426 & GFZ/SLCCI altitude & m & n1 pn tx && \ref{item:alt_slcci} \\
 \hline
 \var{alt} & 4 & \alias{alt_gdre} \var{alt_cnes} & & c2 && \ref{item:alt}\\
 \var{alt} & 4 & \alias{alt_reaper} \var{alt_gfz} & & e1 e2 && \ref{item:alt} \\
@@ -190,8 +196,7 @@ If the time tags on the original GDR data include a bias, the orbit is either (r
 \var{alt} & 4 & \alias{alt_gdrcp} \var{alt_jgm3} & & pn tx && \ref{item:alt} \\
 \end{vartable}
 
-Notes:
-\begin{enumerate}
+\begin{notes}
 \item JGM-3 \citep{tapley1996} was the original gravity field solutions used by NASA for the orbit determination of Geosat and TOPEX/Poseidon that featured on the GDR products. Though the gravity field was tailored to the TOPEX orbit, it was generally regarded the best at the time and was hence also used more widely than just for TOPEX/Poseidon. The radial orbit accuracy of about 3 cm for TOPEX/Poseidon and 8 cm for Geosat has since been superseded by more up-to-date orbit solutions.\label{item:alt_jgm3}
 \item DGM-E04 was a gravity field model developed at the Delft University of Technology tailored to the ERS-1 and ERS-2 orbits and derived from the JGM-3 model. The model significantly improved the radial orbit accuracy to about 3.5 cm, better than any general purpose models available at the time \citep{scharroo1998a}.\label{item:alt_dgme04}
 \item CNES produces the operational and precise orbits for a number of satellites. Unfortunately, in RADS the CNES orbits are based on mix of gravity field solutions. The CNES orbits for the TOPEX/Poseidon mission feature on the GDRs and are based on the JGM-3 gravity field model \citep{tapley1996}. The CNES orbits for CryoSat and Envisat are obtained from their respective GDR products and are based on the EIGEN-GL04c gravity field model \citep{ablain2008}.\label{item:alt_cnes}
@@ -200,17 +205,18 @@ Notes:
 \item Orbits produced with the EIGEN-GL04c or EIGEN-GL04s gravity fields.\label{item:alt_eiggl04s}
 \item Orbits produced under strict Jason GDR-C' standards.\label{item:alt_gdrcp}
 \item Reduced-dynamic (fast-delivery) orbits based on GPS tracking data only.\label{item:alt_gps}
-\item Orbits provided by ESOC using the EIGEN-6C or EIGEN-6S2 gravity field.\label{item:alt_eig6}
+\item Orbits provided by ESOC using the EIGEN-6C or EIGEN-6S2 gravity field. The orbits are available for parts of the various altimeter missions only: CryoSat-2 cycles 4-58, Envisat all cycles, Jason-1 cycles 1-260, Jason-2 cycles 1-220.\label{item:alt_eig6}
 \item Orbits produced under strict Jason GDR-D standards (current baseline) \citep{ids2011}. Data since April 2015 are in fact produced with GDR-E standards, but the variable name and comment have not been updated to reflect this.\label{item:alt_gdrd}
 \item Orbits provided by GSFC using their standards "Std1204". They are "GDR-D compatible" and use the goce2s\_fit2 gravity field \citep{lemoine2013}.\label{item:alt_std1204}
 \item Orbits produced by the REAPER project. A combined solution and individual solutions created by DEOS (TU Delft), GFZ and ESOC are available \citep{rudenko2011}.\label{item:alt_reaper}
 \item Orbits provided by GSFC using their standards "Std1404". They are "GDR-E compatible".\label{item:alt_std1404}
 \item Orbits products under strict Jason GDR-E standards (baseline for the production of orbits since April 2015) \citep{ids2015}.\label{item:alt_gdre}
+\item Orbits produced by GFZ in the framework of the ESA Sea Level CCI project. The particular version of the orbits used in RADS are designated VER06 (CCI14), and are based on the EIGEN-6S2A gravity field model \citep{rudenko2014}.\label{item:alt_slcci}
 \item The variable \var{alt} refers to the preferred (best) orbit solution for each satellite. If two variable names are mentioned, RADS picks the first one by preference; it that is not available, the second variable is used.\label{item:alt}
-\end{enumerate}
+\end{notes}
 
 \section{Orbital altitude rate}
-The rate of change of the orbital altitude is relevant for computing the Doppler correction or a correction to the altitude as a result of a time tag bias. Furthermore, the orbital altitude rate can be used to estimate time tag biases.
+The rate of change of the orbital altitude is relevant for computing the Doppler correction and for correcting the altitude as a result of a time tag bias. Furthermore, the orbital altitude rate can be used to estimate time tag biases.
 
 \begin{vartable}
 \var{alt_rate} & 5, 501 & orbital altitude rate & m/s & all && \\
@@ -223,7 +229,8 @@ The sea level anomaly (SLA) or sea surface height anomaly (SSHA) is the height f
 
 The sea level anomaly in RADS is always computed on-the-fly. This means that the RADS software will gather the required variables and their selected flavours from the netCDF data files, edit those data based on the user-selected criteria, and then constructs the sea level anomaly based on those. If any of the variables that make up the sea level anomaly is not available, marked invalid, or is out of range, then the sea level anomaly is also marked invalid (set to the NaN value). In addition, variables that do not strictly make up the sea level anomaly (like wave height or wind speed) can be used as edit criteria, e.g. rejecting data with high sea states.
 
-The \file{rads.xml} configuration file spells out, in reverse polish notation (RPN), how the sea level anomaly is computed. The `sea level equation' is written as:
+The \file{rads.xml} configuration file spells out, in reverse polish notation (RPN), how the sea level anomaly (\var{sla}) is computed. The 'sea level equation' is written as:
+
 \begin{smallverb}
 <data>
     alt range SUB dry_tropo SUB wet_tropo SUB iono SUB
@@ -231,26 +238,29 @@ The \file{rads.xml} configuration file spells out, in reverse polish notation (R
     tide_pole SUB ssb SUB mss SUB ref_frame_offset SUB
 </data>
 \end{smallverb}
-where \cmd{SUB} stands for `subtract' and the others are names or aliases of the various variables that make up the sea level anomaly. If any of these variables is NaN, the result is NaN as well.
-The use of aliases comes in handy here. We can, for example, switch out the orbit solution between one flavour
-and another simply by directing the alias \var{alt} from say \var{alt_jgm3} to \var{alt_dgme04}. We would not have to change anything to the sea level equation.
 
-The configuration file also spells out which variables are used as `quality flag'. That is, if any of these variables is set to NaN, the sea level anomaly is also set to NaN, even though these variables strictly do not contribute to the computation of sea level. For example:
+where \cmd{SUB} stands for 'subtract' and the others are names or aliases of the various variables that make up the sea level anomaly. If any of these variables is NaN, the result is NaN as well.
+The use of aliases comes in handy here. We can, for example, switch out the orbit solution between one flavour
+and another simply by directing the alias \var{alt} from say \var{alt_jgm3} to \var{alt_dgme04}. We do not have to change anything to the sea level equation.
+
+The configuration file also spells out which variables are used as 'quality flag'. That is, if any of these variables is set to NaN, the sea level anomaly is also set to NaN, even though these variables are not added or subtracted as part of the 'sea level equation'. For example:
 \begin{smallverb}
 <quality_flag>
     swh sig0 range_rms range_numval flags
 </quality_flag>
 \end{smallverb}
+
+While the sea level anomaly variable \var{sla} is computed on-the-fly by the RADS software, there is a second variable \var{ssha} that is already stored on the RADS products. Users can use this variable directly as well, but then give up the opportunity to edit the results themselves.
+
 \begin{vartable}
-\var{sla} & 0 & sea level anomaly & m & all & -5 5 & 1 \\
-\hline
-\var{ssha} & & \alias{sla} & & all & & \\
+\var{sla} & 0 & sea level anomaly & m & all & -5 5 & \ref{item:sla} \\
+\var{ssha} & & sea level anomaly (precomputed) & m & all & & \ref{item:ssha} \\
 \end{vartable}
 
-Note:
-\begin{enumerate}
-\item The limits on the sea level anomaly can be changed in the configuration file, of by using the \cmd{h=} flag on the command line.
-\end{enumerate}
+\begin{notes}
+\item The limits on the sea level anomaly can be changed in the configuration file, of by using the \cmd{--sla=MIN,MAX} option on the command line.\label{item:sla}
+\item The variable \var{ssha} is read directly from the RADS products and already is screened by editing.\label{item:ssha}
+\end{notes}
 
 \section{Altimeter range}
 \label{var:range}
@@ -271,19 +281,18 @@ Dual-frequency altimeters measure the range also on a secondary frequency (C- an
 \var{range} & 6 & \alias{range_ku} & & other & & \\
 \end{vartable}
 
-Notes:
-\begin{enumerate}
+\begin{notes}
 \item A constant bias of -124 mm is added to the Geosat range. An additional internal calibration and USO correction comes from an external file [\emph{Brian Beckley}, priv.\ comm., 2002].
 \item The range of the ERS-1 and ERS-2 altimeters has been corrected for SPTR bias jumps and USO drift based on offline tables \citep{martini2000}.
 \item A constant bias of 409.2 mm is added to the ERS-1 range \citep{francis1993b,stum1998a}.
 \item The ERS-2 USO correction appears to be low during the periods 1997-07-26 20:24:04 to 1998-01-07 03:58:09 and 1998-03-17 11:10:48 to 2000-01-08 06:04:13. During both periods 4.77 mm is added to the USO correction (and to range).
 \item The USO correction for Envisat is based on external USO correction files (1-Hz data): \url{http://earth.esa.int/pcs/envisat/ra2/auxdata/}
-\item The Envisat Ku- and S-band ranges are increased by a constant of 409.2 mm (same as ERS-1). During the short operation of the Side B altimeter an additional 9 mm is added to both ranges. An additional 150 mm is added to the S-band range to account for a bias in the dual-frequency ionosphere correction \citep{scharroo2010a}.
+\item Even though the Envisat Ku- and S-band ranges have biases of the order of 45 cm, this is not corrected for in the range, but in the reference frame offset (\var{ref_frame_offset}). A correction of 150 mm is added to the S-band range to account for a bias in the dual-frequency ionosphere correction \citep{scharroo2010a}. During the short operation of the Side B altimeter, an additional 9 mm was added to both Ku- and S-band ranges.
 \item S-band range for Envisat is available only until the loss of the S-band signal.
 \item TOPEX Ku- and C-band ranges are corrected for internal path delays and oscillator drifts based on external correction files (one value per cycle: \url{http://topex.wff.nasa.gov/}) \citep{hayne1994}. An additional -15.4 mm is added to the C-band range to account for a bias in the dual-frequency ionosphere correction \citep{scharroo2010a}.
 \item A constant bias of -2.3 mm is added to the Jason-1 C-band range to account for a bias in the dual-frequency ionosphere correction \citep{scharroo2010a}.
 \item A separate range based on an MLE3 retracker is available for Jason-2.\label{item:range_ku_mle3}
-\end{enumerate}
+\end{notes}
 
 \section{Altimeter range statistics}
 The altimeter ranges are provided in RADS as (approximately) 1-second averages based on 10, 20, or 40 'elementary' measurements during that second. The altimeter range reported is, in fact, not the statistical mean, but is generally determined as follows:
@@ -311,10 +320,9 @@ Hence, technically, \var{range_rms} is not the standard deviation of the altimet
 \var{range_rms}    &   20 & \alias{range_rms_ku} && other && \\
 \end{vartable}
 
-Note:
-\begin{enumerate}
+\begin{notes}[Note:]
 \item Standard deviation of S-band range for Envisat is available only until the loss of the S-band signal.\label{item:range_rms_s}
-\end{enumerate}
+\end{notes}
 
 \begin{vartable}
 \var{range_numval_ku} & 2101 & nr of valid Ka-band measurements && sa & 33 40 & \\
@@ -345,14 +353,13 @@ To remedy this problem an air tide correction is applied to the sea level pressu
 \var{dry_tropo}       &   7 & \alias{dry_tropo_ecmwf} && other && \\
 \end{vartable}
 
-Notes:
-\begin{enumerate}
+\begin{notes}
 \item The pressure fields on which this correction is based are from the ECMWF operational analysis runs. That means that numerous changes to the models and their resolution create an unstable reference for long-term studies. Please verify any of the ECMWF model results against the other models. Because of an unfortunate choice to use surface pressure fields, instead of sea level pressure fields, for this correction, coastal areas may be affected by ``leaking'' of the effect of higher terrain over land (thus lower pressure) into the sea and ocean (where there should be no terrain effect).\label{item:dry_tropo_ecmwf}
-\item The NCEP reanalysis model used for this correction has \emph{not} gone through any updates, so from that point of view the correction should be consistent over time. However, this older model also is less accurate and has a lower resolution (2.5\deg$\times$2.5\deg) than the ECMWF analysis fields. \label{item:dry_tropo_ncep}
+\item The NCEP reanalysis model used for this correction has \emph{not} gone through any updates, so from that point of view the correction should be consistent over time. However, this older model also is less accurate and has a lower resolution ($2.5\deg\times2.5\deg$) than the ECMWF analysis fields. \label{item:dry_tropo_ncep}
 \item The ERA (ECMWF ReAnalysis) Interim model provides an excellent long-term consistency. The data is distributed by ECMWF as Gaussian grids with an approximately uniform spacing of 79~km \citep{berrisford2011}.\label{item:dry_tropo_era}
 \item NCEP and ERA sea level pressure grids are interpolated and, over land and lakes, the pressure is then corrected for altitude based on a high-resolution terrain model, thus avoiding the coastal contamination seen in the ECMWF dry tropospheric correction.\label{item:dry_tropo_lakes}
 \item The air tide correction to the dry tropospheric correction is provided for reference only. It is already applied to all variations of the dry tropospheric correction (ECMWF, NCEP, ERA interim).\label{item:dry_tropo_airtide}
-\end{enumerate}
+\end{notes}
 
 \section{Wet tropospheric correction}
 \label{var:wet_tropo}
@@ -385,20 +392,19 @@ The radiometer wet tropospheric correction for ERS-1, ERS-2, and Envisat is base
 \var{wet_tropo} & 8 & \alias{wet_tropo_rad} \var{wet_tropo_ecmwf} & & other & & \ref{item:wet_tropo} \\
 \end{vartable}
 
-Notes:
-\begin{enumerate}
+\begin{notes}
 \item Because of model bias and noise, allow positive values.\label{item:wet_tropo_rad_n1}
 \item Need to exclude bogus zero values from TMR measurements.\label{item:wet_tropo_rad_tp}
 \item ERS-2 MWR is not available from 2009-05-04 to 2010-01-15.\label{item:wet_tropo_rad_e2}
 \item The ECMWF correction is actually computed by integrating several layers of the atmosphere, rather than using the simplified form discussed above. The meteorological fields on which this correction is based are from the ECMWF operational analysis runs. That means that numerous changes to the models and their resolution create an unstable reference for long-term studies. Please verify any of the ECMWF model results against the other models.\label{item:wet_tropo_ecmwf}
-\item NCEP reanalysis model used for this correction has \emph{not} gone through any updates, so from that point of view the correction should be consistent over time. However, this older model also is less accurate and has a lower resolution (2.5\deg$\times$2.5\deg) than the ECMWF analysis fields.\label{item:wet_tropo_ncep}
+\item NCEP reanalysis model used for this correction has \emph{not} gone through any updates, so from that point of view the correction should be consistent over time. However, this older model also is less accurate and has a lower resolution ($2.5\deg\times2.5\deg$) than the ECMWF analysis fields.\label{item:wet_tropo_ncep}
 \item The NASA NVAP model is an old water vapour model used in the Geosat era.\label{item:wet_tropo_nvap}
 \item TOVS and SSMI are separate radiometer constellations whose data were used to model the water vapour content globally.\label{item:wet_tropo_tovs_ssmi}
 \item This the result of a merger of the TOVS radiometer data with the NCEP water vapour and near-surface temperature models.\label{item:wet_tropo_tovs_ncep}
 \item The ERA (ECMWF ReAnalysis) Interim model provides an excellent long-term consistency. The data is distributed by ECMWF as Gaussian grids with an approximately uniform spacing of 79~km \citep{berrisford2011}.\label{item:wet_tropo_era}
 %\item The \emph{enhanced} radiometer wet tropospheric correction (\var{wet_tropo_rad_enh}) is a variation of\var{wet_tropo_rad} in which the data near the coasts are treated with a special algorithm to lessen the influence of land in the radiometer footprint on the results. These correction fields are available, on semi-operational basis for Jason-1 and Jason-2 only.\label{item:wet_tropo}
 \item CryoSat-2 and Geosat have no radiometer, so the wet tropospheric correction is always based on models. For the other missions we may default to the model if the radiometer correction is not \emph{at all} available on the product. This would be the case when the radiometer is \emph{permanently} switched off, or off for a long time. The model will not be used during short outages.\label{item:wet_tropo}
-\end{enumerate}
+\end{notes}
 
 \section{Ionospheric correction}
 The radar signal is also delayed by ions and electrons in the upper layers of the atmosphere (the ionosphere). The delay is inversely proportional to the altimeter radar frequency, and otherwise proportional to the vertically integrated electron density, known as total electron content or TEC. This dispersive nature allows dual-frequency altimeters (TOPEX, Envisat, Jason-1 and -2) to directly determine the ionospheric path delay on either frequency. For single frequency altimeters we rely on TEC estimates from models based on other dual-frequency equipment (GPS, DORIS) or climatologies.
@@ -420,18 +426,18 @@ The radar signal is also delayed by ions and electrons in the upper layers of th
 \var{iono} & 9 & \alias{iono_nic09} & & e1 gs pn && \ref{item:iono} \\
 \end{vartable}
 
-Notes:
-\begin{enumerate}
+
+\begin{notes}
 \item Positive correction values are allowed to account for noise in the altimeter dual-frequency ionospheric correction. The values for this correction have been adjusted from the original GDR products to account for relative C-band and S-band biases (Section~\ref{var:range}).\label{item:iono_alt}
 \item Because of the relatively large noise in the dual-frequency ionospheric correction, \var{iono_alt} is smoothed over 35 seconds along the altimeter track (appoximately 250 km), in contrast to the 21 seconds suggested by \citet{imel1994}.\label{item:iono_alt_smooth}
 \item For Jason-2, a separate dual-frequency correction based on the MLE3 retracker is available.\label{item:iono_alt_mle3}\label{item:iono_alt_smooth_mle3}
 \item The ``ancient'' Bent TEC climatology \citep{llewellyn1973} should no longer be used.\label{item:iono_bent}
 \item The TEC model based on DORIS featured for a while on TOPEX/Poseidon and Envisat altimeter products but was far behind the accuracy of the (similar in construct) GPS-derived GIM models.\label{item:iono_doris}
-\item JPL produces, based on the global constellation of GPS satellites and IGS GPS receivers, 2-hourly maps of TEC, known as the JPL GIM model \citep{komjathy2000}. The models have a spatial resolution of 5\deg$\times$2.5\deg\ and start in August 1998.\label{item:iono_gim}
+\item JPL produces, based on the global constellation of GPS satellites and IGS GPS receivers, 2-hourly maps of TEC, known as the JPL GIM model \citep{komjathy2000}. The models have a spatial resolution of $5\deg\times2.5\deg$ and start in August 1998.\label{item:iono_gim}
 \item The International Reference Ionosphere went through several versions, the latest of which is IRI2007 \citep{bilitza2008}. Because of its rather coarse spatial and temporal resolution, it cannot compete with the JPL GIM model, or even the NIC09 climatology.\label{item:iono_iri2007}
 \item The NIC09 climatology is based on 12 years of JPL GIM maps and can be extended as far back as the 1950s or extrapolated using predicted solar flux values \citep{scharroo2010a}. This model is particularly useful for the period prior to August 1998 (before the availability of \var{iono_gim}).\label{item:iono_nic09}
 \item The alias \var{iono} with use either the smoothed dual-frequency ionospheric correction or one of the models in the order as given.\label{item:iono}
-\end{enumerate}
+\end{notes}
 
 \section{Atmospheric (inverse barometer) correction}
 The inverse barometer (IB) correction accounts for the suppression of sea level due to higher sea level pressure, and its rise during lower sea level pressure. When we assume a linear relation between pressure and suppression we talk about a "static" IB correction, and because the sea level goes down with increasing pressure, opposite to the way we think of a mercury barometer, we use the term "inverse". The simplest form of this correction is:
@@ -452,15 +458,15 @@ Over inland waters, this correction should not be applied \citep{cretaux2006}.
 \var{inv_bar} & 10 & \alias{inv_bar_mog2d} \var{inv_bar_mok2d} & & all & & \ref{item:inv_bar} \\
 \end{vartable}
 
-Notes:
-\begin{enumerate}
+
+\begin{notes}
 \item This correction is the simplification explained above.\label{item:inv_bar_static}
 \item For reference the global mean pressure, converted to an IB correction, $C p_0$, is provided.\label{item:inv_bar_global}
 \item The dynamic atmospheric correction model MOG2D includes the ocean dynamic response to wind and pressure forcing. It also accounts for the aliasing of the air tides as discussed in Section~\ref{var:dry_tropo}. MOG2D also comes with two latencies: (a) a few days, and thus features on the IGDR-derived products, and (b) a few weeks, and thus features on the GDR-derived products. For fast-delivery products there is generally no MOG2D correction (so MOK2D will be used), but the MOG2D field will be filled in as soon as the MOG2D maps have been distributed.\label{item:inv_bar_mog2d}
 \item Since the MOG2D only start in 1992, we have created a ``mock-up'' version of MOG2D (a simple linear variant of \var{inv_bar_static}) to match the mean of MOG2D as to not disturb continuity of the DAC prior to 1992.\label{item:inv_bar_mok2d}.
 \item For reference, the local long-term mean of the MOG2D correction is provided. This is the interpolation of a static grid computed as the average of all MOG2D maps over the period 1993-2009.\label{item:inv_bar_mog2d_mean}
 \item When using the \var{inv_bar} alias, \var{inv_bar_mog2d} is used while automatically defaulting to \var{inv_bar_mok2d}.\label{item:inv_bar}
-\end{enumerate}
+\end{notes}
 
 \section{Solid earth and pole tide}
 \label{var:tide_solid}\label{var:tide_pole}
@@ -468,7 +474,7 @@ The solid earth tide is the variation of the elevation of the crust of the earth
 
 The RADS implementation of the Cartwright-Taylor-Edden solid earth tide model includes 386 second order waves and 99 third order waves \citep{cartwright1971,cartwright1973}.
 
-The pole tide is the vertical deformation of the earth crust as a result of polar motion. We can visualise this as the ellipsoidal shape of the earth being moved as the rotation axis of the earth moves away or closer to the mean pole \citep{munk1960}. We use the IERS(EOP)05C04 earth orientation parameters and their predictions relative to the mean pole (0.042" along the Greenwich meridian, 0.293" towards 90\deg{}W).
+The pole tide is the vertical deformation of the earth crust as a result of polar motion. We can visualise this as the ellipsoidal shape of the earth being moved as the rotation axis of the earth moves away or closer to the mean pole \citep{munk1960}. We use the IERS(EOP)05C04 earth orientation parameters and their predictions relative to the mean pole (0.042" along the Greenwich meridian, 0.293" towards 90$\deg$W).
 
 Two Love numbers multiply the results of this simple equilibrium model: $(1 + k_2)$ = 1.302 for the combination of solid earth and oceans, and $h_2$ = 0.609 for the solid earth only (over land and lakes) \citep{wahr1985}.
 
@@ -496,40 +502,31 @@ Although the FES and GOT models are global, they are limited in scope. Over land
 \var{tide_ocean_fes04} & 1213 & FES2004 ocean tide & m & all & -5 5 & \ref{item:tide_ocean_fes04} \\
 \var{tide_load_fes04}  & 1313 & FES2004 load  tide & m & all & -0.5 0.5 & \ref{item:tide_load_fes04} \\
 \var{tide_ocean_webtide}&1215 & WebTide ocean tide & m & all & -5 5 & \ref{item:tide_ocean_webtide} \\
-\var{tide_ocean_got47} & 1217 & GOT4.7  ocean tide & m & e1 e2 g1 gs pn tx & -5 5 & \ref{item:tide_ocean_got47} \\
-\var{tide_load_got47}  & 1317 & GOT4.7  load  tide & m & e1 e2 g1 gs pn tx & -0.5 0.5 & \ref{item:tide_load_got47} \\
 \var{tide_ocean_got48} & 1219 & GOT4.8  ocean tide & m & all & -5 5 & \ref{item:tide_ocean_got48} \\
 \var{tide_load_got48}  & 1319 & GOT4.8  load  tide & m & all & -0.5 0.5 & \ref{item:tide_load_got48} \\
-\var{tide_ocean_got49} & 1221 & GOT4.9  ocean tide & m & e1 j1 n1 pn tx & -5 5 & \ref{item:tide_ocean_got49} \\
-\var{tide_load_got49}  & 1321 & GOT4.9  load  tide & m & e1 j1 n1 pn tx & -0.5 0.5 & \ref{item:tide_load_got49} \\
-\var{tide_ocean_got410}& 1222 & GOT4.10 ocean tide & m & c2 j1 j2 pn sa tx & -5 5 & \ref{item:tide_ocean_got410} \\
-\var{tide_load_got410} & 1322 & GOT4.10 load  tide & m & c2 j1 j2 pn sa tx & -0.5 0.5 & \ref{item:tide_load_got410} \\
-\var{tide_ocean_fes12} & 1223 & FES2012 ocean tide & m & c2 j1 j2 pn sa tx & -5 5 & \ref{item:tide_ocean_fes12} \\
+\var{tide_ocean_got410}& 1222 & GOT4.10 ocean tide & m & all & -5 5 & \ref{item:tide_ocean_got410} \\
+\var{tide_load_got410} & 1322 & GOT4.10 load  tide & m & all & -0.5 0.5 & \ref{item:tide_load_got410} \\
+\var{tide_ocean_fes12} & 1223 & FES2012 ocean tide & m & all & -5 5 & \ref{item:tide_ocean_fes12} \\
 \var{tide_equil}       & 3901 & long-period equilib.\ tide & m & all & -1 1 & \ref{item:tide_equil} \\
 \var{tide_non_equil}   & 3902 & long-period non-equil.\ tide & m & all & -1 1 & \ref{item:tide_non_equil} \\
 \hline
-\var{tide_ocean} & 12 & \alias{tide_ocean_got48} && all && \\
-\var{tide_load}  & 13 & \alias{tide_load_got48} && all && \\
+\var{tide_ocean} & 12 & \alias{tide_ocean_got410} && all && \\
+\var{tide_load}  & 13 & \alias{tide_load_got410} && all && \\
                  & 39 & \alias{tide_equil} && all && \\
 \end{vartable}
 
-Notes:
-\begin{enumerate}
+
+\begin{notes}
 \item The Finite Element Solution (FES2004) includes 9 short-period waves (Q1, O1, K1, P1, 2N2, N2, M2, K2, and S2) plus 24 additional short-period waves determined by admittance, and 4 long-period waves (Mf, Mm, Mtm and MSqm) \citep{lyard2006}. Long-period equilibrium tides (not yet included in FES2004) are added to these.\label{item:tide_ocean_fes04}\label{item:tide_load_fes04}
 \item WebTide is a collection of regional tide models along the Canadian coast, made available on the web by the Bedford Institute of Oceanography \url{http://www.bio.gc.ca/research-recherche/WebTide-MareeWeb/webtide-eng.htm}. In RADS, a single value is presented in \var{tide_ocean_webtide}, determined from (in order of decreasing preference) the regional models for: Scotia/Fundy/Maine, Northeast Pacific, Arctic, Hudson Bay. Each of these models has a very limited amount of constituents, does not include admittance to infer others, and also does not include any long-period tides (equilibrium or non-equilibrium).\label{item:tide_ocean_webtide}
-\item The Goddard Ocean Tide model GOT 4.7 includes 10 short-period waves (K1, O1, P1, Q1, S1, K2, M2, N2, S2, and M4) plus 17 additional short-period waves determined by admittance \citep{ray2011}. The 4 long-period waves from FES2004 and additional long-period equilibrium tides are added to these.\label{item:tide_ocean_got47}\label{item:tide_load_got47}
-\textbf{This field is slated to be removed.}
-\item The Goddard Ocean Tide model GOT 4.8 differs from GOT 4.7 only in its S2 component.\label{item:tide_ocean_got48}\label{item:tide_load_got48}
-\item The Goddard Ocean Tide model GOT 4.9 differs from GOT 4.7 only in its S2 component.\label{item:tide_ocean_got49}\label{item:tide_load_got49}
-\textbf{This field is slated to be removed.}
-\item The Goddard Ocean Tide model GOT4.10c differs from the current default in RADS, GOT4.8, in two ways. First, GOT4.10c is based only on Jason data, whereas 4.8 was from only TOPEX data. Second, it includes an adjustment for the geocenter. (Hence the 'c' in the name.) The processing for 4.8 and 4.10 was largely identical; one exception involved an improvement to P1 alone. GOT4.10c is an update of \citet{ray2013}.\label{item:tide_ocean_got410}\label{item:tide_load_got410}
-\textbf{This model will soon become the default ocean and load tide model.}
-\item FES2012 (Finite Element Solution 2012) takes advantage of longer altimeter time series, improved modelling, and data assimilation techniques, and more accurate and higher resolution ocean bathymetry. A new global finite element grid (with approx.\ 1.5 million nodes) was used to create a  'free' solution (independent of in situ and remote-sensing data) that has twice accuracy of the FES2004 version. The 'free' solution was assimilated with long-term altimetry data from TOPEX/POSEIDON, Jason-1, Jason-2, ERS-1, ERS-2, and ENVISAT. The FES2012 solution shows particular improvement in coastal and shelf regions.
+\item The Goddard Ocean Tide model GOT 4.7 includes 10 short-period waves (K1, O1, P1, Q1, S1, K2, M2, N2, S2, and M4) plus 17 additional short-period waves determined by admittance \citep{ray2011}. The 4 long-period waves from FES2004 and additional long-period equilibrium tides are added to these. The Goddard Ocean Tide model GOT 4.8 differs from GOT 4.7 only in its S2 component.\label{item:tide_ocean_got48}\label{item:tide_load_got48}
+\item The Goddard Ocean Tide model GOT4.10c differs from the current default in RADS, GOT4.8, in two ways. First, GOT4.10c is based only on Jason data, whereas 4.8 was from only TOPEX data. Second, it includes an adjustment for the geocenter. (Hence the 'c' in the name.) The processing for 4.8 and 4.10 was largely identical; one exception involved an improvement to P1 alone. GOT4.10c is an update of \citet{ray2013}. This model is now the default tide model.\label{item:tide_ocean_got410}\label{item:tide_load_got410}
+\item FES2012 (Finite Element Solution 2012) takes advantage of longer altimeter time series, improved modelling, and data assimilation techniques, and more accurate and higher resolution ocean bathymetry. A new global finite element grid (with approx.\ 1.5 million nodes) was used to create a  'free' solution (independent of in situ and remote-sensing data) that has twice accuracy of the FES2004 version. The 'free' solution was assimilated with long-term altimetry data from TOPEX/POSEIDON, Jason-1, Jason-2, ERS-1, ERS-2, and ENVISAT. The FES2012 solution shows particular improvement in coastal and shelf regions, but not in overall open ocean statistics.
 
 Please note that tide loading effects have not yet been computed for FES2012, and therefore you should use the load tide from one the GOT load tide models with the ocean tide from FES2012. Since the load tide models are global, this would not limit the area for which you can determine geocentric tides (ocean plus load tides). \url{http://www.aviso.oceanobs.com/en/data/products/auxiliary-products/global-tide-fes2004-fes99/description-fes2012.html}\label{item:tide_ocean_fes12}
 \item The equilibrium ocean tide includes 15 tidal spectrum lines from the Cartwright-Tayler-Edden tables \citep{cartwright1971,cartwright1973} plus an additional 123 second and third order waves \citep{tamura1987}.\label{item:tide_equil}
 \item The four long-period non-equlibrium ocean tidal components (Mm, Mf, Mtm, and MSqm) from the FES2004 model are represented in \var{tide_non_equil}. The equilibrium parts of those have been removed to avoid double accounting.\label{item:tide_non_equil}
-\end{enumerate}
+\end{notes}
 
 \section{Sea state bias}
 \label{var:ssb}
@@ -558,48 +555,42 @@ In the earlier days of altimetry the sea state bias was generally considered as 
 \var{ssb}     &   15 & \alias{ssb_hyb} && c2 g1 gs sa && \\
 \end{vartable}
 
-Notes:
-\begin{enumerate}
+
+\begin{notes}
 \item One-, three- or four-term polynomials of SWH and wind speed \citep{gaspar1994a}.\label{item:ssb_bm3}
 \item Non-parametric sea state bias models for Ku-band and C-band by CLS \citep{gaspar2002,labroue2004}.\label{item:ssb_cls}\label{item:ssb_cls_c}
 \item Four-term sea state bias model for TOPEX (different model for side A and side B altimeters) \citep{chambers2003a}.\label{item:ssb_csr}
 \item Hybrid (mix between parametric and non-parametric techniques) sea state bias models produced at NOAA \citep{scharroo2005e}.\label{item:ssb_hyb}
 \item For Jason-2 data retracked by MLE3, a separate non-parametric model is available.\label{item:ssb_cls_mle3}
 \item The non-parametric SSB model developed by \citet{tran2012} will be part of the upcoming GDR-D standards.\label{item:ssb_tran2012}
-\end{enumerate}
+\end{notes}
 
 \section{Mean sea surface and geoid}
 \label{var:geoid}\label{var:mss}
 The sea level anomaly (SLA) is expressed as the difference of the instantaneous tide-corrected sea surface with respect to a well-established mean. Over the years several (more or less) global mean sea surface models have been developed from the compilation of satellite altimeter (and sometimes gravity) data. Generally, the more altimeter data collected, the more precise the model. But also the resolution of the model counts. Each model has been referenced to the TOPEX reference ellipsoid, just as the satellite orbits (Section~\ref{var:alt}).
 
-Another reference surface is the geoid (the theoretical mean sea surface in absence of ocean currents, wind, etc.). Geoid models are generally made from satellite tracking data (for the longer wave lengths), and altimetry and in-situ gravimetry (for the shorter wave lengths).
+Another reference surface is the geoid (the theoretical mean sea surface in absence of ocean currents, wind, etc.). Geoid models are generally made from satellite tracking data (for the longer wave lengths), GRACE and/or GOCE (for the medium wave lengths), and altimetry and in-situ gravimetry (for the shorter wave lengths).
 
 \begin{vartable}
-\var{mss_cls01} & 1605 & CLS01 mean sea surface & m & all & -200 200 & \ref{item:mss_cls01} \\
 \var{mss_egm2008} & 1610 & EGM2008 mean sea surface & m & all & -200 200 & \ref{item:mss_egm2008} \\
-\var{mss_dncs2008} & 1612 & DNSC08 mean sea surface & m & all & -200 200 & \ref{item:mss_dnsc2008} \\
 \var{mss_dtu10} & 1613 & DTU10 mean sea surface & m & all & -200 200 & \ref{item:mss_dtu10} \\
-\var{mss_cls11} & 1614 & {CNES-CLS11} mean sea surface & m &  & -200 200 & \ref{item:mss_cls11} \\
-\var{mss_dtu13} & 1616 & DTU13 mean sea surface & m & c2 j1 j2 pn sa tx & -200 200 & \ref{item:mss_dtu13} \\
+\var{mss_cls11} & 1614 & CNES-CLS11 mean sea surface & m & all & -200 200 & \ref{item:mss_cls11} \\
+\var{mss_dtu13} & 1616 & DTU13 mean sea surface & m & all & -200 200 & \ref{item:mss_dtu13} \\
 \var{geoid_egm2008} & 1611 & EGM2008 geoid & m & all & -200 200 & \ref{item:geoid_egm2008} \\
-\var{geoid_eigen6} & 1617 & EIGEN6c3stat geoid & m & c2 j1 j2 pn sa tx & -200 200 & \ref{item:geoid_eigen6} \\
+\var{geoid_eigen6} & 1617 & EIGEN-6C3stat geoid & m & all & -200 200 & \ref{item:geoid_eigen6} \\
 \hline
-\var{mss} & 16 & \alias{mss_dtu10} && all && \\
-\var{geoid} && \alias{geoid_egm2008} && all && \\
+\var{mss} & 16 & \alias{mss_dtu13} && all && \\
+\var{geoid} && \alias{geoid_eigen6} && all && \\
 \end{vartable}
 
-Notes:
-\begin{enumerate}
-\item Widely used, but outdated, mean sea surface model based on ERS-1/2 and TOPEX data created at CLS \citep{hernandez2001}.\label{item:mss_cls01}
+
+\begin{notes}
 \item Combined geoid and mean sea surface solution \citep{pavlis2008}.\label{item:mss_egm2008}\label{item:geoid_egm2008}
-\item Older version a mean sea surface model based on RADS data created at DNSC (now DTU) \citep{andersen2009}.\label{item:mss_dnsc2008}
-\item The DTU10 mean sea surface model created at DTU based on RADS data \citep{andersen2010}.\label{item:mss_dtu10}
+\item The DTU10 mean sea surface model was created at DTU and based on RADS altimeter data \citep{andersen2010}. It is a follow-on of the DNSC08 mean sea surface model \citep{andersen2009}.\label{item:mss_dtu10}
 \item Newest iteration of mean sea surface models at CNES/CLS \citep{schaeffer2012}.\label{item:mss_cls11}
-\item The DTU13MSS is the latest release of the global high-resolution mean sea surface from DTU Space, which includes two major advances over DTU10MSS. First, the time series have been extended to 20 years from 17 years. Second, the DTU13MSS ingests Cryosat-2 SAR lead data in order to map the high latitude parts of the Arctic Ocean. In high-latitude regions a combination of joint ERS-1/ERS-2/ENVISAT and Cryosat-2 altimetry have been used. Also, the Jason-1 geodetic mission has been used for the DTU13MSS. \citep{andersen2013a}.\label{item:mss_dtu13}
-\textbf{This will soon become the default MSS model, replacing DTU10.}
-\item The EIGEN?6C3stat geoid model has been generated in preparation for the final release of EIGEN?6C4. It was computed from a combination of LAGEOS, GRACE, and GOCE data, augmented with DTU13 surface gravity data to degree and order 1949 (corresponding to approximately 10 km spatial resolution). \citep{forste2013,shako2014}.\label{item:geoid_eigen6}
-\textbf{This will soon become the default geoid model, replacing EGM2008.}
-\end{enumerate}
+\item The DTU13MSS is the latest release of the global high-resolution mean sea surface from DTU Space, which includes two major advances over DTU10MSS. First, the time series have been extended to 20 years from 17 years. Second, the DTU13MSS ingests Cryosat-2 SAR lead data in order to map the high latitude parts of the Arctic Ocean. In high-latitude regions a combination of joint ERS-1/ERS-2/ENVISAT and Cryosat-2 altimetry have been used. Also, the Jason-1 geodetic mission has been used for the DTU13MSS \citep{andersen2013a}. This is the default mean sea surface model and is used as reference for the sea level anomaly variable (\var{sla}).\label{item:mss_dtu13}
+\item The EIGEN-6C3stat geoid model has been generated in preparation for the final release of EIGEN-6C4. It was computed from a combination of LAGEOS, GRACE, and GOCE data, augmented with DTU13 surface gravity data to degree and order 1949 (corresponding to approximately 10 km spatial resolution). \citep{foerste2013,shako2014}. This is the default geoid model.\label{item:geoid_eigen6}
+\end{notes}
 
 \chapter{Wind speed and wave height variables}
 \section{Significant wave height}
@@ -623,7 +614,7 @@ The 1-Hz standard deviation of SWH is determined from the individual 10-, 20-, o
 \var{swh_s} & 1702 & S-band significant wave height & m & n1 & -0.5 8 & \ref{item:swh_1},\ref{item:swh_3} \\
 \var{swh_ku_mle3} & 1711 & Ku-band significant wave height (MLE3) & m & j2 & 0 8 & \ref{item:swh_ku_mle3} \\
 \hline
-\var{swh_ww3} & 1712 & WaveWatch3 significant wave height & m & c2 j2 sa & & \ref{item:swh_ww3} \\
+\var{swh_ww3} & 1712 & WAVEWATCH3 significant wave height & m & c2 j2 sa & & \ref{item:swh_ww3} \\
 \hline
 \var{swh_rms_ka} & 2802 & std dev of Ku-band SWH & m & sa & 0 2.1 & \\
 \var{swh_rms_ku} & 2802 & std dev of Ku-band SWH & m & g1 & 0 0.5 & \\
@@ -640,14 +631,14 @@ The 1-Hz standard deviation of SWH is determined from the individual 10-, 20-, o
 \var{swh_rms} & 28 & \alias{swh_rms_ku} && other && \\
 \end{vartable}
 
-Notes:
-\begin{enumerate}
+
+\begin{notes}
 \item The SWH of Envisat and CryoSat will be set to a negative value when $\sigma_c<\sigma_p$. For other missions, the value is set to 0.\label{item:swh_1}
 \item During the degradation of the TOPEX SWH measurements (cycles 98-235) the SWH values are corrected according to \citet{queffeulou2004}. Thereafter 32 mm was added.\label{item:swh_2}
 \item S-band SWH for Envisat is only until the loss of the S-band signal.\label{item:swh_3}
 \item For Jason-2, significant wave heights from the MLE3 retracker are available as well.\label{item:swh_ku_mle3}
-\item The SWH in this field is based on wave hindcasts done by NOAA using the WaveWatch III model and GFS analysis winds \citep{chawla2011}. The hindcasts cover the entire globe and are carried out in monthly installments, so they are only available on delay-time data in RADS. The original resolution of these model grids is 1\deg\ by 1\deg\ by 6 hours. For other WaveWatch 3 fields see Section~\ref{var:wave}.\label{item:swh_ww3}
-\end{enumerate}
+\item The SWH in this field is based on wave hindcasts done by NOAA using the WAVEWATCH~III model \citep{tolman2009} and GFS analysis winds \citep{chawla2011}. The hindcasts cover the entire globe and are carried out in monthly installments, so they are only available on delay-time data in RADS. The original resolution of these model grids is 1$\deg$ by 1$\deg$ by 6 hours. For other WAVEWATCH~III fields see Section~\ref{var:wave}.\label{item:swh_ww3}
+\end{notes}
 
 \section{Altimeter backscatter coefficient}
 \label{var:sig0}
@@ -676,8 +667,8 @@ The 1-Hz standard deviation of backscatter coefficient is determined from the in
 \var{sig0_rms} & 29 & \alias{sig0_rms_ku} && other && \\
 \end{vartable}
 
-Notes:
-\begin{enumerate}
+
+\begin{notes}
 \item The ERS-1 backscatter coefficient is corrected for varying biases due to the attitude control. Between 0 and 0.35 dB was added.\label{item:sig0_e1}
 \item The GFO backscatter is corrected for a few deficiencies in lookup tables, adding 0.37~dB before 6 Dec 2000 and between 7 and 9 March 2001.\label{item:sig0_g1}
 \item The Jason-1 Ku- and C-band backscatter are aligned with TOPEX values by subtracting 2.40 and 0.725 dB, respectively. For the time being, the same biases are applied to Jason-2. However, wind speed values are not adjusted.\label{item:sig0_j1}
@@ -686,7 +677,7 @@ Notes:
 \item S-band backscatter for Envisat is only until the loss of the S-band signal.\label{item:sig0_n1}
 \item For Jason-2, the backscatter coefficient from the MLE3 retracker is available as well.\label{item:sig0_ku_mle3}
 \item For TOPEX, the standard deviation is that of the automatic gain control, not of the backscatter coefficient. That means that the variation of the total volume of the waveform in not included, only the variation of the gain setting of the instrument.\label{item:sig0_rms_tx}
-\end{enumerate}
+\end{notes}
 
 \section{Wind speed}
 \label{var:wind}
@@ -709,32 +700,39 @@ Atmospheric models, like those at ECMWF also provide wind speed and wind directi
 \var{wind_speed} & 19 & \alias{wind_speed_alt} && all && \\
 \end{vartable}
 
-Notes:
-\begin{enumerate}
+
+\begin{notes}
 \item For Geosat, GFO, ERS-1 and ERS-2, the wind speed is based on the Modified Chelton-Wentz (MCW) algorithm \citep{witter1991}. In case of GFO 0.63 dB was subtracted from the backscatter coefficient before feeding it into the MCW algorithm.\label{item:wind_speed_mcw}
 \item The CryoSat and Envisat wind speed is based on the ECMWF 1-parameter algorithm tailored to Envisat \citep{abdalla2007}.\label{item:wind_speed_abdalla}
 \item The Ka-band altimeter of SARAL required a new 1-parameter algorithm, similar to Envisat's, again matching ECWMF wind fields \citep{lillibridge2014}.\label{item:wind_speed_saral}
 \item The TOPEX/Poseidon wind speed is based on the 2-parameter model by \citet{gourrion2002b}.\label{item:wind_speed_topex}
 \item For Jason-1 and Jason-2, a variant of the 2-parameter model by \citet{gourrion2002b} tailored to Jason-1 is used to derive wind speed \citep{collard2005}.\label{item:wind_speed_jason}
 \item The U (towards east) and V (towards north) components of the wind speed according to ECMWF model data. The absolute magnitude can be computed on-the-fly.\label{item:wind_speed_ecmwf}
-\item The U (towards east) and V (towards north) components of the wind speed according to 0.5$\deg\times$0.5$\deg\times$6h model grids from NOAA's Global Forecast System. The absolute magnitude can be computed on-the-fly. \emph{The inclusion of these fields is experimental, and may be removed in the future.}\label{item:wind_speed_gfs}
-\end{enumerate}
+\item The U (towards east) and V (towards north) components of the wind speed according to $0.5\deg\times0.5\deg\times6$h model grids from NOAA's Global Forecast System. The absolute magnitude can be computed on-the-fly. \emph{The inclusion of these fields is experimental, and may be removed in the future.}\label{item:wind_speed_gfs}
+\end{notes}
 
 \section{Other wave model data}
 \label{var:wave}
-For calibration and validation purposes, and to support further studies that include wind and wave processes (like swell and their effect on sea state bias) a number of variables from the WaveWatch 3 models. These variables are currently only available during the year 2000 to 2012 (inclusive). The original resolution of the model grids is 1\deg\ by 1\deg\ by 6 hours.
+For calibration and validation purposes, and to support further studies that include wind and wave processes (like swell and their effect on sea state bias) a number of variables from the WAVEWATCH~III model (version 3.14) \citep{tolman2009} as run by the University of New Hampshire. These variables are currently only available during the year 2000 to 2012 (inclusive). The original resolution of the model grids is 1$\deg$ by 1$\deg$ by 6 hours, and are restricted to latitudes lower than 77.5$\deg$.
 
-In addition, SWH from the WaveWatch 3 model is made available as \var{swh_ww3} (see Section~\ref{var:swh}).
+In addition, SWH from the WAVEWATCH~III model is made available as \var{swh_ww3} (see Section~\ref{var:swh}).
 
 \begin{vartable}
-\var{wave_m0} & 4001 & WaveWatch3 wave height variance & m$^2$ & all & & \\
-\var{wave_m1} & 4002 & WaveWatch3 first moment of wave height & m$^2$/s & all & & \\
-\var{wave_m2} & 4003 & WaveWatch3 wave velocity variance & m$^2$/s$^2$ & all & & \\
-\var{wave_m4} & 4004 & WaveWatch3 wave slope variance & rad$^2$ & all & & \\
+\var{wave_m0}  & 4001 & WaveWatch3 wave height variance & m$^2$ & all & & \\
+\var{wave_m1}  & 4002 & WaveWatch3 first moment of wave height & m$^2$/s & all & & \\
+\var{wave_m2}  & 4003 & WaveWatch3 wave velocity variance & m$^2$/s$^2$ & all & & \\
+\var{wave_m4}  & 4004 & WaveWatch3 wave slope variance & rad$^2$ & all & & \\
 \var{wave_shs} & 4005 & WaveWatch3 wave swell & m & all & & \\
 \end{vartable}
 
-\chapter{Additional variables}
+\chapter{Radiometer variables}
+
+\section{Radiometer brightness temperatures}
+\label{var:tb}
+\section{Water vapour content}
+\section{Liquid water content}
+
+\chapter{Variables for data editing}
 \section{Engineering and geophysical flags}
 \label{var:flags}
 The engineering and geophysical flags are historically a number of bits in a 2-byte integer number that describe either instrument settings, type of surface overflow, or warnings about the quality of the data. In RADS4 there are a number of \emph{aliases} to help pick out single bits from this word. The editing, however, is currently still determined by the limits set on the flag word, where the lower limits indicates which bits of the flag word \emph{should not} be set, and the upper limits indicates the bits of the flag word that \emph{should} be set. In other words, a record will be rejected if either:
@@ -744,7 +742,7 @@ The engineering and geophysical flags are historically a number of bits in a 2-b
 \end{itemize}
 where \var{flags_low} and \var{flags_high} are the lower and higher limit of \var{flags} specified, and \verb|AND| is the logical bitwise AND operator.
 
-In future version of the data base the flag word \var{flags} will be phased out and only the more elementary flag variables that are now defined as aliases will be available.
+In a future version of the data base the flag word \var{flags} will be phased out and only the more elementary flag variables that are now defined as aliases will be available.
 
 \begin{vartable}
 \var{flags} & 2601 & flag word & & c2 & 48 0 &  \\
@@ -763,63 +761,107 @@ The individual bits of the flag word \var{flags} are described in the following 
 \begin{table}
 \small
 \begin{sideways}
-\begin{tabular}{lrlll}
+\begin{tabular}{lrllll}
 \hline
-Variable & field & name & values & sat \\
+Variable & field & name & values & sat & note \\
 \hline
-\var{flag_alt_oper_mode} & 2516 & bit 0: hardware/software status & 0 = nominal, 1 = bad & pn tx \\
-                         & 2516 & bit 0: altimeter status & 0 = Side A, 1 = Side B & j1 j2 n1\\
-                         & 2516 & bit 0: altimeter status &  0 = LRM, 1 = PLRM & c2 \\
-\var{qual_sptr}          & 2516 & bit 0: SPTR availability & & e1 \\
-\var{qual_attitude}      & 2501 & bit 1: quality of attitude & 0 = ok, 1 = bad & e2 j1 j2 n1 tx sa \\
-                         &      & bit 1: quality of attitude & 0 = ok, 1 = suspect & g1 gs pn \\
-\var{qual_dh}            & 2502 & bit 2: dH status & 1 = suspect & gs \\
-\var{flag_rad_oper_mode} & 2502 & bit 2: TMP 21 GHz Channel status & 0 = A, 1 = B & pn tx \\
+\var{flag_alt_oper_mode} & 2516 & bit 0: hardware/software status & 0 = nominal, 1 = bad & pn tx & \\
+                         & 2516 & bit 0: altimeter status & 0 = Side A, 1 = Side B & j1 j2 n1 & \\
+                         & 2516 & bit 0: altimeter status &  0 = LRM, 1 = PLRM & c2 & \\
+\var{qual_sptr}          & 2516 & bit 0: SPTR availability & & e1 & \\
+\var{qual_attitude}      & 2501 & bit 1: quality of attitude & 0 = ok, 1 = bad & e2 j1 j2 n1 tx sa & \\
+                         &      & bit 1: quality of attitude & 0 = ok, 1 = suspect & g1 gs pn & \\
+\var{qual_dh}            & 2502 & bit 2: dH status & 1 = suspect & gs & \\
+\var{flag_rad_oper_mode} & 2502 & bit 2: TMP 21 GHz Channel status & 0 = A, 1 = B & pn tx & \\
 \var{qual_iono_alt}      & 2503 & bit 3: quality of dual-frequency iono corr & 0 = ok, 1 = bad & j1 j2 n1 tx \\
-\var{surface_type}       & 2504 & surface type & 0 = open ocean, 2 = enclosed sea or lake, 3 = land, 4 = continental ice & all \\
-\var{surface_type_rad}   & 2506 & bit 6: radiometer land flag & 0 = water, 1 = land & all but c2 gs \\
-\var{qual_alt_rain_ice}  & 2507 & bit 7: altimeter rain/ice flag & 0 = no rain/ice, 1 = rain/ice & all but c2 gs \\
-\var{qual_rad_rain_ice}  & 2508 & bit 8: radiometer rain/ice flag & 0 = no rain/ice, 1 = rain/ice & e1 e2 j1 j2 n1 pn tx \\
-\var{qual_rad_tb}        & 2509 & bit 9/10: radiometer quality flag & 0 = ok, 1 = interp.\ near land, 2 = extrap., 3 = interp.\ failed & pn tx \\
-                         &      & & 0 = ok, 1 = bad tb238, 2 = bad tb365, 3 = both bad & e1 e2 n1 \\
-                         &      & & 0 = ok, 1 = bad tb220, 2 = bad tb370, 3 = both bad & g1 \\
-                         &      & & 0 = ok, 1 = bad tb187/tb238, 2 = bad tb340, 3 = both bad & j1 j2 \\
-                         &      & & 0 = ok, 1 = bad tb238, 2 = bad tb370, 3 = both bad & sa \\
-\var{qual_range}         & 2511 & bit 11: quality of range & 0 = ok, 1 = some 10Hz invalid & gs \\
-                         &      & & 0 = ok, 1 = suspect & other \\
-\var{qual_swh}           & 2512 & bit 12: quality of SSB & 0 = ok, 1 = suspect & gs \\
-                         &      & bit 12: quality of SWH & 0 = ok, 1 = suspect & other \\
-\var{flag_alt_track_mode}& 2514 & bit 14: altimeter tracking mode & 0 = nominal, 1 = preset & e1 e2 \\
-                         &      & & 0 = nominal, 1 = coarse or acquisition & gs tx \\
-                         &      & & 0 = nominal, 1 = C-band coarse & j1 \\
-                         &      & & 0 = nominal, 1 = acquisition & pn \\
-\var{qual_orbit}         & 2515 & bit 15: orbital quality flag & 0 = ok, 1 = suspect & all \\
-\var{flag_land}          & 2504 & bit 4: water/land flag & 0 = water, 1 = land & all \\
-\var{flag_ocean}         & 2505 & bit 5: ocean/non-ocean flag & 0 = ocean, 1 = non-ocean & all \\
+\var{flag_water}         & 2504 & bit 4: water/dry flag & 0 = open ocean or enclosed sea or lake, 1 = land & all & \\
+\var{flag_ocean}         & 2505 & bit 5: ocean/land flag & 0 = open ocean, 1 = land or enclosed sea or lake & all & \\
+\var{surface_type_rad}   & 2506 & bit 6: radiometer land flag & 0 = water, 1 = land & all but c2 gs & \\
+\var{qual_alt_rain_ice}  & 2507 & bit 7: altimeter rain/ice flag & 0 = no rain/ice, 1 = rain/ice & all but c2 gs & \\
+\var{qual_rad_rain_ice}  & 2508 & bit 8: radiometer rain/ice flag & 0 = no rain/ice, 1 = rain/ice & e1 e2 j1 j2 n1 pn tx & \\
+\var{qual_rad_tb}        & 2509 & bit 9/10: radiometer quality flag & 0 = ok, 1 = interp.\ near land, 2 = extrap., 3 = interp.\ failed & pn tx & \\
+                         &      & & 0 = ok, 1 = bad tb238, 2 = bad tb365, 3 = both bad & e1 e2 n1 & \\
+                         &      & & 0 = ok, 1 = bad tb220, 2 = bad tb370, 3 = both bad & g1 & \\
+                         &      & & 0 = ok, 1 = bad tb187/tb238, 2 = bad tb340, 3 = both bad & j1 j2 & \\
+                         &      & & 0 = ok, 1 = bad tb238, 2 = bad tb370, 3 = both bad & sa & \\
+\var{qual_range}         & 2511 & bit 11: quality of range & 0 = ok, 1 = some 10Hz invalid & gs & \\
+                         &      & & 0 = ok, 1 = suspect & other & \\
+\var{qual_swh}           & 2512 & bit 12: quality of SSB & 0 = ok, 1 = suspect & gs & \\
+                         &      & bit 12: quality of SWH & 0 = ok, 1 = suspect & other & \\
+\var{flag_alt_track_mode}& 2514 & bit 14: altimeter tracking mode & 0 = nominal, 1 = preset & e1 e2 & \\
+                         &      & & 0 = nominal, 1 = coarse or acquisition & gs tx & \\
+                         &      & & 0 = nominal, 1 = C-band coarse & j1 & \\
+                         &      & & 0 = nominal, 1 = acquisition & pn & \\
+\var{qual_orbit}         & 2515 & bit 15: orbital quality flag & 0 = ok, 1 = suspect & all & \\
+\var{flag_land}          & 2504 & bit 4: water/land flag & 0 = water, 1 = land & all & \\
+\var{flag_ocean}         & 2505 & bit 5: ocean/non-ocean flag & 0 = ocean, 1 = non-ocean & all & \\
+\hline
+\var{surface_type}       &      & surface type & 0 = open ocean, 2 = enclosed sea or lake, 3 = land, & all & \ref{item:surface_type} \\
+                         &      &              & ~~~~~4 = continental ice & all & \ref{item:surface_type} \\
 \hline
 \end{tabular}
 \end{sideways}
 \end{table}
 
+\begin{notes}[Note:]
+\item \label{item:surface_type} A new variable \var{surface_type} has been introduced to combine the original flag bits 2, 4, and 5 into a single variable. Generally, the flag mask determined by \var{flags_low} as discussed above will be set to only allow data over open ocean. Effort is made to get rid of this quirky method of screening the data and use the individual flags instead.
 
-\section{Radiometer brightness temperatures}
-\label{var:tb}
+The values of \var{surface_type} are based on the GSHHG coastline dataset \citep{wessel1996} that is distributed with the Generic Mapping Tools (GMT) plotting package \citep{wessel2013}. Version 2.3.4 of this data set was used to create land mask of ocean/land/lake indicators at 1 arcminute resolution. This grid was than queried to determine whether the satellite nadir point was over ocean, land, or lakes or enclosed seas. The additional information about continental ice came for the original GDR data. If this indicator was set in the GDR, \var{surface_type} was set to the value 4, and bits 4 and 5 of \var{flags} were both set to 1, irrespective of the aforementioned land mask.
+
+Experience has shown that for Antarctica only the grounded ice is marked as "continental ice" (4). The ice sheets are marked "land" (2) as the GSHHG coastline datasets marks the (minimum) extent of the ice sheets.
+
+The value of 1 of \var{surface_type} has been reserved for later use.
+\end{notes}
+
+
 
 \section{Bathymetry and topography}
 \label{var:topo}
+Bathymetry is the depth of the oceans (and seas). It is given as a negative number, and thus constitutes the elevation of the sea bottom with respect to the geoid.
+The bathymetry is generally predicted from altimeter data, by inverting altimeter-derived gravity anamalies into ocean depth \citep[e.g.]{smith1994h}.
 
-SRTM30PLUS topography/bathymetry
-\var{topo_srtm30plus}
+Topography is the elevation of the land (and lakes). It is represented generally by a positive value and is measured relative to the geoid. Occasionally the values can be negative, like in large parts of The Netherlands, and around the Dead Sea. By convention, the elevation of the lake surfaces (not the lake bottom) is stored, except for the Caspian Sea for which generally the bottom topography is given. The topography models are based on a number of different sources: altimetry, the SRTM mission, and local leveling.
 
-V10 of SRTM30\_PLUS was released in May 2014. Ocean data are based on the Smith and Sandwell global 1-minute grid between latitudes +/- 81 degrees. Higher resolution grids have been added from the LDEO Ridge Multibeam Synthesis Project, the JAMSTEC Data Site for Research Cruises, and the NGDC Coastal Relief Model. Arctic bathymetry is from the International Bathymetric Chart of the Oceans (IBCAO) [Jakobsson et al., 2003].
+In RADS the bathymetry and topography are combined into a single field. Please use the \var{surface_type} variable to distinguish between ocean, land, and lakes.
 
-Land data are based on the 1-km averages of topography derived from the USGS SRTM30 grided DEM data product created with data from the NASA Shuttle Radar Topography Mission. GTOPO30 data are used for high latitudes where SRTM data are not available.
+\begin{vartable}
+\var{topo_dtm2000}    & 2202 & DTM2000 topography    & m & j1 j2 n1 sa          & & \ref{item:topo_dtm2000} \\ 
+\var{topo_srtm30plus} & 2204 & SRTM30PLUS topography & m & all & & \ref{item:topo_srtm30plus} \\
+\var{topo_dtu10}      & 2205 & DTU10 topography      & m & all & & \ref{item:topo_dtu10} \\
+\hline
+\var{topo}            & 22 & \alias{topo_srtm30plus} && all && \ref{item:topo} \\
+\end{vartable}
 
+
+\begin{notes}
+\item On some of the GDR products, the topography/bathymetry is determined from the DTM2000.1 model (N. Pavlis and J. Saleh, GSFC) and is copied into the RADS data base.\label{item:topo_dtm2000}
+\item
+Ocean data are based on the Smith and Sandwell global 1-minute grid between the latitudes 81$\deg$S and 81$\deg$N degrees \citep{sandwell2014b}. Higher resolution grids have been added from the LDEO Ridge Multibeam Synthesis Project, the JAMSTEC Data Site for Research Cruises, and the NGDC Coastal Relief Model. Arctic bathymetry is from the International Bathymetric Chart of the Oceans (IBCAO) \citep{jakobsson2012}.
+
+Land data are based on the 1-km averages of topography derived from the USGS SRTM30 gridded DEM data product created with data from the NASA Shuttle Radar Topography Mission. GTOPO30 data are used for high latitudes where SRTM data are not available.
+
+V10 of SRTM30\_PLUS was released in May 2014.
 For more information about SRTM30\_PLUS, please see:
 \url{http://topex.ucsd.edu/WWW_html/srtm30_plus.html}
+\label{item:topo_srtm30plus}
+\item The DTU10 topography/bathymetry model was derived from altimeter data together with the DTU10 mean sea surface model (\var{mss_dtu10}) \citep{andersen2010} and is an update of the DNSC08 bathymetry model \citep{andersen2009a}. It is not clear where the topographic (land) data stem from. The model is interpolated to the altimeter ground track location.\label{item:topo_dtu10}
+\end{notes}
 
+\section{Distance from coast and coastal proximity parameter}
+
+Because the altimeter and radiometer measurements are affected by land in their respective footprints, it is worthwhile to know what the distance from the satellite nadir to any coastline is, since it would facilitate editing out of possibly corrupted measurements. RADS contains two parameters for this purpose, to be used by the user at leisure: the distance from the coast and the coastal proximity parameter. Both are based on the proximity of the altimeter footprint to land, but potentially suit different purposes.
+
+The distance from (or to) the coast is measured from the centre of the altimeter footprint (i.e. the satellite nadir point) to the \emph{nearest} coastline, based on the GSHHG coastline dataset \citep{wessel1996} that is distributed with the Generic Mapping Tools (GMT) plotting package \citep{wessel2013}. Version 2.3.0 of this dataset has been use to produce a grid of the distance to the coast at 1 arcminute resolution. Any islets of less than 1 square kilometer have been excluded. Values in the RADS data base have been interpolated in this grid. Positive value are offshore distances to the nearest coast, negative values are inland distances to the nearest shore.
+
+The coastal proximity parameter is a dimensionless measure of the effect of land over altimetric waveforms, and has values in the range from -1 to +1, where -1 means unaffected by land (normally offshore, open-ocean points) and 1 means totally affected by land (for instance points a few km inland). Therefore this parameter can be used for screening purposes in place of distance from coast. The grid for this parameter was developed by NOC Southampton in the framework of the ESA Sea Level CCI project and has a resolution of $0.01\deg\times0.01\deg$ \citep{cipollini2011}.
+
+\begin{vartable}
+\var{dist_coast} & 45, 4501 & distance to coast & km & all && \\
+\var{prox_coast} & 4502 & coastal proximity parameter && all && \\
+\end{vartable}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \bibliography{altim}
-
 \printindex
 \end{document}
 

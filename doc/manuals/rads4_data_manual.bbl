@@ -1,4 +1,4 @@
-\begin{thebibliography}{71}
+\begin{thebibliography}{79}
 \providecommand{\natexlab}[1]{#1}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
@@ -16,10 +16,15 @@ Ablain, M., M.-I. Pujol, S.~Philipps, and N.~Picot (2008), Assessment of
   {Jason-2} and {Jason-1} orbit quality from {SSH} analysis, Ocean Science
   Topography Science Team Meeting, Nice, France, 10-12 November 2008.
 
-\bibitem[{\textit{Andersen and Knudsen}(2009)}]{andersen2009}
-Andersen, O.~B., and P.~Knudsen (2009), {DNSC08} mean sea surface and mean
-  dynamic topography models, \textit{J.\ Geophys.\ Res.}, \textit{114}, C11001,
-  \doi{10.1029/2008JC005179}.
+\bibitem[{\textit{Andersen and Knudsen}(2009{\natexlab{a}})}]{andersen2009}
+Andersen, O.~B., and P.~Knudsen (2009{\natexlab{a}}), {DNSC08} mean sea surface
+  and mean dynamic topography models, \textit{J.\ Geophys.\ Res.},
+  \textit{114}, C11001, \doi{10.1029/2008JC005179}.
+
+\bibitem[{\textit{Andersen and Knudsen}(2009{\natexlab{b}})}]{andersen2009a}
+Andersen, O.~B., and P.~Knudsen (2009{\natexlab{b}}), The {DNSC08BAT}
+  bathymetry developed from satellite altimetry, \textit{Tech. rep.}, Danish
+  National Spacecenter.
 
 \bibitem[{\textit{Andersen and Knudsen}(2010)}]{andersen2010}
 Andersen, O.~B., and P.~Knudsen (2010), The {DTU10} mean sea surface and mean
@@ -87,6 +92,11 @@ Chelton, D.~B. (1994), The sea state bias in altimeter estimates of sea lvel
   from collinear analysis of {TOPEX} data, \textit{J.\ Geophys.\ Res.},
   \textit{99}(C12), 24,995--25,008.
 
+\bibitem[{\textit{Cipollini}(2011)}]{cipollini2011}
+Cipollini, P. (2011), A new parameter to facilitate screening of coastal
+  altimetry data and corrections, Ocean Science Topography Science Team
+  Meeting, San Diego, 19-21 October 2011.
+
 \bibitem[{\textit{Collard}(2005)}]{collard2005}
 Collard, F. (2005), Algorithmes de vent et periode moyenne des vagues {JASON} a
   base de reseaux de neurons, \textit{Rapport BO-021-CLS-0407-RF}, Boost
@@ -110,7 +120,7 @@ Feng, H., S.~Yao, L.~Li, N.~Tran, D.~Vandemark, and S.~Labroue (2010),
   correction, \textit{IEEE Geosci.\ Rem.\ Sens.\ Lett.}, \textit{7}(3),
   577--581.
 
-\bibitem[{\textit{F{\"o}rste et~al.}(2013)}]{forste2013}
+\bibitem[{\textit{F{\"o}rste et~al.}(2013)}]{foerste2013}
 F{\"o}rste, C., et~al. (2013), {EIGEN-6C3stat} -- the newest high resolution
   global combined gravity field model based on the 4th release of the {GOCE}
   direct approach, \textit{Tech. rep.}, ICGEM/GFZ Postdam.
@@ -169,11 +179,6 @@ Hayne, G.~S., D.~W. Hancock, III, and C.~L. Purdy (1994), {TOPEX} altimeter
   range stability estimates from calibration mode data, \textit{{TOPEX Research
   News}}, \textit{3}, 18--22.
 
-\bibitem[{\textit{Hernandez and Schaeffer}(2001)}]{hernandez2001}
-Hernandez, F., and P.~Schaeffer (2001), The {CLS01} mean sea surface: A
-  validation with the {GSFC00.1} surface, \textit{Tech. rep.}, Collect.,
-  Localisation, Satell., Ramonville St.\ Agne, France.
-
 \bibitem[{\textit{Imel}(1994)}]{imel1994}
 Imel, D.~A. (1994), Evaluation of the {TOPEX} dual-frequency ionosphere
   correction, \textit{J.\ Geophys.\ Res.}, \textit{99}(C12), 24,895--24,906.
@@ -187,6 +192,11 @@ Imel, D.~A. (1994), Evaluation of the {TOPEX} dual-frequency ionosphere
 {International DORIS Service} (2015), New {GDR-E} orbit standards,
   \url{ftp://ftp.ids-doris.org/pub/ids/data/POD_configuration_GDRE.pdf}
   (retrieved 25 June 2015).
+
+\bibitem[{\textit{Jakobsson et~al.}(2012)}]{jakobsson2012}
+Jakobsson, M., et~al. (2012), The {International Bathymetric Chart of the
+  Arctic Ocean (IBCAO)} version 3.0, \textit{Geophys.\ Res.\ Lett.},
+  \textit{39}, L12609, \doi{10.1029/2012GL052219}.
 
 \bibitem[{\textit{Keihm et~al.}(1995)\textit{Keihm, Janssen, and
   Ruf}}]{ruf1995c}
@@ -317,6 +327,15 @@ Rudenko, S., M.~Otten, P.~N. A.~M. Visser, R.~Scharroo, and T.~Sch{\"o}ne
   (2011), Improvements in {ERS-1} and {ERS-2} precise orbit determination,
   Poster presentation at EGU 2011 General Assembly.
 
+\bibitem[{\textit{Rudenko et~al.}(2014)\textit{Rudenko, Dettmering, Esselborn,
+  Sch{\"o}ne, F{\"o}rste, Lemoine, Ablain, Alexandre, and
+  Neumayer}}]{rudenko2014}
+Rudenko, S., D.~Dettmering, S.~Esselborn, T.~Sch{\"o}ne, C.~F{\"o}rste, J.-M.
+  Lemoine, M.~Ablain, D.~Alexandre, and K.-H. Neumayer (2014), Influence of
+  time variable geopotential models on precise orbits of altimetry satellites,
+  global and regional mean sea level trends, \textit{Adv.\ Space Res.},
+  \textit{54}(1), 92--118, \doi{10.106/j.asr.2014.03.010}.
+
 \bibitem[{\textit{Ruf et~al.}(1996)\textit{Ruf, Dewan, and
   Sabramanya}}]{ruf1996}
 Ruf, C.~S., R.~P. Dewan, and B.~Sabramanya (1996), Combined microwave
@@ -329,6 +348,13 @@ Saastamoinen, J. (1972), Atmospheric corrections for the troposphere and
   Satellites for Geodesy}, \textit{Geophys.\ Monogr.\ Ser.}, vol.~15, edited by
   S.~W. Hendriksen, A.~Mancini, and B.~H. Chovitz, pp. 247--251, American
   Geophysical Union, Washington, D.C.
+
+\bibitem[{\textit{Sandwell et~al.}(2014)\textit{Sandwell, M{\"u}ller, Smith,
+  Garcia, and Francis}}]{sandwell2014b}
+Sandwell, D.~T., R.~D. M{\"u}ller, W.~H.~F. Smith, E.~S. Garcia, and C.~R.
+  Francis (2014), New global marine gravity model from {CryoSat-2} and
+  {Jason-1} reveals buried tectonic structure, \textit{Science},
+  \textit{346}(6205), 65--67, \doi{10.1126/science.1258213}.
 
 \bibitem[{\textit{Schaeffer et~al.}(2012)\textit{Schaeffer, Faug{\`e}re,
   Legeais, Ollivier, Guinle, and Picot}}]{schaeffer2012}
@@ -356,12 +382,17 @@ Scharroo, R., and P.~N. A.~M. Visser (1998), Precise orbit determination and
 \bibitem[{\textit{Shako et~al.}(2014)\textit{Shako, F{\"o}rste, Abrikosov,
   Bruinsma, Marty, Lemoine, Flechtner, Neumayer, and Dahle}}]{shako2014}
 Shako, R., C.~F{\"o}rste, O.~Abrikosov, S.~Bruinsma, J.~C. Marty, J.-M.
-  Lemoine, F.~Flechtner, K.~H. Neumayer, and C.~Dahle (2014), {EIGEN-6C}: A
+  Lemoine, F.~Flechtner, K.-H. Neumayer, and C.~Dahle (2014), {EIGEN-6C}: A
   high-resolution global gravity combination model including {GOCE} data, in
   \textit{Observation of the System Earth from Space - CHAMP, GRACE, GOCE and
   future missions}, edited by F.~Flechtner, N.~Sneeuw, and W.-D. Schuh,
   Advanced Technologies in Earth Sciences, pp. 155--161, Springer Berlin
   Heidelberg, \doi{10.1007/978-3-642-32135-1_20}.
+
+\bibitem[{\textit{Smith and Sandwell}(1994)}]{smith1994h}
+Smith, W. H.~F., and D.~T. Sandwell (1994), Bathymetric prediction from dense
+  satellite altimetry and sparse shipboard bathymetry, \textit{J.\ Geophys.\
+  Res.}, \textit{99}(B11), 21,803--21,824.
 
 \bibitem[{\textit{Stum et~al.}(1998)\textit{Stum, Ogor, Le~Traon, Dorandeu,
   Gaspar, and Dumont}}]{stum1998a}
@@ -381,6 +412,10 @@ Tapley, B.~D., M.~M. Watkins, J.~C. Ries, G.~W. Davis, R.~J. Eanes, S.~R.
   Poole, H.~J. Rim, B.~E. Schutz, and C.-K. Shum (1996), {The Joint Gravity
   Model 3}, \textit{J.\ Geophys.\ Res.}, \textit{101}(B12), 28,029--28,049.
 
+\bibitem[{\textit{Tolman}(2009)}]{tolman2009}
+Tolman, H.~L. (2009), User manual and system documentation of {WAVEWATCH III}
+  version 3.14, \textit{Tech. rep.}, NOAA National Weather Service.
+
 \bibitem[{\textit{Tran et~al.}(2010)\textit{Tran, Vandemark, Labroue, Feng,
   Chapron, Tolman, Lambin, and Picot}}]{tran2010}
 Tran, N., D.~Vandemark, S.~Labroue, H.~Feng, B.~Chapron, H.~L. Tolman,
@@ -398,6 +433,17 @@ Tran, N., S.~Philipps, J.~C. Poisson, S.~Urien, E.~Bronner, and N.~Picot
 Wahr, J.~M. (1985), Deformation of the {Earth} induced by polar motion,
   \textit{J.\ Geophys.\ Res.}, \textit{90}(B11), 9363--9368,
   \doi{10.1029/JB090iB11p09363}.
+
+\bibitem[{\textit{Wessel and Smith}(1996)}]{wessel1996}
+Wessel, P., and W.~H.~F. Smith (1996), A global, self-consistent, hierarchical,
+  high-resolution shoreline, \textit{J.\ Geophys.\ Res.}, \textit{101}(B4),
+  8741--8743.
+
+\bibitem[{\textit{Wessel et~al.}(2013)\textit{Wessel, Smith, Scharroo, Luis,
+  and Wobbe}}]{wessel2013}
+Wessel, P., W.~H.~F. Smith, R.~Scharroo, J.~Luis, and F.~Wobbe (2013), {Generic
+  Mapping Tools}: Improved version released, \textit{Eos Trans.\ AGU},
+  \textit{94}(45), 409--410, \doi{10.1002/2013EO450001}.
 
 \bibitem[{\textit{Wingham et~al.}(2006)}]{wingham2006}
 Wingham, D.~J., et~al. (2006), {CryoSat}: A mission to determine the
