@@ -133,6 +133,7 @@ integer(fourbyteint) :: i, j, m, oldcyc=0, oldpass=0, mle=3, nhz=0, nwvf=0
 
 ! Initialise
 
+call synopsis
 t0 = nan
 t1 = nan
 
@@ -143,6 +144,8 @@ do
 	select case (optopt)
 	case ('!')
 		exit
+	case (':', '::')
+		call rads_opt_error (optopt, optarg)
 	case ('v')
 		verbose = 1
 	case ('debug')
@@ -158,11 +161,8 @@ do
 	case ('w', 'with-wvf')
 		nwvf = 256
 		nhz = 20
-	case default
-		if (.not.dateopt (optopt, optarg, t0, t1)) then
-			call synopsis ('--help')
-			stop
-		endif
+	case ('time', 't:', 'sec', 'mjd', 'doy', 'ymd') ! Finally try date arguments
+		if (.not.dateopt(optopt, optarg, t0, t1)) call rads_opt_error (optopt, optarg)
 	end select
 enddo
 

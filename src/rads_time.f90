@@ -305,19 +305,19 @@ if (l < 8) return
 if (string(8:8) == '-') then ! YYYY-MM-DD
 	if (l < 10) return
 	if (present(sep) .and. (l < 11 .or. string(11:11) /= sep)) return	! sep has to be there
-	read (string,'(i4,5(1x,i2))',iostat=ios) yy,mm,dd,hh,mn,ss
-	if (l > 20) read (string(20:),*,iostat=ios) fs
+	read (string, '(i4,5(1x,i2))', iostat=ios) yy,mm,dd,hh,mn,ss
+	if (l > 20) read (string(20:), *, iostat=ios) fs
 else if (string(5:5) == '-') then ! YYYY-DDD
 	if (l < 8) return
 	if (present(sep) .and. (l < 9 .or. string(9:9) /= sep)) return	! sep has to be there
-	read (string,'(i4,1x,i3,3(1x,i2))',iostat=ios) yy,dd,hh,mn,ss
+	read (string, '(i4,1x,i3,3(1x,i2))', iostat=ios) yy,dd,hh,mn,ss
 	mm = 1 ! You can actually use 2000-01-DDD in ymd2mjd
-	if (l > 16) read (string(16:),*,iostat=ios) fs
+	if (l > 16) read (string(16:), *, iostat=ios) fs
 else ! YYYYMMDD (probably)
 	if (l < 8) return
 	if (present(sep) .and. (l < 9 .or. string(9:9) /= sep)) return	! sep has to be there
-	read (string,'(i4,2i2,1x,3i2)',iostat=ios) yy,mm,dd,hh,mn,ss
-	if (l > 16) read (string(16:),*,iostat=ios) fs
+	read (string, '(i4,2i2,1x,3i2)', iostat=ios) yy,mm,dd,hh,mn,ss
+	if (l > 16) read (string(16:), *, iostat=ios) fs
 endif
 call ymd2mjd(yy,mm,dd,mjd)
 strp1985f = (mjd - 46066) * 86400d0 + hh * 3600d0 + mn * 60d0 + ss + fs

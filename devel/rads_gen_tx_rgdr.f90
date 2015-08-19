@@ -105,6 +105,7 @@ real(eightbytereal), parameter :: sec1992 = 220838400d0	! UTC seconds from 1 Jan
 
 ! Initialise
 
+call synopsis
 t0 = nan
 t1 = nan
 
@@ -115,6 +116,8 @@ call getopt ('vC:S: debug: sat: cycle: t: mjd: sec: ymd: doy:', optopt, optarg)
 	select case (optopt)
 	case ('!')
 		exit
+	case (':', '::')
+		call rads_opt_error (optopt, optarg)
 	case ('v')
 		verbose = 1
 	case ('debug')
@@ -125,11 +128,8 @@ call getopt ('vC:S: debug: sat: cycle: t: mjd: sec: ymd: doy:', optopt, optarg)
 		if (c1 < c0) c1 = c0
 	case ('S', 'sat')
 		sat = optarg
-	case default
-		if (.not.dateopt (optopt, optarg, t0, t1)) then
-			call synopsis ('--help')
-			stop
-		endif
+	case ('time', 't:', 'sec', 'mjd', 'doy', 'ymd') ! Finally try date arguments
+		if (.not.dateopt(optopt, optarg, t0, t1)) call rads_opt_error (optopt, optarg)
 	end select
 enddo
 

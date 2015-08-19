@@ -57,7 +57,7 @@
 !
 ! Lillibridge, J. L., R. Scharroo, S. Abdalla, and D. C. Vandemark,
 ! One- and two-dimensional wind speed models for Ka-band altimetry,
-! J. Atmos. Oceanic Technol., 31(3), 630–638, doi:10.1175/JTECH-D-13-00167.1, 2014.
+! J. Atmos. Oceanic Technol., 31(3), 630-638, doi:10.1175/JTECH-D-13-00167.1, 2014.
 !-----------------------------------------------------------------------
 program rads_add_ncep
 

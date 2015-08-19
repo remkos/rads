@@ -845,11 +845,8 @@ do
 		endif
 
 	! We do not save any of the next options
-	case (':')
-		call rads_message ('Unknown option '//trim(opt(nopt)%arg)//' skipped')
-		cycle ! Skip unknown options
-	case ('::')
-		call rads_exit ('Option '//trim(opt(nopt)%arg)//' should be followed by required argument')
+	case (':', '::')
+		call rads_opt_error (opt(nopt)%opt, opt(nopt)%arg)
 	case ('q', 'quiet')
 		rads_verbose = -1
 	case ('v')
@@ -1006,9 +1003,9 @@ case ('opt')
 			call rads_set_quality_flag (S, 'sla', opt%arg(k0:k1-1))
 		enddo
 	endif
-! Finally try date arguments
-case default
-	if (dateopt(opt%opt, opt%arg, val(1), val(2))) call rads_set_limits (S, 'time', val(1), val(2))
+case ('time', 't:', 'sec', 'mjd', 'doy', 'ymd') ! Finally try date arguments
+	if (.not.dateopt(opt%opt, opt%arg, val(1), val(2))) call rads_opt_error (opt%opt, opt%arg)
+	call rads_set_limits (S, 'time', val(1), val(2))
 end select
 end subroutine rads_parse_option
 
@@ -3205,6 +3202,33 @@ else
 	call nf90_message (string)
 endif
 end subroutine rads_message
+
+!***********************************************************************
+!*rads_opt_error -- Print error message about failed option scanning
+!+
+subroutine rads_opt_error (opt, arg)
+character(len=*), intent(in) :: opt, arg
+!
+! This routine prints an error message to standard error in case RADS
+! failed to identify or scan an option on the command line.
+! The message is subpressed when -q is used (rads_verbose < 0)
+!
+! Arguments:
+!  opt      : Command line option
+!  arg      : Argument of the command line option
+!-----------------------------------------------------------------------
+if (opt == ':') then ! Unknown option
+	call rads_message ('Unknown option '//trim(arg)//' skipped')
+else if (opt == '::') then ! Missing required argument
+	call rads_exit ('Option '//trim(arg)//' should be followed by a required argument')
+else if (len_trim(opt) == 1) then ! Short option
+	call rads_exit ('Option ''-'//trim(opt)//' '//trim(arg)//''' could not be parsed')
+else if (len_trim(opt) == 2 .and. opt(2:2) == ':') then ! Long option
+	call rads_exit ('Option ''--'//trim(opt(1:1))//' '//trim(arg)//''' could not be parsed')
+else ! Long option
+	call rads_exit ('Option ''--'//trim(opt)//' '//trim(arg)//''' could not be parsed')
+endif
+end subroutine rads_opt_error
 
 !***********************************************************************
 !*rads_version -- Print message about current program and version

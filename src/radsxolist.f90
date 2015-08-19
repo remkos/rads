@@ -86,7 +86,8 @@ do
 	select case (optopt)
 	case ('!') ! End of arguments
 		exit
-	case (':') ! Ignore unknown option
+	case (':', '::')
+		call rads_opt_error (optopt, optarg)
 	case ('S', 'sat')
 		use_sats = optarg(:3*msat)
 	case ('X', 'xml')
@@ -144,8 +145,8 @@ do
 		read (optarg, *, iostat=ios) check_flag
 	case (' ')
 		! Skip filenames for now
-	case default
-		if (dateopt(optopt, optarg, t0, t1)) cycle
+	case ('time', 't:', 'sec', 'mjd', 'doy', 'ymd') ! Finally try date arguments
+		if (.not.dateopt(optopt, optarg, t0, t1)) call rads_opt_error (optopt, optarg)
 	end select
 enddo
 

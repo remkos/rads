@@ -58,8 +58,6 @@ install:	all
 	for p in $(PROGS_L2); do ( cd $(bindir) ; $(LN_S) radsxolist $$p ) ; done
 	for p in $(PROGS_L4); do ( cd $(bindir) ; $(LN_S) $${p/4/} $$p ) ; done
 
-man:	$(MAN)
-
 #-----------------------------------------------------------------------
 # Object dependencies
 #-----------------------------------------------------------------------
