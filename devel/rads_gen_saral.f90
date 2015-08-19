@@ -106,24 +106,28 @@ t1 = nan
 ! Scan command line for options
 
 do
-	call getopt ('vC:S: debug: sat: cycle: t: mjd: sec: ymd: doy:', optopt, optarg)
+	call getopt ('vC:S: debug:: sat: cycle: t: mjd: sec: ymd: doy:', optopt, optarg)
 	select case (optopt)
 	case ('!')
 		exit
 	case (':', '::')
 		call rads_opt_error (optopt, optarg)
 	case ('v')
-		verbose = 1
+		verbose = verbose + 1
 	case ('debug')
-		read (optarg,*) verbose
+		verbose = verbose + 1
+		read (optarg, *, iostat=ios) verbose
+		if (ios /= 0) call rads_opt_error (optopt, optarg)
 	case ('C', 'cycle')
 		c1 = -1
-		read (optarg,*,iostat=ios) c0,c1
+		read (optarg, *, iostat=ios) c0, c1
+		if (ios > 0) call rads_opt_error (optopt, optarg)
 		if (c1 < c0) c1 = c0
 	case ('S', 'sat')
 		sat = optarg
 	case ('time', 't:', 'sec', 'mjd', 'doy', 'ymd') ! Finally try date arguments
-		if (.not.dateopt(optopt, optarg, t0, t1)) call rads_opt_error (optopt, optarg)
+		call dateopt (optopt, optarg, t0, t1, iostat=ios)
+		if (ios > 0) call rads_opt_error (optopt, optarg)
 	end select
 enddo
 

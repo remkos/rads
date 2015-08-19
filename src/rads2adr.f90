@@ -65,8 +65,10 @@ do i = 1,rads_nopt
 		call rads_parse_r_option (S, rads_opt(i)%opt, rads_opt(i)%arg, reject)
 	case ('maxrec')
 		read (rads_opt(i)%arg, *, iostat=ios) nselmax
+		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	case ('step')
 		read (rads_opt(i)%arg, *, iostat=ios) step
+		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	end select
 enddo
 

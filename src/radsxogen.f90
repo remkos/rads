@@ -110,11 +110,14 @@ do i = 1,rads_nopt
 		case default
 			read (rads_opt(i)%arg, *, iostat=ios) inter_half
 		end select
+		if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	case ('g', 'gap')
 		read (rads_opt(i)%arg, *, iostat=ios) max_gap
-		if (max_gap < 1) call rads_exit ('Option -g<gap> : needs <gap> > 0')
+		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
+		if (max_gap < 1) call rads_exit ('Option -g <gap> : needs <gap> > 0')
 	case ('dt')
 		read (rads_opt(i)%arg, *, iostat=ios) dt
+		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	case (' ')
 		filename = rads_opt(i)%arg
 	end select

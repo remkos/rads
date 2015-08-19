@@ -71,12 +71,15 @@ limits(3:3,:) = 1d0
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
 	case ('x', 'x:')
-		call read_val (rads_opt(i)%arg, limits(:,1), '/')
+		call read_val (rads_opt(i)%arg, limits(:,1), '/', iostat=ios)
+		if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	case ('y', 'y:')
-		call read_val (rads_opt(i)%arg, limits(:,2), '/')
+		call read_val (rads_opt(i)%arg, limits(:,2), '/', iostat=ios)
+		if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	case ('res')
 		limits(3,2) = nan
-		call read_val (rads_opt(i)%arg, limits(3,:), '/')
+		call read_val (rads_opt(i)%arg, limits(3,:), '/', iostat=ios)
+		if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 		if (isnan_(limits(3,2))) limits(3,2) = limits(3,1)
 	case ('c')
 		if (rads_opt(i)%arg == '' .or. rads_opt(i)%arg == 'a') then
@@ -87,6 +90,7 @@ do i = 1,rads_nopt
 		endif
 	case ('min')
 		read (rads_opt(i)%arg, *, iostat=ios) minnr
+		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	case ('o', 'output', 'grd')
 		grid_name = rads_opt(i)%arg
 	case ('fmt')

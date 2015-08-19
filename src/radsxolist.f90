@@ -71,15 +71,6 @@ stat_only = xostat
 call synopsis
 xml = ''
 
-! Write header
-call get_command (command, status = i)
-if (xostat) then
-	write (*, 600) 'Statistics', timestamp(), trim(command)
-else
-	write (*, 600) 'List', timestamp(), trim(command)
-endif
-600 format ('# ',a,' of RADS crossovers'/'# Created: ',a,' UTC: ',a)
-
 ! Scan command line arguments
 do
 	call getopt (optlist, optopt, optarg)
@@ -95,10 +86,13 @@ do
 		xml(nxml) = optarg
 	case ('lon')
 		read (optarg, *, iostat=ios) lon0,lon1
+		if (ios /= 0) call rads_opt_error (optopt, optarg)
 	case ('lat')
 		read (optarg, *, iostat=ios) lat0,lat1
+		if (ios /= 0) call rads_opt_error (optopt, optarg)
 	case ('dt')
 		read (optarg, *, iostat=ios) dt0,dt1
+		if (ios > 0) call rads_opt_error (optopt, optarg)
 		if (dt0 > dt1) then
 			dt1 = dt0
 			dt0 = 0d0
@@ -108,6 +102,7 @@ do
 	case ('e', 'edit')
 		edit = 3.5d0
 		read (optarg, *, iostat=ios) edit
+		if (ios > 0) call rads_opt_error (optopt, optarg)
 	case ('dual-asc')
 		singles = .false.
 		dual_asc = .true.
@@ -130,6 +125,7 @@ do
 	case ('b', 'bin')
 		bin = 1d0
 		read (optarg, *, iostat=ios) bin
+		if (ios > 0) call rads_opt_error (optopt, optarg)
 	case ('r', 'replace')
 		nvar_replace = nvar_replace + 1
 		if (nvar_replace > 10) call rads_exit ('Too many -r options')
@@ -139,16 +135,28 @@ do
 	case ('tbias')
 		ltbias = .true.
 		read (optarg, *, iostat=ios) tbias
+		if (ios > 0) call rads_opt_error (optopt, optarg)
 	case ('p', 'pass-info')
 		pass_info = .true.
 	case ('check-flag')
 		read (optarg, *, iostat=ios) check_flag
+		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	case (' ')
 		! Skip filenames for now
 	case ('time', 't:', 'sec', 'mjd', 'doy', 'ymd') ! Finally try date arguments
-		if (.not.dateopt(optopt, optarg, t0, t1)) call rads_opt_error (optopt, optarg)
+		call dateopt (optopt, optarg, t0, t1, iostat=ios)
+		if (ios > 0) call rads_opt_error (optopt, optarg)
 	end select
 enddo
+
+! Write header
+call get_command (command, status=i)
+if (xostat) then
+	write (*, 600) 'Statistics', timestamp(), trim(command)
+else
+	write (*, 600) 'List', timestamp(), trim(command)
+endif
+600 format ('# ',a,' of RADS crossovers'/'# Created: ',a,' UTC: ',a)
 
 ! Some options exclude or imply others
 if (bin > 0d0) then

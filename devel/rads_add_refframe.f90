@@ -56,7 +56,7 @@ type(rads_var), pointer :: var
 
 ! Other variables
 
-integer(fourbyteint) :: ios, j
+integer(fourbyteint) :: i, ios
 
 ! Initialise
 
@@ -71,11 +71,12 @@ read (var%info%parameters, *, iostat=ios) coef
 
 ! Check for options
 
-do j = 1,rads_nopt
-	select case (rads_opt(j)%opt)
+do i = 1,rads_nopt
+	select case (rads_opt(i)%opt)
 	case ('coef')
 		coef = 0d0
-		read (rads_opt(j)%arg, *, iostat=ios) coef
+		read (rads_opt(i)%arg, *, iostat=ios) coef
+		if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	end select
 enddo
 

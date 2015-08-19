@@ -50,10 +50,11 @@ end interface d_int
 !***********************************************************************
 !*real_val -- Read array of values from string with optional substitution
 !+
-! pure subroutine read_val (string, val, translate)
+! pure subroutine read_val (string, val, translate, iostat)
 ! character(len=*), intent(in) :: string
 ! integer(fourbyteint) <or> real(eightbytereal), intent(out) :: val(:)
 ! character(len=*), intent(in), optional :: translate
+! integer(fourbyteint), optional :: iostat
 !
 ! This routine reads 4-byte integer or 8-byte real values from a string
 ! <string> into an array <val>. To simplify things when the separators
@@ -63,11 +64,16 @@ end interface d_int
 ! The values in <val> will retain their value when <string> prematurely
 ! runs out of values.
 !
+! This function returns the value of iostat when reading the variables.
+! Note that zero and negative numbers should be considered OK; positive
+! as errors.
+!
 ! Arguments:
 !  string    : input character string
 !  val       : output array of values (integer or double)
-!  translate : optional: string of characters that need to be changed
+!  translate : (optional) string of characters that need to be changed
 !             to spaces first
+!  iostat    : (optional) value of iostat (positive is error)
 !-----------------------------------------------------------------------
 private :: read_val_int, read_val_dble
 interface read_val
@@ -1088,10 +1094,11 @@ else
 endif
 end function d_int4
 
-pure subroutine read_val_dble (string, val, translate)
+pure subroutine read_val_dble (string, val, translate, iostat)
 character(len=*), intent(in) :: string
 real(eightbytereal), intent(out) :: val(:)
 character(len=*), intent(in), optional :: translate
+integer(fourbyteint), intent(out), optional :: iostat
 character(len=len(string)) :: temp
 integer :: i
 if (present(translate)) then
@@ -1106,18 +1113,19 @@ if (present(translate)) then
 else
 	read (string, *, iostat=i) val
 endif
+if (present(iostat)) iostat = i
 end subroutine read_val_dble
 
-pure subroutine read_val_int (string, val, translate)
+pure subroutine read_val_int (string, val, translate, iostat)
 character(len=*), intent(in) :: string
 integer(fourbyteint), intent(out) :: val(:)
 character(len=*), intent(in), optional :: translate
+integer(fourbyteint), intent(out), optional :: iostat
 character(len=len(string)) :: temp
-integer :: i,j
+integer :: i
 if (present(translate)) then
 	do i = 1,len(string)
-		j = index(translate, string(i:i))
-		if (j > 0) then
+		if (index(translate, string(i:i)) > 0) then
 			temp(i:i) = ','
 		else
 			temp(i:i) = string(i:i)
@@ -1127,6 +1135,7 @@ if (present(translate)) then
 else
 	read (string, *, iostat=i) val
 endif
+if (present(iostat)) iostat = i
 end subroutine read_val_int
 
 pure subroutine mean_variance_only (x, mean, variance)

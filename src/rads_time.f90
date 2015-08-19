@@ -444,12 +444,12 @@ end function sec85
 !***********************************************************************
 !*dateopt -- Processes standard datation options
 !+
-function dateopt (optopt, optarg, t0, t1, dt)
+pure subroutine dateopt (optopt, optarg, t0, t1, dt, iostat)
 use typesizes
-logical :: dateopt
 character(len=*), intent(in) :: optopt, optarg
 real(eightbytereal), intent(out) :: t0
 real(eightbytereal), intent(out), optional :: t1, dt
+integer(fourbyteint), intent(out), optional :: iostat
 !
 ! This function processes standard datation arguments of either of the
 ! following forms:
@@ -465,14 +465,16 @@ real(eightbytereal), intent(out), optional :: t1, dt
 ! be the ! result of the <getopt> routine, for example.
 !
 ! When <optopt> is parsed through to <dateopt> it checks whether <optopt> is
-! of one of the above forms. If not, <dateopt> gets the value .false., and
+! of one of the above forms. If not, <iostat> gets the value 9999, and
 ! none of the arguments is altered.
 !
 ! If <optopt> is of one of the standard datation forms, the values of <t0> and
 ! <t1> (when given) are read from <optarg> and interpreted as stated above
 ! and converted to seconds since 1.0 Jan 1985. When provided, <dt> is read
-! too, but is not converted. On return, <dateopt> will get the value .true.
+! too, but is not converted. On return, <dateopt> will get the value 0.
 ! Values can be separated by spaced or slashes.
+!
+! If the scanning of optarg fails, the value of iostat is returned in <iostat>.
 !
 ! When <t1> or <dt> are not provided in <optarg>, the arguments of the function
 ! call will keep their values unchanged.
@@ -480,12 +482,13 @@ real(eightbytereal), intent(out), optional :: t1, dt
 ! the call to <dateopt>.
 !
 ! Arguments:
-!   dateopt (output): .true. if <optopt> is in a standard datation format
-!   optopt   (input): datation option ('mjd', 'sec', etc.) (see above)
-!   optarg   (input): datation option argument (see above)
-!   t0, t1  (output): datation arguments converted to SEC85
-!                     (seconds since 1.0 Jan 1985)
-!   dt      (output): third datation argument (not converted)
+!   dateopt : .true. if <optopt> is in a standard datation format
+!   optopt  : datation option ('mjd', 'sec', etc.) (see above)
+!   optarg  : datation option argument (see above)
+!   t0      : first time after conversion to SEC85
+!   t1      : (optional) second time after conversion to SEC85
+!   dt      : (optional) third datation argument (not converted)
+!   iostat  : (optional) return code from reading optarg
 !-----------------------------------------------------------------------
 integer :: i,mode
 real(eightbytereal) :: tt0,tt1
@@ -505,7 +508,7 @@ case ('doy')
 case ('ymd')
 	mode=5
 case default
-	dateopt = .false.
+	if (present(iostat)) iostat=9999
 	return
 end select
 
@@ -534,8 +537,8 @@ endif
 if (tt0 == tt0) t0 = sec85 (mode, tt0)
 
 ! Successful return
-dateopt = .true.
-end function dateopt
+if (present(iostat)) iostat = i
+end subroutine dateopt
 
 !***********************************************************************
 !*datestamp -- Create character string with current date

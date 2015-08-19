@@ -60,21 +60,25 @@ do i = 1,rads_nopt
 	case ('rate')
 		rate = .true.
 	case ('dt')
-		read (rads_opt(i)%arg,*,iostat=ios) dt
+		read (rads_opt(i)%arg, *, iostat=ios) dt
+		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	case ('doppler')
 		doppler = .true.
 	case ('grid')
 		gridnm = rads_opt(i)%arg
 		if (gridnm == '') gridnm='EGM96/egm96.nc'
 	case ('chirp')
-		read (rads_opt(i)%arg,*,iostat=ios) chirp
+		read (rads_opt(i)%arg, *, iostat=ios) chirp
+		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	case ('equator')
 		equator = .true.
 	case ('tbias')
 		tbias = 1d30
-		read (rads_opt(i)%arg,*,iostat=ios) tbias
+		read (rads_opt(i)%arg, *, iostat=ios) tbias
+		if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	case ('flag')
-		read (rads_opt(i)%arg,*,iostat=ios) var_old,maxrms
+		read (rads_opt(i)%arg, *, iostat=ios) var_old,maxrms
+		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 		maxrms = maxrms/1d2
 	case ('range2')
 		range = .true.

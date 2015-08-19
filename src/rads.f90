@@ -854,6 +854,7 @@ do
 	case ('debug')
 		rads_verbose = rads_verbose + 1
 		read (opt(nopt)%arg, *, iostat=ios) rads_verbose
+		if (ios > 0) call rads_opt_error (opt(nopt)%opt, opt(nopt)%arg)
 	case ('log')
 		if (opt(nopt)%arg == '-') then
 			rads_log_unit = stdout
@@ -934,7 +935,7 @@ contains
 
 subroutine rads_parse_option (opt)
 type(rads_option), intent(in) :: opt
-integer :: j, k0, k1
+integer :: j, k0, k1, ios
 real(eightbytereal) :: val(2)
 ! Scan a single command line argument (option)
 val = nan
@@ -943,7 +944,8 @@ select case (opt%opt)
 case ('C', 'cycle')
 	S%cycles(2) = -1
 	S%cycles(3) = 1
-	call read_val (opt%arg, S%cycles, '/-x')
+	call read_val (opt%arg, S%cycles, '/-', iostat=ios)
+	if (ios > 0) call rads_opt_error (opt%opt, opt%arg)
 	if (S%cycles(2) < 0) S%cycles(2) = S%cycles(1)
 case ('P', 'pass')
 	if (opt%arg(:1) == 'a') then ! Only ascending passes
@@ -955,7 +957,8 @@ case ('P', 'pass')
 	else
 		S%passes(2) = -1
 		S%passes(3) = 1
-		call read_val (opt%arg, S%passes, '/-x')
+		call read_val (opt%arg, S%passes, '/-', iostat=ios)
+		if (ios > 0) call rads_opt_error (opt%opt, opt%arg)
 		if (S%passes(2) < 0) S%passes(2) = S%passes(1)
 	endif
 case ('A', 'alias')
@@ -972,9 +975,11 @@ case ('Z', 'cmp', 'compress')
 case ('R', 'region')
 	call rads_set_region (S, opt%arg)
 case ('lat', 'lon', 'sla')
-	call rads_set_limits (S, opt%opt, string=opt%arg)
+	call rads_set_limits (S, opt%opt, string=opt%arg, iostat=ios)
+	if (ios > 0) call rads_opt_error (opt%opt, opt%arg)
 case ('L', 'limits')
-	call rads_set_limits (S, opt%arg(:j-1), string=opt%arg(j+1:))
+	call rads_set_limits (S, opt%arg(:j-1), string=opt%arg(j+1:), iostat=ios)
+	if (ios > 0) call rads_opt_error (opt%opt, opt%arg)
 case ('Q', 'quality_flag')
 	if (j > 0) then
 		call rads_set_quality_flag (S, opt%arg(:j-1), opt%arg(j+1:))
@@ -984,7 +989,8 @@ case ('Q', 'quality_flag')
 
 ! The next are only for compatibility with RADS 3
 case ('h')
-	call rads_set_limits (S, 'sla', string=opt%arg)
+	call rads_set_limits (S, 'sla', string=opt%arg, iostat=ios)
+	if (ios > 0) call rads_opt_error (opt%opt, opt%arg)
 case ('opt')
 	if (j > 0) then
 		if (len_trim(opt%arg) == j+1) then
@@ -1004,7 +1010,8 @@ case ('opt')
 		enddo
 	endif
 case ('time', 't:', 'sec', 'mjd', 'doy', 'ymd') ! Finally try date arguments
-	if (.not.dateopt(opt%opt, opt%arg, val(1), val(2))) call rads_opt_error (opt%opt, opt%arg)
+	call dateopt(opt%opt, opt%arg, val(1), val(2), iostat=ios)
+	if (ios > 0) call rads_opt_error (opt%opt, opt%arg)
 	call rads_set_limits (S, 'time', val(1), val(2))
 end select
 end subroutine rads_parse_option
@@ -2742,12 +2749,13 @@ end subroutine rads_set_alias
 !***********************************************************************
 !*rads_set_limits -- Set limits on given variable
 !+
-subroutine rads_set_limits (S, varname, lo, hi, string)
+subroutine rads_set_limits (S, varname, lo, hi, string, iostat)
 use rads_misc
 type(rads_sat), intent(inout) :: S
 character(len=*), intent(in) :: varname
 real(eightbytereal), intent(in), optional :: lo, hi
 character(len=*), intent(in), optional :: string
+integer(fourbyteint), intent(out), optional :: iostat
 !
 ! This routine set the lower and upper limits for a given variable in
 ! RADS.
@@ -2763,6 +2771,7 @@ character(len=*), intent(in), optional :: string
 !  lo, hi   : Lower and upper limit
 !  string   : String of up to two values, with separating whitespace
 !             or comma or slash.
+!  iostat   : (optional) iostat code from reading string
 !
 ! Error code:
 !  S%error  : rads_noerr, rads_err_var
@@ -2776,7 +2785,7 @@ if (.not.present(string)) then
 else if (string == '') then	! Reset limits to none
 	var%info%limits = nan
 else ! Read limits (only change the ones given)
-	call read_val (string, var%info%limits, '/')
+	call read_val (string, var%info%limits, '/', iostat=iostat)
 endif
 if (var%info%datatype == rads_type_lat .or. var%info%datatype == rads_type_lon) then
 	! If latitude or longitude limits are changed, recompute equator longitude limits
@@ -2804,7 +2813,7 @@ where (limits == limits) mask = nint(limits) ! Because it is not guaranteed for 
 do i = 1,S%nvar
 	if (.not.any(S%var(i)%field >= 2501 .and. S%var(i)%field <= 2516)) cycle
 	bits = (/0,1/) ! Default values
-	read (S%var(i)%info%dataname, *, iostat = ios) bits
+	read (S%var(i)%info%dataname, *, iostat=ios) bits
 	if (S%var(i)%info%dataname == 'surface_type') then
 		! Special setting to get surface type from bits 2, 4, 5
 		! 0=ocean, 2=enclosed seas and lakes, 3=land, 4=continental ice
@@ -3220,13 +3229,13 @@ character(len=*), intent(in) :: opt, arg
 if (opt == ':') then ! Unknown option
 	call rads_message ('Unknown option '//trim(arg)//' skipped')
 else if (opt == '::') then ! Missing required argument
-	call rads_exit ('Option '//trim(arg)//' should be followed by a required argument')
+	call rads_exit ('Option "'//trim(arg)//'" should be followed by a required argument')
 else if (len_trim(opt) == 1) then ! Short option
-	call rads_exit ('Option ''-'//trim(opt)//' '//trim(arg)//''' could not be parsed')
+	call rads_exit ('Option "-'//trim(opt)//' '//trim(arg)//'" could not be parsed')
 else if (len_trim(opt) == 2 .and. opt(2:2) == ':') then ! Long option
-	call rads_exit ('Option ''--'//trim(opt(1:1))//' '//trim(arg)//''' could not be parsed')
+	call rads_exit ('Option "--'//trim(opt(1:1))//' '//trim(arg)//'" could not be parsed')
 else ! Long option
-	call rads_exit ('Option ''--'//trim(opt)//' '//trim(arg)//''' could not be parsed')
+	call rads_exit ('Option "--'//trim(opt)//' '//trim(arg)//'" could not be parsed')
 endif
 end subroutine rads_opt_error
 

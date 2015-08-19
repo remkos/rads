@@ -88,11 +88,14 @@ do i = 1,rads_nopt
 		if (rads_opt(i)%arg /= 'n' .and. rads_opt(i)%arg /= 'any') then
 			reject = 0
 			read (rads_opt(i)%arg, *, iostat=ios) reject
+			if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 		endif
 	case ('step')
 		read (rads_opt(i)%arg, *, iostat=ios) step
+		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	case ('dt')
 		read (rads_opt(i)%arg, *, iostat=ios) dt
+		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	case ('a', 'mean')
 		out_mean = .true.
 	case ('s', 'stddev')

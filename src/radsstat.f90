@@ -48,7 +48,7 @@ character(len=*), parameter :: wtype(0:3)=(/ &
 character(len=rads_strl) :: format_string
 character(len=rads_cmdl) :: filename = ''
 integer(fourbyteint), parameter :: period_day=0, period_pass=1, period_cycle=2
-integer(fourbyteint) :: nr, minnr=2, cycle, pass, i, l, &
+integer(fourbyteint) :: nr, minnr=2, cycle, pass, i, &
 	period=period_day, wmode=0, nx, ny, kx, ky, ios, sizes(2), ncid, varid(2)
 real(eightbytereal), allocatable :: lat_w(:)
 real(eightbytereal) :: sini, step=1d0, x0, y0, res(2)=(/3d0,1d0/), start_time
@@ -75,16 +75,20 @@ do i = 1,rads_nopt
 	case ('d')
 		period = period_day
 		read (rads_opt(i)%arg, *, iostat=ios) step
+		if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	case ('p')
 		period = period_pass
 		read (rads_opt(i)%arg, *, iostat=ios) step
+		if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 		step = dble(S%passes(2))/nint(S%passes(2)/step)
 	case ('c')
 		period = period_cycle
 		read (rads_opt(i)%arg, *, iostat=ios) step
+		if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	case ('b')
 		wmode = 0
-		call read_val (rads_opt(i)%arg, res, '/-+x')
+		call read_val (rads_opt(i)%arg, res, '/-+x', iostat=ios)
+		if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	case ('m')
 		wmode = 1
 	case ('a')
@@ -97,8 +101,10 @@ do i = 1,rads_nopt
 		fullyear = .true.
 	case ('min')
 		read (rads_opt(i)%arg, *, iostat=ios) minnr
+		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	case ('res')
-		call read_val (rads_opt(i)%arg, res, '/-+x')
+		call read_val (rads_opt(i)%arg, res, '/-+x', iostat=ios)
+		if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	case ('o', 'output')
 		filename = rads_opt(i)%arg
 		if (filename == '') filename = 'radsstat.nc'
@@ -108,6 +114,7 @@ do i = 1,rads_nopt
 		else
 			reject = 0
 			read (rads_opt(i)%arg, *, iostat=ios) reject
+			if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 			if (reject < 0 .or. reject > S%nsel) call rads_exit ('-r# used with invalid value')
 		endif
 	end select
@@ -383,7 +390,7 @@ end subroutine init_stat
 ! Write out ASCII the header
 
 subroutine ascii_header
-integer :: j0, j
+integer :: j0, j, l
 
 600 format ('# Statistics of RADS variables (',a,')'/ &
 '# Created: ',a,' UTC: ',a/ &
