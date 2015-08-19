@@ -24,10 +24,11 @@
 \usepackage{rotating}
 \usepackage{placeins}
 \bibliographystyle{agu08}
+\input{rads_config}
 
 \makeindex
 
-\title{RADS version 4.0 \\ ~ \\
+\title{RADS version \vernum \\ ~ \\
 Data Manual}
 \author{Remko Scharroo}
 \date{\today}
@@ -470,11 +471,11 @@ Over inland waters, this correction should not be applied \citep{cretaux2006}.
 
 \section{Solid earth and pole tide}
 \label{var:tide_solid}\label{var:tide_pole}
-The solid earth tide is the variation of the elevation of the crust of the earth surface as a result of the attraction by the sun and moon (other planets are generally ignored as their influence is at least an order of magnitude smaller). As per geodetic convention the ``permanent tide'' (the mean tide resulting from the mere presence of the sun and moon) is excluded from the solid earth tide but is included in the geoid.
+The solid earth tide is the variation of the elevation of the crust of the earth surface as a result of the attraction by the sun and moon (other planets are generally ignored as their influence is at least an order of magnitude smaller). As per geodetic convention the "permanent tide" (the mean tide resulting from the mere presence of the sun and moon) is excluded from the solid earth tide but is included in the geoid.
 
 The RADS implementation of the Cartwright-Taylor-Edden solid earth tide model includes 386 second order waves and 99 third order waves \citep{cartwright1971,cartwright1973}.
 
-The pole tide is the vertical deformation of the earth crust as a result of polar motion. We can visualise this as the ellipsoidal shape of the earth being moved as the rotation axis of the earth moves away or closer to the mean pole \citep{munk1960}. We use the IERS(EOP)05C04 earth orientation parameters and their predictions relative to the mean pole (0.042" along the Greenwich meridian, 0.293" towards 90$\deg$W).
+The pole tide is the vertical deformation of the earth crust as a result of polar motion. We can visualise this as the ellipsoidal shape of the earth being moved as the rotation axis of the earth moves away or closer to the mean pole \citep{munk1960}. We use the IERS(EOP)05C04 earth orientation parameters and their predictions. The motion of the mean pole, describing the effect of global isostatic adjustment (GIA) is represented by a linear motion, as suggested by \citet{wahr2015} following the work of \citet{argus2012}. The implicit effect on pole tide is further discussed by Desai (forthcoming work, private communication).
 
 Two Love numbers multiply the results of this simple equilibrium model: $(1 + k_2)$ = 1.302 for the combination of solid earth and oceans, and $h_2$ = 0.609 for the solid earth only (over land and lakes) \citep{wahr1985}.
 
@@ -520,7 +521,7 @@ Although the FES and GOT models are global, they are limited in scope. Over land
 \item The Finite Element Solution (FES2004) includes 9 short-period waves (Q1, O1, K1, P1, 2N2, N2, M2, K2, and S2) plus 24 additional short-period waves determined by admittance, and 4 long-period waves (Mf, Mm, Mtm and MSqm) \citep{lyard2006}. Long-period equilibrium tides (not yet included in FES2004) are added to these.\label{item:tide_ocean_fes04}\label{item:tide_load_fes04}
 \item WebTide is a collection of regional tide models along the Canadian coast, made available on the web by the Bedford Institute of Oceanography \url{http://www.bio.gc.ca/research-recherche/WebTide-MareeWeb/webtide-eng.htm}. In RADS, a single value is presented in \var{tide_ocean_webtide}, determined from (in order of decreasing preference) the regional models for: Scotia/Fundy/Maine, Northeast Pacific, Arctic, Hudson Bay. Each of these models has a very limited amount of constituents, does not include admittance to infer others, and also does not include any long-period tides (equilibrium or non-equilibrium).\label{item:tide_ocean_webtide}
 \item The Goddard Ocean Tide model GOT 4.7 includes 10 short-period waves (K1, O1, P1, Q1, S1, K2, M2, N2, S2, and M4) plus 17 additional short-period waves determined by admittance \citep{ray2011}. The 4 long-period waves from FES2004 and additional long-period equilibrium tides are added to these. The Goddard Ocean Tide model GOT 4.8 differs from GOT 4.7 only in its S2 component.\label{item:tide_ocean_got48}\label{item:tide_load_got48}
-\item The Goddard Ocean Tide model GOT4.10c differs from the current default in RADS, GOT4.8, in two ways. First, GOT4.10c is based only on Jason data, whereas 4.8 was from only TOPEX data. Second, it includes an adjustment for the geocenter. (Hence the 'c' in the name.) The processing for 4.8 and 4.10 was largely identical; one exception involved an improvement to P1 alone. GOT4.10c is an update of \citet{ray2013}. This model is now the default tide model.\label{item:tide_ocean_got410}\label{item:tide_load_got410}
+\item The Goddard Ocean Tide model GOT4.10c differs from GOT4.8 in two ways. First, GOT4.10c is based only on Jason data, whereas 4.8 was from only TOPEX data. Second, it includes an adjustment for the geocenter. (Hence the 'c' in the name.) The processing for 4.8 and 4.10 was largely identical; one exception involved an improvement to P1 alone. GOT4.10c is an update of \citet{ray2013}. This model is now the default tide model.\label{item:tide_ocean_got410}\label{item:tide_load_got410}
 \item FES2012 (Finite Element Solution 2012) takes advantage of longer altimeter time series, improved modelling, and data assimilation techniques, and more accurate and higher resolution ocean bathymetry. A new global finite element grid (with approx.\ 1.5 million nodes) was used to create a  'free' solution (independent of in situ and remote-sensing data) that has twice accuracy of the FES2004 version. The 'free' solution was assimilated with long-term altimetry data from TOPEX/POSEIDON, Jason-1, Jason-2, ERS-1, ERS-2, and ENVISAT. The FES2012 solution shows particular improvement in coastal and shelf regions, but not in overall open ocean statistics.
 
 Please note that tide loading effects have not yet been computed for FES2012, and therefore you should use the load tide from one the GOT load tide models with the ocean tide from FES2012. Since the load tide models are global, this would not limit the area for which you can determine geocentric tides (ocean plus load tides). \url{http://www.aviso.oceanobs.com/en/data/products/auxiliary-products/global-tide-fes2004-fes99/description-fes2012.html}\label{item:tide_ocean_fes12}
@@ -818,7 +819,7 @@ The value of 1 of \var{surface_type} has been reserved for later use.
 \section{Bathymetry and topography}
 \label{var:topo}
 Bathymetry is the depth of the oceans (and seas). It is given as a negative number, and thus constitutes the elevation of the sea bottom with respect to the geoid.
-The bathymetry is generally predicted from altimeter data, by inverting altimeter-derived gravity anamalies into ocean depth \citep[e.g.]{smith1994h}.
+The bathymetry is generally predicted from altimeter data, by inverting altimeter-derived gravity anomalies into ocean depth \citep[e.g.]{smith1994h}.
 
 Topography is the elevation of the land (and lakes). It is represented generally by a positive value and is measured relative to the geoid. Occasionally the values can be negative, like in large parts of The Netherlands, and around the Dead Sea. By convention, the elevation of the lake surfaces (not the lake bottom) is stored, except for the Caspian Sea for which generally the bottom topography is given. The topography models are based on a number of different sources: altimetry, the SRTM mission, and local leveling.
 
@@ -829,7 +830,7 @@ In RADS the bathymetry and topography are combined into a single field. Please u
 \var{topo_srtm30plus} & 2204 & SRTM30PLUS topography & m & all & & \ref{item:topo_srtm30plus} \\
 \var{topo_dtu10}      & 2205 & DTU10 topography      & m & all & & \ref{item:topo_dtu10} \\
 \hline
-\var{topo}            & 22 & \alias{topo_srtm30plus} && all && \ref{item:topo} \\
+\var{topo}            & 22 & \alias{topo_srtm30plus} && all && \\
 \end{vartable}
 
 

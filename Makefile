@@ -27,7 +27,7 @@
 
 include config.mk
 
-CONFIG_IN = config.mk.in src/rads-config.in
+CONFIG_IN = config.mk.in src/rads-config.in doc/manuals/rads_config.tex.in
 CONFIG    = $(CONFIG_IN:.in=)
 SUBDIRS   = src conf $(DEVEL)
 

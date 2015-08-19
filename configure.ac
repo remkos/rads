@@ -19,7 +19,7 @@
 # -----------------------------------------------------------------
 # Define and show package version
 # -----------------------------------------------------------------
-AC_INIT([RADS], [4.0.3], [remko@altimetrics.com])
+AC_INIT([RADS], [4.1.0], [remko@altimetrics.com])
 AC_MSG_NOTICE([AC_PACKAGE_NAME, version AC_PACKAGE_VERSION])
 
 # -----------------------------------------------------------------
@@ -304,4 +304,4 @@ AC_SUBST(INSTALL_DIR)
 # -----------------------------------------------------------------
 # Substitute in .in files
 # -----------------------------------------------------------------
-AC_OUTPUT(config.mk src/rads-config)
+AC_OUTPUT(config.mk src/rads-config doc/manuals/rads_config.tex)
