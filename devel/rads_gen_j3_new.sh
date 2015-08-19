@@ -53,6 +53,7 @@ rads_add_common  $options			>> $log 2>&1
 rads_add_dual    $options			>> $log 2>&1
 rads_add_dual    $options --mle=3	>> $log 2>&1
 rads_add_ib      $options			>> $log 2>&1
+rads_add_ww3_222 $options --all		>> $log 2>&1
 rads_add_sla     $options           >> $log 2>&1
 
 date								>> $log 2>&1
