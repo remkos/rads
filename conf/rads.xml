@@ -976,6 +976,7 @@ Global RADS configuration file
 	<compress>int4 1e-4</compress>
 	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
 </var>
+<!--
 <var name="tide_ocean_got47" field="1217">
 	<long_name>GOT4.7 ocean tide</long_name>
 	<source>GOT4.7</source>
@@ -986,6 +987,7 @@ Global RADS configuration file
 	<compress>int4 1e-4</compress>
 	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
 </var>
+-->
 <var name="tide_ocean_got48" field="1219">
 	<long_name>GOT4.8 ocean tide</long_name>
 	<source>GOT4.8</source>
@@ -996,6 +998,7 @@ Global RADS configuration file
 	<compress>int4 1e-4</compress>
 	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
 </var>
+<!--
 <var name="tide_ocean_got49" field="1221">
 	<long_name>GOT4.9 ocean tide</long_name>
 	<source>GOT4.9</source>
@@ -1006,6 +1009,7 @@ Global RADS configuration file
 	<compress>int4 1e-4</compress>
 	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
 </var>
+-->
 <var name="tide_ocean_got410" field="1222">
        <long_name>GOT4.10 ocean tide</long_name>
        <source>GOT4.10</source>
@@ -1048,6 +1052,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Load tide variation to be added to ocean tide</comment>
 </var>
+<!--
 <var name="tide_load_got47" field="1317">
 	<long_name>GOT4.7 load tide</long_name>
 	<source>GOT4.7</source>
@@ -1058,6 +1063,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Load tide variation to be added to ocean tide</comment>
 </var>
+-->
 <var name="tide_load_got48" field="1319">
 	<long_name>GOT4.8 load tide</long_name>
 	<source>GOT4.8</source>
@@ -1068,6 +1074,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Load tide variation to be added to ocean tide</comment>
 </var>
+<!--
 <var name="tide_load_got49" field="1321">
 	<long_name>GOT4.9 load tide</long_name>
 	<source>GOT4.9</source>
@@ -1078,6 +1085,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Load tide variation to be added to ocean tide</comment>
 </var>
+-->
 <var name="tide_load_got410" field="1322">
        <long_name>GOT4.10 load tide</long_name>
        <source>GOT4.10</source>
@@ -1221,6 +1229,7 @@ Global RADS configuration file
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
 </var>
+<!--
 <var name="mss_cls01" field="1605">
 	<long_name>CLS01 mean sea surface height</long_name>
 	<source>CLS01</source>
@@ -1230,7 +1239,6 @@ Global RADS configuration file
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
 </var>
-<!--
 <var name="mss_arcgice" field="1609">
 	<long_name>ArcGICE geoid height</long_name>
 	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
@@ -1261,6 +1269,7 @@ Global RADS configuration file
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
 </var>
+<!--
 <var name="mss_dnsc08" field="1612">
 	<long_name>DNSC08 mean sea surface height</long_name>
 	<source>DNSC08</source>
@@ -1270,6 +1279,7 @@ Global RADS configuration file
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
 </var>
+-->
 <var name="mss_ucl04" field="1613" sat="c2 e1 e2">
 	<long_name>UCL04 mean sea surface height</long_name>
 	<source>UCL</source>
@@ -1768,6 +1778,7 @@ Global RADS configuration file
 	<format>f7.0</format>
 	<compress>int2</compress>
 </var>
+<!--
 <var name="topo_dnsc08" field="2203">
 	<long_name>DNSC08 topography</long_name>
 	<source>DNSC08</source>
@@ -1777,6 +1788,7 @@ Global RADS configuration file
 	<format>f7.0</format>
 	<compress>int2</compress>
 </var>
+-->
 <var name="topo_srtm30plus" field="2204">
 	<long_name>SRTM30_PLUS topography</long_name>
 	<source>SRTM30_PLUS V10</source>
