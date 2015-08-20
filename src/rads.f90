@@ -1,4 +1,14 @@
+!****h* module/rads
+! SUMMARY
+! RADS main module
+!
+! PURPOSE
+! This module provides the main functionalities for the RADS4 software.
+! To use any of the following subroutines and functions, add the following
+! line in your Fortran 90 (or later) code:
+!	use rads
 !-----------------------------------------------------------------------
+! COPYRIGHT
 ! Copyright (c) 2011-2015  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
@@ -11,7 +21,7 @@
 ! but WITHOUT ANY WARRANTY; without even the implied warranty of
 ! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ! GNU Lesser General Public License for more details.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 
 module rads
 use typesizes
@@ -177,15 +187,18 @@ integer(fourbyteint), save :: rads_nopt = 0          ! Number of command line op
 integer(fourbyteint) :: rads_verbose = 0             ! Verbosity level
 integer(fourbyteint) :: rads_log_unit = stdout       ! Unit number for statistics logging
 
-!***********************************************************************
-!*rads_init -- Initialize RADS4
-!+
+!****f* rads/rads_init
+! SUMMARY
+! Initialize RADS4
+!
+! SYNTAX
 ! subroutine rads_init (S, sat, xml, verbose)
-! type(rads_sat), intent(inout) :: S or S(:)
-! character(len=*), intent(in), optional :: sat or sat(:)
+! type(rads_sat), intent(inout) :: S <or> S(:)
+! character(len=*), intent(in), optional :: sat <or> sat(:)
 ! character(len=*), intent(in), optional :: xml(:)
 ! integer, intent(in), optional :: verbose
 !
+! PURPOSE
 ! This routine initializes the <S> struct with the information pertaining
 ! to given satellite/mission phase <sat>, which is to be formed as 'e1',
 ! or 'e1g', or 'e1/g'. If no phase is specified, all mission phases will be
@@ -217,13 +230,13 @@ integer(fourbyteint) :: rads_log_unit = stdout       ! Unit number for statistic
 ! store information of multiple missions, or when required XML files are
 ! missing.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
-!  sat      : Optional: Satellite/mission abbreviation
-!  verbose  : Optional: Verbosity level
-!  xml      : Optional: Array of names of additional XML files to be loaded
-!  optlist  : Optional: list of command specific short and long options
-!-----------------------------------------------------------------------
+!  sat      : (optional) Satellite/mission abbreviation
+!  verbose  : (optional) Verbosity level
+!  xml      : (optional) Array of names of additional XML files to be loaded
+!  optlist  : (optional) List of command specific short and long options
+!****-------------------------------------------------------------------
 private :: rads_init_sat_0d, rads_init_sat_1d, rads_init_sat_0d_xml, rads_init_sat_1d_xml, &
 	rads_init_cmd_0d, rads_init_cmd_1d, rads_load_options, rads_parse_options
 interface rads_init
@@ -235,27 +248,32 @@ interface rads_init
 	module procedure rads_init_cmd_1d
 end interface rads_init
 
-!***********************************************************************
-!*rads_end -- End RADS4
-!+
+!****f* rads/rads_end
+! SUMMARY
+! End RADS4
+!
+! SYNTAX
 ! subroutine rads_end (S)
 ! type(rads_sat), intent(inout) :: S <or> S(:)
 !
+! PURPOSE
 ! This routine ends RADS by freeing up all <S> space and other allocated
 ! global arrays.
 !
-! Argument:
+! ARGUMENT
 !  S        : Satellite/mission dependent struct or array of structs
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 private :: rads_end_0d, rads_end_1d
 interface rads_end
 	module procedure rads_end_0d
 	module procedure rads_end_1d
 end interface rads_end
 
-!***********************************************************************
-!*rads_get_var -- Read variable (data) from RADS4 file
-!+
+!****f* rads/rads_get_var
+! SUMMARY
+! Read variable (data) from RADS4 file
+!
+! SYNTAX
 ! recursive subroutine rads_get_var (S, P, var, data, noedit)
 ! type(rads_sat), intent(inout) :: S
 ! type(rads_pass), intent(inout) :: P
@@ -263,6 +281,7 @@ end interface rads_end
 ! real(eightbytereal), intent(out) :: data(:)
 ! logical, intent(in), optional :: noedit
 !
+! PURPOSE
 ! This routine loads the data from a single variable <var> into the
 ! buffer <data>. This command must be preceeded by <rads_open_pass>.
 ! The variable <var> can be addressed as a variable name, a RADS3-type
@@ -273,7 +292,7 @@ end interface rads_end
 ! If no data are available and no default value and no secondary aliases
 ! then NaN is returned in the array <data>.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  P        : Pass dependent structure
 !  var      : (string) Name of the variable to be read.
@@ -281,12 +300,12 @@ end interface rads_end
 !             (integer) Field number.
 !             (type(rads_var)) Variable struct (e.g. S%sel(i))
 !  data     : Data returned by this routine
-!  noedit   : Optional: set to .true. to skip editing on limits and/or
+!  noedit   : (optional) Set to .true. to skip editing on limits and/or
 !             quality flags; set to .false. to allow editing (default)
 !
-! Error code:
+! ERROR CODE:
 !  S%error  : rads_noerr, rads_err_var, rads_err_memory, rads_err_source
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 private :: rads_get_var_by_name, rads_get_var_by_var, rads_get_var_by_number, &
 	rads_get_var_by_name_2d, rads_get_var_helper, rads_get_var_common
 interface rads_get_var
@@ -296,11 +315,12 @@ interface rads_get_var
 	module procedure rads_get_var_by_name_2d
 end interface rads_get_var
 
-!***********************************************************************
-!*rads_def_var -- Define variable(s) to be written to RADS data file
-!+
-! subroutine rads_def_var (S, P, var, nctype, scale_factor, add_offset, ndims)
+!****if* rads/rads_def_var
+! SUMMARY
+! Define variable(s) to be written to RADS data file
 !
+! SYNTAX
+! subroutine rads_def_var (S, P, var, nctype, scale_factor, add_offset, ndims)
 ! type(rads_sat), intent(inout) :: S
 ! type(rads_pass), intent(inout) :: P
 ! type(rads_var), intent(in) :: var <or> var(:) <or>
@@ -308,6 +328,7 @@ end interface rads_get_var
 ! integer(fourbyteint), intent(in), optional :: nctype, ndims
 ! real(eightbytereal), intent(in), optional :: scale_factor, add_offset
 !
+! PURPOSE
 ! This routine defines the variables to be written to a RADS data file by
 ! the reference to the variable struct of type(rads_var), or a
 ! number of variables referenced by an array of structures.
@@ -317,18 +338,18 @@ end interface rads_get_var
 ! The optional arguments <nctype>, <scale_factor>, <add_offset>, <ndims>  can
 ! be used to overrule those value in the <var%info> struct.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  P        : Pass structure
 !  var      : Structure(s) of variable(s) of type(rads_var) or name of variable
-!  nctype   : (Optional) Data type in netCDF file
-!  scale_factor : (Optional) Value of the scale_factor attribute
-!  add_offset : (Optional) Value of the add_offset attribute
-!  ndims    : (Optional) Number of dimensions of the variable
+!  nctype   : (optional) Data type in netCDF file
+!  scale_factor : (optional) Value of the scale_factor attribute
+!  add_offset : (optional) Value of the add_offset attribute
+!  ndims    : (optional) Number of dimensions of the variable
 !
-! Error codes:
+! ERROR CODE
 !  S%error  : rads_noerr, rads_err_nc_var
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 private :: rads_def_var_by_var_0d, rads_def_var_by_var_1d, rads_def_var_by_name
 interface rads_def_var
 	module procedure rads_def_var_by_var_0d
@@ -336,9 +357,11 @@ interface rads_def_var
 	module procedure rads_def_var_by_name
 end interface rads_def_var
 
-!***********************************************************************
-!*rads_put_var -- Write data for variable to RADS file
-!+
+!****if* rads/rads_put_var
+! SUMMARY
+! Write data for variable to RADS file
+!
+! SYNTAX
 ! subroutine rads_put_var (S, P, var, data, start)
 ! use netcdf
 ! use rads_netcdf
@@ -349,6 +372,7 @@ end interface rads_def_var
 ! real(eightbytereal), intent(in) :: data(:) <or> data(:,:)
 ! integer(fourbyteint), optional, intent(in) :: start(:)
 !
+! PURPOSE
 ! This routine writes the data array <data> for the variable <var>
 ! (referenced by the structure of type(rads_var)) to the netCDF file
 ! previously opened with rads_create_pass or rads_open_pass.
@@ -361,16 +385,16 @@ end interface rads_def_var
 ! for storing the data from the first available position in the file.
 ! For example: start=101 first skips 100 records.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  P        : Pass structure
 !  var      : Structure of variable of type(rads_var)
 !  data     : Data to be written (in original (SI) units)
 !  start    : Position of the first data point in the file
 !
-! Error codes:
+! ERROR CODE
 !  S%error  : rads_noerr, rads_err_nc_put
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 private :: rads_put_var_helper, &
 	rads_put_var_by_var_0d, rads_put_var_by_name_0d, &
 	rads_put_var_by_var_1d, rads_put_var_by_var_1d_start, rads_put_var_by_name_1d, &
@@ -390,43 +414,49 @@ interface rads_put_var
 	module procedure rads_put_var_by_name_3d
 end interface rads_put_var
 
-!***********************************************************************
-!*rads_stat -- Print the RADS statistics for a given satellite
-!+
+!****f* rads/rads_stat
+! SUMMARY
+! Print the RADS statistics for a given satellite
+!
+! SYNTAX
 ! subroutine rads_stat (S)
 ! type(rads_sat), intent(in) :: S <or> S(:)
 ! integer(fourbyteint), intent(in), optional :: unit
 !
+! PURPOSE
 ! This routine prints out the statistics of all variables that were
 ! processed per mission (indicated by scalar or array <S>), to the output
 ! on unit <rads_log_unit>.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 private :: rads_stat_0d, rads_stat_1d
 interface rads_stat
 	module procedure rads_stat_0d
 	module procedure rads_stat_1d
 end interface rads_stat
 
-!***********************************************************************
-!*rads_parse_varlist -- Parse a string of variables
-!+
+!****if* rads/rads_parse_varlist
+! SUMMARY
+! Parse a string of variables
+!
+! SYNTAX
 ! subroutine rads_parse_varlist (S, string)
 ! type (rads_sat), intent(inout) :: S
 ! character(len=*), intent(in) :: string <or> string(:)
 !
+! PURPOSE
 ! Parse the string <string> of comma- or slash-separated names of variables.
 ! This will allocate the array S%sel and update counter S%nsel.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  string   : String of variables
 !
-! Error codes:
+! ERROR CODE
 !  S%error  : rads_err_var
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 private :: rads_parse_varlist_0d, rads_parse_varlist_1d
 interface rads_parse_varlist
 	module procedure rads_parse_varlist_0d
@@ -435,9 +465,11 @@ end interface rads_parse_varlist
 
 contains
 
-!***********************************************************************
-!*rads_init_sat_0d_xml -- Initialize RADS4 by satellite
-!+
+!****if* rads/rads_init_sat_0d_xml
+! SUMMARY
+! Initialize RADS4 by satellite
+!
+! SYNOPSIS
 subroutine rads_init_sat_0d_xml (S, sat, xml, verbose)
 use rads_misc
 type(rads_sat), intent(inout) :: S
@@ -445,21 +477,22 @@ character(len=*), intent(in) :: sat
 character(len=*), intent(in) :: xml(:)
 integer(fourbyteint), intent(in), optional :: verbose
 !
+! PURPOSE
 ! This routine initializes the <S> struct with the information pertaining to satellite
 ! and mission phase <sat>, which is to be formed as 'e1', or 'e1g', or 'e1/g'.
 ! If no phase is specified, a default is assumed (usually 'a').
 ! The routine will read the satellite and mission specific setup XML files and store
 ! all the information in the stuct <S>.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  sat      : Satellite/mission abbreviation
 !  xml      : Array of additional XML files to be loaded
-!  verbose  : Optional: verbosity level (default = 0)
+!  verbose  : (optional) verbosity level (default = 0)
 !
-! Error code:
+! ERROR CODE
 !  S%error  : rads_noerr, rads_err_xml_file, rads_err_xml_parse, rads_err_var
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer(fourbyteint) :: i, j, l
 
 if (present(verbose)) rads_verbose = verbose
@@ -631,37 +664,43 @@ do i = nsat+1,size(S)
 enddo
 end subroutine rads_init_cmd_1d
 
-!***********************************************************************
-!*rads_init_sat_struct -- Initialize empty rads_sat struct
-!+
+!****if* rads/rads_init_sat_struct
+! SUMMARY
+! Initialize empty rads_sat struct
+!
+! SYNOPSIS
 subroutine rads_init_sat_struct (S)
 use rads_misc
 type(rads_sat), intent(inout) :: S
 !
+! PURPOSE
 ! This routine initializes the <S> struct with the bare minimum.
 ! It is later updated in rads_init_sat_0d.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 ! gfortran 4.4.1 segfaults on the next line if this routine is made pure or elemental,
 ! so please leave it as a normal routine.
 S = rads_sat ('', '', '', '', null(), '', 1d0, (/13.8d0, nan/), 90d0, nan, nan, nan, 1, 1, rads_noerr, &
 	0, 0, 0, 0, 0, .false., '', 0, null(), null(), null(), null(), null(), null(), null(), null())
 end subroutine rads_init_sat_struct
 
-!***********************************************************************
-!*rads_free_sat_struct -- Free all allocated memory from rads_sat struct
-!+
+!****if* rads/rads_free_sat_struct
+! SUMMARY
+! Free all allocated memory from rads_sat struct
+!
+! SYNOPSIS
 subroutine rads_free_sat_struct (S)
 type(rads_sat), intent(inout) :: S
 !
+! PURPOSE
 ! This routine frees the <S> struct of type rads_sat and all allocated
 ! memory in it. It then reinitialises a clean struct.
 !
-! Argument:
+! ARGUMENT
 !  S        : Satellite/mission dependent struct or array of structs
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer(fourbyteint) :: i,ios
 if (S%sat == '') return
 do i = S%nvar,1,-1
@@ -674,20 +713,23 @@ deallocate (S%glob_att, S%var, S%sel, S%phases, S%excl_cycles, stat=ios)
 call rads_init_sat_struct (S)
 end subroutine rads_free_sat_struct
 
-!***********************************************************************
-!*rads_init_pass_struct -- Initialize empty rads_pass struct
-!+
+!****if* rads/rads_init_pass_struct
+! SUMMARY
+! Initialize empty rads_pass struct
+!
+! SYNOPSIS
 subroutine rads_init_pass_struct (S, P)
 type(rads_sat), target, intent(in) :: S
 type(rads_pass), intent(inout) :: P
 !
+! PURPOSE
 ! This routine initializes the <P> struct with the bare minimum.
 ! This is only really necessary prior to calling rads_create_pass.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  P        : Pass dependent structure
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 ! gfortran 4.4.1 segfaults on the next line if this routine is made pure or elemental,
 ! so please leave it as a normal routine.
 P = rads_pass ('', '', null(), nan, nan, nan, nan, null(), null(), .false., 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &
@@ -695,24 +737,27 @@ P = rads_pass ('', '', null(), nan, nan, nan, nan, null(), null(), .false., 0, 0
 P%S => S
 end subroutine rads_init_pass_struct
 
-!***********************************************************************
-!*rads_free_var_struct -- Free all allocated memory from rads_var struct
-!+
+!****if* rads/rads_free_var_struct
+! SUMMARY
+! Free all allocated memory from rads_var struct
+!
+! SYNOPSIS
 pure subroutine rads_free_var_struct (S, var, alias)
 use rads_grid
 type(rads_sat), intent(inout) :: S
 type(rads_var), intent(inout) :: var
 logical, intent(in) :: alias
 !
+! PURPOSE
 ! This routine frees the <var> struct of type rads_var and all allocated
 ! memory in it. Use alias = .true. when called from rads_set_alias, so
 ! that it prevents removing info structs used elsewhere.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent struct or array of structs
 !  var      : Variable struct to be freed
 !  alias    : .true. if called to create alias
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer(fourbyteint) :: i,n,ios
 type(rads_varinfo), pointer :: info
 info => var%info ! This is needed to make the associated () work later on
@@ -752,20 +797,23 @@ endif
 nullify (var%inf1,var%inf2)
 end subroutine rads_free_var_struct
 
-!***********************************************************************
-!*rads_set_options -- Specify the list of command specific options
-!+
+!****f* rads/rads_set_options
+! SUMMARY
+! Specify the list of command specific options
+!
+! SYNPOSIS
 subroutine rads_set_options (optlist)
 character(len=*), intent(in), optional :: optlist
 !
+! PURPOSE
 ! Add the command specific options to the list of common RADS options.
 ! The argument <optlist> needs to have the same format as in the routine
 ! <getopt> in the <rads_misc> module. The short options will be placed
 ! before the common ones, the long options will be placed after them.
 !
-! Argument:
-!  optlist  : Optional: list of command specific short and long options
-!-----------------------------------------------------------------------
+! ARGUMENT
+!  optlist  : (optional) list of command specific short and long options
+!****-------------------------------------------------------------------
 integer :: i
 if (.not.present(optlist)) return
 
@@ -781,13 +829,16 @@ else ! Short options in front, long options in the middle
 endif
 end subroutine rads_set_options
 
-!***********************************************************************
-!*rads_load_options -- Extract options from command line
-!+
+!****if* rads/rads_load_options
+! SUMMARY
+! Extract options from command line
+!
+! SYNOPSIS
 subroutine rads_load_options (nsat)
 use rads_misc
 integer, intent(out) :: nsat
 !
+! PURPOSE
 ! Scan the command line for all common RADS 4 command line options
 ! like --cycle, --sat, -P, etc, and store only these, not any other
 ! command line options, in an external array <rads_option>.
@@ -805,9 +856,9 @@ integer, intent(out) :: nsat
 !
 ! The value <nsat> returns the total amount of -S options.
 !
-! Arguments:
+! ARGUMENTS
 !  nsat     : Number of '-S' or '--sat' options
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer :: ios, iunit, i, nopt
 type(rads_option), pointer :: opt(:)
 
@@ -904,15 +955,18 @@ endif
 rads_nopt = nopt
 end subroutine rads_load_options
 
-!***********************************************************************
-!*rads_parse_options -- Parse RADS options
-!+
+!****if* rads/rads_parse_options
+! SUMMARY
+! Parse RADS options
+!
+! SYNOPSIS
 subroutine rads_parse_options (S, opt)
 use rads_time
 use rads_misc
 type(rads_sat), intent(inout) :: S
 type(rads_option), intent(in) :: opt(:)
 !
+! PURPOSE
 ! This routine fills the <S> struct with the information pertaining
 ! to a given satellite and mission as read from the options in the
 ! array <opt>.
@@ -921,10 +975,10 @@ type(rads_option), intent(in) :: opt(:)
 ! of the list of variables following -V or --var. Same for --sel, and the
 ! backward compatible options sel= and var=.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  opt      : Array of options (usually command line arguments)
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer :: i
 do i = 1,size(opt)
 	call rads_parse_option (opt(i))
@@ -1018,9 +1072,11 @@ end subroutine rads_parse_option
 
 end subroutine rads_parse_options
 
-!***********************************************************************
-!*rads_parse_varlist_0d -- Parse a string of variables
-!+
+!****if* rads/rads_parse_varlist_0d
+! SUMMARY
+! Parse a string of variables
+!
+! SYNOPSIS
 subroutine rads_parse_varlist_0d (S, string)
 use rads_misc
 type (rads_sat), intent(inout) :: S
@@ -1029,13 +1085,13 @@ character(len=*), intent(in) :: string
 ! Parse the string <string> of comma- or slash-separated names of variables.
 ! This will allocate the array S%sel and update counter S%nsel.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  string   : String of variables
 !
-! Error codes:
+! ERROR CODE
 !  S%error  : rads_err_var
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer(fourbyteint) :: i0, i1, n, noedit
 type(rads_var), pointer :: temp(:), var
 
@@ -1094,30 +1150,29 @@ do i = 1,size(string)
 enddo
 end subroutine rads_parse_varlist_1d
 
-!***********************************************************************
+!****if* rads/rads_parse_cmd
 !*rads_parse_cmd -- Parse command line options
-!+
+!
+! SYNOPSIS
 subroutine rads_parse_cmd (S)
 type(rads_sat), intent(inout) :: S
 !
+! PURPOSE
 ! After initialising RADS for a single satellite using rads_init_sat (S,sat)
 ! this routine can be used to update the <S> struct with information from
 ! the command line options. In contrast to rads_init_sat (S) this does not
 ! require that -S or --sat is one of the command line options.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
-!  optlist  : Optional: list of command specific short and long options
-!-----------------------------------------------------------------------
+!  optlist  : (optional) list of command specific short and long options
+!****-------------------------------------------------------------------
 integer :: nsat
 call rads_load_options (nsat)
 call rads_parse_options (S, rads_opt(1:rads_nopt))
 call rads_parse_varlist (S, pack(rads_opt%arg, mod(rads_opt%id,10)==id_var))
 end subroutine rads_parse_cmd
 
-!***********************************************************************
-!*rads_end_0d, rads_end_1d -- End RADS4
-!+
 subroutine rads_end_0d (S)
 type(rads_sat), intent(inout) :: S
 integer :: ios
@@ -1136,9 +1191,11 @@ enddo
 if (rads_log_unit > stdout) close (rads_log_unit)
 end subroutine rads_end_1d
 
-!***********************************************************************
-!*rads_open_pass -- Open RADS pass file
-!+
+!****f* rads/rads_open_pass
+! SUMMARY
+! Open RADS pass file
+!
+! SYNOPSIS
 subroutine rads_open_pass (S, P, cycle, pass, rw)
 use netcdf
 use rads_netcdf
@@ -1150,6 +1207,7 @@ type(rads_pass), intent(inout) :: P
 integer(fourbyteint), intent(in) :: cycle, pass
 logical, intent(in), optional :: rw
 !
+! PURPOSE
 ! This routine opens a netCDF file for access to the RADS machinery.
 ! However, prior to opening the file, three tests are performed to speed
 ! up data selection:
@@ -1173,16 +1231,16 @@ logical, intent(in), optional :: rw
 ! open for reading and writing.
 ! The file opened with this routine should be closed by using rads_close_pass.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  P        : Pass structure
 !  cycle    : Cycle number
 !  pass     : Pass number
-!  rw       : Optionally set read/write permission (def: read only)
+!  rw       : (optional) Set read/write permission (def: read only)
 !
-! Error codes:
+! ERROR CODE
 !  S%error  : rads_noerr, rads_warn_nc_file, rads_err_nc_parse
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 character(len=40) :: date
 character(len=5) :: hz
 character(len=rads_strl) :: string
@@ -1409,9 +1467,11 @@ end subroutine rads_set_phase
 
 end subroutine rads_open_pass
 
-!***********************************************************************
-!*rads_close_pass -- Open RADS pass file
-!+
+!****f* rads/rads_close_pass
+! SUMMARY
+! Close RADS pass file
+!
+! SYNOPSIS
 subroutine rads_close_pass (S, P, keep)
 use netcdf
 use rads_netcdf
@@ -1419,6 +1479,7 @@ type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 logical, intent(in), optional :: keep
 !
+! PURPOSE
 ! This routine closes a netCDF file previously opened by rads_open_pass.
 ! The routine will reset the ncid element of the <P> structure to
 ! indicate that the passfile is closed.
@@ -1428,14 +1489,14 @@ logical, intent(in), optional :: keep
 ! A second call to rads_close_pass without the keep argment can subsequently
 ! deallocate the time, lat and lon elements of the <P> structure.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  P        : Pass structure
 !  keep     : Keep the P%tll matrix (destroy by default)
 !
-! Error code:
+! ERROR CODE
 !  S%error  : rads_noerr, rads_err_nc_close
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer :: ios
 S%error = rads_noerr
 if (P%ncid > 0 .and. nft(nf90_close(P%ncid))) S%error = rads_err_nc_close
@@ -1446,9 +1507,11 @@ endif
 deallocate (P%history, P%flags, P%tll, stat=ios)
 end subroutine rads_close_pass
 
-!***********************************************************************
-!*rads_get_var_by_number -- Read variable (data) from RADS4 file by integer
-!+
+!****if* rads/rads_get_var_by_number
+! SUMMARY
+! Read variable (data) from RADS4 file by integer
+!
+! SYNOPSIS
 recursive subroutine rads_get_var_by_number (S, P, field, data, noedit)
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
@@ -1456,10 +1519,11 @@ integer(fourbyteint), intent(in) :: field
 real(eightbytereal), intent(out) :: data(:)
 logical, intent(in), optional :: noedit
 !
+! PURPOSE
 ! This routine is added for backward compatibility with the field numbers
 ! in RADS3. It functions the same as rads_get_var, except that it
 ! uses the old field number as indicator for the variable.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 character(len=4) :: name
 integer :: i
 logical :: skip_edit
@@ -1486,9 +1550,11 @@ call rads_error (S, rads_err_var, 'No variable with field number "'//name//'" wa
 data(:P%ndata) = nan
 end subroutine rads_get_var_by_number
 
-!***********************************************************************
-!*rads_get_var_by_var -- Read variable (data) from RADS by type(rads_var)
-!+
+!****if* rads/rads_get_var_by_var
+! SUMMARY
+! Read variable (data) from RADS by type(rads_var)
+!
+! SYNOPSIS
 recursive subroutine rads_get_var_by_var (S, P, var, data, noedit)
 use rads_misc
 type(rads_sat), intent(inout) :: S
@@ -1500,7 +1566,7 @@ logical, intent(in), optional :: noedit
 ! This routine is an alternative to rads_get_var_by_name in the sense
 ! that it addresses the variable by a varlist item, like S%sel(i), thus
 ! shortcutting the need to (re)do the search for varinfo.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 logical :: skip_edit
 
 S%error = rads_noerr
@@ -1518,9 +1584,11 @@ endif
 call rads_get_var_common (S, P, var, data(:P%ndata), skip_edit)
 end subroutine rads_get_var_by_var
 
-!***********************************************************************
-!*rads_get_var_by_name -- Read variable (data) from RADS by character
-!+
+!****if* rads/rads_get_var_by_name
+! SUMMARY
+! Read variable (data) from RADS by character
+!
+! SYNOPSIS
 recursive subroutine rads_get_var_by_name (S, P, varname, data, noedit)
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
@@ -1528,9 +1596,10 @@ character(len=*), intent(in) :: varname
 real(eightbytereal), intent(out) :: data(:)
 logical, intent(in), optional :: noedit
 !
+! PURPOSE
 ! This routine loads the data from a single variable <varname>, addressed
 ! by a character string into the buffer <data>.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 type(rads_var), pointer :: var
 integer(fourbyteint) :: l
 logical :: skip_edit
@@ -1557,19 +1626,12 @@ endif
 call rads_get_var_common (S, P, var, data(:P%ndata), skip_edit)
 end subroutine rads_get_var_by_name
 
-!***********************************************************************
-!*rads_get_var_by_name -- Read 2D variable (data) from RADS by character
-!+
 recursive subroutine rads_get_var_by_name_2d (S, P, varname, data, noedit)
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 character(len=*), intent(in) :: varname
 real(eightbytereal), intent(out) :: data(:,:)
 logical, intent(in), optional :: noedit
-!
-! This routine loads the data from a single variable <varname>, addressed
-! by a character string into the buffer <data>.
-!-----------------------------------------------------------------------
 real(eightbytereal), allocatable :: temp(:)
 integer(fourbyteint) :: k
 k = P%ndata
@@ -1581,19 +1643,22 @@ deallocate(temp)
 P%ndata = k
 end subroutine rads_get_var_by_name_2d
 
-!***********************************************************************
-!*rads_get_var_helper -- Helper routine for all rads_get_var_by_* routines
-!+
+!****if* rads/rads_get_var_helper
+! SUMMARY
+! Helper routine for all rads_get_var_by_* routines
+!
+! SYNOPSIS
 logical function rads_get_var_helper (S, P, data)
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(in) :: P
 real(eightbytereal), intent(in) :: data(:)
 !
+! PURPOSE
 ! This routine checks two things:
 ! - If P%ndata <= 0, then return .true.
 ! - If allocated memory is too small, then return .true. and print error
 ! - Else return .false.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 if (P%ndata <= 0) then
 	rads_get_var_helper = .true.
 else if (size(data) < P%ndata) then
@@ -1604,9 +1669,11 @@ else
 endif
 end function rads_get_var_helper
 
-!***********************************************************************
-!*rads_get_var_common -- Read variable (data) from RADS database (common to all)
-!+
+!****if* rads/rads_get_var_common
+! SUMMARY
+! Read variable (data) from RADS database (common to all)
+!
+! SYNOPSIS
 recursive subroutine rads_get_var_common (S, P, var, data, noedit)
 use rads_misc
 type(rads_sat), intent(inout) :: S
@@ -1615,9 +1682,10 @@ type(rads_var), intent(inout) :: var
 real(eightbytereal), intent(out) :: data(:)
 logical, intent(in) :: noedit
 !
+! PURPOSE
 ! This routine is common to all rads_get_var_* routines. It should only
 ! be called from those routines.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 type(rads_varinfo), pointer :: info
 integer :: i
 
@@ -2047,9 +2115,11 @@ end subroutine rads_update_stat
 
 end subroutine rads_get_var_common
 
-!***********************************************************************
-!*rads_read_xml -- Read RADS4 XML file
-!+
+!****f* rads/rads_read_xml
+! SUMMARY
+! Read RADS4 XML file
+!
+! SYNOPSIS
 subroutine rads_read_xml (S, filename)
 use netcdf
 use xmlparse
@@ -2058,6 +2128,7 @@ use rads_misc
 type(rads_sat), intent(inout) :: S
 character(len=*), intent(in) :: filename
 !
+! PURPOSE
 ! This routine parses a RADS4 XML file and fills the <S> struct with
 ! information pertaining to the given satellite and all variable info
 ! encountered in that file.
@@ -2065,14 +2136,14 @@ character(len=*), intent(in) :: filename
 ! The execution terminates on any error, and also on any warning if
 ! fatal = .true.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  filename : XML file name
 !  fatal    : If .true., then all warnings are fatal.
 !
-! Error code:
+! ERROR CODE
 !  S%error  : rads_noerr, rads_err_xml_parse, rads_err_xml_file
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 type(xml_parse) :: X
 integer, parameter :: max_lvl = 20
 character(len=rads_varl) :: tag, name, tags(max_lvl)
@@ -2525,9 +2596,11 @@ end subroutine xmlparse_error
 
 end subroutine rads_read_xml
 
-!***********************************************************************
-!*rads_varptr -- Returns the pointer to a given variable
-!+
+!****if* rads/rads_varptr
+! SUMMARY
+! Returns the pointer to a given variable
+!
+! SYNOPSIS
 function rads_varptr (S, varname, tgt) result (ptr)
 use netcdf
 type(rads_sat), intent(inout) :: S
@@ -2535,6 +2608,7 @@ character(len=*), intent(in) :: varname
 type(rads_var), intent(in), pointer, optional :: tgt
 type(rads_var), pointer :: ptr
 !
+! PURPOSE
 ! This function returns a pointer to the structure of type(rads_var)
 ! pointing to an element of the list of variables S%var.
 !
@@ -2557,15 +2631,15 @@ type(rads_var), pointer :: ptr
 !    - Otherwise: Initialize a new variable, copy the info pointer
 !      from <tgt> and return its pointer
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  varname  : Name of the RADS variable
-!  tgt      : Optional target pointer (see above)
+!  tgt      : (optional) target pointer (see above)
 !  rads_varptr : Pointer to the structure for <varname>
 !
-! Error code:
+! ERROR CODE
 !  S%error  : rads_noerr, rads_err_var
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer(fourbyteint) :: i, n
 type(rads_var), pointer :: temp(:)
 integer(twobyteint) :: field
@@ -2651,15 +2725,18 @@ endif
 
 end function rads_varptr
 
-!***********************************************************************
-!*rads_set_alias -- Set alias to an already defined variable
-!+
+!****f* rads/rads_set_alias
+! SUMMARY
+! Set alias to an already defined variable
+!
+! SYNOPSIS
 subroutine rads_set_alias (S, alias, varname, field)
 use rads_misc
 type(rads_sat), intent(inout) :: S
 character(len=*), intent(in) :: alias, varname
 integer(twobyteint), intent(in), optional :: field(2)
 !
+! PURPOSE
 ! This routine defines an alias to an existing variable, or up to three
 ! variables. When more than one variable is given as target, they will
 ! be addressed one after the other.
@@ -2667,15 +2744,15 @@ integer(twobyteint), intent(in), optional :: field(2)
 ! The alias will need to point to an already existing variable or alias.
 ! Up to three variables can be specified, separated by spaces or commas.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  alias    : New alias for (an) existing variable(s)
 !  varname  : Existing variable name(s)
-!  field    : Optional: new field numbers to associate with alias
+!  field    : (optional) new field numbers to associate with alias
 !
-! Error code:
+! ERROR CODE
 !  S%error  : rads_noerr, rads_err_alias, rads_err_var
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 type(rads_var), pointer :: tgt, src
 integer :: i0, i1, n_alias, l0, l1, l2, i
 character(len=rads_naml), pointer :: long_name
@@ -2746,9 +2823,11 @@ endif
 src%long_name => long_name
 end subroutine rads_set_alias
 
-!***********************************************************************
-!*rads_set_limits -- Set limits on given variable
-!+
+!****f* rads/rads_set_limits
+! SUMMARY
+! Set limits on given variable
+!
+! SYNOPSIS
 subroutine rads_set_limits (S, varname, lo, hi, string, iostat)
 use rads_misc
 type(rads_sat), intent(inout) :: S
@@ -2757,6 +2836,7 @@ real(eightbytereal), intent(in), optional :: lo, hi
 character(len=*), intent(in), optional :: string
 integer(fourbyteint), intent(out), optional :: iostat
 !
+! PURPOSE
 ! This routine set the lower and upper limits for a given variable in
 ! RADS.
 ! The limits can either be set by giving the lower and upper limits
@@ -2765,7 +2845,7 @@ integer(fourbyteint), intent(out), optional :: iostat
 ! In case only one number is given, only the lower or higher bound
 ! (following the separator) is set, the other value is left unchanged.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  varname  : Variable name
 !  lo, hi   : Lower and upper limit
@@ -2773,9 +2853,9 @@ integer(fourbyteint), intent(out), optional :: iostat
 !             or comma or slash.
 !  iostat   : (optional) iostat code from reading string
 !
-! Error code:
+! ERROR CODE
 !  S%error  : rads_noerr, rads_err_var
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 type(rads_var), pointer :: var
 var => rads_varptr (S, varname)
 if (.not.associated(var)) return
@@ -2799,13 +2879,15 @@ else if (var%name == 'flags') then
 endif
 end subroutine rads_set_limits
 
-!***********************************************************************
-!*rads_set_limits_by_flagmask -- Set limits based on flagmask
-!+
+!****if* rads/rads_set_limits_by_flagmask
+! SUMMARY
+! Set limits based on flagmask
+!
+! SYNOPSIS
 subroutine rads_set_limits_by_flagmask (S, limits)
 type(rads_sat), intent(inout) :: S
 real(eightbytereal), intent(inout) :: limits(2)
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer :: i, ios, mask(2), bits(2)
 mask = 0
 where (limits == limits) mask = nint(limits) ! Because it is not guaranteed for every compiler that nint(nan)=0
@@ -2845,14 +2927,17 @@ do i = 1,S%nvar
 enddo
 end subroutine rads_set_limits_by_flagmask
 
-!***********************************************************************
-!*rads_set_region -- Set latitude/longitude limits or distance to point
-!+
+!****f* rads/rads_set_region
+! SUMMARY
+! Set latitude/longitude limits or distance to point
+!
+! SYNOPSIS
 subroutine rads_set_region (S, string)
 use rads_misc
 type(rads_sat), intent(inout) :: S
 character(len=*), intent(in) :: string
 !
+! PURPOSE
 ! This routine set the region for data selection (after the -R option).
 ! The region can either be specified as a box by four values "W/E/S/N",
 ! or as a circular region by three values "E/N/radius". Separators
@@ -2863,15 +2948,15 @@ character(len=*), intent(in) :: string
 ! reading pass data, the distance to the centroid is used as well to
 ! edit out data.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  string   : String of three or four values with separating whitespace.
 !             For rectangular region: W/E/S/N.
 !             For circular region: E/N/radius (radius in degrees).
 !
-! Error code:
+! ERROR CODE
 !  S%error  : rads_noerr, rads_err_var
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 real(eightbytereal) :: r(4), x
 r = nan
 call read_val (string, r, '/')
@@ -2897,24 +2982,27 @@ endif
 call rads_traxxing (S)
 end subroutine rads_set_region
 
-!***********************************************************************
-!*rads_set_format -- Set print format for ASCII output of given variable
-!+
+!****f* rads/rads_set_format
+! SUMMARY
+! Set print format for ASCII output of given variable
+!
+! SYNOPSIS
 subroutine rads_set_format (S, varname, format)
 type(rads_sat), intent(inout) :: S
 character(len=*), intent(in) :: varname, format
 !
+! PURPOSE
 ! This routine set the FORTRAN format specifier of output of a given
 ! variable in RADS.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  varname  : Variable name
 !  format   : FORTRAN format specifier (e.g. 'f10.3')
 !
-! Error code:
+! ERROR CODE
 !  S%error  : rads_noerr, rads_err_var
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 type(rads_var), pointer :: var
 var => rads_varptr(S, varname)
 if (.not.associated(var)) return
@@ -2922,14 +3010,17 @@ var%info%format = format
 var%info%boz_format = (index('bozBOZ',var%info%format(:1)) > 0)
 end subroutine rads_set_format
 
-!***********************************************************************
-!*rads_set_compress -- Set format for binary storage of given variable
-!+
+!****if* rads/rads_set_compress
+! SUMMARY
+! Set format for binary storage of given variable
+!
+! SYNOPSIS
 subroutine rads_set_compress (S, varname, format)
 use netcdf
 type(rads_sat), intent(inout) :: S
 character(len=*), intent(in) :: varname, format
 !
+! PURPOSE
 ! This routine set the format specification for binary storage of a
 ! variable in RADS. The specification has the form: type[,scale[,offset]]
 ! where
@@ -2939,14 +3030,14 @@ character(len=*), intent(in) :: varname, format
 ! - 'offset' is the offset to add to the result when unpacking (optional)
 ! Instead of commas, spaces or slashes can be used as separators.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  varname  : Variable name
 !  format   : Binary storage specification (e.g. int2,1e-3)
 !
-! Error code:
+! ERROR CODE
 !  S%error  : rads_noerr, rads_err_var
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 character(len=len(format)) :: temp
 integer :: i, ios
 type(rads_var), pointer :: var
@@ -2978,26 +3069,29 @@ end select
 read (temp(i+1:), *, iostat=ios) var%info%scale_factor, var%info%add_offset
 end subroutine rads_set_compress
 
-!***********************************************************************
-!*rads_set_quality_flag -- Set quality flag(s) for given variable
-!+
+!****if* rads/rads_set_quality_flag
+! SUMMARY
+! Set quality flag(s) for given variable
+!
+! SYNOPSIS
 subroutine rads_set_quality_flag (S, varname, flag)
 type(rads_sat), intent(inout) :: S
 character(len=*), intent(in) :: varname, flag
 !
+! PURPOSE
 ! This routine set appends <flag> to the variables contained in the set
 ! of variables to check to allow variable <varname> to pass (if <flag> is
 ! not already contained in that set).
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  varname  : Variable name
 !  flag     : Name of the variable that needs to be checked to validate
 !             <varname>.
 !
-! Error code:
+! ERROR CODE
 !  S%error  : rads_noerr, rads_err_var
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 type(rads_var), pointer :: var
 var => rads_varptr(S, varname)
 if (.not.associated(var)) then
@@ -3009,24 +3103,27 @@ else if (index(var%info%quality_flag,flag) == 0) then
 endif
 end subroutine rads_set_quality_flag
 
-!***********************************************************************
-!*rads_long_name_and_units -- Get string of long_name and units (or flag_meanings)
-!+
+!****if* rads/rads_long_name_and_units
+! SUMMARY
+! Get string of long_name and units (or flag_meanings)
+!
+! SYNOPSIS
 subroutine rads_long_name_and_units (var, unit)
 use rads_misc
 type(rads_var), intent(in) :: var
 integer(fourbyteint), optional, intent(in) :: unit
 !
+! PURPOSE
 ! This writes to the output file attached to <unit> the long_name and units (or
 ! flag_meanings) of a variable. The output can be one of the following:
 !  long_name [units]
 !  long_name [bits: flag_meanings]
 !  long_name [values: flag_meanings]
 !
-! Arguments:
+! ARGUMENTS
 !  var      : Pointer to variable
 !  unit     : Fortran output unit (6 = stdout (default), 0 = stderr)
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer :: iunit, i, i0, i1
 iunit = stdout
 if (present(unit)) iunit = unit
@@ -3052,15 +3149,18 @@ write (iunit,550) ']'
 551 format (1x,i0,'=',a)
 end subroutine rads_long_name_and_units
 
-!***********************************************************************
-!*rads_stat_0d -- Print the RADS statistics for a given satellite
-!+
+!****if* rads/rads_stat_0d
+! SUMMARY
+! Print the RADS statistics for a given satellite
+!
+! SYNOPSIS
 subroutine rads_stat_0d (S)
 use rads_time
 type(rads_sat), intent(in) :: S
 !
+! PURPOSE
 ! This is the scalar version of rads_stat.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer(fourbyteint) :: i
 write (rads_log_unit, 700)
 write (rads_log_unit, 710) trim(S%satellite), S%sat, timestamp(), trim(S%command)
@@ -3145,17 +3245,20 @@ do i = 1,size(S)
 enddo
 end subroutine rads_stat_1d
 
-!***********************************************************************
-!*rads_exit -- Exit RADS with error message
-!+
+!****if* rads/rads_exit
+! SUMMARY
+! Exit RADS with error message
+!
+! SYNOPSIS
 subroutine rads_exit (string)
 character(len=*), intent(in) :: string
 !
+! PURPOSE
 ! This routine terminates RADS after printing an error message.
 !
-! Argument:
+! ARGUMENT
 !  string   : Error message
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 character(len=rads_naml) :: progname
 call getarg (0, progname)
 call rads_message (string)
@@ -3163,46 +3266,52 @@ call rads_message ('Use "'//trim(progname)//' --help" for more info')
 call exit (10)
 end subroutine rads_exit
 
-!***********************************************************************
-!*rads_error -- Print error message and store error code
-!+
+!****if* rads/rads_exit
+! SUMMARY
+! Print error message and store error code
+!
+! SYNOPSIS
 subroutine rads_error (S, ierr, string, P)
 type(rads_sat), intent(inout) :: S
 integer(fourbyteint), intent(in) :: ierr
 character(len=*), intent(in) :: string
 type(rads_pass), intent(in), optional :: P
 !
+! PURPOSE
 ! This routine prints an error message and sets the error code.
 ! The message is subpressed when -q is used (rads_verbose < 0)
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  ierr     : Error code
 !  string   : Error message
 !  P        : If used, it will add the pass file name at the end of <string>
 !
-! Error code:
+! ERROR CODE
 !  S%error  : Will be set to ierr when not rads_noerr
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 call rads_message (string, P)
 if (ierr /= rads_noerr) S%error = ierr
 end subroutine rads_error
 
-!***********************************************************************
-!*rads_message -- Print warning message
-!+
+!****if* rads/rads_message
+! SUMMARY
+! Print warning message
+!
+! SYNOPSIS
 subroutine rads_message (string, P)
 use rads_netcdf
 character(len=*), intent(in) :: string
 type(rads_pass), intent(in), optional :: P
 !
+! PURPOSE
 ! This routine prints a message to standard error.
 ! The message is subpressed when -q is used (rads_verbose < 0)
 !
-! Arguments:
+! ARGUMENTS
 !  string   : Error message
 !  P        : If used, it will add the pass file name at the end of <string>
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 if (rads_verbose < 0) then
 	! Remain quiet
 else if (present(P)) then
@@ -3212,20 +3321,23 @@ else
 endif
 end subroutine rads_message
 
-!***********************************************************************
-!*rads_opt_error -- Print error message about failed option scanning
-!+
+!****if* rads/rads_opt_error
+! SUMMARY
+! Print error message about failed option scanning
+!
+! SYNOPSIS
 subroutine rads_opt_error (opt, arg)
 character(len=*), intent(in) :: opt, arg
 !
+! PURPOSE
 ! This routine prints an error message to standard error in case RADS
 ! failed to identify or scan an option on the command line.
 ! The message is subpressed when -q is used (rads_verbose < 0)
 !
-! Arguments:
+! ARGUMENTS
 !  opt      : Command line option
 !  arg      : Argument of the command line option
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 if (opt == ':') then ! Unknown option
 	call rads_message ('Unknown option '//trim(arg)//' skipped')
 else if (opt == '::') then ! Missing required argument
@@ -3239,14 +3351,17 @@ else ! Long option
 endif
 end subroutine rads_opt_error
 
-!***********************************************************************
-!*rads_version -- Print message about current program and version
-!+
+!****if* rads/rads_version
+! SUMMARY
+! Print message about current program and version
+!
+! SYNOPSIS
 function rads_version (description, unit, flag)
 character(len=*), intent(in), optional :: description, flag
 integer(fourbyteint), intent(in), optional :: unit
 logical :: rads_version
 !
+! PURPOSE
 ! This routine prints out a message in one of the following forms,
 ! on the first argument on the command line or the optional argument <flag>.
 ! 1) When first command line argument or <flag> is --version:
@@ -3265,14 +3380,14 @@ logical :: rads_version
 !    No output
 !    Return value is .true.
 !
-! Arguments:
+! ARGUMENTS
 !  description : One-line description of program
 !  unit        : Fortran output unit (6 = stdout (default), 0 = stderr)
 !  flag        : Use string in replacement of first command line argument
 !
-! Return value:
+! RETURN VALUE
 !  rads_version: .false. if output is of type 3, otherwise .true.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer :: iunit
 character(len=rads_naml) :: progname, arg
 call getarg (0, progname)
@@ -3300,18 +3415,21 @@ endif
 1320 format (a,', version ',a)
 end function rads_version
 
-!***********************************************************************
-!*rads_synopsis -- Print general usage information for all RADS programs
-!+
+!****if* rads/rads_synopsis
+! SUMMARY
+! Print general usage information for all RADS programs
+!
+! SYNOPSIS
 subroutine rads_synopsis (unit)
 integer(fourbyteint), intent(in), optional :: unit
 !
+! PURPOSE
 ! This routine prints out the usage information that is common to all
 ! RADS programs.
 !
-! Arguments:
+! ARGUMENTS
 !  unit        : Fortran output unit (6 = stdout (default), 0 = stderr)
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer :: iunit
 character(len=rads_naml) :: progname
 call getarg (0, progname)
@@ -3363,15 +3481,18 @@ write (iunit, 1300) trim(progname)
 '  --version                 Version info')
 end subroutine rads_synopsis
 
-!***********************************************************************
-!*rads_get_phase -- Get pointer to satellite phase info
-!+
+!****if* rads/rads_get_phase
+! SUMMARY
+! Get pointer to satellite phase info
+!
+! SYNOPSIS
 function rads_get_phase (S, name, allow_new) result (phase)
 type(rads_sat), intent(inout) :: S
 character(len=*), intent(in) :: name
 logical, intent(in), optional :: allow_new
 type(rads_phase), pointer :: phase
 !
+! PURPOSE
 ! Create pointer to the proper phase definitions for phase <name>.
 ! This routine can also create new phase definitions when <allow_new> is
 ! set to .true.
@@ -3380,11 +3501,11 @@ type(rads_phase), pointer :: phase
 ! used. However the path to the directory with netCDF files will use the
 ! entire phase name.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  name     : Name of phase
 !  allow_new: Allow the creation of a new phase
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer(fourbyteint) :: i, n
 type(rads_phase), pointer :: temp(:)
 nullify (phase)
@@ -3422,24 +3543,27 @@ phase => S%phases(n)
 phase%dataroot = trim(S%dataroot)//'/'//trim(S%tree)//'/'//trim(name)
 end function rads_get_phase
 
-!***********************************************************************
-!*rads_time_to_cycle -- Determine cycle number for given epoch
-!+
+!****if* rads/rads_time_to_cycle
+! SUMMARY
+! Determine cycle number for given epoch
+!
+! SYNOPSIS
 function rads_time_to_cycle (S, time)
 type(rads_sat), intent(inout) :: S
 real(eightbytereal), intent(in) :: time
 integer(fourbyteint) :: rads_time_to_cycle
 !
+! PURPOSE
 ! Given an epoch <time> in seconds since 1985, determine the cycle in
 ! which that epoch falls.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  time     : Time in seconds since 1985
 !
-! Return value:
+! RETURN VALUE
 !  rads_time_to_cycle : Cycle number in which <time> falls
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer :: i, j, n
 real(eightbytereal) :: d, t0, x
 
@@ -3470,7 +3594,8 @@ end function rads_time_to_cycle
 
 !***********************************************************************
 !*rads_cycle_to_time -- Determine start or end time of cycle
-!+
+!
+! SYNOPSIS
 function rads_cycle_to_time (S, cycle)
 type(rads_sat), intent(inout) :: S
 integer(fourbyteint), intent(in) :: cycle
@@ -3478,13 +3603,13 @@ real(eightbytereal) :: rads_cycle_to_time
 !
 ! Given a cycle number, estimate the start time of that cycle.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  cycle    : Cycle number
 !
-! Return value:
+! RETURN VALUE
 !  rads_cycle_to_time : Start time of <cycle> in seconds since 1985
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer :: i, cc, pp
 real(eightbytereal) :: d, t0
 ! Find the correct phase
@@ -3509,13 +3634,16 @@ else
 endif
 end function rads_cycle_to_time
 
-!***********************************************************************
-!*rads_traxxing -- Determine which tracks cross an area
-!+
+!****if* rads/rads_traxxing
+! SUMMARY
+! Determine which tracks cross an area
+!
+! SYNOPSIS
 subroutine rads_traxxing (S)
 use rads_misc
 type(rads_sat), intent(inout) :: S
 !
+! PURPOSE
 ! Given an area and a certain satellite in a low circular orbit with
 ! known inclination and orbital period, the question is: which tracks
 ! cross the area?
@@ -3530,9 +3658,9 @@ type(rads_sat), intent(inout) :: S
 ! representing the lower and upper bounds for the longitude of the
 ! equator passage for ascending and descending tracks, resp.
 !
-! Argument:
+! ARGUMENT
 !  S        : Satellite/mission dependent structure
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 real(eightbytereal) :: u(2),l(2),latmax
 integer(fourbyteint) :: i
 
@@ -3575,23 +3703,26 @@ if (rads_verbose >= 3) write (*,'(a,4f12.6)') "Eqlonlim = ",S%eqlonlim
 
 end subroutine rads_traxxing
 
-!***********************************************************************
-!*rads_progress_bar -- Print and update progress of scanning cycles/passes
-!+
+!****if* rads/rads_progress_bar
+! SUMMARY
+! Print and update progress of scanning cycles/passes
+!
+! SYNOPSIS
 subroutine rads_progress_bar (S, P, nselpass)
 type(rads_sat), intent(in) :: S
 type(rads_pass), intent(in) :: P
 integer(fourbyteint), intent(in) :: nselpass
 !
+! PURPOSE
 ! This routine prints information on the progress of cycling through
 ! cycles and passes of satellite data. If used, it should preferably be
 ! called before every call of rads_close_pass.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  P        : Pass structure
 !  nselpass : Number of measurements selected in this pass
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer :: pos_old = 50, lin_old = -1, cycle_old = -1, pos, lin, i
 
 ! Formats for printing progress report
@@ -3637,14 +3768,17 @@ lin_old = lin
 
 end subroutine rads_progress_bar
 
-!***********************************************************************
-!*rads_parse_r_option -- Parse the -r option
-!+
+!****if* rads/rads_parse_r_option
+! SUMMARY
+! Parse the -r option
+!
+! SYNOPSIS
 subroutine rads_parse_r_option (S, opt, arg, idx)
 type(rads_sat), intent(in) :: S
 character(len=*), intent(in) :: opt, arg
 integer(fourbyteint), intent(out) :: idx
 !
+! PURPOSE
 ! This routine is used generally with the -r option, but can also be
 ! associated with any other command line option.
 ! The routine parses the argument of the option and returns the index
@@ -3657,7 +3791,13 @@ integer(fourbyteint), intent(out) :: idx
 ! 1 <= integer <= nsel    value of integer
 ! name of variable on -V  positional index of variable on -V option
 ! any other value         quit program with error message
-!-----------------------------------------------------------------------
+!
+! ARGUMENTS
+!  S        : Satellite/mission dependent structure
+!  opt      : Command line option name ('r' or 'reject-on-nan')
+!  arg      : Command line option argument
+!  idx      : Index value
+!****-------------------------------------------------------------------
 integer(fourbyteint) :: i
 select case (arg)
 case ('n', 'any')
@@ -3681,9 +3821,11 @@ case default
 end select
 end subroutine rads_parse_r_option
 
-!***********************************************************************
-!*rads_create_pass -- Create RADS pass (data) file
-!+
+!****if* rads/rads_create_pass
+! SUMMARY
+! Create RADS pass (data) file
+!
+! SYNOPSIS
 subroutine rads_create_pass (S, P, ndata, n_hz, n_wvf, name)
 use netcdf
 use rads_netcdf
@@ -3693,6 +3835,7 @@ type(rads_pass), intent(inout) :: P
 integer(fourbyteint), intent(in), optional :: ndata, n_hz, n_wvf
 character(len=*), intent(in), optional :: name
 !
+! PURPOSE
 ! This routine creates a new RADS netCDF data file. If one of the same
 ! file name already exists, it is removed.
 ! The file is initialized with the appropriate global attributes, and
@@ -3720,7 +3863,7 @@ character(len=*), intent(in), optional :: name
 ! the pass (cycle, pass, equator_time, equator_lon). Upon return, the
 ! P%ncid and P%dimid will be updated.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  P        : Pass structure
 !  ndata    : Length of the primary ('time') dimension (use 0 for unlimited)
@@ -3728,9 +3871,9 @@ character(len=*), intent(in), optional :: name
 !  n_wvf    : Number of waveform gates
 !  name     : Name of directory in which to store pass file, or file name
 !
-! Error codes:
+! ERROR CODE
 !  S%error  : rads_noerr, rads_err_nc_create
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer(fourbyteint) :: i, l, e
 logical :: exist
 real(eightbytereal), parameter :: ellipsoid_axis = 6378136.3d0, ellipsoid_flattening = 1d0/298.257d0
@@ -3808,15 +3951,18 @@ if (e /= 0) call rads_error (S, rads_err_nc_create, 'Error writing global attrib
 call rads_put_history (S, P)
 end subroutine rads_create_pass
 
-!***********************************************************************
-!*rads_put_passinfo -- Write pass info to RADS data file
+!****if* rads/rads_put_passinfo
+! SUMMARY
+! Write pass info to RADS data file
 !
+! SYNOPSIS
 subroutine rads_put_passinfo (S, P)
 use netcdf
 use rads_time
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 !
+! PURPOSE
 ! This routine writes cycle and pass number, equator longitude and time,
 ! and start and end time of the pass to the global attributes in a RADS
 ! pass file.
@@ -3824,10 +3970,10 @@ type(rads_pass), intent(inout) :: P
 ! Equator longitude is written in the range 0-360 and is truncated after
 ! six decimals.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  P        : Pass structure
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer :: e
 character(len=26) :: date(3)
 e = 0
@@ -3842,15 +3988,18 @@ nf90_put_att (P%ncid, nf90_global, 'last_meas_time', date(3))
 if (e /= 0) call rads_error (S, rads_err_nc_create, 'Error writing global attributes to file', P)
 end subroutine rads_put_passinfo
 
-!***********************************************************************
-!*rads_put_history -- Write history to RADS data file
+!****if* rads/rads_put_history
+! SUMMARY
+! Write history to RADS data file
 !
+! SYNOPSIS
 subroutine rads_put_history (S, P)
 use netcdf
 use rads_time
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 !
+! PURPOSE
 ! This routine writes a datestamp and the command line to the global
 ! attribute 'history', followed by any possible previous history.
 !
@@ -3865,10 +4014,10 @@ type(rads_pass), intent(inout) :: P
 !
 ! Note that P%history will not be updated.
 !
-! Arguments:
+! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  P        : Pass structure
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer :: e, i
 character(len=8) :: log
 
@@ -3892,9 +4041,6 @@ enddo
 e = nf90_put_att (P%ncid, nf90_global, 'original', P%original)
 end subroutine rads_put_history
 
-!***********************************************************************
-!*rads_def_var_by_var_0d -- Define variable to be written to RADS data file
-!
 subroutine rads_def_var_by_var_0d (S, P, var, nctype, scale_factor, add_offset, ndims)
 use netcdf
 use rads_netcdf
@@ -3903,9 +4049,6 @@ type(rads_pass), intent(inout) :: P
 type(rads_var), intent(in) :: var
 integer(fourbyteint), intent(in), optional :: nctype, ndims
 real(eightbytereal), intent(in), optional :: scale_factor, add_offset
-!
-! Zero-dimensional version of rads_def_var.
-!-----------------------------------------------------------------------
 type(rads_varinfo), pointer :: info
 integer(fourbyteint) :: e, n, xtype
 integer :: j=0, j0, j1

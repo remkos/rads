@@ -2,6 +2,7 @@
 *.aux
 *.blg
 *.cache
+*.gz
 *.idx
 *.ilg
 *.ind
@@ -46,6 +47,8 @@ devel/rads_gen_j3
 devel/rads_gen_reaper
 devel/rads_gen_saral
 devel/rads_gen_tx_rgdr
+doc/manuals/sub
+rads_config.tex
 src/config.f90
 src/rads-config
 src/rads2adr
@@ -70,5 +73,3 @@ src/radsxoconv
 src/radsxogen
 src/radsxolist
 src/radsxostat
-rads4_data_manual.synctex.gz
-rads_config.tex

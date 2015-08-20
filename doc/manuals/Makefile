@@ -17,7 +17,9 @@ include ../../config.mk
 PDFLATEX = pdflatex
 BIBTEX = bibtex
 MAKEINDEX = makeindex
-MAN = rads4_data_manual.pdf
+ROBODOC = robodoc
+MAN = rads4_data_manual.pdf rads4_software_manual.pdf
+SUB	= sub/rads_f90.tex
 
 #-----------------------------------------------------------------------
 # What to create?
@@ -25,10 +27,19 @@ MAN = rads4_data_manual.pdf
 
 all:	$(MAN)
 
-%.pdf:	%.tex
+rads4_software_manual.pdf:	%.pdf:	%.tex $(SUB)
+	$(PDFLATEX) $*
+	$(PDFLATEX) $*
+	$(MAKEINDEX) $*
+	$(PDFLATEX) $*
+
+rads4_data_manual.pdf:	%.pdf:	%.tex
 	$(PDFLATEX) $*
 	$(BIBTEX) $*
 	$(PDFLATEX) $*
 	$(PDFLATEX) $*
 	$(MAKEINDEX) $*
 	$(PDFLATEX) $*
+
+sub/%_f90.tex:	../../src/%.f90
+	$(ROBODOC) --src ../../src/$*.f90 --doc sub/$*_f90 --singlefile

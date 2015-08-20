@@ -1,0 +1,92 @@
+%-----------------------------------------------------------------------
+% Copyright (c) 2011-2015  Remko Scharroo
+% See LICENSE.TXT file for copying and redistribution conditions.
+%
+% This program is free software: you can redistribute it and/or modify
+% it under the terms of the GNU Lesser General Public License as
+% published by the Free Software Foundation, either version 3 of the
+% License, or (at your option) any later version.
+%
+% This program is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU Lesser General Public License for more details.
+%-----------------------------------------------------------------------
+
+\documentclass[a4paper,10pt,openany,natbib,nomargin]{thesis}
+\usepackage{palatino}
+\usepackage{newpxmath}
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage{rads}
+\usepackage{makeidx}
+\usepackage{url}\urlstyle{sf}
+\usepackage{rotating}
+\usepackage{placeins}
+\bibliographystyle{agu08}
+\input{rads_config}
+\setlength{\parindent}{0in}
+\setlength{\parskip}{.08in}
+
+\makeindex
+
+\title{RADS version \vernum \\ ~ \\
+Software Manual}
+\author{Remko Scharroo}
+\date{\today}
+
+\DeclareUrlCommand\cmd{\urlstyle{tt}}
+\renewcommand\deg{\ensuremath{^\circ}}
+\newcommand\prog[1]{\url{#1}\index{programs!#1@\protect\url{#1}}}
+\DeclareUrlCommand\code{\urlstyle{tt}}
+\newcommand\Code[1]{\textbf{\code{#1}}}
+\newcommand\CODE[1]{\Code{\emph{#1}}}
+\newcommand\file[1]{\url{#1}\index{files!#1@\protect\url{#1}}}
+\newcommand\cc[1]{\multicolumn{1}{c}{\em #1}}
+\newcommand\var[1]{\url{#1}\index{variables!#1@\protect\url{#1}}}
+\newcommand\alias[1]{\emph{alias of} \var{#1}}
+\setcounter{topnumber}{3}
+\renewcommand{\topfraction}{.9}
+\setcounter{bottomnumber}{2}
+\renewcommand{\bottomfraction}{.7}
+\setcounter{totalnumber}{4}
+\renewcommand{\textfraction}{.1}
+\renewcommand{\floatpagefraction}{.8}
+\let\SECTION\subsection
+\newcommand{\script}[2][scriptsize]{\begingroup\csname #1\endcsname\verbatiminput{#2}\endgroup}
+
+\newenvironment{vartable}{
+\begin{table}[ht]
+\small
+\begin{tabular}{lrllllr}
+\hline
+Variable & field & name & units & sat & range & note \\
+\hline
+}{
+\hline
+\end{tabular}
+\end{table}
+}
+
+\newenvironment{smallverb}{\small\verbatim}{\endverbatim}
+\newenvironment{notes}[1][Notes:]{\FloatBarrier\paragraph{#1}\begin{enumerate}}{\end{enumerate}}
+
+\begin{document}
+\makeatletter
+\renewcommand{\tiny}{\@setfontsize\tiny{5.8pt}{6.5}}
+\makeatother
+
+\maketitle
+\tableofcontents
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{RADS software installation}
+\chapter{RADS commands}
+\chapter{RADS code}
+\section{Module rads}
+\input{sub/rads_f90}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\bibliography{altim}
+\printindex
+\end{document}
+
