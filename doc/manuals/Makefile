@@ -19,7 +19,8 @@ BIBTEX = bibtex
 MAKEINDEX = makeindex
 ROBODOC = robodoc
 MAN = rads4_data_manual.pdf rads4_software_manual.pdf
-SUB	= sub/rads_f90.tex
+SUB = sub/rads.tex sub/rads_geo.tex sub/rads_grid.tex sub/rads_math.tex \
+	sub/rads_misc.tex sub/rads_netcdf.tex sub/rads_time.tex
 
 #-----------------------------------------------------------------------
 # What to create?
@@ -48,8 +49,8 @@ rads4_data_manual.pdf:	%.pdf:	%.tex
 # How to create LaTeX documentation from source code
 #-----------------------------------------------------------------------
 
-sub/%_f90.tex:	../../src/%.f90
-	$(ROBODOC) --src ../../src/$*.f90 --doc sub/$*_f90 --singlefile
+sub/%.tex:	../../src/%.f90
+	$(ROBODOC) --src ../../src/$*.f90 --doc sub/$* --singlefile
 
 #-----------------------------------------------------------------------
 # How to cleanup
