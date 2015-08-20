@@ -49,7 +49,7 @@ LITTLE_ENDIAN = @LITTLE_ENDIAN@
 # Environments for developers only
 #-----------------------------------------------------------------------
 ALTIM = @ALTIM@
-DEVEL = @DEVEL@
+DEVEL_DIRS = @DEVEL_DIRS@
 DEVEL_OBJS = @DEVEL_OBJS@
 LAPACK_LIB = @LAPACK_LIB@
 
@@ -70,10 +70,6 @@ FFLAGS = @FCFLAGS@@DEVEL_FLAGS@ -I../include @MOD_FLAG@../src $(NETCDF_INC)
 #-----------------------------------------------------------------------
 # Special rules
 #-----------------------------------------------------------------------
-# .tex and .pdf rules
-%.pdf:	%.tex
-	pdflatex $<
-
 # .f90 rules
 %.o:	%.f90
 	$(COMPILE.f) $(OUTPUT_OPTION) $<

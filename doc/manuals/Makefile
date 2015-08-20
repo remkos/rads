@@ -27,6 +27,9 @@ SUB	= sub/rads_f90.tex
 
 all:	$(MAN)
 
+install:	all
+	$(INSTALL_DATA) $(MAN) $(docdir)
+
 rads4_software_manual.pdf:	%.pdf:	%.tex $(SUB)
 	$(PDFLATEX) $*
 	$(PDFLATEX) $*
@@ -41,5 +44,18 @@ rads4_data_manual.pdf:	%.pdf:	%.tex
 	$(MAKEINDEX) $*
 	$(PDFLATEX) $*
 
+#-----------------------------------------------------------------------
+# How to create LaTeX documentation from source code
+#-----------------------------------------------------------------------
+
 sub/%_f90.tex:	../../src/%.f90
 	$(ROBODOC) --src ../../src/$*.f90 --doc sub/$*_f90 --singlefile
+
+#-----------------------------------------------------------------------
+# How to cleanup
+#-----------------------------------------------------------------------
+
+clean:
+	$(RM) *.aux *.blg *.idx *.ilg *.ind *.log *.gz *.toc
+spotles:	clean
+	$(RM) rads_config.tex

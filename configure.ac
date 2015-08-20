@@ -176,18 +176,18 @@ AC_MSG_RESULT([$opt])
 
 if test "x$enable_devel" = "xno"; then
 	ALTIM=
-	DEVEL=
+	DEVEL_DIRS=
 	DEVEL_OBJS=
 	DEVEL_FLAGS=
 	INSTALL_C=
 else
-	DEVEL=devel
+	DEVEL_DIRS=devel doc/manuals
 	DEVEL_OBJS='${ALTIM}/src/rssubs/tpj_subs.o ${ALTIM}/src/rssubs/solar_subs.o'
 	DEVEL_FLAGS=" -I../devel $MOD_FLAG"'${ALTIM}/include'
 	INSTALL_C=" -C"
 fi
 AC_SUBST(ALTIM)
-AC_SUBST(DEVEL)
+AC_SUBST(DEVEL_DIRS)
 AC_SUBST(DEVEL_OBJS)
 AC_SUBST(DEVEL_FLAGS)
 

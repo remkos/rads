@@ -15,7 +15,7 @@
 #
 # This Makefile provides the following targets:
 # all      : Compile code
-# install  : Install executables and scripts
+# install  : Install programs and documentation
 # clean    : Remove compiled code
 # spotless : Remove compiled code and configuration files
 # gitclean : Remove all files not in git repository
@@ -29,7 +29,7 @@ include config.mk
 
 CONFIG_IN = config.mk.in src/rads-config.in doc/manuals/rads_config.tex.in
 CONFIG    = $(CONFIG_IN:.in=)
-SUBDIRS   = src conf $(DEVEL)
+SUBDIRS   = src conf $(DEVEL_DIRS)
 
 .PHONY:	$(SUBDIRS)
 
@@ -38,8 +38,12 @@ SUBDIRS   = src conf $(DEVEL)
 #-----------------------------------------------------------------------
 
 all install clean spotless test::	$(CONFIG) $(SUBDIRS)
+
 $(SUBDIRS):
 	$(MAKE) $(MFLAGS) -C $@ $(MAKECMDGOALS)
+
+install::
+	$(INSTALL_DATA) doc/manuals/*.pdf $(docdir)
 
 clean spotless::
 	$(RM) $(CONFIG)
