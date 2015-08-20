@@ -1,4 +1,4 @@
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 ! Copyright (c) 2011-2015  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
@@ -11,7 +11,7 @@
 ! but WITHOUT ANY WARRANTY; without even the implied warranty of
 ! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ! GNU Lesser General Public License for more details.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 
 module rads_math
 use typesizes
@@ -26,20 +26,23 @@ real(eightbytereal), parameter, private :: nan = transfer ((/not(0_fourbyteint),
 
 contains
 
-!***********************************************************************
-!*math_push -- Put new buffer on top of stack
-!+
+!****f* rads_math/math_push
+! SUMMARY
+! Put new buffer on top of stack
+!
+! SYNOPSIS
 subroutine math_push (n, top)
 integer(fourbyteint) :: n
 type(math_ll), pointer :: top
 !
+! PURPOSE
 ! This routine adds a new item to the top of the linked list of math
 ! buffers.
 !
-! Arguments:
+! ARGUMENTS
 !   n     : Number of elements for new data buffer
 !   top   : Pointer to the top of the stack
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 type(math_ll), pointer :: temp
 allocate (temp)
 allocate (temp%data(n))
@@ -47,18 +50,21 @@ temp%prev => top
 top => temp
 end subroutine math_push
 
-!***********************************************************************
-!*math_pop -- Remove buffer from top of stack
-!+
+!****f* rads_math/math_pop
+! SUMMARY
+! Remove buffer from top of stack
+!
+! SYNOPSIS
 subroutine math_pop (top)
 type(math_ll), pointer :: top
 !
+! PURPOSE
 ! This routine removes the item on the top of the linked list of math
 ! buffers.
 !
-! Argument:
+! ARGUMENT
 !   top   : Pointer to the top of the stack
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 type(math_ll), pointer :: temp
 if (.not.associated(top)) return
 temp => top%prev
@@ -67,9 +73,11 @@ deallocate (top)
 top => temp
 end subroutine math_pop
 
-!***********************************************************************
-!*math_eval -- Evaluate math command or value
-!+
+!****f* rads_math/math_eval
+! SUMMARY
+! Evaluate math command or value
+!
+! SYNOPSIS
 function math_eval (string, n, top)
 use rads_misc
 character(len=*), intent(in) :: string
@@ -77,14 +85,14 @@ integer(fourbyteint), intent(in) :: n
 type(math_ll), pointer, intent(inout) :: top
 integer(fourbyteint) :: math_eval
 !
-! Arguments:
+! ARGUMENTS
 !  string : math command or value
 !  n      : number of elements in data buffer
 !  top    : Pointer to top of the stack
 !
-! Returned value:
+! RETURN VALUE
 !  math_eval : 0 = no error, -1 = no matching command
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 type(math_ll), pointer :: temp
 real(eightbytereal) :: x, y, z, w
 real(eightbytereal), parameter :: pi = 4d0*atan(1d0), d2r = pi/180d0, r2d = 180d0/pi

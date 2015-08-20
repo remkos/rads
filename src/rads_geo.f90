@@ -1,4 +1,4 @@
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 ! Copyright (c) 2011-2015  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
@@ -11,21 +11,24 @@
 ! but WITHOUT ANY WARRANTY; without even the implied warranty of
 ! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ! GNU Lesser General Public License for more details.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 
 module rads_geo
 use typesizes
 
 contains
 
-!***********************************************************************
-!*checklon -- Convert and verify longitude
-!+
+!****f* rads_geo/checklon
+! SUMMARY
+! Convert and verify longitude
+!
+! SYNOPSIS
 function checklon (lon_bounds, lon)
 real(eightbytereal), intent(in) :: lon_bounds(2)
 real(eightbytereal), intent(inout) :: lon
 logical :: checklon
 !
+! PURPOSE
 ! This function converts the logitude <lon> (in degrees) to within limits
 ! <lon_bounds>, where lon_bounds(1) < lon_bounds(2). If lon is not within those
 ! boundaries, checklon is set to .true.
@@ -34,11 +37,11 @@ logical :: checklon
 !
 ! If either of the limits is NaN, no wrapping and no check is performed.
 !
-! Arguments:
+! ARGUMENTS
 !  lon_bounds : longitude limits (degrees)
 !  lon        : longitude (degrees)
 !  checklon   : .true. if lon is outside limits, .false. otherwise.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 if (any(lon_bounds /= lon_bounds)) then
 	checklon = .false.
 	return
@@ -47,13 +50,16 @@ lon = lon_bounds(1) + modulo (lon-lon_bounds(1),360d0)
 checklon = (lon > lon_bounds(2))
 end function checklon
 
-!***********************************************************************
-!*sfdist -- Spherical distance between two points
-!+
+!****f* rads_geo/sfdist
+! SUMMARY
+! Spherical distance between two points
+!
+! SYNOPSIS
 function sfdist (lat0, lon0, lat1, lon1)
 real(eightbytereal), intent(in) :: lat0, lon0, lat1, lon1
 real(eightbytereal) :: sfdist
 !
+! PURPOSE
 ! Compute spherical distance between two points of given geocentric
 ! latitude and longitude. All angles are in radians.
 !
@@ -62,16 +68,16 @@ real(eightbytereal) :: sfdist
 ! distances, but only has inaccuracies determining distances to
 ! antipodal points.
 !
-! References:
-! - R.W. Sinnott, "Virtues of the Haversine", Sky and Telescope,
+! REFERENCES
+! * R.W. Sinnott, "Virtues of the Haversine", Sky and Telescope,
 !   vol. 68, no. 2, p. 159, 1984.
-! - http://en.wikipedia.org/wiki/Great-circle_distance
+! * http://en.wikipedia.org/wiki/Great-circle_distance
 !
-! Arguments:
-!  lat0, lon0 : Geocentic latitude and longitude of one point (rad).
-!  lat1, lon1 : Geocentic latitude and longitude of other point (rad).
+! ARGUMENTS
+!  lat0, lon0 : Geocentic latitude and longitude of one point (rad)
+!  lat1, lon1 : Geocentic latitude and longitude of other point (rad)
 !  sfdist     : Spherical distance in radians.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 real(eightbytereal) :: s
 s = sin((lat0-lat1)/2d0)**2 + cos(lat0)*cos(lat1)*sin((lon0-lon1)/2d0)**2
 sfdist = 2d0*asin(sqrt(s))

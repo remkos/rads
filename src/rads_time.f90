@@ -1,4 +1,4 @@
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 ! Copyright (c) 2011-2015  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
@@ -11,13 +11,13 @@
 ! but WITHOUT ANY WARRANTY; without even the implied warranty of
 ! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ! GNU Lesser General Public License for more details.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 
 module rads_time
 
-!***********************************************************************
-!*sec85ymdhms -- Convert SEC85 to YY, MM, DD, HH, MN, SS
-!+
+!****f* rads_time/sec85ymdhms -- Convert SEC85 to YY, MM, DD, HH, MN, SS
+!
+! SYNTAX
 ! pure subroutine sec85ymdhms (sec, yy, mm, dd, hh, mn, ss)
 ! use typesizes
 ! real(eightbytereal) <or> integer(fourbyteint), intent(in) :: sec
@@ -31,7 +31,7 @@ module rads_time
 ! integer. The return value for <ss> will be likewise a double or an
 ! integer.
 !
-! Arguments:
+! ARGUMENTS
 !  sec : Seconds since 1 Jan 1985 (double float or integer)
 !  yy  : 4-digit year (between 1901 and 2099)
 !  mm  : Month
@@ -39,16 +39,16 @@ module rads_time
 !  hh  : Hours
 !  mn  : Minutes
 !  ss  : Seconds (double float or integer)
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 private :: sec85ymdhms_dble, sec85ymdhms_int4
 interface sec85ymdhms
 	module procedure sec85ymdhms_dble
 	module procedure sec85ymdhms_int4
 end interface sec85ymdhms
 
-!***********************************************************************
-!*strf1985f -- Construct date string from seconds since 1985
-!+
+!****f* rads_time/strf1985f -- Construct date string from seconds since 1985
+!
+! SYNTAX
 ! elemental function strf1985f (sec, sep, frac)
 ! use typesizes
 ! real(eightbytereal) <or> integer(fourbyteint), intent(in) :: sec
@@ -63,13 +63,13 @@ end interface sec85ymdhms
 ! where 'x' is a separator character given by the optional argument
 ! <sep> (default is a space)
 !
-! Arguments:
+! ARGUMENTS
 !  sec       : Seconds since 1.0 Jan 1985 (double float or integer)
 !  sep       : (Optional) Separator character (default is a space)
 !
-! Return value:
+! RETURN VALUE
 !  strf1985f : Character string of time
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 private :: strf1985f_dble, strf1985f_int4
 interface strf1985f
 	module procedure strf1985f_dble
@@ -78,9 +78,9 @@ end interface strf1985f
 
 contains
 
-!***********************************************************************
-!*ymd2mjd -- Convert YY, MM and DD to MJD
-!+
+!****f* rads_time/ymd2mjd -- Convert YY, MM and DD to MJD
+!
+! SYNOPSIS
 pure subroutine ymd2mjd (yy, mm, dd, mjd)
 use typesizes
 integer(fourbyteint), intent(in) :: yy, mm, dd
@@ -98,12 +98,12 @@ integer(fourbyteint), intent(out) :: mjd
 ! This routine can also be used to convert year and day-of-year to
 ! MJD by setting the month number to 1.
 !
-! Arguments:
+! ARGUMENTS
 !  yy  : Year (either as 2 digits or 4 digits)
 !  mm  : Month
 !  dd  : Day (or day-of-year)
 !  mjd : Modified Julian Day
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer(fourbyteint), parameter :: mjd1901 = 15385 ! 1 Jan 1901
 integer(fourbyteint), parameter :: cal(0:13) = &
 	(/-31,0,31,59,90,120,151,181,212,243,273,304,334,365/)
@@ -120,8 +120,9 @@ mjd = mjd1901 + j*365 + j/4 + cal(mm) + (dd - 1)
 if (modulo(yy,4) == 0 .and. mm > 2) mjd = mjd + 1
 end subroutine ymd2mjd
 
-!*mjd2ymd -- Convert MJD to YY, MM and DD
-!+
+!****f* rads_time/mjd2ymd -- Convert MJD to YY, MM and DD
+!
+! SYNOPSIS
 pure subroutine mjd2ymd (mjd, yy, mm, dd)
 use typesizes
 integer(fourbyteint), intent(in) :: mjd
@@ -131,12 +132,12 @@ integer(fourbyteint), intent(out) :: yy, mm, dd
 !
 ! This routine works only for the years 1901 through 2099.
 !
-! Arguments:
+! ARGUMENTS
 !  mjd : Modified Julian Day
 !  yy  : 4-digit year (between 1901 and 2099)
 !  mm  : Month
 !  dd  : Day (or day-of-year when no <mm> is given)
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer (fourbyteint) :: leap
 integer(fourbyteint), parameter :: cal(0:13,0:1) = &
 	reshape((/-31,0,31,59,90,120,151,181,212,243,273,304,334,365, &
@@ -152,23 +153,24 @@ if (dd > cal(mm+1,leap)) mm = mm + 1
 dd = dd - cal(mm,leap)
 end subroutine mjd2ymd
 
-!***********************************************************************
-!*mjd2yd -- Convert MJD to YY and DDD
-!+
+!****f* rads_time/mjd2yd -- Convert MJD to YY and DDD
+!
+! SYNOPSIS
 pure subroutine mjd2yd (mjd, yy, ddd)
 use typesizes
 integer(fourbyteint), intent(in) :: mjd
 integer(fourbyteint), intent(out) :: yy, ddd
 !
+! PURPOSE
 ! Converts Modified Julian Date to year and day-of-year.
 !
 ! This routine works only for the years 1901 through 2099.
 !
-! Arguments:
+! ARGUMENTS
 !  mjd : Modified Julian Day
 !  yy  : 4-digit year (between 1901 and 2099)
 !  ddd : Day-of-year
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer (fourbyteint) :: j
 integer(fourbyteint), parameter :: mjd1901 = 15385 ! 1 Jan 1901
 ddd = mjd - mjd1901 ! Number of days since 1 Jan 1901
@@ -177,17 +179,19 @@ yy = j + 1901
 ddd = ddd - j*365 - j/4 + 1 ! Day of year
 end subroutine mjd2yd
 
-!*sec85ymdhms_dble -- Convert SEC85 to YY, MM, DD, HH, MN, SS
-!+
+!****if* rads_time/sec85ymdhms_dble -- Convert SEC85 to YY, MM, DD, HH, MN, SS
+!
+! SYNOPSIS
 pure subroutine sec85ymdhms_dble (sec, yy, mm, dd, hh, mn, ss)
 use typesizes
 real(eightbytereal), intent(in) :: sec
 integer(fourbyteint), intent(out) :: yy, mm, dd, hh, mn
 real(eightbytereal), intent(out) :: ss
 !
+! PURPOSE
 ! Converts SEC85 (seconds since 1985-01-01 00:00:00) to year, month,
 ! day, hours, minutes, and (floating point) seconds.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 real(eightbytereal) :: tt
 ! First split off the day part
 dd = floor(sec/86400d0)
@@ -200,9 +204,9 @@ mn = floor(tt/60d0)
 ss = tt - mn * 60
 end subroutine sec85ymdhms_dble
 
-!***********************************************************************
-!*sec85ymdhms_int -- Convert SEC85 to YY, MM, DD, HH, MN, SS
-!+
+!****if* rads_time/sec85ymdhms_int -- Convert SEC85 to YY, MM, DD, HH, MN, SS
+!
+! SYNOPSIS
 pure subroutine sec85ymdhms_int4 (sec, yy, mm, dd, hh, mn, ss)
 use typesizes
 integer(fourbyteint), intent(in) :: sec
@@ -210,7 +214,7 @@ integer(fourbyteint), intent(out) :: yy, mm, dd, hh, mn, ss
 !
 ! Converts SEC85 (seconds since 1985-01-01 00:00:00) to year, month,
 ! day, hours, minutes, and (floating point) seconds.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer(fourbyteint) :: tt
 ! First split off the day part
 dd = sec / 86400
@@ -223,15 +227,15 @@ mn = tt / 60
 ss = tt - mn * 60
 end subroutine sec85ymdhms_int4
 
-!***********************************************************************
-!*strf1985f_dble -- Construct date string from seconds since 1985
-!+
+!****if* rads_time/strf1985f_dble -- Construct date string from seconds since 1985
+!
+! SYNOPSIS
 elemental function strf1985f_dble (sec, sep)
 use typesizes
 real(eightbytereal), intent(in) :: sec
 character(len=1), optional, intent(in) :: sep
 character(len=26) :: strf1985f_dble
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer(fourbyteint) :: yy, mm, dd, hh, mn
 real(eightbytereal) :: ss
 character(len=1) :: x
@@ -245,15 +249,15 @@ write (strf1985f_dble, '(i4.4,2("-",i2.2),a1,2(i2.2,":"),i2.2,f7.6)') &
 		yy, mm, dd, x, hh, mn, floor(ss), modulo(ss,1d0)
 end function strf1985f_dble
 
-!***********************************************************************
-!*strf1985f_int4 -- Construct date string from seconds since 1985
-!+
+!****if* rads_time/strf1985f_int4 -- Construct date string from seconds since 1985
+!
+! SYNOPSIS
 elemental function strf1985f_int4 (sec, sep)
 use typesizes
 integer(fourbyteint), intent(in) :: sec
 character(len=1), optional, intent(in) :: sep
 character(len=19) :: strf1985f_int4
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer(fourbyteint) :: yy, mm, dd, hh, mn, ss
 character(len=1) :: x
 if (present(sep)) then
@@ -266,15 +270,16 @@ write (strf1985f_int4, '(i4.4,2("-",i2.2),a1,2(i2.2,":"),i2.2)') &
 		yy, mm, dd, x, hh, mn, ss
 end function strf1985f_int4
 
-!***********************************************************************
-!*strp1985f -- Parse date string and convert it to seconds since 1985
-!+
+!****f* rads_time/strp1985f -- Parse date string and convert it to seconds since 1985
+!
+! SYNOPSIS
 elemental function strp1985f (string, sep)
 use typesizes
 character(len=*), intent(in) :: string
 character(len=1), intent(in), optional :: sep
 real(eightbytereal) :: strp1985f
 !
+! PURPOSE
 ! This routine reads a string of the form YYYY-MM-DDxHH:MM:SS.SSSSSS
 ! or YYYYMMDDxHHMMSS.SSSSSS or YYYY-DDDxHH:MM:SS.SSSSSS, where x is
 ! any character, and converts it to a seconds since 1.0 Jan 1985.
@@ -286,13 +291,13 @@ real(eightbytereal) :: strp1985f
 ! If <sep> is specified, then the character between the date and time
 ! part of the string has to be the character specified by <sep>.
 !
-! Arguments:
+! ARGUMENTS
 !  string    : Character string of time
 !  sep       : (Optional) Required separator between date and time
 !
-! Return value:
+! RETURN VALUE
 !  strp1985f : Seconds since 1.0 Jan 1985
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer(fourbyteint) :: yy,mm,dd,hh,mn,ss,mjd,ios,l
 real(eightbytereal) :: fs
 real(eightbytereal), parameter :: nan = transfer ((/not(0_fourbyteint),not(0_fourbyteint)/),0d0)
@@ -323,15 +328,16 @@ call ymd2mjd(yy,mm,dd,mjd)
 strp1985f = (mjd - 46066) * 86400d0 + hh * 3600d0 + mn * 60d0 + ss + fs
 end function strp1985f
 
-!***********************************************************************
-!*sec85 -- Convert MJD or YYMMDD or YYDDD to SEC85
-!+
+!****f* rads_time/sec85 -- Convert MJD or YYMMDD or YYDDD to SEC85
+!
+! SYNOPSIS
 pure function sec85 (i, date)
 use typesizes
 integer(fourbyteint), intent(in) :: i
 real(eightbytereal), intent(in) :: date
 real(eightbytereal) :: sec85
 !
+! PURPOSE
 ! This function converts Modified Julian Dates (MJD) or Year-Month-Day
 ! (YYMMDD) or Year-Day (YYDDD) or Year-Month-Day-Hours-Minutes-Seconds
 ! (YYMMDDHHMMSS) to seconds from 1.0 Jan 1985 (SEC85). Fractions of days or
@@ -358,7 +364,7 @@ real(eightbytereal) :: sec85
 !   YYMMDDHHMMSS :     1d8 - 1d12    ( 1950/01/01 - 2050/01/01 )
 ! YYYYMMDDHHMMSS : 1950d10 - 2050d10 ( 1950/01/01 - 2050/01/01 )
 !
-! Arguments:
+! ARGUMENTS
 !  i     : i=1, convert MJD to SEC85
 !          i=2, convert YYMMDD or YYYYMMDD to SEC85
 !          i=3, convert YYDDD or YYYYDDD to SEC85
@@ -366,8 +372,10 @@ real(eightbytereal) :: sec85
 !          i=5, convert [YY]YYMMDD[HHMMSS] to SEC85
 !          i=0, convert any of the above to SEC85
 !  date  : Input value.
+!
+! RETURN VALUE
 !  sec85 : Output value, seconds from 1.0 Jan 1985.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer(fourbyteint) :: mjd,yy,mm,dd,hh,mn,ii
 real(eightbytereal) :: ff
 integer, parameter :: mjd85 = 46066, day = 86400
@@ -441,9 +449,9 @@ end select
 
 end function sec85
 
-!***********************************************************************
-!*dateopt -- Processes standard datation options
-!+
+!****f* rads_time/dateopt -- Processes standard datation options
+!
+! SYNOPSIS
 pure subroutine dateopt (optopt, optarg, t0, t1, dt, iostat)
 use typesizes
 character(len=*), intent(in) :: optopt, optarg
@@ -451,6 +459,7 @@ real(eightbytereal), intent(out) :: t0
 real(eightbytereal), intent(out), optional :: t1, dt
 integer(fourbyteint), intent(out), optional :: iostat
 !
+! PURPOSE
 ! This function processes standard datation arguments of either of the
 ! following forms:
 !
@@ -481,7 +490,7 @@ integer(fourbyteint), intent(out), optional :: iostat
 ! Since <t1> and <dt> are optional arguments, they can also be omitted from
 ! the call to <dateopt>.
 !
-! Arguments:
+! ARGUMENTS
 !   dateopt : .true. if <optopt> is in a standard datation format
 !   optopt  : datation option ('mjd', 'sec', etc.) (see above)
 !   optarg  : datation option argument (see above)
@@ -489,7 +498,7 @@ integer(fourbyteint), intent(out), optional :: iostat
 !   t1      : (optional) second time after conversion to SEC85
 !   dt      : (optional) third datation argument (not converted)
 !   iostat  : (optional) return code from reading optarg
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer :: i,mode
 real(eightbytereal) :: tt0,tt1
 character(len=len(optarg)) :: arg
@@ -540,31 +549,33 @@ if (tt0 == tt0) t0 = sec85 (mode, tt0)
 if (present(iostat)) iostat = i
 end subroutine dateopt
 
-!***********************************************************************
-!*datestamp -- Create character string with current date
-!+
+!****f* rads_time/datestamp -- Create character string with current date
+!
+! SYNOPSIS
 function datestamp ()
 character(len=10) :: datestamp
 !
+! PURPOSE
 ! This function produces the current date (in UTC) in the form
 ! 2012-06-15
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer :: values(9), time
 call gmtime(time(),values)
 write (datestamp, '(i4.4,2("-",i2.2))') values(6)+1900,values(5)+1,values(4)
 end function datestamp
 
-!***********************************************************************
-!*timestamp -- Create character string with current date
-!+
+!****f* rads_time/timestamp -- Create character string with current date
+!
+! SYNOPSIS
 function timestamp (sep)
 character(len=1), optional :: sep
 character(len=19) :: timestamp
 !
+! PURPOSE
 ! This function produces the current date (in UTC) in the form
 ! 2012-06-15x02:58:15, where x is a separator character indicated
 ! by the optional argument <sep>. Default is a space.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer :: values(9), time
 character(len=1) :: x
 if (present(sep)) then

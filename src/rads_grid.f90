@@ -1,4 +1,4 @@
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 ! Copyright (c) 2011-2015  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
@@ -11,11 +11,13 @@
 ! but WITHOUT ANY WARRANTY; without even the implied warranty of
 ! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ! GNU Lesser General Public License for more details.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 
-!***********************************************************************
-!*rads_grid -- A set of grid reading and interpolation routines
-!+
+!****f* module/rads_grid
+! SUMMARY
+! A set of grid reading and interpolation routines
+!
+! SYNOPSIS
 module rads_grid
 use typesizes
 type grid
@@ -29,6 +31,7 @@ type grid
 	real(eightbytereal), allocatable :: grid_dble(:,:)
 end type
 !
+! PURPOSE
 ! Use the following routines to load grids into memory and interpolate
 ! or query them:
 ! grid_load -- Load a grid into memory (NetCDF format)
@@ -43,21 +46,24 @@ end type
 !
 ! Information about the grid is stored in a structure of type 'grid'.
 ! Use the module 'rads_grid' to define the structure.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer, parameter, private :: stderr = 0
 real(eightbytereal), parameter, private :: nan = transfer ((/not(0_fourbyteint),not(0_fourbyteint)/),0d0)
 
 contains
 
-!***********************************************************************
-!*grid_load -- Load a grid into memory (NetCDF format)
-!+
+!****f* rads_grid/grid_load
+! SUMMARY
+! Load a grid into memory (NetCDF format)
+!
+! SYNOPSIS
 function grid_load (filenm, info)
 use netcdf
 integer(fourbyteint) :: grid_load
 character(len=*), intent(in) :: filenm
 type(grid), intent(inout) :: info
 !
+! PURPOSE
 ! This routine allocates memory and loads the contents of a netCDF
 ! grid file into the allocated memory. To save memory, the grid is stored
 ! in its original representation, i.e., 2- or 4-byte integer or
@@ -79,22 +85,20 @@ type(grid), intent(inout) :: info
 ! When the allocation of memory or the loading of the grid was
 ! unsuccessful, this will be reflected in the returned function value.
 !
-! Input argument:
+! ARGUMENTS
 !  filenm   : Name of the file containing the grid.
 !             Optionally append ?varname to indicate that the variable
 !             varname must be read.
-!
-! Output argument:
 !  info     : Structure containing information about the grid. Needs
 !             to be declared or allocated in calling program.
 !
-! Return value:
+! RETURN VALUE
 !  grid_load: 0 = No error
 !             1 = Could not find or open grid
 !             2 = Variable not found or not 2-dimensional
 !             3 = Illegal grid format
 !             4 = Error loading grid
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer(fourbyteint) :: i,ncid,z_id
 character(len=80) :: units
 
@@ -286,19 +290,22 @@ end subroutine grid_error
 
 end function grid_load
 
-!***********************************************************************
-!*grid_free -- Free grid buffer
-!+
+!****f* rads_grid/grid_free
+! SUMMARY
+! Free grid buffer
+!
+! SYNOPSIS
 elemental subroutine grid_free (info)
 type (grid), intent(inout) :: info
 !
+! PURPOSE
 ! This routine frees up the memory allocated by <grid_load> to store a grid.
 ! Note that this routine does not deallocate the grid structure info
 ! itself, only the memory allocated to store the grid values.
 !
-! Input argument:
+! ARGUMENT
 !  info : Grid info structure as returned by grid_load
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 if (allocated(info%grid_int1)) deallocate(info%grid_int1)
 if (allocated(info%grid_int2)) deallocate(info%grid_int2)
 if (allocated(info%grid_int4)) deallocate(info%grid_int4)
@@ -307,9 +314,11 @@ if (allocated(info%grid_dble)) deallocate(info%grid_dble)
 info%ntype = 0
 end subroutine grid_free
 
-!***********************************************************************
-!*grid_query -- Look-up value in buffered grid
-!+
+!****f* rads_grid/grid_query
+! SUMMARY
+! Look-up value in buffered grid
+!
+! SYNOPSIS
 pure function grid_query (info, x, y)
 use netcdf
 type(grid), intent(in) :: info
@@ -329,13 +338,13 @@ real(eightbytereal) :: grid_query
 ! undetermined or when (<x>, <y>) is outside the grid, even after
 ! wrapping, grid_query returns a NaN value.
 !
-! Input arguments:
+! ARGUMENTS
 !  info : Grid info structure as returned by grid_load
 !  x, y : x- and y-coordinate of the point to be queried
 !
-! Output argument:
+! RETURN VALUE
 !  grid_query : Value at the location (x, y)
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 real(eightbytereal) :: z
 integer(fourbyteint) :: jx,jy
 
@@ -379,15 +388,18 @@ endif
 grid_query = z
 end function grid_query
 
-!***********************************************************************
-!*grid_lininter -- Bi-linear interpolation of buffered grid
-!+
+!****f* rads_grid/grid_lininter
+! SUMMARY
+! Bi-linear interpolation of buffered grid
+!
+! SYNOPSIS
 pure function grid_lininter (info, x, y)
 use netcdf
 type(grid), intent(in) :: info
 real(eightbytereal), intent(in) :: x, y
 real(eightbytereal) :: grid_lininter
 !
+! PURPOSE
 ! This function interpolates a buffered grid that was previously loaded
 ! using <grid_load>. Bi-linear interpolation is used whenever possible.
 !
@@ -406,13 +418,13 @@ real(eightbytereal) :: grid_lininter
 ! (<x>, <y>) is close to an undetermined grid point, <grid_lininter>
 ! returns a NaN value.
 !
-! Input arguments:
+! ARGUMENTS
 !  info : Grid info structure as returned by grid_load
 !  x, y : x- and y-coordinate of the point to be interpolated
 !
-! Output argument:
+! RETURN VALUE
 !  grid_lininter : Interpolated value at the location (x, y)
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 real(eightbytereal) :: xj,yj,z(2,2),weight(2,2),wtot,vtot,zz
 integer(fourbyteint) :: jx,jy,jx1,jy1
 
@@ -482,15 +494,18 @@ enddo
 grid_lininter = vtot / wtot * info%dz + info%z0
 end function grid_lininter
 
-!***********************************************************************
-!*grid_splinter -- Bi-cubic spline interpolation of buffered grid
-!+
+!****f* rads_grid/grid_splinter
+! SUMMARY
+! Bi-cubic spline interpolation of buffered grid
+!
+! SYNOPSIS
 pure function grid_splinter (info, x, y)
 use netcdf
 type(grid), intent(in) :: info
 real(eightbytereal), intent(in) :: x, y
 real(eightbytereal) :: grid_splinter
 !
+! PURPOSE
 ! This function interpolates a buffered grid that was previously loaded
 ! using <grid_load>. Bi-cubic spline interpolation is used whenever possible.
 !
@@ -513,13 +528,13 @@ real(eightbytereal) :: grid_splinter
 ! (<x>, <y>) is close to an undetermined grid point, grid_splinter returns
 ! a NaN value.
 !
-! Input arguments:
+! ARGUMENTS
 !  info : Grid info structure as returned by grid_load
 !  x, y : x- and y-coordinate of the point to be interpolated
 !
-! Output argument:
+! RETURN VALUE
 !  grid_splinter : Interpolated value at the location (x, y)
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer(fourbyteint) :: jx,jy,j
 real(eightbytereal) :: xj,yj,z(6,6),zy(6),w(6),u(6)
 
@@ -622,25 +637,28 @@ end function grid_splinteru
 
 end function grid_splinter
 
-!***********************************************************************
-!*grid_x -- Get x-coordinate of grid pixel
-!+
+!****f* rads_grid/grid_x
+! SUMMARY
+! Get x-coordinate of grid pixel
+!
+! SYNOPSIS
 pure function grid_x (info, i)
 type(grid), intent(in) :: info
 integer(fourbyteint), intent(in) :: i
 real(eightbytereal) :: grid_x
 !
+! PURPOSE
 ! This function returns the x-coordinate of a grid pixel.
 ! The input i is the index along the horizontal axis, running from 1 to
 ! <info%nx>. If <i> is out of range, NaN is returned.
 !
-! Input arguments:
+! ARGUMENTS
 !  info : Grid info structure as returned by grid_load
 !  i    : Horizontal index of the grid pixel
 !
-! Output argument:
+! RETURN VALUE
 !  grid_x : x-coordinate of the grid pixel
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 if (i < 1 .or. i > info%nx) then
 	grid_x = nan
 else if (i == info%nx) then
@@ -650,25 +668,28 @@ else
 endif
 end function grid_x
 
-!***********************************************************************
-!*grid_y -- Get y-coordinate of grid pixel
-!+
+!****f* rads_grid/grid_y
+! SUMMARY
+! Get y-coordinate of grid pixel
+!
+! SYNOPSIS
 pure function grid_y (info, i)
 type(grid), intent(in) :: info
 integer(fourbyteint), intent(in) :: i
 real(eightbytereal) :: grid_y
 !
+! PURPOSE
 ! This function returns the y-coordinate of a grid pixel.
 ! The input i is the index along the vertical axis, running from 1 to
 ! <info%ny>. If <i> is out of range, NaN is returned.
 !
-! Input arguments:
+! ARGUMENTS
 !  info : Grid info structure as returned by grid_load
 !  i    : Vertical index of the grid pixel
 !
-! Output argument:
+! RETURN VALUE
 !  grid_y : y-coordinate of the grid pixel
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 if (i < 1 .or. i > info%ny) then
 	grid_y = nan
 else if (i == info%ny) then
@@ -678,19 +699,22 @@ else
 endif
 end function grid_y
 
-!***********************************************************************
-!*grid_inside -- Check if coordinates are within grid boundaries
-!+
+!****f* rads_grid/grid_inside
+! SUMMARY
+! Check if coordinates are within grid boundaries
+!
+! SYNOPSIS
 pure function grid_inside (info, x, y)
 type(grid), intent(in) :: info
 real(eightbytereal), intent(in) :: x,y
 logical :: grid_inside
 !
+! PURPOSE
 ! This function determines if point (<x>, <y>) is within or on the
 ! boundaries of a grid designated by its struct info.
 ! If <x> or <y> are NaN, .false. is returned.
 ! If <x> is periodical, no boundary check is performed on <x>.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 if (info%nxwrap == 0) then
 	grid_inside = (x >= info%xmin .and. x <= info%xmax)
 else

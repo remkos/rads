@@ -1,4 +1,4 @@
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 ! Copyright (c) 2011-2015  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
@@ -11,7 +11,7 @@
 ! but WITHOUT ANY WARRANTY; without even the implied warranty of
 ! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ! GNU Lesser General Public License for more details.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 
 module rads_misc
 use typesizes
@@ -25,21 +25,24 @@ logical, private, save :: getopt_new = .true., getopt_end = .false., getopt_opt 
 real(eightbytereal), parameter :: nan = transfer ((/not(0_fourbyteint),not(0_fourbyteint)/),0d0)
 logical, parameter :: little_endian = btest(1,0), big_endian = .not.little_endian
 
-!***********************************************************************
-!*d_int -- Convert integer to double while accounting for NaNs
-!+
+!****f* rads_misc/d_int
+! SUMMARY
+! Convert integer to double while accounting for NaNs
+!
+! SYNTAX
 ! elemental function d_int (i)
 ! integer(onebyteint) <or> integer(twobyteint) <or> integer(fourbyteint) :: i
 ! real(eightbytereal) :: d_int
 !
+! PURPOSE
 ! Convert an integer (or integer array) to a double, while taking into
 ! account that the maximum value for that type of integer (127, 32767, etc)
 ! indicates NaN.
 !
-! Arguments:
+! ARGUMENTS
 !  i     : Integer to convert to double
 !  d_int : Result as a double real
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 private :: d_int1, d_int2, d_int4
 interface d_int
 	module procedure d_int1
@@ -47,15 +50,18 @@ interface d_int
 	module procedure d_int4
 end interface d_int
 
-!***********************************************************************
-!*real_val -- Read array of values from string with optional substitution
-!+
+!****f* rads_misc/read_val
+! SUMMARY
+! Read array of values from string with optional substitution
+!
+! SYNOPSIS
 ! pure subroutine read_val (string, val, translate, iostat)
 ! character(len=*), intent(in) :: string
 ! integer(fourbyteint) <or> real(eightbytereal), intent(out) :: val(:)
 ! character(len=*), intent(in), optional :: translate
 ! integer(fourbyteint), optional :: iostat
 !
+! PURPOSE
 ! This routine reads 4-byte integer or 8-byte real values from a string
 ! <string> into an array <val>. To simplify things when the separators
 ! between values are not space, comma or tab, we can optionally translate
@@ -68,22 +74,24 @@ end interface d_int
 ! Note that zero and negative numbers should be considered OK; positive
 ! as errors.
 !
-! Arguments:
+! ARGUMENTS
 !  string    : input character string
 !  val       : output array of values (integer or double)
 !  translate : (optional) string of characters that need to be changed
 !             to spaces first
 !  iostat    : (optional) value of iostat (positive is error)
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 private :: read_val_int, read_val_dble
 interface read_val
 	module procedure read_val_int
 	module procedure read_val_dble
 end interface read_val
 
-!***********************************************************************
-!*mean_variance -- Compute mean and standard deviation of a series
-!+
+!****f* rads_misc/mean_variance
+! SUMMARY
+! Compute mean and standard deviation of a series
+!
+! SYNOPSIS
 ! pure subroutine mean_variance (x, mean, variance, nr)
 ! pure subroutine mean_variance (x, mean, variance, min, max)
 ! real(eightbytereal), intent(in) :: x(:)
@@ -91,6 +99,7 @@ end interface read_val
 ! real(eightbytereal), intent(out), optional :: min, max
 ! integer(fourbyteint), intent(out), optional :: nr
 !
+! PURPOSE
 ! This routine computes the mean and variance (and optionally the
 ! minimum and maximum) of a series of values <x> using the method proposed
 ! by West (1979), since it is more stable in the way it computes the variance.
@@ -104,12 +113,12 @@ end interface read_val
 !  Updating mean and variance estimates: an improved method
 !  Communications of the ACM, 22(9), 532-535, 1979
 !
-! Arguments:
+! ARGUMENTS
 !  x        : Series of values
 !  mean     : Mean of series <x>
 !  variance : Variance of series <x>
 !  nr       : Number of valid values in series <x>
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 private :: mean_variance_only, mean_variance_nr, mean_variance_minmax
 interface mean_variance
 	module procedure mean_variance_only
@@ -119,14 +128,16 @@ end interface mean_variance
 
 contains
 
-!***********************************************************************
-!*getopt -- Get option from command line argument
+!****f* rads_misc/getopt
+! SUMMARY
+! Get option from command line argument
 !
 subroutine getopt (optlist, optopt, optarg, unit)
 character(len=*), intent(in) :: optlist
 character(len=*), intent(out) :: optopt, optarg
 integer, intent(in), optional :: unit
 !
+! PURPOSE
 ! This subroutine mimics both the GNU C <getopt> and <getopt_long> functions,
 ! and provides several enhancements over those functions (see below).
 !
@@ -190,12 +201,12 @@ integer, intent(in), optional :: unit
 ! -            optopt = ' ', optarg = '-' (regarded normal argument)
 ! --           (Will be skipped, and will stop option parsing)
 !
-! Arguments:
+! ARGUMENTS
 !  optlist  : list of short and long options
 !  optopt   : option part of the option, without -- or -
 !  optarg   : argument of the option
 !  unit     : (Optional) input unit number, otherwise command line
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer :: input, i, j, k, n, l
 logical :: optional_arg, err
 
@@ -368,19 +379,22 @@ end function nextarg
 
 end subroutine getopt
 
-!***********************************************************************
-!*getopt_reset -- Reset to beginning of command line options
-!+
+!****f* rads/getopt_reset
+! SUMMARY
+! Reset to beginning of command line options
+!
+! SYNOPSIS
 subroutine getopt_reset (unit)
 integer, intent(in), optional :: unit
 !
+! PURPOSE
 ! By calling this routine the pointer for <getopt> is reset to the
 ! beginning of the argument list, or the file on input <unit> is rewound
 ! to the beginning.
 !
-! Argument:
+! ARGUMENT
 !   unit  : (Optional) unit of the input file, command line otherwise
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 if (present(unit)) then
 	rewind (unit)
 else
@@ -392,20 +406,23 @@ getopt_end = .false.
 getopt_opt = .false.
 end subroutine getopt_reset
 
-!***********************************************************************
-!*strtolower -- Convert string to lower case
-!+
+!****f* rads_misc/strtolower
+! SUMMARY
+! Convert string to lower case
+!
+! SYNOPSIS
 elemental function strtolower (string) result (lower)
 character(len=*), intent(in) :: string
 character(len=len(string)) :: lower
 !
+! PURPOSE
 ! Convert character string to all lower case letters, leaving all non-
 ! alphabetical characters as is.
 !
-! Arguments:
+! ARGUMENTS
 !  string : String to be converted
 !  lower  : String returned in lower case
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer :: i
 do i = 1,len(string)
 	if (string(i:i) >= 'A' .and. string(i:i) <= 'Z') then
@@ -416,20 +433,23 @@ do i = 1,len(string)
 enddo
 end function strtolower
 
-!***********************************************************************
-!*strtoupper -- Convert string to upper case
-!+
+!****f* rads_misc/strtoupper
+! SUMMARY
+! Convert string to upper case
+!
+! SYNOPSIS
 elemental function strtoupper (string) result (upper)
 character(len=*), intent(in) :: string
 character(len=len(string)) :: upper
 !
+! PURPOSE
 ! Convert character string to all upper case letters, leaving all non-
 ! alphabetical characters as is.
 !
-! Arguments:
+! ARGUMENTS
 !  string : String to be converted
 !  upper  : String returned in upper case
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer :: i
 do i = 1,len(string)
 	if (string(i:i) >= 'a' .and. string(i:i) <= 'z') then
@@ -440,20 +460,23 @@ do i = 1,len(string)
 enddo
 end function strtoupper
 
-!***********************************************************************
-!*getlun -- Get free logical unit number
-!+
+!****f* rads_misc/getlun
+! SUMMARY
+! Get free logical unit number
+!
+! SYNOPSIS
 function getlun ()
 integer :: getlun
 !
+! PURPOSE
 ! This function returns a logical unit number that is not currently
 ! connected to any file. A value of 0 is returned if no free unit is found.
 !
-! Example:
+! EXAMPLE
 ! integer :: unit, getlun
 ! unit = getlun()
 ! open (unit=unit, file='filename', status='old')
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer :: unit
 logical :: opened
 
@@ -467,34 +490,40 @@ enddo
 getlun = 0
 end function getlun
 
-!***********************************************************************
-!*checkenv -- Get environment variable, if it exists
-!+
+!****f* rads_misc/checkenv
+! SUMMARY
+! Get environment variable, if it exists
+!
+! SYNOPSIS
 subroutine checkenv (env, string)
 character(len=*), intent(in) :: env
 character(len=*), intent(inout) :: string
 !
+! PURPOSE
 ! This routine returns the contents of environment variable <env> in the
 ! variable <string>.
 ! If the environment variable <env> is not set, <string> is unchanged.
 !
-! Arguments:
+! ARGUMENTS
 !   env    : Name of the environment variable.
 !   string : Upon input: default value for string.
 !          : Upon output: contents of the environment variable or default.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 character(len=320) :: temp
 call getenv (env,temp)
 if (temp /= ' ') string = temp
 end subroutine checkenv
 
-!***********************************************************************
-!*parseenv -- Parse a string for embedded environment variable
-!+
+!****f* rads_misc/parseenv
+! SUMMARY
+! Parse a string for embedded environment variable
+!
+! SYNOPSIS
 recursive subroutine parseenv (input, output)
 character(len=*), intent(in) :: input
 character(len=*), intent(inout) :: output
 !
+! PURPOSE
 ! This routine parse the string <input> for embedded environment
 ! variables and replaces them with its value. The result is returned
 ! in <output>.
@@ -505,10 +534,10 @@ character(len=*), intent(inout) :: output
 ! (same meaning as in the bash shell).
 ! Nesting of variable names is not allowed.
 !
-! Arguments:
+! ARGUMENTS
 !   input  : String to be parsed.
 !   output : String with environment variables replaced.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 character(len=320) :: env
 integer :: j, k = 0, l, m, n
 output = input
@@ -544,39 +573,45 @@ do
 enddo
 end subroutine parseenv
 
-!***********************************************************************
-!*outofrange - Verify if value is within limits
-!+
+!****f* rads_misc/outofrange
+! SUMMARY
+! Verify if value is within limits
+!
+! SYNOPSIS
 function outofrange (limits, value)
 real(eightbytereal), intent(in) :: limits(2)
 real(eightbytereal), intent(inout) :: value
 logical :: outofrange
 !
+! PURPOSE
 ! This function checks if value is within <limits(1:2)>, where
 ! <limits(1)> is less than <limits(2)>. If <value> is not within those
 ! limits, <outofrange> is set to .true.
 !
 ! If either of the limits is NaN, no check is performed at that limit.
 !
-! Arguments:
+! ARGUMENTS
 !  limits     : minimum and maximum allowed value
 !  value      : value to be checked
 !  outofrange : .true. if value is outside limits, .false. otherwise.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 outofrange = (value < limits(1) .or. value > limits(2))
 end function outofrange
 
-!***********************************************************************
-!*nint1 -- Round 8-byte real to 1-byte integer
-!+
+!****f* rads_misc/nint1
+! SUMMARY
+! Round 8-byte real to 1-byte integer
+!
+! SYNOPSIS
 elemental function nint1 (x)
 integer(onebyteint) :: nint1
 real(eightbytereal), intent(in) :: x
 !
+! PURPOSE
 ! This elemental function rounds an 8-byte real to a 1-byte integer.
 ! If the real is out of range, or NaN, the returned value is 127.
 ! Since this function is elemental, it can be applied to arrays as well.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer(onebyteint), parameter :: imax = huge(0_onebyteint)
 real(eightbytereal), parameter :: xmin = -imax-1.5d0, xmax = imax+0.5d0
 if (x > xmin .and. x < xmax) then
@@ -586,17 +621,20 @@ else ! Out of range or NaN
 endif
 end function nint1
 
-!***********************************************************************
-!*nint2 -- Round 8-byte real to 2-byte integer
-!+
+!****f* rads_misc/nint2
+! SUMMARY
+! Round 8-byte real to 2-byte integer
+!
+! SYNOPSIS
 elemental function nint2 (x)
 integer(twobyteint) :: nint2
 real(eightbytereal), intent(in) :: x
 !
+! PURPOSE
 ! This elemental function rounds an 8-byte real to a 2-byte integer.
 ! If the real is out of range, or NaN, the returned value is 32767.
 ! Since this function is elemental, it can be applied to arrays as well.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer(twobyteint), parameter :: imax = huge(0_twobyteint)
 real(eightbytereal), parameter :: xmin = -imax-1.5d0, xmax = imax+0.5d0
 if (x > xmin .and. x < xmax) then
@@ -606,17 +644,20 @@ else ! Out of range or NaN
 endif
 end function nint2
 
-!***********************************************************************
-!*nint4 -- Round 8-byte real to 4-byte integer
-!+
+!****f* rads_misc/nint4
+! SUMMARY
+! Round 8-byte real to 4-byte integer
+!
+! SYNOPSIS
 elemental function nint4 (x)
 integer(fourbyteint) :: nint4
 real(eightbytereal), intent(in) :: x
 !
+! PURPOSE
 ! This elemental function rounds an 8-byte real to a 4-byte integer.
 ! If the real is out of range, or NaN, the returned value is 2147483647.
 ! Since this function is elemental, it can be applied to arrays as well.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer(fourbyteint), parameter :: imax = huge(0_fourbyteint)
 real(eightbytereal), parameter :: xmin = -imax-1.5d0, xmax = imax+0.5d0
 if (x > xmin .and. x < xmax) then
@@ -626,9 +667,11 @@ else ! Out of range or NaN
 endif
 end function nint4
 
-!***********************************************************************
-!*bit_transfer -- Transfer the bit pattern of integer part of double
-!+
+!****f* rads_misc/bit_transfer
+! SUMMARY
+! Transfer the bit pattern of integer part of double
+!
+! SYNOPSIS
 elemental subroutine bit_transfer (x)
 real(eightbytereal), intent(inout) :: x
 if (little_endian) then
@@ -638,64 +681,76 @@ else
 endif
 end subroutine bit_transfer
 
-!***********************************************************************
-!*isnan_ -- Check if double precision value is not a number
-!+
+!****f* rads_misc/isnan_
+! SUMMARY
+! Check if double precision value is not a number
+!
+! SYNOPSIS
 elemental function isnan_ (x)
 real(eightbytereal), intent(in) :: x
 logical :: isnan_
 !
+! PURPOSE
 ! This elemental function checks if a 8-byte real is not a number (NaN).
 ! It is added here, since it is not standard Fortran 90, though GNU
 ! Fortran and HP Fortran have it.
 ! Since this function is elemental, it can be applied to arrays as well.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 isnan_ = (x /= x)
 end function isnan_
 
-!***********************************************************************
-!*isan -- Check if double precision value is a number
-!+
+!****f* rads_misc/isan
+! SUMMARY
+! Check if double precision value is a number
+!
+! SYNOPSIS
 elemental function isan_ (x)
 real(eightbytereal), intent(in) :: x
 logical :: isan_
 !
+! PURPOSE
 ! This elemental function checks if a 8-byte real is a number (i.e. it is
 ! not a NaN).
 ! Since this function is elemental, it can be applied to arrays as well.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 isan_ = (x == x)
 end function isan_
 
-!***********************************************************************
-!*cross_product -- Compute cross product of two 3-D vectors
-!+
+!****f* rads_misc/cross_product
+! SUMMARY
+! Compute cross product of two 3-D vectors
+!
+! SYNOPSIS
 pure function cross_product (a, b) result(c)
 real(eightbytereal), intent(in) :: a(3), b(3)
 real(eightbytereal) :: c(3)
 !
+! PURPOSE
 ! This function returns the vector obtained by computing the cross
 ! product of two 3-dimensional vectors.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 c(1) = a(2) * b(3) - a(3) * b(2)
 c(2) = a(3) * b(1) - a(1) * b(3)
 c(3) = a(1) * b(2) - a(2) * b(1)
 end function cross_product
 
-!***********************************************************************
-!*iqsort -- Make a quick sort of an INTEGER*4 array
-!+
+!****f* rads_misc/iqsort
+! SUMMARY
+! Make a quick sort of an INTEGER*4 array
+!
+! SYNOPSIS
 pure subroutine iqsort (indx, arr)
 use typesizes
 integer(fourbyteint), intent(inout) :: indx(:)
 integer(fourbyteint), intent(in) :: arr(:)
 !
+! PURPOSE
 ! This routine quick-sorts an integer array <indx> according to the
 ! corresponding value in array <arr> of type integer.
 ! The array <indx> contains pointers to the values in array <arr>,
 ! which does not have to be equally large.
 !
-! Arguments:
+! ARGUMENTS
 !  indx (input) : One-dimensional array of index numbers
 !      (output) : Row of index numbers sorted on corresponding value
 !                 On failure: indx(1) = 0.
@@ -745,7 +800,7 @@ integer(fourbyteint), intent(in) :: arr(:)
 !
 ! This routine is based on the routine indexx() discussed in
 ! Numerical Recipes in Fortran 90, The Art of Parallel Scientific Computing.
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer(fourbyteint), parameter :: m = 15, nstack = 256
 integer(fourbyteint) :: i, j, k, l, r, indxt, jstack, istack(nstack)
 integer(fourbyteint) :: a
@@ -831,24 +886,27 @@ end subroutine swap_if
 end subroutine iqsort
 
 
-!***********************************************************************
-!*regression -- Compute best fitting linear regression
-!+
+!****f* rads_misc/regression
+! SUMMARY
+! Compute best fitting linear regression
+!
+! SYNOPSIS
 pure subroutine regression (x, y, a, b, r, fit)
 real(eightbytereal), intent(in) :: x(:), y(:)
 real(eightbytereal), intent(out) :: a, b, r, fit
 !
+! PURPOSE
 ! Compute best fitting straight line through a number of points
 ! with coordinates (<x>,<y>). Upon return, <a> and <b> will be the
 ! coefficients of the line y = a + b * x that best fits the data points.
 !
-! Arguments:
+! ARGUMENTS
 !  x     : x-coordinate
 !  y     : y-coordinate
 !  a, b  : Coefficients of linear regression (intercept and slope)
 !  r     : Regression
 !  fit   : RMS of fit of regression to the data
-!-
+!****
 real(eightbytereal) :: sumx,sumy,sumxx,sumxy,sumyy,uxx,uxy,uyy
 integer(fourbyteint) :: i,n
 n = 0
@@ -876,36 +934,42 @@ r = uxy / sqrt(uxx*uyy)
 fit = sqrt((sumyy - a * sumy - b * sumxy) / n)
 end subroutine regression
 
-!***********************************************************************
-!*is_number -- Is string a number?
-!+
+!****f* rads_misc/is_number
+! SUMMARY
+! Is string a number?
+!
+! SYNOPSIS
 pure function is_number (string)
 character(len=*), intent(in) :: string
 logical :: is_number
 !
+! PURPOSE
 ! This function determines if the character string supplied is a number
 ! (or starts with a number followed by whitespace).
 ! Both floating point (1.0, 1d9, -1e-10) and integers (0, -5) are allowed.
 ! 'NaN' or 'nan' is considered a number as well.
 !
-! Arguments:
+! ARGUMENTS
 !  string   : Input character string
 !  is_number: Return value. True is string is a number
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer :: ios
 real(eightbytereal) :: val
 read (string,*,iostat=ios) val
 is_number = (ios == 0)
 end function is_number
 
-!***********************************************************************
-!*next_word -- Get next word from string
-!+
+!****f* rads_misc/next_word
+! SUMMARY
+! Get next word from string
+!
+! SYNOPSIS
 function next_word (string, i0, i1)
 character(len=*), intent(in) :: string
 integer, intent(inout) :: i0, i1
 logical :: next_word
 !
+! PURPOSE
 ! This routine scans <string> and finds the next word in <string>
 ! after index <i1>. A word is considered anything between delimiters
 ! space, comma, or slash. Multiple spaces are seen as one delimeter,
@@ -924,13 +988,13 @@ logical :: next_word
 !   <next_word> = .false.
 !   <i0> and <i1> are both zero
 !
-! Arguments:
+! ARGUMENTS
 !  string   : Input character string
 !  i0       : Start of word found (zero when none)
 !  i1       : Input: position of last delimeter
 !             output: position of the next delimeter
 !  next_word: .true. is word found, .false. otherwise
-!-----------------------------------------------------------------------
+!****-------------------------------------------------------------------
 integer :: l,i
 l = len(string)
 
@@ -957,13 +1021,16 @@ next_word = .true.
 end function next_word
 
 
-!***********************************************************************
-!*mean_1hz -- Compute mean and rms of multi-Hz array
-!+
+!****f* rads_misc/mean_1hz
+! SUMMARY
+! Compute mean and rms of multi-Hz array
+!
+! SYNOPSIS
 pure subroutine mean_1hz (y, mean, rms)
 real(eightbytereal), intent(in) :: y(:,:)
 real(eightbytereal), intent(out) :: mean(:), rms(:)
 !
+! PURPOSE
 ! Compute mean and stddev values from multi-Hz array <y(m,n)> where <m> is
 ! the number of measurements per "second" (usually 20) and <n> is the
 ! number of 1-Hz measurements in the array. Output are the mean values,
@@ -971,11 +1038,11 @@ real(eightbytereal), intent(out) :: mean(:), rms(:)
 !
 ! Points for which <y> is NaN are skipped.
 !
-! Arguments:
+! ARGUMENTS
 !  y     : Input array of dimension (m,n)
 !  mean  : Average of y per 1-Hz, dimension n
 !  rms   : Standard deviation of 1-Hz, dimension n
-!-
+!****
 integer(fourbyteint) :: i, j, n
 do j = 1,size(y,2)
 	mean(j) = 0d0
@@ -1000,13 +1067,16 @@ do j = 1,size(y,2)
 enddo
 end subroutine mean_1hz
 
-!***********************************************************************
-!*trend_1hz -- Compute mean and rms of multi-Hz array with trend removal
-!+
+!****f* rads_misc/trend_1hz
+! SUMMARY
+! Compute mean and rms of multi-Hz array with trend removal
+!
+! SYNOPSIS
 pure subroutine trend_1hz (x, x0, y, mean, rms)
 real(eightbytereal), intent(in) :: x(:,:), x0(:), y(:,:)
 real(eightbytereal), intent(out) :: mean(:), rms(:)
 !
+! PURPOSE
 ! Compute mean and stddev values from multi-Hz array <y(m,n)> where <m> is
 ! the number of measurements per "second" (usually 20) and <n> is the
 ! number of 1-Hz measurements in the array. Output are the mean values,
@@ -1017,13 +1087,13 @@ real(eightbytereal), intent(out) :: mean(:), rms(:)
 !
 ! Points for which <x> or <y> is NaN are skipped.
 !
-! Arguments:
+! ARGUMENTS
 !  x     : x-coordinate belonging to the values y
 !  x0    : x-coordinate to compute mean
 !  y     : Input array of dimension (m,n)
 !  mean  : Average of y per 1-Hz, dimension n
 !  rms   : Standard deviation of 1-Hz, dimension n
-!-
+!****
 real(eightbytereal) :: sumx,sumy,sumxx,sumxy,sumyy,uxx,uxy,uyy,a,b,xx
 integer(fourbyteint) :: i, j, n
 do j = 1,size(y,2)
