@@ -65,7 +65,7 @@ options:
 	--tabsize 4
 	--latex
 	--nogeneratedwith
-	--documenttitle "RADS Code Manual"
+	--documenttitle "RADS User Manual"
 	--sectionnameonly
 
 item order:

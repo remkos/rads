@@ -26,13 +26,6 @@
 \bibliographystyle{agu08}
 \input{rads_config}
 
-\makeindex
-
-\title{RADS version \vernum \\ ~ \\
-Data Manual}
-\author{Remko Scharroo}
-\date{\today}
-
 \DeclareUrlCommand\cmd{\urlstyle{tt}}
 \renewcommand\deg{\ensuremath{^\circ}}
 \newcommand\prog[1]{\url{#1}\index{programs!#1@\protect\url{#1}}}
@@ -50,8 +43,6 @@ Data Manual}
 \setcounter{totalnumber}{4}
 \renewcommand{\textfraction}{.1}
 \renewcommand{\floatpagefraction}{.8}
-\let\SECTION\subsection
-\newcommand{\script}[2][scriptsize]{\begingroup\csname #1\endcsname\verbatiminput{#2}\endgroup}
 
 \newenvironment{vartable}{
 \begin{table}[ht]
@@ -66,17 +57,24 @@ Variable & field & name & units & sat & range & note \\
 \end{table}
 }
 
-\newenvironment{smallverb}{\small\verbatim}{\endverbatim}
+\verbatimfont{\small}
 \newenvironment{notes}[1][Notes:]{\FloatBarrier\paragraph{#1}\begin{enumerate}}{\end{enumerate}}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\makeindex
+
+\title{RADS version \vernum \\ ~ \\
+Data Manual}
+\author{Remko Scharroo}
+\date{\today}
 
 \begin{document}
-\makeatletter
-\renewcommand{\tiny}{\@setfontsize\tiny{5.8pt}{6.5}}
-\makeatother
 
 \maketitle
 \tableofcontents
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \chapter{Introduction}
 \label{ch:intro}
@@ -232,24 +230,24 @@ The sea level anomaly in RADS is always computed on-the-fly. This means that the
 
 The \file{rads.xml} configuration file spells out, in reverse polish notation (RPN), how the sea level anomaly (\var{sla}) is computed. The 'sea level equation' is written as:
 
-\begin{smallverb}
+\begin{verbatim}
 <data>
     alt range SUB dry_tropo SUB wet_tropo SUB iono SUB
     inv_bar SUB tide_solid SUB tide_ocean SUB tide_load SUB
     tide_pole SUB ssb SUB mss SUB ref_frame_offset SUB
 </data>
-\end{smallverb}
+\end{verbatim}
 
 where \cmd{SUB} stands for 'subtract' and the others are names or aliases of the various variables that make up the sea level anomaly. If any of these variables is NaN, the result is NaN as well.
 The use of aliases comes in handy here. We can, for example, switch out the orbit solution between one flavour
 and another simply by directing the alias \var{alt} from say \var{alt_jgm3} to \var{alt_dgme04}. We do not have to change anything to the sea level equation.
 
 The configuration file also spells out which variables are used as 'quality flag'. That is, if any of these variables is set to NaN, the sea level anomaly is also set to NaN, even though these variables are not added or subtracted as part of the 'sea level equation'. For example:
-\begin{smallverb}
+\begin{verbatim}
 <quality_flag>
     swh sig0 range_rms range_numval flags
 </quality_flag>
-\end{smallverb}
+\end{verbatim}
 
 While the sea level anomaly variable \var{sla} is computed on-the-fly by the RADS software, there is a second variable \var{ssha} that is already stored on the RADS products. Users can use this variable directly as well, but then give up the opportunity to edit the results themselves.
 

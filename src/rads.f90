@@ -210,13 +210,15 @@ integer(fourbyteint) :: rads_log_unit = stdout       ! Unit number for statistic
 !
 ! Only if the <sat> argument is omitted, then the routine will parse
 ! the command line for arguments in the form:
-! --sat <sat> --cycle <lo>,<hi>,<step> --pass <lo>,<hi>,<step> --lim <var>=<lo>,<hi>
-! --lat <lo>,<hi> --lon <lo>,<hi> --alias <var>=<var> --opt <value>=<value>
-! --opt <value>,... --fmt <var>=<value>
-! or their equivalents without the --, or the short options -S, -C, -P, -L, -F
+! --sat=<sat> --cycle=<lo>,<hi>,<step> --pass=<lo>,<hi>,<step>
+! --lim:<var>=<lo>,<hi> --lat=<lo>,<hi> --lon=<lo>,<hi> --alias:<var>=<var>
+! --opt:<value>=<value> --opt=<value>,... --fmt:<var>=<value>
+! or their equivalents without the = or : separators after the long name,
+! or their equivalents without the initial --, or the short options -S, -C,
+! -P, -L, -F
 !
-! The routine will read the satellite/mission specific setup XML files and store
-! all the information in the stuct <S>. The XML files polled are:
+! The routine will read the satellite/mission specific setup XML files and
+! store all the information in the stuct <S>. The XML files polled are:
 !   $RADSDATAROOT/conf/rads.xml
 !   ~/.rads/rads.xml
 !   rads.xml

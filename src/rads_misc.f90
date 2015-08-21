@@ -674,6 +674,7 @@ end function nint4
 ! SYNOPSIS
 elemental subroutine bit_transfer (x)
 real(eightbytereal), intent(inout) :: x
+!****
 if (little_endian) then
 	x = transfer((/nint4(x),0_fourbyteint/),0d0)
 else
