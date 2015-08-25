@@ -78,7 +78,7 @@ do i = 1,rads_nopt
 		if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	case ('flag')
 		read (rads_opt(i)%arg, *, iostat=ios) var_old,maxrms
-		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
+		if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 		maxrms = maxrms/1d2
 	case ('range2')
 		range = .true.
