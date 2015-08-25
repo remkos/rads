@@ -43,6 +43,7 @@ $(SUBDIRS):
 	$(MAKE) $(MFLAGS) -C $@ $(MAKECMDGOALS)
 
 install::
+	$(INSTALL_DIR) $(docdir)
 	$(INSTALL_DATA) doc/manuals/*.pdf $(docdir)
 
 clean spotless::
