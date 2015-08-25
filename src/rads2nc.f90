@@ -43,7 +43,7 @@ integer(fourbyteint) :: nselpass = 0
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('r::o: reject-on-nan:: output: step:')
+call rads_set_options ('r::o: reject-on-nan:: output: step: maxrec:')
 call rads_init (S)
 if (S%error /= rads_noerr) call rads_exit ('Fatal error')
 
@@ -116,7 +116,7 @@ write (*,1300)
 '                      Note: If no -r option is given -rsla is assumed'/ &
 '  --step N                  Step through records with stride n (default: 1)'/ &
 '  --maxrec N                Specify maximum number of output records (default: unlimited)'/ &
-'  -o, --out OUTNAME         Specify name of a single output file (default is pass files)')
+'  -o, --output OUTNAME      Specify name of a single output file (default is pass files)')
 stop
 end subroutine synopsis
 

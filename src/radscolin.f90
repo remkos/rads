@@ -130,11 +130,11 @@ do i = 1,rads_nopt
 	end select
 enddo
 
-! --cumul requires --diff or --r0 and not allowed together with --out
+! --cumul requires --diff or --r0 and not allowed together with --output
 if (.not.out_cumul) then
 	! Continue
 else if (.not.ascii) then
-	call rads_message ('--cumul cannot be used together with -o or --out')
+	call rads_message ('--cumul cannot be used together with -o or --output')
 	stop
 else if  (.not.out_diff .and. reject /= 0) then
 	call rads_message ('--cumul requires --diff or -r')
