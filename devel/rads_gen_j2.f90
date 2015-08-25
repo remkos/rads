@@ -110,16 +110,15 @@ t1 = nan
 ! Scan command line for options
 
 do
-	call getopt ('vC:S: debug:: sat: cycle: t: mjd: sec: ymd: doy:', optopt, optarg)
+	call getopt ('vC:S: verbose debug: sat: cycle: t: mjd: sec: ymd: doy:', optopt, optarg)
 	select case (optopt)
 	case ('!')
 		exit
 	case (':', '::')
 		call rads_opt_error (optopt, optarg)
-	case ('v')
+	case ('v', 'verbose')
 		verbose = verbose + 1
 	case ('debug')
-		verbose = verbose + 1
 		read (optarg, *, iostat=ios) verbose
 		if (ios /= 0) call rads_opt_error (optopt, optarg)
 	case ('C', 'cycle')

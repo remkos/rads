@@ -138,23 +138,29 @@ character(len=160) :: arg
 call getarg (0, arg)
 if (index(arg, 'rads_gen_') > 0) then
 	write (*,1300) trim(arg),syntax
+	write (*,1310)
 else
 	write (*,1301) trim(arg),syntax
+	write (*,1310)
 endif
-1300 format (/a,' [rads_dataselectors]',a // &
+1300 format (/'Usage: ',a,' [rads_dataselectors]',a // &
 'Optional [rads_dataselectors] are:' / &
 '  -S, --sat SAT[/PHASE]     Specify satellite [and phase] (e.g. e1/g, tx)' / &
-'  -C, --cycle C0[,C1]       Select data for one or more cycles' / &
-'  --time T0,T1              Specify time selection (optionally use --ymd, --doy,' / &
-'                            or --sec for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)')
-1301 format (/a,' [rads_dataselectors]',a // &
+'  -C, --cycle C0[,C1]       Select data for one or more cycles')
+1301 format (/'Usage: ',a,' [rads_dataselectors]',a // &
 'Required argument is:' / &
 '  -S, --sat SAT[/PHASE]     Specify satellite [and phase] (e.g. e1/g, tx)' // &
 'Optional [rads_dataselectors] are:' / &
 '  -C, --cycle C0[,C1[,DC]]  Specify first and last cycle and modulo' / &
-'  -P, --pass P0[,P1[,DP]]   Specify first and last pass and modulo' / &
+'  -P, --pass P0[,P1[,DP]]   Specify first and last pass and modulo')
+1310 format ( &
 '  --time T0,T1              Specify time selection (optionally use --ymd, --doy,' / &
-'                            or --sec for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)')
+'                            or --sec for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)' // &
+'Common [rads_options] are:'/ &
+'  --help                    Print this syntax massage'/ &
+'  -v, --verbose             Increase verbosity level'/ &
+'  --debug LEVEL             Set debug/verbosity level'/ &
+'  --version                 Version info')
 end subroutine synopsis_devel
 
 !*log_string -- Print string to log output

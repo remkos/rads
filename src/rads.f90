@@ -175,7 +175,7 @@ endtype
 ! Some private variables to keep
 
 character(len=*), parameter, private :: default_short_optlist = 'S:X:vqV:C:P:A:F:R:L:Q:Z:', &
-	default_long_optlist = ' t: h: args: sat: xml: debug: log: quiet var: sel: cycle: pass: alias:' // &
+	default_long_optlist = ' t: h: args: sat: xml: debug: verbose log: quiet var: sel: cycle: pass: alias:' // &
 	' cmp: compress: fmt: format: lat: lon: time: sla: limits: opt: mjd: sec: ymd: doy: quality_flag: region:'
 character(len=rads_strl), save, private :: rads_optlist = default_short_optlist // default_long_optlist
 
@@ -883,7 +883,7 @@ do
 	! Get next option and its argument
 	call getopt (rads_optlist, opt(nopt)%opt, opt(nopt)%arg, iunit)
 
-! Now hunt for '-S', --sat', '-v', '--debug', '-X', and '--xml' among the command line options
+! Now hunt for '-S', --sat', '-v', '--verbose', '--debug', '-X', and '--xml' among the command line options
 ! The array opt%id is filled to indicate where to find -S, -X, -v|q, -V and other options
 ! Also look for '--args' option to load arguments from file
 
@@ -902,12 +902,11 @@ do
 		call rads_opt_error (opt(nopt)%opt, opt(nopt)%arg)
 	case ('q', 'quiet')
 		rads_verbose = -1
-	case ('v')
+	case ('v', 'verbose')
 		rads_verbose = rads_verbose + 1
 	case ('debug')
-		rads_verbose = rads_verbose + 1
 		read (opt(nopt)%arg, *, iostat=ios) rads_verbose
-		if (ios > 0) call rads_opt_error (opt(nopt)%opt, opt(nopt)%arg)
+		if (ios /= 0) call rads_opt_error (opt(nopt)%opt, opt(nopt)%arg)
 	case ('log')
 		if (opt(nopt)%arg == '-') then
 			rads_log_unit = stdout
@@ -3442,7 +3441,7 @@ else
 endif
 write (iunit, 1300) trim(progname)
 1300 format (/ &
-'usage: ',a,' [required_arguments] [rads_dataselectors] [rads_options] [program_options]' // &
+'Usage: ',a,' [required_arguments] [rads_dataselectors] [rads_options] [program_options]' // &
 'Required argument is:'/ &
 '  -S, --sat SAT[/PHASE]     Specify satellite [and phase] (e.g. e1/g, tx)'// &
 'Optional [rads_dataselectors] are:'/ &
@@ -3479,7 +3478,8 @@ write (iunit, 1300) trim(progname)
 '  --help                    Print this syntax massage'/ &
 '  --log FILENAME            Send statistics to FILENAME (default is standard output)'/ &
 '  -q, --quiet               Suppress warning messages (but keeps fatal error messages)' / &
-'  -v, --debug LEVEL         Set debug/verbosity level'/ &
+'  -v, --verbose             Increase verbosity level'/ &
+'  --debug LEVEL             Set debug/verbosity level'/ &
 '  --version                 Version info')
 end subroutine rads_synopsis
 
