@@ -181,7 +181,7 @@ if test "x$enable_devel" = "xno"; then
 	DEVEL_FLAGS=
 	INSTALL_C=
 else
-	DEVEL_DIRS=devel doc/manuals
+	DEVEL_DIRS="devel"
 	DEVEL_OBJS='${ALTIM}/src/rssubs/tpj_subs.o ${ALTIM}/src/rssubs/solar_subs.o'
 	DEVEL_FLAGS=" -I../devel $MOD_FLAG"'${ALTIM}/include'
 	INSTALL_C=" -C"
