@@ -74,7 +74,7 @@ case ('JA1')
 case ('JA2')
 	call parseenv ('${RADSROOT}/ext/j2/JA2_ORF.txt', orf)
 case ('JA3')
-        call parseenv ('${RADSROOT}/ext/j3/JA3_ORF.txt', orf)
+	call parseenv ('${RADSROOT}/ext/j3/JA3_ORF.txt', orf)
 case ('SRL')
 	call parseenv ('${RADSROOT}/ext/sa/SRL_ORF.txt', orf)
 case default
@@ -98,11 +98,12 @@ do
 	read (10,550,iostat=ios) orf
 	if (ios /= 0) exit
 	read (orf,600) yy,mm,dd,hh,mn,ss,cycle(npass),pass(npass),lon,lat
+	call ymd2mjd(yy,mm,dd,mjd)
+	ss = (mjd-51544)*86400d0 + hh*3600d0 + mn*60d0 + ss
 	if (abs(lat) > 1) then
-		call ymd2mjd(yy,mm,dd,mjd)
-		starttime(npass) = (mjd-51544)*86400d0 + hh*3600d0 + mn*60d0 + ss
+		starttime(npass) = ss
 	else
-		eqtime(npass) = (mjd-51544)*86400d0 + hh*3600d0 + mn*60d0 + ss
+		eqtime(npass) = ss
 		eqlon(npass) = lon
 		npass=npass + 1
 	endif
