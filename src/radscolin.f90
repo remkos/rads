@@ -235,12 +235,17 @@ do m = 1,nsat
 		if (P%ndata > 0) then
 			allocate (temp(P%ndata),bin(P%ndata))
 			bin = nint((P%tll(:,1) - P%equator_time) / dt) ! Store bin nr associated with measurement
-			do j = 1,nsel
-				call rads_get_var (S(m), P, S(m)%sel(j), temp)
-				data(ntrx,j,bin(:)) = temp(:)
-			enddo
-			! For time being, set to "true" ANY incoming data point, even if NaN
-			mask(ntrx,bin(:)) = .true.
+			! Guard against rogue timings
+			if (minval(bin) < -nbins .or. maxval(bin) > nbins) then
+				call rads_message ('Skipping pass because of rogue timings (time(:) or equator_time):', P)
+			else
+				do j = 1,nsel
+					call rads_get_var (S(m), P, S(m)%sel(j), temp)
+					data(ntrx,j,bin(:)) = temp(:)
+				enddo
+				! For time being, set to "true" ANY incoming data point, even if NaN
+				mask(ntrx,bin(:)) = .true.
+			endif
 			deallocate (temp,bin)
 		endif
 		call rads_close_pass (S(m), P)
