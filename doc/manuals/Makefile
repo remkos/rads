@@ -18,6 +18,7 @@ PDFLATEX = pdflatex
 BIBTEX = bibtex
 MAKEINDEX = makeindex
 ROBODOC = robodoc
+CONFIG = rads_config.tex
 MAN = rads4_data_manual.pdf rads4_user_manual.pdf
 SUB = sub/rads.tex sub/rads_geo.tex sub/rads_grid.tex sub/rads_math.tex \
 	sub/rads_misc.tex sub/rads_netcdf.tex sub/rads_time.tex
@@ -31,13 +32,13 @@ all:	$(MAN)
 install:	all
 	$(INSTALL_DATA) $(MAN) $(docdir)
 
-rads4_user_manual.pdf:	%.pdf:	%.tex $(SUB)
+rads4_user_manual.pdf:	%.pdf:	%.tex $(CONFIG) $(SUB)
 	$(PDFLATEX) $*
 	$(PDFLATEX) $*
 	$(MAKEINDEX) $*
 	$(PDFLATEX) $*
 
-rads4_data_manual.pdf:	%.pdf:	%.tex
+rads4_data_manual.pdf:	%.pdf:	%.tex $(CONFIG)
 	$(PDFLATEX) $*
 	$(BIBTEX) $*
 	$(PDFLATEX) $*

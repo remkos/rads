@@ -18,6 +18,14 @@ The code is currently still under major development. When released, it will be m
 ## Version History
 Following is a history of releases on GitHub, newest to oldest.
 
+### v4.1.1
+* Bug fixes.
+* Improved warnings for erroneous command line options.
+* Subroutines documented with robodoc headers.
+* Start of RADS User Manual.
+* Installing documents with 'make install'.
+* Removed 'verbose' argument from rads_init.
+
 ### v4.1.0
 * Numerous updates to the database: removed obsolete variables, updated several, introduced new variables.
 * New handling off "long options". For example: can now use either --var=VAR or --var VAR (without = symbol).
