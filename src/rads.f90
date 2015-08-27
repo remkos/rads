@@ -192,11 +192,10 @@ integer(fourbyteint) :: rads_log_unit = stdout       ! Unit number for statistic
 ! Initialize RADS4
 !
 ! SYNTAX
-! subroutine rads_init (S, sat, xml, verbose)
+! subroutine rads_init (S, sat, xml)
 ! type(rads_sat), intent(inout) :: S <or> S(:)
 ! character(len=*), intent(in), optional :: sat <or> sat(:)
 ! character(len=*), intent(in), optional :: xml(:)
-! integer, intent(in), optional :: verbose
 !
 ! PURPOSE
 ! This routine initializes the <S> struct with the information pertaining
@@ -232,18 +231,18 @@ integer(fourbyteint) :: rads_log_unit = stdout       ! Unit number for statistic
 ! store information of multiple missions, or when required XML files are
 ! missing.
 !
+! The verbosity level can be controlled by setting rads_verbose before
+! calling this routine (default = 0). The output unit for log info can
+! be controlled by setting rads_log_unit up front (default = stdout).
+!
 ! ARGUMENTS
 !  S        : Satellite/mission dependent structure
 !  sat      : (optional) Satellite/mission abbreviation
-!  verbose  : (optional) Verbosity level
 !  xml      : (optional) Array of names of additional XML files to be loaded
-!  optlist  : (optional) List of command specific short and long options
 !****-------------------------------------------------------------------
-private :: rads_init_sat_0d, rads_init_sat_1d, rads_init_sat_0d_xml, rads_init_sat_1d_xml, &
+private :: rads_init_sat_0d, rads_init_sat_1d, &
 	rads_init_cmd_0d, rads_init_cmd_1d, rads_load_options, rads_parse_options
 interface rads_init
-	module procedure rads_init_sat_0d_xml
-	module procedure rads_init_sat_1d_xml
 	module procedure rads_init_sat_0d
 	module procedure rads_init_sat_1d
 	module procedure rads_init_cmd_0d
@@ -467,17 +466,16 @@ end interface rads_parse_varlist
 
 contains
 
-!****if* rads/rads_init_sat_0d_xml
+!****if* rads/rads_init_sat_0d
 ! SUMMARY
 ! Initialize RADS4 by satellite
 !
 ! SYNOPSIS
-subroutine rads_init_sat_0d_xml (S, sat, xml, verbose)
+subroutine rads_init_sat_0d (S, sat, xml)
 use rads_misc
 type(rads_sat), intent(inout) :: S
 character(len=*), intent(in) :: sat
-character(len=*), intent(in) :: xml(:)
-integer(fourbyteint), intent(in), optional :: verbose
+character(len=*), intent(in), optional :: xml(:)
 !
 ! PURPOSE
 ! This routine initializes the <S> struct with the information pertaining to satellite
@@ -497,7 +495,6 @@ integer(fourbyteint), intent(in), optional :: verbose
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: i, j, l
 
-if (present(verbose)) rads_verbose = verbose
 call rads_init_sat_struct (S)
 
 ! Decipher the satellite and phase
@@ -536,19 +533,21 @@ call rads_read_xml (S, trim(S%userroot)//'/.rads/rads.xml')
 if (index(S%command, 'radsreconfig') > 0) return ! Premature bailing from here in radsreconfig
 call rads_read_xml (S, 'rads.xml')
 
-! Now read the xml files specified on the command line
+! Now read the xml files specified on the command line, or the xml argument.
 ! If it is not an absolute path name, also look for it in $RADSDATAROOT/conf as well as in $HOME/.rads
-do i = 1,size(xml)
-	call rads_read_xml (S, xml(i))
-	if (S%error /= rads_err_xml_file) cycle
-	if (xml(i)(1:1) == '/') call rads_exit ('Requested XML file '//trim(xml(i))//' does not exist')
-	call rads_read_xml (S, trim(S%dataroot)//'/conf/'//xml(i))
-	if (S%error /= rads_err_xml_file) cycle
-	call rads_read_xml (S, trim(S%userroot)//'/.rads/'//xml(i))
-	if (S%error /= rads_err_xml_file) cycle
-	call rads_message ('Requested XML file '//trim(xml(i))//' does not exist in current directory,')
-	call rads_exit ('nor in '//trim(S%dataroot)//'/conf, nor in '//trim(S%userroot)//'/.rads')
-enddo
+if (present(xml)) then
+	do i = 1,size(xml)
+		call rads_read_xml (S, xml(i))
+		if (S%error /= rads_err_xml_file) cycle
+		if (xml(i)(1:1) == '/') call rads_exit ('Requested XML file '//trim(xml(i))//' does not exist')
+		call rads_read_xml (S, trim(S%dataroot)//'/conf/'//xml(i))
+		if (S%error /= rads_err_xml_file) cycle
+		call rads_read_xml (S, trim(S%userroot)//'/.rads/'//xml(i))
+		if (S%error /= rads_err_xml_file) cycle
+		call rads_message ('Requested XML file '//trim(xml(i))//' does not exist in current directory,')
+		call rads_exit ('nor in '//trim(S%dataroot)//'/conf, nor in '//trim(S%userroot)//'/.rads')
+	enddo
+endif
 
 ! If no phases are defined, then the satellite is not known
 if (.not.associated(S%phases)) call rads_exit ('Satellite "'//S%sat//'" unknown')
@@ -592,35 +591,18 @@ if (rads_verbose >= 3) then
 		write (*,'(i3,1x,a,a,2i5,2f14.4)') i,S%var(i)%name,S%var(i)%info%name,S%var(i)%field,S%var(i)%info%limits
 	enddo
 endif
-end subroutine rads_init_sat_0d_xml
+end subroutine rads_init_sat_0d
 
-subroutine rads_init_sat_1d_xml (S, sat, xml, verbose)
+subroutine rads_init_sat_1d (S, sat, xml)
 type(rads_sat), intent(inout) :: S(:)
 character(len=*), intent(in) :: sat(:)
-character(len=*), intent(in) :: xml(:)
-integer(fourbyteint), intent(in), optional :: verbose
+character(len=*), intent(in), optional :: xml(:)
 integer :: i
 if (size(S) /= size(sat)) call rads_exit ('Size of arguments "S" and "sat" in routine rads_init should be the same')
 if (size(S) < 1) call rads_exit ('Size of argument "S" in routine rads_init should be at least 1')
 do i = 1,size(S)
-	call rads_init_sat_0d_xml (S(i), sat(i), xml, verbose)
+	call rads_init_sat_0d (S(i), sat(i), xml)
 enddo
-end subroutine rads_init_sat_1d_xml
-
-subroutine rads_init_sat_0d (S, sat, verbose)
-type(rads_sat), intent(inout) :: S
-character(len=*), intent(in) :: sat
-integer(fourbyteint), intent(in), optional :: verbose
-character(len=8) :: xml(0)
-call rads_init_sat_0d_xml (S, sat, xml, verbose)
-end subroutine rads_init_sat_0d
-
-subroutine rads_init_sat_1d (S, sat, verbose)
-type(rads_sat), intent(inout) :: S(:)
-character(len=*), intent(in) :: sat(:)
-integer(fourbyteint), intent(in), optional :: verbose
-character(len=8) :: xml(0)
-call rads_init_sat_1d_xml (S, sat, xml, verbose)
 end subroutine rads_init_sat_1d
 
 subroutine rads_init_cmd_0d (S)
@@ -634,7 +616,7 @@ sopt = minloc (rads_opt%id, rads_opt%id==10+id_sat) ! Position of the first (onl
 !
 ! The next three pack functions isolate the -X option arguments, the command line
 ! arguments associcated with the -S option, and  all -V option arguments.
-call rads_init_sat_0d_xml (S, rads_opt(sopt(1))%arg, &
+call rads_init_sat_0d (S, rads_opt(sopt(1))%arg, &
 	pack(rads_opt%arg, mod(rads_opt%id,10)==id_xml))
 call rads_parse_options (S, pack(rads_opt, mod(rads_opt%id,10)==id_alias))
 call rads_parse_options (S, pack(rads_opt, mod(rads_opt%id,10)==id_misc))
@@ -653,7 +635,7 @@ do i = 1,nsat
 	sopt = minloc (rads_opt%id, rads_opt%id==i*10+id_sat) ! Position of i-th -S option
 	! The next three pack functions isolate the -X option arguments, the command line
 	! arguments associcated with the i-th -S option, and  all -V option arguments.
-	call rads_init_sat_0d_xml (S(i), rads_opt(sopt(1))%arg, &
+	call rads_init_sat_0d (S(i), rads_opt(sopt(1))%arg, &
 		pack(rads_opt%arg, rads_opt%id==id_xml .or. rads_opt%id==i*10+id_xml))
 	call rads_parse_options (S(i), pack(rads_opt, rads_opt%id==id_alias .or. rads_opt%id==i*10+id_alias))
 	call rads_parse_options (S(i), pack(rads_opt, rads_opt%id==id_misc .or. rads_opt%id==i*10+id_misc))
@@ -908,9 +890,9 @@ do
 		read (opt(nopt)%arg, *, iostat=ios) rads_verbose
 		if (ios /= 0) call rads_opt_error (opt(nopt)%opt, opt(nopt)%arg)
 	case ('log')
-		if (opt(nopt)%arg == '-') then
+		if (opt(nopt)%arg == '-' .or. opt(nopt)%arg == 'stdout') then
 			rads_log_unit = stdout
-		else if (opt(nopt)%arg == '+') then
+		else if (opt(nopt)%arg == '+' .or. opt(nopt)%arg == 'stderr') then
 			rads_log_unit = stderr
 		else
 			rads_log_unit = getlun()
