@@ -82,17 +82,16 @@ program rads_gen_reaper
 !-----------------------------------------------------------------------
 use rads
 use rads_devel
-use rads_misc
+use rads_gen
 use rads_netcdf
+use rads_misc
 use rads_time
 use netcdf
 
 ! Command line arguments
 
-integer(fourbyteint) :: verbose=0, c0=0, c1=999, ios
-real(eightbytereal) :: t0, t1
+integer(fourbyteint) :: ios
 character(len=rads_cmdl) :: infile, filenm, old_filenm = ''
-character(len=rads_varl) :: optopt, optarg
 
 ! Header variables
 
@@ -129,33 +128,7 @@ logical :: new
 ! Initialise
 
 call synopsis
-t0 = nan
-t1 = nan
-
-! Scan command line for options
-
-do
-	call getopt ('vC: verbose debug: cycle: t: mjd: sec: ymd: doy:', optopt, optarg)
-	select case (optopt)
-	case ('!')
-		exit
-	case (':', '::')
-		call rads_opt_error (optopt, optarg)
-	case ('v', 'verbose')
-		verbose = verbose + 1
-	case ('debug')
-		read (optarg, *, iostat=ios) verbose
-		if (ios /= 0) call rads_opt_error (optopt, optarg)
-	case ('C', 'cycle')
-		c1 = -1
-		read (optarg, *, iostat=ios) c0, c1
-		if (ios > 0) call rads_opt_error (optopt, optarg)
-		if (c1 < c0) c1 = c0
-	case ('time', 't:', 'sec', 'mjd', 'doy', 'ymd') ! Finally try date arguments
-		call dateopt (optopt, optarg, t0, t1, iostat=ios)
-		if (ios > 0) call rads_opt_error (optopt, optarg)
-	end select
-enddo
+call rads_gen_getopt ('')
 
 !----------------------------------------------------------------------
 ! Read all file names from standard input
@@ -248,10 +221,10 @@ alt_2m = (filenm(18:18) == 'M')
 
 mission = filenm(1:2)
 if (mission == 'E1') then
-	if (ers == 0) call rads_init (S, 'e1.' // strtolower(filenm(52:55)), (/'reaper'/), verbose)
+	if (ers == 0) call rads_init (S, 'e1.' // strtolower(filenm(52:55)), (/'reaper'/))
 	ers = 1
 else if (mission == 'E2') then
-	if (ers == 0) call rads_init (S, 'e2.' // strtolower(filenm(52:55)), (/'reaper'/), verbose)
+	if (ers == 0) call rads_init (S, 'e2.' // strtolower(filenm(52:55)), (/'reaper'/))
 	ers = 2
 else
 	call log_string ('Error: Unknown file type: '//mission, .true.)
@@ -509,8 +482,8 @@ integer :: i
 character(len=rads_cmdl) :: original
 
 if (nout == 0) return	! Skip empty data sets
-if (cyclenr(1) < c0 .or. cyclenr(1) > c1) return	! Skip chunks that are not of the selected cycle
-if (tnode(1) < t0 .or. tnode(1) > t1) return	! Skip equator times that are not of selected range
+if (cyclenr(1) < cycles(1) .or. cyclenr(1) > cycles(2)) return	! Skip chunks that are not of the selected cycle
+if (tnode(1) < times(1) .or. tnode(1) > times(2)) return	! Skip equator times that are not of selected range
 
 ! Update phase name if required
 phasenm(1) = strtolower(phasenm(1))

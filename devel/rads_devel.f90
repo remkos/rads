@@ -158,6 +158,8 @@ endif
 '                            or --sec for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)' // &
 'Common [rads_options] are:'/ &
 '  --help                    Print this syntax massage'/ &
+'  --log FILENAME            Send statistics to FILENAME (default is standard output)'/ &
+'  -q, --quiet               Suppress warning messages (but keeps fatal error messages)' / &
 '  -v, --verbose             Increase verbosity level'/ &
 '  --debug LEVEL             Set debug/verbosity level'/ &
 '  --version                 Version info')

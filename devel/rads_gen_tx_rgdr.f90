@@ -77,6 +77,7 @@ program rads_gen_tx_rgdr
 use rads
 use rads_devel
 use rads_devel_netcdf
+use rads_gen
 use rads_misc
 use rads_netcdf
 use rads_time
@@ -84,10 +85,8 @@ use netcdf
 
 ! Command line arguments
 
-integer(fourbyteint) :: verbose=0, c0=0, c1=999, ios, i
-real(eightbytereal) :: t0, t1
+integer(fourbyteint) :: ios, i
 character(len=rads_cmdl) :: infile, arg
-character(len=rads_varl) :: optopt, optarg, sat = 'tx.r50'
 
 ! Header variables
 
@@ -106,40 +105,9 @@ real(eightbytereal), parameter :: sec1992 = 220838400d0	! UTC seconds from 1 Jan
 ! Initialise
 
 call synopsis
-t0 = nan
-t1 = nan
-
-! Scan command line for options
-
-do
-	call getopt ('vC:S: verbose debug: sat: cycle: t: mjd: sec: ymd: doy:', optopt, optarg)
-	select case (optopt)
-	case ('!')
-		exit
-	case (':', '::')
-		call rads_opt_error (optopt, optarg)
-	case ('v', 'verbose')
-		verbose = verbose + 1
-	case ('debug')
-		read (optarg, *, iostat=ios) verbose
-		if (ios /= 0) call rads_opt_error (optopt, optarg)
-	case ('C', 'cycle')
-		c1 = -1
-		read (optarg, *, iostat=ios) c0, c1
-		if (ios > 0) call rads_opt_error (optopt, optarg)
-		if (c1 < c0) c1 = c0
-	case ('S', 'sat')
-		sat = optarg
-	case ('time', 't:', 'sec', 'mjd', 'doy', 'ymd') ! Finally try date arguments
-		call dateopt (optopt, optarg, t0, t1, iostat=ios)
-		if (ios > 0) call rads_opt_error (optopt, optarg)
-	end select
-enddo
-
-! Initialise
-
+call rads_gen_getopt ('tx.r50')
 call synopsis ('--head')
-call rads_init (S, sat, verbose)
+call rads_init (S, sat)
 
 !----------------------------------------------------------------------
 ! Read all file names from standard input
@@ -192,7 +160,7 @@ do
 
 ! Skip passes of which the cycle number or equator crossing time is outside the specified interval
 
-	if (equator_time < t0 .or. equator_time > t1 .or. cyclenr < c0 .or. cyclenr > c1) then
+	if (equator_time < times(1) .or. equator_time > times(2) .or. cyclenr < cycles(1) .or. cyclenr > cycles(2)) then
 		call nfs(nf90_close(ncid))
 		call log_string ('Skipped', .true.)
 		cycle

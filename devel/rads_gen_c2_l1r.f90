@@ -82,6 +82,7 @@ program rads_gen_c2_l1r
 
 use rads
 use rads_devel
+use rads_gen
 use rads_misc
 use rads_netcdf
 use rads_time
@@ -89,11 +90,9 @@ use netcdf
 
 ! Command line arguments
 
-integer(fourbyteint) :: verbose=0, c0=0, c1=999, ios
-real(eightbytereal) :: t0, t1
+integer(fourbyteint) :: ios
 character(len=rads_cmdl) :: filename, arg
 character(len=rads_strl) :: filenames = ''
-character(len=rads_varl) :: optopt, optarg, sat = 'c2'
 
 ! Header variables
 
@@ -129,50 +128,14 @@ real(eightbytereal), parameter :: fai = 7.3d-3
 real(eightbytereal), parameter :: sec2000=473299200d0, rev_time = 5953.45d0, rev_long = -24.858d0
 real(eightbytereal), parameter :: pitch_bias = 0.096d0, roll_bias = 0.086d0, yaw_bias = 0d0	! Attitude biases to be added
 real(eightbytereal) :: uso_corr, dhellips, tbias, range_bias
-integer(fourbyteint) :: i, j, m, oldcyc=0, oldpass=0, mle=3, nhz=0, nwvf=0
+integer(fourbyteint) :: i, j, m, oldcyc=0, oldpass=0, mle=3
 
 ! Initialise
 
 call synopsis
-t0 = nan
-t1 = nan
-
-! Scan command line for options
-
-do
-	call getopt ('mvwC:S: verbose debug: sat: cycle: t: mjd: sec: ymd: doy: with-20hz with-wvf', optopt, optarg)
-	select case (optopt)
-	case ('!')
-		exit
-	case (':', '::')
-		call rads_opt_error (optopt, optarg)
-	case ('v', 'verbose')
-		verbose = verbose + 1
-	case ('debug')
-		read (optarg, *, iostat=ios) verbose
-		if (ios /= 0) call rads_opt_error (optopt, optarg)
-	case ('C', 'cycle')
-		c1 = -1
-		read (optarg, *, iostat=ios) c0, c1
-		if (ios > 0) call rads_opt_error (optopt, optarg)
-		if (c1 < c0) c1 = c0
-	case ('S', 'sat')
-		sat = optarg
-	case ('m', 'with-20hz')
-		nhz = 20
-	case ('w', 'with-wvf')
-		nwvf = 256
-		nhz = 20
-	case ('time', 't:', 'sec', 'mjd', 'doy', 'ymd') ! Finally try date arguments
-		call dateopt (optopt, optarg, t0, t1, iostat=ios)
-		if (ios > 0) call rads_opt_error (optopt, optarg)
-	end select
-enddo
-
-! Initialise
-
+call rads_gen_getopt ('c2')
 call synopsis ('--head')
-call rads_init (S, sat, verbose)
+call rads_init (S, sat)
 
 !----------------------------------------------------------------------
 ! Read all file names for standard input
@@ -630,8 +593,8 @@ integer(fourbyteint), intent(in) :: cycnr, passnr, ndata
 integer(fourbyteint) :: i, j
 
 if (ndata == 0) return	! Skip empty data sets
-if (cycnr < c0 .or. cycnr > c1) return	! Skip chunks that are not of the selected cycle
-if (eq_time < t0 .or. eq_time > t1) return	! Skip equator times that are not of selected range
+if (cycnr < cycles(1) .or. cycnr > cycles(2)) return	! Skip chunks that are not of the selected cycle
+if (eq_time < times(1) .or. eq_time > times(2)) return	! Skip equator times that are not of selected range
 
 ! Store relevant info
 call rads_init_pass_struct (S, P)
