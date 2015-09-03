@@ -260,6 +260,7 @@ if (out_diff) then
 	ntrx = ntrx / 2
 	do j = 1,ntrx
 		data(j,:,:) = data(j,:,:) - data(j+ntrx,:,:)
+		mask(j,:) = mask(j,:) .or. mask(j+ntrx,:)
 	enddo
 	do j = 2*ntrx,ntrx+1,-1
 		info(j+2) = info(j)
