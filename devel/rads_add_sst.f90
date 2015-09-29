@@ -59,6 +59,7 @@ integer(fourbyteint), parameter :: nx=360, ny=180, secweek=7*86400, sec2000=4732
 integer(fourbyteint), parameter :: sun = 157982400	! Sun 1990-01-03 12:00
 integer(fourbyteint), parameter :: wed = 157723200	! Wed 1989-12-31 12:00
 real(eightbytereal), parameter :: x0=0.5d0, y0=-89.5d0, dx=1d0, dy=1d0, dz=1d-2
+real(eightbytereal), parameter :: tmp0(2) = (/273.15d0,0d0/)
 integer(twobyteint) :: grids(0:nx+1,ny,2,2)
 real(eightbytereal) :: meangrid(0:nx+1,ny)
 
@@ -326,7 +327,7 @@ do i = 1,2
 	do iy = ny,1,-1
 		do ix = 1,nx
 			k = k + 1
-			grid(ix,iy,i) = nint2(tmp(k)/dz)
+			grid(ix,iy,i) = nint2((tmp(k)-tmp0(i))/dz)
 		enddo
 	enddo
 	if (i == 1) then ! Skip second field
