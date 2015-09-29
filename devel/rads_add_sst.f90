@@ -40,7 +40,9 @@ use rads
 use rads_misc
 use rads_devel
 use rads_netcdf
+use rads_time
 use netcdf
+use grib_api
 
 ! Command line arguments
 
@@ -56,7 +58,7 @@ integer(fourbyteint) :: t1old=0, t2old=0, j
 integer(fourbyteint), parameter :: nx=360, ny=180, secweek=7*86400, sec2000=473299200
 integer(fourbyteint), parameter :: sun = 157982400	! Sun 1990-01-03 12:00
 integer(fourbyteint), parameter :: wed = 157723200	! Wed 1989-12-31 12:00
-real(eightbytereal), parameter :: x0=0.5d0, y0=-89.5d0, dx=1d0, dy=1d0
+real(eightbytereal), parameter :: x0=0.5d0, y0=-89.5d0, dx=1d0, dy=1d0, dz=1d-2
 integer(twobyteint) :: grids(0:nx+1,ny,2,2)
 real(eightbytereal) :: meangrid(0:nx+1,ny)
 
@@ -68,7 +70,7 @@ call rads_init (S)
 
 ! Get template for path name
 
-call parseenv ('${ALTIM}/data/sst/oisst.%Y.nc', path)
+call parseenv ('${ALTIM}/data/sst/oisst_v2/GRIB/oisst.%Y%m%d.grb', path)
 call parseenv ('${ALTIM}/data/sst/oisst.mean.nc', meanpath)
 
 ! Check all options
@@ -157,7 +159,7 @@ do i = 1,n
 		t1 = floor((time(i) - sun)/secweek) * secweek + sun
 	endif
 
-! What is the next Wednesday of Sunday?
+! What is the next Wednesday or Sunday?
 
 	if (time(i) < wed) then  ! Before Wed 1989-12-31 12:00
 		t2 = floor((time(i) - wed)/secweek + 1) * secweek + wed
@@ -168,18 +170,18 @@ do i = 1,n
 ! Load new grids when needed
 
 	if (t1 /= t1old) then
-		if (get_sst(t1,grids(:,:,1,:)) /= 0) then
+		if (get_grib(t1,grids(:,:,1,:)) /= 0) then
 			call log_string ('Warning: no SST for current time')
 			call log_records (0)
-			return
+			stop
 		endif
 		t1old = t1
 	endif
 	if (t2 /= t2old) then
-		if (get_sst(t2,grids(:,:,2,:)) /= 0) then
+		if (get_grib(t2,grids(:,:,2,:)) /= 0) then
 			call log_string ('Warning: no SST for current time')
 			call log_records (0)
-			return
+			stop
 		endif
 		t2old = t2
 	endif
@@ -283,65 +285,67 @@ j = nf90_close(ncid)
 end subroutine get_mean
 
 !-----------------------------------------------------------------------
-! Get the SST and ice concentration grids for time t.
+! Get the SST and ice concentration grids for time t from GRIB files
 !-----------------------------------------------------------------------
 
-function get_sst (t, grid)
-integer(fourbyteint) :: t, get_sst
-integer(twobyteint) :: grid(0:nx+1,ny,2)
-character(len=rads_cmdl) :: filename
-integer(fourbyteint) ::	ncid, v_id, j, start(3)=1, nt
-real(eightbytereal) :: time(60)
+integer function get_grib (t, grid)
+integer(fourbyteint), intent(in) :: t
+integer(twobyteint), intent(out) :: grid(0:nx+1,ny,2)
+integer(fourbyteint) ::	fileid, gribid, ix, iy, i, k, l, status, strf1985
+real(eightbytereal) :: tmp(nx*ny)
+character(len=rads_naml) :: fn
+
+600 format ('(',a,')')
 
 ! Determine file name
 
-call strf1985(filename,path,t)
+l = strf1985 (fn, path, t)
+write (*,600,advance='no') fn(l-17:l)
 
 ! Open input file
 
-if (nft(nf90_open(filename,nf90_nowrite,ncid))) then
-	get_sst = 1
+call grib_open_file (fileid, fn, 'r', status)
+if (status /= grib_success) then
+	get_grib = 1
 	return
 endif
 
-! Get hours since 2000 and convert to seconds since 1985
+! Get SST and ice concentration grid
 
-if (nft(nf90_inquire_dimension(ncid,3,len=nt))) call rads_exit ('Error reading time')
-if (nt > 60) call rads_exit ('Time dimension too large')
-if (nft(nf90_inq_varid(ncid,'time',v_id))) call rads_exit ('Error reading time')
-if (nft(nf90_get_var(ncid,v_id,time(1:nt)))) call rads_exit ('Error reading time')
-time = time * 3600d0 + sec2000
-
-! What is the right grid index?
-
-start(3) = nint((t - time(1)) / secweek + 1)
-if (start(3) > nt) then
-	get_sst = 3
-	return
-endif
-call strf1985(filename,'(Reading %Y-%m-%d %H:%M)',nint(time(start(3))))
-write (*,'(a)',advance='no') trim(filename)
-
-! Read the required SST grid
-
-if (nft(nf90_inq_varid(ncid,'sst',v_id))) call rads_exit ('Error reading SST grid')
-if (nft(nf90_get_var(ncid,v_id,grid(1:nx,:,1),start))) call rads_exit ('Error reading SST grid')
-
-! Read the required ice concentration grid
-
-if (nft(nf90_inq_varid(ncid,'ice',v_id))) call rads_exit ('Error reading ice grid')
-if (nft(nf90_get_var(ncid,v_id,grid(1:nx,:,2),start))) call rads_exit ('Error reading ice grid')
+do i = 1,2
+	call grib_new_from_file (fileid, gribid, status)
+	if (status /= grib_success) then
+		get_grib = 2
+		return
+	endif
+	call grib_get (gribid, 'values', tmp, status)
+	call grib_release (gribid)
+	if (status /= grib_success) exit
+	! Copy the input data while scaling and putting things upside down
+	k = 0
+	do iy = ny,1,-1
+		do ix = 1,nx
+			k = k + 1
+			grid(ix,iy,i) = nint2(tmp(k)/dz)
+		enddo
+	enddo
+	if (i == 1) then ! Skip second field
+		call grib_new_from_file (fileid, gribid, status)
+		call grib_release (gribid)
+	endif
+enddo
 
 ! Copy left and right boundaries
 
 grid(0,:,:) = grid(nx,:,:)
 grid(nx+1,:,:) = grid(1,:,:)
 
-! Here normal termination
+! Close file
 
-get_sst = 0
-j = nf90_close(ncid)
-end function get_sst
+call grib_close_file(fileid)
+
+get_grib = 0
+end function get_grib
 
 !-----------------------------------------------------------------------
 ! Weighted product with value checking on array a

@@ -1,4 +1,4 @@
-\begin{thebibliography}{81}
+\begin{thebibliography}{82}
 \providecommand{\natexlab}[1]{#1}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
@@ -111,6 +111,12 @@ Collard, F. (2005), Algorithmes de vent et periode moyenne des vagues {JASON} a
 Cr{\'e}taux, J.-F., and C.~M. Birkett (2006), Lake studies from satellite radar
   altimetry, \textit{C.\ R.\ Geoscience}, \textit{338}, 1098--1112,
   \doi{10.1016/j.crte.2006.08.002}.
+
+\bibitem[{\textit{Desai et~al.}(2015)\textit{Desai, Wahr, and
+  Beckley}}]{desai2015}
+Desai, S.~D., J.~M. Wahr, and B.~D. Beckley (2015), Revisiting the pole tide
+  for and from satellite altimetry, \textit{J.\ Geod.},
+  \doi{10.1007/s00190-015-0848-7}.
 
 \bibitem[{\textit{Dumont et~al.}(2001)\textit{Dumont, Sicard, Stum, and
   Zanif{\'e}}}]{dumont2001}
