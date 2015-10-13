@@ -35,6 +35,7 @@ devel/rads_add_webtide
 devel/rads_add_ww3_222
 devel/rads_add_ww3_314
 devel/rads_fix_c2
+devel/rads_fix_eqtime
 devel/rads_fix_j1
 devel/rads_fix_j2
 devel/rads_fix_j3
@@ -73,4 +74,3 @@ src/radsxoconv
 src/radsxogen
 src/radsxolist
 src/radsxostat
-rads_fix_eqtime

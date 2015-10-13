@@ -38,7 +38,7 @@ rads4_user_manual.pdf:	%.pdf:	%.tex $(CONFIG) $(SUB)
 	$(MAKEINDEX) $*
 	$(PDFLATEX) $*
 
-rads4_data_manual.pdf:	%.pdf:	%.tex $(CONFIG)
+rads4_data_manual.pdf:	%.pdf:	%.tex %.bbl $(CONFIG)
 	$(PDFLATEX) $*
 	$(BIBTEX) $*
 	$(PDFLATEX) $*
