@@ -134,15 +134,18 @@ integer, intent(in), optional :: xtype
 ! varid    : NetCDF variable ID
 ! xtype    : Type of variable (optional, default = nf90_double)
 !****-------------------------------------------------------------------
-integer(fourbyteint) :: i,j
-real(eightbytereal) :: xrange(2)
-xrange(1) = x0; xrange(2) = x1
+integer(fourbyteint) :: i, j, node_offset = 0
+real(eightbytereal) :: dx, xrange(2)
+
+! Create dimension and variable for this axis
 call nfs(nf90_def_dim(ncid,varnm,abs(nx),dimid))
 if (present(xtype)) then
 	call nfs(nf90_def_var(ncid,varnm,xtype,dimid,varid))
 else
 	call nfs(nf90_def_var(ncid,varnm,nf90_double,dimid,varid))
 endif
+
+! Add attributes
 if (units == '[]' .or. units == '()') then
 	i = index(longname,units(1:1))
 	j = index(longname,units(2:2))
@@ -156,6 +159,19 @@ else
 	if (longname /= ' ') call nfs(nf90_put_att(ncid,varid,'long_name',trim(longname)))
 	if (units /= ' ') call nfs(nf90_put_att(ncid,varid,'units',trim(units)))
 endif
+
+! Check if node_offset was set
+i = nf90_get_att(ncid,nf90_global,'node_offset',node_offset)
+
+! If so, extend range by half a bin in both directions
+if (node_offset == 0) then
+	xrange(1) = x0; xrange(2) = x1
+else
+	dx = (x1-x0)/(nx-1)/2d0
+	xrange(1) = x0 - dx; xrange(2) = x1 + dx
+endif
+
+! Add "actual_range" attribute
 call nfs(nf90_put_att(ncid,varid,'actual_range',xrange))
 end subroutine nf90_def_axis
 
@@ -181,14 +197,14 @@ integer, intent(in), optional :: len
 ! len     : Length of the dimension (optional, only needed for unlimited
 !           dimension)
 !****-------------------------------------------------------------------
-integer :: dimid(1),nx,node_offset=0,i
+integer :: dimid(1), nx, node_offset=0, i
 real(eightbytereal), allocatable :: x(:)
 real(eightbytereal) :: xrange(2)
 call nfs(nf90_inquire_variable(ncid,varid,dimids=dimid))
 call nfs(nf90_inquire_dimension(ncid,dimid(1),len=nx))
 if (nx == nf90_unlimited) nx = len
 call nfs(nf90_get_att(ncid,varid,'actual_range',xrange))
-if (nf90_get_att(ncid,nf90_global,'node_offset',node_offset) /= nf90_noerr) node_offset=0
+i = nf90_get_att(ncid,nf90_global,'node_offset',node_offset)
 allocate(x(nx))
 !
 ! This kind of prolonged way of filling x() is to make sure that:
@@ -198,14 +214,14 @@ allocate(x(nx))
 ! The alternative, to add multiples of dx is prone to increasing errors
 !
 if (node_offset == 0) then
-	x(1)=xrange(1)
-	do i=2,nx-1
-		x(i)=(xrange(1)*(nx-i)+xrange(2)*(i-1))/(nx-1)
+	x(1) = xrange(1)
+	do i = 2,nx-1
+		x(i) = (xrange(1)*(nx-i)+xrange(2)*(i-1))/(nx-1)
 	enddo
-	x(nx)=xrange(2)
+	x(nx) = xrange(2)
 else
-	do i=1,nx
-		x(i)=(xrange(1)*(nx-i+0.5d0)+xrange(2)*(i-0.5d0))/(nx)
+	do i = 1,nx
+		x(i) = (xrange(1)*(nx-i+0.5d0)+xrange(2)*(i-0.5d0))/(nx)
 	enddo
 endif
 call nfs(nf90_put_var(ncid,varid,x))
