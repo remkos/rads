@@ -2646,11 +2646,14 @@ Global RADS configuration file
 	<long_name>Ka-band backscatter coefficient correction due to atmosphere/attitude (GFS)</long_name>
 	<units>dB</units>
 	<data>dsig0_atmos_gfs_ka</data>
+	<default>1.01</default>
 	<format>f6.3</format>
 	<compress>int2 1e-3</compress>
 	<comment>Alternative to dsig0_atmos_ka which is already applied</comment>
 </var>
 <alias name="dsig0" field="32" sat="e1 e2 tx">dsig0_ku</alias>
+<alias name="dsig0_atmos" sat="sa">dsig0_atmos_ka</alias>
+<alias name="dsig0_atmos" sat="c2 e1 e2 j1 j2 j3 n1 pn tx">dsig0_atmos_ku</alias>
 
 <var name="liquid_water_rad" field="3301 33" sat="e1 e2 j1 j2 j3 n1 pn sa tx">
 	<long_name>radiometer liquid water content</long_name>

@@ -80,11 +80,11 @@ integer(fourbyteint) :: j, cyc, pass
 ! Data elements
 
 character(len=rads_naml) :: path
-integer(fourbyteint) :: hex,hexold=-99999
+integer(fourbyteint) :: hex, hexold=-99999
 type(airtideinfo) :: airinfo
 real(eightbytereal), parameter :: rad2=2d0*atan(1d0)/45d0
-logical :: dry_on=.false., wet_on=.false., ib_on=.false., air_on=.false., sig0_on = .false., wind_on = .false., &
-	topo_on=.false., saral=.false., saral_patch2, new=.false., air_plus=.false., error
+logical :: dry_on=.false., wet_on=.false., ib_on=.false., air_on=.false., sig0_on=.false., wind_on =.false., &
+	topo_on=.false., saral=.false., saral_patch2, new=.false., air_plus=.false., error=.false.
 character(len=4) :: source = 'ncep', band
 
 ! Model data
@@ -264,24 +264,16 @@ do i = 1,n
 ! Load new grids when entering new 6-hour period
 
 	if (hex /= hexold) then
-		if (hex == hexold + 1) then
+		if (hex == hexold + 1 .and. .not.error) then
 			m1 = m2
 			error = get_grids (hex+1,m2)
 		else
 			error = get_grids (hex,m1)
 			if (.not.error) error = get_grids (hex+1,m2)
 		endif
-		if (error) then
-			write (*,'(a)') 'Model switched off.'
-			dry_on = .false.
-			wet_on = .false.
-			ib_on = .false.
-			sig0_on = .false.
-			wind_on = .false.
-			exit
-		endif
 		hexold = hex
 	endif
+	if (error) exit
 
 ! Linearly interpolation in time, bi-cubic spline interpolation in space
 
@@ -368,9 +360,9 @@ enddo
 
 ! If no more fields are determined, abort.
 
-if (.not.(dry_on .or. ib_on .or. wet_on .or. sig0_on .or. wind_on)) then
+if (error .or. .not.(dry_on .or. ib_on .or. wet_on .or. sig0_on .or. wind_on)) then
 	call log_records (0)
-	stop
+	return
 endif
 
 ! If backscatter attenuation is computed, replace the old backscatter here
