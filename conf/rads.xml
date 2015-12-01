@@ -326,7 +326,7 @@ Global RADS configuration file
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_gdrd" field="418" sat="c2 j1 j2 n1 sa tx.r50">
-	<long_name>GDR-D orbital altitude</long_name>
+	<long_name>CNES GDR-D orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>CNES, GDR-D standards</source>
 	<parameters>gdr-d</parameters>
@@ -404,7 +404,7 @@ Global RADS configuration file
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_gdre" field="425" sat="c2 j2 j3">
-	<long_name>GDR-E orbital altitude</long_name>
+	<long_name>CNES GDR-E orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>CNES, GDR-E standards</source>
 	<parameters>gdr-e</parameters>
