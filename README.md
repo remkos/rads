@@ -18,6 +18,9 @@ The code is currently still under major development. When released, it will be m
 ## Version History
 Following is a history of releases on GitHub, newest to oldest.
 
+### v4.1.3
+* Added Jason-2 GDR-E orbits, which are now the default.
+
 ### v4.1.2
 * Bug fixes for 'radscolin --diff -r0' and for 'rads2grd -c'.
 * Add 'configure' to distribution.

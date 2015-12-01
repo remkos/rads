@@ -175,14 +175,14 @@ If the time tags on the original GDR data include a bias, the orbit has either b
 \var{alt_gps}      & 416 & GPS altitude & m & j1 j2 && \ref{item:alt_gps} \\
 \var{alt_eig6c}    & 417 & EIGEN-6C altitude & m & c2 n1 && \ref{item:alt_eig6} \\
 \var{alt_eig6s2}   & 417 & EIGEN-6S2 altitude & m & j1 j2 && \ref{item:alt_eig6} \\
-\var{alt_gdrd}     & 418 & GDR-D altitude & m & c2 j1 j2 n1 sa && \ref{item:alt_gdrd} \\
+\var{alt_gdrd}     & 418 & CNES GDR-D altitude & m & c2 j1 j2 n1 sa && \ref{item:alt_gdrd} \\
 \var{alt_std1204}  & 419 & GSFC/Std1204 altitude & m & j1 j2 pn tx && \ref{item:alt_std1204} \\
 \var{alt_reaper}   & 420 & REAPER/COMBI altitude & m & e1 e2 && \ref{item:alt_reaper} \\
 \var{alt_reaper_deos} & 421 & REAPER/DEOS altitude & m & e1 e2 && \ref{item:alt_reaper} \\
 \var{alt_reaper_gfz}  & 422 & REAPER/GFZ altitude & m & e1 e2 && \ref{item:alt_reaper} \\
 \var{alt_reaper_esoc} & 423 & REAPER/ESOC altitude & m & e1 e2 && \ref{item:alt_reaper} \\
 \var{alt_std1404}  & 424 & GSFC/Std1404 altitude & m & j2 && \ref{item:alt_std1404} \\
-\var{alt_gdre}     & 425 & GDR-E altitude & m & c2 && \ref{item:alt_gdre} \\
+\var{alt_gdre}     & 425 & CNES GDR-E altitude & m & c2 j2 && \ref{item:alt_gdre} \\
 \var{alt_slcci}    & 426 & GFZ/SLCCI altitude & m & n1 pn tx && \ref{item:alt_slcci} \\
 \hline
 \var{alt} & 4 & \alias{alt_gdre} \var{alt_cnes} & & c2 && \ref{item:alt}\\
@@ -190,7 +190,8 @@ If the time tags on the original GDR data include a bias, the orbit has either b
 \var{alt} & 4 & \alias{alt_pgs7777} & & g1 && \ref{item:alt} \\
 \var{alt} & 4 & \alias{alt_gdrcp} & & gs && \ref{item:alt} \\
 \var{alt} & 4 & \alias{alt_gdrd} \var{alt_eiggl04s} & & j1 && \ref{item:alt} \\
-\var{alt} & 4 & \alias{alt_gdrd} & & j2 sa && \ref{item:alt} \\
+\var{alt} & 4 & \alias{alt_gdre} \alias{alt_gdrd} & & j2 && \ref{item:alt} \\
+\var{alt} & 4 & \alias{alt_gdrd} & & sa && \ref{item:alt} \\
 \var{alt} & 4 & \alias{alt_gdrd} \var{alt_gdrcp} & & n1 && \ref{item:alt} \\
 \var{alt} & 4 & \alias{alt_gdrcp} \var{alt_jgm3} & & pn tx && \ref{item:alt} \\
 \end{vartable}
@@ -205,11 +206,11 @@ If the time tags on the original GDR data include a bias, the orbit has either b
 \item Orbits produced under strict Jason GDR-C' standards.\label{item:alt_gdrcp}
 \item Reduced-dynamic (fast-delivery) orbits based on GPS tracking data only.\label{item:alt_gps}
 \item Orbits provided by ESOC using the EIGEN-6C or EIGEN-6S2 gravity field. The orbits are available for parts of the various altimeter missions only: CryoSat-2 cycles 4-58, Envisat all cycles, Jason-1 cycles 1-260, Jason-2 cycles 1-220.\label{item:alt_eig6}
-\item Orbits produced under strict Jason GDR-D standards (current baseline) \citep{ids2011}. Data since April 2015 are in fact produced with GDR-E standards, but the variable name and comment have not been updated to reflect this.\label{item:alt_gdrd}
+\item Orbits produced by CNES under strict Jason GDR-D standards (current baseline) \citep{ids2011}. Data since April 2015 are in fact produced with GDR-E standards, but the variable name and comment have not been updated to reflect this.\label{item:alt_gdrd}
 \item Orbits provided by GSFC using their standards "Std1204". They are "GDR-D compatible" and use the goce2s\_fit2 gravity field \citep{lemoine2013}.\label{item:alt_std1204}
 \item Orbits produced by the REAPER project. A combined solution and individual solutions created by DEOS (TU Delft), GFZ and ESOC are available \citep{rudenko2011}.\label{item:alt_reaper}
 \item Orbits provided by GSFC using their standards "Std1404". They are "GDR-E compatible".\label{item:alt_std1404}
-\item Orbits products under strict Jason GDR-E standards (baseline for the production of orbits since April 2015) \citep{ids2015}.\label{item:alt_gdre}
+\item Orbits produced by CNES under strict Jason GDR-E standards (baseline for the production of orbits since April 2015) \citep{ids2015}.\label{item:alt_gdre}
 \item Orbits produced by GFZ in the framework of the ESA Sea Level CCI project. The particular version of the orbits used in RADS are designated VER06 (CCI14), and are based on the EIGEN-6S2A gravity field model \citep{rudenko2014}.\label{item:alt_slcci}
 \item The variable \var{alt} refers to the preferred (best) orbit solution for each satellite. If two variable names are mentioned, RADS picks the first one by preference; it that is not available, the second variable is used.\label{item:alt}
 \end{notes}
