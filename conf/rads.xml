@@ -325,10 +325,10 @@ Global RADS configuration file
 	<compress>int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_gdrd" field="418" sat="c2 j1 j2 j3 n1 sa tx.r50">
+<var name="alt_gdrd" field="418" sat="c2 j1 j2 n1 sa tx.r50">
 	<long_name>GDR-D orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
-	<source>GDR-D standards</source>
+	<source>CNES, GDR-D standards</source>
 	<parameters>gdr-d</parameters>
 	<units>m</units>
 	<data>alt_gdrd</data>
@@ -403,10 +403,10 @@ Global RADS configuration file
 	<compress>int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_gdre" field="425" sat="c2">
+<var name="alt_gdre" field="425" sat="c2 j2 j3">
 	<long_name>GDR-E orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
-	<source>GDR-E standards</source>
+	<source>CNES, GDR-E standards</source>
 	<parameters>gdr-e</parameters>
 	<units>m</units>
 	<data>alt_gdre</data>
@@ -432,7 +432,8 @@ Global RADS configuration file
 <alias name="alt" field="4" sat="g1">alt_pgs7777</alias>
 <alias name="alt" field="4" sat="gs">alt_gdrcp</alias>
 <alias name="alt" field="4" sat="j1">alt_gdrd alt_eiggl04s</alias>
-<alias name="alt" field="4" sat="j2 j3 sa">alt_gdrd</alias>
+<alias name="alt" field="4" sat="j2 j3">alt_gdre</alias>
+<alias name="alt" field="4" sat="sa">alt_gdrd</alias>
 <alias name="alt" field="4" sat="n1">alt_gdrd alt_gdrcp</alias>
 <alias name="alt" field="4" sat="pn tx">alt_gdrcp alt_jgm3</alias>
 <alias name="alt" field="4" sat="tx.r50">alt_gdrd</alias>

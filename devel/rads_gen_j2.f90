@@ -37,7 +37,7 @@ program rads_gen_j2
 ! time - Time since 1 Jan 85
 ! lat - Latitude
 ! lon - Longitude
-! alt_gdrd - Orbit altitude
+! alt_gdrd/alt_gdre - Orbit altitude
 ! alt_rate - Orbit altitude rate
 ! range_* - Ocean range (retracked)
 ! dry_tropo_ecmwf - ECMWF dry tropospheric correction
@@ -228,7 +228,11 @@ do
 	call new_var ('time', a + sec2000)
 	call cpy_var ('lat')
 	call cpy_var ('lon')
-	call cpy_var ('alt', 'alt_gdrd')
+	if (cyclenr < 254) then ! Before Cycle 254 was GDR-D orbit
+		call cpy_var ('alt', 'alt_gdrd')
+	else
+		call cpy_var ('alt', 'alt_gdre')
+	endif
 	call cpy_var ('orb_alt_rate', 'alt_rate')
 	call cpy_var ('range_ku')
 	call cpy_var ('range_ku_mle3')
