@@ -31,7 +31,7 @@ use netcdf
 
 type(rads_sat) :: S
 type(rads_pass) :: P
-integer(fourbyteint) :: cycle, pass, i, ios, intervals = 0
+integer(fourbyteint) :: cycle, pass, i, ncid, ios, intervals = 0
 type(rads_var), pointer :: var
 logical :: show_x = .false., round = .false.
 real(eightbytereal) :: factor = 1d0
@@ -188,6 +188,7 @@ if (P%ndata == 0) write (*,'(a)') '# Could not find any corresponding file, cont
 write (*,'(a)') '#'
 
 ! Now start the list
+ncid = P%finfo(1)%ncid
 do i = 1,S%nvar
 	info => S%var(i)%info
 	if (S%var(i)%name /= info%name) then
@@ -202,18 +203,18 @@ do i = 1,S%nvar
 		j = index(info%dataname,':')
 		if (j == 1) then
 			varid = nf90_global
-		else if (nft(nf90_inq_varid(P%ncid,info%dataname(:j-1),varid))) then
-			call list ('X', S%var(i))
+		else if (nft(nf90_inq_varid(ncid,info%dataname(:j-1),varid))) then
+			call list ('X',S%var(i))
 			cycle
 		endif
-		if (nft(nf90_inquire_attribute(P%ncid,varid,info%dataname(j+1:),xtype=j))) then
-			call list ('X', S%var(i))
+		if (nft(nf90_inquire_attribute(ncid,varid,info%dataname(j+1:),xtype=j))) then
+			call list ('X',S%var(i))
 		else
 			call list ('N', S%var(i))
 		endif
 	else if (info%datasrc == rads_src_nc_var) then
-		if (.not.nft(nf90_inq_varid(P%ncid,info%dataname,varid))) then
-			call list ('N', S%var(i))
+		if (.not.nft(nf90_inq_varid(ncid,info%dataname,varid))) then
+			call list ('N',S%var(i))
 		else if (info%default /= huge(0d0)) then
 			call list ('D', S%var(i))
 		else
