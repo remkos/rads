@@ -1327,6 +1327,15 @@ Global RADS configuration file
        <format>f10.4</format>
        <compress>int4 1e-4</compress>
 </var>
+<var name="mss_dtu15" field="1618">
+	<long_name>DTU15 mean sea surface height</long_name>
+	<source>DTU15</source>
+	<parameters>DTU15/DTU15MSS_1min.nc</parameters>
+	<units>m</units>
+	<data>mss_dtu15</data>
+	<format>f10.4</format>
+	<compress>int4 1e-4</compress>
+</var>
 <alias name="mss" field="16">mss_dtu13</alias>
 
 <if sat="sa">

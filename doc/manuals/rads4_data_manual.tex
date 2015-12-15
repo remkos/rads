@@ -573,9 +573,10 @@ Another reference surface is the geoid (the theoretical mean sea surface in abse
 
 \begin{vartable}
 \var{mss_egm2008} & 1610 & EGM2008 mean sea surface & m & all & -200 200 & \ref{item:mss_egm2008} \\
-\var{mss_dtu10} & 1613 & DTU10 mean sea surface & m & all & -200 200 & \ref{item:mss_dtu10} \\
+\var{mss_dtu10} & 1613 & DTU10 mean sea surface & m & e1 e2 gs g1 tx n1 j1 & -200 200 & \ref{item:mss_dtu10} \\
 \var{mss_cls11} & 1614 & CNES-CLS11 mean sea surface & m & all & -200 200 & \ref{item:mss_cls11} \\
 \var{mss_dtu13} & 1616 & DTU13 mean sea surface & m & all & -200 200 & \ref{item:mss_dtu13} \\
+\var{mss_dtu15} & 1616 & DTU15 mean sea surface & m & c2 j2 sa & -200 200 & \ref{item:mss_dtu15} \\
 \var{geoid_egm2008} & 1611 & EGM2008 geoid & m & all & -200 200 & \ref{item:geoid_egm2008} \\
 \var{geoid_eigen6} & 1617 & EIGEN-6C3stat geoid & m & all & -200 200 & \ref{item:geoid_eigen6} \\
 \hline
@@ -586,15 +587,17 @@ Another reference surface is the geoid (the theoretical mean sea surface in abse
 
 \begin{notes}
 \item Combined geoid and mean sea surface solution \citep{pavlis2008}.\label{item:mss_egm2008}\label{item:geoid_egm2008}
-\item The DTU10 mean sea surface model was created at DTU and based on RADS altimeter data \citep{andersen2010}. It is a follow-on of the DNSC08 mean sea surface model \citep{andersen2009}.\label{item:mss_dtu10}
+\item The DTU10 mean sea surface model was created at DTU and based on RADS altimeter data \citep{andersen2010}. It is a follow-on of the DNSC08 mean sea surface model \citep{andersen2009}. \textbf{This field is slated to be removed from all datasets.}\label{item:mss_dtu10}
 \item Newest iteration of mean sea surface models at CNES/CLS \citep{schaeffer2012}.\label{item:mss_cls11}
-\item The DTU13MSS is the latest release of the global high-resolution mean sea surface from DTU Space, which includes two major advances over DTU10MSS. First, the time series have been extended to 20 years from 17 years. Second, the DTU13MSS ingests Cryosat-2 SAR lead data in order to map the high latitude parts of the Arctic Ocean. In high-latitude regions a combination of joint ERS-1/ERS-2/ENVISAT and Cryosat-2 altimetry have been used. Also, the Jason-1 geodetic mission has been used for the DTU13MSS \citep{andersen2013a}. This is the default mean sea surface model and is used as reference for the sea level anomaly variable (\var{sla}).\label{item:mss_dtu13}
+\item The DTU13MSS is the penultimate release of the global high-resolution mean sea surface from DTU Space, which includes two major advances over DTU10MSS. First, the time series have been extended to 20 years from 17 years. Second, the DTU13MSS ingests Cryosat-2 SAR lead data in order to map the high latitude parts of the Arctic Ocean. In high-latitude regions a combination of joint ERS-1/ERS-2/ENVISAT and Cryosat-2 altimetry have been used. Also, the Jason-1 geodetic mission has been used for the DTU13MSS \citep{andersen2013a}. This is the default mean sea surface model and is used as reference for the sea level anomaly variable (\var{sla}).\label{item:mss_dtu13}
+\item The DTU15MSS is the latest state-of-the-art of the global high-resolution mean sea surface derived by DTU Space from satellite altimetry. The main improvement over DTU13 is the inclusion of four years of CryoSat-2 data, with a new treatment of orbit errors and ice classification \citep{stenseng2015}.\textbf{This model is slowly phased in into RADS4 and is intended to replace in the near future DTU13 as the default mean sea surface.}\label{item:mss_dtu15}
 \item The EIGEN-6C3stat geoid model has been generated in preparation for the final release of EIGEN-6C4. It was computed from a combination of LAGEOS, GRACE, and GOCE data, augmented with DTU13 surface gravity data to degree and order 1949 (corresponding to approximately 10 km spatial resolution). \citep{foerste2013,shako2014}. This is the default geoid model.\label{item:geoid_eigen6}
 \end{notes}
 
 \chapter{Wind speed and wave height variables}
 \section{Significant wave height}
 \label{var:swh}
+
 The significant wave height (SWH) is generally defined as the mean wave height (peak to trough) of the highest one-third of the ocean waves. Another commonly used definition is four times the standard deviation of the elevation of the sea surface in the radar footprint.
 
 SWH is determined from the rate of increase of returned power of the radar altimeter pulse (the waveform slope) and requires no further correction other than some instrument parameters. There is one complexity in this, and that is that SWH is defined as follows:

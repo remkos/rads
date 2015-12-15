@@ -1,4 +1,4 @@
-\begin{thebibliography}{82}
+\begin{thebibliography}{83}
 \providecommand{\natexlab}[1]{#1}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
@@ -224,7 +224,7 @@ Komjathy, A., G.~H. Born, and D.~N. Anderson (2000), An improved high precision
 
 \bibitem[{\textit{Labroue and Obligis}(2003)}]{labroue2003}
 Labroue, S., and E.~Obligis (2003), Neural network retrieval algorithms for the
-  {Envisat/MWR}, \textit{Tech.\ Rep. CLS/DOS/NT/03.xxx}, Collect.,
+  {Envisat/MWR}, \textit{Tech.\ Rep. CLS/DOS/NT/03.848}, Collect.,
   Localisation, Satell., Ramonville St.\ Agne, France.
 
 \bibitem[{\textit{Labroue et~al.}(2004)\textit{Labroue, Gaspar, Dorandeu,
@@ -404,6 +404,12 @@ Shako, R., C.~F{\"o}rste, O.~Abrikosov, S.~Bruinsma, J.~C. Marty, J.-M.
 Smith, W. H.~F., and D.~T. Sandwell (1994), Bathymetric prediction from dense
   satellite altimetry and sparse shipboard bathymetry, \textit{J.\ Geophys.\
   Res.}, \textit{99}(B11), 21,803--21,824.
+
+\bibitem[{\textit{Stenseng et~al.}(2015)\textit{Stenseng, Piccioni, Andersen,
+  and Knudsen}}]{stenseng2015}
+Stenseng, L., G.~Piccioni, O.~B. Andersen, and P.~Knudsen (2015), Sea surface
+  retracking and classification of cryosat-2 altimetry observations in the
+  arctic ocean, presented at AGU 2015 Fall Meeting.
 
 \bibitem[{\textit{Stum et~al.}(1998)\textit{Stum, Ogor, Le~Traon, Dorandeu,
   Gaspar, and Dumont}}]{stum1998a}
