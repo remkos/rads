@@ -213,7 +213,7 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-integer(fourbyteint) :: i
+integer(fourbyteint) :: i, ncid
 real(eightbytereal) :: time(n), lat(n), lon(n), topo(n), surface_type(n), dry(n), wet(n), ib(n), air(n), &
 	atten_old(n), atten(n), wvc(n), lwc(n), sig0(n), sig0_20hz(20,n), u10(n), v10(n), &
 	f1, f2, g1, g2, slp, dslp, slp0, tmp, mtmp, rp, rt
@@ -222,8 +222,9 @@ call log_pass (P)
 
 ! If "new" option is used, write only when fields are not yet available
 
-if (new .and. nff(nf90_inq_varid(P%ncid,'dry_tropo_'//source,i)) .and. &
-	nff(nf90_inq_varid(P%ncid,'wet_tropo_'//source,i))) then
+ncid = P%finfo(1)%ncid
+if (new .and. nff(nf90_inq_varid(ncid,'dry_tropo_'//source,i)) .and. &
+	nff(nf90_inq_varid(ncid,'wet_tropo_'//source,i))) then
 	call log_records (0)
 	return
 endif
