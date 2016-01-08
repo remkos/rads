@@ -179,7 +179,8 @@ call nfs (nf90_def_dim (ncid, 'xover', nf90_unlimited, dimid(1)))
 call nfs (nf90_def_dim (ncid, 'leg', 2, dimid(2)))
 
 ! To use general netCDF creation machinary, we trick the library a bit here
-P%finfo(1) = rads_file (ncid, filename)
+P%ncid = ncid
+P%filename = filename
 P%rw = .true.
 S(1)%time%info%ndims = 2
 
@@ -401,7 +402,7 @@ do cycle1 = S1%cycles(1), S1%cycles(2)
 			cycle
 		endif
 		call load_data (S1, P1)
-		if (rads_verbose > 2) write (*,600) 'close S1', P1%cycle, P1%pass, P1%finfo(1)%ncid
+		if (rads_verbose > 2) write (*,600) 'close S1', P1%cycle, P1%pass, P1%ncid
 		call rads_close_pass (S1, P1, .true.) ! Close the pass file, but keep all its info
 
 		! Limit the time selection for P2 based on the time limits of P1
@@ -452,7 +453,7 @@ do cycle1 = S1%cycles(1), S1%cycles(2)
 				top => P2
 			endif
 			call load_data (S2, P2)
-			if (rads_verbose > 2) write (*,600) 'close S2', P2%cycle, P2%pass, P2%finfo(1)%ncid
+			if (rads_verbose > 2) write (*,600) 'close S2', P2%cycle, P2%pass, P2%ncid
 			call rads_close_pass (S2, P2, .true.) ! Close the pass file, but keep all its info
 			if (P2%start_time > t1) exit
 			if (P2%ndata > 0) call xogen_passes (S1, P1, S2, P2, dt)

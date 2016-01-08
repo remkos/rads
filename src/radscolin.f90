@@ -412,7 +412,8 @@ call nfs (nf90_put_att (ncid, nf90_global, 'pass_number', pass))
 call nfs (nf90_put_att (ncid, nf90_global, 'history', timestamp()//' UTC: '//trim(S(1)%command)))
 
 ! To use general netCDF creation machinary, we trick the library a bit here
-P%finfo(1) = rads_file (ncid, filename)
+P%ncid = ncid
+P%filename = filename
 P%rw = .true.
 S(1)%time%info%ndims = 2
 

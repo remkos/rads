@@ -31,7 +31,7 @@ use netcdf
 
 type(rads_sat) :: S
 type(rads_pass) :: P
-integer(fourbyteint) :: cycle, pass, i, j, ncid, varid
+integer(fourbyteint) :: cycle,pass,i,j,varid
 type(rads_varinfo), pointer :: info
 logical :: show_x = .false.
 
@@ -65,14 +65,13 @@ if (show_x) write (*,610)
 '# M  field  var_name  math_rpn_statment    long_name'/ &
 '# N  field  var_name  netcdf_var_name      long_name')
 610 format ( &
-'# X  field  var_name  non_existent_netcdf  long_name')
+'# X  field  var_name  non_existent_netcdf  long_name') 
 
 ! If no file, let it be known
 if (P%ndata == 0) write (*,'(a)') '# Could not find any corresponding file, continuing without ...'
 write (*,'(a)') '#'
 
 ! List the variables
-ncid = P%finfo(1)%ncid
 do i = 1,S%nvar
 	info => S%var(i)%info
 	if (S%var(i)%name /= info%name) then
@@ -87,17 +86,17 @@ do i = 1,S%nvar
 		j = index(info%dataname,':')
 		if (j == 1) then
 			varid = nf90_global
-		else if (nft(nf90_inq_varid(ncid,info%dataname(:j-1),varid))) then
+		else if (nft(nf90_inq_varid(P%ncid,info%dataname(:j-1),varid))) then
 			call list ('X',S%var(i))
 			cycle
 		endif
-		if (nft(nf90_inquire_attribute(ncid,varid,info%dataname(j+1:),xtype=j))) then
+		if (nft(nf90_inquire_attribute(P%ncid,varid,info%dataname(j+1:),xtype=j))) then
 			call list ('X',S%var(i))
 		else
 			call list ('N',S%var(i))
 		endif
 	else if (info%datasrc == rads_src_nc_var) then
-		if (.not.nft(nf90_inq_varid(ncid,info%dataname,varid))) then
+		if (.not.nft(nf90_inq_varid(P%ncid,info%dataname,varid))) then
 			call list ('N',S%var(i))
 		else if (info%default /= huge(0d0)) then
 			call list ('D',S%var(i))

@@ -96,7 +96,7 @@ else
 	enddo
 	eqlon = P%equator_lon
 	eqtime = P%equator_time
-	metafile = P%finfo(1)%name
+	metafile = P%filename
 endif
 call rads_close_pass (S, P)
 end subroutine getraw

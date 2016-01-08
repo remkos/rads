@@ -37,7 +37,7 @@ program rads_gen_j1
 ! time - Time since 1 Jan 85
 ! lat - Latitude
 ! lon - Longitude
-! alt_gdrd/alt_gdre - Orbit altitude
+! alt_gdrd - Orbit altitude
 ! alt_rate - Orbit altitude rate
 ! range_* - Ocean range (retracked)
 ! dry_tropo_ecmwf - ECMWF dry tropospheric correction
@@ -91,7 +91,7 @@ character(len=1) :: phasenm = ''
 
 integer(fourbyteint) :: cyclenr, passnr, varid
 real(eightbytereal) :: equator_time
-logical :: cma92 = .false., gdre = .false.
+logical :: cma92
 
 ! Other local variables
 
@@ -120,14 +120,10 @@ do
 		cycle
 	endif
 
-! Check if input is GDR-C or GDR-E
+! Check if input is GDR-C
 
-	if (index(infile,'_2Pc') > 0) then
-		gdre = .false.
-	else if (index(infile,'_2Pe') > 0) then
-		gdre = .true.
-	else
-		call log_string ('Error: this is neither GDR-C, nor GDR-E', .true.)
+	if (index(infile,'_2Pc') <= 0) then
+		call log_string ('Error: this is not GDR-C', .true.)
 		cycle
 	endif
 
@@ -200,16 +196,11 @@ do
 
 	call nfs(nf90_get_att(ncid,nf90_global,'references',arg))
 	i = index(infile, '/', .true.) + 1
-	if (gdre) then
-		cma92 = .false.
-		P%original = trim(infile(i:))
-	else
-		j = index(arg, 'CMA')
-		P%original = trim(infile(i:)) // ' (' // trim(arg(j:))
-		cma92 = index(arg(j:), '9.2') > 0
-		j = len_trim(P%original)
-		P%original(j+1:) = ')'
-	endif
+	j = index(arg, 'CMA')
+	P%original = trim(infile(i:)) // ' (' // trim(arg(j:))
+	cma92 = index(arg(j:), '9.2') > 0
+	j = len_trim(P%original)
+	P%original(j+1:) = ')'
 
 ! Allocate variables
 
@@ -252,11 +243,7 @@ do
 	call new_var ('time', a + sec2000)
 	call cpy_var ('lat')
 	call cpy_var ('lon')
-	if (gdre) then
-		call cpy_var ('alt', 'alt_gdre')
-	else
-		call cpy_var ('alt', 'alt_eiggl04s')
-	endif
+	call cpy_var ('alt', 'alt_eiggl04s')
 	call cpy_var ('orb_alt_rate', 'alt_rate')
 	call cpy_var ('range_ku pseudo_dat_bias_corr ADD', 'range_ku')
 	call cpy_var ('range_c pseudo_dat_bias_corr ADD', 'range_c')
