@@ -445,7 +445,7 @@ do
 
 	! In some cases the last 1-Hz measurement is invalid, so we need to skip it
 
-	if (nvalid(nrec) > 0) then
+	if (t_1hz(nrec) > 0) then
 		! This is OK
 	else if (recnr(2) == 0) then
 		recnr(1) = recnr(1) - 1
@@ -479,7 +479,7 @@ do
 		eq_time = eq_time + 0.5d0 * rev_time
 		ndata = recnr(2)
 	else
-		ndata = ndata + nrec
+		ndata = ndata + recnr(1)
 	endif
 	oldcyc = cycnr(2)
 	oldpass = passnr(2)
