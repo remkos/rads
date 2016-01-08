@@ -443,6 +443,16 @@ do
 	j = index(filename, '/', .true.) + 1
 	filenames = trim(filenames) // rads_linefeed // filename(j:)
 
+	! In some cases the last 1-Hz measurement is invalid, so we need to skip it
+
+	if (nvalid(nrec) > 0) then
+		! This is OK
+	else if (recnr(2) == 0) then
+		recnr(1) = recnr(1) - 1
+	else
+		recnr(2) = recnr(2) - 1
+	endif
+
 	! If input file is split between ascending/descending, dump the first chunk,
 	! move the second chunk down and update the equator crossing to the new pass
 
