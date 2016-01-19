@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2016  Remko Scharroo
+! Copyright (c) 2011-2015  Remko Scharroo and Eric Leuliette
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -13,25 +13,25 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*rads_gen_j3 -- Converts Jason-3 data to RADS
+!*rads_gen_s3 -- Converts Sentinel-3 data to RADS
 !+
-program rads_gen_j3
+program rads_gen_s3
 
-! This program reads Jason-3 (O/I)GDR files and converts them to the RADS format,
-! written into files $RADSDATAROOT/data/j3/a/j3pPPPPcCCC.nc.
+! This program reads Sentinel-3 NRT/STC/NTC files and converts them to the RADS format,
+! written into files $RADSDATAROOT/data/s3/a/s3pPPPPcCCC.nc.
 !  PPPP = relative pass number
 !   CCC = cycle number
 !
-! syntax: rads_gen_j3 [options] < list_of_JASON3_file_names
+! syntax: rads_gen_s3 [options] < list_of_Sentinel3_file_names
 !
-! This program handles Jason-3 OGDR, IGDR and GDR files in netCDF format.
+! This program handles Sentinel-3 standard_measurement files in netCDF format.
 ! The format is described in:
 !
-! [1] Jason-3 Products Handbook, SALP-MU-M-OP-16118-CN (CNES)
-!     Version 1.0, 9 July 2012
+! [1] SENTINEL-3 Products and Algorithms Definition (S3PAD)
+!     Surface Topography Mission (STM) SRAL/MWR L2 Products Specifications
+!     CLS-DOS-NT-09-033, 9 rev 0, 12 July 2011
+!     S3PAD-RS-CLS-SD02-00013
 !
-! [2] SALP Products Specification - Volume 30: Jason-3 Products
-!     SALP-ST-M-EA-16122-CN, Version 1.2, 9 December 2013
 !-----------------------------------------------------------------------
 !
 ! Variables array fields to be filled are:
@@ -58,7 +58,6 @@ program rads_gen_j3
 ! range_rms_* - Std dev of range
 ! range_numval_* - Nr of averaged range measurements
 ! topo_dtm2000 - Bathymetry
-! tb_187 - Brightness temperature (18.7 GHz)
 ! tb_238 - Brightness temperature (23.8 GHz)
 ! tb_340 - Brightness temperature (34.0 GHz)
 ! flags, flags_mle3 - Engineering flags
@@ -69,8 +68,7 @@ program rads_gen_j3
 ! rad_water_vapor - Water vapor content
 !
 ! Extionsions _* are:
-! _ku:      Ku-band retracked with MLE4
-! _ku_mle3: Ku-band retracked with MLE3
+! _ku:      Ku-band
 ! _c:       C-band
 !-----------------------------------------------------------------------
 use rads
@@ -91,7 +89,7 @@ character(len=rads_cmdl) :: infile, arg
 
 integer(fourbyteint) :: cyclenr, passnr, varid
 real(eightbytereal) :: equator_time
-logical :: ogdr
+logical :: nrt
 
 ! Data variables
 
@@ -104,7 +102,7 @@ real(eightbytereal), parameter :: sec2000=473299200d0	! UTC seconds from 1 Jan 1
 ! Initialise
 
 call synopsis
-call rads_gen_getopt ('j3')
+call rads_gen_getopt ('s3')
 call synopsis ('--head')
 call rads_init (S, sat)
 
@@ -124,10 +122,10 @@ do
 		cycle
 	endif
 
-! Check if input is GDR-D
+! Check if input is standard_measurement.nc
 
-	if (index(infile,'_2PT') <= 0) then
-		call log_string ('Error: this is not GDR-T', .true.)
+	if (index(infile,'standard_measurement') <= 0) then
+		call log_string ('Error: this is not standard_measurement.nc', .true.)
 		cycle
 	endif
 
@@ -148,7 +146,7 @@ do
 	endif
 
 	call nfs(nf90_get_att(ncid,nf90_global,'title',arg))
-	ogdr = (arg(:4) == 'OGDR')
+	nrt = (arg(:4) == 'nrt')
 	call nfs(nf90_get_att(ncid,nf90_global,'cycle_number',cyclenr))
 	call nfs(nf90_get_att(ncid,nf90_global,'pass_number',passnr))
 	call nfs(nf90_get_att(ncid,nf90_global,'equator_time',arg))
@@ -178,10 +176,7 @@ do
 
 	call nfs(nf90_get_att(ncid,nf90_global,'references',arg))
 	i = index(infile, '/', .true.) + 1
-	j = index(arg, 'L2 library=')
-	P%original = trim(infile(i:)) // ' (' // arg(j+11:)
-	j = index(P%original, ',')
-	P%original(j:) = ')'
+	P%original = trim(infile(i:)) // ' (' // arg // ')'
 
 ! Allocate variables
 
@@ -191,33 +186,20 @@ do
 ! Compile flag bits
 
 	flags = 0
-	call nc2f ('alt_state_flag_oper',0)				! bit  0: Altimeter Side A/B
+!instr_op_mode_01
+!	call nc2f ('alt_state_flag_oper',0)				! bit  0: Altimeter Side A/B
 	call nc2f ('qual_alt_1hz_off_nadir_angle_wf',1)	! bit  1: Quality off-nadir pointing
-	call nc2f ('surface_type',2,val=2)				! bit  2: Continental ice
+	call nc2f ('surf_type_01',2,val=2)				! bit  2: Continental ice
 	call nc2f ('qual_alt_1hz_range_c',3)			! bit  3: Quality dual-frequency iono
-	call nc2f ('surface_type',4,lim=2)				! bit  4: Water/land
-	call nc2f ('surface_type',5,lim=1)				! bit  5: Ocean/other
+	call nc2f ('surf_type_01',4,lim=2)				! bit  4: Water/land
+	call nc2f ('surf_type_01',5,lim=1)				! bit  5: Ocean/other
 	call nc2f ('rad_surf_type',6,lim=2)				! bit  6: Radiometer land flag
-	call nc2f ('rain_flag',7)
-	call nc2f ('ice_flag',7)						! bit  7: Altimeter rain or ice flag
+	call nc2f ('rain_flag_01_ku',7)
+	call nc2f ('open_sea_ice_flag_01_ku',7)			! bit  7: Altimeter rain or ice flag
 	call nc2f ('rad_rain_flag',8)
 	call nc2f ('rad_sea_ice_flag',8)				! bit  8: Radiometer rain or ice flag
-	call nc2f ('qual_rad_1hz_tb187',9)
-	call nc2f ('qual_rad_1hz_tb238',9)				! bit  9: Quality 18.7 and 23.8 GHz channel
+	call nc2f ('qual_rad_1hz_tb238',9)				! bit  9: Quality 23.8 GHz channel
 	call nc2f ('qual_rad_1hz_tb340',10)				! bit 10: Quality 34.0 GHz channel
-
-! Now do specifics for MLE3 (not used for the time being)
-
-	flags_save = flags	! Keep flags for later
-	call nc2f ('qual_alt_1hz_range_ku_mle3',3)		! bit  3: Quality dual-frequency iono
-	call nc2f ('qual_alt_1hz_range_ku_mle3',11)		! bit 11: Quality range
-	call nc2f ('qual_alt_1hz_swh_ku_mle3',12)		! bit 12: Quality SWH
-	call nc2f ('qual_alt_1hz_sig0_ku_mle3',13)		! bit 13: Quality Sigma0
-	flags_mle3 = flags	! Copy result for MLE3
-	flags = flags_save	! Continue with MLE4 flags
-
-! Redo the last ones for MLE4
-
 	call nc2f ('qual_alt_1hz_range_ku',3)			! bit  3: Quality dual-frequency iono
 	call nc2f ('qual_alt_1hz_range_ku',11)			! bit 11: Quality range
 	call nc2f ('qual_alt_1hz_swh_ku',12)			! bit 12: Quality SWH
@@ -225,63 +207,58 @@ do
 
 ! Convert all the necessary fields to RADS
 
-	call get_var (ncid, 'time', a)
+	call get_var (ncid, 'time_01', a)
 	call new_var ('time', a + sec2000)
-	call cpy_var ('lat')
-	call cpy_var ('lon')
-	call cpy_var ('alt', 'alt_gdrd')
-	call cpy_var ('orb_alt_rate', 'alt_rate')
-	call cpy_var ('range_ku')
-	call cpy_var ('range_ku_mle3')
-	call cpy_var ('range_c')
-	call cpy_var ('model_dry_tropo_corr', 'dry_tropo_ecmwf')
-	call cpy_var ('rad_wet_tropo_corr', 'wet_tropo_rad')
-	call cpy_var ('model_wet_tropo_corr', 'wet_tropo_ecmwf')
+	call cpy_var ('lat_01','lat')
+	call cpy_var ('lon_01','lon')
+!Which alt field?
+	call cpy_var ('alt_01', 'alt')
+	call cpy_var ('orb_alt_rate_01', 'alt_rate')
+	call cpy_var ('range_ocean_01_ku','range_ku')
+	call cpy_var ('range_ocean_01_c','range_c')
+!Add PLRM ranges?
+!Add zero or meas altitude tropo measurements?
+	call cpy_var ('mod_dry_tropo_cor_meas_altitude_01', 'dry_tropo_ecmwf')
+	call cpy_var ('rad_wet_tropo_cor_01_ku', 'wet_tropo_rad')
+	call cpy_var ('mod_wet_tropo_cor_meas_altitude_01', 'wet_tropo_ecmwf')
 	call cpy_var ('iono_corr_alt_ku', 'iono_alt')
-	call cpy_var ('iono_corr_alt_ku_mle3', 'iono_alt_mle3')
-	if (.not.ogdr) call cpy_var ('iono_corr_gim_ku', 'iono_gim')
+	if (.not.nrt) call cpy_var ('iono_corr_gim_ku', 'iono_gim')
 	call cpy_var ('inv_bar_corr', 'inv_bar_static')
-	if (ogdr) then
+	if (nrt) then
 		call cpy_var ('inv_bar_corr', 'inv_bar_mog2d')
 	else
 		call cpy_var ('inv_bar_corr hf_fluctuations_corr ADD', 'inv_bar_mog2d')
 	endif
-	call cpy_var ('solid_earth_tide', 'tide_solid')
+	call cpy_var ('solid_earth_tide_01', 'tide_solid')
 	call cpy_var ('ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got48')
 	call cpy_var ('ocean_tide_sol2 load_tide_sol2 SUB', 'tide_ocean_fes04')
 	call cpy_var ('load_tide_sol1', 'tide_load_got48')
 	call cpy_var ('load_tide_sol2', 'tide_load_fes04')
-	call cpy_var ('pole_tide', 'tide_pole')
-	call cpy_var ('sea_state_bias_ku', 'ssb_cls')
-	call cpy_var ('sea_state_bias_ku_mle3', 'ssb_cls_mle3')
-	call cpy_var ('sea_state_bias_c', 'ssb_cls_c')
-	call cpy_var ('geoid', 'geoid_egm96')
-	call cpy_var ('mean_sea_surface', 'mss_cnescls11')
-	call cpy_var ('swh_ku')
-	call cpy_var ('swh_ku_mle3')
-	call cpy_var ('swh_c')
-	call cpy_var ('sig0_ku')
-	call cpy_var ('sig0_ku_mle3')
-	call cpy_var ('sig0_c')
+	call cpy_var ('pole_tide_01', 'tide_pole')
+	call cpy_var ('sea_state_bias_01_ku', 'ssb')
+	call cpy_var ('sea_state_bias_01_c', 'ssb_c')
+	call cpy_var ('geoid_01', 'geoid_egm2008')
+	call cpy_var ('mean_sea_surf_sol1_01', 'mss_cnescls11')
+	call cpy_var ('mean_sea_surf_sol2_01', 'mss_dtu10')
+	call cpy_var ('swh_ocean_01_ku','swh_ku')
+	call cpy_var ('swh_ocean_01_c','swh_c')
+	call cpy_var ('sig0_ocean_01_ku','sig0_ku')
+	call cpy_var ('sig0_ocean_01_c','sig0_c')
 	call cpy_var ('wind_speed_alt')
-	call cpy_var ('wind_speed_alt_mle3')
 	call cpy_var ('wind_speed_rad')
 	call cpy_var ('wind_speed_model_u', 'wind_speed_ecmwf_u')
 	call cpy_var ('wind_speed_model_v', 'wind_speed_ecmwf_v')
-	call cpy_var ('range_rms_ku')
-	call cpy_var ('range_rms_ku_mle3')
-	call cpy_var ('range_rms_c')
-	call cpy_var ('range_numval_ku')
-	call cpy_var ('range_numval_ku_mle3')
-	call cpy_var ('range_numval_c')
+	call cpy_var ('range_ocean_rms_01_ku','range_rms_ku')
+	call cpy_var ('range_ocean_rms_01_c','range_rms_c')
+	call cpy_var ('range_ocean_numval_01_ku','range_numval_ku')
+	call cpy_var ('range_ocean_numval_01_c','range_numval_c')
 	call cpy_var ('bathymetry', 'topo_dtm2000')
-	call cpy_var ('tb_187')
-	call cpy_var ('tb_238')
-	call cpy_var ('tb_340')
+	call cpy_var ('tb_238_01','tb_238')
+	call cpy_var ('tb_365_01','tb_365')
 	a = flags
 	call new_var ('flags', a)
-	a = flags_mle3
-	call new_var ('flags_mle3', a)
+	a = flags_plrm
+	call new_var ('flags_plrm', a)
 	call cpy_var ('swh_rms_ku')
 	call cpy_var ('swh_rms_ku_mle3')
 	call cpy_var ('swh_rms_c')
@@ -312,14 +289,14 @@ contains
 
 subroutine synopsis (flag)
 character(len=*), optional :: flag
-if (rads_version ('Write Jason-3 data to RADS', flag=flag)) return
-call synopsis_devel (' < list_of_JASON3_file_names')
+if (rads_version ('Write Sentinel-3 data to RADS', flag=flag)) return
+call synopsis_devel (' < list_of_Sentinel3_file_names')
 write (*,1310)
 1310 format (/ &
-'This program converts Jason-3 OGDR/IGDR/GDR files to RADS data' / &
-'files with the name $RADSDATAROOT/data/j3/a/pPPPP/j3pPPPPcCCC.nc.' / &
+'This program converts Sentinel-3 NRT/STC/NTC files to RADS data' / &
+'files with the name $RADSDATAROOT/data/s3/a/pPPPP/s3pPPPPcCCC.nc.' / &
 'The directory is created automatically and old files are overwritten.')
 stop
 end subroutine synopsis
 
-end program rads_gen_j3
+end program rads_gen_s3
