@@ -14,18 +14,19 @@
 # GNU Lesser General Public License for more details.
 #-----------------------------------------------------------------------
 #
-# Convert latest Jason-3 OGDR and IGDR files to RADS
+# Convert latest Jason-3 OGDR files to RADS, only during Cal/Val phase
 #
-# The most recently updated data in the OGDR and IGDR directories
-# will be processed, with the IGDRs superceding the OGDRs
+# The most recently updated data in the OGDR directories
+# will be processed. Two directories will be created, one called
+# j3.ogdr_orig for the (mostly) original OGDRs, one called j3.ogdr
+# which includes post-processing.
 #
 # syntax: rads_gen_j3_new.sh
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
 
-rads_open_sandbox j3
-lst=$SANDBOX/rads_gen_j3_new.lst
-imrk=igdr/.bookmark
+rads_open_sandbox j3.ogdr0
+lst=$SANDBOX/rads_gen_j3_tmp.lst
 omrk=ogdr/.bookmark
 
 date								>  $log 2>&1
@@ -35,14 +36,15 @@ date								>  $log 2>&1
 d0=`date -u -v -2d +%Y%m%d`
 TZ=UTC touch -t ${d0}0000 $omrk
 find ogdr/c??? -name "JA3_*.nc" -a -newer $omrk | sort > $lst
-rads_gen_j3 --ymd=$d0 < $lst		>> $log 2>&1
+rads_gen_j3 --ymd=$d0 $options < $lst		>> $log 2>&1
 
-# Now process all IGDR data that came in during the last four days (including current)
+rads_close_sandbox
 
-d0=`date -u -v -3d +%Y%m%d`
-TZ=UTC touch -t ${d0}0000 $imrk
-find igdr/c??? -name "JA3_*.nc" -a -newer $imrk | sort > $lst
-rads_gen_j3 < $lst					>> $log 2>&1
+# Now process do the same again, and do the post-processing
+
+rads_open_sandbox j3.ogdr
+find ogdr/c??? -name "JA3_*.nc" -a -newer $omrk | sort > $lst
+rads_gen_j3 --ymd=$d0 $options < $lst		>> $log 2>&1
 
 # Do the patches to all data
 

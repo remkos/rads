@@ -30,7 +30,7 @@ rads_sat=$1
 SANDBOX=`mktemp -d ${TMPDIR:-/tmp}/rads.XXXXXX`
 ln -s $RADSDATAROOT/nml $RADSDATAROOT/conf $SANDBOX
 export RADSDATAROOT=$SANDBOX
-options=${options:-"-S$rads_sat"}
+options="-S$rads_sat $opt"
 log=$RADSDATAROOT/${rads_job}-`date -u +%Y%m%d-%H%M%S`.log
 lst=$RADSDATAROOT/${rads_job}-`date -u +%Y%m%d-%H%M%S`.lst
 }
@@ -43,6 +43,8 @@ rsync -aW --remove-source-files $* $SANDBOX/$rads_sat/ $RADSDATAROOT/$rads_sat/
 mkdir -p $RADSDATAROOT/$rads_sat/log
 mv -f $log.gz $RADSDATAROOT/$rads_sat/log
 rm -rf $SANDBOX
-cd $RADSROOT/tables
-make $rads_sat web
+case $rads_sat in
+	*.*) ;; # Do nothing when using special directories
+	*) (cd $RADSROOT/tables ; make $rads_sat web) ;;
+esac
 }
