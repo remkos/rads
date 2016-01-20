@@ -29,7 +29,7 @@ rads_open_sandbox c2
 mrk=$SANDBOX/bookmark
 
 # Pick start date: either 4 days ago or the last processed time, whatever is earlier
-d0=`date -u -v -4d -v +4H +%Y%m%d`
+d0=`date -u -v -92H +%Y%m%d 2>&1` || d0=`date -u --date="92 hours ago" +%Y%m%d`
 d2=20`tail -n 1 $RADSROOT/tables/c2a.cyc | cut -c34-39`
 [[ $d2 -lt $d0 ]] && d0=$d2
 

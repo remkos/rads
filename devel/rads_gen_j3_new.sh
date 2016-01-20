@@ -33,7 +33,7 @@ date								>  $log 2>&1
 
 # Process only OGDR data for the last three days (including current)
 
-d0=`date -u -v -2d +%Y%m%d`
+d0=`date -u -v -2d +%Y%m%d 2>&1` || d0=`date -u --date="2 days ago" +%Y%m%d`
 TZ=UTC touch -t ${d0}0000 $omrk
 find ogdr/c??? -name "JA3_*.nc" -a -newer $omrk | sort > $lst
 rads_gen_j3 --ymd=$d0 $options < $lst		>> $log 2>&1
