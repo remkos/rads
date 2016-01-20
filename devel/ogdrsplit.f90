@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2015  Remko Scharroo
+! Copyright (c) 2011-2016  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -15,7 +15,7 @@
 
 !*ogdrsplit -- Split Jason or SARAL OGDR files into pass files
 !
-! Read OSDR_SSHA or OGDR or OGDR_SSHA files from Jason-1, Jason-2 or SARAL and
+! Read OSDR_SSHA or OGDR or OGDR_SSHA files from Jason-1/2/3 or SARAL and
 ! split them into separate pass files. The OGDR file names are read from
 ! standard input. The individual pass files will be named
 ! <destdir>/cCCC/???_*_2P?PCCC_[P]PPP.nc, where CCC is the cycle number and
@@ -193,7 +193,7 @@ call nfs(nf90_inquire(ncid1,nvariables=nvars,nattributes=natts))
 ! Open the output file. Make directory if needed.
 
 605 format (a,'/c',i3.3)
-610 format (a,'/c',i3.3,'/',a,'P',i3.3,'_',i3.3,'.nc') ! JA1/JA2 format
+610 format (a,'/c',i3.3,'/',a,'P',i3.3,'_',i3.3,'.nc') ! JA? format
 611 format (a,'/c',i3.3,'/',a,'P',i3.3,'_',i4.4,'.nc') ! SRL format
 620 format ('... Records : ',3i6,' : ',a,1x,a,' - ',a)
 
