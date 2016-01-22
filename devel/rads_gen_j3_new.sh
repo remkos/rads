@@ -14,36 +14,38 @@
 # GNU Lesser General Public License for more details.
 #-----------------------------------------------------------------------
 #
-# Convert latest Jason-3 OGDR files to RADS, only during Cal/Val phase
+# Convert latest Jason-3 OGDR/IGDR files to RADS, only during Cal/Val phase
 #
-# The most recently updated data in the OGDR directories
-# will be processed. Two directories will be created, one called
-# j3.ogdr_orig for the (mostly) original OGDRs, one called j3.ogdr
-# which includes post-processing.
+# The most recently updated data in the OGDR/IGDR files
+# will be processed. Four directories will be created, two called
+# j3.ogdr0 and j3.igdr0 for the (mostly) original OGDRs, two called
+# j3.ogdr and j3.igdr which includes post-processing.
 #
 # syntax: rads_gen_j3_new.sh
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
 
-rads_open_sandbox j3.ogdr0
+# Process only OGDR/IGDR data for the last ten days (including current)
+
+d0=`date -u -v -9d +%Y%m%d 2>&1` || d0=`date -u --date="9 days ago" +%Y%m%d`
+
+for type in ogdr igdr; do
+rads_open_sandbox j3.${type}0
 lst=$SANDBOX/rads_gen_j3_tmp.lst
-omrk=ogdr/.bookmark
 
 date								>  $log 2>&1
 
-# Process only OGDR data for the last ten days (including current)
-
-d0=`date -u -v -9d +%Y%m%d 2>&1` || d0=`date -u --date="9 days ago" +%Y%m%d`
+omrk=${type}/.bookmark
 TZ=UTC touch -t ${d0}0000 $omrk
-find ogdr/c??? -name "JA3_*.nc" -a -newer $omrk | sort > $lst
+find ${type}/c??? -name "JA3_*.nc" -a -newer $omrk | sort > $lst
 rads_gen_j3 --ymd=$d0 $options < $lst		>> $log 2>&1
 
 rads_close_sandbox
 
 # Now process do the same again, and do the post-processing
 
-rads_open_sandbox j3.ogdr
-find ogdr/c??? -name "JA3_*.nc" -a -newer $omrk | sort > $lst
+rads_open_sandbox j3.${type}
+find ${type}/c??? -name "JA3_*.nc" -a -newer $omrk | sort > $lst
 rads_gen_j3 --ymd=$d0 $options < $lst		>> $log 2>&1
 
 # Do the patches to all data
@@ -62,3 +64,5 @@ rads_add_sla     $options           >> $log 2>&1
 date								>> $log 2>&1
 
 rads_close_sandbox
+
+done
