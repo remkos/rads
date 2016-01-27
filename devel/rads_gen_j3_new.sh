@@ -25,14 +25,27 @@
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
 
+# Check arguments
+
+days=2
+types="ogdr igdr"
+for key in "$@"; do
+	case $key in
+		-d*) days=${1:2:9} ;;
+		-o) types=ogdr ;;
+		-i) types=igdr ;;
+	esac
+done
+
 # Process only OGDR/IGDR data for the last ten days (including current)
 
-d0=`date -u -v -9d +%Y%m%d 2>&1` || d0=`date -u --date="9 days ago" +%Y%m%d`
+d0=`date -u -v -${days}d +%Y%m%d 2>&1` || d0=`date -u --date="${days} days ago" +%Y%m%d`
 
 # Run this for ogdr or igdr depending on the arguments on the command line.
 # Default is doing both!
 
-for type in ${1:-ogdr igdr}; do
+for type in ${types}; do
+	exit
 rads_open_sandbox j3.${type}0
 lst=$SANDBOX/rads_gen_j3_tmp.lst
 
