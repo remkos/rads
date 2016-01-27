@@ -29,7 +29,10 @@
 
 d0=`date -u -v -9d +%Y%m%d 2>&1` || d0=`date -u --date="9 days ago" +%Y%m%d`
 
-for type in ogdr igdr; do
+# Run this for ogdr or igdr depending on the arguments on the command line.
+# Default is doing both!
+
+for type in ${1:-ogdr igdr}; do
 rads_open_sandbox j3.${type}0
 lst=$SANDBOX/rads_gen_j3_tmp.lst
 
