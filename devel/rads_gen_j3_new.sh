@@ -29,11 +29,11 @@
 
 days=2
 types="ogdr igdr"
-for key in "$@"; do
-	case $key in
-		-d*) days=${1:2:9} ;;
-		-o) types=ogdr ;;
-		-i) types=igdr ;;
+while getopts "iod:" opt; do
+	case $opt in
+		d) days=$OPTARG ;;
+		o) types=ogdr ;;
+		i) types=igdr ;;
 	esac
 done
 
