@@ -29,8 +29,8 @@
 
 days=2
 types="ogdr igdr"
-while getopts "iod:" opt; do
-	case $opt in
+while getopts "iod:" arg; do
+	case $arg in
 		d) days=$OPTARG ;;
 		o) types=ogdr ;;
 		i) types=igdr ;;
