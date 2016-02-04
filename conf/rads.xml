@@ -1222,7 +1222,7 @@ Global RADS configuration file
 <alias name="ssb" field="15" sat="c2 g1 gs sa">ssb_hyb</alias>
 <alias name="ssb" field="15" sat="j1 j2 j3 n1 tx">ssb_cls</alias>
 
-<var name="geoid_egm96" field="1601" sat="j3 sa tx.r50">
+<var name="geoid_egm96" field="1601" sat="j2 j3 sa tx.r50">
 	<long_name>EGM96 geoid height</long_name>
 	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
 	<source>EGM96</source>
