@@ -33,7 +33,7 @@ use typesizes
 use netcdf
 
 character(len=rads_cmdl) :: orf, arg, filenm, dimnm, filetype, destdir
-character(len=26) :: date(2)
+character(len=26) :: date(3)
 character(len=rads_strl) :: exclude_list = ','
 integer(fourbyteint), parameter :: mpass = 254 * 500
 real(eightbytereal), parameter :: sec2000 = 473299200d0
@@ -195,7 +195,7 @@ call nfs(nf90_inquire(ncid1,nvariables=nvars,nattributes=natts))
 605 format (a,'/c',i3.3)
 610 format (a,'/c',i3.3,'/',a,'P',i3.3,'_',i3.3,'.nc') ! JA? format
 611 format (a,'/c',i3.3,'/',a,'P',i3.3,'_',i4.4,'.nc') ! SRL format
-620 format ('... Records : ',3i6,' : ',a,1x,a,' - ',a)
+620 format ('... Records : ',3i6,' : ',a,1x,a,' - ',a,a)
 
 write (outnm,605) trim(destdir),cycle(ipass)
 inquire (file=outnm,exist=exist)
@@ -220,7 +220,13 @@ if (exist) then
 	do while (time(rec0) < time2(2)+0.5d0 .and. rec0 <= rec1)
 		rec0 = rec0 + 1
 	enddo
-	if (rec1 < rec0) then
+	nrec = rec1 - rec0 + 1
+	if (nrec <= 5) then
+		if (nrec > 0) then
+			call strf1985f(date(1),time(rec0)+sec2000)
+			call strf1985f(date(2),time(rec1)+sec2000)
+			write (*,620) rec0,rec1,nrec,trim(outnm),date(1:2),' (skipped)'
+		endif
 		call nfs(nf90_close(ncid2))
 		return
 	endif
@@ -254,29 +260,28 @@ else
 	enddo
 endif
 
-! Overwrite cycle/pass attributes
-
-call nfs(nf90_put_att(ncid2,nf90_global,'cycle_number',cycle(ipass)))
-call nfs(nf90_put_att(ncid2,nf90_global,'pass_number',pass(ipass)))
-call nfs(nf90_put_att(ncid2,nf90_global,'absolute_pass_number',(cycle(ipass)-1)*254+pass(ipass)))
-call strf1985f(date(1),eqtime(ipass)+sec2000)
-call nfs(nf90_put_att(ncid2,nf90_global,'equator_time',date(1)))
-call nfs(nf90_put_att(ncid2,nf90_global,'equator_longitude',eqlon(ipass)))
-call strf1985f(date(1),time2(1)+sec2000)
-call nfs(nf90_put_att(ncid2,nf90_global,'first_meas_time',date(1)))
-call strf1985f(date(2),time(rec1)+sec2000)
-call nfs(nf90_put_att(ncid2,nf90_global,'last_meas_time',date(2)))
-call strf1985f(date(1),time(rec0)+sec2000)
-call nfs(nf90_enddef(ncid2))
-
 ! Initialize
 
 nrec = rec1 - rec0 + 1
 idxin(2)=rec0
 idxut(2)=dimlen + 1
-write (*,620) rec0,rec1,rec1-rec0+1,trim(outnm),date
+call strf1985f(date(1),time(rec0)+sec2000)
+call strf1985f(date(2),time(rec1)+sec2000)
+call strf1985f(date(3),eqtime(ipass)+sec2000)
+write (*,620) rec0,rec1,nrec,trim(outnm),date(1:2)
 
 allocate (darr1(nrec),darr2(nhz,nrec),iarr1(nrec),iarr2(nhz,nrec),iarr3(nhz))
+
+! Overwrite cycle/pass attributes
+
+call nfs(nf90_put_att(ncid2,nf90_global,'cycle_number',cycle(ipass)))
+call nfs(nf90_put_att(ncid2,nf90_global,'pass_number',pass(ipass)))
+call nfs(nf90_put_att(ncid2,nf90_global,'absolute_pass_number',(cycle(ipass)-1)*254+pass(ipass)))
+call nfs(nf90_put_att(ncid2,nf90_global,'equator_time',date(3)))
+call nfs(nf90_put_att(ncid2,nf90_global,'equator_longitude',eqlon(ipass)))
+call nfs(nf90_put_att(ncid2,nf90_global,'first_meas_time',date(1)))
+call nfs(nf90_put_att(ncid2,nf90_global,'last_meas_time',date(2)))
+call nfs(nf90_enddef(ncid2))
 
 ! Copy all data elements
 
