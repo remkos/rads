@@ -243,7 +243,7 @@ Global RADS configuration file
 	<compress>int4 1e-3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_cnes" field="404" sat="e1 e2 c2 j3 n1 pn tx">
+<var name="alt_cnes" field="404" sat="e1 e2 c2 j2 j3 n1 pn tx">
 	<long_name>CNES orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>CNES</source>
