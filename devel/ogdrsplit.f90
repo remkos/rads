@@ -38,7 +38,7 @@ character(len=rads_strl) :: exclude_list = ','
 integer(fourbyteint), parameter :: mpass = 254 * 500
 real(eightbytereal), parameter :: sec2000 = 473299200d0
 integer(fourbyteint) :: l, yy, mm, dd, hh, mn, cycle(mpass), pass(mpass), npass, ipass, i0, i, ncid1, &
-	nrec, nhz, hash, mjd, ios, varid
+	nrec, nhz, hash, mjd, ios, varid, n_ignore = 0
 real(eightbytereal) :: ss, lon, lat, eqtime(mpass), eqlon(mpass), starttime(mpass)
 real(eightbytereal), allocatable :: time(:)
 
@@ -50,10 +50,11 @@ if (iargc() < 1) then
 endif
 1300 format ('ogdrsplit -- Split OGDR or OGDR SSHA file into pass files'// &
 'syntax: ogdrsplit [options] destdir < list'//'where'/ &
-'  destdir : Destination directory (appends c???/*.nc)'/ &
-'  list    : Input OGDR or OGDR SSHA files'// &
+'  destdir           : Destination directory (appends c???/*.nc)'/ &
+'  list              : Input OGDR or OGDR SSHA files'// &
 'where [options] are:' / &
-'  -xvar   : Exclude variable from copying')
+'  -iNRECS           : Ignore up to NRECS record chunks to move to existing files (def: 0)' / &
+'  -xVAR1[,VAR2,...] : Exclude variable(s) from copying')
 
 ! First determine filetype
 
@@ -118,7 +119,9 @@ npass = npass - 1
 
 do i = 1,iargc()
 	call getarg (i,arg)
-	if (arg(:2) == '-x') then
+	if (arg(:2) == '-i') then
+		read (arg(3:),*) n_ignore
+	else if (arg(:2) == '-x') then
 		exclude_list = trim(exclude_list) // arg(3:len_trim(arg)) // ','
 	else
 		destdir = arg
@@ -221,7 +224,7 @@ if (exist) then
 		rec0 = rec0 + 1
 	enddo
 	nrec = rec1 - rec0 + 1
-	if (nrec <= 5) then
+	if (nrec <= n_ignore) then
 		if (nrec > 0) then
 			call strf1985f(date(1),time(rec0)+sec2000)
 			call strf1985f(date(2),time(rec1)+sec2000)
