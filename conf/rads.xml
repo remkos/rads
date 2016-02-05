@@ -80,6 +80,17 @@ Global RADS configuration file
 	<comment>Sea level from satellite 20-Hz altitude - range - all altimetric corrections.
 		These values were computed when the data set was created, in contrast to the sla_20hz variable.</comment>
 </var>
+<var name="ssha_mle3" sat="j2 j3">
+	<long_name>sea surface height anomaly (MLE3)</long_name>
+	<standard_name>sea_surface_height_above_sea_level</standard_name>
+	<units>m</units>
+	<data>ssha_mle3</data>
+	<limits>-3 3</limits>
+	<format>f8.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Sea level from satellite altitude - range - all altimetric corrections.
+		These values were computed when the data set was created, in contrast to the sla variable.</comment>
+</var>
 
 <var name="time" field="101 1">
 	<long_name>time</long_name>

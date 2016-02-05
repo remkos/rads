@@ -34,22 +34,25 @@ use rads_misc
 
 type(rads_sat) :: S
 type(rads_pass) :: P
-integer(fourbyteint) :: cyc, pass, j
-logical :: update = .false.
+integer(fourbyteint) :: cyc, pass, i
+logical :: update = .false., mle3 = .false.
 
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('mu multi-hz update all')
+call rads_set_options ('mu mle: multi-hz update all')
 call rads_init (S)
 
 ! Check all options
-do j = 1,rads_nopt
-	select case (rads_opt(j)%opt)
+do i = 1,rads_nopt
+	select case (rads_opt(i)%opt)
 	case ('u', 'update')
 		update = .true.
 	case ('m', 'multi-hz')
 		S%n_hz_output = .true.
+	case ('mle')
+		mle3 = (rads_opt(i)%arg == '3')
+		call rads_read_xml (S, trim(S%dataroot)//'/conf/mle3.xml')
 	end select
 enddo
 
@@ -78,6 +81,7 @@ write (*,1310)
 'Additional [processing_options] are:'/ &
 '  --all                     (Has no effect)'/ &
 '  -m, --multi-hz            Do multi-Hertz SLA (only)'/ &
+'  --mle=3                   Produce SSHA based on MLE3 (only)'/ &
 '  -u, --update              Update files only when there are changes')
 stop
 end subroutine synopsis
@@ -91,24 +95,25 @@ integer(fourbyteint), intent(in) :: n
 integer(fourbyteint) :: i
 real(eightbytereal) :: sla(n), tmp(n)
 real(eightbytereal), parameter :: dz = 1d-4
-character(len=5) :: hz
+character(len=5) :: ext
 
 call log_pass (P)
 
 ! Get sea level anomaly
 
 if (S%n_hz_output) then
-	write (hz, '("_",i2.2,"hz")') P%n_hz
+	write (ext, '("_",i2.2,"hz")') P%n_hz
 else
-	hz = ''
+	ext = ''
 endif
-call rads_get_var (S, P, 'sla'//hz, sla)
+call rads_get_var (S, P, 'sla'//ext, sla)
 
 ! If requested, check for changes first
 
+if (mle3) ext = '_mle3'
 if (update) then
 	i = rads_verbose; rads_verbose = -1 ! Temporarily suspend warning
-	call rads_get_var (S, P, 'ssha'//hz, tmp, .true.)
+	call rads_get_var (S, P, 'ssha'//ext, tmp, .true.)
 	rads_verbose = i
 	do i = 1,n
 		if (isnan_(tmp(i)) .and. isnan_(sla(i))) cycle
@@ -125,13 +130,13 @@ endif
 
 call rads_put_history (S, P)
 
-call rads_def_var (S, P, 'ssha'//hz)
+call rads_def_var (S, P, 'ssha'//ext)
 if (S%n_hz_output) then
 	i = n/P%n_hz
-	call rads_put_var (S, P, 'ssha'//hz, reshape(sla, (/P%n_hz,i/)))
+	call rads_put_var (S, P, 'ssha'//ext, reshape(sla, (/P%n_hz,i/)))
 	call log_records (i)
 else
-	call rads_put_var (S, P, 'ssha', sla)
+	call rads_put_var (S, P, 'ssha'//ext, sla)
 	call log_records (n)
 endif
 

@@ -293,6 +293,8 @@ do
 	call cpy_var ('atmos_corr_sig0_c', 'dsig0_atmos_c')
 	call cpy_var ('rad_liquid_water', 'liquid_water_rad')
 	call cpy_var ('rad_water_vapor', 'water_vapor_rad')
+	call cpy_var ('ssha', 'ssha')
+	call cpy_var ('ssha_mle3', 'ssha_mle3')
 
 ! Dump the data
 

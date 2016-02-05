@@ -57,6 +57,7 @@ rads_add_orbit   $options -Valt_std1404			>> $log 2>&1
 rads_add_ww3_222 $options --all					>> $log 2>&1
 rads_add_ww3_314 $options --all -C0-165			>> $log 2>&1
 rads_add_sla     $options           			>> $log 2>&1
+rads_add_sla     $options --mle=3				>> $log 2>&1
 
 date											>> $log 2>&1
 
