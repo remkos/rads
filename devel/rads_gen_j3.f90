@@ -68,7 +68,7 @@ program rads_gen_j3
 ! rad_liquid_water - Liquid water content
 ! rad_water_vapor - Water vapor content
 !
-! Extionsions _* are:
+! Extensions _* are:
 ! _ku:      Ku-band retracked with MLE4
 ! _ku_mle3: Ku-band retracked with MLE3
 ! _c:       C-band
