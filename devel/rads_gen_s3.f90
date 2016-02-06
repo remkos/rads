@@ -60,15 +60,16 @@ program rads_gen_s3
 ! topo_dtm2000 - Bathymetry
 ! tb_238 - Brightness temperature (23.8 GHz)
 ! tb_340 - Brightness temperature (34.0 GHz)
-! flags, flags_mle3 - Engineering flags
+! flags, flags_plrm - Engineering flags
 ! swh_rms_* - Std dev of SWH
 ! sig0_rms_* - Std dev of sigma0
 ! off_nadir_angle2_wf_ku - Mispointing from waveform squared
 ! rad_liquid_water - Liquid water content
 ! rad_water_vapor - Water vapor content
 !
-! Extionsions _* are:
-! _ku:      Ku-band
+! Extensions _* are:
+! _ku:      Ku-band retracked from SAR
+! _ku_plrm: Ku-band retracked with PLRM
 ! _c:       C-band
 !-----------------------------------------------------------------------
 use rads
@@ -82,7 +83,7 @@ use netcdf
 
 ! Command line arguments
 
-integer(fourbyteint) :: ios, i, j
+integer(fourbyteint) :: ios, i
 character(len=rads_cmdl) :: infile, arg
 
 ! Header variables
@@ -93,7 +94,7 @@ logical :: nrt
 
 ! Data variables
 
-integer(twobyteint), allocatable :: flags_mle3(:), flags_save(:)
+integer(twobyteint), allocatable :: flags_plrm(:), flags_save(:)
 
 ! Other local variables
 
@@ -102,7 +103,7 @@ real(eightbytereal), parameter :: sec2000=473299200d0	! UTC seconds from 1 Jan 1
 ! Initialise
 
 call synopsis
-call rads_gen_getopt ('s3')
+call rads_gen_getopt ('3a')
 call synopsis ('--head')
 call rads_init (S, sat)
 
@@ -131,7 +132,7 @@ do
 
 ! Read global attributes
 
-	call nfs(nf90_inq_dimid(ncid,'time',varid))
+	call nfs(nf90_inq_dimid(ncid,'time_01',varid))
 	call nfs(nf90_inquire_dimension(ncid,varid,len=nrec))
 	if (nrec == 0) then
 		cycle
@@ -140,7 +141,7 @@ do
 		cycle
 	endif
 	call nfs(nf90_get_att(ncid,nf90_global,'mission_name',arg))
-	if (arg /= 'Jason-3') then
+	if (arg /= 'Sentinel 3A') then
 		call log_string ('Error: wrong misson-name found in header', .true.)
 		cycle
 	endif
@@ -180,102 +181,124 @@ do
 
 ! Allocate variables
 
-	allocate (a(nrec),flags(nrec),flags_mle3(nrec),flags_save(nrec))
+	allocate (a(nrec),flags(nrec),flags_plrm(nrec),flags_save(nrec))
 	nvar = 0
 
 ! Compile flag bits
 
 	flags = 0
-!instr_op_mode_01
-!	call nc2f ('alt_state_flag_oper',0)				! bit  0: Altimeter Side A/B
-	call nc2f ('qual_alt_1hz_off_nadir_angle_wf',1)	! bit  1: Quality off-nadir pointing
+	call nc2f ('instr_op_mode_01',0,lim=2)			! bit  0: Altimeter mode
+	call nc2f ('corrected_off_nadir_angle_wf_ocean_01_ku',1)	! bit  1: Quality off-nadir pointing
 	call nc2f ('surf_type_01',2,val=2)				! bit  2: Continental ice
-	call nc2f ('qual_alt_1hz_range_c',3)			! bit  3: Quality dual-frequency iono
+	call nc2f ('range_ocean_qual_01_c',3)			! bit  3: Quality dual-frequency iono
 	call nc2f ('surf_type_01',4,lim=2)				! bit  4: Water/land
 	call nc2f ('surf_type_01',5,lim=1)				! bit  5: Ocean/other
-	call nc2f ('rad_surf_type',6,lim=2)				! bit  6: Radiometer land flag
+	call nc2f ('rad_surf_type_01',6,lim=2)			! bit  6: Radiometer land flag
 	call nc2f ('rain_flag_01_ku',7)
 	call nc2f ('open_sea_ice_flag_01_ku',7)			! bit  7: Altimeter rain or ice flag
-	call nc2f ('rad_rain_flag',8)
-	call nc2f ('rad_sea_ice_flag',8)				! bit  8: Radiometer rain or ice flag
-	call nc2f ('qual_rad_1hz_tb238',9)				! bit  9: Quality 23.8 GHz channel
-	call nc2f ('qual_rad_1hz_tb340',10)				! bit 10: Quality 34.0 GHz channel
-	call nc2f ('qual_alt_1hz_range_ku',3)			! bit  3: Quality dual-frequency iono
-	call nc2f ('qual_alt_1hz_range_ku',11)			! bit 11: Quality range
-	call nc2f ('qual_alt_1hz_swh_ku',12)			! bit 12: Quality SWH
-	call nc2f ('qual_alt_1hz_sig0_ku',13)			! bit 13: Quality Sigma0
+	call nc2f ('rain_flag_01_ku',8)					! bit  8: Altimeter rain flag
+	call nc2f ('tb_238_quality_flag_01',9)			! bit  9: Quality 23.8 GHz channel
+	call nc2f ('tb_365_quality_flag_01',10)			! bit 10: Quality 36.5 GHz channel
+	call nc2f ('range_ocean_qual_01_ku',11)			! bit 11: Quality range
+	call nc2f ('swh_ocean_qual_01_ku',12)			! bit 12: Quality SWH
+	call nc2f ('sig0_ocean_qual_01_ku',13)			! bit 13: Quality Sigma0
+
+! Now do specifics for PLRM
+
+	flags_save = flags	! Keep flags for later
+	call nc2f ('qual_alt_1hz_range_plrm_c',3)		! bit  3: Quality dual-frequency iono
+	call nc2f ('range_ocean_qual_01_plrm_ku',11)	! bit 11: Quality range
+	call nc2f ('swh_ocean_qual_01_plrm_ku',12)		! bit 12: Quality SWH
+	call nc2f ('sig0_ocean_qual_01_plrm_ku',13)		! bit 13: Quality Sigma0
+	flags_plrm = flags	! Copy result for PLRM
+	flags = flags_save	! Continue with SAR flags
+
+! Redo the last ones for SAR
+
+	call nc2f ('qual_alt_1hz_range_c',3)			! bit  3: Quality dual-frequency iono
+	call nc2f ('range_ocean_qual_01_ku',11)			! bit 11: Quality range
+	call nc2f ('swh_ocean_qual_01_ku',12)			! bit 12: Quality SWH
+	call nc2f ('sig0_ocean_qual_01_ku',13)			! bit 13: Quality Sigma0
 
 ! Convert all the necessary fields to RADS
-
 	call get_var (ncid, 'time_01', a)
 	call new_var ('time', a + sec2000)
 	call cpy_var ('lat_01','lat')
 	call cpy_var ('lon_01','lon')
 !Which alt field?
-	call cpy_var ('alt_01', 'alt')
+	call cpy_var ('alt_01', 'alt_gdre')
 	call cpy_var ('orb_alt_rate_01', 'alt_rate')
 	call cpy_var ('range_ocean_01_ku','range_ku')
+	call cpy_var ('range_ocean_01_plrm_ku','range_ku_plrm')
 	call cpy_var ('range_ocean_01_c','range_c')
 !Add PLRM ranges?
 !Add zero or meas altitude tropo measurements?
 	call cpy_var ('mod_dry_tropo_cor_meas_altitude_01', 'dry_tropo_ecmwf')
 	call cpy_var ('rad_wet_tropo_cor_01_ku', 'wet_tropo_rad')
 	call cpy_var ('mod_wet_tropo_cor_meas_altitude_01', 'wet_tropo_ecmwf')
-	call cpy_var ('iono_corr_alt_ku', 'iono_alt')
-	if (.not.nrt) call cpy_var ('iono_corr_gim_ku', 'iono_gim')
-	call cpy_var ('inv_bar_corr', 'inv_bar_static')
+	call cpy_var ('iono_cor_alt_01_ku', 'iono_alt')
+	call cpy_var ('iono_cor_alt_01_plrm_ku', 'iono_alt_plrm')
+	if (.not.nrt) call cpy_var ('iono_cor_gim_01_ku', 'iono_gim')
+	call cpy_var ('inv_bar_cor_01', 'inv_bar_static')
 	if (nrt) then
-		call cpy_var ('inv_bar_corr', 'inv_bar_mog2d')
+		call cpy_var ('inv_bar_cor_01', 'inv_bar_mog2d')
 	else
-		call cpy_var ('inv_bar_corr hf_fluctuations_corr ADD', 'inv_bar_mog2d')
+		call cpy_var ('inv_bar_cor_01 hf_fluct_cor_01 ADD', 'inv_bar_mog2d')
 	endif
 	call cpy_var ('solid_earth_tide_01', 'tide_solid')
-	call cpy_var ('ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got48')
-	call cpy_var ('ocean_tide_sol2 load_tide_sol2 SUB', 'tide_ocean_fes04')
-	call cpy_var ('load_tide_sol1', 'tide_load_got48')
-	call cpy_var ('load_tide_sol2', 'tide_load_fes04')
+	call cpy_var ('ocean_tide_sol1_01 load_tide_sol1_01 SUB', 'tide_ocean_got48')
+	call cpy_var ('ocean_tide_sol2_01 load_tide_sol2_01 SUB', 'tide_ocean_fes04')
+	call cpy_var ('load_tide_sol1_01', 'tide_load_got48')
+	call cpy_var ('load_tide_sol2_01', 'tide_load_fes04')
 	call cpy_var ('pole_tide_01', 'tide_pole')
-	call cpy_var ('sea_state_bias_01_ku', 'ssb')
-	call cpy_var ('sea_state_bias_01_c', 'ssb_c')
+	call cpy_var ('sea_state_bias_01_ku', 'ssb_cls')
+	call cpy_var ('sea_state_bias_01_plrm_ku', 'ssb_cls_plrm')
+	call cpy_var ('sea_state_bias_01_c', 'ssb_cls_c')
 	call cpy_var ('geoid_01', 'geoid_egm2008')
 	call cpy_var ('mean_sea_surf_sol1_01', 'mss_cnescls11')
 	call cpy_var ('mean_sea_surf_sol2_01', 'mss_dtu10')
 	call cpy_var ('swh_ocean_01_ku','swh_ku')
+	call cpy_var ('swh_ocean_01_plrm_ku','swh_ku_plrm')
 	call cpy_var ('swh_ocean_01_c','swh_c')
 	call cpy_var ('sig0_ocean_01_ku','sig0_ku')
+	call cpy_var ('sig0_ocean_01_plrm_ku','sig0_ku_plrm')
 	call cpy_var ('sig0_ocean_01_c','sig0_c')
-	call cpy_var ('wind_speed_alt')
-	call cpy_var ('wind_speed_rad')
-	call cpy_var ('wind_speed_model_u', 'wind_speed_ecmwf_u')
-	call cpy_var ('wind_speed_model_v', 'wind_speed_ecmwf_v')
+	call cpy_var ('wind_speed_alt_01_ku','wind_speed_alt')
+	call cpy_var ('wind_speed_alt_01_plrm_ku','wind_speed_alt_plrm')
+	call cpy_var ('wind_speed_mod_u_01', 'wind_speed_ecmwf_u')
+	call cpy_var ('wind_speed_mod_v_01', 'wind_speed_ecmwf_v')
 	call cpy_var ('range_ocean_rms_01_ku','range_rms_ku')
+	call cpy_var ('range_ocean_rms_01_plrm_ku','range_rms_ku_plrm')
 	call cpy_var ('range_ocean_rms_01_c','range_rms_c')
 	call cpy_var ('range_ocean_numval_01_ku','range_numval_ku')
+	call cpy_var ('range_ocean_numval_01_plrm_ku','range_numval_ku_plrm')
 	call cpy_var ('range_ocean_numval_01_c','range_numval_c')
-	call cpy_var ('bathymetry', 'topo_dtm2000')
+	call cpy_var ('odle_01', 'topo_ace2')
 	call cpy_var ('tb_238_01','tb_238')
 	call cpy_var ('tb_365_01','tb_365')
 	a = flags
 	call new_var ('flags', a)
 	a = flags_plrm
 	call new_var ('flags_plrm', a)
-	call cpy_var ('swh_rms_ku')
-	call cpy_var ('swh_rms_ku_mle3')
-	call cpy_var ('swh_rms_c')
-	call cpy_var ('sig0_rms_ku')
-	call cpy_var ('sig0_rms_ku_mle3')
-	call cpy_var ('sig0_rms_c')
-	call cpy_var ('off_nadir_angle_wf_ku', 'off_nadir_angle2_wf_ku')
-	call cpy_var ('atmos_corr_sig0_ku', 'dsig0_atmos_ku')
-	call cpy_var ('atmos_corr_sig0_c', 'dsig0_atmos_c')
-	call cpy_var ('rad_liquid_water', 'liquid_water_rad')
-	call cpy_var ('rad_water_vapor', 'water_vapor_rad')
+	call cpy_var ('swh_ocean_rms_01_ku','swh_rms_ku')
+	call cpy_var ('swh_ocean_rms_01_plrm_ku','swh_rms_ku_plrm')
+	call cpy_var ('swh_ocean_rms_01_c','swh_rms_c')
+	call cpy_var ('sig0_ocean_rms_01_ku','sig0_rms_ku')
+	call cpy_var ('sig0_ocean_rms_01_plrm_ku','sig0_rms_ku_plrm')
+	call cpy_var ('sig0_ocean_rms_01_c','sig0_rms_c')
+	call cpy_var ('corrected_off_nadir_angle_wf_ocean_01_ku', 'off_nadir_angle2_wf_ku')
+	call cpy_var ('atm_cor_sig0_01_ku', 'dsig0_atmos_ku')
+	call cpy_var ('atm_cor_sig0_01_c', 'dsig0_atmos_c')
+	call cpy_var ('rad_liquid_water_01_ku', 'liquid_water_rad')
+	call cpy_var ('rad_wet_tropo_cor_01_ku', 'water_vapor_rad')
+	call cpy_var ('ssha_01_ku', 'ssha')
+	call cpy_var ('ssha_01_plrm_ku', 'ssha_plrm')
 
 ! Dump the data
 
 	call nfs(nf90_close(ncid))
 	call put_rads
-	deallocate (a, flags, flags_mle3, flags_save)
+	deallocate (a, flags, flags_plrm, flags_save)
 
 enddo
 
