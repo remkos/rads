@@ -579,11 +579,11 @@ Global RADS configuration file
 	<format>f12.4</format>
 	<compress>int4 1e-4 1300e3</compress>
 </var>
-<var name="range_ku_plrm" field="612" sat="j2 j3">
-	<long_name>Ku-band range corrected for instr. effects (MLE3)</long_name>
+<var name="range_ku_plrm" field="612" sat="3a 3b">
+	<long_name>Ku-band range corrected for instr. effects (PLRM)</long_name>
 	<standard_name>altimeter_range</standard_name>
 	<units>m</units>
-	<data>range_ku_mle3</data>
+	<data>range_ku_plrm</data>
 	<format>f12.4</format>
 	<compress>int4 1e-4 1300e3</compress>
 </var>
@@ -1844,6 +1844,16 @@ Global RADS configuration file
 	<format>f3.0</format>
 	<compress>int1</compress>
 </var>
+<var name="range_numval_ku_plrm" sat="3a 3b">
+	<long_name>number of valid Ku-band measurements (PLRM)</long_name>
+	<standard_name>altimeter_range number_of_observations</standard_name>
+	<units>count</units>
+	<limits>15.5 20.5</limits>
+	<data>range_numval_ku_plrm</data>
+	<format>f3.0</format>
+	<compress>int1</compress>
+</var>
+
 <var name="range_numval_ku_retrk" sat="tx.r50">
 	<long_name>number of valid retracked Ku-band measurements</long_name>
 	<standard_name>altimeter_range number_of_observations</standard_name>
