@@ -199,14 +199,10 @@ do
 	call nc2f ('rain_flag_01_ku',8)					! bit  8: Altimeter rain flag
 	call nc2f ('tb_238_quality_flag_01',9)			! bit  9: Quality 23.8 GHz channel
 	call nc2f ('tb_365_quality_flag_01',10)			! bit 10: Quality 36.5 GHz channel
-	call nc2f ('range_ocean_qual_01_ku',11)			! bit 11: Quality range
-	call nc2f ('swh_ocean_qual_01_ku',12)			! bit 12: Quality SWH
-	call nc2f ('sig0_ocean_qual_01_ku',13)			! bit 13: Quality Sigma0
 
 ! Now do specifics for PLRM
 
 	flags_save = flags	! Keep flags for later
-	call nc2f ('qual_alt_1hz_range_plrm_c',3)		! bit  3: Quality dual-frequency iono
 	call nc2f ('range_ocean_qual_01_plrm_ku',11)	! bit 11: Quality range
 	call nc2f ('swh_ocean_qual_01_plrm_ku',12)		! bit 12: Quality SWH
 	call nc2f ('sig0_ocean_qual_01_plrm_ku',13)		! bit 13: Quality Sigma0
@@ -215,7 +211,6 @@ do
 
 ! Redo the last ones for SAR
 
-	call nc2f ('qual_alt_1hz_range_c',3)			! bit  3: Quality dual-frequency iono
 	call nc2f ('range_ocean_qual_01_ku',11)			! bit 11: Quality range
 	call nc2f ('swh_ocean_qual_01_ku',12)			! bit 12: Quality SWH
 	call nc2f ('sig0_ocean_qual_01_ku',13)			! bit 13: Quality Sigma0
