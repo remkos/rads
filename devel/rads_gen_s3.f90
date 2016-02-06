@@ -203,7 +203,22 @@ do
 	call nc2f ('swh_ocean_qual_01_ku',12)			! bit 12: Quality SWH
 	call nc2f ('sig0_ocean_qual_01_ku',13)			! bit 13: Quality Sigma0
 
-! Need to add PLRM flags
+! Now do specifics for PLRM
+
+	flags_save = flags	! Keep flags for later
+	call nc2f ('qual_alt_1hz_range_plrm_c',3)		! bit  3: Quality dual-frequency iono
+	call nc2f ('range_ocean_qual_01_plrm_ku',11)	! bit 11: Quality range
+	call nc2f ('swh_ocean_qual_01_plrm_ku',12)		! bit 12: Quality SWH
+	call nc2f ('sig0_ocean_qual_01_plrm_ku',13)		! bit 13: Quality Sigma0
+	flags_plrm = flags	! Copy result for PLRM
+	flags = flags_save	! Continue with SAR flags
+
+! Redo the last ones for SAR
+
+	call nc2f ('qual_alt_1hz_range_c',3)			! bit  3: Quality dual-frequency iono
+	call nc2f ('range_ocean_qual_01_ku',11)			! bit 11: Quality range
+	call nc2f ('swh_ocean_qual_01_ku',12)			! bit 12: Quality SWH
+	call nc2f ('sig0_ocean_qual_01_ku',13)			! bit 13: Quality Sigma0
 
 ! Convert all the necessary fields to RADS
 	call get_var (ncid, 'time_01', a)
@@ -211,9 +226,10 @@ do
 	call cpy_var ('lat_01','lat')
 	call cpy_var ('lon_01','lon')
 !Which alt field?
-	call cpy_var ('alt_01', 'alt')
+	call cpy_var ('alt_01', 'alt_gdre')
 	call cpy_var ('orb_alt_rate_01', 'alt_rate')
 	call cpy_var ('range_ocean_01_ku','range_ku')
+	call cpy_var ('range_ocean_01_plrm_ku','range_ku_plrm')
 	call cpy_var ('range_ocean_01_c','range_c')
 !Add PLRM ranges?
 !Add zero or meas altitude tropo measurements?
@@ -221,6 +237,7 @@ do
 	call cpy_var ('rad_wet_tropo_cor_01_ku', 'wet_tropo_rad')
 	call cpy_var ('mod_wet_tropo_cor_meas_altitude_01', 'wet_tropo_ecmwf')
 	call cpy_var ('iono_cor_alt_01_ku', 'iono_alt')
+	call cpy_var ('iono_cor_alt_01_plrm_ku', 'iono_alt_plrm')
 	if (.not.nrt) call cpy_var ('iono_cor_gim_01_ku', 'iono_gim')
 	call cpy_var ('inv_bar_cor_01', 'inv_bar_static')
 	if (nrt) then
@@ -235,20 +252,26 @@ do
 	call cpy_var ('load_tide_sol2_01', 'tide_load_fes04')
 	call cpy_var ('pole_tide_01', 'tide_pole')
 	call cpy_var ('sea_state_bias_01_ku', 'ssb_cls')
+	call cpy_var ('sea_state_bias_01_plrm_ku', 'ssb_cls_plrm')
 	call cpy_var ('sea_state_bias_01_c', 'ssb_cls_c')
 	call cpy_var ('geoid_01', 'geoid_egm2008')
 	call cpy_var ('mean_sea_surf_sol1_01', 'mss_cnescls11')
 	call cpy_var ('mean_sea_surf_sol2_01', 'mss_dtu10')
 	call cpy_var ('swh_ocean_01_ku','swh_ku')
+	call cpy_var ('swh_ocean_01_plrm_ku','swh_ku_plrm')
 	call cpy_var ('swh_ocean_01_c','swh_c')
 	call cpy_var ('sig0_ocean_01_ku','sig0_ku')
+	call cpy_var ('sig0_ocean_01_plrm_ku','sig0_ku_plrm')
 	call cpy_var ('sig0_ocean_01_c','sig0_c')
 	call cpy_var ('wind_speed_alt_01_ku','wind_speed_alt')
+	call cpy_var ('wind_speed_alt_01_plrm_ku','wind_speed_alt_plrm')
 	call cpy_var ('wind_speed_mod_u_01', 'wind_speed_ecmwf_u')
 	call cpy_var ('wind_speed_mod_v_01', 'wind_speed_ecmwf_v')
 	call cpy_var ('range_ocean_rms_01_ku','range_rms_ku')
+	call cpy_var ('range_ocean_rms_01_plrm_ku','range_rms_ku_plrm')
 	call cpy_var ('range_ocean_rms_01_c','range_rms_c')
 	call cpy_var ('range_ocean_numval_01_ku','range_numval_ku')
+	call cpy_var ('range_ocean_numval_01_plrm_ku','range_numval_ku_plrm')
 	call cpy_var ('range_ocean_numval_01_c','range_numval_c')
 	call cpy_var ('odle_01', 'topo_ace2')
 	call cpy_var ('tb_238_01','tb_238')
@@ -268,6 +291,8 @@ do
 	call cpy_var ('atm_cor_sig0_01_c', 'dsig0_atmos_c')
 	call cpy_var ('rad_liquid_water_01_ku', 'liquid_water_rad')
 	call cpy_var ('rad_wet_tropo_cor_01_ku', 'water_vapor_rad')
+	call cpy_var ('ssha_01_ku', 'ssha')
+	call cpy_var ('ssha_01_plrm_ku', 'ssha_plrm')
 
 ! Dump the data
 

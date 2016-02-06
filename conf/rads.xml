@@ -91,6 +91,17 @@ Global RADS configuration file
 	<comment>Sea level from satellite altitude - range - all altimetric corrections.
 		These values were computed when the data set was created, in contrast to the sla variable.</comment>
 </var>
+<var name="ssha_plrm" sat="3a">
+	<long_name>sea surface height anomaly (PLRM)</long_name>
+	<standard_name>sea_surface_height_above_sea_level</standard_name>
+	<units>m</units>
+	<data>ssha_mle3</data>
+	<limits>-3 3</limits>
+	<format>f8.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Sea level from satellite altitude - range - all altimetric corrections.
+		These values were computed when the data set was created, in contrast to the sla variable.</comment>
+</var>
 
 <var name="time" field="101 1">
 	<long_name>time</long_name>
@@ -568,6 +579,14 @@ Global RADS configuration file
 	<format>f12.4</format>
 	<compress>int4 1e-4 1300e3</compress>
 </var>
+<var name="range_ku_plrm" field="612" sat="j2 j3">
+	<long_name>Ku-band range corrected for instr. effects (MLE3)</long_name>
+	<standard_name>altimeter_range</standard_name>
+	<units>m</units>
+	<data>range_ku_mle3</data>
+	<format>f12.4</format>
+	<compress>int4 1e-4 1300e3</compress>
+</var>
 <var name="range_20hz_ku" sat="c2">
 	<long_name>20-Hz Ku-band range corrected for instr. effects</long_name>
 	<standard_name>altimeter_range</standard_name>
@@ -868,6 +887,17 @@ Global RADS configuration file
 </var>
 <var name="iono_alt_mle3" field="911" sat="j2 j3">
 	<long_name>dual-frequency ionospheric correction (MLE3)</long_name>
+	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
+	<source>dual-frequency altimeter</source>
+	<units>m</units>
+	<limits>-0.4 0.04</limits>
+	<data>iono_alt_mle3</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
+</var>
+<var name="iono_alt_plrm" field="912" sat="3a">
+	<long_name>dual-frequency ionospheric correction (PLRM)</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>dual-frequency altimeter</source>
 	<units>m</units>
@@ -1196,6 +1226,17 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
+<var name="ssb_cls_plrm" field="1514" sat="3a">
+	<long_name>CLS non-parametric sea state bias (PLRM)</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<source>CLS</source>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<data>ssb_cls_plrm</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
+</var>
 <var name="ssb_tran2012" field="1513" sat="j1 j2 j3">
 	<long_name>Tran et al. 2012 non-parametric sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
@@ -1421,6 +1462,15 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<compress>int2 1e-3</compress>
 </var>
+<var name="swh_ku_plrm" field="1713" sat="3a">
+	<long_name>Ku-band significant wave height (PLRM)</long_name>
+	<standard_name>sea_surface_wave_significant_height</standard_name>
+	<units>m</units>
+	<limits>0 8</limits>
+	<data>swh_ku_plrm</data>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+</var>
 <var name="swh_ww3" field="1712" sat="c2 j2 j3 sa 3a">
 	<long_name>WaveWatch3 significant wave height</long_name>
 	<standard_name>sea_surface_wave_significant_height</standard_name>
@@ -1516,6 +1566,15 @@ Global RADS configuration file
 	<units>dB</units>
 	<limits>6 27</limits>
 	<data>sig0_ku_mle3</data>
+	<format>f6.2</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="sig0_ku_plrm" field="1812" sat="3a">
+	<long_name>Ku-band backscatter coefficient (PLRM)</long_name>
+	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
+	<units>dB</units>
+	<limits>6 27</limits>
+	<data>sig0_ku_plrm</data>
 	<format>f6.2</format>
 	<compress>int2 1e-2</compress>
 </var>
@@ -1640,6 +1699,16 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<compress>int2 1e-2</compress>
 </var>
+<var name="wind_speed_alt_plrm" field="1912" sat="3a">
+	<long_name>altimeter wind speed (PLRM)</long_name>
+	<standard_name>wind_speed</standard_name>
+	<source>altimeter</source>
+	<units>m/s</units>
+	<limits>-1 30</limits>
+	<data>wind_speed_alt_plrm</data>
+	<format>f6.3</format>
+	<compress>int2 1e-2</compress>
+</var>
 <alias name="wind_speed" field="19">wind_speed_alt</alias>
 
 <var name="range_rms_norm" field="2001">
@@ -1722,6 +1791,16 @@ Global RADS configuration file
 	<units>m</units>
 	<limits>0.00 0.17</limits> <!--May need adjustment-->
 	<data>range_rms_ku_mle3</data>
+	<format>f6.4</format>
+	<default>0</default>
+	<compress>int2 1e-4</compress>
+	<comment>Based on valid high-rate measurements</comment>
+</var>
+<var name="range_rms_ku_plrm" field="2013" sat="3a">
+	<long_name>std dev of Ku-band range (PLRM)</long_name>
+	<units>m</units>
+	<limits>0.00 0.17</limits> <!--May need adjustment-->
+	<data>range_rms_ku_plrm</data>
 	<format>f6.4</format>
 	<default>0</default>
 	<compress>int2 1e-4</compress>
