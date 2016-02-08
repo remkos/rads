@@ -40,7 +40,7 @@ Global RADS configuration file
 	<quality_flag sat="e1 e2 g1 j1 j2 j3 3a 3b n1 tx" action="append">swh_rms</quality_flag>
 	<quality_flag sat="j1 j2 j3 3a 3b" action="append">sig0_rms</quality_flag>
 	<quality_flag sat="e2 j1 j2 j3 3a 3b" action="append">attitude</quality_flag>
-	<quality_flag sat="c2 n1 sa 3a 3b" action="append">peakiness</quality_flag>
+	<quality_flag sat="c2 n1 sa" action="append">peakiness</quality_flag>
 	<comment>Sea level determined from satellite altitude - range - all altimetric corrections</comment>
 </var>
 <var name="sla_20hz" sat="c2">
