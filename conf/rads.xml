@@ -435,7 +435,8 @@ Global RADS configuration file
 	<data>alt_gdre</data>
 	<format>f12.4</format>
 	<compress>int4 1e-4 700e3</compress>
-	<compress sat="j1 j2 j3 3a 3b tx">int4 1e-4 1300e3</compress>
+	<compress sat="3a 3b">int4 1e-4 800e3</compress>
+    <compress sat="j1 j2 j3 tx">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_slcci" field="426" sat="e1 e2 n1 pn tx">
@@ -517,6 +518,7 @@ Global RADS configuration file
 		<limits>750e3 850e3</limits>
 		<limits sat="c2">700e3 800e3</limits>
 		<limits sat="j1 j2 j3 pn tx">1300e3 1400e3</limits>
+        <limits sat="3a 3b">800e3 900e3</limits>
 		<data>range_ku</data>
 		<format>f11.3</format>
 		<compress>int4 1e-4 700e3</compress>
@@ -524,7 +526,11 @@ Global RADS configuration file
 			<format>f12.4</format>
 			<compress>int4 1e-4 1300e3</compress>
 		</if>
-	</var>
+        <if sat="3a 3b">
+            <format>f12.4</format>
+            <compress>int4 1e-4 800e3</compress>
+        </if>
+    </var>
 	<alias name="range" field="6">range_ku</alias>
 </else>
 <var name="range_ku_retrk" sat="tx.r50">
@@ -536,7 +542,7 @@ Global RADS configuration file
 	<format>f12.4</format>
 	<compress>int4 1e-4 1300e3</compress>
 </var>
-<var name="range_c" field="602" sat="j1 j2 j3 3a 3b tx">
+<var name="range_c" field="602" sat="j1 j2 j3 tx">
 	<long_name>C-band range corrected for instr. effects</long_name>
 	<standard_name>altimeter_range</standard_name>
 	<units>m</units>
@@ -544,6 +550,15 @@ Global RADS configuration file
 	<data>range_c</data>
 	<format>f12.4</format>
 	<compress>int4 1e-4 1300e3</compress>
+</var>
+<var name="range_c" field="602" sat="3a 3b">
+    <long_name>C-band range corrected for instr. effects</long_name>
+    <standard_name>altimeter_range</standard_name>
+    <units>m</units>
+    <limits>800e3 900e3</limits>
+    <data>range_c</data>
+    <format>f12.4</format>
+    <compress>int4 1e-4 800e3</compress>
 </var>
 <var name="range_c_retrk" sat="tx.r50">
 	<long_name>C-band retracked range corrected for instr. effects</long_name>
@@ -585,7 +600,7 @@ Global RADS configuration file
 	<units>m</units>
 	<data>range_ku_plrm</data>
 	<format>f12.4</format>
-	<compress>int4 1e-4 1300e3</compress>
+	<compress>int4 1e-4 800e3</compress>
 </var>
 <var name="range_20hz_ku" sat="c2">
 	<long_name>20-Hz Ku-band range corrected for instr. effects</long_name>
