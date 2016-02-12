@@ -18,6 +18,11 @@ The code is currently still under major development. When released, it will be m
 ## Version History
 Following is a history of releases on GitHub, newest to oldest.
 
+### Future release (v4.1.4)
+* Implement processing of Jason-3 and Sentinel-3 data
+* Implement satellite codes 'j3' (Jason-3), '3a' (Sentinel-3A), '3b' (Sentinel-3B)
+* Minor bug fixes
+
 ### v4.1.3
 * Added Jason-2 GDR-E orbits, which are now the default.
 
