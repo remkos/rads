@@ -3289,6 +3289,44 @@ Global RADS configuration file
 
 <!-- Mission definitions for various satellites -->
 
+<if sat="2a">
+	<satellite>HY-2A</satellite>
+	<satid>15</satid>
+	<inclination>99.35</inclination>
+</if>
+
+<if sat="3a">
+	<satellite>SNTNL-3A</satellite>
+	<satid>16</satid>
+	<dt1hz>1.020152</dt1hz><!--Need to update this value-->
+	<inclination>98.65</inclination>
+	<frequency>13.575 5.41</frequency>
+	<xover_params>0.05 0.05</xover_params><!--Need to verify-->
+	<phase name="a">
+		<mission>Exact Repeat Mission</mission>
+		<cycles>0 999</cycles>
+		<repeat>27 770</repeat>
+		<ref_pass>2016-03-05 00:00:00 0.624790 1 1</ref_pass><!--Need to update this value-->
+		<start_time>2016-03-05</start_time><!--Need to update this value-->
+	</phase>
+</if>
+
+<if sat="3b">
+	<satellite>SNTNL-3B</satellite>
+	<satid>17</satid>
+	<dt1hz>1.020152</dt1hz><!--Need to update this value-->
+	<inclination>98.65</inclination>
+	<frequency>13.575 5.41</frequency>
+	<xover_params>0.05 0.05</xover_params><!--Need to verify-->
+	<phase name="a">
+		<mission>Exact Repeat Mission</mission>
+		<cycles>0 999</cycles>
+		<repeat>27 770</repeat>
+		<ref_pass>2016-03-05 00:00:00 0.624790 1 1</ref_pass><!--Need to update this value-->
+		<start_time>2016-03-05</start_time><!--Need to update this value-->
+	</phase>
+</if>
+
 <if sat="c2">
 	<satellite>CRYOSAT2</satellite>
 	<satid>12</satid>
@@ -3493,7 +3531,7 @@ Global RADS configuration file
 		<mission>Exact Repeat Mission</mission>
 		<cycles>0 999</cycles>
 		<repeat>9.91564280 254</repeat>
-		<ref_pass>2016-02-17T10:27:24 99.92 1 1</ref_pass>
+		<ref_pass>2016-02-17T10:56:52 99.92 1 1</ref_pass>
 		<start_time>2016-01-19</start_time>
 	</phase>
 </if>
@@ -3590,43 +3628,5 @@ Global RADS configuration file
 	<xover_params>0.07 0.80</xover_params>
 	<phase name="a">
 		<mission>Geodetic Mission</mission>
-	</phase>
-</if>
-
-<if sat="2a">
-	<satellite>HY-2A</satellite>
-	<satid>15</satid>
-	<inclination>99.35</inclination>
-</if>
-
-<if sat="3a">
-	<satellite>SNTNL-3A</satellite>
-	<satid>16</satid>
-	<dt1hz>1.020152</dt1hz><!--Need to update this value-->
-	<inclination>98.65</inclination>
-	<frequency>13.575 5.41</frequency>
-	<xover_params>0.05 0.05</xover_params><!--Need to verify-->
-	<phase name="a">
-		<mission>Exact Repeat Mission</mission>
-		<cycles>0 999</cycles>
-		<repeat>27 770</repeat>
-		<ref_pass>2016-03-05 00:00:00 0.624790 1 1</ref_pass><!--Need to update this value-->
-		<start_time>2016-03-05</start_time><!--Need to update this value-->
-	</phase>
-</if>
-
-<if sat="3b">
-	<satellite>SNTNL-3B</satellite>
-	<satid>17</satid>
-	<dt1hz>1.020152</dt1hz><!--Need to update this value-->
-	<inclination>98.65</inclination>
-	<frequency>13.575 5.41</frequency>
-	<xover_params>0.05 0.05</xover_params><!--Need to verify-->
-	<phase name="a">
-		<mission>Exact Repeat Mission</mission>
-		<cycles>0 999</cycles>
-		<repeat>27 770</repeat>
-		<ref_pass>2016-03-05 00:00:00 0.624790 1 1</ref_pass><!--Need to update this value-->
-		<start_time>2016-03-05</start_time><!--Need to update this value-->
 	</phase>
 </if>
