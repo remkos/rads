@@ -38,7 +38,7 @@ program rads_gen_j3
 ! time - Time since 1 Jan 85
 ! lat - Latitude
 ! lon - Longitude
-! alt_gdrd - Orbit altitude
+! alt_gdre - Orbit altitude
 ! alt_rate - Orbit altitude rate
 ! range_* - Ocean range (retracked)
 ! dry_tropo_ecmwf - ECMWF dry tropospheric correction

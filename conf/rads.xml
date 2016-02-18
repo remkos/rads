@@ -357,7 +357,7 @@ Global RADS configuration file
 	<data>alt_gdrd</data>
 	<format>f12.4</format>
 	<compress>int4 1e-4 700e3</compress>
-	<compress sat="j1 j2 j3 tx">int4 1e-4 1300e3</compress>
+	<compress sat="j1 j2 tx">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_std1204" field="419" sat="j1 j2 pn tx">

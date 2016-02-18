@@ -25,6 +25,11 @@
 ! - Recompute wind speed from adjusted sigma0 based on Collard model
 !
 ! usage: rads_fix_j2 [data-selectors] [options]
+!
+! References:
+! Quartly, G. D., Optimizing sigma0 information from Jason-2 altimeter,
+! IEEE Geosci. Rem. Sens. Lett., 6(3), 398–402,
+! doi:10.1109/LGRS.2009.2013973, 2009.
 !-----------------------------------------------------------------------
 program rads_fix_j2
 
@@ -114,7 +119,7 @@ if (lrad) then
 	wet = wet + 2d-3
 endif
 
-! Adjust backscatter for correlation with off-nadir angle (See Quartly)
+! Adjust backscatter for correlation with off-nadir angle (See Quartly [2009])
 
 if (lsig0) then
 	call rads_get_var (S, P, 'off_nadir_angle2_wf_ku', psi2, .true.)
