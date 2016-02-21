@@ -62,10 +62,6 @@ do i = 1,rads_nopt
 	end select
 enddo
 
-! Nothing to be done for the time being
-
-stop
-
 ! Run process for all files
 
 do cyc = S%cycles(1),S%cycles(2),S%cycles(3)
