@@ -27,14 +27,14 @@
 
 # Check arguments
 
-days=2
+days=3
 types="ogdr igdr"
 while getopts "iod:" arg; do
-        case $arg in
-        d) days=$OPTARG ;;
-        o) types=ogdr ;;
-        i) types=igdr ;;
-        esac
+	case $arg in
+		d) days=$OPTARG ;;
+		o) types=ogdr ;;
+		i) types=igdr ;;
+	esac
 done
 
 # Process only OGDR/IGDR data for the last ($days+1) days (including current)

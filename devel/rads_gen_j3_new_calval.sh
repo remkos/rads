@@ -27,7 +27,7 @@
 
 # Check arguments
 
-days=2
+days=3
 types="ogdr igdr"
 while getopts "iod:" arg; do
 	case $arg in
