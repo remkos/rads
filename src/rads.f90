@@ -993,6 +993,7 @@ case ('P', 'pass')
 		S%passes(3) = 2
 	else
 		S%passes(2) = -1
+		S%passes(3) = 1
 		call read_val (opt%arg, S%passes, '/-', iostat=ios)
 		if (ios > 0) call rads_opt_error (opt%opt, opt%arg)
 		if (S%passes(2) < 0) S%passes(2) = S%passes(1)
@@ -3433,8 +3434,9 @@ write (iunit, 1300) trim(progname)
 '  -L, --limits VAR=MIN,MAX  Specify edit data range for variable VAR'/ &
 '  --lon LON0,LON1           Specify longitude boundaries (deg)'/ &
 '  --lat LAT0,LAT1           Specify latitude  boundaries (deg)'/ &
-'  -P, --pass P0[,P1[,DP]]   Specify first and last pass and modulo; alternatively use -Pa (--pass asc)'/ &
-'                            for ascending passes or -Pd (--pass des) for descending passes' / &
+'  -P, --pass P0[,P1[,DP]]   Specify first and last pass and modulo; alternatively use -Pa'/ &
+'                            (--pass asc) or -Pd (--pass des) to restrict selection to ascending or'/ &
+'                            descending passes only'/ &
 '  -Q, --quality_flag VAR=FLAG'/&
 '                            Check variable FLAG when validating variable VAR'/ &
 '  -R, --region LON0,LON1,LAT0,LAT1'/ &
@@ -3458,7 +3460,7 @@ write (iunit, 1300) trim(progname)
 '  --args FILENAME           Get any of the above arguments from FILENAME (one argument per line)'/ &
 '  --help                    Print this syntax massage'/ &
 '  --log FILENAME            Send statistics to FILENAME (default is standard output)'/ &
-'  -q, --quiet               Suppress warning messages (but keeps fatal error messages)' / &
+'  -q, --quiet               Suppress warning messages (but keeps fatal error messages)'/ &
 '  -v, --verbose             Increase verbosity level'/ &
 '  --debug LEVEL             Set debug/verbosity level'/ &
 '  --version                 Version info')
