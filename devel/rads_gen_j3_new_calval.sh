@@ -37,7 +37,7 @@ while getopts "iod:" arg; do
 	esac
 done
 
-# Process only OGDR/IGDR data for the last ten days (including current)
+# Process only OGDR/IGDR data for the last ($days+1) days (including current)
 
 d0=`date -u -v -${days}d +%Y%m%d 2>&1` || d0=`date -u --date="${days} days ago" +%Y%m%d`
 

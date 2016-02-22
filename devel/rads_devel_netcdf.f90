@@ -127,25 +127,25 @@ integer(fourbyteint) :: i, ival, ndims, varid
 
 if (nf90_inq_varid_warn(ncid,varnm,varid) /= nf90_noerr) return
 call nfs(nf90_inquire_variable(ncid,varid,ndims=ndims))
-if (ndims == 2) then
+if (ndims == 2) then	! Reduce 2D flags to 1D array
 	call nfs(nf90_get_var(ncid,varid,flag2d(1:1,1:nrec)))
 	flag(1:nrec) = flag2d(1,1:nrec)
 else
 	call nfs(nf90_get_var(ncid,varid,flag(1:nrec)))
 endif
-if (present(lim)) then
+if (present(lim)) then	! Set flag when value >= lim
 	do i = 1,nrec
 		if (flag(i) >= lim) flags(i) = ibset(flags(i),bit)
 	enddo
-else if (present(neq)) then
+else if (present(neq)) then	! Set flag when value /= neq
 	do i = 1,nrec
 		if (flag(i) /= neq) flags(i) = ibset(flags(i),bit)
 	enddo
-else if (present(mask)) then
+else if (present(mask)) then	! Set flag when value and mask have common set bits
 	do i = 1,nrec
 		if (iand(flag(i),mask) /= 0) flags(i) = ibset(flags(i),bit)
 	enddo
-else
+else	! Set flag when value == 1, or when value == val (when given)
 	ival = 1
 	if (present(val)) ival = val
 	do i = 1,nrec

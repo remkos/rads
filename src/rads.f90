@@ -986,14 +986,13 @@ case ('C', 'cycle')
 	if (S%cycles(2) < 0) S%cycles(2) = S%cycles(1)
 case ('P', 'pass')
 	if (opt%arg(:1) == 'a') then ! Only ascending passes
-		S%passes(1) = 1
+		S%passes(1) = S%passes(1)/2*2+1
 		S%passes(3) = 2
 	else if (opt%arg(:1) == 'd') then ! Only descending passes
-		S%passes(1) = 2
+		S%passes(1) = (S%passes(1)+1)/2*2
 		S%passes(3) = 2
 	else
 		S%passes(2) = -1
-		S%passes(3) = 1
 		call read_val (opt%arg, S%passes, '/-', iostat=ios)
 		if (ios > 0) call rads_opt_error (opt%opt, opt%arg)
 		if (S%passes(2) < 0) S%passes(2) = S%passes(1)
