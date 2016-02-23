@@ -47,7 +47,7 @@ rads_fix_sa      $options								>> $log 2>&1
 rads_add_ssb     $options --all							>> $log 2>&1
 rads_add_mog2d   $options								>> $log 2>&1
 rads_add_ib      $options								>> $log 2>&1
-rads_add_orbit   $options -Valt_gdrd --equator --loc-7	>> $log 2>&1
+rads_add_orbit   $options -Valt_gdre --equator --loc-7	>> $log 2>&1
 rads_add_ww3_222 $options --all							>> $log 2>&1
 rads_add_sla     $options           					>> $log 2>&1
 

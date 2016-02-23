@@ -209,7 +209,11 @@ do
 	call new_var ('time', a + sec2000)
 	call cpy_var ('lat')
 	call cpy_var ('lon')
-	call cpy_var ('alt', 'alt_gdrd')
+	if (cyclenr < 25) then
+		call cpy_var ('alt', 'alt_gdrd')
+	else
+		call cpy_var ('alt', 'alt_gdre')
+	endif
 	call cpy_var ('orb_alt_rate', 'alt_rate')
 	call cpy_var ('range', 'range_ka')
 	call cpy_var ('range_numval', 'range_numval_ka')
