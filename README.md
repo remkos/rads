@@ -18,19 +18,23 @@ The code is currently still under major development. When released, it will be m
 ## Version History
 Following is a history of releases on GitHub, newest to oldest.
 
-### Future release (v4.1.4)
+### v4.1.5 (23 Feb 2016)
+* Added SARAL GDR-E orbits, which are now the default.
+* Further updates for Jason-3
+
+### v4.1.4 (12 Feb 2016)
 * Implement processing of Jason-3 and Sentinel-3 data
 * Implement satellite codes 'j3' (Jason-3), '3a' (Sentinel-3A), '3b' (Sentinel-3B)
 * Minor bug fixes
 
-### v4.1.3
+### v4.1.3 (1 Dec 2015)
 * Added Jason-2 GDR-E orbits, which are now the default.
 
-### v4.1.2
+### v4.1.2 (13 Oct 2015)
 * Bug fixes for 'radscolin --diff -r0' and for 'rads2grd -c'.
 * Add 'configure' to distribution.
 
-### v4.1.1
+### v4.1.1 (27 Aug 2015)
 * Bug fixes.
 * Improved warnings for erroneous command line options.
 * Subroutines documented with robodoc headers.
@@ -38,27 +42,27 @@ Following is a history of releases on GitHub, newest to oldest.
 * Installing documents with 'make install'.
 * Removed 'verbose' argument from rads_init.
 
-### v4.1.0
+### v4.1.0 (19 Aug 2015)
 * Numerous updates to the database: removed obsolete variables, updated several, introduced new variables.
 * New handling off "long options". For example: can now use either --var=VAR or --var VAR (without = symbol).
 
-### v4.0.3
+### v4.0.3 (10 Aug 2015)
 * Improvements to rads_add_surface; new landmask based on GSHHG 2.3.4 introduced.
 * Fixed scaling of water_vapor_rad in rads_gen_j1; affected only cycles 1-283.
 * Updated data manual with GDR-D/E references.
 
-### v4.0.2
+### v4.0.2 (25 Jun 2015)
 * Prepared for GCC and GFortran version 5.
 * rads_add_ww3_222 did not properly identify 6-hourly time step for recent grids.
 * Improved module dependencies in Makefiles.
 * Introduced GDR-E orbit for CryoSat-2.
 
-### v4.0.1
+### v4.0.1 (29 Apr 2015)
 * Updated the way the version number is determined, using either the version tag in configure.ac or "git describe --tags" when using a git repository.
 * Removed all the SVN $Id$ and $Revision$ tags.
 * Updates for future Jason-3 processing.
 * Updates for processing of CryoSat-2 Baseline C.
 
-### v4.0.0
+### v4.0.0 (19 Mar 2015)
 * Import from GoogleCode into GitHub.
 
