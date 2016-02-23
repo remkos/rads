@@ -217,10 +217,11 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-integer(fourbyteint) :: getorb,kstep=0,k,i,i0,i1
+integer(fourbyteint) :: getorb,kstep=0, k, i, i0, i1
 integer(twobyteint) :: flag
-real(eightbytereal) :: utc(n),lat(n),lon(n),alt(n),alt_old(n),alt_rate(n),flags(n),alt_cnes(n),range_ku(n), &
-	range_c(n),drange_fm(n),dalt(-1:1),dlat(-1:1),dlon(-1:1),t,f,rms,xx,yy,zz,xx0,yy0,dhellips
+real(eightbytereal) :: utc(n), lat(n), lon(n), alt(n), alt_old(n), alt_rate(n), flags(n), &
+	alt_cnes(n), range_ku(n), range_c(n), drange_fm(n), dalt(-1:1), dlat(-1:1), dlon(-1:1),&
+	t, f, rms, xx, yy, zz, xx0, yy0, dhellips, equator_time, equator_lon
 logical :: asc, cryofix
 
 call log_pass (P)
@@ -341,6 +342,8 @@ P%end_time   = utc(n)
 ! 1/4 rev (approx 1509) after the start of the track.
 
 if (equator) then
+	equator_time = 0d0
+	equator_lon = 0d0
 	xx0 = 0
 	yy0 = 0
 	if (P%equator_time > 0d0) then
@@ -352,25 +355,27 @@ if (equator) then
 	endif
 	do i = i0,i1
 		t = i
-		if (getorb(t,yy,xx,zz,dir,.true.) > 0) then
-			call log_records (0)
-			return
-		endif
+		if (getorb(t,yy,xx,zz,dir,.true.) > 0) exit
 		if (yy*yy0 >= 0) then
 			! no equator crossing (dlat and yy0 same sign)
 		else if (yy > yy0 .eqv. asc) then
 			! crossing is in the right sense
 			f = yy/(yy-yy0)
-			P%equator_time = t - f
-			P%equator_lon = xx - f*(xx-xx0)
+			equator_time = t - f
+			equator_lon = xx - f*(xx-xx0)
 			exit
 		else
 			write (*,*) yy0,yy,asc
 		endif
 		xx0 = xx
 		yy0 = yy
-		if (i == i1) call log_string ('error scanning for equator crossing')
 	enddo
+	if (equator_time == 0d0) then
+		call log_string ('error scanning for equator crossing')
+	else
+		P%equator_time = equator_time
+		P%equator_lon = equator_lon
+	endif
 endif
 if (rads_verbose >= 1) write (*,*) 'eq:', P%equator_time, P%equator_lon
 
