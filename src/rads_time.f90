@@ -481,7 +481,7 @@ integer(fourbyteint), intent(out), optional :: iostat
 ! <t1> (when given) are read from <optarg> and interpreted as stated above
 ! and converted to seconds since 1.0 Jan 1985. When provided, <dt> is read
 ! too, but is not converted. On return, <dateopt> will get the value 0.
-! Values can be separated by spaced or slashes.
+! Values can be separated by spaces, commas, or slashes.
 !
 ! If the scanning of optarg fails, the value of iostat is returned in <iostat>.
 !

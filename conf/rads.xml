@@ -435,7 +435,7 @@ Global RADS configuration file
 	<data>alt_gdre</data>
 	<format>f12.4</format>
 	<compress>int4 1e-4 700e3</compress>
-    <compress sat="j1 j2 j3 tx">int4 1e-4 1300e3</compress>
+	<compress sat="j1 j2 j3 tx">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_slcci" field="426" sat="e1 e2 n1 pn tx">
@@ -522,7 +522,7 @@ Global RADS configuration file
 			<format>f12.4</format>
 			<compress>int4 1e-4 1300e3</compress>
 		</if>
-    </var>
+	</var>
 	<alias name="range" field="6">range_ku</alias>
 </else>
 <var name="range_ku_retrk" sat="tx.r50">
@@ -2258,6 +2258,7 @@ Global RADS configuration file
 	<limits sat="c2">32 0</limits>
 	<limits sat="g1">65384 0</limits>
 	<limits sat="gs">51176 0</limits>
+	<limits sat="j3">65384 0</limits> <!--Temporary value, deselecting altimeter rain flag-->
 	<limits sat="n1">36712 0</limits>
 	<limits sat="pn">480 0</limits>
 	<limits sat="tx">49640 0</limits>
