@@ -32,6 +32,7 @@ Global RADS configuration file
 	<standard_name>sea_surface_height_above_sea_level</standard_name>
 	<units>m</units>
 	<limits>-3 3</limits>
+	<plot_range>-0.4 0.4</plot_range>
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
 	<data>alt range SUB dry_tropo SUB wet_tropo SUB iono SUB inv_bar SUB tide_solid SUB tide_ocean SUB tide_load SUB
@@ -61,8 +62,9 @@ Global RADS configuration file
 	<long_name>sea surface height anomaly</long_name>
 	<standard_name>sea_surface_height_above_sea_level</standard_name>
 	<units>m</units>
-	<data>ssha</data>
 	<limits>-3 3</limits>
+	<plot_range>-0.4 0.4</plot_range>
+	<data>ssha</data>
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>Sea level from satellite altitude - range - all altimetric corrections.
@@ -72,8 +74,8 @@ Global RADS configuration file
 	<long_name>20-Hz sea surface height anomaly</long_name>
 	<standard_name>sea_surface_height_above_sea_level</standard_name>
 	<units>m</units>
-	<data>ssha_20hz</data>
 	<limits>-3 3</limits>
+	<data>ssha_20hz</data>
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
 	<dimensions>2</dimensions>
@@ -84,8 +86,9 @@ Global RADS configuration file
 	<long_name>sea surface height anomaly (MLE3)</long_name>
 	<standard_name>sea_surface_height_above_sea_level</standard_name>
 	<units>m</units>
-	<data>ssha_mle3</data>
 	<limits>-3 3</limits>
+	<plot_range>-0.4 0.4</plot_range>
+	<data>ssha_mle3</data>
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>Sea level from satellite altitude - range - all altimetric corrections.
@@ -95,8 +98,9 @@ Global RADS configuration file
 	<long_name>sea surface height anomaly (PLRM)</long_name>
 	<standard_name>sea_surface_height_above_sea_level</standard_name>
 	<units>m</units>
-	<data>ssha_mle3</data>
 	<limits>-3 3</limits>
+	<plot_range>-0.4 0.4</plot_range>
+	<data>ssha_mle3</data>
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>Sea level from satellite altitude - range - all altimetric corrections.
@@ -171,7 +175,7 @@ Global RADS configuration file
 <var name="meas_ind" sat="c2">
 	<long_name>elementary measurement index</long_name>
 	<standard_name>dimension</standard_name>
-	<units>count</units>
+	<units>1</units>
 	<data>meas_ind</data>
 	<comment>Added to be CF-compliant</comment>
 	<compress>int1</compress>
@@ -180,7 +184,7 @@ Global RADS configuration file
 <var name="wvf_ind" sat="c2">
 	<long_name>waveform index</long_name>
 	<standard_name>dimension</standard_name>
-	<units>count</units>
+	<units>1</units>
 	<data>wnf_ind</data>
 	<comment>Added to be CF-compliant</comment>
 	<compress>int2</compress>
@@ -592,8 +596,8 @@ Global RADS configuration file
 	<standard_name>altimeter_range</standard_name>
 	<units>m</units>
 	<limits>700e3 800e3</limits>
-	<format>f11.3</format>
 	<data>range_20hz_ku</data>
+	<format>f11.3</format>
 	<compress>int4 1e-4 700e3</compress>
 	<dimensions>2</dimensions>
 </var>
@@ -604,8 +608,8 @@ Global RADS configuration file
 	<standard_name>altimeter_range</standard_name>
 	<units>m</units>
 	<limits>700e3 800e3</limits>
-	<format>f11.3</format>
 	<data>range_tracker_20hz_ku</data>
+	<format>f11.3</format>
 	<compress>int4 1e-4 700e3</compress>
 	<dimensions>2</dimensions>
 	<comment>Position of the range window according to on-board tracker, corrected for internal delays and variations of USO</comment>
@@ -615,8 +619,8 @@ Global RADS configuration file
 	<long_name>20-Hz flag for utilization in the computation of 1-Hz Ku-band range</long_name>
 	<standard_name>altimeter_range status_flag</standard_name>
 	<flag_values>yes no</flag_values>
-	<format>f11.3</format>
 	<data>range_used_20hz_ku</data>
+	<format>f11.3</format>
 	<compress>int1</compress>
 	<dimensions>2</dimensions>
 	<comment>Map of valid points used to compute the 1-Hz Ku-band altimeter range, SWH, and sigma0</comment>
@@ -628,6 +632,7 @@ Global RADS configuration file
 	<source>ECMWF</source>
 	<units>m</units>
 	<limits>-2.4 -2.1</limits>
+	<plot_range>-2.4 -2.2</plot_range>
 	<data>dry_tropo_ecmwf</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -639,6 +644,7 @@ Global RADS configuration file
 	<source>NOAA/NCEP reanalysis</source>
 	<units>m</units>
 	<limits>-2.4 -2.1</limits>
+	<plot_range>-2.4 -2.2</plot_range>
 	<data>dry_tropo_ncep</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -650,6 +656,7 @@ Global RADS configuration file
 	<source>NOAA Global Forecast System</source>
 	<units>m</units>
 	<limits>-2.4 -2.1</limits>
+	<plot_range>-2.4 -2.2</plot_range>
 	<data>dry_tropo_gfs</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -661,6 +668,7 @@ Global RADS configuration file
 	<source>ECMWF interim reanalysis</source>
 	<units>m</units>
 	<limits>-2.4 -2.1</limits>
+	<plot_range>-2.4 -2.2</plot_range>
 	<data>dry_tropo_era</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -677,6 +685,7 @@ Global RADS configuration file
 	<limits>-0.6 0.0</limits>
 	<limits sat="n1">-0.6 0.05</limits> <!--Due to model bias and noise, allow positive values-->
 	<limits sat="pn tx">-0.6 -0.001</limits> <!--Need to exclude bogus 0 values from TMR measurements-->
+	<plot_range>-0.4 0.0</plot_range>
 	<data>wet_tropo_rad</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -688,6 +697,7 @@ Global RADS configuration file
 	<source>ECMWF</source>
 	<units>m</units>
 	<limits>-0.6 0.0</limits>
+	<plot_range>-0.4 0.0</plot_range>
 	<data>wet_tropo_ecmwf</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -699,6 +709,7 @@ Global RADS configuration file
 	<source>NOAA/NCEP reanalysis</source>
 	<units>m</units>
 	<limits>-0.6 0.0</limits>
+	<plot_range>-0.4 0.0</plot_range>
 	<data>wet_tropo_ncep</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -710,6 +721,7 @@ Global RADS configuration file
 	<source>NVAP</source>
 	<units>m</units>
 	<limits>-0.6 0.0</limits>
+	<plot_range>-0.4 0.0</plot_range>
 	<data>wet_tropo_nvap</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -721,6 +733,7 @@ Global RADS configuration file
 	<source>TOVS and SSMI</source>
 	<units>m</units>
 	<limits>-0.6 0.0</limits>
+	<plot_range>-0.4 0.0</plot_range>
 	<data>wet_tropo_tovs_ssmi</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -732,6 +745,7 @@ Global RADS configuration file
 	<source>TOVS and NOAA/NCEP</source>
 	<units>m</units>
 	<limits>-0.6 0.0</limits>
+	<plot_range>-0.4 0.0</plot_range>
 	<data>wet_tropo_tovs_ncep</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -743,6 +757,7 @@ Global RADS configuration file
 	<source>NOAA Global Forecast System</source>
 	<units>m</units>
 	<limits>-0.6 0.0</limits>
+	<plot_range>-0.4 0.0</plot_range>
 	<data>wet_tropo_gfs</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -755,6 +770,7 @@ Global RADS configuration file
 	<source>ECMWF interim reanalysis</source>
 	<units>m</units>
 	<limits>-0.6 0.0</limits>
+	<plot_range>-0.4 0.0</plot_range>
 	<data>wet_tropo_era</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -766,6 +782,7 @@ Global RADS configuration file
 	<source>radiometer with coastal correction</source>
 	<units>m</units>
 	<limits>-0.6 0.0</limits>
+	<plot_range>-0.4 0.0</plot_range>
 	<data>wet_tropo_rad_enh</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -776,6 +793,7 @@ Global RADS configuration file
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
 	<units>m</units>
 	<limits>-0.6 0.6</limits>
+	<plot_range>-0.2 0.2</plot_range>
 	<data>wet_tropo_rad wet_tropo_ecmwf SUB</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -792,6 +810,7 @@ Global RADS configuration file
 	<source>dual-frequency altimeter</source>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
+	<plot_range>-0.08 0.02</plot_range>
 	<data>iono_alt</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -803,6 +822,7 @@ Global RADS configuration file
 	<source>dual-frequency altimeter</source>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
+	<plot_range>-0.08 0.02</plot_range>
 	<data>iono_alt_retrk</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -814,6 +834,7 @@ Global RADS configuration file
 	<source>Bent climatology</source>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
+	<plot_range>-0.08 0.02</plot_range>
 	<data>iono_bent</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -825,6 +846,7 @@ Global RADS configuration file
 	<source>dual-frequency altimeter after smoothing</source>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
+	<plot_range>-0.08 0.02</plot_range>
 	<data>iono_alt_smooth</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -836,6 +858,7 @@ Global RADS configuration file
 	<source>DORIS</source>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
+	<plot_range>-0.08 0.02</plot_range>
 	<data>iono_doris</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -852,6 +875,7 @@ Global RADS configuration file
 	<parameters sat="j1 j2 j3 pn tx">0.925</parameters>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
+	<plot_range>-0.08 0.02</plot_range>
 	<data>iono_gim</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -864,6 +888,7 @@ Global RADS configuration file
 	<source>IRI2007 climatology</source>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
+	<plot_range>-0.08 0.02</plot_range>
 	<data>iono_iri2007</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -880,6 +905,7 @@ Global RADS configuration file
 	<parameters sat="tx pn j1 j2 j3">0.925</parameters>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
+	<plot_range>-0.08 0.02</plot_range>
 	<data>iono_nic09</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -891,6 +917,7 @@ Global RADS configuration file
 	<source>dual-frequency altimeter</source>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
+	<plot_range>-0.08 0.02</plot_range>
 	<data>iono_alt_mle3</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -902,6 +929,7 @@ Global RADS configuration file
 	<source>dual-frequency altimeter</source>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
+	<plot_range>-0.08 0.02</plot_range>
 	<data>iono_alt_mle3</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -913,6 +941,7 @@ Global RADS configuration file
 	<source>dual-frequency altimeter after smoothing</source>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
+	<plot_range>-0.08 0.02</plot_range>
 	<data>iono_alt_smooth_mle3</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -994,6 +1023,7 @@ Global RADS configuration file
 	<source>GOT00.1</source>
 	<units>m</units>
 	<limits>-5 5</limits>
+	<plot_range>-2 2</plot_range>
 	<data>tide_ocean_got00</data>
 	<format>f7.4</format>
 	<compress>int4 1e-4</compress>
@@ -1004,6 +1034,7 @@ Global RADS configuration file
 	<source>FES2004</source>
 	<units>m</units>
 	<limits>-5 5</limits>
+	<plot_range>-2 2</plot_range>
 	<data>tide_ocean_fes04</data>
 	<format>f7.4</format>
 	<compress>int4 1e-4</compress>
@@ -1015,6 +1046,7 @@ Global RADS configuration file
 	<parameters>sshelf ne_pac4 hudson arctic9 nwatl</parameters>
 	<units>m</units>
 	<limits>-5 5</limits>
+	<plot_range>-2 2</plot_range>
 	<data>tide_ocean_webtide</data>
 	<default>nan</default>
 	<format>f7.4</format>
@@ -1027,6 +1059,7 @@ Global RADS configuration file
 	<source>GOT4.7</source>
 	<units>m</units>
 	<limits>-5 5</limits>
+	<plot_range>-2 2</plot_range>
 	<data>tide_ocean_got47</data>
 	<format>f7.4</format>
 	<compress>int4 1e-4</compress>
@@ -1038,6 +1071,7 @@ Global RADS configuration file
 	<source>GOT4.8</source>
 	<units>m</units>
 	<limits>-5 5</limits>
+	<plot_range>-2 2</plot_range>
 	<data>tide_ocean_got48</data>
 	<format>f7.4</format>
 	<compress>int4 1e-4</compress>
@@ -1049,6 +1083,7 @@ Global RADS configuration file
 	<source>GOT4.9</source>
 	<units>m</units>
 	<limits>-5 5</limits>
+	<plot_range>-2 2</plot_range>
 	<data>tide_ocean_got49</data>
 	<format>f7.4</format>
 	<compress>int4 1e-4</compress>
@@ -1060,6 +1095,7 @@ Global RADS configuration file
 	<source>GOT4.10</source>
 	<units>m</units>
 	<limits>-5 5</limits>
+	<plot_range>-2 2</plot_range>
 	<data>tide_ocean_got410</data>
 	<format>f7.4</format>
 	<compress>int4 1e-4</compress>
@@ -1070,6 +1106,7 @@ Global RADS configuration file
 	<source>FES2012</source>
 	<units>m</units>
 	<limits>-5 5</limits>
+	<plot_range>-2 2</plot_range>
 	<data>tide_ocean_fes12</data>
 	<format>f7.4</format>
 	<compress>int4 1e-4</compress>
@@ -1496,6 +1533,7 @@ Global RADS configuration file
 		<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 		<units>dB</units>
 		<limits>6 27</limits>
+		<plot_range>6 18</plot_range>
 		<data>sig0_ka</data>
 		<format>f6.3</format>
 		<compress>int2 1e-3</compress>
@@ -1508,6 +1546,7 @@ Global RADS configuration file
 		<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 		<units>dB</units>
 		<limits>6 27</limits>
+		<plot_range>6 18</plot_range>
 		<data>sig0_ku</data>
 		<format>f6.2</format>
 		<compress>int2 1e-2</compress>
@@ -1519,6 +1558,7 @@ Global RADS configuration file
 	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 	<units>dB</units>
 	<limits>6 27</limits>
+	<plot_range>6 18</plot_range>
 	<data>sig0_c</data>
 	<format>f6.2</format>
 	<compress>int2 1e-2</compress>
@@ -1528,6 +1568,7 @@ Global RADS configuration file
 	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 	<units>dB</units>
 	<limits>6 27</limits>
+	<plot_range>6 18</plot_range>
 	<data>sig0_s</data>
 	<format>f6.2</format>
 	<compress>int2 1e-2</compress>
@@ -1545,6 +1586,7 @@ Global RADS configuration file
 	<long_name>Ku-band automatic gain control</long_name>
 	<units>dB</units>
 	<limits>0 70</limits>
+	<plot_range>20 35</plot_range>
 	<data>agc_ku</data>
 	<format>f6.2</format>
 	<compress>int2 1e-2</compress>
@@ -1565,6 +1607,7 @@ Global RADS configuration file
 	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 	<units>dB</units>
 	<limits>6 27</limits>
+	<plot_range>6 18</plot_range>
 	<data>sig0_ku_mle3</data>
 	<format>f6.2</format>
 	<compress>int2 1e-2</compress>
@@ -1574,6 +1617,7 @@ Global RADS configuration file
 	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 	<units>dB</units>
 	<limits>6 27</limits>
+	<plot_range>6 18</plot_range>
 	<data>sig0_ku_plrm</data>
 	<format>f6.2</format>
 	<compress>int2 1e-2</compress>
@@ -1595,6 +1639,7 @@ Global RADS configuration file
 	<source>altimeter</source>
 	<units>m/s</units>
 	<limits>-1 30</limits>
+	<plot_range>0 16</plot_range>
 	<data>wind_speed_alt</data>
 	<format>f6.3</format>
 	<compress>int2 1e-2</compress>
@@ -1605,6 +1650,7 @@ Global RADS configuration file
 	<source>altimeter</source>
 	<units>m/s</units>
 	<limits>-1 30</limits>
+	<plot_range>0 16</plot_range>
 	<data>wind_speed_alt_retrk</data>
 	<format>f6.3</format>
 	<compress>int2 1e-2</compress>
@@ -1615,6 +1661,7 @@ Global RADS configuration file
 	<source>radiometer</source>
 	<units>m/s</units>
 	<limits>0 30</limits>
+	<plot_range>0 16</plot_range>
 	<data>wind_speed_rad</data>
 	<format>f6.3</format>
 	<compress>int2 1e-2</compress>
@@ -1625,6 +1672,7 @@ Global RADS configuration file
 	<source>ECMWF</source>
 	<units>m/s</units>
 	<limits>-30 30</limits>
+	<plot_range>-16 16</plot_range>
 	<data>wind_speed_ecmwf_u</data>
 	<format>f7.3</format>
 	<compress>int2 1e-2</compress>
@@ -1635,6 +1683,7 @@ Global RADS configuration file
 	<source>ECMWF</source>
 	<units>m/s</units>
 	<limits>-30 30</limits>
+	<plot_range>-16 16</plot_range>
 	<data>wind_speed_ecmwf_v</data>
 	<format>f7.3</format>
 	<compress>int2 1e-2</compress>
@@ -1645,6 +1694,7 @@ Global RADS configuration file
 	<source>ECMWF</source>
 	<units>m/s</units>
 	<limits>0 30</limits>
+	<plot_range>0 16</plot_range>
 	<data>wind_speed_ecmwf_u wind_speed_ecmwf_v HYPOT</data>
 	<format>f7.3</format>
 	<compress>int2 1e-2</compress>
@@ -1655,6 +1705,7 @@ Global RADS configuration file
 	<source>NOAA Global Forecast System</source>
 	<units>m/s</units>
 	<limits>-30 30</limits>
+	<plot_range>-16 16</plot_range>
 	<data>wind_speed_gfs_u</data>
 	<format>f7.3</format>
 	<compress>int2 1e-2</compress>
@@ -1665,6 +1716,7 @@ Global RADS configuration file
 	<source>NOAA Global Forecast System</source>
 	<units>m/s</units>
 	<limits>-30 30</limits>
+	<plot_range>-16 16</plot_range>
 	<data>wind_speed_gfs_v</data>
 	<format>f7.3</format>
 	<compress>int2 1e-2</compress>
@@ -1675,6 +1727,7 @@ Global RADS configuration file
 	<source>NOAA Global Forecast System</source>
 	<units>m/s</units>
 	<limits>0 30</limits>
+	<plot_range>0 16</plot_range>
 	<data>wind_speed_gfs_u wind_speed_gfs_v HYPOT</data>
 	<format>f7.3</format>
 	<compress>int2 1e-2</compress>
@@ -1685,6 +1738,7 @@ Global RADS configuration file
 	<source>altimeter, CLS algorithm</source>
 	<units>m/s</units>
 	<limits>0 30</limits>
+	<plot_range>0 16</plot_range>
 	<data>wind_speed_cls</data>
 	<format>f6.3</format>
 	<compress>int2 1e-2</compress>
@@ -1695,6 +1749,7 @@ Global RADS configuration file
 	<source>altimeter</source>
 	<units>m/s</units>
 	<limits>-1 30</limits>
+	<plot_range>0 16</plot_range>
 	<data>wind_speed_alt_mle3</data>
 	<format>f6.3</format>
 	<compress>int2 1e-2</compress>
@@ -1705,6 +1760,7 @@ Global RADS configuration file
 	<source>altimeter</source>
 	<units>m/s</units>
 	<limits>-1 30</limits>
+	<plot_range>0 16</plot_range>
 	<data>wind_speed_alt_plrm</data>
 	<format>f6.3</format>
 	<compress>int2 1e-2</compress>
@@ -1724,6 +1780,7 @@ Global RADS configuration file
 		<long_name>std dev of Ka-band range</long_name>
 		<units>m</units>
 		<limits>0.0 0.17</limits>
+		<plot_range>0.0 0.2</plot_range>
 		<data>range_rms_ka</data>
 		<format>f6.4</format>
 		<default>0</default>
@@ -1741,6 +1798,7 @@ Global RADS configuration file
 		<limits sat="j1 j2 j3">0.00 0.17</limits> <!--Retracker noise on Jason is lower than others-->
 		<limits sat="c2">0.00 0.18</limits> <!--CryoSat-2 needs a little extra to allow PLRM-->
 		<limits sat="tx">0.00 0.15</limits> <!--TOPEX a-b tracker leads to much lower std dev than other satellites-->
+		<plot_range>0.0 0.2</plot_range>
 		<data>range_rms_ku</data>
 		<format>f6.4</format>
 		<default>0</default>
@@ -1753,6 +1811,7 @@ Global RADS configuration file
 	<long_name>std dev of retracked Ku-band range</long_name>
 	<units>m</units>
 	<limits>0.0 0.4</limits>
+	<plot_range>0.0 0.2</plot_range>
 	<data>range_rms_ku_retrk</data>
 	<format>f6.4</format>
 	<default>0</default>
@@ -1790,6 +1849,7 @@ Global RADS configuration file
 	<long_name>std dev of Ku-band range (MLE3)</long_name>
 	<units>m</units>
 	<limits>0.00 0.17</limits> <!--May need adjustment-->
+	<plot_range>0.0 0.2</plot_range>
 	<data>range_rms_ku_mle3</data>
 	<format>f6.4</format>
 	<default>0</default>
@@ -1800,6 +1860,7 @@ Global RADS configuration file
 	<long_name>std dev of Ku-band range (PLRM)</long_name>
 	<units>m</units>
 	<limits>0.00 0.17</limits> <!--May need adjustment-->
+	<plot_range>0.0 0.2</plot_range>
 	<data>range_rms_ku_plrm</data>
 	<format>f6.4</format>
 	<default>0</default>
@@ -1811,8 +1872,9 @@ Global RADS configuration file
 	<var name="range_numval_ka" field="2101">
 		<long_name>number of valid Ka-band measurements</long_name>
 		<standard_name>altimeter_range number_of_observations</standard_name>
-		<units>count</units>
+		<units>1</units>
 		<limits>32.5 40.5</limits>
+		<plot_range>0 21</plot_range>
 		<data>range_numval_ka</data>
 		<default>40</default>
 		<format>f3.0</format>
@@ -1824,10 +1886,12 @@ Global RADS configuration file
 	<var name="range_numval_ku" field="2101">
 		<long_name>number of valid Ku-band measurements</long_name>
 		<standard_name>altimeter_range number_of_observations</standard_name>
-		<units>count</units>
+		<units>1</units>
 		<limits>16.5 20.5</limits>
 		<limits sat="j1 j2 j3">15.5 20.5</limits>
 		<limits sat="g1 gs tx">8.5 10.5</limits> <!--GFO, Geosat, TOPEX are only 10 Hz-->
+		<plot_range>0 21</plot_range>
+		<plot_range sat="g1 gs tx">0 11</plot_range>
 		<data>range_numval_ku</data>
 		<default>20</default>
 		<format>f3.0</format>
@@ -1838,8 +1902,9 @@ Global RADS configuration file
 <var name="range_numval_ku_mle3" field="2101" sat="j2 j3">
 	<long_name>number of valid Ku-band measurements (MLE3)</long_name>
 	<standard_name>altimeter_range number_of_observations</standard_name>
-	<units>count</units>
+	<units>1</units>
 	<limits>15.5 20.5</limits>
+	<plot_range>0 21</plot_range>
 	<data>range_numval_ku_mle3</data>
 	<format>f3.0</format>
 	<compress>int1</compress>
@@ -1847,8 +1912,9 @@ Global RADS configuration file
 <var name="range_numval_ku_plrm" sat="3a 3b">
 	<long_name>number of valid Ku-band measurements (PLRM)</long_name>
 	<standard_name>altimeter_range number_of_observations</standard_name>
-	<units>count</units>
+	<units>1</units>
 	<limits>15.5 20.5</limits>
+	<plot_range>0 21</plot_range>
 	<data>range_numval_ku_plrm</data>
 	<format>f3.0</format>
 	<compress>int1</compress>
@@ -1857,8 +1923,9 @@ Global RADS configuration file
 <var name="range_numval_ku_retrk" sat="tx.r50">
 	<long_name>number of valid retracked Ku-band measurements</long_name>
 	<standard_name>altimeter_range number_of_observations</standard_name>
-	<units>count</units>
+	<units>1</units>
 	<limits>8.5 10.5</limits> <!--TOPEX is only 10 Hz-->
+	<plot_range>0 11</plot_range>
 	<data>range_numval_ku_retrk</data>
 	<format>f3.0</format>
 	<compress>int1</compress>
@@ -1867,8 +1934,9 @@ Global RADS configuration file
 <var name="range_numval_c" field="2102" sat="j1 j2 j3 3a 3b">
 	<long_name>number of valid C-band measurements</long_name>
 	<standard_name>altimeter_range number_of_observations</standard_name>
-	<units>count</units>
+	<units>1</units>
 	<limits>16.5 20.5</limits>
+	<plot_range>0 21</plot_range>
 	<data>range_numval_c</data>
 	<format>f3.0</format>
 	<compress>int1</compress>
@@ -1876,7 +1944,7 @@ Global RADS configuration file
 <var name="range_numval_c_retrk" sat="tx.r50">
 	<long_name>number of valid retracked C-band measurements</long_name>
 	<standard_name>altimeter_range number_of_observations</standard_name>
-	<units>count</units>
+	<units>1</units>
 	<limits>3.5 5.5</limits>
 	<data>range_numval_c_retrk</data>
 	<format>f3.0</format>
@@ -2062,8 +2130,8 @@ Global RADS configuration file
 	<var name="peakiness_ka" field="2401">
 		<long_name>Ka-band peakiness</long_name>
 		<units>1</units>
-		<data>peakiness_ka</data>
 		<limits>3.2 6.0</limits>
+		<data>peakiness_ka</data>
 		<format>f6.2</format>
 		<compress>int2 1e-2</compress>
 	</var>
@@ -2422,6 +2490,7 @@ Global RADS configuration file
 		<long_name>std dev of Ka-band significant wave height</long_name>
 		<units>m</units>
 		<limits>0.0 2.1</limits>
+		<plot_range>0.2 1.0</plot_range>
 		<data>swh_rms_ka</data>
 		<format>f5.3</format>
 		<default>0</default>
@@ -2438,6 +2507,7 @@ Global RADS configuration file
 		<limits sat="g1">0.0 0.5</limits> <!--GFO on-board a-b tracker smoothes the data-->
 		<limits sat="j1 j2 j3">0.0 1.5</limits> <!--Retracker noise on Jason is lower than others-->
 		<limits sat="tx">0.0 0.9</limits> <!--TOPEX a-b tracker leads to much lower std dev than other satellites-->
+		<plot_range>0.2 1.0</plot_range>
 		<data>swh_rms_ku</data>
 		<format>f5.3</format>
 		<default>0</default>
@@ -2450,6 +2520,7 @@ Global RADS configuration file
 	<long_name>std dev of C-band significant wave height</long_name>
 	<units>m</units>
 	<limits>0.0 2.1</limits>
+	<plot_range>0.2 1.0</plot_range>
 	<data>swh_rms_c</data>
 	<format>f5.3</format>
 	<compress>int2 1e-3</compress>
@@ -2459,6 +2530,7 @@ Global RADS configuration file
 	<long_name>std dev of S-band significant wave height</long_name>
 	<units>m</units>
 	<limits>0.0 2.1</limits>
+	<plot_range>0.2 1.0</plot_range>
 	<data>swh_rms_s</data>
 	<format>f5.3</format>
 	<compress>int2 1e-3</compress>
@@ -2468,6 +2540,7 @@ Global RADS configuration file
 	<long_name>std dev of Ku-band significant wave height (MLE3)</long_name>
 	<units>m</units>
 	<limits>0.0 1.5</limits> <!--Might need to be changed-->
+	<plot_range>0.2 1.0</plot_range>
 	<data>swh_rms_ku_mle3</data>
 	<format>f5.3</format>
 	<default>0</default>
@@ -2478,6 +2551,7 @@ Global RADS configuration file
 	<long_name>std dev of Ku-band significant wave height (PLRM)</long_name>
 	<units>m</units>
 	<limits>0.0 1.5</limits> <!--Might need to be changed-->
+	<plot_range>0.2 1.0</plot_range>
 	<data>swh_rms_ku_plrm</data>
 	<format>f5.3</format>
 	<default>0</default>
@@ -2496,10 +2570,11 @@ Global RADS configuration file
 	<var name="sig0_rms_ka" field="2902">
 		<long_name>std dev of Ka-band backscatter coefficient</long_name>
 		<units>dB</units>
+		<limits>0.0 1.0</limits>
+		<plot_range>0.0 0.5</plot_range>
 		<data>sig0_rms_ka</data>
 		<format>f5.3</format>
 		<compress>int2 1e-3</compress>
-		<limits>0.0 1.0</limits>
 		<default>0</default>
 		<comment>Based on valid high-rate measurements</comment>
 	</var>
@@ -2509,10 +2584,11 @@ Global RADS configuration file
 	<var name="sig0_rms_ku" field="2902">
 		<long_name>std dev of Ku-band backscatter coefficient</long_name>
 		<units>dB</units>
+		<limits>0.0 1.0</limits>
+		<plot_range>0.0 0.5</plot_range>
 		<data>sig0_rms_ku</data>
 		<format>f5.3</format>
 		<compress>int2 1e-3</compress>
-		<limits>0.0 1.0</limits>
 		<default>0</default>
 		<comment>Based on valid high-rate measurements</comment>
 	</var>
@@ -2537,20 +2613,22 @@ Global RADS configuration file
 <var name="sig0_rms_ku_mle3" field="2912" sat="j2 j3">
 	<long_name>std dev of Ku-band backscatter coefficient (MLE3)</long_name>
 	<units>dB</units>
+	<limits>0.0 1.0</limits>
+	<plot_range>0.0 0.5</plot_range>
 	<data>sig0_rms_ku_mle3</data>
 	<format>f5.3</format>
 	<compress>int2 1e-3</compress>
-	<limits>0.0 1.0</limits>
 	<default>0</default>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
 <var name="sig0_rms_ku_plrm" field="2913" sat="3a 3b">
 	<long_name>std dev of Ku-band backscatter coefficient (PLRM)</long_name>
 	<units>dB</units>
+	<limits>0.0 1.0</limits>
+	<plot_range>0.0 0.5</plot_range>
 	<data>sig0_rms_ku_plrm</data>
 	<format>f5.3</format>
 	<compress>int2 1e-3</compress>
-	<limits>0.0 1.0</limits>
 	<default>0</default>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
@@ -2568,6 +2646,7 @@ Global RADS configuration file
 		<long_name>off-nadir pointing angle squared from waveform</long_name>
 		<units>degrees^2</units>
 		<data>off_nadir_angle2_wf_ka</data>
+		<plot_range>-0.04 0.08</plot_range>
 		<format>f7.4</format>
 		<default>0</default>
 		<compress>int2 1e-4</compress>
@@ -2577,17 +2656,16 @@ Global RADS configuration file
 <else>
 	<var name="off_nadir_angle2_wf_ku" field="3002">
 		<long_name>off-nadir pointing angle squared from waveform</long_name>
+		<long_name sat="e2">off-nadir angle squared from waveform (smoothed)</long_name>
 		<units>degrees^2</units>
+		<limits sat="j1 j2 j3">-0.20 0.64</limits> <!--Attitude^2 on Jason is pretty bad-->
+		<limits sat="e2">-0.05 0.05</limits>
+		<plot_range>-0.04 0.08</plot_range>
 		<data>off_nadir_angle2_wf_ku</data>
 		<data sat="gs pn tx">off_nadir_angle_wf_ku SQR</data> <!--Compute attitude^2 from attitude-->
 		<format>f7.4</format>
 		<default>0</default>
 		<compress>int2 1e-4</compress>
-		<limits sat="j1 j2 j3">-0.20 0.64</limits> <!--Attitude^2 on Jason is pretty bad-->
-		<if sat="e2">
-			<long_name>off-nadir angle squared from waveform (smoothed)</long_name>
-			<limits>-0.05 0.05</limits>
-		</if>
 	</var>
 	<alias name="attitude" field="30">off_nadir_angle2_wf_ku</alias>
 </else>
@@ -2595,6 +2673,7 @@ Global RADS configuration file
 	<long_name>off-nadir pointing angle squared from retracked Ku-band waveform</long_name>
 	<units>degrees^2</units>
 	<data>off_nadir_angle2_wf_ku_retrk</data>
+	<plot_range>-0.04 0.04</plot_range>
 	<format>f7.4</format>
 	<default>0</default>
 	<compress>int2 1e-4</compress>
@@ -2613,6 +2692,7 @@ Global RADS configuration file
 	<data>off_nadir_angle2_pf SQRT</data>
 	<data sat="c2">attitude_pitch attitude_roll HYPOT</data>
 	<data sat="pn tx">off_nadir_angle_pf</data> <!--T/P and CryoSat store off-nadir angle, not squared-->
+	<plot_range>0.00 0.01</plot_range>
 	<format>f5.3</format>
 	<compress>int2 1e-3</compress>
 </var>
@@ -2628,6 +2708,7 @@ Global RADS configuration file
 <var name="off_nadir_angle2_wf_rms_ku" field="3005" sat="c2">
 	<long_name>std dev of off-nadir pointing angle squared from waveform</long_name>
 	<units>degrees^2</units>
+	<plot_range>0.0 0.04</plot_range>
 	<data>off_nadir_angle2_wf_rms_ku</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -2636,6 +2717,7 @@ Global RADS configuration file
 	<long_name>platform pitch angle</long_name>
 	<units>degrees</units>
 	<data>attitude_pitch</data>
+	<plot_range>-0.16 0.02</plot_range>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 </var>
@@ -2651,6 +2733,7 @@ Global RADS configuration file
 	<long_name>platform roll angle</long_name>
 	<units>degrees</units>
 	<data>attitude_roll</data>
+	<plot_range>-0.16 0.02</plot_range>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 </var>
@@ -2666,6 +2749,7 @@ Global RADS configuration file
 	<long_name>platform yaw angle</long_name>
 	<units>degrees</units>
 	<data>attitude_yaw</data>
+	<plot_range>-0.12 0.12</plot_range>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 </var>
@@ -2914,6 +2998,7 @@ Global RADS configuration file
 <var name="mqe" field="3409" sat="e1 e2 c2">
 	<long_name>mean quadratic error of waveform fit</long_name>
 	<data>mqe</data>
+	<plot_range>0.1 0.7</plot_range>
 	<format>f6.3</format>
 	<compress>int2 1e-3</compress>
 </var>
@@ -2928,6 +3013,7 @@ Global RADS configuration file
 <var name="nr_iter" field="3410" sat="c2">
 	<long_name>number of iterations of retracking</long_name>
 	<data>nr_iter</data>
+	<plot_range>0 25</plot_range>
 	<format>f3.0</format>
 	<compress>int1</compress>
 </var>
@@ -2935,6 +3021,7 @@ Global RADS configuration file
 	<long_name>Ku-band noise floor of waveforms</long_name>
 	<data>noise_floor_ku</data>
 	<units>dB</units>
+	<plot_range>-40 -20</plot_range>
 	<format>f7.3</format>
 	<compress>int2 1e-3 -20</compress>
 </var>
@@ -2955,6 +3042,7 @@ Global RADS configuration file
 </var>
 <var name="flags_star_tracker" field="3413" sat="c2">
 	<long_name>star tracker flags</long_name>
+	<plot_range>0 8</plot_range>
 	<data>flags_star_tracker</data>
 	<flag_masks>str1_on str2_on str3_on</flag_masks>
 	<compress>int1</compress>
