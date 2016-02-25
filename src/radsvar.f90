@@ -104,6 +104,21 @@ subroutine list_variable
 type(rads_varinfo), pointer :: info
 real(eightbytereal) :: x
 info => var%info
+
+! If no plot_range then copy limits
+if (all(isnan_(info%plot_range))) info%plot_range = info%limits
+
+! Compute intervals; will be NaN when not requested
+x = (info%plot_range(2)-info%plot_range(1)) / intervals
+if (round) call round_up (x)	! Round if
+if (info%nctype /= nf90_real .and. info%nctype /= nf90_double .and. x <= info%scale_factor) then
+	! Interval and range when interval is at the data resolution
+	x = info%scale_factor
+	info%plot_range(1) = (nint(info%plot_range(1)/x)-0.5d0)*x
+	info%plot_range(2) = (nint(info%plot_range(2)/x)+0.5d0)*x
+endif
+
+! Print the general satellite information
 write (*,600) timestamp(), trim(S%command)
 write (*,610) trim(prefix), 'userroot', trim(S%userroot)
 write (*,610) trim(prefix), 'dataroot', trim(S%dataroot)
@@ -113,6 +128,8 @@ write (*,610) trim(prefix), 'phase', trim(S%phase%name)
 write (*,610) trim(prefix), 'satellite', trim(S%satellite)
 write (*,623) trim(prefix), 'cycles', S%cycles
 write (*,623) trim(prefix), 'passes', S%passes
+
+! Print the variable information
 write (*,610) trim(prefix), 'alias', trim(var%name)
 write (*,610) trim(prefix), 'var', trim(info%name)
 write (*,610) trim(prefix), 'long_name', trim(var%long_name)
@@ -124,19 +141,18 @@ if (info%flag_meanings /= '') write (*,610) trim(prefix), 'flag_meanings', trim(
 if (all(isan_(info%limits))) write (*,632) trim(prefix), 'limits', info%limits
 if (any(isnan_(info%plot_range))) then
 	! Nothing
-else if (intervals == 0) then
+else if (isnan_(x)) then
 	write (*,632) trim(prefix), 'plot_range', info%plot_range
 else
-	x = (info%plot_range(2)-info%plot_range(1)) / intervals
-	if (round) call round_up (x)
 	write (*,633) trim(prefix), 'plot_range', info%plot_range, x
 endif
+
 ! Formats
 600 format ('# RADS variable info'/'# Created: ',a,' UTC: ',a/'#')
 610 format (a,a,'="',a,'"')
 623 format (a,a,'=(',i0,2(1x,i0),')')
-632 format (a,a,'=(',f0.3,1x,f0.3,')')
-633 format (a,a,'=(',f0.3,2(1x,f0.3),')')
+632 format (a,a,'=(',f0.4,1x,f0.4,')')
+633 format (a,a,'=(',f0.4,2(1x,f0.4),')')
 end subroutine list_variable
 
 !***********************************************************************
