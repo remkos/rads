@@ -122,7 +122,8 @@ endtype
 type :: rads_sat
 	character(len=rads_naml) :: userroot             ! Root directory of current user (i.e. $HOME)
 	character(len=rads_naml) :: dataroot             ! Root directory of RADS data directory
-	character(len=rads_varl) :: tree                 ! Satellite directory tree (e.g. 'e2' or 'e2.com6')
+	character(len=rads_varl) :: spec                 ! Satellite specification given by user (e.g. 'e2g' or 'e2.reap')
+	character(len=rads_varl) :: tree                 ! Satellite directory tree (e.g. 'e2' or 'e2.reap')
 	character(len=rads_cmdl) :: command              ! Command line
 	character(len=rads_naml), pointer :: glob_att(:) ! Global attributes
 	character(len=8) :: satellite                    ! Satellite name
@@ -494,27 +495,17 @@ character(len=*), intent(in), optional :: xml(:)
 ! ERROR CODE
 !  S%error  : rads_noerr, rads_err_xml_file, rads_err_xml_parse, rads_err_var
 !****-------------------------------------------------------------------
-integer(fourbyteint) :: i, j, l
+integer(fourbyteint) :: i
 
 call rads_init_sat_struct (S)
 
-! Decipher the satellite and phase
-l = len_trim(sat)
-if (l < 2) call rads_exit ('Satellite/phase has fewer than 2 characters')
+! Store satellite specification
+! S%sat, S%tree, S%satellite will be populated/overwritten later by rads_read_xml
+! S%spec will then be replaced by the phase name (if specified)
+if (len_trim(sat) < 2) call rads_exit ('Satellite/phase has fewer than 2 characters')
+S%spec = sat
 S%sat = sat(:2)
 S%satellite = S%sat
-
-! Do we have a 'tree' specified? Note that we do not consider it if part of phase argument
-j = max(index(sat,'/'),index(sat,':'))
-if (l == 3) then ! <sat><phase>
-	S%tree = S%sat
-	j = 3
-else if (j == 0) then ! No separator
-	S%tree = sat
-else ! With separator
-	S%tree = sat(:j-1)
-	j = j + 1
-endif
 
 ! Set some global variables
 S%dataroot = radsdataroot
@@ -554,15 +545,15 @@ endif
 if (.not.associated(S%phases)) call rads_exit ('Satellite "'//S%sat//'" unknown')
 
 ! When a phase/mission is specifically given, load the appropriate settings
-if (j == 0 .or. sat(j:j) == ' ') then
+if (S%spec == '') then
 	! By default, use the largest possible cycle and pass range and set the first (default) phase
 	S%phase => S%phases(1)
 	S%cycles(1) = minval(S%phases%cycles(1))
 	S%cycles(2) = maxval(S%phases%cycles(2))
 	S%passes(2) = maxval(S%phases%passes)
 else
-	S%phase => rads_get_phase(S, sat(j:))
-	if (.not.associated(S%phase)) call rads_exit ('No such mission phase "'//sat(j:j)//'" of satellite "'//S%sat//'"')
+	S%phase => rads_get_phase(S, S%spec)
+	if (.not.associated(S%phase)) call rads_exit ('No such mission phase "'//trim(S%spec)//'" of satellite "'//S%sat//'"')
 	S%cycles(1:2) = S%phase%cycles
 	S%passes(2) = S%phase%passes
 endif
@@ -667,7 +658,7 @@ type(rads_sat), intent(inout) :: S
 !****-------------------------------------------------------------------
 ! gfortran 4.4.1 segfaults on the next line if this routine is made pure or elemental,
 ! so please leave it as a normal routine.
-S = rads_sat ('', '', '', '', null(), '', 1d0, (/13.8d0, nan/), 90d0, nan, nan, nan, 1, 1, rads_noerr, &
+S = rads_sat ('', '', '', '', '', null(), '', 1d0, (/13.8d0, nan/), 90d0, nan, nan, nan, 1, 1, rads_noerr, &
 	0, 0, 0, 0, 0, .false., '', 0, null(), null(), null(), null(), null(), null(), null(), null())
 end subroutine rads_init_sat_struct
 
@@ -2238,6 +2229,9 @@ do
 		allocate (S%glob_att(nval))
 		S%glob_att = val(1:nval)
 
+	case ('satellites')
+		call sat_translate
+
 	case ('satellite')
 		S%satellite = val(1)(:8)
 
@@ -2580,6 +2574,48 @@ write (text, 1300) trim(filename), X%lineno, string
 call rads_error (S, rads_err_xml_parse, text)
 1300 format ('Error parsing file ',a,' at or near line ',i0,': ',a)
 end subroutine xmlparse_error
+
+subroutine sat_translate
+integer :: i, j, l
+! Translate the given satellite identifier into sat, tree, phase.
+! Start with S%spec given on command line.
+! It will be replaced by the mission phase, if any.
+!
+! If three characters, this may be like "e2g".
+! Check if the first two characters match the list.
+l = len_trim(S%spec)
+if (l == 3) then
+	do i = 1,nval
+		if (S%spec(1:2) /= val(i)(1:2)) cycle
+		S%sat = val(i)(1:2)
+		S%spec = S%spec(3:3)	! Phase part
+		S%tree = S%sat
+		return
+	enddo
+endif
+! If we have a '/' or ':' or '.', then separate specification
+j = scan(S%spec,'/:.')
+if (j > 0) l = j - 1
+! Now scan for matching strings (start only)
+do i = 1,nval
+	if (index(' '//val(i), ' '//strtolower(S%spec(:l))) == 0) cycle
+	S%sat = val(i)(1:2)
+	if (j == 0) then
+		S%tree = S%sat
+	else
+		S%tree = S%sat // S%spec(j:)
+	endif
+	j = scan(S%tree,'/:')
+	if (j == 0) then
+		S%spec = ''
+	else
+		S%spec = S%tree(j+1:)
+		S%tree(j:) = ''
+	endif
+	return
+enddo
+call rads_exit ('No satellite found based on specification "'//trim(S%spec)//'"')
+end subroutine sat_translate
 
 end subroutine rads_read_xml
 

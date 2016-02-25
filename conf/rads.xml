@@ -27,6 +27,26 @@ Global RADS configuration file
 	ellipsoid TOPEX
 </global_attributes>
 
+<satellites>
+	2a h2a hy-2a hy2a
+	3a s3a sentinel-3a sentinel3a sntnl-3a
+	3b s3b sentinel-3b sentinel3b sntnl-3b
+	c2 cs2 cryosat-2 cryosat2
+	e1 er1 ers-1 ers1
+	e2 er2 ers-2 ers2
+	g1 gfo gfo-1 gfo1
+	g3 ge3 geos-3 geos3
+	gs geo geosat
+	j1 ja1 jason-1 jason1
+	j2 ja2 jason-2 jason2
+	j3 ja3 jason-3 jason3
+	n1 en1 envisat
+	pn pos poseidon
+	tx top topex
+	sa srl saral
+	ss sea seasat-a
+</satellites>
+
 <var name="sla" field="0">
 	<long_name>sea level anomaly</long_name>
 	<standard_name>sea_surface_height_above_sea_level</standard_name>
