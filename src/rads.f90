@@ -79,6 +79,7 @@ type :: rads_varinfo
 	type(grid), pointer :: grid                      ! Pointer to grid for interpolation (if data source is grid)
 	real(eightbytereal) :: default                   ! Optional default value (Inf if not set)
 	real(eightbytereal) :: limits(2)                 ! Lower and upper limit for editing
+	real(eightbytereal) :: plot_range(2)             ! Suggested range for plotting
 	real(eightbytereal) :: add_offset, scale_factor  ! Offset and scale factor in case of netCDF
 	real(eightbytereal) :: xmin, xmax, mean, sum2    ! Minimum, maximum, mean, sum squared deviation
 	logical :: boz_format                            ! Format starts with B, O or Z.
@@ -2394,6 +2395,9 @@ do
 			if (var%name == 'flags') call rads_set_limits_by_flagmask (S, info%limits)
 		endif
 
+	case ('plot_range')
+		read (val(:nval), *, iostat=ios) info%plot_range
+
 	case ('data')
 		call assign_or_append (info%dataname)
 		src = ''
@@ -2691,7 +2695,7 @@ if (associated(tgt)) then
 else
 	allocate (ptr%info)
 	ptr%info = rads_varinfo (varname, varname, '', '', '', '', '', '', '', '', 'f0.3', '', '', null(), &
-		huge(0d0), nan, 0d0, 1d0, nan, nan, 0d0, 0d0, .false., 1, nf90_double, 0, 0, 0, 0, 0, 0, 0)
+		huge(0d0), nan, nan, 0d0, 1d0, nan, nan, 0d0, 0d0, .false., 1, nf90_double, 0, 0, 0, 0, 0, 0, 0)
 	name => ptr%info%name
 endif
 long_name => ptr%info%long_name ! This is to avoid warning in gfortran 4.8
