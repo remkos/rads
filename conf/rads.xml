@@ -2939,6 +2939,7 @@ Global RADS configuration file
 	<long_name>radiometer water vapor content</long_name>
 	<standard_name>atmosphere_mass_content_of_water_vapor</standard_name>
 	<units>kg/m^2</units>
+	<plot_range>0 70</plot_range>
 	<data>water_vapor_rad</data>
 	<default>0</default>
 	<if sat="e1 e2">
@@ -2955,6 +2956,7 @@ Global RADS configuration file
 	<standard_name>atmosphere_mass_content_of_water_vapor</standard_name>
 	<source>NOAA Global Forecast System</source>
 	<units>kg/m^2</units>
+	<plot_range>0 70</plot_range>
 	<data>water_vapor_content_gfs</data>
 	<default>0</default>
 	<format>f6.2</format>
