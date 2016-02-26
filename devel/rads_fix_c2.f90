@@ -140,13 +140,15 @@ ciono = .false.
 cdrift = ldrift .and. baseline < 'C'
 
 call rads_get_var (S, P, 'time', time, .true.)
-call rads_get_var (S, P, 'dry_tropo_ecmwf', dry, .true.)
-call rads_get_var (S, P, 'wet_tropo_ecmwf', wet, .true.)
-call rads_get_var (S, P, 'inv_bar_static', ib, .true.)
-call rads_get_var (S, P, 'iono_gim', iono, .true.)
 call rads_get_var (S, P, 'sig0_ku', sig0, .true.)
 call rads_get_var (S, P, 'flags', flagword, .true.)
 if (P%n_hz > 0) call rads_get_var (S, P, 'sig0_20hz_ku', sig0_20hz, .true.)
+if (lmeteo) then
+	call rads_get_var (S, P, 'dry_tropo_ecmwf', dry, .true.)
+	call rads_get_var (S, P, 'wet_tropo_ecmwf', wet, .true.)
+	call rads_get_var (S, P, 'inv_bar_static', ib, .true.)
+	call rads_get_var (S, P, 'iono_gim', iono, .true.)
+endif
 
 ! Process data records
 
@@ -167,7 +169,7 @@ do i = 1,n
 		endif
 	endif
 
-! Correct for sigma0 drift
+! For data older than Baseline C: Correct for sigma0 drift
 
 	if (.not.cdrift) then
 		dsig0 = 0
@@ -182,13 +184,13 @@ do i = 1,n
 	if (.not.lsig0) then
 		! Skip
 	else if (fdm_l2) then
-		sig0(i) = sig0(i) - 1.4d0
+		dsig0 = dsig0 - 1.4d0
 	else if (lrm_l2) then
-		sig0(i) = sig0(i) - 7.0d0
+		dsig0 = dsig0 - 7.0d0
 	else	! All L1 data (LRM and PLRM)
-		if ((time(i) > 808272000d0 .and. time(i) < 810086400d0) .or. &	! 2010-08-13 00:00 - 2010-09-03 00:00
-			 (time(i) > 812764800d0 .and. time(i) < 814233600d0)) &	! 2010-10-04 00:00 - 2010-10-21 00:00
-			dsig0 = dsig0 + 1.5d0 ! These data are biased low by 1.5 dB, so we add 1.5 dB
+		if (baseline < 'C' .and. ((time(i) > 808272000d0 .and. time(i) < 810086400d0) .or. &	! 2010-08-13 00:00 - 2010-09-03 00:00
+			 (time(i) > 812764800d0 .and. time(i) < 814233600d0))) &	! 2010-10-04 00:00 - 2010-10-21 00:00
+			dsig0 = dsig0 + 1.5d0 ! Baseline B data for these periods were biased low by 1.5 dB, so we add 1.5 dB
 		if (sar) then
 			dsig0 = dsig0 + sig0_bias_sar
 		else
@@ -200,9 +202,9 @@ do i = 1,n
 	if (P%n_hz > 0) sig0_20hz(:,i) = sig0_20hz(:,i) + dsig0
 enddo
 
-! Prior to Cycle 5 pass 333 all iono is bogus
+! Baseline B LRM L2 data: Prior to Cycle 5 pass 333 all iono is bogus
 
-if (lmeteo .and. lrm_l2 .and. P%equator_time < 808700000d0) then
+if (lmeteo .and. baseline < 'C' .and. lrm_l2 .and. P%equator_time < 808700000d0) then
 	iono = nan
 	ciono = .true.
 endif
