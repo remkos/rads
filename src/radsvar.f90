@@ -34,11 +34,12 @@ type(rads_pass) :: P
 integer(fourbyteint) :: cycle, pass, i, ios, intervals = 0
 type(rads_var), pointer :: var
 logical :: show_x = .false., round = .false.
+real(eightbytereal) :: factor = 1d0
 character(len=rads_varl) :: prefix = ''
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('i:j:p:x')
+call rads_set_options ('d:i:j:p:x')
 call rads_init (S)
 if (S%error /= rads_noerr) call rads_exit ('Fatal error')
 
@@ -46,8 +47,10 @@ if (S%error /= rads_noerr) call rads_exit ('Fatal error')
 nullify (var)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
-	case ('x')
-		show_x = .true.
+	case ('V', 'var', 'sel')
+		var => rads_varptr(S, rads_opt(i)%arg)
+	case ('d')
+		read (rads_opt(i)%arg, *, iostat=ios) factor
 	case ('i')
 		read (rads_opt(i)%arg, *, iostat=ios) intervals
 	case ('j')
@@ -55,8 +58,8 @@ do i = 1,rads_nopt
 		round = .true.
 	case ('p')
 		prefix = rads_opt(i)%arg(:rads_varl)
-	case ('V', 'var', 'sel')
-		var => rads_varptr(S, rads_opt(i)%arg)
+	case ('x')
+		show_x = .true.
 	end select
 enddo
 
@@ -90,10 +93,12 @@ if (rads_version ('Make list of RADS variables')) return
 call rads_synopsis
 write (stderr,1300)
 1300 format (/ &
-'Program specific [program_options] are:'/ &
-'  -i INTERVALS              Select number of intervals for binning'/ &
-'  -j INTERVALS              Select number of intervals for binning with rounding'/ &
-'  -p PREFIX                 Set prefix for script variables'/ &
+'With the option "-V VAR", program specific [program_options] are:'/ &
+'  -d FACTOR                 Scale the plotting range for differences by FACTOR (def: 1)'/ &
+'  -i INTERVALS              Select nr of intervals to determine a plotting bin size'/ &
+'  -j INTERVALS              Same as -i INTERVAL and round the bin size'/ &
+'  -p PREFIX                 Set prefix for script variables'// &
+'Without the option "-V VAR", program specific [program_options] are:'/ &
 '  -x                        Also list defined but unavailable variables')
 stop
 end subroutine synopsis
@@ -102,7 +107,7 @@ end subroutine synopsis
 ! List attributes of single variable, to be used in bash script
 subroutine list_variable
 type(rads_varinfo), pointer :: info
-real(eightbytereal) :: x
+real(eightbytereal) :: x, diff_range(2)
 info => var%info
 
 ! If no plot_range then copy limits
@@ -117,6 +122,9 @@ if (info%nctype /= nf90_real .and. info%nctype /= nf90_double .and. x <= info%sc
 	info%plot_range(1) = (nint(info%plot_range(1)/x)-0.5d0)*x
 	info%plot_range(2) = (nint(info%plot_range(2)/x)+0.5d0)*x
 endif
+
+! Centre and scale plot_range to get range for plotting differences
+diff_range = factor * (info%plot_range - 0.5d0 * sum(info%plot_range))
 
 ! Print the general satellite information
 write (*,600) timestamp(), trim(S%command)
@@ -141,10 +149,12 @@ if (info%flag_meanings /= '') write (*,610) trim(prefix), 'flag_meanings', trim(
 if (all(isan_(info%limits))) write (*,632) trim(prefix), 'limits', info%limits
 if (any(isnan_(info%plot_range))) then
 	! Nothing
-else if (isnan_(x)) then
+else if (intervals == 0) then
 	write (*,632) trim(prefix), 'plot_range', info%plot_range
+	write (*,632) trim(prefix), 'diff_range', diff_range
 else
 	write (*,633) trim(prefix), 'plot_range', info%plot_range, x
+	write (*,633) trim(prefix), 'diff_range', diff_range, factor*x
 endif
 
 ! Formats
