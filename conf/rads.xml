@@ -830,7 +830,7 @@ Global RADS configuration file
 	<source>dual-frequency altimeter</source>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
-	<plot_range>-0.08 0.02</plot_range>
+	<plot_range>-0.15 0.02</plot_range>
 	<data>iono_alt</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -842,7 +842,7 @@ Global RADS configuration file
 	<source>dual-frequency altimeter</source>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
-	<plot_range>-0.08 0.02</plot_range>
+	<plot_range>-0.15 0.02</plot_range>
 	<data>iono_alt_retrk</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -854,7 +854,7 @@ Global RADS configuration file
 	<source>Bent climatology</source>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
-	<plot_range>-0.08 0.02</plot_range>
+	<plot_range>-0.15 0.02</plot_range>
 	<data>iono_bent</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -866,7 +866,7 @@ Global RADS configuration file
 	<source>dual-frequency altimeter after smoothing</source>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
-	<plot_range>-0.08 0.02</plot_range>
+	<plot_range>-0.15 0.02</plot_range>
 	<data>iono_alt_smooth</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -878,7 +878,7 @@ Global RADS configuration file
 	<source>DORIS</source>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
-	<plot_range>-0.08 0.02</plot_range>
+	<plot_range>-0.15 0.02</plot_range>
 	<data>iono_doris</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -895,7 +895,7 @@ Global RADS configuration file
 	<parameters sat="j1 j2 j3 pn tx">0.925</parameters>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
-	<plot_range>-0.08 0.02</plot_range>
+	<plot_range>-0.15 0.02</plot_range>
 	<data>iono_gim</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -908,7 +908,7 @@ Global RADS configuration file
 	<source>IRI2007 climatology</source>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
-	<plot_range>-0.08 0.02</plot_range>
+	<plot_range>-0.15 0.02</plot_range>
 	<data>iono_iri2007</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -925,7 +925,7 @@ Global RADS configuration file
 	<parameters sat="tx pn j1 j2 j3">0.925</parameters>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
-	<plot_range>-0.08 0.02</plot_range>
+	<plot_range>-0.15 0.02</plot_range>
 	<data>iono_nic09</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -937,7 +937,7 @@ Global RADS configuration file
 	<source>dual-frequency altimeter</source>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
-	<plot_range>-0.08 0.02</plot_range>
+	<plot_range>-0.15 0.02</plot_range>
 	<data>iono_alt_mle3</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -949,7 +949,7 @@ Global RADS configuration file
 	<source>dual-frequency altimeter</source>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
-	<plot_range>-0.08 0.02</plot_range>
+	<plot_range>-0.15 0.02</plot_range>
 	<data>iono_alt_mle3</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -961,7 +961,7 @@ Global RADS configuration file
 	<source>dual-frequency altimeter after smoothing</source>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
-	<plot_range>-0.08 0.02</plot_range>
+	<plot_range>-0.15 0.02</plot_range>
 	<data>iono_alt_smooth_mle3</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -1553,7 +1553,7 @@ Global RADS configuration file
 		<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 		<units>dB</units>
 		<limits>6 27</limits>
-		<plot_range>6 18</plot_range>
+		<plot_range>8 18</plot_range>
 		<data>sig0_ka</data>
 		<format>f6.3</format>
 		<compress>int2 1e-3</compress>
@@ -1566,7 +1566,7 @@ Global RADS configuration file
 		<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 		<units>dB</units>
 		<limits>6 27</limits>
-		<plot_range>6 18</plot_range>
+		<plot_range>8 18</plot_range>
 		<data>sig0_ku</data>
 		<format>f6.2</format>
 		<compress>int2 1e-2</compress>
@@ -1578,7 +1578,7 @@ Global RADS configuration file
 	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 	<units>dB</units>
 	<limits>6 27</limits>
-	<plot_range>6 18</plot_range>
+	<plot_range>8 18</plot_range>
 	<data>sig0_c</data>
 	<format>f6.2</format>
 	<compress>int2 1e-2</compress>
@@ -1588,7 +1588,7 @@ Global RADS configuration file
 	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 	<units>dB</units>
 	<limits>6 27</limits>
-	<plot_range>6 18</plot_range>
+	<plot_range>8 18</plot_range>
 	<data>sig0_s</data>
 	<format>f6.2</format>
 	<compress>int2 1e-2</compress>
@@ -1627,7 +1627,7 @@ Global RADS configuration file
 	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 	<units>dB</units>
 	<limits>6 27</limits>
-	<plot_range>6 18</plot_range>
+	<plot_range>8 18</plot_range>
 	<data>sig0_ku_mle3</data>
 	<format>f6.2</format>
 	<compress>int2 1e-2</compress>
@@ -1637,7 +1637,7 @@ Global RADS configuration file
 	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 	<units>dB</units>
 	<limits>6 27</limits>
-	<plot_range>6 18</plot_range>
+	<plot_range>8 18</plot_range>
 	<data>sig0_ku_plrm</data>
 	<format>f6.2</format>
 	<compress>int2 1e-2</compress>
