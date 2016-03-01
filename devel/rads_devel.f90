@@ -202,7 +202,7 @@ logical, intent(in), optional :: advance
 !   P      : pass structure
 !   advance: (optional) add carriage return if .true. (default is .false.)
 !-----------------------------------------------------------------------
-call log_string (P%finfo(1)%name(len_trim(P%S%dataroot)+2:), advance)
+call log_string (P%fileinfo(1)%name(len_trim(P%S%dataroot)+2:), advance)
 end subroutine log_pass
 
 !*log_records -- Print string to log output
@@ -227,7 +227,7 @@ type(rads_pass), intent(in), optional :: P
 553 format (i4,' records changed')
 
 if (present(P)) then
-	write (rads_log_unit,551) count, trim(P%finfo(1)%name(len_trim(P%S%dataroot)+2:))
+	write (rads_log_unit,551) count, trim(P%fileinfo(1)%name(len_trim(P%S%dataroot)+2:))
 else
 	write (rads_log_unit,553) count
 endif

@@ -222,7 +222,7 @@ call log_pass (P)
 
 ! If "new" option is used, write only when fields are not yet available
 
-ncid = P%finfo(1)%ncid
+ncid = P%fileinfo(1)%ncid
 if (new .and. nff(nf90_inq_varid(ncid,'dry_tropo_'//source,i)) .and. &
 	nff(nf90_inq_varid(ncid,'wet_tropo_'//source,i))) then
 	call log_records (0)
