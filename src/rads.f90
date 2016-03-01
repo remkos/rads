@@ -167,7 +167,7 @@ type :: rads_pass
 	integer(fourbyteint) :: first_meas, last_meas    ! Measurement index of first and last point in region
 	integer(fourbyteint) :: time_dims                ! Dimensions of time/lat/lon stored
 	integer(fourbyteint) :: trkid                    ! Numerical track identifiers
-	type (rads_file) :: finfo(rads_roots)            ! File information for pass files
+	type (rads_file) :: fileinfo(rads_roots)         ! File information for pass files
 	type (rads_sat), pointer :: S                    ! Pointer to satellite/mission structure
 	type (rads_pass), pointer :: next                ! Pointer to next pass in linked list
 endtype
@@ -1302,20 +1302,20 @@ endif
 S%pass_stat(6+ascdes) = S%pass_stat(6+ascdes) + 1
 
 ! Open pass file
-write (P%finfo(1)%name, '(a,"/c",i3.3,"/",a2,"p",i4.4,"c",i3.3,".nc")') trim(S%phase%dataroot), cycle, S%sat, pass, cycle
+write (P%fileinfo(1)%name, '(a,"/c",i3.3,"/",a2,"p",i4.4,"c",i3.3,".nc")') trim(S%phase%dataroot), cycle, S%sat, pass, cycle
 if (present(rw)) then
 	P%rw = rw
 else
 	P%rw = .false.
 endif
 if (P%rw) then
-	if (rads_verbose >= 2) write (*,'(2a)') 'Opening for read/write: ',trim(P%finfo(1)%name)
-	if (nft(nf90_open(P%finfo(1)%name,nf90_write,ncid))) return
+	if (rads_verbose >= 2) write (*,'(2a)') 'Opening for read/write: ',trim(P%fileinfo(1)%name)
+	if (nft(nf90_open(P%fileinfo(1)%name,nf90_write,ncid))) return
 else
-	if (rads_verbose >= 2) write (*,'(2a)') 'Opening for read only: ',trim(P%finfo(1)%name)
-	if (nft(nf90_open(P%finfo(1)%name,nf90_nowrite,ncid))) return
+	if (rads_verbose >= 2) write (*,'(2a)') 'Opening for read only: ',trim(P%fileinfo(1)%name)
+	if (nft(nf90_open(P%fileinfo(1)%name,nf90_nowrite,ncid))) return
 endif
-P%finfo(1)%ncid = ncid
+P%fileinfo(1)%ncid = ncid
 
 ! Read global attributes
 S%error = rads_err_nc_parse
@@ -1482,9 +1482,9 @@ logical, intent(in), optional :: keep
 integer :: ios
 integer(fourbyteint) :: ncid
 S%error = rads_noerr
-ncid = P%finfo(1)%ncid
+ncid = P%fileinfo(1)%ncid
 if (ncid > 0 .and. nft(nf90_close(ncid))) S%error = rads_err_nc_close
-P%finfo = rads_file (0, '')
+P%fileinfo = rads_file (0, '')
 if (present(keep)) then
 	if (keep) return
 endif
@@ -1763,7 +1763,7 @@ else if (info%datatype == rads_type_lon) then
 endif
 
 ! Look for the variable name in the netCDF file (or take the stored one)
-ncid = P%finfo(1)%ncid
+ncid = P%fileinfo(1)%ncid
 if (P%cycle == info%cycle .and. P%pass == info%pass) then
 	! Keep old varid, but produce error when already tried and failed
 	if (info%varid == 0) then
@@ -1850,7 +1850,7 @@ use rads_misc
 integer(fourbyteint) :: varid, i, ncid
 character(len=26) :: date
 
-ncid = P%finfo(1)%ncid
+ncid = P%fileinfo(1)%ncid
 
 ! First locate the colon in the name
 i = index(info%dataname, ':')
@@ -1887,7 +1887,7 @@ use netcdf
 use rads_netcdf
 integer(fourbyteint) :: start(1), i, j, k, bits(2), ncid
 
-ncid = P%finfo(1)%ncid
+ncid = P%fileinfo(1)%ncid
 if (info%dataname /= 'flags') then
 	! Extract single flags from flagword
 	if (.not.associated(P%flags)) then
@@ -3363,7 +3363,7 @@ type(rads_pass), intent(in), optional :: P
 if (rads_verbose < 0) then
 	! Remain quiet
 else if (present(P)) then
-	call nf90_message (trim(string) // ' ' // P%finfo(1)%name)
+	call nf90_message (trim(string) // ' ' // P%fileinfo(1)%name)
 else
 	call nf90_message (string)
 endif
@@ -3911,7 +3911,7 @@ character(len=*), intent(in), optional :: name
 !
 ! Upon entry, the <P> structure needs to contain the relevant information on
 ! the pass (cycle, pass, equator_time, equator_lon). Upon return, the
-! P%finfo will be updated.
+! P%fileinfo will be updated.
 !
 ! ARGUMENTS
 !  S        : Satellite/mission dependent structure
@@ -3952,7 +3952,7 @@ else
 	call rads_init_pass_struct (S, P)
 	filename = name
 endif
-P%finfo(1)%name = filename
+P%fileinfo(1)%name = filename
 
 ! Create the (new) data file
 if (rads_verbose >= 2) write (*,'(2a,i10)') 'Creating ',trim(filename),P%ndata
@@ -3960,7 +3960,7 @@ if (nft(nf90_create(filename, nf90_write+nf90_nofill, ncid))) then
 	call rads_error (S, rads_err_nc_create, 'Error creating file', P)
 	return
 endif
-P%finfo(1)%ncid = ncid
+P%fileinfo(1)%ncid = ncid
 
 ! Define the principle dimension
 if (nft(nf90_def_dim (ncid, 'time', P%ndata, l))) then
@@ -4032,7 +4032,7 @@ type(rads_pass), intent(inout) :: P
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: e, ncid
 character(len=26) :: date(3)
-ncid = P%finfo(1)%ncid
+ncid = P%fileinfo(1)%ncid
 e = 0
 date = strf1985f ((/P%equator_time,P%start_time,P%end_time/))
 e = e + &
@@ -4079,7 +4079,7 @@ integer(fourbyteint) :: e, i, ncid
 character(len=8) :: log
 
 ! Make sure we are in define mode and that we can write
-ncid = P%finfo(1)%ncid
+ncid = P%fileinfo(1)%ncid
 if (nf90_redef (ncid) == nf90_eperm) call rads_error (S, rads_err_nc_put, 'File not opened for writing:', P)
 
 ! Write history attribute
@@ -4112,7 +4112,7 @@ integer(fourbyteint) :: e, n, xtype, ncid
 integer :: j=0, j0, j1
 character(len=5) :: hz
 S%error = rads_noerr
-ncid = P%finfo(1)%ncid
+ncid = P%fileinfo(1)%ncid
 
 ! Get some information on dimensions and scale factors
 info => var%info
@@ -4251,7 +4251,7 @@ type(rads_pass), intent(inout) :: P
 type(rads_var), intent(inout) :: var
 real(eightbytereal), intent(in) :: data
 if (rads_put_var_helper (S, P, var)) return
-if (nft(nf90_put_var (P%finfo(1)%ncid, var%info%varid, data))) call rads_error (S, rads_err_nc_put, &
+if (nft(nf90_put_var (P%fileinfo(1)%ncid, var%info%varid, data))) call rads_error (S, rads_err_nc_put, &
 	'Error writing data for variable "'//trim(var%name)//'" to file', P)
 end subroutine rads_put_var_by_var_0d
 
@@ -4296,7 +4296,7 @@ real(eightbytereal), intent(in) :: data(:)
 integer(fourbyteint), intent(in) :: start(:)
 integer(fourbyteint) :: e, ncid
 if (rads_put_var_helper (S, P, var)) return
-ncid = P%finfo(1)%ncid
+ncid = P%fileinfo(1)%ncid
 select case (var%info%nctype)
 case (nf90_int1)
 	e = nf90_put_var (ncid, var%info%varid, nint1((data - var%info%add_offset) / var%info%scale_factor), start)
@@ -4341,7 +4341,7 @@ real(eightbytereal), intent(in) :: data(:,:)
 integer(fourbyteint), intent(in) :: start(:)
 integer(fourbyteint) :: e, ncid
 if (rads_put_var_helper (S, P, var)) return
-ncid = P%finfo(1)%ncid
+ncid = P%fileinfo(1)%ncid
 select case (var%info%nctype)
 case (nf90_int1)
 	e = nf90_put_var (ncid, var%info%varid, nint1((data - var%info%add_offset) / var%info%scale_factor), start)
@@ -4386,7 +4386,7 @@ real(eightbytereal), intent(in) :: data(:,:,:)
 integer(fourbyteint), intent(in) :: start(:)
 integer(fourbyteint) :: e, ncid
 if (rads_put_var_helper (S, P, var)) return
-ncid = P%finfo(1)%ncid
+ncid = P%fileinfo(1)%ncid
 select case (var%info%nctype)
 case (nf90_int1)
 	e = nf90_put_var (ncid, var%info%varid, nint1((data - var%info%add_offset) / var%info%scale_factor), start)
@@ -4409,7 +4409,7 @@ type(rads_pass), intent(inout) :: P
 type(rads_var), intent(inout) :: var
 integer(fourbyteint) :: e, ncid
 S%error = rads_noerr
-ncid = P%finfo(1)%ncid
+ncid = P%fileinfo(1)%ncid
 e = nf90_enddef (ncid) ! Make sure to get out of define mode
 if (.not.P%rw) then
 	call rads_error (S, rads_err_nc_put, &

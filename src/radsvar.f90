@@ -188,7 +188,7 @@ if (P%ndata == 0) write (*,'(a)') '# Could not find any corresponding file, cont
 write (*,'(a)') '#'
 
 ! Now start the list
-ncid = P%finfo(1)%ncid
+ncid = P%fileinfo(1)%ncid
 do i = 1,S%nvar
 	info => S%var(i)%info
 	if (S%var(i)%name /= info%name) then
