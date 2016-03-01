@@ -2128,15 +2128,15 @@ integer :: nattr, nval, i, ios, skip, skip_level
 integer(twobyteint) :: field(2)
 logical :: endtag, endskip
 real(eightbytereal) :: node_rate
-type(rads_varinfo), pointer :: info
-type(rads_var), pointer :: var
+type(rads_varinfo), pointer :: info, info_block
+type(rads_var), pointer :: var, var_block
 type(rads_phase), pointer :: phase
 
 ! Initialise
 S%error = rads_noerr
 endskip = .true.
 skip_level = 0
-nullify (info, var, phase)
+nullify (var_block, info_block, phase)
 
 ! Open XML file
 call xml_open (X, filename, .true.)
@@ -2160,10 +2160,14 @@ do
 			call xmlparse_error ('Closing tag </'//trim(tag)//'> follows opening tag <'//trim(tags(X%level+1))//'>')
 		endskip = (X%level < skip_level)
 		if (endskip) skip_level = 0  ! Stop skipping when descended back below the starting level
-		if (tag == 'var') nullify (var, info) ! Stop processing <var> block
+		if (tag == 'var') nullify (var_block, info_block) ! Stop processing <var> block
 		if (tag == 'phase') nullify (phase)   ! Stop processing <phase> block
 		cycle  ! Ignore all other end tags
 	endif
+
+	! Set var and info to the ones for the <var> block, which means that outside of the block they will be set to null
+	var => var_block
+	info => info_block
 
 	! Special actions for <else> and <elseif>
 	! These will issue a 'skip' when previous <if> was not skipped
@@ -2204,11 +2208,15 @@ do
 	! sat="!j1" => pass
 	! sat="!tx" => skip
 	! sat="!tx.r" => skip
+	!
+	! Additionally: check for var="name" option. This will temporarily overrule var and info.
+	! They are reset to var_block and info_block on the next cycle of the loop.
 
 	skip = 0
 	skip_level = 0
 	do i = 1,nattr
-		if (attr(1,i) == 'sat') then
+		select case (attr(1,i))
+		case ('sat')
 			if (skip == 0) skip = 1
 			if (S%sat == '??') then
 				skip = -1
@@ -2217,7 +2225,10 @@ do
 			else
 				if (index(attr(2,i),S%sat//' ') > 0 .or. index(attr(2,i),trim(S%tree)//' ') > 0) skip = -1
 			endif
-		endif
+		case ('var')
+			var => rads_varptr (S, attr(2,i), null())
+			info => var%info
+		end select
 	enddo
 	if (skip == 1) then
 		skip_level = X%level
@@ -2315,9 +2326,9 @@ do
 
 	case ('var')
 		if (has_name (field)) then
-			var => rads_varptr (S, name, null())
-			info => var%info
-			if (any(field > rads_nofield)) var%field = field
+			var_block => rads_varptr (S, name, null())
+			info_block => var_block%info
+			if (any(field > rads_nofield)) var_block%field = field
 		endif
 
 	case ('long_name')
