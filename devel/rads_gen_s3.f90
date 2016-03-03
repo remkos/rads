@@ -99,6 +99,8 @@ integer(twobyteint), allocatable :: flags_plrm(:), flags_save(:)
 ! Other local variables
 
 real(eightbytereal), parameter :: sec2000=473299200d0	! UTC seconds from 1 Jan 1985 to 1 Jan 2000
+real(eightbytereal), allocatable :: dh(:)
+real(eightbytereal) :: dhellips
 
 ! Initialise
 
@@ -181,7 +183,7 @@ do
 
 ! Allocate variables
 
-	allocate (a(nrec),flags(nrec),flags_plrm(nrec),flags_save(nrec))
+	allocate (a(nrec),dh(nrec),flags(nrec),flags_plrm(nrec),flags_save(nrec))
 	nvar = 0
 
 ! Compile flag bits
@@ -217,17 +219,21 @@ do
 
 ! Convert all the necessary fields to RADS
 	call get_var (ncid, 'time_01', a)
-	call new_var ('time', a + sec2000)
-	call cpy_var ('lat_01','lat')
+	call cpy_var ('lat_01', 'lat')
+	! Compute ellipsoid corrections
+	do i = 1,nrec
+		dh(i) = dhellips(1,a(i))
+	enddo
 	call cpy_var ('lon_01','lon')
-!Which alt field?
-	call cpy_var ('alt_01', 'alt_gdre')
+! Which alt field?
+	call get_var (ncid, 'alt_01', a)
+	call new_var ('alt_gdre', a + dh)
 	call cpy_var ('orb_alt_rate_01', 'alt_rate')
 	call cpy_var ('range_ocean_01_ku','range_ku')
 	call cpy_var ('range_ocean_01_plrm_ku','range_ku_plrm')
 	call cpy_var ('range_ocean_01_c','range_c')
-!Add PLRM ranges?
-!Add zero or meas altitude tropo measurements?
+! Add PLRM ranges?
+! Add zero or meas altitude tropo measurements?
 	call cpy_var ('mod_dry_tropo_cor_meas_altitude_01', 'dry_tropo_ecmwf')
 	call cpy_var ('rad_wet_tropo_cor_01_ku', 'wet_tropo_rad')
 	call cpy_var ('mod_wet_tropo_cor_meas_altitude_01', 'wet_tropo_ecmwf')
@@ -249,9 +255,12 @@ do
 	call cpy_var ('sea_state_bias_01_ku', 'ssb_cls')
 	call cpy_var ('sea_state_bias_01_plrm_ku', 'ssb_cls_plrm')
 	call cpy_var ('sea_state_bias_01_c', 'ssb_cls_c')
-	call cpy_var ('geoid_01', 'geoid_egm2008')
-	call cpy_var ('mean_sea_surf_sol1_01', 'mss_cnescls11')
-	call cpy_var ('mean_sea_surf_sol2_01', 'mss_dtu10')
+	call get_var (ncid, 'geoid_01', a)
+	call new_var ('geoid_egm2008', a + dh)
+	call get_var (ncid, 'mean_sea_surf_sol1_01', a)
+	call new_var ('mss_cnescls11', a + dh)
+	call get_var (ncid, 'mean_sea_surf_sol2_01', a)
+	call new_var ('mss_dtu10', a + dh)
 	call cpy_var ('swh_ocean_01_ku','swh_ku')
 	call cpy_var ('swh_ocean_01_plrm_ku','swh_ku_plrm')
 	call cpy_var ('swh_ocean_01_c','swh_c')
