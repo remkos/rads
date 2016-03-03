@@ -125,10 +125,11 @@ do
 		cycle
 	endif
 
-! Check if input is standard_measurement.nc
+! Check if input is a Sentinel-3 Level 2 data set
 
-	if (index(infile,'standard_measurement') <= 0) then
-		call log_string ('Error: this is not standard_measurement.nc', .true.)
+	if (nf90_get_att(ncid,nf90_global,'title',arg) /= nf90_noerr .or. &
+		arg /= 'IPF SRAL/MWR Level 2 Measurement') then
+		call log_string ('Error: this is not a Sentinel-3 SRAL Level 2 data set', .true.)
 		cycle
 	endif
 
@@ -148,8 +149,8 @@ do
 		cycle
 	endif
 
-	call nfs(nf90_get_att(ncid,nf90_global,'title',arg))
-	nrt = (arg(:4) == 'nrt')
+	call nfs(nf90_get_att(ncid,nf90_global,'product_name',arg))
+	nrt = index(arg,'_NR_') > 0
 	call nfs(nf90_get_att(ncid,nf90_global,'cycle_number',cyclenr))
 	call nfs(nf90_get_att(ncid,nf90_global,'pass_number',passnr))
 	call nfs(nf90_get_att(ncid,nf90_global,'equator_time',arg))
@@ -219,13 +220,13 @@ do
 
 ! Convert all the necessary fields to RADS
 	call get_var (ncid, 'time_01', a)
+	call new_var ('time', a + sec2000)
 	call cpy_var ('lat_01', 'lat')
 	! Compute ellipsoid corrections
 	do i = 1,nrec
 		dh(i) = dhellips(1,a(i))
 	enddo
 	call cpy_var ('lon_01','lon')
-! Which alt field?
 	call get_var (ncid, 'alt_01', a)
 	call new_var ('alt_gdre', a + dh)
 	call cpy_var ('orb_alt_rate_01', 'alt_rate')
@@ -302,7 +303,7 @@ do
 
 	call nfs(nf90_close(ncid))
 	call put_rads
-	deallocate (a, flags, flags_plrm, flags_save)
+	deallocate (a, dh, flags, flags_plrm, flags_save)
 
 enddo
 
