@@ -73,7 +73,7 @@ do
 
 ! Read file name
 
-610 format ('Splitting : ',a)
+610 format ('Combining : ',a)
 	read (*,'(a)',iostat=ios) filenm
 	if (ios /= 0) stop
 	write (*,610) trim(filenm)
@@ -194,7 +194,10 @@ else
 	do varid = 0, nvars
 		if (varid > 0) then
 			call nfs(nf90_inquire_variable(ncid1,varid,varnm,xtype,ndims,dimids,natts))
-			if (excluded(varnm) .or. ndims > 1 .or. dimids(1) > 1) cycle
+			! Skip all listed excluded variables, all 20-Hz variables
+			! Skip also all uint variables because the netCDF library doesn't work with them
+			! (they occur only in enhanced_measurements.nc)
+			if (excluded(varnm) .or. ndims > 1 .or. dimids(1) > 1 .or. xtype == nf90_uint) cycle
 			call nfs(nf90_def_var(ncid2,varnm,xtype,dimids(1:ndims),varid2))
 		endif
 		do i = 1,natts
