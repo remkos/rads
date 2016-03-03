@@ -13,7 +13,7 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*s3_split -- Split and combine Sentinel-3 files into pass files
+!*s3combine -- Combine (and split) Sentinel-3 files into pass files
 !
 ! Read Sentinel-3 standard_measurements.nc or reduced_measurements.nc
 ! granules and combine them (and split them) into pass files.
@@ -24,7 +24,7 @@
 !
 ! This program does not rely on ORF files, like ogdrsplit does
 !-----------------------------------------------------------------------
-program s3_split
+program s3combine
 
 use rads
 use rads_misc
@@ -46,8 +46,8 @@ if (iargc() < 1) then
 	write (*,1300)
 	stop
 endif
-1300 format ('s3_split -- Combine/split Sentinel-3 files into pass files'// &
-'syntax: s3_split [options] destdir < list'//'where'/ &
+1300 format ('s3combine -- Combine/split Sentinel-3 files into pass files'// &
+'syntax: s3combine [options] destdir < list'//'where'/ &
 '  destdir           : Destination directory (appends c???/*.nc)'/ &
 '  list              : List of input files names'// &
 'where [options] are:' / &
@@ -256,4 +256,4 @@ logical :: excluded
 excluded = (index(exclude_list,','//trim(varnm)//',') > 0)
 end function excluded
 
-end program s3_split
+end program s3combine

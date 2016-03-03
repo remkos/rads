@@ -24,7 +24,7 @@ PROGS	= rads_add_dual rads_add_ecmwf rads_add_era rads_add_flags rads_add_grid \
 		rads_add_tide rads_add_webtide rads_add_ww3_222 rads_add_ww3_314 \
 		rads_fix_c2 rads_fix_eqtime rads_fix_j1 rads_fix_j2 rads_fix_j3 rads_fix_reaper rads_fix_sa \
 		rads_gen_c2_l1r rads_gen_j1 rads_gen_j2 rads_gen_j3 rads_gen_reaper rads_gen_s3 \
-		rads_gen_saral rads_gen_tx_rgdr ogdrsplit s3_split
+		rads_gen_saral rads_gen_tx_rgdr ogdrsplit s3combine
 
 # RADS library and linked libraries
 LIB     = ../src/librads.a $(ALTIM)/lib/rssubs.a

@@ -13,7 +13,6 @@
 *.toc
 confdefs.h
 config.mk
-configure
 devel/ogdrsplit
 devel/rads_add_dual
 devel/rads_add_ecmwf
@@ -49,6 +48,7 @@ devel/rads_gen_reaper
 devel/rads_gen_s3
 devel/rads_gen_saral
 devel/rads_gen_tx_rgdr
+devel/s3combine
 doc/manuals/sub
 rads_config.tex
 src/config.f90
@@ -75,4 +75,3 @@ src/radsxoconv
 src/radsxogen
 src/radsxolist
 src/radsxostat
-s3_split
