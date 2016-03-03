@@ -19,7 +19,7 @@
 ! granules and combine them (and split them) into pass files.
 ! The input file names are read from
 ! standard input. The individual pass files will be named
-! <destdir>/cCCC/S3A_*_CCC_PPP.nc, where CCC is the cycle number and
+! <destdir>/cCCC/S3A_*_CCC_PPP_*.nc, where CCC is the cycle number and
 ! PPP the pass number. The directory <destdir>/cCCC will be created if needed.
 !
 ! This program does not rely on ORF files, like ogdrsplit does
@@ -106,6 +106,7 @@ do
 		do i = 2,nrec
 			if (lat(i) > lat(i-1) .neqv. modulo(pass_number,2) == 1) then
 				call copyfile (i0, i-1)
+				i0 = i
 				pass_number = pass_number + 1
 				if (pass_number > 770) then
 					cycle_number = cycle_number + 1
@@ -131,7 +132,7 @@ subroutine copyfile (rec0, rec1)
 integer(fourbyteint), intent(inout) :: rec0
 integer(fourbyteint), intent(in) :: rec1
 integer(fourbyteint) :: nrec,ncid2,varid,varid2,xtype,ndims,dimids(2),natts,i,nvars,idxin(2)=1,idxut(2)=1,dimlen
-character(len=rads_naml) :: outnm,attnm,varnm
+character(len=rads_naml) :: dirnm,prdnm,outnm,attnm,varnm
 real(eightbytereal) :: time2(2)
 real(eightbytereal), allocatable :: darr1(:)
 integer(fourbyteint), allocatable :: iarr1(:)
@@ -146,13 +147,14 @@ call nfs(nf90_inquire(ncid1,nvariables=nvars,nattributes=natts))
 ! Open the output file. Make directory if needed.
 
 605 format (a,'/c',i3.3)
-610 format (a,'/c',i3.3,'/',a,i3.3,'_',i3.3,'.nc')
+610 format (a,i3.3,'_',i3.3,a,'.nc')
 620 format ('... Records : ',3i6,' : ',a,1x,a,' - ',a,a)
 
-write (outnm,605) trim(destdir),cycle_number
-inquire (file=outnm,exist=exist)
-if (.not.exist) call system('mkdir -p '//outnm)
-write (outnm,610) trim(destdir),cycle_number,product_name(:15),cycle_number,pass_number
+write (dirnm,605) trim(destdir),cycle_number
+inquire (file=dirnm,exist=exist)
+if (.not.exist) call system('mkdir -p '//dirnm)
+write (prdnm,610) product_name(:15),cycle_number,pass_number,product_name(77:94)
+outnm = trim(dirnm) // '/' // trim(prdnm)
 inquire (file=outnm,exist=exist)
 
 if (exist) then
@@ -202,7 +204,6 @@ else
 		endif
 		do i = 1,natts
 			call nfs(nf90_inq_attname(ncid1,varid,i,attnm))
-			if (varid == 0 .and. pass_number /= pass_in .and. attnm(1:7) == 'equator') cycle
 			call nfs(nf90_copy_att(ncid1,varid,attnm,ncid2,varid2))
 		enddo
 	enddo
@@ -222,8 +223,9 @@ call strf1985f(date(2),time2(2)+sec2000)
 
 allocate (darr1(nrec),iarr1(nrec))
 
-! Overwrite cycle/pass attributes
+! Overwrite cycle/pass attributes and product name
 
+call nfs(nf90_put_att(ncid2,nf90_global,'product_name',prdnm))
 call nfs(nf90_put_att(ncid2,nf90_global,'cycle_number',cycle_number))
 call nfs(nf90_put_att(ncid2,nf90_global,'pass_number',pass_number))
 call nfs(nf90_put_att(ncid2,nf90_global,'absolute_pass_number',(cycle_number-1)*nr_passes+pass_number-54))
@@ -236,7 +238,7 @@ call nfs(nf90_enddef(ncid2))
 varid2 = 0
 do varid = 1,nvars
 	call nfs(nf90_inquire_variable(ncid1,varid,varnm,xtype,ndims,dimids,natts))
-	if (excluded(varnm) .or. ndims > 1 .or. dimids(1) > 1) cycle
+	if (excluded(varnm) .or. ndims > 1 .or. dimids(1) > 1 .or. xtype == nf90_uint) cycle
 	varid2 = varid2 + 1
 	if (xtype == nf90_double) then
 		call nfs(nf90_get_var(ncid1,varid ,darr1,idxin(2:2)))
