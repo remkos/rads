@@ -289,7 +289,7 @@ Global RADS configuration file
 	<compress>int4 1e-3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_cnes" field="404" sat="e1 e2 c2 j2 j3 n1 pn tx">
+<var name="alt_cnes" field="404" sat="3a 3b e1 e2 c2 j2 j3 n1 pn tx">
 	<long_name>CNES orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>CNES</source>
@@ -2086,6 +2086,7 @@ Global RADS configuration file
 		<standard_name>surface_brightness_temperature</standard_name>
 		<source>radiometer</source>
 		<units>K</units>
+		<plot_range>160 260</plot_range>
 		<data>tb_238</data>
 		<format>f6.2</format>
 		<compress>int2 1e-2</compress>
@@ -2113,6 +2114,7 @@ Global RADS configuration file
 		<standard_name>surface_brightness_temperature</standard_name>
 		<source>radiometer</source>
 		<units>K</units>
+		<plot_range>160 240</plot_range>
 		<data>tb_365</data>
 		<format>f6.2</format>
 		<compress>int2 1e-2</compress>
@@ -2857,6 +2859,7 @@ Global RADS configuration file
 <var name="dsig0_atmos_ka" field="3203" sat="sa">
 	<long_name>Ka-band backscatter coefficient correction due to atmosphere/attitude</long_name>
 	<units>dB</units>
+	<plot_range>0 1</plot_range>
 	<data>dsig0_atmos_ka</data>
 	<format>f5.3</format>
 	<compress>int2 1e-3</compress>
@@ -2865,6 +2868,7 @@ Global RADS configuration file
 <var name="dsig0_atmos_ku" field="3203" sat="3a 3b c2 e1 e2 j1 j2 j3 n1 pn tx">
 	<long_name>Ku-band backscatter coefficient correction due to atmosphere/attitude</long_name>
 	<units>dB</units>
+	<plot_range>0 1</plot_range>
 	<data>dsig0_atmos_ku</data>
 	<default>0.22</default>
 	<format>f4.2</format>
@@ -2875,6 +2879,7 @@ Global RADS configuration file
 <var name="dsig0_atmos_c" field="3204" sat="3a 3b j1 j2 j3 tx">
 	<long_name>C-band backscatter coefficient correction due to atmosphere/attitude</long_name>
 	<units>dB</units>
+	<plot_range>0 1</plot_range>
 	<data>dsig0_atmos_c</data>
 	<format>f4.2</format>
 	<compress>int1 1e-2</compress>
@@ -2883,6 +2888,7 @@ Global RADS configuration file
 <var name="dsig0_atmos_s" field="3204" sat="n1">
 	<long_name>S-band backscatter coefficient correction due to atmosphere/attitude</long_name>
 	<units>dB</units>
+	<plot_range>0 1</plot_range>
 	<data>dsig0_atmos_s</data>
 	<format>f4.2</format>
 	<compress>int1 1e-2</compress>
@@ -2931,7 +2937,7 @@ Global RADS configuration file
 </var>
 <alias name="dsig0" field="32" sat="e1 e2 tx">dsig0_ku</alias>
 <alias name="dsig0_atmos" sat="sa">dsig0_atmos_ka</alias>
-<alias name="dsig0_atmos" sat="c2 e1 e2 j1 j2 j3 n1 pn tx">dsig0_atmos_ku</alias>
+<alias name="dsig0_atmos" sat="3a 3b c2 e1 e2 j1 j2 j3 n1 pn tx">dsig0_atmos_ku</alias>
 
 <var name="liquid_water_rad" field="3301 33" sat="3a 3b e1 e2 j1 j2 j3 n1 pn sa tx">
 	<long_name>radiometer liquid water content</long_name>
