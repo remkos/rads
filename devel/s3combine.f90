@@ -39,6 +39,7 @@ real(eightbytereal), parameter :: sec2000 = 473299200d0
 integer(fourbyteint) :: i0, i, ncid1, nrec, ios, varid, n_ignore = 0, nr_passes = 770, &
 	pass_number = 0, cycle_number = 0, pass_in, cycle_in
 real(eightbytereal), allocatable :: time(:), lat(:)
+logical :: backsearch = .false.
 
 ! Print description, if requested
 
@@ -51,6 +52,7 @@ endif
 '  destdir           : Destination directory (appends c???/*.nc)'/ &
 '  list              : List of input files names'// &
 'where [options] are:' / &
+'  -b                : Allow backsearch in already combined files, overwriting with newer' / &
 '  -iNRECS           : Ignore up to NRECS record chunks to move to existing files (def: 0)' / &
 '  -xVAR1[,VAR2,...] : Exclude variable(s) from copying')
 
@@ -58,7 +60,9 @@ endif
 
 do i = 1,iargc()
 	call getarg (i,arg)
-	if (arg(:2) == '-i') then
+	if (arg(:2) == '-b') then
+		backsearch = .true.
+	else if (arg(:2) == '-i') then
 		read (arg(3:),*) n_ignore
 	else if (arg(:2) == '-x') then
 		exclude_list = trim(exclude_list) // arg(3:len_trim(arg)) // ','
@@ -134,7 +138,7 @@ integer(fourbyteint), intent(in) :: rec1
 integer(fourbyteint) :: nrec,ncid2,varid,varid2,xtype,ndims,dimids(2),natts,i,nvars,idxin(2)=1,idxut(2)=1,dimlen
 character(len=rads_naml) :: dirnm,prdnm,outnm,attnm,varnm
 real(eightbytereal) :: time2(2)
-real(eightbytereal), allocatable :: darr1(:)
+real(eightbytereal), allocatable :: time1(:), darr1(:)
 integer(fourbyteint), allocatable :: iarr1(:)
 logical :: exist
 character(len=26) :: date(2)
@@ -164,18 +168,29 @@ if (exist) then
 	call nfs(nf90_open(outnm,nf90_write,ncid2))
 	call nfs(nf90_set_fill(ncid2,nf90_nofill,i))
 	call nfs(nf90_inquire_dimension(ncid2,1,len=dimlen))
-	idxin(2)=dimlen
-	call nfs(nf90_get_var(ncid2,1,time2(1),idxin(1:1)))
-	call nfs(nf90_get_var(ncid2,1,time2(2),idxin(2:2)))
-	do while (time(rec0) < time2(2)+0.5d0 .and. rec0 <= rec1)
-		rec0 = rec0 + 1
-	enddo
+	allocate (time1(dimlen))
+	call nfs(nf90_get_var(ncid2,1,time1))
+	if (backsearch) then
+		do while (time1(dimlen) > time(rec0) .and. dimlen > 0)
+			dimlen = dimlen -1
+		enddo
+	else
+		do while (time(rec0) < time1(dimlen)+0.5d0 .and. rec0 <= rec1)
+			rec0 = rec0 + 1
+		enddo
+	endif
 	nrec = rec1 - rec0 + 1
 	if (nrec <= 0) then
 		call nfs(nf90_close(ncid2))
 		return
 	endif
 	call nfs(nf90_redef(ncid2))
+	if (dimlen > 0) then
+		time2(1) = time1(1)
+	else
+		time2(1) = time(rec0)
+	endif
+	deallocate (time1)
 
 else
 
