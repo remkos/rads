@@ -190,7 +190,7 @@ do
 ! Compile flag bits
 
 	flags = 0
-	call nc2f ('instr_op_mode_01',0,lim=2)			! bit  0: Altimeter mode
+	call nc2f ('instr_op_mode_01',0,lim=1)			! bit  0: Altimeter mode
 	call nc2f ('corrected_off_nadir_angle_wf_ocean_01_ku',1)	! bit  1: Quality off-nadir pointing
 	call nc2f ('surf_type_01',2,val=2)				! bit  2: Continental ice
 	call nc2f ('range_ocean_qual_01_c',3)			! bit  3: Quality dual-frequency iono
