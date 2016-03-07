@@ -284,6 +284,7 @@ call nfs(nf90_put_att(ncid2,nf90_global,'equator_time',date(3)))
 call nfs(nf90_put_att(ncid2,nf90_global,'equator_longitude',eqlon(ipass)))
 call nfs(nf90_put_att(ncid2,nf90_global,'first_meas_time',date(1)))
 call nfs(nf90_put_att(ncid2,nf90_global,'last_meas_time',date(2)))
+call nfs(nf90_put_att(ncid2,nf90_global,'original',trim(filenm)))
 call nfs(nf90_enddef(ncid2))
 
 ! Copy all data elements
