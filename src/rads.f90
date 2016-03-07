@@ -29,7 +29,7 @@ use rads_grid, only: grid
 
 ! Dimensions
 integer(fourbyteint), parameter :: rads_var_chunk = 100, rads_varl = 40, rads_naml = 160, rads_cmdl = 320, &
-	rads_strl = 1600, rads_hstl = 3200, rads_cyclistl = 50, rads_optl = 50, rads_roots = 2
+	rads_strl = 1600, rads_hstl = 3200, rads_cyclistl = 50, rads_optl = 50, rads_max_branches = 2
 ! RADS4 data types
 integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, rads_type_flagmasks = 2, rads_type_flagvalues = 3, &
 	rads_type_time = 11, rads_type_lat = 12, rads_type_lon = 13, rads_type_dim = 14
@@ -84,6 +84,7 @@ type :: rads_varinfo
 	real(eightbytereal) :: xmin, xmax, mean, sum2    ! Minimum, maximum, mean, sum squared deviation
 	logical :: boz_format                            ! Format starts with B, O or Z.
 	integer(fourbyteint) :: ndims                    ! Number of dimensions of variable
+	integer(fourbyteint) :: brid                     ! Branch ID (default 1)
 	integer(fourbyteint) :: nctype, varid            ! netCDF data type (nf90_int, etc.) and variable ID
 	integer(fourbyteint) :: datatype                 ! Type of data (rads_type_other|flagmasks|flagvalues|time|lat|lon|dim)
 	integer(fourbyteint) :: datasrc                  ! Retrieval source (rads_src_nc_var|nc_att|math|grid_lininter|grid_splinter|grid_query|constant|flags)
@@ -106,7 +107,6 @@ endtype
 
 type :: rads_phase
 	character(len=rads_varl) :: name, mission        ! Name (1-letter), and mission description
-	character(len=rads_naml) :: dataroot             ! Root directory of satellite and phase
 	integer(fourbyteint) :: cycles(2), passes        ! Cycle range and maximum number of passes
 	real(eightbytereal) :: start_time, end_time      ! Start time and end time of this phase
 	real(eightbytereal) :: ref_time, ref_lon         ! Time and longitude of equator crossing of "reference pass"
@@ -126,7 +126,8 @@ endtype
 
 type :: rads_sat
 	character(len=rads_naml) :: userroot             ! Root directory of current user (i.e. $HOME)
-	character(len=rads_naml) :: dataroot             ! Root directory of RADS data directory
+	character(len=rads_naml) :: dataroot             ! Root directory of RADS data directory (i.e. $RADSDATAROOT)
+	character(len=rads_varl) :: branch(rads_max_branches) ! Name of optional branches
 	character(len=rads_varl) :: spec                 ! Satellite specification given by user (e.g. 'e2g' or 'e2.reap')
 	character(len=rads_varl) :: tree                 ! Satellite directory tree (e.g. 'e2' or 'e2.reap')
 	character(len=rads_cmdl) :: command              ! Command line
@@ -167,7 +168,7 @@ type :: rads_pass
 	integer(fourbyteint) :: first_meas, last_meas    ! Measurement index of first and last point in region
 	integer(fourbyteint) :: time_dims                ! Dimensions of time/lat/lon stored
 	integer(fourbyteint) :: trkid                    ! Numerical track identifiers
-	type (rads_file) :: fileinfo(rads_roots)         ! File information for pass files
+	type (rads_file) :: fileinfo(rads_max_branches)  ! File information for pass files
 	type (rads_sat), pointer :: S                    ! Pointer to satellite/mission structure
 	type (rads_pass), pointer :: next                ! Pointer to next pass in linked list
 endtype
@@ -662,7 +663,7 @@ type(rads_sat), intent(inout) :: S
 !****-------------------------------------------------------------------
 ! gfortran 4.4.1 segfaults on the next line if this routine is made pure or elemental,
 ! so please leave it as a normal routine.
-S = rads_sat ('', '', '', '', '', null(), '', 1d0, (/13.8d0, nan/), 90d0, nan, nan, nan, 1, 1, rads_noerr, &
+S = rads_sat ('', '', '', '', '', '', null(), '', 1d0, (/13.8d0, nan/), 90d0, nan, nan, nan, 1, 1, rads_noerr, &
 	0, 0, 0, 0, 0, .false., '', 0, null(), null(), null(), null(), null(), null(), null(), null())
 end subroutine rads_init_sat_struct
 
@@ -1302,7 +1303,8 @@ endif
 S%pass_stat(6+ascdes) = S%pass_stat(6+ascdes) + 1
 
 ! Open pass file
-write (P%fileinfo(1)%name, '(a,"/c",i3.3,"/",a2,"p",i4.4,"c",i3.3,".nc")') trim(S%phase%dataroot), cycle, S%sat, pass, cycle
+600 format (a,'/',a,'/',a,'/c',i3.3,'/',a2,'p',i4.4,'c',i3.3,'.nc')
+write (P%fileinfo(1)%name, 600) trim(S%dataroot), trim(S%tree), trim(S%phase%name), cycle, S%sat, pass, cycle
 if (present(rw)) then
 	P%rw = rw
 else
@@ -1410,6 +1412,24 @@ do i = P%ndata, P%first_meas, -1
 enddo
 P%last_meas = i
 
+! Open files in other (optional) branches
+do i = 2, rads_max_branches
+	if (S%branch(i) == '') exit
+	write (P%fileinfo(i)%name, 600) &
+		trim(S%dataroot), trim(S%tree)//trim(S%branch(i)), trim(S%phase%name), cycle, S%sat, pass, cycle
+	if (P%rw) then
+		if (rads_verbose >= 2) write (*,'(2a)') 'Opening for read/write: ',trim(P%fileinfo(i)%name)
+		if (nft(nf90_open(P%fileinfo(i)%name,nf90_write,ncid))) return
+	else
+		if (rads_verbose >= 2) write (*,'(2a)') 'Opening for read only: ',trim(P%fileinfo(i)%name)
+		if (nft(nf90_open(P%fileinfo(i)%name,nf90_nowrite,ncid))) return
+	endif
+	if (nft(nf90_inquire_dimension(ncid,1,len=k))) return
+	if (k /= P%ndata) call rads_message ('Dimension in ' // trim(P%fileinfo(i)%name) // ' does not match ' // &
+		trim(P%fileinfo(1)%name))
+	P%fileinfo(i)%ncid = ncid
+enddo
+
 ! If subset is requested, reallocate appropriately sized time, lat, lon arrays
 ! If multi-Hertz data: load multi-Hertz fields
 i = P%last_meas - P%first_meas + 1
@@ -1479,11 +1499,13 @@ logical, intent(in), optional :: keep
 ! ERROR CODE
 !  S%error  : rads_noerr, rads_err_nc_close
 !****-------------------------------------------------------------------
-integer :: ios
+integer :: i, ios
 integer(fourbyteint) :: ncid
 S%error = rads_noerr
-ncid = P%fileinfo(1)%ncid
-if (ncid > 0 .and. nft(nf90_close(ncid))) S%error = rads_err_nc_close
+do i = 1,rads_max_branches
+	ncid = P%fileinfo(i)%ncid
+	if (ncid > 0 .and. nft(nf90_close(ncid))) S%error = rads_err_nc_close
+enddo
 P%fileinfo = rads_file (0, '')
 if (present(keep)) then
 	if (keep) return
@@ -1763,7 +1785,7 @@ else if (info%datatype == rads_type_lon) then
 endif
 
 ! Look for the variable name in the netCDF file (or take the stored one)
-ncid = P%fileinfo(1)%ncid
+ncid = P%fileinfo(info%brid)%ncid
 if (P%cycle == info%cycle .and. P%pass == info%pass) then
 	! Keep old varid, but produce error when already tried and failed
 	if (info%varid == 0) then
@@ -1850,7 +1872,7 @@ use rads_misc
 integer(fourbyteint) :: varid, i, ncid
 character(len=26) :: date
 
-ncid = P%fileinfo(1)%ncid
+ncid = P%fileinfo(info%brid)%ncid
 
 ! First locate the colon in the name
 i = index(info%dataname, ':')
@@ -2138,7 +2160,7 @@ integer, parameter :: max_lvl = 20
 character(len=rads_varl) :: tag, name, tags(max_lvl)
 character(len=rads_naml) :: attr(2,max_lvl), val(max_lvl)
 character(len=6) :: src
-integer :: nattr, nval, i, ios, skip, skip_level
+integer :: nattr, nval, i, j, ios, skip, skip_level
 integer(twobyteint) :: field(2)
 logical :: endtag, endskip
 real(eightbytereal) :: node_rate
@@ -2421,7 +2443,21 @@ do
 		call assign_or_append (info%dataname)
 		src = ''
 		do i = 1,nattr
-			if (attr(1,i) == 'source') src = attr(2,i)(:6)
+			select case (attr(1,i))
+			case ('source')
+				src = attr(2,i)(:6)
+			case ('branch')
+				do j = 2,rads_max_branches
+					if (S%branch(j) == attr(2,i)) then
+						exit
+					else if (S%branch(j) == '') then
+						S%branch(j) = attr(2,i)(:rads_varl)
+						exit
+					endif
+				enddo
+				if (j > rads_max_branches) call rads_exit ('Too many branches: '//trim(attr(2,i)))
+				info%brid = j
+			end select
 		enddo
 		! Work out which data source
 		select case (src)
@@ -2756,7 +2792,7 @@ if (associated(tgt)) then
 else
 	allocate (ptr%info)
 	ptr%info = rads_varinfo (varname, varname, '', '', '', '', '', '', '', '', 'f0.3', '', '', null(), &
-		huge(0d0), nan, nan, 0d0, 1d0, nan, nan, 0d0, 0d0, .false., 1, nf90_double, 0, 0, 0, 0, 0, 0, 0)
+		huge(0d0), nan, nan, 0d0, 1d0, nan, nan, 0d0, 0d0, .false., 1, 1, nf90_double, 0, 0, 0, 0, 0, 0, 0)
 	name => ptr%info%name
 endif
 long_name => ptr%info%long_name ! This is to avoid warning in gfortran 4.8
@@ -3566,7 +3602,6 @@ if (associated(S%phases)) n = size(S%phases)
 do i = 1,n
 	if (S%phases(i)%name(1:1) == name(1:1)) then
 		phase => S%phases(i)
-		phase%dataroot = trim(S%dataroot)//'/'//trim(S%tree)//'/'//trim(name)
 		return
 	endif
 enddo
@@ -3588,9 +3623,8 @@ else
 endif
 
 ! Initialize the new phase information and direct the pointer
-S%phases(n) = rads_phase (name(1:1), '', '', (/999,0/), 0, nan, nan, nan, nan, 0, 0, nan, nan, nan, 0, 0, null())
+S%phases(n) = rads_phase (name(1:1), '', (/999,0/), 0, nan, nan, nan, nan, 0, 0, nan, nan, nan, 0, 0, null())
 phase => S%phases(n)
-phase%dataroot = trim(S%dataroot)//'/'//trim(S%tree)//'/'//trim(name)
 end function rads_get_phase
 
 !****if* rads/rads_time_to_cycle
@@ -3937,8 +3971,9 @@ if (present(n_hz)) P%n_hz = n_hz
 if (present(n_wvf)) P%n_wvf = n_wvf
 
 ! Build the file name, make directory if needed
+600 format (a,'/',a,'/',a,'/c',i3.3,'/',a2,'p',i4.4,'c',i3.3,'.nc')
 if (.not.present(name)) then
-	write (filename, '(a,"/c",i3.3,"/",a2,"p",i4.4,"c",i3.3,".nc")') trim(S%phase%dataroot), P%cycle, S%sat, P%pass, P%cycle
+	write (filename, 600) trim(S%dataroot), trim(S%tree), trim(S%phase%name), P%cycle, S%sat, P%pass, P%cycle
 	l = len_trim(filename)-15
 	inquire (file = filename(:l), exist = exist)
 	if (.not.exist) call system ('mkdir -p ' // filename(:l))
