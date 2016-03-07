@@ -18,14 +18,25 @@ The code is currently still under major development. When released, it will be m
 ## Version History
 Following is a history of releases on GitHub, newest to oldest.
 
+### v4.2.0 (7 Mar 2016)
+* Tuning for processing of Jason-3 data.
+* Added <plot_range> XML tag, which can be used for generating the right plotting range.
+* Added new functionalities to radsvar (i.e. create output that can be included in batch files).
+* Replaced 'units = "count"' by 'units = "1"' in line with udunits standards.
+* On -S option now allow satellite names with more than 2 characters (e.g. ja3, jason3).
+* Introduced the possibility to read RADS data from multiple directories using a tag like <data branch=".ext">.
+* Allow "single-line" XML tags with "var" option like <limits var="sla" sat="j3">-0.4 0.4</limits>
+* Added s3combine to merge and split Sentinel-3 granules into pass files.
+* Made some changes to rads_gen_s3, rads_gen_c2, ogdrsplit.
+
 ### v4.1.5 (23 Feb 2016)
 * Added SARAL GDR-E orbits, which are now the default.
-* Further updates for Jason-3
+* Further updates for Jason-3.
 
 ### v4.1.4 (12 Feb 2016)
-* Implement processing of Jason-3 and Sentinel-3 data
-* Implement satellite codes 'j3' (Jason-3), '3a' (Sentinel-3A), '3b' (Sentinel-3B)
-* Minor bug fixes
+* Implement processing of Jason-3 and Sentinel-3 data.
+* Implement satellite codes 'j3' (Jason-3), '3a' (Sentinel-3A), '3b' (Sentinel-3B).
+* Minor bug fixes.
 
 ### v4.1.3 (1 Dec 2015)
 * Added Jason-2 GDR-E orbits, which are now the default.
