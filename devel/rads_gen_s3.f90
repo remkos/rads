@@ -99,6 +99,8 @@ integer(twobyteint), allocatable :: flags_plrm(:), flags_save(:)
 ! Other local variables
 
 real(eightbytereal), parameter :: sec2000=473299200d0	! UTC seconds from 1 Jan 1985 to 1 Jan 2000
+real(eightbytereal), allocatable :: dh(:)
+real(eightbytereal) :: dhellips
 
 ! Initialise
 
@@ -123,10 +125,11 @@ do
 		cycle
 	endif
 
-! Check if input is standard_measurement.nc
+! Check if input is a Sentinel-3 Level 2 data set
 
-	if (index(infile,'standard_measurement') <= 0) then
-		call log_string ('Error: this is not standard_measurement.nc', .true.)
+	if (nf90_get_att(ncid,nf90_global,'title',arg) /= nf90_noerr .or. &
+		arg /= 'IPF SRAL/MWR Level 2 Measurement') then
+		call log_string ('Error: this is not a Sentinel-3 SRAL Level 2 data set', .true.)
 		cycle
 	endif
 
@@ -146,8 +149,8 @@ do
 		cycle
 	endif
 
-	call nfs(nf90_get_att(ncid,nf90_global,'title',arg))
-	nrt = (arg(:4) == 'nrt')
+	call nfs(nf90_get_att(ncid,nf90_global,'product_name',arg))
+	nrt = index(arg,'_NR_') > 0
 	call nfs(nf90_get_att(ncid,nf90_global,'cycle_number',cyclenr))
 	call nfs(nf90_get_att(ncid,nf90_global,'pass_number',passnr))
 	call nfs(nf90_get_att(ncid,nf90_global,'equator_time',arg))
@@ -181,13 +184,13 @@ do
 
 ! Allocate variables
 
-	allocate (a(nrec),flags(nrec),flags_plrm(nrec),flags_save(nrec))
+	allocate (a(nrec),dh(nrec),flags(nrec),flags_plrm(nrec),flags_save(nrec))
 	nvar = 0
 
 ! Compile flag bits
 
 	flags = 0
-	call nc2f ('instr_op_mode_01',0,lim=2)			! bit  0: Altimeter mode
+	call nc2f ('instr_op_mode_01',0,lim=1)			! bit  0: Altimeter mode
 	call nc2f ('corrected_off_nadir_angle_wf_ocean_01_ku',1)	! bit  1: Quality off-nadir pointing
 	call nc2f ('surf_type_01',2,val=2)				! bit  2: Continental ice
 	call nc2f ('range_ocean_qual_01_c',3)			! bit  3: Quality dual-frequency iono
@@ -218,16 +221,20 @@ do
 ! Convert all the necessary fields to RADS
 	call get_var (ncid, 'time_01', a)
 	call new_var ('time', a + sec2000)
-	call cpy_var ('lat_01','lat')
+	call cpy_var ('lat_01', 'lat')
+	! Compute ellipsoid corrections
+	do i = 1,nrec
+		dh(i) = dhellips(1,a(i))
+	enddo
 	call cpy_var ('lon_01','lon')
-!Which alt field?
-	call cpy_var ('alt_01', 'alt_gdre')
+	call get_var (ncid, 'alt_01', a)
+	call new_var ('alt_gdre', a + dh)
 	call cpy_var ('orb_alt_rate_01', 'alt_rate')
 	call cpy_var ('range_ocean_01_ku','range_ku')
 	call cpy_var ('range_ocean_01_plrm_ku','range_ku_plrm')
 	call cpy_var ('range_ocean_01_c','range_c')
-!Add PLRM ranges?
-!Add zero or meas altitude tropo measurements?
+! Add PLRM ranges?
+! Add zero or meas altitude tropo measurements?
 	call cpy_var ('mod_dry_tropo_cor_meas_altitude_01', 'dry_tropo_ecmwf')
 	call cpy_var ('rad_wet_tropo_cor_01_ku', 'wet_tropo_rad')
 	call cpy_var ('mod_wet_tropo_cor_meas_altitude_01', 'wet_tropo_ecmwf')
@@ -249,9 +256,12 @@ do
 	call cpy_var ('sea_state_bias_01_ku', 'ssb_cls')
 	call cpy_var ('sea_state_bias_01_plrm_ku', 'ssb_cls_plrm')
 	call cpy_var ('sea_state_bias_01_c', 'ssb_cls_c')
-	call cpy_var ('geoid_01', 'geoid_egm2008')
-	call cpy_var ('mean_sea_surf_sol1_01', 'mss_cnescls11')
-	call cpy_var ('mean_sea_surf_sol2_01', 'mss_dtu10')
+	call get_var (ncid, 'geoid_01', a)
+	call new_var ('geoid_egm2008', a + dh)
+	call get_var (ncid, 'mean_sea_surf_sol1_01', a)
+	call new_var ('mss_cnescls11', a + dh)
+	call get_var (ncid, 'mean_sea_surf_sol2_01', a)
+	call new_var ('mss_dtu10', a + dh)
 	call cpy_var ('swh_ocean_01_ku','swh_ku')
 	call cpy_var ('swh_ocean_01_plrm_ku','swh_ku_plrm')
 	call cpy_var ('swh_ocean_01_c','swh_c')
@@ -293,7 +303,7 @@ do
 
 	call nfs(nf90_close(ncid))
 	call put_rads
-	deallocate (a, flags, flags_plrm, flags_save)
+	deallocate (a, dh, flags, flags_plrm, flags_save)
 
 enddo
 

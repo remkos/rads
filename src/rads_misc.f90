@@ -700,7 +700,7 @@ logical :: isnan_
 isnan_ = (x /= x)
 end function isnan_
 
-!****f* rads_misc/isan
+!****f* rads_misc/isan_
 ! SUMMARY
 ! Check if double precision value is a number
 !
@@ -886,7 +886,6 @@ end subroutine swap_if
 
 end subroutine iqsort
 
-
 !****f* rads_misc/regression
 ! SUMMARY
 ! Compute best fitting linear regression
@@ -907,7 +906,7 @@ real(eightbytereal), intent(out) :: a, b, r, fit
 !  a, b  : Coefficients of linear regression (intercept and slope)
 !  r     : Regression
 !  fit   : RMS of fit of regression to the data
-!****
+!****-------------------------------------------------------------------
 real(eightbytereal) :: sumx,sumy,sumxx,sumxy,sumyy,uxx,uxy,uyy
 integer(fourbyteint) :: i,n
 n = 0
@@ -1021,7 +1020,6 @@ i1 = i
 next_word = .true.
 end function next_word
 
-
 !****f* rads_misc/mean_1hz
 ! SUMMARY
 ! Compute mean and rms of multi-Hz array
@@ -1043,7 +1041,7 @@ real(eightbytereal), intent(out) :: mean(:), rms(:)
 !  y     : Input array of dimension (m,n)
 !  mean  : Average of y per 1-Hz, dimension n
 !  rms   : Standard deviation of 1-Hz, dimension n
-!****
+!****-------------------------------------------------------------------
 integer(fourbyteint) :: i, j, n
 do j = 1,size(y,2)
 	mean(j) = 0d0
@@ -1094,7 +1092,7 @@ real(eightbytereal), intent(out) :: mean(:), rms(:)
 !  y     : Input array of dimension (m,n)
 !  mean  : Average of y per 1-Hz, dimension n
 !  rms   : Standard deviation of 1-Hz, dimension n
-!****
+!****-------------------------------------------------------------------
 real(eightbytereal) :: sumx,sumy,sumxx,sumxy,sumyy,uxx,uxy,uyy,a,b,xx
 integer(fourbyteint) :: i, j, n
 do j = 1,size(y,2)
@@ -1132,6 +1130,42 @@ do j = 1,size(y,2)
 	endif
 enddo
 end subroutine trend_1hz
+
+!****f* rads_misc/round_up
+! SUMMARY
+! Find the smallest `round' number greater than x
+!
+! SYNOPSIS
+elemental subroutine round_up (x)
+use typesizes
+real(eightbytereal), intent(inout) :: x
+!
+! PURPOSE
+! Routine to find the smallest "round" number larger in absolute value than <x>,
+! a "round" number being 1, 2 or 5 times a power of 10.
+! Examples (in -> out):
+! 0.0 -> 0.0, NaN -> NaN, 200.0 -> 200.0, 8.7 -> 10.0, -0.4 -> -0.5
+!
+! ARGUMENTS
+!  x     : Value to be rounded on input; rounded value on output
+!****-------------------------------------------------------------------
+real(eightbytereal) :: xx, p
+integer(fourbyteint) :: i
+if (x == 0d0 .or. isnan_(x)) return
+xx = abs(x)
+i = floor(log10(xx))
+p = 10d0**i
+xx = xx / p
+if (xx == 1d0) then
+	! Nothing
+else if (xx <= 2d0) then
+	x = sign(2d0*p,x)
+else if (xx <= 5d0) then
+	x = sign(5d0*p,x)
+else
+	x = sign(10d0*p,x)
+endif
+end subroutine round_up
 
 !***********************************************************************
 

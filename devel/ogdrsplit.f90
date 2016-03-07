@@ -16,7 +16,7 @@
 !*ogdrsplit -- Split Jason or SARAL OGDR files into pass files
 !
 ! Read OSDR_SSHA or OGDR or OGDR_SSHA files from Jason-1/2/3 or SARAL and
-! split them into separate pass files. The OGDR file names are read from
+! split them into separate pass files. The input file names are read from
 ! standard input. The individual pass files will be named
 ! <destdir>/cCCC/???_*_2P?PCCC_[P]PPP.nc, where CCC is the cycle number and
 ! [P]PPP the pass number. The directory <destdir>/cCCC will be created if needed.
@@ -33,12 +33,11 @@ use typesizes
 use netcdf
 
 character(len=rads_cmdl) :: orf, arg, filenm, dimnm, filetype, destdir
-character(len=26) :: date(3)
 character(len=rads_strl) :: exclude_list = ','
 integer(fourbyteint), parameter :: mpass = 254 * 500
 real(eightbytereal), parameter :: sec2000 = 473299200d0
 integer(fourbyteint) :: l, yy, mm, dd, hh, mn, cycle(mpass), pass(mpass), npass, ipass, i0, i, ncid1, &
-	nrec, nhz, hash, mjd, ios, varid, n_ignore = 0
+	nrec, nhz, hash, mjd, ios, varid, n_ignore = 0, nr_passes, max_dim = 2
 real(eightbytereal) :: ss, lon, lat, eqtime(mpass), eqlon(mpass), starttime(mpass)
 real(eightbytereal), allocatable :: time(:)
 
@@ -48,12 +47,13 @@ if (iargc() < 1) then
 	write (*,1300)
 	stop
 endif
-1300 format ('ogdrsplit -- Split OGDR or OGDR SSHA file into pass files'// &
+1300 format ('ogdrsplit -- Split OGDR or OGDR SSHA files into pass files'// &
 'syntax: ogdrsplit [options] destdir < list'//'where'/ &
 '  destdir           : Destination directory (appends c???/*.nc)'/ &
-'  list              : Input OGDR or OGDR SSHA files'// &
+'  list              : List of input file names'// &
 'where [options] are:' / &
 '  -iNRECS           : Ignore up to NRECS record chunks to move to existing files (def: 0)' / &
+'  -x2               : Exclude any multi-dimensional variables' / &
 '  -xVAR1[,VAR2,...] : Exclude variable(s) from copying')
 
 ! First determine filetype
@@ -69,6 +69,7 @@ filetype = filenm(i-3:l+3)
 
 ! Open the equator crossing table
 
+nr_passes = 254
 select case (filetype(:3))
 case ('JA1')
 	call parseenv ('${RADSROOT}/ext/j1/JA1_ORF.txt', orf)
@@ -78,6 +79,7 @@ case ('JA3')
 	call parseenv ('${RADSROOT}/ext/j3/JA3_ORF.txt', orf)
 case ('SRL')
 	call parseenv ('${RADSROOT}/ext/sa/SRL_ORF.txt', orf)
+	nr_passes = 1024
 case default
 	stop 'Wrong filetype'
 end select
@@ -121,6 +123,8 @@ do i = 1,iargc()
 	call getarg (i,arg)
 	if (arg(:2) == '-i') then
 		read (arg(3:),*) n_ignore
+	else if (arg(:3) == '-x2') then
+		max_dim = 1
 	else if (arg(:2) == '-x') then
 		exclude_list = trim(exclude_list) // arg(3:len_trim(arg)) // ','
 	else
@@ -146,8 +150,6 @@ do
 	allocate (time(nrec))
 	call nfs(nf90_inq_varid(ncid1,'time',varid))
 	call nfs(nf90_get_var(ncid1,varid,time))
-	call nfs(nf90_get_att(ncid1,nf90_global,'first_meas_time',date(1)))
-	call nfs(nf90_get_att(ncid1,nf90_global,'last_meas_time',date(2)))
 	write (*,610) trim(filenm)
 
 ! Check time with equator crossing table
@@ -187,6 +189,7 @@ real(eightbytereal) :: time2(2)
 real(eightbytereal), allocatable :: darr1(:),darr2(:,:)
 integer(fourbyteint), allocatable :: iarr1(:),iarr2(:,:),iarr3(:)
 logical :: exist
+character(len=26) :: date(3)
 
 ! Skip empty data chunks
 
@@ -244,7 +247,8 @@ else
 ! Create the dimensions
 
 	call nfs(nf90_def_dim(ncid2,'time',nf90_unlimited,i))
-	if (nhz > 1) call nfs(nf90_def_dim(ncid2,'meas_ind',nhz,i)) ! Create only if there is a 2nd dimension
+	if (nhz > 1 .and. max_dim > 1) &
+		call nfs(nf90_def_dim(ncid2,'meas_ind',nhz,i)) ! Create only if there is a 2nd dimension
 	time2(1)=time(rec0)
 
 ! Copy all the variable definitions and attributes
@@ -253,7 +257,7 @@ else
 	do varid = 0,nvars
 		if (varid > 0) then
 			call nfs(nf90_inquire_variable(ncid1,varid,varnm,xtype,ndims,dimids,natts))
-			if (excluded(varnm)) cycle
+			if (excluded(varnm) .or. ndims > max_dim .or. dimids(1) > max_dim) cycle
 			call nfs(nf90_def_var(ncid2,varnm,xtype,dimids(1:ndims),varid2))
 		endif
 		do i = 1,natts
@@ -266,12 +270,15 @@ endif
 ! Initialize
 
 nrec = rec1 - rec0 + 1
-idxin(2)=rec0
-idxut(2)=dimlen + 1
+idxin(2) = rec0
+idxut(2) = dimlen + 1
+time2(2) = time(rec1)
 call strf1985f(date(1),time(rec0)+sec2000)
 call strf1985f(date(2),time(rec1)+sec2000)
-call strf1985f(date(3),eqtime(ipass)+sec2000)
 write (*,620) rec0,rec1,nrec,trim(outnm),date(1:2)
+call strf1985f(date(1),time2(1)+sec2000)
+call strf1985f(date(2),time2(2)+sec2000)
+call strf1985f(date(3),eqtime(ipass)+sec2000)
 
 allocate (darr1(nrec),darr2(nhz,nrec),iarr1(nrec),iarr2(nhz,nrec),iarr3(nhz))
 
@@ -279,7 +286,7 @@ allocate (darr1(nrec),darr2(nhz,nrec),iarr1(nrec),iarr2(nhz,nrec),iarr3(nhz))
 
 call nfs(nf90_put_att(ncid2,nf90_global,'cycle_number',cycle(ipass)))
 call nfs(nf90_put_att(ncid2,nf90_global,'pass_number',pass(ipass)))
-call nfs(nf90_put_att(ncid2,nf90_global,'absolute_pass_number',(cycle(ipass)-1)*254+pass(ipass)))
+call nfs(nf90_put_att(ncid2,nf90_global,'absolute_pass_number',(cycle(ipass)-1)*nr_passes+pass(ipass)))
 call nfs(nf90_put_att(ncid2,nf90_global,'equator_time',date(3)))
 call nfs(nf90_put_att(ncid2,nf90_global,'equator_longitude',eqlon(ipass)))
 call nfs(nf90_put_att(ncid2,nf90_global,'first_meas_time',date(1)))
@@ -291,7 +298,7 @@ call nfs(nf90_enddef(ncid2))
 varid2 = 0
 do varid = 1,nvars
 	call nfs(nf90_inquire_variable(ncid1,varid,varnm,xtype,ndims,dimids,natts))
-	if (excluded(varnm)) cycle
+	if (excluded(varnm) .or. ndims > max_dim .or. dimids(1) > max_dim) cycle
 	varid2 = varid2 + 1
 	if (xtype == nf90_double) then
 		if (ndims == 2) then
@@ -315,7 +322,7 @@ do varid = 1,nvars
 	endif
 enddo
 
-deallocate (darr1,iarr1,iarr2)
+deallocate (darr1,iarr1,iarr2,iarr3)
 
 call nfs(nf90_close(ncid2))
 

@@ -34,8 +34,8 @@ use xmlparse
 type(rads_sat) :: S
 type(xml_parse) :: X
 character(len=80) :: arg
-integer, parameter :: nsat = 10
-character(len=2) :: satnm(nsat+1) = (/ 'c2', 'e1', 'e2', 'g1', 'gs', 'j1', 'j2', 'n1', 'pn', 'tx', '??' /)
+integer, parameter :: nsat = 12
+character(len=2) :: satnm(nsat+1) = (/ 'c2', 'e1', 'e2', 'g1', 'gs', 'j1', 'j2', 'j3', 'n1', 'pn', 'tx', '3a', '??' /)
 
 integer :: passes(2),cycles(2)=0,i,j
 character(len=4) :: radsfmt
