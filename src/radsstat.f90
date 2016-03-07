@@ -457,8 +457,7 @@ call nfs (nf90_def_dim (ncid, 'time', nf90_unlimited, dimid(1)))
 call nfs (nf90_def_dim (ncid, 'stat', lstat, dimid(2)))
 
 ! To use general netCDF creation machinary, we trick the library a bit here
-Pout%ncid = ncid
-Pout%filename = filename
+Pout%fileinfo(1) = rads_file (ncid, filename)
 Pout%rw = .true.
 
 ! Define "time" variables

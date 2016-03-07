@@ -166,7 +166,7 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-integer(fourbyteint) :: i
+integer(fourbyteint) :: i, ncid
 real(eightbytereal) :: time(n), lat(n), lon(n), h(n), surface_type(n), dry(n), wet(n), ib(n), air(n), &
 	f1, f2, g1, g2, slp, dslp, slp0, wvc, tmp
 
@@ -176,8 +176,9 @@ call log_pass (P)
 
 ! If "new" option is used, write only when fields are not yet available
 
-if (new .and. nff(nf90_inq_varid(P%ncid,'dry_tropo_era',i)) .and. &
-	nff(nf90_inq_varid(P%ncid,'wet_tropo_era',i))) then
+ncid = P%fileinfo(1)%ncid
+if (new .and. nff(nf90_inq_varid(ncid,'dry_tropo_era',i)) .and. &
+	nff(nf90_inq_varid(ncid,'wet_tropo_era',i))) then
 	call log_records (0)
 	return
 endif
