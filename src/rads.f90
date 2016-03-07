@@ -29,7 +29,7 @@ use rads_grid, only: grid
 
 ! Dimensions
 integer(fourbyteint), parameter :: rads_var_chunk = 100, rads_varl = 40, rads_naml = 160, rads_cmdl = 320, &
-	rads_strl = 1600, rads_hstl = 3200, rads_cyclistl = 50, rads_optl = 50, rads_max_branches = 2
+	rads_strl = 1600, rads_hstl = 3200, rads_cyclistl = 50, rads_optl = 50, rads_max_branches = 5
 ! RADS4 data types
 integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, rads_type_flagmasks = 2, rads_type_flagvalues = 3, &
 	rads_type_time = 11, rads_type_lat = 12, rads_type_lon = 13, rads_type_dim = 14
@@ -119,17 +119,11 @@ type :: rads_phase
 	type(rads_cyclist), pointer :: subcycles         ! Subcycle definition (if requested)
 endtype
 
-type :: rads_file
-	integer(fourbyteint) :: ncid            ! NetCDF ID of pass file
-	character(len=rads_cmdl) :: name        ! Name of the netCDF pass file
-endtype
-
 type :: rads_sat
 	character(len=rads_naml) :: userroot             ! Root directory of current user (i.e. $HOME)
 	character(len=rads_naml) :: dataroot             ! Root directory of RADS data directory (i.e. $RADSDATAROOT)
 	character(len=rads_varl) :: branch(rads_max_branches) ! Name of optional branches
-	character(len=rads_varl) :: spec                 ! Satellite specification given by user (e.g. 'e2g' or 'e2.reap')
-	character(len=rads_varl) :: tree                 ! Satellite directory tree (e.g. 'e2' or 'e2.reap')
+	character(len=rads_varl) :: spec                 ! Temporary holding space for satellite specification
 	character(len=rads_cmdl) :: command              ! Command line
 	character(len=rads_naml), pointer :: glob_att(:) ! Global attributes
 	character(len=8) :: satellite                    ! Satellite name
@@ -152,6 +146,11 @@ type :: rads_sat
 	type(rads_var), pointer :: sel(:)                ! List of selected variables and aliases
 	type(rads_var), pointer :: time, lat, lon        ! Pointers to time, lat, lon variables
 	type(rads_phase), pointer :: phases(:), phase    ! Definitions of all mission phases and pointer to current phase
+endtype
+
+type :: rads_file
+	integer(fourbyteint) :: ncid                     ! NetCDF ID of pass file
+	character(len=rads_cmdl) :: name                 ! Name of the netCDF pass file
 endtype
 
 type :: rads_pass
@@ -505,7 +504,7 @@ integer(fourbyteint) :: i
 call rads_init_sat_struct (S)
 
 ! Store satellite specification
-! S%sat, S%tree, S%satellite will be populated/overwritten later by rads_read_xml
+! S%sat, S%branch, S%satellite will be populated/overwritten later by rads_read_xml
 ! S%spec will then be replaced by the phase name (if specified)
 if (len_trim(sat) < 2) call rads_exit ('Satellite/phase has fewer than 2 characters')
 S%spec = sat
@@ -663,7 +662,7 @@ type(rads_sat), intent(inout) :: S
 !****-------------------------------------------------------------------
 ! gfortran 4.4.1 segfaults on the next line if this routine is made pure or elemental,
 ! so please leave it as a normal routine.
-S = rads_sat ('', '', '', '', '', '', null(), '', 1d0, (/13.8d0, nan/), 90d0, nan, nan, nan, 1, 1, rads_noerr, &
+S = rads_sat ('', '', '', '', '', null(), '', 1d0, (/13.8d0, nan/), 90d0, nan, nan, nan, 1, 1, rads_noerr, &
 	0, 0, 0, 0, 0, .false., '', 0, null(), null(), null(), null(), null(), null(), null(), null())
 end subroutine rads_init_sat_struct
 
@@ -1303,8 +1302,8 @@ endif
 S%pass_stat(6+ascdes) = S%pass_stat(6+ascdes) + 1
 
 ! Open pass file
-600 format (a,'/',a,'/',a,'/c',i3.3,'/',a2,'p',i4.4,'c',i3.3,'.nc')
-write (P%fileinfo(1)%name, 600) trim(S%dataroot), trim(S%tree), trim(S%phase%name), cycle, S%sat, pass, cycle
+600 format (a,'/',a2,a,'/',a,'/c',i3.3,'/',a2,'p',i4.4,'c',i3.3,'.nc')
+write (P%fileinfo(1)%name, 600) trim(S%dataroot), S%sat, trim(S%branch(1)), trim(S%phase%name), cycle, S%sat, pass, cycle
 if (present(rw)) then
 	P%rw = rw
 else
@@ -1397,7 +1396,7 @@ if (.not.P%rw .and. S%centroid(3) > 0d0) then
 endif
 
 ! Look for first non-NaN measurement
-do i = 1,P%ndata
+do i = 1, P%ndata
 	if (.not.any(isnan_(P%tll(i,:)))) exit
 enddo
 if (i > P%ndata) then ! Got no non-NaNs
@@ -1416,7 +1415,7 @@ P%last_meas = i
 do i = 2, rads_max_branches
 	if (S%branch(i) == '') exit
 	write (P%fileinfo(i)%name, 600) &
-		trim(S%dataroot), trim(S%tree)//trim(S%branch(i)), trim(S%phase%name), cycle, S%sat, pass, cycle
+		trim(S%dataroot), S%sat, trim(S%branch(i)), trim(S%phase%name), cycle, S%sat, pass, cycle
 	if (P%rw) then
 		if (rads_verbose >= 2) write (*,'(2a)') 'Opening for read/write: ',trim(P%fileinfo(i)%name)
 		if (nft(nf90_open(P%fileinfo(i)%name,nf90_write,ncid))) return
@@ -1552,7 +1551,7 @@ do i = 1,S%nvar
 	endif
 enddo
 write (name,'(i0)') field
-call rads_error (S, rads_err_var, 'No variable with field number "'//name//'" was defined for "'//trim(S%tree)//'"')
+call rads_error (S, rads_err_var, 'No variable with field number "'//name//'" was defined for "'//S%sat//trim(S%branch(1))//'"')
 data(:P%ndata) = nan
 end subroutine rads_get_var_by_number
 
@@ -2257,9 +2256,9 @@ do
 			if (S%sat == '??') then
 				skip = -1
 			else if (attr(2,i)(:1) == '!') then
-				if (index(attr(2,i),S%sat//' ') == 0 .and. index(attr(2,i),trim(S%tree)//' ') == 0) skip = -1
+				if (index(attr(2,i),S%sat//' ') == 0 .and. index(attr(2,i),S%sat//trim(S%branch(1))//' ') == 0) skip = -1
 			else
-				if (index(attr(2,i),S%sat//' ') > 0 .or. index(attr(2,i),trim(S%tree)//' ') > 0) skip = -1
+				if (index(attr(2,i),S%sat//' ') > 0 .or. index(attr(2,i),S%sat//trim(S%branch(1))//' ') > 0) skip = -1
 			endif
 		case ('var')
 			var => rads_varptr (S, attr(2,i), null())
@@ -2442,15 +2441,15 @@ do
 	case ('data')
 		call assign_or_append (info%dataname)
 		src = ''
-		do i = 1,nattr
+		do i = 1, nattr
 			select case (attr(1,i))
 			case ('source')
 				src = attr(2,i)(:6)
 			case ('branch')
-				do j = 2,rads_max_branches
+				do j = 1, rads_max_branches
 					if (S%branch(j) == attr(2,i)) then
 						exit
-					else if (S%branch(j) == '') then
+					else if (j > 1 .and. S%branch(j) == '') then
 						S%branch(j) = attr(2,i)(:rads_varl)
 						exit
 					endif
@@ -2650,28 +2649,24 @@ if (l == 3) then
 		if (S%spec(1:2) /= val(i)(1:2)) cycle
 		S%sat = val(i)(1:2)
 		S%spec = S%spec(3:3)	! Phase part
-		S%tree = S%sat
 		return
 	enddo
 endif
 ! If we have a '/' or ':' or '.', then separate specification
 j = scan(S%spec,'/:.')
 if (j > 0) l = j - 1
-! Now scan for matching strings (start only)
+! Now scan for matching strings (beginning of string only)
 do i = 1,nval
 	if (index(' '//val(i), ' '//strtolower(S%spec(:l))) == 0) cycle
 	S%sat = val(i)(1:2)
-	if (j == 0) then
-		S%tree = S%sat
-	else
-		S%tree = S%sat // S%spec(j:)
-	endif
-	j = scan(S%tree,'/:')
-	if (j == 0) then
+	S%spec = S%spec(l+1:)	! Everything after <sat>
+	j = scan(S%spec,'/:')
+	if (j == 0) then	! No phase indication
+		S%branch(1) = S%spec
 		S%spec = ''
-	else
-		S%spec = S%tree(j+1:)
-		S%tree(j:) = ''
+	else	! With phase indication
+		S%branch(1) = S%spec(:j-1)
+		S%spec = S%spec(j+1:)
 	endif
 	return
 enddo
@@ -2768,7 +2763,7 @@ if (i <= S%nvar) then
 else if (.not.present(tgt)) then
 	! No match found, and none should be created: return null pointer and error
 	nullify (ptr)
-	call rads_error (S, rads_err_var, 'No variable "'//trim(varname)//'" was defined for "'//trim(S%tree)//'"')
+	call rads_error (S, rads_err_var, 'No variable "'//trim(varname)//'" was defined for "'//S%sat//trim(S%branch(1))//'"')
 	return
 else
 	! If we got here, we need to make a new variable. Do we also need to allocate more space?
@@ -3971,16 +3966,17 @@ if (present(n_hz)) P%n_hz = n_hz
 if (present(n_wvf)) P%n_wvf = n_wvf
 
 ! Build the file name, make directory if needed
-600 format (a,'/',a,'/',a,'/c',i3.3,'/',a2,'p',i4.4,'c',i3.3,'.nc')
+600 format (a,'/',a2,a,'/',a,'/c',i3.3,'/',a2,'p',i4.4,'c',i3.3,'.nc')
+610 format (a,'p',i4.4,'c',i3.3,'.nc')
 if (.not.present(name)) then
-	write (filename, 600) trim(S%dataroot), trim(S%tree), trim(S%phase%name), P%cycle, S%sat, P%pass, P%cycle
+	write (filename, 600) trim(S%dataroot), S%sat, trim(S%branch(1)), trim(S%phase%name), P%cycle, S%sat, P%pass, P%cycle
 	l = len_trim(filename)-15
 	inquire (file = filename(:l), exist = exist)
 	if (.not.exist) call system ('mkdir -p ' // filename(:l))
 else if (name == '') then
-	write (filename, '(a2,"p",i4.4,"c",i3.3,".nc")') S%sat, P%pass, P%cycle
+	write (filename, 610) S%sat, P%pass, P%cycle
 else if (name(len_trim(name):) == '/') then
-	write (filename, '(a,a2,"p",i4.4,"c",i3.3,".nc")') trim(name), S%sat, P%pass, P%cycle
+	write (filename, 610) trim(name)//S%sat, P%pass, P%cycle
 	inquire (file = name, exist = exist)
 	if (.not.exist) call system ('mkdir -p ' // name)
 else
