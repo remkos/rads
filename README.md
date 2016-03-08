@@ -18,7 +18,7 @@ The code is currently still under major development. When released, it will be m
 ## Version History
 Following is a history of releases on GitHub, newest to oldest.
 
-### v4.2.0 (7 Mar 2016)
+### v4.2.0 (8 Mar 2016)
 * Tuning for processing of Jason-3 data.
 * Added \<plot_range\> XML tag, which can be used for generating the right plotting range.
 * Added new functionalities to radsvar (i.e. create output that can be included in batch files).
@@ -55,7 +55,7 @@ Following is a history of releases on GitHub, newest to oldest.
 
 ### v4.1.0 (19 Aug 2015)
 * Numerous updates to the database: removed obsolete variables, updated several, introduced new variables.
-* New handling off "long options". For example: can now use either --var=VAR or --var VAR (without = symbol).
+* New handling of "long options". For example: can now use either --var=VAR or --var VAR (without = symbol).
 
 ### v4.0.3 (10 Aug 2015)
 * Improvements to rads_add_surface; new landmask based on GSHHG 2.3.4 introduced.

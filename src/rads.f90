@@ -1302,8 +1302,8 @@ endif
 S%pass_stat(6+ascdes) = S%pass_stat(6+ascdes) + 1
 
 ! Open pass file
-600 format (a,'/',a2,a,'/',a,'/c',i3.3,'/',a2,'p',i4.4,'c',i3.3,'.nc')
-write (P%fileinfo(1)%name, 600) trim(S%dataroot), S%sat, trim(S%branch(1)), trim(S%phase%name), cycle, S%sat, pass, cycle
+600 format (a,'/',a,'/',a,'/c',i3.3,'/',a2,'p',i4.4,'c',i3.3,'.nc')
+write (P%fileinfo(1)%name, 600) trim(S%dataroot), trim(S%branch(1)), trim(S%phase%name), cycle, S%sat, pass, cycle
 if (present(rw)) then
 	P%rw = rw
 else
@@ -1415,7 +1415,7 @@ P%last_meas = i
 do i = 2, rads_max_branches
 	if (S%branch(i) == '') exit
 	write (P%fileinfo(i)%name, 600) &
-		trim(S%dataroot), S%sat, trim(S%branch(i)), trim(S%phase%name), cycle, S%sat, pass, cycle
+		trim(S%dataroot), trim(S%branch(i)), trim(S%phase%name), cycle, S%sat, pass, cycle
 	if (P%rw) then
 		if (rads_verbose >= 2) write (*,'(2a)') 'Opening for read/write: ',trim(P%fileinfo(i)%name)
 		if (nft(nf90_open(P%fileinfo(i)%name,nf90_write,ncid))) return
@@ -1551,7 +1551,7 @@ do i = 1,S%nvar
 	endif
 enddo
 write (name,'(i0)') field
-call rads_error (S, rads_err_var, 'No variable with field number "'//name//'" was defined for "'//S%sat//trim(S%branch(1))//'"')
+call rads_error (S, rads_err_var, 'No variable with field number "'//name//'" was defined for "'//trim(S%branch(1))//'"')
 data(:P%ndata) = nan
 end subroutine rads_get_var_by_number
 
@@ -2256,9 +2256,9 @@ do
 			if (S%sat == '??') then
 				skip = -1
 			else if (attr(2,i)(:1) == '!') then
-				if (index(attr(2,i),S%sat//' ') == 0 .and. index(attr(2,i),S%sat//trim(S%branch(1))//' ') == 0) skip = -1
+				if (index(attr(2,i),S%sat//' ') == 0 .and. index(attr(2,i),trim(S%branch(1))//' ') == 0) skip = -1
 			else
-				if (index(attr(2,i),S%sat//' ') > 0 .or. index(attr(2,i),S%sat//trim(S%branch(1))//' ') > 0) skip = -1
+				if (index(attr(2,i),S%sat//' ') > 0 .or. index(attr(2,i),trim(S%branch(1))//' ') > 0) skip = -1
 			endif
 		case ('var')
 			var => rads_varptr (S, attr(2,i), null())
@@ -2446,11 +2446,12 @@ do
 			case ('source')
 				src = attr(2,i)(:6)
 			case ('branch')
+				! 'branch' can be like '.20hz'
 				do j = 1, rads_max_branches
-					if (S%branch(j) == attr(2,i)) then
+					if (S%branch(j) == S%sat//attr(2,i)) then
 						exit
-					else if (j > 1 .and. S%branch(j) == '') then
-						S%branch(j) = attr(2,i)(:rads_varl)
+					else if (S%branch(j) == '') then
+						S%branch(j) = S%sat//attr(2,i)(:rads_varl-2)
 						exit
 					endif
 				enddo
@@ -2662,10 +2663,10 @@ do i = 1,nval
 	S%spec = S%spec(l+1:)	! Everything after <sat>
 	j = scan(S%spec,'/:')
 	if (j == 0) then	! No phase indication
-		S%branch(1) = S%spec
+		S%branch(1) = S%sat//S%spec(:rads_varl-2)
 		S%spec = ''
 	else	! With phase indication
-		S%branch(1) = S%spec(:j-1)
+		S%branch(1) = S%sat//S%spec(:j-1)
 		S%spec = S%spec(j+1:)
 	endif
 	return
@@ -2763,7 +2764,7 @@ if (i <= S%nvar) then
 else if (.not.present(tgt)) then
 	! No match found, and none should be created: return null pointer and error
 	nullify (ptr)
-	call rads_error (S, rads_err_var, 'No variable "'//trim(varname)//'" was defined for "'//S%sat//trim(S%branch(1))//'"')
+	call rads_error (S, rads_err_var, 'No variable "'//trim(varname)//'" was defined for "'//trim(S%branch(1))//'"')
 	return
 else
 	! If we got here, we need to make a new variable. Do we also need to allocate more space?
@@ -3966,10 +3967,10 @@ if (present(n_hz)) P%n_hz = n_hz
 if (present(n_wvf)) P%n_wvf = n_wvf
 
 ! Build the file name, make directory if needed
-600 format (a,'/',a2,a,'/',a,'/c',i3.3,'/',a2,'p',i4.4,'c',i3.3,'.nc')
+600 format (a,'/',a,'/',a,'/c',i3.3,'/',a2,'p',i4.4,'c',i3.3,'.nc')
 610 format (a,'p',i4.4,'c',i3.3,'.nc')
 if (.not.present(name)) then
-	write (filename, 600) trim(S%dataroot), S%sat, trim(S%branch(1)), trim(S%phase%name), P%cycle, S%sat, P%pass, P%cycle
+	write (filename, 600) trim(S%dataroot), trim(S%branch(1)), trim(S%phase%name), P%cycle, S%sat, P%pass, P%cycle
 	l = len_trim(filename)-15
 	inquire (file = filename(:l), exist = exist)
 	if (.not.exist) call system ('mkdir -p ' // filename(:l))
