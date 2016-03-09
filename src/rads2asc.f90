@@ -55,7 +55,7 @@ real(eightbytereal), allocatable :: r(:), q(:)
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('r::fs:o: reject-on-nan:: step: list: output: maxrec:')
+call rads_set_options ('r::fs:o:cp reject-on-nan:: step: list: output: maxrec:')
 call rads_init (Sats)
 if (any(Sats%error /= rads_noerr)) call rads_exit ('Fatal error')
 
@@ -79,6 +79,10 @@ do i = 1,rads_nopt
 		else
 			stat_mode = no_stat
 		endif
+	case ('c')
+		stat_mode = cycle_stat
+	case ('p')
+		stat_mode = pass_stat
 	case ('maxrec')
 		read (rads_opt(i)%arg, *, iostat=ios) nselmax
 		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
@@ -203,10 +207,11 @@ write (*,1300)
 '  -r n, -r any              Reject records if any value is NaN'/ &
 '                      Note: If no -r option is given -r sla is assumed'/ &
 '  -f                        Do not start with time,lat,lon in output'/ &
-'  -sp, -sc                  Include statistics per pass or per cycle'/ &
+'  -c, -s c                  Include statistics per cycle'/ &
+'  -p, -s p                  Include statistics per pass'/ &
 '  --step N                  Step through records with stride N (default = 1)'/ &
 '  --list FILENAME           Specify file name in which to write list of output files'/ &
-'  --maxrec N                Specify maximum number of output records (default = unlimited)'/ &
+'  --maxrec NREC             Specify maximum number of output records (default = unlimited)'/ &
 '  -o, --output FILENAME     Specify name of a single output file (default is pass files, - is stdout)')
 stop
 end subroutine synopsis
