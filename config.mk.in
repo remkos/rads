@@ -65,7 +65,9 @@ NETCDF_LIB = @NETCDF_LIB@
 LN_S = @LN_S@ -f
 RANLIB = @RANLIB@
 FC = @FC@
-FFLAGS = @FCFLAGS@@DEVEL_FLAGS@ -I../include @MOD_FLAG@../src $(NETCDF_INC)
+# Here we use -I../src/include instead of -Iinclude to avoid warnings
+# when using FFLAGS in the devel directory
+FFLAGS = @FCFLAGS@@DEVEL_FLAGS@ -I../src/include @MOD_FLAG@../src $(NETCDF_INC)
 
 #-----------------------------------------------------------------------
 # Special rules
