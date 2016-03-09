@@ -3418,7 +3418,7 @@ Global RADS configuration file
 <if sat="3a">
 	<satellite>SNTNL-3A</satellite>
 	<satid>16</satid>
-	<dt1hz>1.020152</dt1hz><!--Need to update this value-->
+	<dt1hz>1.000000</dt1hz><!--By design!-->
 	<inclination>98.65</inclination>
 	<frequency>13.575 5.41</frequency>
 	<xover_params>0.05 0.05</xover_params><!--Need to verify-->
@@ -3426,15 +3426,15 @@ Global RADS configuration file
 		<mission>Exact Repeat Mission</mission>
 		<cycles>0 999</cycles>
 		<repeat>27 770</repeat>
-		<ref_pass>2016-03-05 00:00:00 0.624790 1 1</ref_pass><!--Need to update this value-->
-		<start_time>2016-03-05</start_time><!--Need to update this value-->
+		<ref_pass>2016-03-01 08:14:33 206.339350 1 442</ref_pass><!--May need to update this value-->
+		<start_time>2016-03-01</start_time>
 	</phase>
 </if>
 
 <if sat="3b">
 	<satellite>SNTNL-3B</satellite>
 	<satid>17</satid>
-	<dt1hz>1.020152</dt1hz><!--Need to update this value-->
+	<dt1hz>1.000000</dt1hz><!--By design!-->
 	<inclination>98.65</inclination>
 	<frequency>13.575 5.41</frequency>
 	<xover_params>0.05 0.05</xover_params><!--Need to verify-->
@@ -3442,8 +3442,8 @@ Global RADS configuration file
 		<mission>Exact Repeat Mission</mission>
 		<cycles>0 999</cycles>
 		<repeat>27 770</repeat>
-		<ref_pass>2016-03-05 00:00:00 0.624790 1 1</ref_pass><!--Need to update this value-->
-		<start_time>2016-03-05</start_time><!--Need to update this value-->
+		<ref_pass>2017-10-01 00:00:00 0.624790 1 1</ref_pass><!--Need to update this value-->
+		<start_time>2017-10-01</start_time><!--Need to update this value-->
 	</phase>
 </if>
 
