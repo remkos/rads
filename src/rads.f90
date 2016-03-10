@@ -3560,7 +3560,9 @@ write (iunit, 1300) trim(progname)
 '  -q, --quiet               Suppress warning messages (but keeps fatal error messages)'/ &
 '  -v, --verbose             Increase verbosity level'/ &
 '  --debug LEVEL             Set debug/verbosity level'/ &
-'  --version                 Version info')
+'  --version                 Version info'/ &
+'  --                        Terminates all options; all following command-line arguments are considered'/ &
+'                            non-option arguments, even if they begin with a hyphen.')
 end subroutine rads_synopsis
 
 !****if* rads/rads_get_phase
