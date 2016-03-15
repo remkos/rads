@@ -36,8 +36,8 @@ type(rads_pass) :: P
 
 ! Local declarations, etc.
 integer(fourbyteint) :: outunit
-character(len=rads_cmdl) :: outname = ''
-integer(fourbyteint) :: i, ios, cycle, pass, step = 1, nseltot = 0, nselmax = huge(0_fourbyteint)
+character(len=rads_cmdl) :: outname = '', dirname = ''
+integer(fourbyteint) :: i, l, ios, cycle, pass, step = 1, nseltot = 0, nselmax = huge(0_fourbyteint)
 integer(fourbyteint) :: reject = -1
 
 ! Operation modes
@@ -60,7 +60,12 @@ if (S%error /= rads_noerr) call rads_exit ('Fatal error')
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
 	case ('o', 'output')
-		outname = rads_opt(i)%arg
+		l = len_trim(rads_opt(i)%arg)
+		if (rads_opt(i)%arg(l:l) == '/') then
+			dirname = rads_opt(i)%arg
+		else
+			outname = rads_opt(i)%arg
+		endif
 	case ('r', 'reject-on-nan')
 		call rads_parse_r_option (S, rads_opt(i)%opt, rads_opt(i)%arg, reject)
 	case ('maxrec')
@@ -155,7 +160,8 @@ write (*,1300)
 '  -r n, -r any              Reject lines if any value is NaN'/ &
 '                      Note: If no -r option is given -r sla is assumed'/ &
 '  --step N                  Step through records with stride N (default = 1)'/ &
-'  -o, --output FILENAME     Specify name of a single output file (default is pass files)')
+'  -o, --output OUTNAME      Specify name of a single output file or (when ending in /) directory'/ &
+'                            name for pass files; default is pass files in current directory')
 stop
 end subroutine synopsis
 
@@ -170,7 +176,7 @@ integer(fourbyteint) :: i
 
 ! Open a new output file when outname is not specified
 if (outname == '') then
-	write (passname, '(a2,"p",i4.4,"c",i3.3,a)') S%sat, cycle, pass, suffix
+	write (passname, '(a,a2,"p",i4.4,"c",i3.3,a)') trim(dirname), S%sat, cycle, pass, suffix
 	outunit = getlun()
 	open (outunit, file=passname, access='direct', form='unformatted', status='replace', recl=rec_length)
 	nselfile = 0

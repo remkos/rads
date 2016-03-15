@@ -37,7 +37,7 @@ type(rads_var), pointer :: var, temp(:)
 
 ! Local declarations, etc.
 integer(fourbyteint) :: outunit, listunit = -1
-character(len=rads_cmdl) :: outname = ''
+character(len=rads_cmdl) :: outname = '', dirname = ''
 character(len=640) :: format_string
 integer(fourbyteint) :: i, j, l, ios, cycle, pass, step = 1, nseltot = 0, nselmax = huge(0_fourbyteint)
 logical :: has_sel = .false., has_f = .false., boz_format = .false.
@@ -63,8 +63,13 @@ if (any(Sats%error /= rads_noerr)) call rads_exit ('Fatal error')
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
 	case ('o', 'output')
-		outname = rads_opt(i)%arg
-		if (outname == '') outname = '-'
+		l = len_trim(rads_opt(i)%arg)
+		if (rads_opt(i)%arg(l:l) == '/') then
+			dirname = rads_opt(i)%arg
+		else
+			outname = rads_opt(i)%arg
+			if (outname == '') outname = '-'
+		endif
 	case ('r', 'reject-on-nan')
 		call rads_parse_r_option (Sats(1), rads_opt(i)%opt, rads_opt(i)%arg, reject)
 	case ('f')
@@ -212,7 +217,9 @@ write (*,1300)
 '  --step N                  Step through records with stride N (default = 1)'/ &
 '  --list FILENAME           Specify file name in which to write list of output files'/ &
 '  --maxrec NREC             Specify maximum number of output records (default = unlimited)'/ &
-'  -o, --output FILENAME     Specify name of a single output file (default is pass files, - is stdout)')
+'  -o, --output OUTNAME      Specify name of a single output file or - for standard output or (when'/ &
+'                            ending in /) directory name for pass files; default is pass files in'/&
+'                            current directory')
 stop
 end subroutine synopsis
 
@@ -227,7 +234,7 @@ integer(fourbyteint) :: i
 
 ! Open a new output file when outname is not specified
 if (outname == '') then
-	write (passname, '(a2,"p",i4.4,"c",i3.3,".asc")') S%sat, pass, cycle
+	write (passname, '(a,a2,"p",i4.4,"c",i3.3,".asc")') trim(dirname), S%sat, pass, cycle
 	outunit = getlun()
 	open (outunit, file=passname, status='replace')
 endif
