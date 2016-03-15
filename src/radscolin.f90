@@ -180,7 +180,7 @@ write (stderr,1300)
 'Program specific [program_options] are:'/ &
 '  --dt DT                   Set minimum bin size in seconds (default is determined by satellite)'/ &
 '  --step N                  Write out only every N points along track'/ &
-'  -r #                      Reject stacked data when there are fewer than # tracks with valid SLA'/ &
+'  -r #                      Reject stacked data when there are fewer than # tracks with valid SLA values'/ &
 '  -r 0, -r none, -r         Keep all stacked data points, even NaN'/ &
 '  -r n, -r any              Reject stacked data when data on any track is NaN (default)'/ &
 '                      Note: If no -r option is given, -r any is assumed'/ &
@@ -205,7 +205,7 @@ end subroutine synopsis
 subroutine process_pass
 real(eightbytereal), allocatable :: temp(:)
 integer, allocatable :: bin(:)
-integer :: j, k, m, ndata
+integer :: i, j, k, m, ndata
 type(rads_pass) :: P
 
 ! Initialize
@@ -287,7 +287,9 @@ else
 	mask = isan_(data(:,type_sla,:))
 	forall (k=-nbins:nbins) nr_in_bin(k) = count(mask(1:ntrx,k))
 	! Set to zero the bins that not reach the threshold number
-	where (nr_in_bin < min(ntrx,reject)) nr_in_bin = 0
+	k = reject
+	if (reject == 9999) k = ntrx
+	where (nr_in_bin < k) nr_in_bin = 0
 endif
 
 ! If no valid measurements at all, return
