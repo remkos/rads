@@ -887,7 +887,7 @@ Global RADS configuration file
 <var name="iono_gim" field="906">
 	<long_name>JPL GIM ionospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
-	<source>JPL GIM 6-hourly maps</source>
+	<source>JPL GIM 2-hourly maps</source>
 	<parameters>0.856</parameters>
 	<parameters sat="c2">0.844</parameters>
 	<parameters sat="3a 3b">0.859</parameters>
@@ -897,6 +897,18 @@ Global RADS configuration file
 	<limits>-0.4 0.04</limits>
 	<plot_range>-0.15 0.02</plot_range>
 	<data>iono_gim</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
+</var>
+<var name="iono_gim_c" sat="j1 j2 j3">
+	<long_name>JPL GIM ionospheric correction (C-band)</long_name>
+	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
+	<source>JPL GIM 2-hourly maps</source>
+	<units>m</units>
+	<limits>-3 0.3</limits>
+	<plot_range>-1 0.15</plot_range>
+	<data>iono_gim 6.56036 MUL</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
