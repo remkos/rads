@@ -18,6 +18,15 @@ The code is currently still under major development. When released, it will be m
 ## Version History
 Following is a history of releases on GitHub, newest to oldest.
 
+### v4.2.1 (22 Mar 2016)
+* Moved directory "include" to "src/include" to avoid clash with default location for "include".
+* Updated information on Sentinel-3A.
+* Made clearer that -- can be used ahead of FILENAME argument to make sure that the option list is terminated; this addressed issue #85.
+* When opening XML file, skip lines until the first line that contains '<'; this fixed issue #87.
+* rads2asc: added -c and -p as alternatives to -sc and -sp.
+* rads2asc, rads2nc, rads2adr: support --output OUTNAME/ for storing passfiles in directory OUTNAME.
+* radscolin: when using -r# (not -rn or -r0) require at least # tracks, not the minimum of # and the available number of tracks.
+
 ### v4.2.0 (8 Mar 2016)
 * Tuning for processing of Jason-3 data.
 * Added \<plot_range\> XML tag, which can be used for generating the right plotting range.
