@@ -253,8 +253,13 @@ endif
 if (.not. info%error .and. mustread) then
 	k = 1
 	do while  (k >= 1)
-		read (info%lun, '(a)', iostat = ierr) info%line
-		info%lineno = info%lineno + 1
+		! Need to cycle to the first line that contains '<'
+		do
+			read (info%lun, '(a)', iostat = ierr) info%line
+			info%lineno = info%lineno + 1
+			write (*,*) info%lineno, adjustl(info%line)
+			if (ierr /= 0 .or. index(info%line, '<') > 0) exit
+		enddo
 		if (ierr == 0) then
 			info%line = adjustl(info%line)
 			k         = index(info%line, '<?')
