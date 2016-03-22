@@ -40,8 +40,8 @@ type(math_ll), pointer :: top
 ! buffers.
 !
 ! ARGUMENTS
-!   n     : Number of elements for new data buffer
-!   top   : Pointer to the top of the stack
+! n     : Number of elements for new data buffer
+! top   : Pointer to the top of the stack
 !****-------------------------------------------------------------------
 type(math_ll), pointer :: temp
 allocate (temp)
@@ -63,7 +63,7 @@ type(math_ll), pointer :: top
 ! buffers.
 !
 ! ARGUMENT
-!   top   : Pointer to the top of the stack
+! top   : Pointer to the top of the stack
 !****-------------------------------------------------------------------
 type(math_ll), pointer :: temp
 if (.not.associated(top)) return
@@ -86,12 +86,12 @@ type(math_ll), pointer, intent(inout) :: top
 integer(fourbyteint) :: math_eval
 !
 ! ARGUMENTS
-!  string : math command or value
-!  n      : number of elements in data buffer
-!  top    : Pointer to top of the stack
+! string    : math command or value
+! n         : number of elements in data buffer
+! top       : Pointer to top of the stack
 !
 ! RETURN VALUE
-!  math_eval : 0 = no error, -1 = no matching command
+! math_eval : 0 = no error, -1 = no matching command
 !****-------------------------------------------------------------------
 type(math_ll), pointer :: temp
 real(eightbytereal) :: x, y, z, w

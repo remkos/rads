@@ -32,13 +32,13 @@ module rads_time
 ! integer.
 !
 ! ARGUMENTS
-!  sec : Seconds since 1 Jan 1985 (double float or integer)
-!  yy  : 4-digit year (between 1901 and 2099)
-!  mm  : Month
-!  dd  : Day
-!  hh  : Hours
-!  mn  : Minutes
-!  ss  : Seconds (double float or integer)
+! sec : Seconds since 1 Jan 1985 (double float or integer)
+! yy  : 4-digit year (between 1901 and 2099)
+! mm  : Month
+! dd  : Day
+! hh  : Hours
+! mn  : Minutes
+! ss  : Seconds (double float or integer)
 !****-------------------------------------------------------------------
 private :: sec85ymdhms_dble, sec85ymdhms_int4
 interface sec85ymdhms
@@ -64,11 +64,11 @@ end interface sec85ymdhms
 ! <sep> (default is a space)
 !
 ! ARGUMENTS
-!  sec       : Seconds since 1.0 Jan 1985 (double float or integer)
-!  sep       : (Optional) Separator character (default is a space)
+! sec       : Seconds since 1.0 Jan 1985 (double float or integer)
+! sep       : (Optional) Separator character (default is a space)
 !
 ! RETURN VALUE
-!  strf1985f : Character string of time
+! strf1985f : Character string of time
 !****-------------------------------------------------------------------
 private :: strf1985f_dble, strf1985f_int4
 interface strf1985f
@@ -99,10 +99,10 @@ integer(fourbyteint), intent(out) :: mjd
 ! MJD by setting the month number to 1.
 !
 ! ARGUMENTS
-!  yy  : Year (either as 2 digits or 4 digits)
-!  mm  : Month
-!  dd  : Day (or day-of-year)
-!  mjd : Modified Julian Day
+! yy  : Year (either as 2 digits or 4 digits)
+! mm  : Month
+! dd  : Day (or day-of-year)
+! mjd : Modified Julian Day
 !****-------------------------------------------------------------------
 integer(fourbyteint), parameter :: mjd1901 = 15385 ! 1 Jan 1901
 integer(fourbyteint), parameter :: cal(0:13) = &
@@ -133,10 +133,10 @@ integer(fourbyteint), intent(out) :: yy, mm, dd
 ! This routine works only for the years 1901 through 2099.
 !
 ! ARGUMENTS
-!  mjd : Modified Julian Day
-!  yy  : 4-digit year (between 1901 and 2099)
-!  mm  : Month
-!  dd  : Day (or day-of-year when no <mm> is given)
+! mjd : Modified Julian Day
+! yy  : 4-digit year (between 1901 and 2099)
+! mm  : Month
+! dd  : Day (or day-of-year when no <mm> is given)
 !****-------------------------------------------------------------------
 integer (fourbyteint) :: leap
 integer(fourbyteint), parameter :: cal(0:13,0:1) = &
@@ -167,9 +167,9 @@ integer(fourbyteint), intent(out) :: yy, ddd
 ! This routine works only for the years 1901 through 2099.
 !
 ! ARGUMENTS
-!  mjd : Modified Julian Day
-!  yy  : 4-digit year (between 1901 and 2099)
-!  ddd : Day-of-year
+! mjd : Modified Julian Day
+! yy  : 4-digit year (between 1901 and 2099)
+! ddd : Day-of-year
 !****-------------------------------------------------------------------
 integer (fourbyteint) :: j
 integer(fourbyteint), parameter :: mjd1901 = 15385 ! 1 Jan 1901
@@ -292,11 +292,11 @@ real(eightbytereal) :: strp1985f
 ! part of the string has to be the character specified by <sep>.
 !
 ! ARGUMENTS
-!  string    : Character string of time
-!  sep       : (Optional) Required separator between date and time
+! string    : Character string of time
+! sep       : (Optional) Required separator between date and time
 !
 ! RETURN VALUE
-!  strp1985f : Seconds since 1.0 Jan 1985
+! strp1985f : Seconds since 1.0 Jan 1985
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: yy,mm,dd,hh,mn,ss,mjd,ios,l
 real(eightbytereal) :: fs
@@ -365,16 +365,16 @@ real(eightbytereal) :: sec85
 ! YYYYMMDDHHMMSS : 1950d10 - 2050d10 ( 1950/01/01 - 2050/01/01 )
 !
 ! ARGUMENTS
-!  i     : i=1, convert MJD to SEC85
-!          i=2, convert YYMMDD or YYYYMMDD to SEC85
-!          i=3, convert YYDDD or YYYYDDD to SEC85
-!          i=4, convert YYMMDDHHMMSS or YYYYMMDDHHMMSS to SEC85
-!          i=5, convert [YY]YYMMDD[HHMMSS] to SEC85
-!          i=0, convert any of the above to SEC85
-!  date  : Input value.
+! i     : i=1, convert MJD to SEC85
+!         i=2, convert YYMMDD or YYYYMMDD to SEC85
+!         i=3, convert YYDDD or YYYYDDD to SEC85
+!         i=4, convert YYMMDDHHMMSS or YYYYMMDDHHMMSS to SEC85
+!         i=5, convert [YY]YYMMDD[HHMMSS] to SEC85
+!         i=0, convert any of the above to SEC85
+! date  : Input value.
 !
 ! RETURN VALUE
-!  sec85 : Output value, seconds from 1.0 Jan 1985.
+! sec85 : Output value, seconds from 1.0 Jan 1985.
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: mjd,yy,mm,dd,hh,mn,ii
 real(eightbytereal) :: ff
@@ -491,13 +491,13 @@ integer(fourbyteint), intent(out), optional :: iostat
 ! the call to <dateopt>.
 !
 ! ARGUMENTS
-!   dateopt : .true. if <optopt> is in a standard datation format
-!   optopt  : datation option ('mjd', 'sec', etc.) (see above)
-!   optarg  : datation option argument (see above)
-!   t0      : first time after conversion to SEC85
-!   t1      : (optional) second time after conversion to SEC85
-!   dt      : (optional) third datation argument (not converted)
-!   iostat  : (optional) return code from reading optarg
+! dateopt : .true. if <optopt> is in a standard datation format
+! optopt  : datation option ('mjd', 'sec', etc.) (see above)
+! optarg  : datation option argument (see above)
+! t0      : first time after conversion to SEC85
+! t1      : (optional) second time after conversion to SEC85
+! dt      : (optional) third datation argument (not converted)
+! iostat  : (optional) return code from reading optarg
 !****-------------------------------------------------------------------
 integer :: i,mode
 real(eightbytereal) :: tt0,tt1
