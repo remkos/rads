@@ -257,7 +257,6 @@ if (.not. info%error .and. mustread) then
 		do
 			read (info%lun, '(a)', iostat = ierr) info%line
 			info%lineno = info%lineno + 1
-			write (*,*) info%lineno, adjustl(info%line)
 			if (ierr /= 0 .or. index(info%line, '<') > 0) exit
 		enddo
 		if (ierr == 0) then
