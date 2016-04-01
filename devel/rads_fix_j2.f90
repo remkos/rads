@@ -21,6 +21,10 @@
 ! sig0:
 ! - Adjust backscatter coefficient for apparent off-nadir angle
 !
+! rad:
+! - Add offset to radiometer wet tropo (only used to patch non-calibration
+!   of radiometer data on OGDR and IGDR)
+!
 ! wind:
 ! - Recompute wind speed from adjusted sigma0 based on Collard model
 !
@@ -45,13 +49,14 @@ type(rads_pass) :: P
 ! Other local variables
 
 real(eightbytereal), parameter :: dsig0_ku = -2.40d0, dsig0_c = -0.73d0	! Ku- and C-band Sigma0 bias of Jason-1
-integer(fourbyteint) :: i, cyc, pass
+real(eightbytereal) :: dwet = 0d0
+integer(fourbyteint) :: i, ios, cyc, pass
 logical :: lrad = .false., lsig0 = .false., lwind = .false.
 
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options (' sig0 all rad wind')
+call rads_set_options (' sig0 all rad: wind')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
@@ -60,6 +65,8 @@ do i = 1,rads_nopt
 	case ('all')
 		lsig0 = .true.
 	case ('rad')
+		read (rads_opt(i)%arg, *, iostat=ios) dwet
+		dwet = dwet * 1d-3
 		lrad = .true.
 	case ('wind')
 		lwind = .true.
@@ -95,7 +102,7 @@ write (*,1310)
 'Additional [processing_options] are:' / &
 '  --sig0                    Adjust backscatter coefficient for apparent off-nadir angle' / &
 '  --all                     All of the above' / &
-'  --rad                     Add 2 mm to radiometer wet tropo' / &
+'  --rad=OFFSET              Add OFFSET mm to radiometer wet tropo' / &
 '  --wind                    Recompute wind speed from adjusted sigma0 based on Collard model')
 stop
 end subroutine synopsis
@@ -112,11 +119,11 @@ integer(fourbyteint) :: i
 call log_pass (P)
 
 ! Adjust radiometer wet tropo by 2 mm because of uncorrected drift.
-! This should be only used for IGDR cycles 267 upto 273 pass 23.
+! This should be only used for OGDRs or IGDRs.
 
 if (lrad) then
 	call rads_get_var (S, P, 'wet_tropo_rad', wet, .true.)
-	wet = wet + 2d-3
+	wet = wet + dwet
 endif
 
 ! Adjust backscatter for correlation with off-nadir angle (See Quartly [2009])
