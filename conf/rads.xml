@@ -134,7 +134,7 @@ Global RADS configuration file
 	<data>time</data>
 	<comment>UTC time of measurement. Attribute leap_second gives time of leap second if any occurs
 	during the data set</comment>
-	<format>f16.6</format>
+	<format>f17.6</format>
 </var>
 <var name="time_rel_eq" field="102">
 	<long_name>time relative to equator crossing</long_name>
