@@ -119,6 +119,7 @@ In order to install and run the RADS software you need a few things installed on
 \item The netCDF library (version 4) and module file compiled with the Fortran 90 interface. Of course, netCDF comes with its own dependencies (like HDF5 and szip).
 Please figure out where to find the netCDF module file \verb|netcdf.mod| and the netCDF C library \verb|libnetcdf| and Fortran library \verb|libnetcdff| before you continue.
 \item Optionally, the \prog{git} program.
+\item For downloading and synchronising the data base, the \prog{rsync} program.
 \end{itemize}
 
 \section{Download the source code}
@@ -219,6 +220,56 @@ Now you can continue with the mirroring of the data files.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{RADS data mirroring}
 \label{ch:mirroring}
+RADS now exceeds 400~GBytes of data. It virtually impossible to copy all of it in one go, or copy all of it every time that updates have been made. To facilitate the updating, it is recommended to use the \prog{rsync} program. This program will determine by it self which files are updated and will update only those. In fact, it will transfer only those parts of the files that are actually changed. This provides a significant speed benefit when, for example, an extra data field is added. 
+
+You need to have at least the executable \prog{rsync} installed on your system to use \prog{rsync}. In case of Linux machines, simply install the \prog{rsync} package available on most distributions. The program \prog{rsync} comes standard with Mac OS X, or can be obtained from \url{http://rsync.samba.org}.
+
+The \prog{rsync} command will download the data from the rsync server at the Delft University of Technology in The Netherlands. This server is setup such that it will allow you to access only the RADS data and software. It will not allow you to log in to the server as a common user. Thus, setting up \prog{ssh} key pairs is not possible.  
+
+Let us start, for example, to synchronise the Jason-2 data. The subdirectory for the Jason-2 data is \verb|j2|, see Table~\ref{tab:rads4_sats}. To get all the Jason-2 data, you will type the following commands (still assuming you have your data in \verb|/rads/data|):
+\begin{verbatim}
+$ cd /rads/data
+$ rsync -avz --del radsuser@rads.tudelft.nl::rads/data/j2 .
+\end{verbatim}
+At the beginning \prog{rsync} will ask you to enter the password for \verb|radsuser|. It will have been provided to you when you registered as a user.
+
+\include{rads4_sats}
+
+Apart from the satellite specific directories, there is a directory that contains configuration files, that help RADS to read the data files. These files are also installed in the same place, when installing the software, but you can download them from the rsync server as well. Be sure to keep these feels up to date.
+\begin{verbatim}
+$ cd /rads/data
+$ rsync -avz --del radsuser@rads.tudelft.nl::rads/data/conf .
+\end{verbatim}
+
+If you are patient, and want to get all of the data at once, you can perform the following commands:
+\begin{verbatim}
+$ cd /rads
+$ rsync -avz --del radsuser@rads.tudelft.nl::rads/data .
+\end{verbatim}
+
+If, for whatever reason, the mirroring is interrupted, you can simply start it again, and it will continue where it left off. If you have a recent version of the \prog{rsync} program, we recommend that you use the option \verb|--del| instead of \verb|--delete|, as it speeds up the process significantly. 
+
+There are one more directory that may be of interest, but is not essential. The \verb|/rads/tables| directory contains a number of lists: lists of the time intervals of passes and cycles, and lists of the data
+available for each satellite.
+
+To mirror this directories use \prog{rsync}:
+\begin{verbatim}
+$ cd /rads
+$ rsync -avz --del radsuser@rads.tudelft.nl::rads/tables .
+\end{verbatim}
+
+If you need to use \prog{rsync} regularly to synchronise the RADS data base and you do not want to enter the password every time, you can set up the environment variable \verb|RSYNC_PASSWD| by one of the following methods (depending on the shell):
+\begin{verbatim}
+   export RSYNC_PASSWD=radspasswd    # under sh or bash
+   setenv RSYNC_PASSWD radspasswd    # under csh or tcsh
+\end{verbatim}
+If you are using the \prog{bash} or \prog{sh} shell, you can do it all in one line, for example:
+\begin{verbatim}
+   RSYNC_PASSWD=radspasswd \
+      rsync -avz --del radsuser@rads.tudelft.nl::rads/data .
+\end{verbatim}
+Obviously, the password is \textbf{not} simply \texttt{radspasswd}.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{RADS utilities}
 \label{ch:utilities}
@@ -229,105 +280,10 @@ Now you can continue with the mirroring of the data files.
 \section{Module rads}
 \input{sub/rads}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\bibliography{altim}
+\bibliography{altim}
 \printindex
 \end{document}
 
-
-
-\prog{Rsync} is a mirroring tool for files across different machines. It does not do version
-control and will simply overwrite the current content.
-
-You need to have at least the executable \prog{rsync} installed on your system to use
-rsync. In case of Linux machines, simply install the \prog{rsync} package available on
-most distributions. \prog{Rsync} comes standard with Mac OS X, or can be obtained from
-\verb|rsync.samba.org|.
-
-\prog{Rsync} will download the data from the rsync server at the Delft University of Technology in The Netherlands. This server is setup such that it will allow you to access only the RADS data and software. It will not allow you to log in to the server as a common user. Thus, setting up \prog{ssh} key pairs is not possible.  
-
-Now you can copy the current version and previous versions of the software using the following commands:
-\small
-\begin{verbatim}
-   rsync -avz --delete radsuser@rads.tudelft.nl::rads/code .
-\end{verbatim}
-\normalsize
-You will be asked to enter the password of radsuser before installation continues.
-
-If you need to do this regularly and you do not want to enter the password every time, you can set up the environment variable \verb|RSYNC_PASSWD| by one of the following methods (depending on the shell):
-\small
-\begin{verbatim}
-   export RSYNC_PASSWD=radspasswd    # under sh or bash
-   setenv RSYNC_PASSWD radspasswd    # under csh or tcsh
-\end{verbatim}
-\normalsize
-If you are using the \prog{bash} or \prog{sh} shell, you can do it all in one line:
-\small
-\begin{verbatim}
-   RSYNC_PASSWD=radspasswd \
-      rsync -avz --delete radsuser@rads.tudelft.nl::rads/code .
-\end{verbatim}
-\normalsize
-Obviously, the password is \textbf{not} simply \texttt{radspasswd}.
-
-The directory code will contain a number of tarballs, each containing the date on which they were created.
-There will also be a link to the latest version. For example:
-\footnotesize
-\begin{verbatim}
-lrwxrwxrwx 1 rads users     27 May  6 19:47 rads_source.tar.gz ->
-                                             rads_source_20100506.tar.gz
--rw-r--r-- 1 rads users 459275 May  6 19:47 rads_source_20100506.tar.gz
-\end{verbatim}
-\normalsize
-
-
-\section{Mirroring the Data Base}
-RADS now nears 200~GBytes of data. It is impossible to copy all of it in one go,
-or copy all of it every time that updates have been made. To facilitate the updating,
-it is recommended to use the \prog{rsync} program. This program will determine by it
-self which files are updated and will update only those. In fact, it will transfer only
-those parts of the files that are actually changed. This provides a significant speed
-benefit when, for example, an extra data field is added. 
-See Section~\ref{sec:software-mirror-rsync} for more information on \prog{rsync}.
-
-First you need to get the \verb|nml| directory. This one contains information about defaults settings in parsing the data base. Assuming you have decided to put the RADS data in \verb|/rads/data|, issue the
-following commands to retrieve this directory.
-\small
-\begin{verbatim}
-   cd /rads/data
-   rsync -avz --delete radsuser@rads.tudelft.nl::rads/data/nml .
-\end{verbatim}
-\normalsize
-
-In the same way you can retrieve, for example, the Jason-2 data. Simply replace \verb|nml| by \verb|j2| in the above.
-See Table~\ref{tab:sats} for a list of all the 2-letter satellite abbreviations.
-
-If you are patient, and want to get all of the data at once, you can perform the
-following commands:
-\small
-\begin{verbatim}
-   cd /rads
-   rsync -avz --delete radsuser@rads.tudelft.nl::rads/data .
-\end{verbatim}
-\normalsize
-
-If, for whatever reason, the mirroring is interrupted, you can simply start it again, and
-it will continue where it left off. If you have a recent version of the \prog{rsync} program, we recommend that you use the option \verb|--del| instead of \verb|--delete|, as it speeds up the process significantly. 
-
-\section{Mirroring of additional information}
-There are two more directories that may be of interest, but are not essential.
-The \verb|/rads/text|
-directory contains this manual, the \verb|/rads/tables| directory contains a number
-of lists: lists of the time intervals of passes and cycles, and lists of the data
-available for each satellite.
-
-To mirror both directories use \prog{rsync}:
-\small
-\begin{verbatim}
-   cd /rads
-   rsync -avz --delete \
-       radsuser@rads.tudelft.nl::"rads/text rads/tables" .
-\end{verbatim}
-\normalsize
 
 \chapter{RADS Data Management}
 \label{ch:management}
@@ -379,7 +335,7 @@ the following:
 \item Satellite-specific and mission-specific system-wide preferences, found in
 the files \verb|getraw_SS.nml| and \verb|getraw_SSF.nml| in the directory
 \verb|$RADSDATAROOT/nml|, where \verb|SS| is the 2-letter
-abbreviation for the satellite, as specified in Table~\ref{tab:sats}, and \verb|F|
+abbreviation for the satellite, as specified in Table~\ref{tab:rads4_sats}, and \verb|F|
 is a 1-letter indication of the mission phase.
 \item General user preferences, found in a file \verb|getraw.nml| in the directory
 \verb|~/.rads|.
@@ -633,7 +589,7 @@ arguments is written in \emph{italics}.
 \item[\code{sat=\CODE{altimeter}[/\CODE{phase}]} or
       \code{sat=\CODE{altimeter}[:\CODE{phase}]}] Specifies the altimeter mission
 and (optionally) its mission phase. The \CODE{altimeter} can be indicated by its
-two-character code listed in Table~\ref{tab:sats}, or by its name. For example,
+two-character code listed in Table~\ref{tab:rads4_sats}, or by its name. For example,
 \Code{e1}
 and \Code{ERS-1} are both allowed. The \CODE{phase} is a one-character indicator, which
 defaults to \Code{b} for Geosat, \Code{g} for \ers1, \Code{b} for \nvsat1, and
@@ -1043,7 +999,7 @@ passes is limited to half the length of the repeat cycle.
 To limit the time interval, create a file \verb|max.nml| as follows:
 \script{max.nml}
 The indices of \verb|dtxo(i,j)| indicate the satellite numbers given in
-Table~\ref{tab:sats}. This file will overrule any settings in the system-wide
+Table~\ref{tab:rads4_sats}. This file will overrule any settings in the system-wide
 namelist \verb|$RADSDATAROOT/nml/max.nml|. Other information essential to
 \prog{max2} comes from the namelist \verb|$RADSDATAROOT/nml/satcat.nml|.
 

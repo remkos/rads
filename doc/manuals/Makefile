@@ -18,7 +18,7 @@ PDFLATEX = pdflatex
 BIBTEX = bibtex
 MAKEINDEX = makeindex
 ROBODOC = robodoc
-CONFIG = rads_config.tex
+CONFIG = rads_config.tex rads4_sats.tex
 MAN = rads4_data_manual.pdf rads4_user_manual.pdf
 SUB = sub/rads.tex sub/rads_geo.tex sub/rads_grid.tex sub/rads_math.tex \
 	sub/rads_misc.tex sub/rads_netcdf.tex sub/rads_time.tex
