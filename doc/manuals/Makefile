@@ -50,8 +50,11 @@ rads4_data_manual.pdf:	%.pdf:	%.tex %.bbl $(CONFIG)
 # How to create LaTeX documentation from source code
 #-----------------------------------------------------------------------
 
+$(SUB):	robodoc.rc
 sub/%.tex:	../../src/%.f90
-	$(ROBODOC) --src ../../src/$*.f90 --doc sub/$* --singlefile
+	$(ROBODOC) --src ../../src/$*.f90 --doc $(TMPDIR)/$* --singlefile
+	sed 's/\\index{unsorted![^}]*}//g' $(TMPDIR)/$*.tex > sub/$*.tex
+	$(RM) $(TMPDIR)/$*.tex
 
 #-----------------------------------------------------------------------
 # How to cleanup

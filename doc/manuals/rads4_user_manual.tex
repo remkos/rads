@@ -37,7 +37,9 @@
 \DeclareUrlCommand\code{\urlstyle{tt}}
 \newcommand\Code[1]{\textbf{\code{#1}}}
 \newcommand\CODE[1]{\Code{\emph{#1}}}
+\newcommand\dir[1]{\url{#1}\index{directories!#1@\protect\url{#1}}}
 \newcommand\file[1]{\url{#1}\index{files!#1@\protect\url{#1}}}
+\newcommand\ctag[1]{\url{#1}\index{configuration!#1@\protect\cmd{#1}}}
 \newcommand\cc[1]{\multicolumn{1}{c}{\em #1}}
 \newcommand\var[1]{\url{#1}\index{variables!#1@\protect\url{#1}}}
 \newcommand\alias[1]{\emph{alias of} \var{#1}}
@@ -117,7 +119,7 @@ In order to install and run the RADS software you need a few things installed on
 \item The \prog{make} command.
 \item A Fortran 90 compiler. RADS is known to compile with \prog{gfortran}, \prog{f90}, \prog{f95}, \prog{xlf90}, \prog{xlf95}, \prog{ifort}.
 \item The netCDF library (version 4) and module file compiled with the Fortran 90 interface. Of course, netCDF comes with its own dependencies (like HDF5 and szip).
-Please figure out where to find the netCDF module file \verb|netcdf.mod| and the netCDF C library \verb|libnetcdf| and Fortran library \verb|libnetcdff| before you continue.
+Please figure out where to find the netCDF module file \file{netcdf.mod} and the netCDF C library \file{libnetcdf} and Fortran library \file{libnetcdff} before you continue.
 \item Optionally, the \prog{git} program.
 \item For downloading and synchronising the data base, the \prog{rsync} program.
 \end{itemize}
@@ -183,7 +185,7 @@ Normally, you would need to tell \prog{configure} only where you want to install
 \begin{verbatim}
 $ configure --prefix=/usr/local --datadir=/rads/data
 \end{verbatim}
-The first argument to \prog{configure} specifies that the \verb|bin|, \verb|include| and \verb|lib| directory are to be put under \verb|/usr/local|. The second argument specifies the directory for the data and configuration file (which could be on a server for more systems to use). Still a directory \verb|share| is created under \verb|/usr/local| to contain the manuals.
+The first argument to \prog{configure} specifies that the \dir{bin}, \dir{include} and \dir{lib} directory are to be put under \dir{/usr/local}. The second argument specifies the directory for the data and configuration file (which could be on a server for more systems to use). Still a directory \dir{share} is created under \dir{/usr/local} to contain the manuals.
 
 If, for whatever reason, \prog{configure} cannot find a Fortran compiler or the netCDF libraries on its own, you need to specify the location of the Fortran compiler and the netCDF library and include files. Here is an example:
 \begin{verbatim}
@@ -192,7 +194,7 @@ $ configure FC=/sw/bin/gfortran \
   --with-netcdf-lib=/sw/lib:/sw/lib/netcdf-gfortran/lib \
   --prefix=/usr/local --datadir=/rads/data
 \end{verbatim}
-The first argument to \prog{configure} specifies the location of the fortran compiler, while the second identifies the directory where we can find \verb|netcdf.mod|. The third argument specifies the two directories that contain the netCDF C library (\verb|libnetcdf|) and netCDF Fortran library (\verb|libnetcdff|), separated by a colon. If these two are merged, or in one directory, you can just use one directory name.
+The first argument to \prog{configure} specifies the location of the fortran compiler, while the second identifies the directory where we can find \file{netcdf.mod}. The third argument specifies the two directories that contain the netCDF C library (\file{libnetcdf}) and netCDF Fortran library (\file{libnetcdff}), separated by a colon. If these two are merged, or in one directory, you can just use one directory name.
 
 The \prog{configure} program also tests if your Fortran compiler is ready for Fortran 90 and can compile with the netCDF library. If you have problems, you may need to review the options you gave to \prog{configure}, and make sure that \prog{configure} picked the same compiler that was used to compile the netCDF library. Finding the \prog{nf-config} command on your system may be pivotal.
 
@@ -204,9 +206,9 @@ Now that your system is configured, it should be easy to compile the software. J
 \begin{verbatim}
 $ make
 \end{verbatim}
-It will compile and link the programs in the subdirectory \verb|src|, but not those in \verb|devel|. The latter are only provided to you to get a feel of how the RADS altimeter database was created. You will not be able to compile or link those programs, as essential routines have been left out.
+It will compile and link the programs in the subdirectory \dir{src}, but not those in \dir{devel}. The latter are only provided to you to get a feel of how the RADS altimeter database was created. You will not be able to compile or link those programs, as essential routines have been left out.
 
-If you have problems compiling, you may need to tweak one of the makefiles, \verb|config.mk|. Please let us know about it, so that we can change the \prog{configure} program accordingly. You can do this at the issue tracker on the RADS GitHub page: \url{https://github.com/remkos/rads/issues}.
+If you have problems compiling, you may need to tweak one of the makefiles, \file{config.mk}. Please let us know about it, so that we can change the \prog{configure} program accordingly. You can do this at the issue tracker on the RADS GitHub page: \url{https://github.com/remkos/rads/issues}.
 
 \section{Installation}
 \label{sec:installation}
@@ -226,14 +228,14 @@ You need to have at least the executable \prog{rsync} installed on your system t
 
 The \prog{rsync} command will download the data from the rsync server at the Delft University of Technology in The Netherlands. This server is setup such that it will allow you to access only the RADS data and software. It will not allow you to log in to the server as a common user. Thus, setting up \prog{ssh} key pairs is not possible.  
 
-Let us start, for example, to synchronise the Jason-2 data. The subdirectory for the Jason-2 data is \verb|j2|, see Table~\ref{tab:rads4_sats}. To get all the Jason-2 data, you will type the following commands (still assuming you have your data in \verb|/rads/data|):
+Let us start, for example, to synchronise the Jason-2 data. The subdirectory for the Jason-2 data is \verb|j2| (See Table~\ref{tab:rads4_sats} for all 2-character abbreviations of the altimeter missions). To get all the Jason-2 data, you will type the following commands (still assuming you have your data in \dir{/rads/data}):
 \begin{verbatim}
 $ cd /rads/data
 $ rsync -avz --del radsuser@rads.tudelft.nl::rads/data/j2 .
 \end{verbatim}
 At the beginning \prog{rsync} will ask you to enter the password for \verb|radsuser|. It will have been provided to you when you registered as a user.
 
-\include{rads4_sats}
+\input{rads4_sats}
 
 Apart from the satellite specific directories, there is a directory that contains configuration files, that help RADS to read the data files. These files are also installed in the same place, when installing the software, but you can download them from the rsync server as well. Be sure to keep these feels up to date.
 \begin{verbatim}
@@ -271,84 +273,79 @@ If you are using the \prog{bash} or \prog{sh} shell, you can do it all in one li
 Obviously, the password is \textbf{not} simply \texttt{radspasswd}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{RADS data management}
+\label{ch:management}
+
+This Chapter describes the basic functionalities of the data management system of RADS. These functionalities are part of the RADS utilities as well as the RADS subroutine library on which the utilities are based.
+
+\section{Preparations before using the data base}
+
+The use of RADS starts with the definition of the environment variable \verb|RADSDATAROOT|, such that it points to the root of the RADS data base. For example (for bash users):
+\begin{verbatim}
+$ export RADSDATAROOT=/rads/data
+\end{verbatim}
+If you already specified this directory in the \prog{configure} step, then you do not have to set the \verb|RADSDATAROOT| directory.
+
+It is also practical to include \dir{/usr/local/bin} (or where ever you installed the binaries) in your executable search path, so that existing executables can be used. However, this is not essential, just practical.
+
+\section{Common functionalities}
+A subroutine library is created to facilitate the data reading, conversion to SI units, editing and the construction of sea level anomalies. Based on these routines, several programs (utilities) are created to list or manipulate the contents of the data base. Since these programs share the same routines, much of their functionalities are the same, as well as their user interface. In addition, a number of developer tools are available to create the data base. These programs will be of less concern to the users, and are not yet explained in this manual. Their code is only provided for reference, and are not intended to be compiled on your system.
+
+Common to all RADS utilities is the internal data selection, editing, and the ability to construct the sea level anomaly (or any other fields) \emph{on the fly}. The construction of the sea level anomaly includes a number of arithmetic expressions (adding and subtracting), plus applying a number of selection criteria that can flag the sea level anomaly as invalid. Both the ability to do arithmetic (even beyond mere adding and subtracting) and editing are built into the software library, so that they can be shared by the various RADS utilities. 
+
+Even when writing their own program, the user does not have to generate code to construct a sea level anomaly or to do editing. At the same time that the sea level anomaly is constructed, the data is edited based on system-wide, user, or local preferences. These preferences can be specified at several levels, either in XML configuration files, or by command line options. The order in which these preferences are processed is the following:
+\begin{itemize}
+\item System-wide general preferences, found in \verb|$RADSDATAROOT/conf/rads.xml|.
+\item General user preferences, found in a file \verb|~/.rads/rads.xml|, if available.
+\item General local preferences, found in a file \verb|rads.xml| in the current working directory.
+\item Preference files indicated by the \verb|-X| or \verb|--xml| option on the command line.
+\item Other command line arguments, such as \verb|-L| or \verb|--limits|.
+\end{itemize}
+So the command line arguments overrule the local preferences and which overrule the user preferences and eventually the system-wide preferences.
+
+The XML configuration file is ``human readable'' and is described in the next section.
+
+\section{RADS configuration file}
+\label{sec:rads.xml}
+The RADS configuration file \file{rads.xml} controls:
+\begin{itemize}
+\item Information about the various altimeter missions, such as repeat period, number of passes per cycle, etc.
+\item Information about all the variables available for each mission, including editing criteria, format for writing to ascii, and the complete information needed to store the variable upon creation of the database.
+\item Optionally, description of variables that can be created \emph{on the fly} from other variables.
+\end{itemize}
+
+The configuration file is a structured XML file, comprised of a number items and blocks, of the following shape:
+\begin{verbatim}
+<block>
+    <item option="value">....</item>
+    <tag>....</tag>
+</block>
+\end{verbatim}
+As usual in an XML file, \verb|<tag>| starts an item with name \verb|tag| and \verb|</tag>| ends it.
+
+The various names of the tags used in the configuration file are described below.
+\begin{description}
+\item[\ctag{if}] Conditional block. Is followed by a condition such as \verb|sat="j1 j2"|.
+\end{description}
+
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{RADS utilities}
 \label{ch:utilities}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{RADS library}
 \label{app:library}
 \verbatimfont{\tiny}
 \section{Module rads}
 \input{sub/rads}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \bibliography{altim}
 \printindex
 \end{document}
 
 
-\chapter{RADS Data Management}
-\label{ch:management}
-
-This Chapter describes the basic functionalities of the data management system of
-RADS. These functionalities are part of the RADS utilities as well as the RADS
-subroutine library on which the utilities are based.
-
-\section{Preparations before using the data base}
-
-The use of RADS starts with the definition of the environment
-variable \verb|RADSDATAROOT|, such that it points to the root of the RADS
-data base. For example (for csh users):
-\small
-\begin{verbatim}
-  setenv RADSDATAROOT /rads/data
-\end{verbatim}
-\normalsize
-If you already specified this directory in the \prog{configure} step, then you do not have to set the
-\verb|RADSDATAROOT| directory.
-
-It is also practical to include \verb|/usr/local/bin| (or where ever you installed the binaries) in your executable
-search path, so that existing executables can be used. However, this is
-not essential when you make your own software.
-
-\section{Common functionalities}
-A subroutine library is created to facilitate the data reading, conversion to SI
-units, editing and the construction of sea level anomalies. 
-Based on these routines, several programs (utilities) are created to list or
-manipulate the contents of
-the data base. Since these programs share the same routines,
-much of their functionalities are the same, as well as their user
-interface. A second set of programs (tools) are available to create the data base.
-These programs will be of less concern to the users, and are not yet explained
-in this manual.
-
-Common to all RADS utilities is the internal data selection, editing, and
-the ability to construct the sea level anomaly (and corrections fields) \emph{on
-the fly}. Since the construction of the sea level anomaly is so important in many
-applications of altimetry, this functionality is provided within the RADS software
-library, so that a user, even when writing her/his own program, does not have to
-generate code to do so. At the same time that the sea level anomaly is
-constructed, the data is edited based on system-wide, user, or local preferences.
-These preferences can be specified at several levels, either in Fortran namelists,
-or as command line options. The order in which the preferences are processed is
-the following:
-\begin{itemize}
-\item System-wide general preferences, found in \verb|$RADSDATAROOT/nml/getraw.nml|.
-\item Satellite-specific and mission-specific system-wide preferences, found in
-the files \verb|getraw_SS.nml| and \verb|getraw_SSF.nml| in the directory
-\verb|$RADSDATAROOT/nml|, where \verb|SS| is the 2-letter
-abbreviation for the satellite, as specified in Table~\ref{tab:rads4_sats}, and \verb|F|
-is a 1-letter indication of the mission phase.
-\item General user preferences, found in a file \verb|getraw.nml| in the directory
-\verb|~/.rads|.
-\item Satellite-specific and mission-specific user preferences, found in the files
-\verb|getraw_SS.nml| and \verb|getraw_SSF.nml| in the directory \verb|~/.rads|.
-\item General local preferences, found in a file \verb|getraw.nml| in the current
-working directory.
-\item Satellite-specific and mission-specific local preferences, found in the files
-\verb|getraw_SS.nml| and \verb|getraw_SSF.nml| in the current working directory.
-\item Command line arguments.
-\end{itemize}
-So the command line arguments overrule the local preferences and they overrule the
-user preferences and eventually the system-wide preferences.
 
 \input{sats}
 
