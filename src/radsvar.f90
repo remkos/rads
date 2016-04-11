@@ -107,24 +107,18 @@ end subroutine synopsis
 ! List attributes of single variable, to be used in bash script
 subroutine list_variable
 type(rads_varinfo), pointer :: info
-real(eightbytereal) :: x, diff_range(2)
+real(eightbytereal) :: plot_bin, diff_range(2), diff_bin
 info => var%info
 
 ! If no plot_range then copy limits
 if (all(isnan_(info%plot_range))) info%plot_range = info%limits
 
-! Compute intervals; will be NaN when not requested
-x = (info%plot_range(2)-info%plot_range(1)) / intervals
-if (round) call round_up (x)	! Round if
-if (info%nctype /= nf90_real .and. info%nctype /= nf90_double .and. x <= info%scale_factor) then
-	! Interval and range when interval is at the data resolution
-	x = info%scale_factor
-	info%plot_range(1) = (nint(info%plot_range(1)/x)-0.5d0)*x
-	info%plot_range(2) = (nint(info%plot_range(2)/x)+0.5d0)*x
-endif
-
-! Centre and scale plot_range to get range for plotting differences
+! Centre and scale plot_range to get diff_range for plotting differences
 diff_range = factor * (info%plot_range - 0.5d0 * sum(info%plot_range))
+
+! Compute bin size and adjust range if necessary
+call adjust_range (info, info%plot_range, plot_bin)
+call adjust_range (info, diff_range, diff_bin)
 
 ! Print the general satellite information
 write (*,600) timestamp(), trim(S%command)
@@ -153,8 +147,8 @@ else if (intervals == 0) then
 	write (*,632) trim(prefix), 'plot_range', info%plot_range
 	write (*,632) trim(prefix), 'diff_range', diff_range
 else
-	write (*,633) trim(prefix), 'plot_range', info%plot_range, x
-	write (*,633) trim(prefix), 'diff_range', diff_range, factor*x
+	write (*,633) trim(prefix), 'plot_range', info%plot_range, plot_bin
+	write (*,633) trim(prefix), 'diff_range', diff_range, diff_bin
 endif
 
 ! Formats
@@ -227,6 +221,21 @@ do i = 1,S%nvar
 	if (associated(S%var(i)%inf2)) call list ('2', S%var(i))
 enddo
 end subroutine list_variables
+
+subroutine adjust_range (info, rng, bin)
+type(rads_varinfo), pointer, intent(in) :: info
+real(eightbytereal), intent(inout) :: rng(2)
+real(eightbytereal), intent(out) :: bin
+! Compute bin size; will be NaN when not requested
+bin = (rng(2)-rng(1)) / intervals
+if (round) call round_up (bin)	! Round if requested
+! Adjust bin size if it is below the data resolution
+if (info%nctype /= nf90_real .and. info%nctype /= nf90_double .and. bin <= info%scale_factor) then
+	bin = info%scale_factor
+endif
+	rng(1) = (nint(rng(1)/bin)-0.5d0)*bin
+	rng(2) = (nint(rng(2)/bin)+0.5d0)*bin
+end subroutine adjust_range
 
 subroutine list (type, var)
 character(len=1), intent(in) :: type
