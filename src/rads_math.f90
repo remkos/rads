@@ -152,11 +152,11 @@ case ('POP')
 	call math_pop (top)
 
 ! x MATH x (1 argument to 1)
-!! x NEG a : a = -x
+!! x NEG a : a = $-$x
 case ('NEG')
 	call math_check (1)
 	top%data = -top%data
-!! x ABS a : a = |x|
+!! x ABS a : a = $|$x$|$
 case ('ABS')
 	call math_check (1)
 	top%data = abs(top%data)
@@ -323,7 +323,7 @@ case ('DIV')
 	call math_check (2)
 	top%prev%data = top%prev%data / top%data
 	call math_pop (top)
-!! x y POW a : a = x ^ y
+!! x y POW a : a = $x^y$
 case ('POW')
 	call math_check (2)
 	top%prev%data = top%prev%data ** top%data
@@ -380,7 +380,7 @@ case ('NEQ', 'NE')
 		top%prev%data = 0d0
 	endwhere
 	call math_pop (top)
-!! x y LT a : a = 1 if x < y; a = 0 otherwise
+!! x y LT a : a = 1 if x $<$ y; a = 0 otherwise
 case ('LT')
 	call math_check (2)
 	where (isnan_(top%prev%data) .or. isnan_(top%data))
@@ -391,7 +391,7 @@ case ('LT')
 		top%prev%data = 0d0
 	endwhere
 	call math_pop (top)
-!! x y LE a : a = 1 if x <= y; a = 0 otherwise
+!! x y LE a : a = 1 if x $\le$ y; a = 0 otherwise
 case ('LE')
 	call math_check (2)
 	where (isnan_(top%prev%data) .or. isnan_(top%data))
@@ -402,7 +402,7 @@ case ('LE')
 		top%prev%data = 0d0
 	endwhere
 	call math_pop (top)
-!! x y GT a : a = 1 if x > y; a = 0 otherwise
+!! x y GT a : a = 1 if x $>$ y; a = 0 otherwise
 case ('GT')
 	call math_check (2)
 	where (isnan_(top%prev%data) .or. isnan_(top%data))
@@ -413,7 +413,7 @@ case ('GT')
 		top%prev%data = 0d0
 	endwhere
 	call math_pop (top)
-!! x y GE a : a = 1 if x >= y; a = 0 otherwise
+!! x y GE a : a = 1 if x $\ge$ y; a = 0 otherwise
 case ('GE')
 	call math_check (2)
 	where (isnan_(top%prev%data) .or. isnan_(top%data))

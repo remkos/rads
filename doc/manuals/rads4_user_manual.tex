@@ -321,12 +321,88 @@ The configuration file is a structured XML file, comprised of a number items and
     <tag>....</tag>
 </block>
 \end{verbatim}
-As usual in an XML file, \verb|<tag>| starts an item with name \verb|tag| and \verb|</tag>| ends it.
+As usual in an XML file, \verb|<tag>| starts an item with name \verb|tag| and \verb|</tag>| ends it. Any content in between is the value, or are the values associated with this tag. Generally, the line can be broken by carriage returns and leading spaces are ignored.
 
+\subsection{Tags in the configuration file}
 The various names of the tags used in the configuration file are described below.
 \begin{description}
-\item[\ctag{if}] Conditional block. Is followed by a condition such as \verb|sat="j1 j2"|.
+\item[\ctag{if}] is followed by a condition such as \verb|sat="j1 j2"|, which means that the contents of the block following this \verb|<if>| applies only to the missions \verb|j1| and \verb|j2|. The selection can be negated by starting it with an exclamation point, i.e. \verb|sat="!j1 j2"| means that the following block applies to all missions \emph{except} \verb|j1| \emph{and} \verb|j2|.
+\item[\ctag{elseif}\textrm{,} \ctag{else}] can follow an \ctag{if}-block. For example:
+\begin{verbatim}
+    <if sat="j1 j2">
+        ... for j1 and j2 ...
+    </if>
+    <elseif sat="e1 e2">
+        ... for e1 and e2 ...
+    </elseif>
+    <else>
+        ... all other missions ...
+    </else>
+\end{verbatim}
+\item[\ctag{global_attributes}] specifies the global attributes that are always to be written to the output file, line by line. The first word on each line is the name of the global attribute, the rest is its value.
+\item[\ctag{satellites}] specifies, line by line, the 2- and 3-character abbreviations for the altimeter missions. The rest of each line is used to specify alternative names which can be searched for substrings.
+\item[\ctag{var}] identifies a block of tags that describe a single variable. The tag needs to include an option such as \verb|name="alt_gdre"| to specify the variable name, and optionally (for example) \verb|field=425| which specify the field numbers used in RADS3. A condition like \verb|sat="j1 j2"| can also be added as an option in this tag.
+\item[\ctag{alias}] specifies an alias (i.e. an alternative name) for a previously specified variable. The tag should at least include an option such as \verb|name="alt"| to specify the name of the alias, and optionally the field number used in RADS3 (e.g. \verb|field=4|). Again, a condition like \verb|sat="j1"| can be added. If more than one value is given, then it means that the alias will point to the first variable, unless it is not available, then it points to the second. For example:
+\begin{verbatim}
+    <alias name="alt" field="4" sat="j2">alt_gdre alt_gdrd</alias>
+\end{verbatim}
+means that if one uses the variable \verb|alt| for Jason-2, then the variable \verb|alt_gdre| is processed. If determining this variable was unsuccessful, then \verb|alt_gdrd| is used instead.
 \end{description}
+
+\subsection{Tags within a \protect\ctag{var}-block}
+The following tags can only occur within a \ctag{var}-block (with one exception, see below):
+\begin{description}
+\item[\ctag{long_name}] specifies the description of the variable, as well as the \verb|long_name| attribute to be written to the netCDF data files.
+\item[\ctag{standard_name}, \ctag{source}, \ctag{comment}] specify the \verb|standard_name|, \verb|source|, and \verb|comment| attributes to be written to the netCDF data files.
+\item[\ctag{units}] specifies the units of the variable as used in any output, as well as the \verb|units| attribute in the netCDF data files.
+\item[\ctag{flag_values}] specifies the meanings of a flag, counting up from 0. For example \verb|yes no| means that 0 is the be interpreted as "yes", 1 as "no".
+\item[\ctag{flag_mask}] specifies the meanings of a flag word made up of bits. For example \verb|left front up| means that when the LSB is raised "left" is true, and the next bits indicate if "front" and "up" are true.
+\item[\ctag{limits}] specifies the range of "good" values. Any value less than the lower limit or greater than the upper limit result in the variable to be set to NaN. In case the variable is a \ctag{flag_mask}, then the first value indicates the mask of bits that should not be set, the second value the bits that should be set, otherwise the result will yield NaN.
+\item[\ctag{plot_range}] specifies a suggested range for plotting the variable. It is not used for any processing, except for the \prog{radsvar} program.
+\item[\ctag{parameters}] is used for the RADS4 database creation and has no impact on any user programs.
+\item[\ctag{data}] specifies the variable name as used in the input RADS netCDF data files (normally the same as the variable name), but could also be used to specify a mathematical statement that derives the variable from others, or to interpolate values from a grid. More about this in Section~\ref{sec:data-tag}.
+\item[\ctag{quality_flag}] indicates which variables are checked to determine the quality of the current variable. If any of the specified variables lead to NaN (not-a-number), the corresponding value of the current variable is set to NaN as well.
+\item[\ctag{dimension}] is the dimension of the variable. Default is 1-dimensional. Some variables can be 2-dimensional.
+\item[\ctag{format}] is the Fortran format specification for ASCII output of the variable.
+\item[\ctag{compress}] specifies the data type (i.e., \verb|int1|, \verb|int2|, \verb|int4|, \verb|real|, or \verb|dble|) and optional \verb|scale_factor| and \verb|add_offset| to be used in the output netCDF files. This applied only the output files. Input netCDF files may be different.
+\end{description}
+Because you may want to overrule just one line in a \ctag{var}-block, one can stick the option \verb|var="varname"| in the above tags. For example,
+\begin{verbatim}
+    <var name="alt_gdre">
+        <compress sat="j1 j2 j3 tx">int4 1e-4 1300e3</compress>
+    </var>
+\end{verbatim}
+is equivalent to
+\begin{verbatim}
+    <compress var="alt_gdre" sat="j1 j2 j3 tx">int4 1e-4 1300e3</compress>
+\end{verbatim}
+
+\subsection{The \protect\ctag{data}-tag}
+\label{sec:data-tag}
+The \ctag{data}-tag can be used in a variety of ways.
+\begin{itemize}
+\item The simplest form, explained above, is that the value indicates the name of the netCDF variable in the RADS data files. For example: \verb|<data>alt_gdre</data>|.
+\item If more than one value is given (i.e. it contains at least one space), then it will be recognised as a mathematical statement, in "Reverse Polish" notation. A number of mathematical operators are available, as described in Table~\ref{tab:math-operators}. This can be very practical to determine on the fly the difference between two variables, or a combination of many (such as the sea level anomaly). For example \verb|<data>wet_tropo_rad wet_tropo_ecmwf SUB</data>| computes the difference between the radiometer and ECWMF wet tropospheric corrections.
+\item branch \emph{To be completed}
+\item grid, grid\_s, grid\_q \emph{To be completed}
+\item constant \emph{To be completed}
+\end{itemize}
+
+\begin{table}
+\tiny
+\begin{tabular}{p{0.2\textwidth}p{0.75\textwidth}}
+\hline
+Operator & Description \\
+\hline
+\input{sub/rads_math.tab}
+\hline
+\end{tabular}
+\caption{Math operators that can be used in the \protect\ctag{data}-tag. Left of the operator (in uppercase) are the input value(s); on the right of the operator the output value(s).}
+\label{tab:math-operators}
+\end{table}
+
+\subsection{Tags for mission definitions}
+\emph{To be completed.}
 
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

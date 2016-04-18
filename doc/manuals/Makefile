@@ -22,6 +22,7 @@ CONFIG = rads_config.tex rads4_sats.tex
 MAN = rads4_data_manual.pdf rads4_user_manual.pdf
 SUB = sub/rads.tex sub/rads_geo.tex sub/rads_grid.tex sub/rads_math.tex \
 	sub/rads_misc.tex sub/rads_netcdf.tex sub/rads_time.tex
+TAB = sub/rads_math.tab
 
 #-----------------------------------------------------------------------
 # What to create?
@@ -32,7 +33,7 @@ all:	$(MAN)
 install:	all
 	$(INSTALL_DATA) $(MAN) $(docdir)
 
-rads4_user_manual.pdf:	%.pdf:	%.tex $(CONFIG) $(SUB)
+rads4_user_manual.pdf:	%.pdf:	%.tex $(CONFIG) $(SUB) $(TAB)
 	$(PDFLATEX) $*
 	$(PDFLATEX) $*
 	$(MAKEINDEX) $*
@@ -55,6 +56,10 @@ sub/%.tex:	../../src/%.f90
 	$(ROBODOC) --src ../../src/$*.f90 --doc $(TMPDIR)/$* --singlefile
 	sed 's/\\index{unsorted![^}]*}//g' $(TMPDIR)/$*.tex > sub/$*.tex
 	$(RM) $(TMPDIR)/$*.tex
+
+
+sub/%.tab:	../../src/%.f90
+	grep "\!\!" ../../src/$*.f90 | tail -n +2 | cut -c3- | sed -e 's/ : / \& /' | awk '{print $$0,"\\\\"}' > $@
 
 #-----------------------------------------------------------------------
 # How to cleanup
