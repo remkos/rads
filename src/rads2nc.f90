@@ -97,8 +97,8 @@ enddo
 ! Finish progress bar
 if (rads_verbose >= 1) write (*,*)
 
-! Close data file before exit
-if (outname /= '') call rads_close_pass (S, Pout)
+! Close data file before exit, but only if one was actually created
+if (outname /= '' .and. nseltot > 0) call rads_close_pass (S, Pout)
 
 ! Print overall statistics and close RADS
 call rads_stat (S)
