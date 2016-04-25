@@ -2365,9 +2365,9 @@ Global RADS configuration file
 
 <var name="surface_type" field="2517">
 	<long_name>surface type</long_name>
-	<flag_values>open_ocean unused enclosed_sea_or_lake land continental_ice</flag_values>
+	<flag_values>open_ocean unused enclosed_sea_or_lake land continental_ice floating_ice salted_basin</flag_values>
 	<data source="flags">surface_type</data>
-	<plot_range>0 4</plot_range>
+	<plot_range>0 6</plot_range>
 	<format>z1</format>
 	<compress>int1</compress>
 </var>
