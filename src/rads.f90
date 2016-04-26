@@ -206,7 +206,7 @@ character(len=*), parameter, private :: default_short_optlist = 'S:X:vqV:C:P:A:F
 	' cmp: compress: fmt: format: lat: lon: time: sla: limits: opt: mjd: sec: ymd: doy: quality_flag: region:'
 character(len=rads_strl), save, private :: rads_optlist = default_short_optlist // default_long_optlist
 
-private :: rads_traxxing, rads_free_sat_struct, rads_free_var_struct, rads_set_limits_by_flagmask
+private :: rads_traxxing, rads_free_sat_struct, rads_free_pass_struct, rads_free_var_struct, rads_set_limits_by_flagmask
 
 !****f* rads/rads_init
 ! SUMMARY
@@ -661,12 +661,12 @@ do i = nsat+1,size(S)
 enddo
 end subroutine rads_init_cmd_1d
 
-!****if* rads/rads_init_sat_struct
+!*****f* rads/rads_init_sat_struct
 ! SUMMARY
 ! Initialize empty rads_sat struct
 !
 ! SYNOPSIS
-subroutine rads_init_sat_struct (S)
+pure subroutine rads_init_sat_struct (S)
 type(rads_sat), intent(inout) :: S
 !
 ! PURPOSE
@@ -684,10 +684,10 @@ end subroutine rads_init_sat_struct
 
 !****if* rads/rads_free_sat_struct
 ! SUMMARY
-! Free all allocated memory from rads_sat struct
+! Free all allocated memory from rads_sat struct and reinitialise
 !
 ! SYNOPSIS
-subroutine rads_free_sat_struct (S)
+pure subroutine rads_free_sat_struct (S)
 type(rads_sat), intent(inout) :: S
 !
 ! PURPOSE
@@ -695,9 +695,9 @@ type(rads_sat), intent(inout) :: S
 ! memory in it. It then reinitialises a clean struct.
 !
 ! ARGUMENT
-! S        : Satellite/mission dependent struct or array of structs
+! S        : Satellite/mission dependent structure
 !****-------------------------------------------------------------------
-integer(fourbyteint) :: i,ios
+integer(fourbyteint) :: i, ios
 if (S%sat == '') return
 do i = S%nvar,1,-1
 	call rads_free_var_struct (S, S%var(i), .false.)
@@ -709,7 +709,7 @@ deallocate (S%glob_att, S%var, S%sel, S%phases, S%excl_cycles, stat=ios)
 call rads_init_sat_struct (S)
 end subroutine rads_free_sat_struct
 
-!****if* rads/rads_init_pass_struct
+!*****f* rads/rads_init_pass_struct
 ! SUMMARY
 ! Initialize empty rads_pass struct
 !
@@ -733,6 +733,33 @@ P = rads_pass ('', null(), nan, nan, nan, nan, null(), null(), .false., 0, 0, 0,
 P%S => S
 end subroutine rads_init_pass_struct
 
+!****if* rads/rads_free_sat_struct
+! SUMMARY
+! Free all allocated memory from rads_pass struct and reinitialise
+!
+! SYNOPSIS
+subroutine rads_free_pass_struct (S, P, unlink)
+type(rads_sat), intent(in) :: S
+type(rads_pass), intent(inout) :: P
+logical, optional, intent(in) :: unlink
+!
+! PURPOSE
+! This routine frees the <P> struct of type rads_pass. If <unlink>
+! is set to .true. the allocated memory is merely unlinked, otherwise
+! all allocated memory is destroyed.
+! Afterwards the routine reinitialises a clean struct.
+!
+! ARGUMENT
+! S        : Satellite/mission dependent structure
+! P        : Pass dependent structure
+!****-------------------------------------------------------------------
+integer(fourbyteint) :: ios
+if (.not.present(unlink) .or. .not.unlink) then
+	deallocate (P%history, P%flags, P%tll, stat=ios)
+endif
+call rads_init_pass_struct (S, P)
+end subroutine rads_free_pass_struct
+
 !****if* rads/rads_free_var_struct
 ! SUMMARY
 ! Free all allocated memory from rads_var struct
@@ -750,11 +777,11 @@ logical, intent(in) :: alias
 ! that it prevents removing info structs used elsewhere.
 !
 ! ARGUMENTS
-! S        : Satellite/mission dependent struct or array of structs
+! S        : Satellite/mission dependent structure
 ! var      : Variable struct to be freed
 ! alias    : .true. if called to create alias
 !****-------------------------------------------------------------------
-integer(fourbyteint) :: i,n,ios
+integer(fourbyteint) :: i, n, ios
 type(rads_varinfo), pointer :: info
 info => var%info ! This is needed to make the associated () work later on
 if (.not.associated(var%info)) return
@@ -1500,9 +1527,10 @@ logical, intent(in), optional :: keep
 ! This routine closes a netCDF file previously opened by rads_open_pass.
 ! The routine will reset the ncid element of the <P> structure to
 ! indicate that the passfile is closed.
-! If <keep> is set to .true., then the time, lat, lon and flags elements of
-! the <P> structure are kept. Otherwise, they are deallocated along with
-! the log entries.
+! If <keep> is set to .true., then the history, flags, time, lat, and lon
+! elements the <P> structure are kept. That is they are not deallocated
+! but only their links are removed. Otherwise, they are deallocated along
+! with the log entries.
 ! A second call to rads_close_pass without the keep argment can subsequently
 ! deallocate the time, lat and lon elements of the <P> structure.
 !
@@ -1514,7 +1542,7 @@ logical, intent(in), optional :: keep
 ! ERROR CODE
 ! S%error  : rads_noerr, rads_err_nc_close
 !****-------------------------------------------------------------------
-integer :: i, ios
+integer :: i
 integer(fourbyteint) :: ncid
 S%error = rads_noerr
 do i = 1,rads_max_branches
@@ -1522,10 +1550,7 @@ do i = 1,rads_max_branches
 	if (ncid > 0 .and. nft(nf90_close(ncid))) S%error = rads_err_nc_close
 enddo
 P%fileinfo = rads_file (0, '')
-if (present(keep)) then
-	if (keep) return
-endif
-deallocate (P%history, P%flags, P%tll, stat=ios)
+call rads_free_pass_struct (S, P, keep)
 end subroutine rads_close_pass
 
 !****if* rads/rads_get_var_by_number
