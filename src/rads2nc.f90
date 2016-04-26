@@ -76,6 +76,9 @@ do i = 1,S%nsel
 	if (reject == -1 .and. S%sel(i)%info%datatype == rads_type_sla) reject = i
 enddo
 
+! Initialise an output pass structure
+call rads_init_pass_struct (S, Pout)
+
 ! Now loop through all cycles and passes
 do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
 	! Stop processing after too many output lines
@@ -97,8 +100,8 @@ enddo
 ! Finish progress bar
 if (rads_verbose >= 1) write (*,*)
 
-! Close data file before exit, but only if one was actually created
-if (outname /= '' .and. nseltot > 0) call rads_close_pass (S, Pout)
+! Close data file before exit and/or empty out history
+call rads_close_pass (S, Pout)
 
 ! Print overall statistics and close RADS
 call rads_stat (S)
@@ -160,6 +163,7 @@ if (nselpass == 0) return
 start(1) = nseltot + 1
 if (outname == '') then
 	Pout = P
+	nullify (Pout%history)
 	call rads_create_pass (S, Pout, nselpass, name=dirname)
 	call rads_def_var (S, Pout, S%sel)
 	start(1) = 1
