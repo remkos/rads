@@ -39,7 +39,7 @@ type(rads_var), pointer :: var, temp(:)
 integer(fourbyteint) :: outunit, listunit = -1
 character(len=rads_cmdl) :: outname = '', dirname = ''
 character(len=640) :: format_string
-integer(fourbyteint) :: i, j, l, ios, cycle, pass, step = 1, nseltot = 0, nselmax = huge(0_fourbyteint)
+integer(fourbyteint) :: i, j, l, ios, cycle, pass, step = 1, nseltot = 0, nselmax = huge(0_fourbyteint), nrpass = 0
 logical :: has_sel = .false., has_f = .false., boz_format = .false.
 integer(fourbyteint) :: reject = -1
 
@@ -168,6 +168,7 @@ do j = 1,msat
 		endif
 
 		! Process passes one-by-one
+		nrpass = 0
 		do pass = S%passes(1), S%passes(2), S%passes(3)
 			call rads_open_pass (S, P, cycle, pass)
 			if (P%ndata > 0) call process_pass (P%ndata, S%nsel)
@@ -176,6 +177,7 @@ do j = 1,msat
 		enddo
 
 		! Print out per-cycle statistics, it requested
+		pass = nrpass
 		if (stat_mode == cycle_stat) call print_stat
 	enddo
 760 format(/'Maximum number of output records reached (',i0,' >= ',i0,')')
@@ -207,19 +209,18 @@ write (*,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
 '  -r, --reject-on-nan VAR   Reject records if variable VAR on -V specifier is NaN'/ &
-'  -r #                      Reject records if data item number # on -V specifier is NaN'/ &
+'  -r NR                     Reject records if data item number NR on -V specifier is NaN'/ &
 '  -r 0, -r none, -r         Do not reject records with NaN values'/ &
 '  -r n, -r any              Reject records if any value is NaN'/ &
 '                      Note: If no -r option is given -r sla is assumed'/ &
-'  -f                        Do not start with time,lat,lon in output'/ &
-'  -c, -s c                  Include statistics per cycle'/ &
-'  -p, -s p                  Include statistics per pass'/ &
+'  -f                        Do not start with time,lat,lon in output (only with --sel)'/ &
+'  -s c|p                    Include statistics per cycle (c) or per pass (p)'/ &
 '  --step N                  Step through records with stride N (default = 1)'/ &
 '  --list FILENAME           Specify file name in which to write list of output files'/ &
 '  --maxrec NREC             Specify maximum number of output records (default = unlimited)'/ &
-'  -o, --output OUTNAME      Specify name of a single output file or - for standard output or (when'/ &
-'                            ending in /) directory name for pass files; default is pass files in'/&
-'                            current directory')
+'  -o, --output OUTNAME      Specify name of a single output file or - for standard output or'/ &
+'                            (when ending in /) directory name for pass files; by default pass'/&
+'                            files are created in the current directory')
 stop
 end subroutine synopsis
 
@@ -276,6 +277,7 @@ do i = 1,ndata,step
 enddo
 
 nseltot = nseltot + nselpass
+nrpass = nrpass + 1
 
 ! Print out pass statistics and reset them, if requested
 if (stat_mode == pass_stat) call print_stat
