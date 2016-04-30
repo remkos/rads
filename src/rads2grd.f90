@@ -43,7 +43,7 @@ type(rads_pass) :: P
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('x:y:c::o: x: y: res: min: output: grd: fmt:')
+call rads_set_options ('x:y:c::o: x: y: res: min: output: grd: line-format:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 
@@ -93,7 +93,7 @@ do i = 1,rads_nopt
 		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	case ('o', 'output', 'grd')
 		grid_name = rads_opt(i)%arg
-	case ('fmt')
+	case ('line-format')
 		format_string = rads_opt(i)%arg
 	end select
 enddo
@@ -193,7 +193,7 @@ write (*,1300)
 '  --min MINNR               Minimum number of points per grid cell (default: 2)'/ &
 '  -o, --output, --grd GRIDNAME'/ &
 '                            Create netCDF grid (suppresses ASCII)'/ &
-'  --fmt FORMAT              Format to be used for ASCII output (default is determined by variables)'/ &
+'  --line-format FORMAT      Format to be used for ASCII output (default is determined by variables)'/ &
 '  -c                        Boundaries are cell oriented'/ &
 '  -c[x|y]                   Only [x|y]-boundaries are cell oriented')
 stop
@@ -284,7 +284,7 @@ enddo
 
 ext = ''
 do j = 1,nvar
-	if (nvar /= 1) ext = trim(S(1)%sel(j+2)%name) // '_'
+	ext = trim(S(1)%sel(j+2)%name) // '_'
 	call nfs (nf90_def_var(ncid,trim(ext) // 'mean'  ,nf90_real,dimid,varid(j*2+1)))
 	call nfs (nf90_def_var(ncid,trim(ext) // 'stddev',nf90_real,dimid,varid(j*2+2)))
 	call nfs (nf90_put_att(ncid,varid(j*2+1),'long_name','mean of '//trim(S(1)%sel(j+2)%long_name)))
