@@ -466,7 +466,7 @@ integer(fourbyteint), intent(out), optional :: iostat
 !   --mjd[=]t0[,t1][,dt] : Modified Julian Dates
 !   --sec[=]t0[,t1][,dt] : Seconds since 1.0 Jan 1985
 !   --ymd[=]t0[,t1][,dt] : [YY]YYMMDD.DDD or [YY]YYMMDDHHMMSS.SSS
-!   --doy[=]t0[,t1][,dt] : YYDDD.DDD
+!   --doy[=]t0[,t1][,dt] : [YY]YYDDD.DDD
 !  --time[=]t0[,t1][,dt] : MJD.DDD or [YY]YYMMDD.DDD or [YY]YYMMDDHHMMSS.SSS
 !
 ! At input, these arguments have already been split up in an option part

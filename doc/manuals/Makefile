@@ -20,9 +20,14 @@ MAKEINDEX = makeindex
 ROBODOC = robodoc
 CONFIG = rads_config.tex rads4_sats.tex
 MAN = rads4_data_manual.pdf rads4_user_manual.pdf
-SUB = sub/rads.tex sub/rads_geo.tex sub/rads_grid.tex sub/rads_math.tex \
-	sub/rads_misc.tex sub/rads_netcdf.tex sub/rads_time.tex
-TAB = sub/rads_math.tab
+SUBS = rads rads_geo rads_grid rads_math rads_misc rads_netcdf rads_time
+SUBS_TEX = $(foreach sub,$(SUBS),sub/$(sub).tex)
+PROGS = rads2asc4 rads2nc rads2grd4 radscolin4
+PROGS_EXTRA = rads2grd4-o radscolin4-r
+PROGS_HLP = $(foreach prog,$(PROGS),sub/$(prog).hlp)
+PROGS_OUT = $(foreach prog,$(PROGS) $(PROGS_EXTRA),sub/$(prog).out)
+TABS_TEX = sub/rads_math.tab
+HLP = sub/rads2asc4.hlp sub
 
 #-----------------------------------------------------------------------
 # What to create?
@@ -33,7 +38,7 @@ all:	$(MAN)
 install:	all
 	$(INSTALL_DATA) $(MAN) $(docdir)
 
-rads4_user_manual.pdf:	%.pdf:	%.tex $(CONFIG) $(SUB) $(TAB)
+rads4_user_manual.pdf:	%.pdf:	%.tex $(CONFIG) $(SUBS_TEX) $(PROGS_HLP) $(PROGS_OUT) $(TABS_TEX)
 	$(PDFLATEX) $*
 	$(PDFLATEX) $*
 	$(MAKEINDEX) $*
@@ -47,25 +52,91 @@ rads4_data_manual.pdf:	%.pdf:	%.tex %.bbl $(CONFIG)
 	$(MAKEINDEX) $*
 	$(PDFLATEX) $*
 
+subs:	$(SUBS_TEX) $(PROGS_HLP) $(PROGS_OUT) $(TABS_TEX)
+
 #-----------------------------------------------------------------------
 # How to create LaTeX documentation from source code
 #-----------------------------------------------------------------------
 
-$(SUB):	robodoc.rc
+$(SUBS_TEX):	robodoc.rc
 sub/%.tex:	../../src/%.f90
 	$(ROBODOC) --src ../../src/$*.f90 --doc $(TMPDIR)/$* --singlefile
 	sed 's/\\index{unsorted![^}]*}//g' $(TMPDIR)/$*.tex > sub/$*.tex
 	$(RM) $(TMPDIR)/$*.tex
 
+#-----------------------------------------------------------------------
+# Make table of the MATH commands
+#-----------------------------------------------------------------------
 
 sub/%.tab:	../../src/%.f90
 	grep "\!\!" ../../src/$*.f90 | tail -n +2 | cut -c3- | sed -e 's/ : / \& /' | awk '{print $$0,"\\\\"}' > $@
+
+#-----------------------------------------------------------------------
+# Make help output
+#-----------------------------------------------------------------------
+
+sub/%.hlp:	../../src/%
+	PATH=../../src $* --help > $@
+
+#-----------------------------------------------------------------------
+# Make command output and logs
+#-----------------------------------------------------------------------
+
+sub/rads2asc4.out:	../../src/rads2asc4
+	PATH=../../src rads2asc4 -S e2 -C 0 -P 901,1000,2 -V time_ymdhms,lat,lon,sla,swh,wind_speed -R -8,42,28,48 -o rads2asc4.asc -v > sub/rads2asc4.log 0>&2
+	head -n 19 rads2asc4.asc > $@
+	echo "............  lines removed .............................." >> $@
+	tail -n 4 rads2asc4.asc >> $@
+	rm -f rads2asc4.asc
+
+sub/rads2nc.out:	../../src/rads2nc
+	PATH=../../src rads2nc -S e2 -C 0 -P 901,1000,2 -V time,lat,lon,sla,swh,wind_speed -R -8,42,28,48 -o rads2nc.nc -v > sub/rads2nc.log 0>&2
+	ncdump rads2nc.nc | head -n 73 | sed 's/	/    /g' > $@
+	echo "............  lines removed .............................." >> $@
+	ncdump rads2nc.nc | tail -n 5 >> $@
+	rm -f rads2nc.nc
+
+sub/rads2grd4.out:	../../src/rads2grd4
+	PATH=../../src rads2grd4 -S e2 -C 0 -P 901,1000,2 -V wind_speed,swh,sla -c > rads2grd4.out
+	head -n 16 rads2grd4.out > $@
+	echo "............... lines removed ..............." >> $@
+	tail -n 4 rads2grd4.out >> $@
+	rm -f rads2grd4.out
+
+sub/rads2grd4-o.out:	../../src/rads2grd4
+	PATH=../../src rads2grd4 -S e2 -C 0 -P 901,1000,2 -V wind_speed,swh,sla -c -o rads2grd4.nc
+	ncdump rads2grd4.nc | head -n 42 | sed 's/	/    /g' > $@
+	echo "............... lines removed ..............." >> $@
+	ncdump rads2grd4.nc | tail -n 5 >> $@
+	rm -f rads2grd4.nc
+
+sub/radscolin4.out:	../../src/radscolin4
+	PATH=../../src radscolin -S e2 -C 0,2 -P 915,1000,2 -V lat,sla,swh,wind_speed > radscolin4.out
+	head -n 18 radscolin4.out > $@
+	echo "......................... lines removed ............................." >> $@
+	tail -n 4 radscolin4.out >> $@
+	rm -f radscolin4.out
+
+sub/radscolin4-r.out:	../../src/radscolin4
+	PATH=../../src radscolin -S e2 -C 0,2 -P 915,1000,2 -V lat,sla,swh,wind_speed -r > radscolin4-r.out
+	head -n 18 radscolin4-r.out > $@
+	echo "......................... lines removed ............................." >> $@
+	tail -n 4 radscolin4-r.out >> $@
+	rm -f radscolin4-r.out
+
+inc/max.out:		getraw.nml max.nml $(RADSROOT)/bin/max2
+	rm -f xovers.rxf
+	max2 sat=e2 cycle=0,1 sel=0,1,17 xovers > inc/max_v.out
+	head -18 xovers.rxf > $@
+	echo "............................. lines removed .............................................." >> $@
+	tail -4 xovers.rxf >> $@
+	rm -f xovers.rxf
 
 #-----------------------------------------------------------------------
 # How to cleanup
 #-----------------------------------------------------------------------
 
 clean:
-	$(RM) *.aux *.blg *.idx *.ilg *.ind *.log *.gz *.toc
-spotles:	clean
+	$(RM) *.aux *.blg *.idx *.ilg *.ind *.log *.gz *.toc sub/*
+spotless:	clean
 	$(RM) rads_config.tex
