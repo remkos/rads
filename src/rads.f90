@@ -203,7 +203,7 @@ include 'rads_version.f90'
 
 character(len=*), parameter, private :: default_short_optlist = 'S:X:vqV:C:P:A:F:R:L:Q:Z:', &
 	default_long_optlist = ' t: h: args: sat: xml: debug: verbose log: quiet var: sel: cycle: pass: alias:' // &
-	' cmp: compress: fmt: format: lat: lon: time: sla: limits: opt: mjd: sec: ymd: doy: quality_flag: region:'
+	' cmp: compress: fmt: format: lat: lon: time: sla: limits: opt: mjd: sec: ymd: doy: quality-flag: quality_flag: region:'
 character(len=rads_strl), save, private :: rads_optlist = default_short_optlist // default_long_optlist
 
 private :: rads_traxxing, rads_free_sat_struct, rads_free_pass_struct, rads_free_var_struct, rads_set_limits_by_flagmask
@@ -1056,7 +1056,7 @@ case ('lat', 'lon', 'sla')
 case ('L', 'limits')
 	call rads_set_limits (S, opt%arg(:j-1), string=opt%arg(j+1:), iostat=ios)
 	if (ios > 0) call rads_opt_error (opt%opt, opt%arg)
-case ('Q', 'quality_flag')
+case ('Q', 'quality-flag', 'quality_flag')
 	if (j > 0) then
 		call rads_set_quality_flag (S, opt%arg(:j-1), opt%arg(j+1:))
 	else
@@ -3568,14 +3568,14 @@ write (iunit, 1300) trim(progname)
 '  -A, --alias VAR1=VAR2     Use variable VAR2 when VAR1 is requested'/ &
 '  -C, --cycle C0[,C1[,DC]]  Specify first and last cycle and modulo'/ &
 '  -F, --fmt, --format VAR=FMT'/ &
-'                            Specify the Fortran format used to print VAR (for ASCII output only)'/ &
+'                            Specify Fortran format used to print VAR (for ASCII output only)'/ &
 '  -L, --limits VAR=MIN,MAX  Specify edit data range for variable VAR'/ &
 '  --lon LON0,LON1           Specify longitude boundaries (deg)'/ &
 '  --lat LAT0,LAT1           Specify latitude  boundaries (deg)'/ &
 '  -P, --pass P0[,P1[,DP]]   Specify first and last pass and modulo; alternatively use -Pa'/ &
-'                            (--pass asc) or -Pd (--pass des) to restrict selection to ascending or'/ &
-'                            descending passes only'/ &
-'  -Q, --quality_flag VAR=FLAG'/&
+'                            (--pass asc) or -Pd (--pass des) to restrict selection to'/ &
+'                            ascending or descending passes only'/ &
+'  -Q, --quality-flag VAR=FLAG'/&
 '                            Check variable FLAG when validating variable VAR'/ &
 '  -R, --region LON0,LON1,LAT0,LAT1'/ &
 '                            Specify rectangular region (deg)'/ &
@@ -3583,27 +3583,28 @@ write (iunit, 1300) trim(progname)
 '                            Specify circular region (deg)' / &
 '  --sla SLA0,SLA1           Specify range for SLA (m)'/ &
 '  --time T0,T1              Specify time selection (optionally use --ymd, --doy,'/ &
-'                            or --sec for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)'/ &
+'                            or --sec for [YY]YYMMDD[HHMMSS], [YY]YYDDD, or SEC85)'/ &
 '  -V, --var VAR1,...        Select variables to be read'/ &
-'  -X, --xml XMLFILE         Load XMLFILE in addition to defaults'/ &
-'  -Z, --cmp, --compress type[,scale[,offset]]'/ &
-'                            Specify binary output format (for netCDF out); type is one of:'/ &
-'                            int1, int2, int4, real, dble; scale and offset are optional (def: 1,0)'// &
-'Still working for backwards Compatibility with RADS 3 are options:'/ &
+'  -X, --xml XMLFILE         Load configuration file XMLFILE in addition to the defaults'/ &
+'  -Z, --cmp, --compress VAR=TYPE[,SCALE[,OFFSET]]'/ &
+'                            Specify binary output format for variable VAR (netCDF only); TYPE'/ &
+'                            is one of: int1, int2, int4, real, dble; SCALE and OFFSET are'/ &
+'                            optional (def: 1,0)'// &
+'Still working for backward compatibility with RADS3 are options:'/ &
 '  --h H0,H1                 Specify range for SLA (m) (now --sla H0,H1)'/ &
-'  --opt J                   Use selection code J when J/100 requested (now -A VAR1=VAR2)'/ &
-'  --opt I=J                 Set option for data item I to J (now -A VAR1=VAR2)'/ &
+'  --opt J                   Use field number J when J/100 requested (now -A VAR1=VAR2)'/ &
+'  --opt I=J                 Make field I (range 1-99) and alias for field J (now -A VAR1=VAR2)'/ &
 '  --sel VAR1,...            Select variables to read'// &
 'Common [rads_options] are:'/ &
-'  --args FILENAME           Get any of the above arguments from FILENAME (one argument per line)'/ &
+'  --args FILENAME           Get all command line arguments from FILENAME (1 argument per line)'/ &
+'  --debug LEVEL             Set debug/verbosity level'/ &
 '  --help                    Print this syntax massage'/ &
 '  --log FILENAME            Send statistics to FILENAME (default is standard output)'/ &
 '  -q, --quiet               Suppress warning messages (but keeps fatal error messages)'/ &
 '  -v, --verbose             Increase verbosity level'/ &
-'  --debug LEVEL             Set debug/verbosity level'/ &
-'  --version                 Version info'/ &
-'  --                        Terminates all options; all following command-line arguments are considered'/ &
-'                            non-option arguments, even if they begin with a hyphen.')
+'  --version                 Print version info only'/ &
+'  --                        Terminates all options; all following command-line arguments are'/ &
+'                            considered non-option arguments, even if they begin with a hyphen')
 end subroutine rads_synopsis
 
 !****if* rads/rads_get_phase
