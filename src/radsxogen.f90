@@ -292,7 +292,7 @@ contains
 subroutine synopsis
 if (rads_version ('Generate altimeter crossovers from RADS')) return
 call rads_synopsis
-write (stderr,1300)
+write (*,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
 '  -d, --dual                Do dual satellite crossovers only'/ &
@@ -312,7 +312,7 @@ write (stderr,1300)
 '                      Note: If no -r option is given -r sla is assumed'/ &
 '  --dt DT                   Limit crossover time interval to number of days'/ &
 '                            use negative number to specify interval in fraction of cycles (default = -0.5)'/ &
-'  [--] FILENAME             Specify output FILENAME (default: radsxogen.nc)')
+'  FILENAME                  Specify output FILENAME (default: radsxogen.nc)')
 stop
 end subroutine synopsis
 

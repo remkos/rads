@@ -175,7 +175,7 @@ contains
 subroutine synopsis
 if (rads_version ('Make collinear data sets from RADS')) return
 call rads_synopsis
-write (stderr,1300)
+write (*,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
 '  --dt DT                   Set minimum bin size in seconds (default is determined by satellite)'/ &

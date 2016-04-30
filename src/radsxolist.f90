@@ -523,10 +523,10 @@ end subroutine process
 subroutine synopsis
 if (rads_version ('RADS crossover file lister')) return
 if (xostat) then
-	write (stderr,1300) 'stat'
+	write (*,1300) 'stat'
 else
-	write (stderr,1300) 'list'
-	write (stderr,1301)
+	write (*,1300) 'list'
+	write (*,1301)
 endif
 1300 format (/ &
 'usage: radsxo',a,' [options] [--] FILENAME ...' // &

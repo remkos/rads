@@ -189,7 +189,7 @@ contains
 subroutine synopsis
 if (rads_version ('Print RADS statistics per cycle, pass or day(s)')) return
 call rads_synopsis
-write (stderr,1300)
+write (*,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
 '  -r#                       Reject records if data item number # on -V specifier is NaN'/ &
@@ -197,10 +197,10 @@ write (stderr,1300)
 '  -r0, -r                   Do not reject measurement records with NaN values'/ &
 '                            In both cases above, all NaN values per variable are averaged'/ &
 '  -rn                       Reject measurement records if any value is NaN'/ &
-'  -c[N]                     Statistics per cycle or N cycles'/ &
-'  -d[N]                     Statistics per day (default) or N days'/ &
-'  -p[N]                     Statistics per pass or N passes'/ &
-'  -b[DX,DY]                 Average by boxes with size (default on: 3x1 degrees)'/ &
+'  -c [N]                    Statistics per cycle or N cycles'/ &
+'  -d [N]                    Statistics per day (default) or N days'/ &
+'  -p [N]                    Statistics per pass or N passes'/ &
+'  -b [DX,DY]                Average by boxes with size (default on: 3x1 degrees)'/ &
 '  -m                        Give all measurements equal weight'/ &
 '  -a                        Weight measurements by cosine of latitude'/ &
 '  -s                        Use inclination-dependent weight'/ &
