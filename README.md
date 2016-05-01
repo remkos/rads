@@ -7,16 +7,21 @@ The RADS database and code has gone through various generations. NetCDF datasets
 
 ## Requirements
 The only requirements to run the code are:
-* A unix type environment (Linux, Mac OS X, etc.)
-* A fortran compiler (preferrably gfortran, but others are known to work as well)
-* The netCDF fortran library (version 4 or later preferred).
-* Potentially in the future: CMake to provide the configuration before compilation
+* A unix type environment (Linux, Mac OS X, etc.).
+* The make command.
+* A fortran compiler (preferrably gfortran, but others like f90, f95, xlf90, xlf95 and ifort are known to work as well)
+* The netCDF library (version 4 or later) with the Fortran 90 interface, as well as its dependencies.
+* Optionally, the git program.
+* For downloading and synchronising the data base: the rsync program.
 
 ## Distribution
-The code is currently still under major development. When released, it will be made available as a tarball, as well as through git.
+Tarballs are released on [GitHub 'releases' page](https://https://github.com/remkos/rads/releases).
+
+## Bug reports and feature requests
+Please submit your bug reports or feature requests, and track existing ones, on the [GitHub 'issues' page](https://https://github.com/remkos/rads/issues). To add content will need to [sign up to GitHub](https://github.com/join?source=header-home).
 
 ## Version History
-Following is a history of releases on GitHub, newest to oldest.
+Following is a history of releases on [GitHub](https://https://github.com/remkos/rads/releases), newest to oldest.
 
 ### v4.2.1 (22 Mar 2016)
 * Moved directory "include" to "src/include" to avoid clash with default location for "include".
