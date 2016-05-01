@@ -33,22 +33,38 @@ use rads_devel
 type(rads_sat) :: S
 type(rads_pass) :: P
 type(grid) :: info
+integer :: i
 
 ! Command line arguments
 
 character(rads_cmdl) :: filename
 integer(fourbyteint) :: cyc, pass
+logical :: sentinel = .false.
 
 ! Initialise
 
 call synopsis ('--head')
+call rads_set_options ('s sentinel')
 call rads_init (S)
+
+! Check options
+
+do i = 1,rads_nopt
+	select case (rads_opt(i)%opt)
+	case ('s', 'sentinel')
+		sentinel = .true.
+	end select
+enddo
 
 ! Load the surface_type grid
 
-call parseenv ('${ALTIM}/data/landmask.nc', filename)
+if (sentinel) then
+	call parseenv ('${ALTIM}/data/landmask.nc', filename)
+else
+	call parseenv ('${ALTIM}/data/S3__SR_2_SURFAX_ver2.nc', filename)
+endif
 call log_string ('Loading mask '//filename)
-if (grid_load (filename, info) /= 0) call rads_exit ('Error loading landmask')
+if (grid_load (filename, info) /= 0) call rads_exit ('Error loading surface type grid')
 call log_string ('done', .true.)
 
 ! Process all data files
@@ -74,10 +90,11 @@ contains
 subroutine synopsis (flag)
 character(len=*), optional :: flag
 if (rads_version ('Add surface type flags to RADS data', flag=flag)) return
-call synopsis_devel ('')
+call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310  format (/ &
-'This program changes BOTH the engineering flags and the surface_type variable')
+'Additional [processing_options] are:'/ &
+'  -s, --sentinel            Use Sentinel-3 7-level mask (default is GMT landmask)')
 stop
 end subroutine synopsis
 
@@ -101,7 +118,9 @@ call rads_get_var (S, P, 'surface_type', surface_type, .true.)
 
 ! Process data records
 !
-! Bits and surface_type to be set when landmask contains any of the following values:
+! 1) When using the old-school GMT landmask
+!
+! Bits and surface_type to be set when the GMT landmask contains any of the following values:
 !
 ! landmask   | bit 2 | bit 4 | bit 5 | surface_type
 ! -----------------------------------------
@@ -114,36 +133,64 @@ call rads_get_var (S, P, 'surface_type', surface_type, .true.)
 ! -----------------------------------------
 !
 ! However, never undo surface_type = 4 or bit 2 = set (continental ice)
+!
+! 2) When using the Sentinel-3 surface type flags
+!
+! surf_class             | bit 2 | bit 4 | bit 5 | surface_type
+! -------------------------------------------------------------
+! 0 = ocean              |   0   |   0   |   0   |   0
+! 1 = land               |   0   |   1   |   1   |   3
+! 2 = continental water  |   0   |   0   |   1   |   2
+! 3 = aquatic vegetation |   0   |   1   |   1   |   3
+! 4 = cont. ice/snow     |   1   |   1   |   1   |   4
+! 5 = floating ice       |   0   |   1   |   1   |   5
+! 6 = salted basin       |   0   |   1   |   1   |   6
+! 7 = undefined (= land) |   0   |   1   |   1   |   3
+! -------------------------------------------------------------
 
 do i = 1,n
 
 ! Determine flags
 
+	! Get the values from array
 	flag = nint(flags(i))
 	surf = nint(surface_type(i))
 
-	if (btest(flag,2) .or. surf == 4) then	! Continental ice
-		flag = ibset (flag, 2)
-		flag = ibset (flag, 4)
-		flag = ibset (flag, 5)
+	! When using 7-level Sentinel-3 mask
+	if (sentinel) then
+		surf = nint(grid_query (info, lon(i), lat(i)))
+		if (surf == 1 .or. surf == 7) surf = 3 ! land, undefined
+
+	! When using old-style GMT land mask
+	else if (btest(flag,2) .or. surf == 4) then	! continental ice
 		surf = 4
 	else
-		select case (nint(grid_query (info, lon(i), lat(i))))
-		case (0) ! ocean
-			flag = ibclr (flag, 4)
-			flag = ibclr (flag, 5)
-			surf = 0
-		case (1, 3) ! land, island
-			flag = ibset (flag, 4)
-			flag = ibset (flag, 5)
-			surf = 3
-		case default ! lake, pond
-			flag = ibclr (flag, 4)
-			flag = ibset (flag, 5)
-			surf = 2
-		end select
+		surf = nint(grid_query (info, lon(i), lat(i)))
+		if (surf == 1) surf = 3 ! land
+		if (surf == 4) surf = 2 ! pond
 	endif
 
+	! Set of clear bits
+	! bit 2: continental ice
+	if (surf == 4) then
+		flag = ibset (flag, 2)
+	else
+		flag = ibclr (flag, 2)
+	endif
+	! bit 4: water/dry
+	if (surf >= 3) then
+		flag = ibset (flag, 4)
+	else
+		flag = ibclr (flag, 4)
+	endif
+	! bit 5: ocean/land
+	if (surf >= 2) then
+		flag = ibset (flag, 4)
+	else
+		flag = ibclr (flag, 4)
+	endif
+
+	! Store the values in array
 	flags(i) = flag
 	surface_type(i) = surf
 enddo

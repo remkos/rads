@@ -22,7 +22,7 @@
 ! <destdir>/cCCC/S3A_*_CCC_PPP_*.nc, where CCC is the cycle number and
 ! PPP the pass number. The directory <destdir>/cCCC will be created if needed.
 !
-! This program does not rely on ORF files, like ogdrsplit does
+! This program does not rely on ORF files, like ogdrsplit does.
 !-----------------------------------------------------------------------
 program s3combine
 

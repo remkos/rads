@@ -82,35 +82,9 @@ This manual is intended to explain the details about the many variables availabl
 
 The variables are organised various chapters. Consult the table of contents to find the variables you are looking for, or go to the index at the end of the manual, where all variables are listed.
 
-\begin{table}
-\begin{tabular}{lccl}
-\hline
-Altimeter & Abbr. & Nr & References \\
-\hline
-GEOS 3      & g3 &  1 & (not included in RADS) \\
-Seasat      & ss &  2 & (not included in RADS) \\
-Geosat      & gs &  3 & \\
-ERS-1       & e1 &  4 & \citep{francis1990a,francis1991a} \\
-TOPEX       & tx &  5 & \citep{fu1994} \\
-Poseidon    & pn &  6 & \\
-ERS-2       & e2 &  7 & \citep{francis1995a} \\
-GFO         & g1 &  8 & \\
-Jason-1     & j1 &  9 & \citep{menard2003} \\
-Envisat     & n1 & 10 & \\
-Jason-2     & j2 & 11 & \citep{lambin2010} \\
-CryoSat-2   & c2 & 12 & \citep{wingham2006} \\
-SARAL       & sa & 13 & \\
-Jason-3     & j3 & 14 & (to be launched summer 2015) \\
-HY-2A       & 2a & 15 & (limited access in RADS) \\
-Sentinel-3A & 3a & 16 & (to be added to RADS summer 2015) \\
-Sentinel-3B & 3b & 17 & (to be launched end 2017) \\
-\hline
-\end{tabular}
-\caption{Abbreviation and numbers used for the various altimeter missions.}
-\label{tab:sats}
-\end{table}
+\input{rads4_sats}
 
-For each variable, a list of different flavours is presented. For an example, turn to Section~\ref{var:wet_tropo}. This Section describes the various wet tropospheric corrections. The table in that Section lists in the first column the various variable names, followed by the field number as was used in RADS 3 (and can still be used in RADS 4), a short description, and the units of this variable. The next column lists for which altimeter missions this variable is available (see Table~\ref{tab:sats}), where "all" stands of all missions, and "other" stands for all missions not mentioned above it. The second to last column is the default range used for editing (NaN is returned when the value exceeds this range). When this column is empty, no range limits are set. Finally, the rightmost column relates to a list of notes provided in that Section.
+For each variable, a list of different flavours is presented. For an example, turn to Section~\ref{var:wet_tropo}. This Section describes the various wet tropospheric corrections. The table in that Section lists in the first column the various variable names, followed by the field number as was used in RADS 3 (and can still be used in RADS 4), a short description, and the units of this variable. The next column lists for which altimeter missions this variable is available (see Table~\ref{tab:rads4_sats}), where "all" stands of all missions, and "other" stands for all missions not mentioned above it. The second to last column is the default range used for editing (NaN is returned when the value exceeds this range). When this column is empty, no range limits are set. Finally, the rightmost column relates to a list of notes provided in that Section.
 
 Near the bottom of each variable table a number of "aliases" are provided. These are short-cuts to one (or more) of the flavours of variables. For example, the tables in Section~\ref{var:wet_tropo} shows that for most altimeter missions the alias \var{wet_tropo} means that radiometer wet tropospheric correction is used (\var{wet_tropo}), but, when not available, for example during extended outage, the ECMWF model wet tropospheric correction (\var{wet_tropo_ecmwf}) is used instead. These "aliases" make it easier to get the preferred flavour of the variable which may differ from mission to mission (for example, some do not have a radiometer). This largely simplifies the construction of sea level anomalies, as described in Section~\ref{var:sla}.
 
@@ -189,7 +163,7 @@ If the time tags on the original GDR data include a bias, the orbit has either b
 \var{alt} & 4 & \alias{alt_reaper} \var{alt_gfz} & & e1 e2 && \ref{item:alt} \\
 \var{alt} & 4 & \alias{alt_pgs7777} & & g1 && \ref{item:alt} \\
 \var{alt} & 4 & \alias{alt_gdrcp} & & gs && \ref{item:alt} \\
-\var{alt} & 4 & \alias{alt_gdrd} \var{alt_eiggl04s} & & j1 && \ref{item:alt} \\
+\var{alt} & 4 & \alias{alt_gdre} & & j1 && \ref{item:alt} \\
 \var{alt} & 4 & \alias{alt_gdre} \var{alt_gdrd} & & j2 && \ref{item:alt} \\
 \var{alt} & 4 & \alias{alt_gdre} & & j3 sa && \ref{item:alt} \\
 \var{alt} & 4 & \alias{alt_gdrd} \var{alt_gdrcp} & & n1 && \ref{item:alt} \\

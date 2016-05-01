@@ -38,9 +38,9 @@ logical :: checklon
 ! If either of the limits is NaN, no wrapping and no check is performed.
 !
 ! ARGUMENTS
-!  lon_bounds : longitude limits (degrees)
-!  lon        : longitude (degrees)
-!  checklon   : .true. if lon is outside limits, .false. otherwise.
+! lon_bounds : longitude limits (degrees)
+! lon        : longitude (degrees)
+! checklon   : .true. if lon is outside limits, .false. otherwise.
 !****-------------------------------------------------------------------
 if (any(lon_bounds /= lon_bounds)) then
 	checklon = .false.
@@ -74,9 +74,9 @@ real(eightbytereal) :: sfdist
 ! * http://en.wikipedia.org/wiki/Great-circle_distance
 !
 ! ARGUMENTS
-!  lat0, lon0 : Geocentic latitude and longitude of one point (rad)
-!  lat1, lon1 : Geocentic latitude and longitude of other point (rad)
-!  sfdist     : Spherical distance in radians.
+! lat0, lon0 : Geocentic latitude and longitude of one point (rad)
+! lat1, lon1 : Geocentic latitude and longitude of other point (rad)
+! sfdist     : Spherical distance in radians.
 !****-------------------------------------------------------------------
 real(eightbytereal) :: s
 s = sin((lat0-lat1)/2d0)**2 + cos(lat0)*cos(lat1)*sin((lon0-lon1)/2d0)**2

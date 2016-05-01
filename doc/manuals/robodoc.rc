@@ -52,11 +52,12 @@ source line comments:
 	!
 
 headertypes:
-	h  "Modules"          robo_modules     5
-	d  "Parameters"       robo_definitions 4
-	M  "Macros"           robo_macros      3
-	c  "Classes"          robo_classes     2
-	I  "Interfaces"       robo_interfaces  1
+	f  "functions"        robo_functions
+	h  "modules"          robo_modules     5
+	d  "parameters"       robo_definitions 4
+	M  "macros"           robo_macros      3
+	c  "classes"          robo_classes     2
+	I  "interfaces"       robo_interfaces  1
 
 options:
 	--headless

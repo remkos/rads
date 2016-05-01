@@ -40,8 +40,8 @@ logical, parameter :: little_endian = btest(1,0), big_endian = .not.little_endia
 ! indicates NaN.
 !
 ! ARGUMENTS
-!  i     : Integer to convert to double
-!  d_int : Result as a double real
+! i     : Integer to convert to double
+! d_int : Result as a double real
 !****-------------------------------------------------------------------
 private :: d_int1, d_int2, d_int4
 interface d_int
@@ -75,11 +75,11 @@ end interface d_int
 ! as errors.
 !
 ! ARGUMENTS
-!  string    : input character string
-!  val       : output array of values (integer or double)
-!  translate : (optional) string of characters that need to be changed
+! string    : input character string
+! val       : output array of values (integer or double)
+! translate : (optional) string of characters that need to be changed
 !             to spaces first
-!  iostat    : (optional) value of iostat (positive is error)
+! iostat    : (optional) value of iostat (positive is error)
 !****-------------------------------------------------------------------
 private :: read_val_int, read_val_dble
 interface read_val
@@ -114,10 +114,10 @@ end interface read_val
 !  Communications of the ACM, 22(9), 532-535, 1979
 !
 ! ARGUMENTS
-!  x        : Series of values
-!  mean     : Mean of series <x>
-!  variance : Variance of series <x>
-!  nr       : Number of valid values in series <x>
+! x        : Series of values
+! mean     : Mean of series <x>
+! variance : Variance of series <x>
+! nr       : Number of valid values in series <x>
 !****-------------------------------------------------------------------
 private :: mean_variance_only, mean_variance_nr, mean_variance_minmax
 interface mean_variance
@@ -202,10 +202,10 @@ integer, intent(in), optional :: unit
 ! --           (Will be skipped, and will stop option parsing)
 !
 ! ARGUMENTS
-!  optlist  : list of short and long options
-!  optopt   : option part of the option, without -- or -
-!  optarg   : argument of the option
-!  unit     : (Optional) input unit number, otherwise command line
+! optlist  : list of short and long options
+! optopt   : option part of the option, without -- or -
+! optarg   : argument of the option
+! unit     : (Optional) input unit number, otherwise command line
 !****-------------------------------------------------------------------
 integer :: input, i, j, k, n, l
 logical :: optional_arg, err
@@ -393,7 +393,7 @@ integer, intent(in), optional :: unit
 ! to the beginning.
 !
 ! ARGUMENT
-!   unit  : (Optional) unit of the input file, command line otherwise
+! unit  : (Optional) unit of the input file, command line otherwise
 !****-------------------------------------------------------------------
 if (present(unit)) then
 	rewind (unit)
@@ -420,8 +420,8 @@ character(len=len(string)) :: lower
 ! alphabetical characters as is.
 !
 ! ARGUMENTS
-!  string : String to be converted
-!  lower  : String returned in lower case
+! string : String to be converted
+! lower  : String returned in lower case
 !****-------------------------------------------------------------------
 integer :: i
 do i = 1,len(string)
@@ -447,8 +447,8 @@ character(len=len(string)) :: upper
 ! alphabetical characters as is.
 !
 ! ARGUMENTS
-!  string : String to be converted
-!  upper  : String returned in upper case
+! string : String to be converted
+! upper  : String returned in upper case
 !****-------------------------------------------------------------------
 integer :: i
 do i = 1,len(string)
@@ -505,9 +505,9 @@ character(len=*), intent(inout) :: string
 ! If the environment variable <env> is not set, <string> is unchanged.
 !
 ! ARGUMENTS
-!   env    : Name of the environment variable.
-!   string : Upon input: default value for string.
-!          : Upon output: contents of the environment variable or default.
+! env    : Name of the environment variable.
+! string : Upon input: default value for string.
+!        : Upon output: contents of the environment variable or default.
 !****-------------------------------------------------------------------
 character(len=320) :: temp
 call getenv (env,temp)
@@ -535,8 +535,8 @@ character(len=*), intent(inout) :: output
 ! Nesting of variable names is not allowed.
 !
 ! ARGUMENTS
-!   input  : String to be parsed.
-!   output : String with environment variables replaced.
+! input  : String to be parsed.
+! output : String with environment variables replaced.
 !****-------------------------------------------------------------------
 character(len=320) :: env
 integer :: j, k = 0, l, m, n
@@ -591,9 +591,9 @@ logical :: outofrange
 ! If either of the limits is NaN, no check is performed at that limit.
 !
 ! ARGUMENTS
-!  limits     : minimum and maximum allowed value
-!  value      : value to be checked
-!  outofrange : .true. if value is outside limits, .false. otherwise.
+! limits     : minimum and maximum allowed value
+! value      : value to be checked
+! outofrange : .true. if value is outside limits, .false. otherwise.
 !****-------------------------------------------------------------------
 outofrange = (value < limits(1) .or. value > limits(2))
 end function outofrange
@@ -901,11 +901,11 @@ real(eightbytereal), intent(out) :: a, b, r, fit
 ! coefficients of the line y = a + b * x that best fits the data points.
 !
 ! ARGUMENTS
-!  x     : x-coordinate
-!  y     : y-coordinate
-!  a, b  : Coefficients of linear regression (intercept and slope)
-!  r     : Regression
-!  fit   : RMS of fit of regression to the data
+! x     : x-coordinate
+! y     : y-coordinate
+! a, b  : Coefficients of linear regression (intercept and slope)
+! r     : Regression
+! fit   : RMS of fit of regression to the data
 !****-------------------------------------------------------------------
 real(eightbytereal) :: sumx,sumy,sumxx,sumxy,sumyy,uxx,uxy,uyy
 integer(fourbyteint) :: i,n
@@ -950,8 +950,8 @@ logical :: is_number
 ! 'NaN' or 'nan' is considered a number as well.
 !
 ! ARGUMENTS
-!  string   : Input character string
-!  is_number: Return value. True is string is a number
+! string   : Input character string
+! is_number: Return value. True is string is a number
 !****-------------------------------------------------------------------
 integer :: ios
 real(eightbytereal) :: val
@@ -989,11 +989,11 @@ logical :: next_word
 !   <i0> and <i1> are both zero
 !
 ! ARGUMENTS
-!  string   : Input character string
-!  i0       : Start of word found (zero when none)
-!  i1       : Input: position of last delimeter
-!             output: position of the next delimeter
-!  next_word: .true. is word found, .false. otherwise
+! string   : Input character string
+! i0       : Start of word found (zero when none)
+! i1       : Input: position of last delimeter
+!            output: position of the next delimeter
+! next_word: .true. is word found, .false. otherwise
 !****-------------------------------------------------------------------
 integer :: l,i
 l = len(string)
@@ -1038,9 +1038,9 @@ real(eightbytereal), intent(out) :: mean(:), rms(:)
 ! Points for which <y> is NaN are skipped.
 !
 ! ARGUMENTS
-!  y     : Input array of dimension (m,n)
-!  mean  : Average of y per 1-Hz, dimension n
-!  rms   : Standard deviation of 1-Hz, dimension n
+! y     : Input array of dimension (m,n)
+! mean  : Average of y per 1-Hz, dimension n
+! rms   : Standard deviation of 1-Hz, dimension n
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: i, j, n
 do j = 1,size(y,2)
@@ -1087,11 +1087,11 @@ real(eightbytereal), intent(out) :: mean(:), rms(:)
 ! Points for which <x> or <y> is NaN are skipped.
 !
 ! ARGUMENTS
-!  x     : x-coordinate belonging to the values y
-!  x0    : x-coordinate to compute mean
-!  y     : Input array of dimension (m,n)
-!  mean  : Average of y per 1-Hz, dimension n
-!  rms   : Standard deviation of 1-Hz, dimension n
+! x     : x-coordinate belonging to the values y
+! x0    : x-coordinate to compute mean
+! y     : Input array of dimension (m,n)
+! mean  : Average of y per 1-Hz, dimension n
+! rms   : Standard deviation of 1-Hz, dimension n
 !****-------------------------------------------------------------------
 real(eightbytereal) :: sumx,sumy,sumxx,sumxy,sumyy,uxx,uxy,uyy,a,b,xx
 integer(fourbyteint) :: i, j, n
@@ -1147,7 +1147,7 @@ real(eightbytereal), intent(inout) :: x
 ! 0.0 -> 0.0, NaN -> NaN, 200.0 -> 200.0, 8.7 -> 10.0, -0.4 -> -0.5
 !
 ! ARGUMENTS
-!  x     : Value to be rounded on input; rounded value on output
+! x     : Value to be rounded on input; rounded value on output
 !****-------------------------------------------------------------------
 real(eightbytereal) :: xx, p
 integer(fourbyteint) :: i

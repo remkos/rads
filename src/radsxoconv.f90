@@ -193,7 +193,7 @@ end subroutine process
 
 subroutine synopsis
 if (rads_version ('RADS crossover file converter')) return
-write (stderr,1300)
+write (*,1300)
 1300 format (/ &
 'usage: radsxoconv [options] FILENAME ...' // &
 'Required argument:' / &

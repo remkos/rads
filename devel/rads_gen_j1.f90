@@ -25,7 +25,7 @@ program rads_gen_j1
 ! syntax: rads_gen_j1 [options] < list_of_JASON1_file_names
 !
 ! This program handles Jason-1 IGDR and GDR files in netCDF format,
-! version C (also known as GDR-C).
+! version C and E (also known as GDR-C and GDR-E).
 ! The format is described in:
 !
 ! [1] IGDR and GDR Jason Products, AVISO and PODAAC User Handbook,
@@ -37,7 +37,7 @@ program rads_gen_j1
 ! time - Time since 1 Jan 85
 ! lat - Latitude
 ! lon - Longitude
-! alt_gdrd/alt_gdre - Orbit altitude
+! alt_eiggl04s/alt_gdre - Orbit altitude
 ! alt_rate - Orbit altitude rate
 ! range_* - Ocean range (retracked)
 ! dry_tropo_ecmwf - ECMWF dry tropospheric correction
@@ -201,7 +201,6 @@ do
 	call nfs(nf90_get_att(ncid,nf90_global,'references',arg))
 	i = index(infile, '/', .true.) + 1
 	if (gdre) then
-		cma92 = .false.
 		P%original = trim(infile(i:))
 	else
 		j = index(arg, 'CMA')
@@ -268,16 +267,28 @@ do
 	call cpy_var ('inv_bar_corr', 'inv_bar_static')
 	call cpy_var ('inv_bar_corr hf_fluctuations_corr ADD', 'inv_bar_mog2d')
 
-!	call cpy_var ('solid_earth_tide', 'tide_solid')
-!	call cpy_var ('ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got00')
-!	call cpy_var ('ocean_tide_sol2 load_tide_sol2 SUB', 'tide_ocean_fes04')
-!	call cpy_var ('load_tide_sol1', 'tide_load_got00')
-!	call cpy_var ('load_tide_sol2', 'tide_load_fes04')
-!	call cpy_var ('pole_tide', 'tide_pole')
+	call cpy_var ('solid_earth_tide', 'tide_solid')
+	if (gdre) then
+		call cpy_var ('ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got410')
+		call cpy_var ('ocean_tide_sol2 load_tide_sol2 SUB', 'tide_ocean_got48')
+		call cpy_var ('load_tide_sol1', 'tide_load_got410')
+		call cpy_var ('load_tide_sol2', 'tide_load_got48')
+	else
+!		call cpy_var ('ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got00')
+!		call cpy_var ('ocean_tide_sol2 load_tide_sol2 SUB', 'tide_ocean_fes04')
+!		call cpy_var ('load_tide_sol1', 'tide_load_got00')
+!		call cpy_var ('load_tide_sol2', 'tide_load_fes04')
+	endif
+	call cpy_var ('pole_tide', 'tide_pole')
 	call cpy_var ('sea_state_bias_ku', 'ssb_cls')
 	call cpy_var ('sea_state_bias_c', 'ssb_cls_c')
-!	call cpy_var ('geoid', 'geoid_egm96')
-!	call cpy_var ('mean_sea_surface', 'mss_cls01')
+	if (gdre) then
+		call cpy_var ('geoid', 'geoid_egm2008')
+		call cpy_var ('mean_sea_surface', 'mss_cnescls11')
+	else
+!		call cpy_var ('geoid', 'geoid_egm96')
+!		call cpy_var ('mean_sea_surface', 'mss_cls01')
+	endif
 	call cpy_var ('swh_ku')
 	call cpy_var ('swh_c')
 	call cpy_var ('sig0_ku')
@@ -302,7 +313,7 @@ do
 	call cpy_var ('sig0_rms_ku')
 	call cpy_var ('sig0_rms_c')
 	call cpy_var ('off_nadir_angle_wf_ku', 'off_nadir_angle2_wf_ku')
-	!call cpy_var ('off_nadir_angle_pf', 'off_nadir_angle2_pf') (always 0, so no use)
+	!call cpy_var ('off_nadir_angle_pf', 'off_nadir_angle2_pf') (Always 0, so no use. Not available in GDR-E)
 	if (cma92) then	! Variable name change between CMA9.2 and CMA9.3
 		call cpy_var ('atmos_sig0_corr_ku', 'dsig0_atmos_ku')
 		call cpy_var ('atmos_sig0_corr_c', 'dsig0_atmos_c')

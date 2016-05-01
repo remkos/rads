@@ -54,9 +54,9 @@ real(eightbytereal), parameter, private :: nan = transfer ((/not(0_fourbyteint),
 ! This can be done for 1D or 2D variables, but not for 3D variables.
 !
 ! ARGUMENTS
-!  ncid  : NetCDF ID
-!  varnm : Variable name, or RPN combination of variable names
-!  array : Array of data values
+! ncid  : NetCDF ID
+! varnm : Variable name, or RPN combination of variable names
+! array : Array of data values
 !****
 private get_var_1d, get_var_2d, get_var_3d
 interface get_var

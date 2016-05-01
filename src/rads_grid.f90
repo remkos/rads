@@ -86,14 +86,14 @@ type(grid), intent(inout) :: info
 ! unsuccessful, this will be reflected in the returned function value.
 !
 ! ARGUMENTS
-!  filenm   : Name of the file containing the grid.
+! filenm    : Name of the file containing the grid.
 !             Optionally append ?varname to indicate that the variable
 !             varname must be read.
-!  info     : Structure containing information about the grid. Needs
+! info      : Structure containing information about the grid. Needs
 !             to be declared or allocated in calling program.
 !
 ! RETURN VALUE
-!  grid_load: 0 = No error
+! grid_load : 0 = No error
 !             1 = Could not find or open grid
 !             2 = Variable not found or not 2-dimensional
 !             3 = Illegal grid format
@@ -304,7 +304,7 @@ type (grid), intent(inout) :: info
 ! itself, only the memory allocated to store the grid values.
 !
 ! ARGUMENT
-!  info : Grid info structure as returned by grid_load
+! info : Grid info structure as returned by grid_load
 !****-------------------------------------------------------------------
 if (allocated(info%grid_int1)) deallocate(info%grid_int1)
 if (allocated(info%grid_int2)) deallocate(info%grid_int2)
@@ -339,11 +339,11 @@ real(eightbytereal) :: grid_query
 ! wrapping, grid_query returns a NaN value.
 !
 ! ARGUMENTS
-!  info : Grid info structure as returned by grid_load
-!  x, y : x- and y-coordinate of the point to be queried
+! info : Grid info structure as returned by grid_load
+! x, y : x- and y-coordinate of the point to be queried
 !
 ! RETURN VALUE
-!  grid_query : Value at the location (x, y)
+! grid_query : Value at the location (x, y)
 !****-------------------------------------------------------------------
 real(eightbytereal) :: z
 integer(fourbyteint) :: jx,jy
@@ -419,11 +419,11 @@ real(eightbytereal) :: grid_lininter
 ! returns a NaN value.
 !
 ! ARGUMENTS
-!  info : Grid info structure as returned by grid_load
-!  x, y : x- and y-coordinate of the point to be interpolated
+! info : Grid info structure as returned by grid_load
+! x, y : x- and y-coordinate of the point to be interpolated
 !
 ! RETURN VALUE
-!  grid_lininter : Interpolated value at the location (x, y)
+! grid_lininter : Interpolated value at the location (x, y)
 !****-------------------------------------------------------------------
 real(eightbytereal) :: xj,yj,z(2,2),weight(2,2),wtot,vtot,zz
 integer(fourbyteint) :: jx,jy,jx1,jy1
@@ -529,11 +529,11 @@ real(eightbytereal) :: grid_splinter
 ! a NaN value.
 !
 ! ARGUMENTS
-!  info : Grid info structure as returned by grid_load
-!  x, y : x- and y-coordinate of the point to be interpolated
+! info : Grid info structure as returned by grid_load
+! x, y : x- and y-coordinate of the point to be interpolated
 !
 ! RETURN VALUE
-!  grid_splinter : Interpolated value at the location (x, y)
+! grid_splinter : Interpolated value at the location (x, y)
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: jx,jy,j
 real(eightbytereal) :: xj,yj,z(6,6),zy(6),w(6),u(6)
@@ -653,11 +653,11 @@ real(eightbytereal) :: grid_x
 ! <info%nx>. If <i> is out of range, NaN is returned.
 !
 ! ARGUMENTS
-!  info : Grid info structure as returned by grid_load
-!  i    : Horizontal index of the grid pixel
+! info : Grid info structure as returned by grid_load
+! i    : Horizontal index of the grid pixel
 !
 ! RETURN VALUE
-!  grid_x : x-coordinate of the grid pixel
+! grid_x : x-coordinate of the grid pixel
 !****-------------------------------------------------------------------
 if (i < 1 .or. i > info%nx) then
 	grid_x = nan
@@ -684,11 +684,11 @@ real(eightbytereal) :: grid_y
 ! <info%ny>. If <i> is out of range, NaN is returned.
 !
 ! ARGUMENTS
-!  info : Grid info structure as returned by grid_load
-!  i    : Vertical index of the grid pixel
+! info : Grid info structure as returned by grid_load
+! i    : Vertical index of the grid pixel
 !
 ! RETURN VALUE
-!  grid_y : y-coordinate of the grid pixel
+! grid_y : y-coordinate of the grid pixel
 !****-------------------------------------------------------------------
 if (i < 1 .or. i > info%ny) then
 	grid_y = nan

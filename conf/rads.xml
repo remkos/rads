@@ -19,10 +19,10 @@ Global RADS configuration file
 
 <global_attributes>
 	Conventions CF-1.7
-	title RADS 4.0 pass file
+	title RADS 4 pass file
 	institution Altimetrics / EUMETSAT / NOAA / TU Delft
 	source radar altimeter
-	references RADS Data Manual, Issue 4.0
+	references RADS Data Manual, Issue 4.2 or later
 	featureType point
 	ellipsoid TOPEX
 </global_attributes>
@@ -450,7 +450,7 @@ Global RADS configuration file
 	<compress>int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_gdre" field="425" sat="3a 3b c2 j2 j3 sa">
+<var name="alt_gdre" field="425" sat="3a 3b c2 j1 j2 j3 sa">
 	<long_name>CNES GDR-E orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>CNES, GDR-E standards</source>
@@ -478,7 +478,7 @@ Global RADS configuration file
 <alias name="alt" field="4" sat="e1 e2">alt_reaper alt_gfz</alias>
 <alias name="alt" field="4" sat="g1">alt_pgs7777</alias>
 <alias name="alt" field="4" sat="gs">alt_gdrcp</alias>
-<alias name="alt" field="4" sat="j1">alt_gdrd alt_eiggl04s</alias>
+<alias name="alt" field="4" sat="j1">alt_gdre</alias>
 <alias name="alt" field="4" sat="j2">alt_gdre alt_gdrd</alias>
 <alias name="alt" field="4" sat="3a 3b j3 sa">alt_gdre</alias>
 <alias name="alt" field="4" sat="n1">alt_gdrd alt_gdrcp</alias>
@@ -2365,9 +2365,9 @@ Global RADS configuration file
 
 <var name="surface_type" field="2517">
 	<long_name>surface type</long_name>
-	<flag_values>open_ocean unused enclosed_sea_or_lake land continental_ice</flag_values>
+	<flag_values>open_ocean unused enclosed_sea_or_lake land continental_ice floating_ice salted_basin</flag_values>
 	<data source="flags">surface_type</data>
-	<plot_range>0 4</plot_range>
+	<plot_range>0 6</plot_range>
 	<format>z1</format>
 	<compress>int1</compress>
 </var>

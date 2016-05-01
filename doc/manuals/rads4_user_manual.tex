@@ -23,6 +23,7 @@
 \usepackage{url}\urlstyle{sf}
 \usepackage{rotating}
 \usepackage{placeins}
+\usepackage{alltt}
 %\usepackage{listings}
 %\lstset{language=Fortran}
 \bibliographystyle{agu08}
@@ -36,10 +37,21 @@
 \DeclareUrlCommand\code{\urlstyle{tt}}
 \newcommand\Code[1]{\textbf{\code{#1}}}
 \newcommand\CODE[1]{\Code{\emph{#1}}}
+\newcommand\dir[1]{\url{#1}\index{directories!#1@\protect\url{#1}}}
 \newcommand\file[1]{\url{#1}\index{files!#1@\protect\url{#1}}}
+\newcommand\ctag[1]{\url{#1}\index{configuration!#1@\protect\cmd{#1}}}
 \newcommand\cc[1]{\multicolumn{1}{c}{\em #1}}
 \newcommand\var[1]{\url{#1}\index{variables!#1@\protect\url{#1}}}
+\newcommand\sopt[1]{\url{-#1}\index{options, short!-#1@\protect\url{-#1}}}
+\newcommand\lopt[1]{\url{--#1}\index{options, long!--#1@\protect\url{--#1}}}
+\newcommand\soptb[2]{\sopt{#1}~\url{#2}}
+\newcommand\loptb[2]{\lopt{#1}~\url{#2}}
+\newcommand\soptc[2]{\sopt{#1}~\emph{#2}}
+\newcommand\loptc[2]{\lopt{#1}~\emph{#2}}
+\newcommand\optc[3]{\soptc{#1}{#3}~~~~\loptc{#2}{#3}}
 \newcommand\alias[1]{\emph{alias of} \var{#1}}
+\newcommand{\script}[2][tiny]{\begingroup\verbatimfont{\csname #1\endcsname}\verbatiminput{#2}\endgroup}
+
 \setcounter{topnumber}{3}
 \renewcommand{\topfraction}{.9}
 \setcounter{bottomnumber}{2}
@@ -47,6 +59,10 @@
 \setcounter{totalnumber}{4}
 \renewcommand{\textfraction}{.1}
 \renewcommand{\floatpagefraction}{.8}
+
+\makeatletter
+\renewcommand{\tiny}{\@setfontsize\tiny{8.0pt}{8.7}}
+\makeatother
 
 \verbatimfont{\small}
 
@@ -65,14 +81,1486 @@ User Manual}
 \tableofcontents
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Introduction}
 
-\chapter{RADS software installation}
-\chapter{RADS commands}
-\chapter{RADS code}
-\section{Module rads}
-\input{sub/rads}
+\label{ch:intro}
+
+This document describes the layout and use of the Radar Altimeter Database System (RADS), Version 4. RADS was first developed at Delft University of Technology's Department of Aerospace Engineering, and remains a joint development with NOAA Laboratory for Satellite Altimetry and EUMETSAT.
+
+The Radar Altimeter Database System is composed of three elements:
+\begin{itemize}
+\item A few hundred gigabytes of altimeter data files from missions stretching from Geosat to whatever altimeter data was made available in the last few days;
+\item A set of software tools (object library and executables);
+\item Configuration files.
+\end{itemize}
+
+So apart from the actual altimeter data, RADS provides a suite of applications and subroutines that simplify the reading, editing, handling and analysing of data from numerous radar altimeters. Although the actual content and layout of the underlying data products do not have to be identical for all altimeters, the user interface is. Also, the data base is easily expandable with additional data and/or additional corrections without impact to the user interface, or to the software in general. In fact, only in very few cases the core software will need to be adjusted and recompiled, in even fewer cases adjustments to the actual tools will be required. Most changes can be covered by changes in the configuration file.
+
+The data base consists of netCDF files, one for each satellite pass (half a revolution starting and ending close to the poles). Ascending passes have odd numbers, descending passes even numbers. The pass numbering increases consecutively within a repeat cycle. 
+
+In case of exact repeat missions the satellite returns to the same ground track every repeat cycle. For Jason-2, for example, this is after 254 passes, when the pass number starts over at 1. Which pass is number 1 is based on the longitude of the equator crossing (ascending node). Thus all passes with the same pass number are collinear.
+
+For non-repeat missions or those with very long repeat cycles (like CryoSat-2 or the Jason-1 Extended Mission), we created "sub-cycles" of a manageable length. There too passes with the same pass number are nearly collinear. Note that the length of the "sub-cycle" may change for cycle to cycle in a kind of dance-step manner.
+
+Each netCDF data file contains the actual (binary) data as well as the meta data that describe the contents (data type, units, creation history, etc.) The naming convention for the files is \verb|SSpPPPPcCCC.nc|, where \verb|SS| is an abbreviation for the satellite (altimeter), \verb|PPPP| is the pass number, \verb|CCC| is the cycle number, and \verb|nc| is the extension, a standard convention for netCDF data files.
+
+The data files are grouped in one directory for each cycle, named \verb|cCCC|. These cycle directories are then grouped into one directory for each mission phase, which are finally part of one directory per satellite. For example, the data file for pass 801 of cycle 150 in ERS-1's tandem mission is \verb|$RADSDATAROOT/e1/g/c150/e1p0801c150.nc|, where \verb|$RADSDATAROOT| is the root directory of the RADS data base.
+
+To read and manipulate the data, you can use standard netCDF tools, like \verb|ncdump| (that comes with the netCDF package), \prog{GMT} (Generic Mapping Tools), \prog{nco} (NetCDF Operators). But more suitable is the use of the RADS subroutine library and programs. The library is the basis for all data utilities provided with RADS and can also be used to create other programs to the user's convenience. For a description on each of the subroutines in the library and on how to create your own program see Appendix~\ref{app:library}. In addition, a number of handy utilities are provided to do some of the most essential jobs (Chapter~\ref{ch:utilities}).
+
+Whether you are using the routines, or the provided utilities, you will have to know how the data handling system of RADS works. It is not essential that you understand the intrinsics of the data files, but it is highly recommended that you familiarise yourself with the way the data can be manipulated, selected and edited \emph{on the fly} by the RADS routines. Basically, the RADS routines can take you a lot of work out of your hands, provided you have read Chapter~\ref{ch:management}.
+
+Before going into the details of RADS, the software and the data have to be installed on your computer. Chapter~\ref{ch:installation} guides you through the process of software installation, and Chapter~\ref{ch:mirroring} tells you how to keep the database up to date.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\bibliography{altim}
+\chapter{RADS software installation}
+\label{ch:installation}
+In order to work efficiently with the RADS data base you are required to install the software (subroutine library, utilities, scripts, and configuration files). This we will tackle in this Chapter. Once you are done with that at least part of the data base needs to be copied onto your hard disk (or another mounted device), which will be described in the next Chapter.
+
+\section{Prerequisites}
+\label{sec:prerequisites}
+In order to install and run the RADS software you need a few things installed on your system:
+\begin{itemize}
+\item A unix platform (for example Linux or Mac OS X).
+\item The \prog{make} command.
+\item A Fortran 90 compiler. RADS is known to compile with \prog{gfortran}, \prog{f90}, \prog{f95}, \prog{xlf90}, \prog{xlf95}, \prog{ifort}.
+\item The netCDF library (version 4) and module file compiled with the Fortran 90 interface. Of course, netCDF comes with its own dependencies (like HDF5 and szip).
+Please figure out where to find the netCDF module file \file{netcdf.mod} and the netCDF C library \file{libnetcdf} and Fortran library \file{libnetcdff} before you continue.
+\item Optionally, the \prog{git} program.
+\item For downloading and synchronising the data base, the \prog{rsync} program.
+\end{itemize}
+
+\section{Download the source code}
+\label{sec:download}
+The source code can be downloaded as a bundle (zip or tarball) from \prog{GitHub} or can be synchronised directly with the \prog{github} server with the \prog{git} program. The two methods are described below in Sections~\ref{sec:download_github} and \ref{sec:sync_git}.
+
+You can put the source code anywhere you like. We will later configure where things will be installed. After downloading the software, continue with the configuration, compilation, and installation steps in Sections~\ref{sec:configuration} through \ref{sec:installation}.
+
+It is recommended to regularly check for updates of the RADS source code and recompile if necessary.
+
+\subsection{Download the bundle from GitHub}
+\label{sec:download_github}
+To download the latest bundle of the source code, simple go to \url{https://github.com/remkos/rads/releases/latest}.
+There you will find the latest release notes, and links for the downloading of the bundle, either as a zip file, or as a compressed tarball.
+
+You can extract the software in place, or anywhere you want by running:
+\begin{alltt}
+$ tar -xvzf rads-v\vernum.tar.gz
+\end{alltt}
+or
+\begin{alltt}
+$ unzip rads-v\vernum.zip
+\end{alltt}
+This will create a directory called \texttt{\small rads-v\vernum}.
+
+\subsection{Software synchronisation with \protect\prog{git}}
+\label{sec:sync_git}
+The version control system \prog{git} helps to administrate software development projects on distributed systems (or at least by distributed users), avoiding problems of accidentally wiping out each others changes. Also, it is a very practical tool for distributing trees of software to others, who then can make their own changes without running the risk of accidentally overwriting them when a new update is provided. The \prog{git} command can merge those changes, and alerts you of that happening.
+
+You need to have at least the executable \prog{git} installed on your system to connect to the GitHub repository. This program comes installed by default on Mac OS X and most Linux and Unix systems.
+
+First you need to 'clone' the code from the GitHub server onto your machine:
+\begin{verbatim}
+$ git clone https://github.com/remkos/rads
+\end{verbatim}
+This downloads all the code and puts it into a directory called \verb|rads|. This needs to be done only once.
+
+Later on you can bring the source on your machine up to date by going into the \verb|rads| directory and
+executing:
+\begin{verbatim}
+$ git pull -t origin master
+\end{verbatim}
+although it is much simpler to just use:
+\begin {verbatim}
+$ make update
+\end{verbatim}
+
+\section{Software configuration}
+\label{sec:configuration}
+Now we are going to determine where the software executables, library, and data is going to be stored. For this we run the \prog{configure} in the source directory (\texttt{\small rads-v\vernum} if you downloaded the tarball, or \verb|rads| if you used \prog{git}). The program \prog{configure} will allow you to specify where you want things installed and also determines which Fortran compiler you have and what special options are needed for your platform.
+
+By default, \prog{configure} will install everything under the directory were it resides itself. It will create directories:
+\begin{description}
+\item[bin] for the executables (both binaries and scripts)
+\item[include] for the Fortran 90 module files to be used with the RADS library
+\item[lib] for the RADS library
+\item[share] for the system independent data: the satellite data and configuration files. This one particularly, you might want to put somewhere else, on a dedicated disk, for example.
+\end{description}
+
+Normally, you would need to tell \prog{configure} only where you want to install the aforementioned directories. The rest, like where to find your Fortran compiler and the netCDF library, are things that \prog{configure} should be able to figure out by itself, using the \prog{nf-config} script, for example. Therefore, you will only have to specify the root directory for the installation (prefix) and likely the place where you want the RADS altimeter data to reside or where they are already residing (datadir). Run, for example:
+\begin{verbatim}
+$ configure --prefix=/usr/local --datadir=/rads/data
+\end{verbatim}
+The first argument to \prog{configure} specifies that the \dir{bin}, \dir{include} and \dir{lib} directory are to be put under \dir{/usr/local}. The second argument specifies the directory for the data and configuration file (which could be on a server for more systems to use). Still a directory \dir{share} is created under \dir{/usr/local} to contain the manuals.
+
+If, for whatever reason, \prog{configure} cannot find a Fortran compiler or the netCDF libraries on its own, you need to specify the location of the Fortran compiler and the netCDF library and include files. Here is an example:
+\begin{verbatim}
+$ configure FC=/sw/bin/gfortran \
+  --with-netcdf-inc=/sw/lib/netcdf-gfortran/include \
+  --with-netcdf-lib=/sw/lib:/sw/lib/netcdf-gfortran/lib \
+  --prefix=/usr/local --datadir=/rads/data
+\end{verbatim}
+The first argument to \prog{configure} specifies the location of the fortran compiler, while the second identifies the directory where we can find \file{netcdf.mod}. The third argument specifies the two directories that contain the netCDF C library (\file{libnetcdf}) and netCDF Fortran library (\file{libnetcdff}), separated by a colon. If these two are merged, or in one directory, you can just use one directory name.
+
+The \prog{configure} program also tests if your Fortran compiler is ready for Fortran 90 and can compile with the netCDF library. If you have problems, you may need to review the options you gave to \prog{configure}, and make sure that \prog{configure} picked the same compiler that was used to compile the netCDF library. Finding the \prog{nf-config} command on your system may be pivotal.
+
+Run \verb|configure --help| to get more info.
+
+\section{Software compilation}
+\label{sec:compilation}
+Now that your system is configured, it should be easy to compile the software. Just run in the source directory (where you also ran \prog{configure}):
+\begin{verbatim}
+$ make
+\end{verbatim}
+It will compile and link the programs in the subdirectory \dir{src}, but not those in \dir{devel}. The latter are only provided to you to get a feel of how the RADS altimeter database was created. You will not be able to compile or link those programs, as essential routines have been left out.
+
+If you have problems compiling, you may need to tweak one of the makefiles, \file{config.mk}. Please let us know about it, so that we can change the \prog{configure} program accordingly. You can do this at the issue tracker on the RADS GitHub page: \url{https://github.com/remkos/rads/issues}.
+
+\section{Installation}
+\label{sec:installation}
+To install the software, configuration file, and manuals in the places discussed in Section~\ref{sec:configuration}, run the following command in the directory where \prog{configure} resides:
+\begin{verbatim}
+$ make install
+\end{verbatim}
+
+Now you can continue with the mirroring of the data files.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{RADS data mirroring}
+\label{ch:mirroring}
+RADS now exceeds 400~GBytes of data. It virtually impossible to copy all of it in one go, or copy all of it every time that updates have been made. To facilitate the updating, it is recommended to use the \prog{rsync} program. This program will determine by it self which files are updated and will update only those. In fact, it will transfer only those parts of the files that are actually changed. This provides a significant speed benefit when, for example, an extra data field is added. 
+
+You need to have at least the executable \prog{rsync} installed on your system to use \prog{rsync}. In case of Linux machines, simply install the \prog{rsync} package available on most distributions. The program \prog{rsync} comes standard with Mac OS X, or can be obtained from \url{http://rsync.samba.org}.
+
+The \prog{rsync} command will download the data from the rsync server at the Delft University of Technology in The Netherlands. This server is setup such that it will allow you to access only the RADS data and software. It will not allow you to log in to the server as a common user. Thus, setting up \prog{ssh} key pairs is not possible.  
+
+Let us start, for example, to synchronise the Jason-2 data. The subdirectory for the Jason-2 data is \verb|j2| (See Table~\ref{tab:rads4_sats} for all 2-character abbreviations of the altimeter missions). To get all the Jason-2 data, you will type the following commands (still assuming you have your data in \dir{/rads/data}):
+\begin{verbatim}
+$ cd /rads/data
+$ rsync -avz --del radsuser@rads.tudelft.nl::rads/data/j2 .
+\end{verbatim}
+At the beginning \prog{rsync} will ask you to enter the password for \verb|radsuser|. It will have been provided to you when you registered as a user.
+
+\input{rads4_sats}
+
+Apart from the satellite specific directories, there is a directory that contains configuration files, that help RADS to read the data files. These files are also installed in the same place, when installing the software, but you can download them from the rsync server as well. Be sure to keep these feels up to date.
+\begin{verbatim}
+$ cd /rads/data
+$ rsync -avz --del radsuser@rads.tudelft.nl::rads/data/conf .
+\end{verbatim}
+
+If you are patient, and want to get all of the data at once, you can perform the following commands:
+\begin{verbatim}
+$ cd /rads
+$ rsync -avz --del radsuser@rads.tudelft.nl::rads/data .
+\end{verbatim}
+
+If, for whatever reason, the mirroring is interrupted, you can simply start it again, and it will continue where it left off. If you have a recent version of the \prog{rsync} program, we recommend that you use the option \verb|--del| instead of \verb|--delete|, as it speeds up the process significantly. 
+
+There are one more directory that may be of interest, but is not essential. The \verb|/rads/tables| directory contains a number of lists: lists of the time intervals of passes and cycles, and lists of the data
+available for each satellite.
+
+To mirror this directories use \prog{rsync}:
+\begin{verbatim}
+$ cd /rads
+$ rsync -avz --del radsuser@rads.tudelft.nl::rads/tables .
+\end{verbatim}
+
+If you need to use \prog{rsync} regularly to synchronise the RADS data base and you do not want to enter the password every time, you can set up the environment variable \verb|RSYNC_PASSWD| by one of the following methods (depending on the shell):
+\begin{verbatim}
+   export RSYNC_PASSWD=radspasswd    # under sh or bash
+   setenv RSYNC_PASSWD radspasswd    # under csh or tcsh
+\end{verbatim}
+If you are using the \prog{bash} or \prog{sh} shell, you can do it all in one line, for example:
+\begin{verbatim}
+   RSYNC_PASSWD=radspasswd \
+      rsync -avz --del radsuser@rads.tudelft.nl::rads/data .
+\end{verbatim}
+Obviously, the password is \textbf{not} simply \texttt{radspasswd}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{RADS data management}
+\label{ch:management}
+
+This Chapter describes the basic functionalities of the data management system of RADS. These functionalities are part of the RADS utilities as well as the RADS subroutine library on which the utilities are based.
+
+\section{Preparations before using the data base}
+
+The use of RADS starts with the definition of the environment variable \verb|RADSDATAROOT|, such that it points to the root of the RADS data base. For example (for bash users):
+\begin{verbatim}
+$ export RADSDATAROOT=/rads/data
+\end{verbatim}
+If you already specified this directory in the \prog{configure} step, then you do not have to set the \verb|RADSDATAROOT| directory.
+
+It is also practical to include \dir{/usr/local/bin} (or where ever you installed the binaries) in your executable search path, so that existing executables can be used. However, this is not essential, just practical.
+
+\section{Common functionalities}
+A subroutine library is created to facilitate the data reading, conversion to SI units, editing and the construction of sea level anomalies. Based on these routines, several programs (utilities) are created to list or manipulate the contents of the data base. Since these programs share the same routines, much of their functionalities are the same, as well as their user interface. In addition, a number of developer tools are available to create the data base. These programs will be of less concern to the users, and are not yet explained in this manual. Their code is only provided for reference, and are not intended to be compiled on your system.
+
+Common to all RADS utilities is the internal data selection, editing, and the ability to construct the sea level anomaly (or any other fields) \emph{on the fly}. The construction of the sea level anomaly includes a number of arithmetic expressions (adding and subtracting), plus applying a number of selection criteria that can flag the sea level anomaly as invalid. Both the ability to do arithmetic (even beyond mere adding and subtracting) and editing are built into the software library, so that they can be shared by the various RADS utilities. 
+
+Even when writing their own program, the user does not have to generate code to construct a sea level anomaly or to do editing. At the same time that the sea level anomaly is constructed, the data is edited based on system-wide, user, or local preferences. These preferences can be specified at several levels, either in XML configuration files, or by command line options. The order in which these preferences are processed is the following:
+\begin{itemize}
+\item System-wide general preferences, found in \verb|$RADSDATAROOT/conf/rads.xml|.
+\item General user preferences, found in a file \verb|~/.rads/rads.xml|, if available.
+\item General local preferences, found in a file \verb|rads.xml| in the current working directory.
+\item Preference files indicated by the \verb|-X| or \verb|--xml| option on the command line.
+\item Other command line arguments, such as \verb|-L| or \verb|--limits|.
+\end{itemize}
+So the command line arguments overrule the local preferences and which overrule the user preferences and eventually the system-wide preferences.
+
+The XML configuration file is ``human readable'' and is described in the next section.
+
+\section{RADS4 configuration file}
+\label{sec:rads.xml}
+The RADS4 configuration file \file{rads.xml} controls:
+\begin{itemize}
+\item Information about the various altimeter missions, such as repeat period, number of passes per cycle, etc.
+\item Information about all the variables available for each mission, including editing criteria, format for writing to ascii, and the complete information needed to store the variable upon creation of the database.
+\item Optionally, description of variables that can be created \emph{on the fly} from other variables.
+\end{itemize}
+
+The configuration file is a structured XML file, comprised of a number items and blocks, of the following shape:
+\begin{verbatim}
+<block>
+    <item option="value">....</item>
+    <tag>....</tag>
+</block>
+\end{verbatim}
+As usual in an XML file, \verb|<tag>| starts an item with name \verb|tag| and \verb|</tag>| ends it. Any content in between is the value, or are the values associated with this tag. Generally, the line can be broken by carriage returns and leading spaces are ignored.
+
+\subsection{Tags in the configuration file}
+The various names of the tags used in the configuration file are described below.
+\begin{description}
+\item[\ctag{if}] is followed by a condition such as \verb|sat="j1 j2"|, which means that the contents of the block following this \verb|<if>| applies only to the missions \verb|j1| and \verb|j2|. The selection can be negated by starting it with an exclamation point, i.e. \verb|sat="!j1 j2"| means that the following block applies to all missions \emph{except} \verb|j1| \emph{and} \verb|j2|.
+\item[\ctag{elseif}\textrm{,} \ctag{else}] can follow an \ctag{if}-block. For example:
+\begin{verbatim}
+    <if sat="j1 j2">
+        ... for j1 and j2 ...
+    </if>
+    <elseif sat="e1 e2">
+        ... for e1 and e2 ...
+    </elseif>
+    <else>
+        ... all other missions ...
+    </else>
+\end{verbatim}
+\item[\ctag{global_attributes}] specifies the global attributes that are always to be written to the output file, line by line. The first word on each line is the name of the global attribute, the rest is its value.
+\item[\ctag{satellites}] specifies, line by line, the 2- and 3-character abbreviations for the altimeter missions. The rest of each line is used to specify alternative names which can be searched for substrings.
+\item[\ctag{var}] identifies a block of tags that describe a single variable. The tag needs to include an option such as \verb|name="alt_gdre"| to specify the variable name, and optionally (for example) \verb|field=425| which specify the field numbers used in RADS3. A condition like \verb|sat="j1 j2"| can also be added as an option in this tag.
+\item[\ctag{alias}] specifies an alias (i.e. an alternative name) for a previously specified variable. The tag should at least include an option such as \verb|name="alt"| to specify the name of the alias, and optionally the field number used in RADS3 (e.g. \verb|field=4|). Again, a condition like \verb|sat="j1"| can be added. If more than one value is given, then it means that the alias will point to the first variable, unless it is not available, then it points to the second. For example:
+\begin{verbatim}
+    <alias name="alt" field="4" sat="j2">alt_gdre alt_gdrd</alias>
+\end{verbatim}
+means that if one uses the variable \verb|alt| for Jason-2, then the variable \verb|alt_gdre| is processed. If determining this variable was unsuccessful, then \verb|alt_gdrd| is used instead.
+\end{description}
+
+\subsection{Tags within a \protect\ctag{var}-block}
+The following tags can only occur within a \ctag{var}-block (with one exception, see below):
+\begin{description}
+\item[\ctag{long_name}] specifies the description of the variable, as well as the \verb|long_name| attribute to be written to the netCDF data files.
+\item[\ctag{standard_name}, \ctag{source}, \ctag{comment}] specify the \verb|standard_name|, \verb|source|, and \verb|comment| attributes to be written to the netCDF data files.
+\item[\ctag{units}] specifies the units of the variable as used in any output, as well as the \verb|units| attribute in the netCDF data files.
+\item[\ctag{flag_values}] specifies the meanings of a flag, counting up from 0. For example \verb|yes no| means that 0 is the be interpreted as "yes", 1 as "no".
+\item[\ctag{flag_mask}] specifies the meanings of a flag word made up of bits. For example \verb|left front up| means that when the LSB is raised "left" is true, and the next bits indicate if "front" and "up" are true.
+\item[\ctag{limits}] specifies the range of "good" values. Any value less than the lower limit or greater than the upper limit result in the variable to be set to NaN. In case the variable is a \ctag{flag_mask}, then the first value indicates the mask of bits that should not be set, the second value the bits that should be set, otherwise the result will yield NaN.
+\item[\ctag{plot_range}] specifies a suggested range for plotting the variable. It is not used for any processing, except for the \prog{radsvar} program.
+\item[\ctag{parameters}] is used for the RADS4 database creation and has no impact on any user programs.
+\item[\ctag{data}] specifies the variable name as used in the input RADS netCDF data files (normally the same as the variable name), but could also be used to specify a mathematical statement that derives the variable from others, or to interpolate values from a grid. More about this in Section~\ref{sec:data-tag}.
+\item[\ctag{quality_flag}] indicates which variables are checked to determine the quality of the current variable. If any of the specified variables lead to NaN (not-a-number), the corresponding value of the current variable is set to NaN as well.
+\item[\ctag{dimension}] is the dimension of the variable. Default is 1-dimensional. Some variables can be 2-dimensional.
+\item[\ctag{format}] is the Fortran format specification for ASCII output of the variable.
+\item[\ctag{compress}] specifies the data type (i.e., \verb|int1|, \verb|int2|, \verb|int4|, \verb|real|, or \verb|dble|) and optional \verb|scale_factor| and \verb|add_offset| to be used in the output netCDF files. This applied only the output files. Input netCDF files may be different.
+\end{description}
+Because you may want to overrule just one line in a \ctag{var}-block, one can stick the option \verb|var="varname"| in the above tags. For example,
+\begin{verbatim}
+    <var name="alt_gdre">
+        <compress sat="j1 j2 j3 tx">int4 1e-4 1300e3</compress>
+    </var>
+\end{verbatim}
+is equivalent to
+\begin{verbatim}
+    <compress var="alt_gdre" sat="j1 j2 j3 tx">int4 1e-4 1300e3</compress>
+\end{verbatim}
+
+\subsection{The \protect\ctag{data}-tag}
+\label{sec:data-tag}
+The \ctag{data}-tag can be used in a variety of ways, depending on the text (value) between the \verb|<data>| and \verb|</data>| strings, or the optional \verb|source=|\emph{source} option.
+
+\begin{description}
+\item[netcdf:] The simplest form, explained above, is that the value indicates the name of the netCDF variable in the RADS data files. For example: \verb|<data>alt_gdre</data>|. RADS automatically assumes this type of input if only one value is given. Alternatively use \verb|<data source="nc">| or \verb|<data source="netcdf">|.
+
+It is also possible to read global or variable attributes, which will then be assigned to the variable for all of the given pass. For example, if such attributes exist, \verb|range_ku:add_offset| (the attribute \verb|add_offset| of the variable \verb|range_ku|) or \verb|:range_bias_ku| (the global attribute \verb|range_bias_ku|) could be used to retrieve a possible bias added to the Ku-band range.
+\item[math:] If more than one value is given (i.e. it contains at least one space), then it will be recognised as a mathematical statement, in "Reverse Polish" notation. A number of mathematical operators are available, as described in Table~\ref{tab:math-operators}. This can be very practical to determine on the fly the difference between two variables, or a combination of many (such as the sea level anomaly). For example \verb|<data>wet_tropo_rad wet_tropo_ecmwf SUB</data>| computes the difference between the radiometer wet tropospheric correction and the ECWMF wet tropospheric corrections by subtracting the latter from the former. To exercise this mathematical machinery, one can also use \verb|<data source="math">|.
+
+\begin{table}
+\tiny
+\begin{tabular}{p{0.2\textwidth}p{0.75\textwidth}}
+\hline
+Operator & Description \\
+\hline
+\input{sub/rads_math.tab}
+\hline
+\end{tabular}
+\caption{Math operators that can be used in the \protect\ctag{data}-tag. Left of the operator (in uppercase) are the input value(s); on the right of the operator the output value(s).}
+\label{tab:math-operators}
+\end{table}
+
+\item[grid:] RADS can interpolate in 2-D netCDF grids \emph{on the fly}. This is practical if you have a static model to be interpolated at a certain location (longitude and latitude, or any other two variables). Depending on the argument of the \verb|source=| option, one can select to do bilinear interpolation (\verb|"grid"| or \verb|"grid_l"|), cubic spline interpolation (\verb|"grid_c"| or \verb|"grid_s"|), or nearest neighbour selection (\verb|"grid_q"| or \verb|"grid_n"|). Without any of these options, a file name ending on ".nc" will automatically be recognised as needing linear interpolation. In addition one can specify the variables to be used as x- and y-coordinated in the interpolation. Default is \verb|x="lon" y="lat"|. Example for interpolating an SSB model:
+\begin{verbatim}
+    <data source="grid" x="wind_speed_alt" y="swh">my_ssb_model.nc</data>
+\end{verbatim}  
+
+\item[constant:] To assign a single constant value use, for example,\\ \verb|<data source="constant">0</data>|.
+
+\item[branch:] An additional option allows you to read a variable from a different directory branch. For example, if you have an additional set of data stored in the directory \verb|c2.mydata| next to the normal \verb|c2| branch, then you can add the option \verb|branch=".mydata"| which will indicate that this extension is used to the 2-character mission abbreviation to find files containing the current variable within the \ctag{var} block. Currently up to 5 branches (including the standard one) can be used.
+\end{description}
+
+\subsection{Tags for mission definitions}
+A number of tags are employed to give general information about the various altimeter missions. You find them at the end of the global configuration file \file{rads.xml}. These tags are:
+\begin{description}
+\item[\ctag{satellite}] Name of the satellite (maximum 8 characters).
+\item[\ctag{satid}] Satellite ID used in the crossover program \prog{radsxogen}.
+\item[\ctag{dt1hz}] Time step of 1-Hz data.
+\item[\ctag{inclination}] Orbital inclination in degrees.
+\item[\ctag{frequency}] Altimeter frequency or frequencies.
+\item[\ctag{xover_params}] Parameters used in \prog{radsxogen}.
+\item[\ctag{phase}] A block of tags that apply to a given mission phase.
+\item[\ctag{mission}] Name of the mission phase.
+\item[\ctag{cycles}] First and last cycle number in this phase.
+\item[\ctag{repeat}] Length of the repeat cycle (not subcycle) in days and passes (half revolutions) in this phase.
+\item[\ctag{ref_pass}] Time of the equator crossing, longitude of the equator crossing, cycle number (not subcycle number) and pass number of reference pass in this phase.
+\item[\ctag{start_time}] Start time of the mission phase.
+\end{description}
+In the above, time epochs can be written as \emph{yyyy}-\emph{mm}-\emph{dd}T\emph{hh}:\emph{mm}:\emph{ss}, where the part from 'T' onward can be omitted in whole or in part. 
+
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{RADS utilities}
+\label{ch:utilities}
+
+\section{Command line interface}
+The RADS4 commands share a very similar layout of the arguments that can be used on the command line. The common features of the command line interface, are explained in this Section. In later Sections we will explain the syntax and use of each of the RADS4 commands.
+
+To learn the syntax of any of the RADS4 commands, simply use the argument \lopt{help} after the command name. Let us start off with an \textbf{excerpt} of the help of the \prog{radsstat4} program obtained when typing:
+\begin{verbatim}
+$ radsstat4 --help
+radsstat4 (v4.2.0): Print RADS statistics per cycle, pass or day(s)
+
+Usage: radsstat4 [required_arguments] [rads_dataselectors] [rads_options] [program_options]
+
+Required argument is:
+  -S, --sat SAT[/PHASE]     Specify satellite [and phase] (e.g. e1/g, tx)
+
+Optional [rads_dataselectors] are:
+  -C, --cycle C0[,C1[,DC]]  Specify first and last cycle and modulo
+  -L, --limits VAR=MIN,MAX  Specify edit data range for variable VAR
+
+Common [rads_options] are:
+  -v, --verbose             Increase verbosity level
+
+Program specific [program_options] are:
+  -l, --minmax              Output min and max in addition to mean and stddev
+  -o, --output [OUTNAME]    Create netCDF output instead of ASCII (default filename is "radsstat.nc")    
+\end{verbatim}
+
+The command line for every RADS4 program consists of a few of the following components:
+\begin{description}
+\item[program name] always starts the command line.
+\item[required arguments] need to be part of the command line for proper operation; in the above example it specifies the satellite mission.
+\item[data selectors] are options (in the Unix parlance those parts that start with one or two hyphens) that select the RADS data of interest.
+\item[RADS options] are options that are common to most programs.
+\item[program options] are options can be placed on the command line to provide certain optional functionalities specific to the program.
+\end{description}
+In this sense, RADS is very much in-line with most Unix commands. RADS also supports both so-called short options and long options, which each can have required or optional arguments. This you will also find in many other Unix commands, particularly those of the GNU flavour.
+
+In general the order of the arguments is irrelevant, though there are some exceptions that will be explained per program.
+
+\subsection{Short options}
+Short options start with a single hyphen and are followed by a single lower case or upper case letter. In RADS a distinction is made between lower case and upper case options in that the upper case options have a common meaning and syntax between most RADS programs whereas lower case options are specific per program; this is done to harmonise the meanings across programs and help the user to easier remember and recognise the distinctive scope of the options.
+
+Short options can have arguments (a values attached to them), which can either be required or optional. So there are three posibilities:
+\begin{description}
+\item[no argument:] The option flag just switches something on or off, for example \sopt{l} in \prog{radsstat4} adds the printing of minima and maxima to the output. In some cases, like \sopt{v}, the option can be repeated to increase the verbosity level one step each time.
+
+Short options without argument can be combined behind a single hyphen. Thus each of the following are equivalent:
+\begin{verbatim}
+    -v -l -v
+    -l -vv
+    -lvv
+    -vlv
+\end{verbatim}
+
+\item[required argument:] The option flag assigns some value. For example, \soptb{S}{j2} selects the satellite altimeter mission \url{j2}.
+
+The option flag and the value can be separated by whitespace (one or more spaces or tabs), but they can also be pasted together. In addition, the option flag can be preceded by short options without argument under the same hyphen. So again, the following combinations all mean the same thing:
+\begin{verbatim}
+    -v -S j2
+    -v -Sj2
+    -vS j2
+    -vSj2
+\end{verbatim} 
+
+\item[optional argument:] The option flag assigns some value, or switches something on with a default value. In the above example for \prog{radsstat4}, the option \sopt{o} can be used with or without an argument, as identified by the argument \url{[outname]} between square brackets. As the help explains, when \sopt{o} is omitted, the output is in ASCII format, when \sopt{o} is used without argument, then a netCDF file \file{radsstat.nc} is created, and when used with an argument (e.g. \soptb{o}{myfile.nc}) then a netCDF file with that name is created.
+
+Note that the use of these types of options can be tricky, as any value that does not start with a hyphen that follows can be perceived as an argument of this option, which can lead to some unintended consequences. To avoid this problem, the option list can be ended with \lopt{}. All remaining material will then be seen as verbatim arguments (for example input file names), even when they start with a hyphen.
+\end{description}
+
+\subsection{Long options}
+To make it a bit less hard to understand (or to remember) some of the options, quite often an alternative "long option", starting with two hyphens is provided. As can be seen in the \prog{radsstat4} help, the short option \sopt{v} can also be written as \lopt{verbose}. But any shorter version of the long option, as long at it is unique can be used. So \url{--verb} is allowed as well.
+
+Just like short options, long options can have no argument, a required argument, or an optional argument. But long options cannot be combined into one, and they have to be separated by whitespace (one or more spaces or tabs) from the option.
+
+\section{Common options}
+\label{sec:common_options}
+As indicated above, the RADS4 commands have a lot of options in common. Most of these use short options in upper case. Long options are always lower case.
+
+\subsection{Common data selectors}
+Below, in alphabetical order, are the command line options used to select data from the RADS database.
+\begin{description}
+
+\item[\optc{A}{alias}{VAR1=VAR2}] ~\\
+Assign \emph{VAR1} as an alias of \emph{VAR2}. This means that when \emph{VAR1} is requested, \emph{VAR2} will be used. For example \loptb{alias}{wet_tropo=wet_tropo_ecmwf} makes \var{wet_tropo} (which is used in the construction of the sea level anomaly \var{sla}) an alias of \var{wet_tropo_ecmwf}. Hence the model wet tropospheric correction, and not the radiometer wet tropospheric correction will then be used to determine sea level.
+
+\item[\optc{C}{cycle}{C0[,C1[,DC]]}] ~\\
+Select data from cycle \emph{C0} to cycle \emph{C1}. If the latter is omitted, only data from cycle \emph{C0} is selected. Adding \emph{DC} will run through the cycles with a step of \emph{DC}, skipping the intermediate ones. The arguments \emph{C0}, \emph{C1} and \emph{DC} can be separated by commas, slashes, or the minus sign. So \soptb{C}{1/3} selects cycles 1 through 3. If omitted, data from all cycles (throughout all mission phases) are selected.
+
+\item[\optc{F}{fmt}{VAR=FMT}~~~~\loptc{format}{VAR=FMT}] ~\\
+For variable \emph{VAR} use the Fortran format \emph{FMT} in ASCII output. E.g., \soptb{F}{sla=f8.4}. This can also be achieved with the ctag{format} tag in a RADS4 configuration file.
+
+\item[\optc{L}{limits}{VAR=MIN,MAX}] ~\\
+Specify the valid range for the selection of a variable. Outside this range the variable will be set to NaN. This is an alternative to using the \ctag{limits} tag in a RADS4 configuration file.
+
+\item[\loptc{lat}{LAT0,LAT1}] ~\\
+Select data in the latitude range from \emph{LAT0} to \emph{LAT1} in degrees. This is equivalent to using \loptc{limits}{{\rm lat=}LAT0,LAT1}. The south to north range has to be specified on the interval from --90\deg{} to 90\deg{}. Examples:
+\begin{tabbing}
+\loptb{lat}{-40,-20}~~ \= Select data between 40\deg{}S and 20\deg{}S \\
+\loptb{lat}{0,90} \> Selects entire northern hemisphere
+\end{tabbing}
+When omitted, the default range specified in the RADS4 configuration file is used. By default, this is --90\deg{} to +90\deg{}.
+
+
+\item[\loptc{lon}{LON0,LON1}] ~\\
+Select data in the longitude range from \emph{LON0} to \emph{LON1} in degrees. This is the same as \loptc{limits}{{\rm lon=}LON0,LON1}. Note that the output longitudes are influenced by the selection the interval, be it in the range from --180\deg{} to 180\deg{} or from 0\deg{} to 360\deg{}. Examples:
+\begin{tabbing}
+\loptb{lon}{-40,-20}~~~~ \= Select data between 40\deg{}W and 20\deg{}W \\
+\loptb{lon}{320,340} \> Same, but output will have only positive longitudes
+\end{tabbing}
+When omitted, the default range specified in the RADS4 configuration file is used, which is normally --180\deg{} to 180\deg{}.
+
+\item[\optc{P}{pass}{P0[,P1[,DP]]}] ~\\
+Select data from pass \emph{P0} to pass \emph{P1} (out of each selected cycle). If the latter is omitted, only data from pass \emph{P0} is selected. Adding \emph{DP} will run through the passes with a step of \emph{DP}, skipping the intermediate ones. The arguments \emph{P0}, \emph{P1} and \emph{DP} can be separated by commas, slashes, or the minus sign. So \soptb{P}{1-100} selects passes 1 through 100. If omitted, data from all passes in each of the select cycles is selected.
+
+In addition, one can use \soptb{P}{a} (or \loptb{pass}{asc}) to select only ascending passes, whereas \soptb{P}{d} (or \loptb{pass}{des}) is used to select only descending passes.
+
+\item[\optc{Q}{quality-flag}{VAR=FLAG}] ~\\
+Check the variable \emph{FLAG} when validating the variable \emph{VAR}. This means that in any event that the variable \emph{FLAG} is set to NaN (is out of bounds), then \emph{VAR} is also set to NaN as well. This is identical to using the \ctag{quality_flag} tag in a RADS4 configuration file.
+
+\item[\optc{R}{region}{LON0,LON1,LAT0,LAT1}] ~\\
+Select data within the longitude range from \emph{LON0} to \emph{LON1} and the latitude range of \emph{LAT0} to \emph{LAT1}, both in degrees. This is equivalent to using both the \lopt{lon} and \lopt{lat} options.
+
+\item[\optc{R}{region}{LON0,LAT0,RADIUS}] ~\\
+Select data within a circular region with a spherical radius \emph{RADIUS} degrees, around the point \emph{LON0,LAT0} (in degrees).
+
+\item[\optc{S}{sat}{SAT[/PHASE]}] ~\\
+Select data from a given satellite \emph{SAT}. Many variants of the satellite name can be used. Either the 2-character code, the 3-character code, or a substring of the satellite name listed in Table~\ref{tab:rads4_sats}.
+
+This is a required option and needs to be given for all RADS4 programs. Optionally, one can also indicate the mission phase \emph{PHASE}, separated from the satellite by a slash. (For backwards compatibility with RADS3 also a colon can be used, but this is discouraged). 
+
+\item[\loptc{sla}{SLA0,SLA1}] ~\\
+Specify the range of for sea level anomaly in meters (if requested). This is the same as \loptc{limits}{{\rm sla=}SLA0,SLA1}.
+
+\item[\loptc{time}{T0,T1}~~~~\loptc{ymd}{T0,T1}~~~~\loptc{doy}{T0,T1}~~~~\loptc{sec}{T0,T1}] ~\\
+Select data only in the time interval from \emph{T0} to \emph{T1}. RADS4 is generally quite efficient in figuring out the time format when using the generic \lopt{time}, but best is to use instead \lopt{ymd} with time in the format \emph{[YY]YYMMDD[HHMMSS]}, \lopt{doy} for \emph{[YY]YYDDD} (year and day of year), or \lopt{sec} for time in seconds from 1 Jan 1985. Decimal points to indicate fractional days or seconds are also allowed.
+
+The following examples all select data between 1 January 1999, 12:00 UTC and 31 December 2001, 00:00 UTC:
+\begin{tabbing}
+\loptb{ymd}{990101120000,011231}~~ \= \kill
+\loptb{ymd}{990101.5,20011231} \> Note that the century can be omitted \\
+\loptb{doy}{99001.5,2001365} \> ~~~ when using \lopt{ymd} or \lopt{doy}. \\
+\loptb{mjd}{51179.5,52274.0} \> With \lopt{mjd} or \lopt{doy}, use only fractions of day, \\
+\loptb{ymd}{990101120000,011231} \> ~~~ but with \lopt{ymd} one can also use "HHMMSS". \\
+\loptb{sec}{441806400,536371200} \> The old-fashioned seconds since 1985 are still there as well.
+\end{tabbing}
+One will notice that the data selection is very fast. RADS4 will not go through all the data sets to get the right data, but will use its "knowledge" of the repeat cycles and passes to quickly select the appropriate cycles and passes and scan only those.
+
+\item[\optc{V}{var}{VAR1,...}] ~\\
+Select one or more variables from the RADS database. Any number of variables can be select in one go by adding their names to the list, separated by commas or slashes. Also the old RADS3 numerical field numbers for the variables can be used!
+
+\item[\optc{X}{xml}{XMLFILE}] ~\\
+Load the configuration file \emph{XMLFILE} in addition to the default configuration files (\file{$RADSDATAROOT/conf/rads.xml}, and---if available---\file{$HOME/.rads/rads.xml} and \file{rads.xml} in the current working directory).
+
+\item[\optc{Z}{compress}{VAR=TYPE[,SCALE[,OFFSET]]}] ~\\
+Specify how the variable \emph{VAR} is to be stored in a netCDF output file. \emph{TYPE} is one of: int1, int2, int4, real, dble. \emph{SCALE} and \emph{OFFSET} are optional with a default of 1 and 0. This is identical to using the \ctag{compress} tag in a RADS4 configuration file. One can also use \lopt{cmp}.
+\end{description}
+
+In all lists, shown as separated by commas above, one can also use slashes, as is done in the \prog{GMT} program syntax.
+
+\subsection{Backward compatibility}
+For backward compatibility with RADS3 a number of options are still allowed, even though their use is deprecated.
+\begin{description}
+\item[\soptc{h}{H0,H1}] ~\\
+Specify the range from SLA (in meters). This has been replaced by \loptc{sla}{H0,H1}.
+\item[\loptc{opt}{J}] ~\\
+Use field number \emph{J} when field \emph{J}/100 is requested. This is now achieved with \loptc{alias}{VAR1=VAR2}.
+\item[\loptc{opt}{I=J}] ~\\
+Make field number \emph{I} (in the range 1 to 99) and alias of field number \emph{J} (in the range 101-9999). This is now achieved with \loptc{alias}{VAR1=VAR2}.
+\item[\loptc{sel}{VAR1,...}] ~\\
+Select variables to be read. Same as \loptc{var}{VAR1,...}, except that using \loptc{sel} signals some additional backward compatible options.
+\end{description}
+
+In addition, again support backward compatibility with RADS3, the user can omit the double hyphen in front of the RADS3 data selectors like \url{sel=}, \url{sat=}, \url{cycle=}, \url{pass=}, etc. But it is highly recommended to use the new options instead.
+
+\subsection{Other common options}
+Additional common options in RADS4 are:
+\begin{description}
+\item[\loptc{args}{FILENAME}] ~\\
+Get any of the command line arguments from a file named \emph{FILENAME} with one option per line.
+\item[\loptc{debug}{LEVEL}] ~\\
+Set debug/verbosity level to \emph{LEVEL}.
+\item[\lopt{help}] ~\\
+Print the syntax of the command and all its arguments.
+\item[\loptc{log}{FILENAME}] ~\\
+Write statistics and other log information to file \emph{FILENAME} (default is standard output).
+\item[\sopt{q}~~~~\lopt{quiet}] ~\\
+Suppress warning messages (but keeps fatal error messages).
+\item[\sopt{v}~~~~\lopt{verbose}] ~\\
+Increase the verbosity level (warnings and debugging). This option can be used numerous times, increasing verbosity by one level each time.
+\item[\lopt{version}] ~\\
+Print the program version only.
+\item[\lopt{}] ~\\
+Terminates all command line options; all following command-line arguments are considered non-option arguments, even if they begin with a hyphen.
+\end{description}
+
+\section{rads2asc4}
+\label{sec:rads2asc4}
+The program \prog{rads2asc4} lists a selection of the RADS4 data base in one ASCII file or in several pass-by-pass ASCII files. These files contain a header per pass with a description of the data content followed by one record for each measurement that passes the selection criteria. The records are build up of columns, separated by white space, listing various data fields. Which data fields are listed (and in which order they are listed) is determined by the command line argument \sopt{V} or \lopt{var}. 
+
+In the output, the data that has not passed the editing criteria will be represented by "NaN" (Not-a-Number). If the sea level anomaly field suffers that fate, the record will not be listed in the output file, unless the \sopt{r} option is used (or \soptb{r}{0} or \soptb{r}{none}).
+
+If the argument \soptc{o}{OUTNAME} or \loptc{output}{OUTNAME} is used, the output will go into one file (named \file{OUTNAME}). Otherwise, pass files are created with the names \verb|SSpPPPPcCCC.asc|, similar to what is described in Chapter~\ref{ch:intro}.
+
+This program can be called as \prog{rads2asc}, or as \prog{rads2asc4} to avoid conflicts with an already installed RADS3.
+
+For more details, see the description of the command line options in the next Sections.
+
+\subsection{Syntax}
+\script{sub/rads2asc4.hlp}
+
+\subsection{Common options}
+For a full explanation of the command line options that are common to most RADS4 programs, see Section~\ref{sec:common_options}.
+
+\subsection{Program specific options}
+The command line options that are specific to \prog{rads2asc4} are listed here.
+\begin{description}
+\item[\optc{r}{reject-on-nan}{VAR}] ~\\
+Do not output records when the value of variable \emph{VAR}, given as an argument to the \sopt{V} or \lopt{VAR} option, is set to NaN. By default records for which the sea level anomaly (if requested) is set to NaN are rejected.
+\item[\optc{r}{reject-on-nan}{NR}] ~\\
+For backward compatibility with RADS3, this will eliminate records when the value on of item number \emph{NR} on the \sopt{V} option is NaN.
+\item[\soptb{r}{0}~~~~\soptb{r}{none}~~~~\sopt{r}] ~\\
+When either of these is used, no records are eliminated and all NaN values are kept.
+\item[\soptb{r}{n}~~~~\soptb{r}{any}] ~\\
+Indicates that a line should not be printed when a value in any of the data columns is NaN.
+\item[\sopt{f}] This only counts when using \lopt{sel} instead of \lopt{var}, in order to be backward compatible with RADS3. When using\lopt{sel} normally time, latitude and longitude are automatically added is output columns. With \sopt{f} those columns are not automatically added, i.e., you will have to add them to the list of variables.
+\item[\soptb{s}{c|p}] ~\\
+Include statistics per cycle (c) or pass (p). Those will by included in the output with lines starting with '\verb|# min :|', '\verb|# max :|', '\verb|# mean:|', and '\verb|# std :|' followed by the cycle number, the number of valid passes in the cycle (c) or the pass number itself (p), the number of valid records in that cycle (c) or pass (p), and then the statistics (minimum, maximum, mean, and standard deviation) of each column.  
+\item[\loptc{step}{N}] ~\\
+Print only one out of \emph{N} records.
+\item[\loptc{list}{FILENAME}] ~\\
+Specify the name of a file to which to write a list of the created output files.
+\item[\loptc{maxrec}{NREC}] ~\\
+Specify the maximum number of output records. The default is unlimited.
+\item[\optc{o}{output}{OUTNAME}] ~\\
+By default (without this option) files are created per pass with a name similar to the ones in the data base, i.e., \verb|SSpPPPPcCCC.asc|, where \verb|SS| is the satellite abbreviation, \verb|PPPP| is the pass number, and \verb|CCC| is the cycle number. This option will send the output to a single named file, or to standard output when using \soptb{o}{-}. Alternatively, when \emph{OUTNAME} ends in a slash, then it indicates the directory in which to store the pass files \verb|SSpPPPPcCCC.asc|.
+\end{description}
+
+\subsection{Example}
+Assuming a default configuration, we issue the following command:
+\begin{verbatim}
+$ rads2asc4 -S e2 -C 0 -P 901,1000,2 -R -8,42,28,48 \
+    -V time_ymdhms,lat,lon,sla,swh,wind_speed -o rads2asc4.asc -v
+\end{verbatim}
+The program will print to standard output information on which passes are available and have valid data points in the requested area (Mediterranean Sea), how many records were read and how many remained in the particular area, how many records were rejected based on the selection criteria on the corrections, and finally some statistics on the columns that were requested.
+\script{sub/rads2asc4.log}
+The resulting ASCII output file \file{rads2asc4.asc} will look like this:
+\script{sub/rads2asc4.out}
+
+\section{rads2grd4}
+\label{sec:rads2grd4}
+The program \prog{rads2grd4} is a quick-and-dirty gridding program for RADS data. No smoothing or interpolation is performed. The data are simply collected in cells of predefined size, after which the mean and standard deviation in each cell is computed.
+
+The boundaries of the grid are specified by the limits set in the RADS4 configuration files, or by the appropriate common command line arguments \lopt{limits}, lopt{lat}, or \lopt{lon}. The cell size is determined by the option \lopt{res}. Alternatively, the options \lopt{x} and \lopt{y} can be used to set both the range and interval along both coordinate axis of the grid. The use of grid-node oriented or cell oriented boundaries is controlled by the \sopt{-c} option. The required minimum number of measurements per cell can be specified with the \lopt{min} option. Cells with a number of points less than the required number will not be part of the output.
+
+The grid program not only grid sea level anomaly in longitude-latitude space, but any data field in any other space specified by the \sopt{V} (or \lopt{var}) option. For example, a non-parametric sea state bias model can be created by gridding the sea level anomalies in wind-wave space, in which case \sopt{wind_speed,swh,sla} is used.
+
+Multiple variables can be gridded simultaneously on the same space. When gridding several variables at once, only records (measurements) for which every variable is valid (not NaN) will be included in the gridding process.
+
+There are two ways to produce output:
+\begin{description}
+\item[ASCII:] Without the \sopt{o} or \lopt{output} option the program will write to standard output a file with an ASCII header explaining the content, followed by one record for each grid cell with a valid solution. Those records contain the x- and y-coordinate of the centre of the cell, and a pair of mean and standard deviation for each z-variable. The right-most column contains the number of points in the cell. This output can be used directly in GMT's \prog{xyz2grd}.
+\item[netCDF:] With the \sopt{o} or \lopt{output} option a netCDF grid file is produced. This contains a grid for the mean and standard deviation of each variable as well as a grid with the number of points.
+\end{description}
+
+The output is a list of ASCII records per cell: $x$ and $y$ of the centre of the cell, mean of $z$, standard deviation of $z$, number
+of points. Cells with a number of points less than the required number are not listed. This output can be used directly in GMT.
+
+This program can be called as \prog{rads2grd}, or as \prog{rads2grd4} to avoid conflicts with an already installed RADS3.
+
+\subsection{Syntax}
+\script{sub/rads2grd4.hlp}
+
+\subsection{Common options}
+For a full explanation of the command line options that are common to most RADS4 programs, see Section~\ref{sec:common_options}.
+Note that the \sopt{V} and \lopt{var} options have a slightly different meaning in this program (see below) than in most others.
+
+\subsection{Program specific options}
+The command line options that are specific to \prog{rads2grd4} are listed here.
+\begin{description}
+\item[\optc{V}{var}{X,Y,Z[,...]}] ~\\
+Specify the variables for the ordinates \emph{X} and \emph{Y}, and the variable to be gridded (\emph{Z}). One can specify one or more variables for \emph{Z}; each will be part of the output.
+\item[\loptc{x}{X0,X1[,DX]}] ~\\
+Set the x-range and optional interval. The default range is determined by the limits set in the RADS4 configuration file. The interval can also be set with the \lopt{res} option.
+\item[\loptc{x}{X0,X1[,DX]}] ~\\
+Set the y-range and optional interval. The default range is determined by the limits set in the RADS4 configuration file. The interval can also be set with the \lopt{res} option.
+\item[\loptc{res}{DX[,DY]}] ~\\
+Set the resolution of the x- and y-coordinate. If only one number is given the same number is used for both coordinates. The default resolution is 1$\times$1.
+\item[\loptc{min}{MINNR}] ~\\
+Specify the minimum number of points in the grid cell. The default is 2.
+\item[\optc{o}{output}{GRIDNAME}] ~\\
+Create a netCDF file with the name \emph{GRIDNAME} containing the output grids. This suppresses the ASCII output. For backward compatibility with RADS3, one can also use \lopt{grd}.
+\item[\loptc{line-format}{FORMAT}] ~\\
+Format to be used for ASCII output. The default is determined by the specific Fortran formats for each variable specified in the RADS4 configuration file.
+\item[\soptb{c}{[x|y]}]
+Determines that the boundaries of the x-y space are cell-oriented, instead of grid-oriented. When using \soptb{c}{x} this applies only to the x-coordinate, when using \soptb{c}{y} it applied only to the y-coordinate. When using \sopt{c} without argument, it applies to both coordinates.
+\end{description}
+
+\subsection{Examples}
+Assuming a default configuration, we issue the following command:
+\begin{verbatim}
+$ rads2grd4 -S e2 -C 0 -P 901,1000,2 -R -8,42,28,48 -V wind_speed,swh,sla -c
+\end{verbatim}
+This command creates to following results to print to standard output:
+\script{sub/rads2grd4.out}
+
+When we want to create a netCDF file as output, we use the \sopt{o} option:
+\begin{verbatim}
+$ rads2grd4 -S e2 -C 0 -P 901,1000,2 -R -8,42,28,48 -V wind_speed,swh,sla -c \\
+    -o rads2grd4.nc
+\end{verbatim}
+To list its contents, use the \prog{ncdump} command. The result will look like the following:
+\script{sub/rads2grd4-o.out}
+
+\section{rads2nc}
+\label{sec:rads2nc}
+The RADS4 program \prog{rads2nc} works similar to \prog{rads2asc4} (Section~\ref{sec:rads2asc4}). Instead of writing output to one of more ASCII files, it creates one or more netCDF files. This significantly reduces on the output size, and can be convenient for reading into third-party programs.
+
+By default, \prog{rads2nc} will create pass-by-pass netCDF files, named \verb|SSpPPPPcCCC.nc|, with only the information of the netCDF variables given on the command line using the \sopt{V} or \lopt{var} options. The variables are edited given the selection criteria in the RADS4 configurations files or elsewhere on the command line. Values regarded 'invalid' will be set to the \verb|_FillValue| in the netCDF files (or NaN in case of floating numbers). They will show up as an underscore (\verb|_|) in the output of \prog{ncdump}.
+
+The output can also be captured in a single netCDF file or in a different directory than the current working directory. See the description of the option \sopt{o} or \lopt{output} below.
+
+For more details, see the description of the command line options in the next Sections.
+
+\subsection{Syntax}
+\script{sub/rads2nc.hlp}
+
+\subsection{Common options}
+For a full explanation of the command line options that are common to most RADS4 programs, see Section~\ref{sec:common_options}.
+
+\subsection{Program specific options}
+The command line options that are specific to \prog{rads2nc} are listed here. Notice that they have some in common with \prog{rads2asc4} (Section~\ref{sec:rads2arc4}).
+\begin{description}
+\item[\optc{r}{reject-on-nan}{VAR}] ~\\
+Do not output records when the value of variable \emph{VAR}, given as an argument to the \sopt{V} or \lopt{VAR} option, is set to NaN. By default records for which the sea level anomaly (if requested) is set to NaN are rejected.
+\item[\optc{r}{reject-on-nan}{NR}] ~\\
+For backward compatibility with RADS3, this will eliminate records when the value on of item number \emph{NR} on the \sopt{V} option is NaN.
+\item[\soptb{r}{0}~~~~\soptb{r}{none}~~~~\sopt{r}] ~\\
+When either of these is used, no records are eliminated and all NaN values are kept.
+\item[\soptb{r}{n}~~~~\soptb{r}{any}] ~\\
+Indicates that a line should not be printed when any of the selected variables is NaN.
+\item[\loptc{step}{N}] ~\\
+Print only one out of \emph{N} records.
+\item[\loptc{maxrec}{NREC}] ~\\
+Specify the maximum number of output records. The default is unlimited.
+\item[\optc{o}{output}{OUTNAME}] ~\\
+By default (without this option) files are created per pass with a name similar to the ones in the data base, i.e., \verb|SSpPPPPcCCC.asc|, where \verb|SS| is the satellite abbreviation, \verb|PPPP| is the pass number, and \verb|CCC| is the cycle number. This option will send the output to a single named file. Alternatively, when \emph{OUTNAME} ends in a slash, then it indicates the directory in which to store the pass files \verb|SSpPPPPcCCC.nc|.
+\end{description}
+
+\subsection{Example}
+Assuming a default configuration, we issue the following command:
+\begin{verbatim}
+$ rads2nc -S e2 -C 0 -P 901,1000,2 -R -8,42,28,48 \
+    -V time,lat,lon,sla,swh,wind_speed -o rads2nc.nc -v
+\end{verbatim}
+Just as \prog{rads2asc4} the program \prog{rads2nc} will now print to standard output information on which passes are available and have valid data points in the requested area (Mediterranean Sea), how many records were read and how many remained in the particular area, how many records were rejected based on the selection criteria on the corrections, and finally some statistics on the columns that were requested. At the same time a netCDF file \file{rads2nc.nc} will be created. To list its contents, use the \prog{ncdump} command. The result will look like the following:
+\script{sub/rads2nc.out}
+
+\section{radscolin4}
+\label{sec:radscolin4}
+The program \prog{radscolin4} creates collinear tracks (in a rather straightforward way). No smoothing or interpolation is performed. The data are ``gridded'' based on their time with respect to the equator passages. The measurements are simply collected in bins of predefined length (1 second by default), after which the data falling in those bins for each specified pass are listed in a way similar to \prog{rads2asc4} (Section~\ref{sec:rads2asc4}). No averaging or differencing is performed.
+
+The program will output only those bins in which data can be found for all specified repeat cycles, unless the \sopt{r} option is used.
+
+The output is a list of ASCII records per bin, containing the variables selected by the \sopt{V} or \lopt{var} option, for each of the specified cycles. \emph{In the current implementation 20 data fields from 400 different cycles can be compared (while the product of the number of data fields and the number of tracks can be no more than 2000).}
+
+This program can be called as \prog{radscolin}, or as \prog{rads2colin4} to avoid conflicts with an already installed RADS3.
+
+\subsection{Syntax}
+\script{sub/radscolin4.hlp}
+
+\subsection{Common options}
+For a full explanation of the command line options that are common to most RADS4 programs, see Section~\ref{sec:common_options}.
+
+\subsection{Program specific options}
+The command line options that are specific to \prog{radscolin4} are listed here. Notice that they have some in common with \prog{rads2asc4} (Section~\ref{sec:rads2asc4}).
+
+\subsection{Examples}
+\script{sub/radscolin4.out}
+\script{sub/radscolin4-r.out}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{RADS library}
+\label{app:library}
+\section{Module rads}
+\verbatimfont{\tiny}
+\input{sub/rads}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bibliography{altim}
 \printindex
 \end{document}
+
+
+\section{Time, latitude and longitude}
+To select a certain period, or region, limits on time, latitude and longitude can be
+specified. Based on these limits, the RADS library will skip passes that do not cross
+this area or do not have data in the specified period. Instead of reading all the data
+points, the software will use the meta data in the netCDF files to decide whether the pass can possibly
+cross the specified area and can possibly contain data within the given time period.
+
+\section{Flags}
+Field number 26 is an integer 16-bit word. These bits are based on the original GDR
+products and/or on external bits maps. An attempt is made to harmonise the meaning of
+each of the bits throughout the different altimeters, however some difference remain.
+See Table~\ref{tab:flags} for a complete description of the data flags and consult
+Table~\ref{tab:datafields} for the bits that are tested by default.
+
+The meaning of the limits for the flag field is different from
+the other limits. In stead of indicating the minimum and maximum value,
+\verb|limits(1,26)| is an integer 16-bit word in which the bits are set that
+\emph{should not} be set in the data field, while \verb|limits(2,26)| is an integer
+16-bit word in which the bits are set that \emph{should} be set in the data field. For
+example, if \verb|limits(1,26)=17| and \verb|limits(2,26)=2|, data will be rejected
+in which bit 0 is set, bit 4 is set, or bit 1 is not set.
+
+Field 25 is a special field. It is a function of the bit field 26. Field 25$nn$ will
+be 1 if bit $nn$ of field 26 is set, otherwise it is 0. Do not use field 25 for data
+editing purposes; the testing of the flag bits can be controlled by setting the
+limits of field 26, as explained in Section~\ref{sec:namelists}.
+
+\chapter{Utilities}
+\label{ch:utilities}
+
+The utilities described in this Chapter are available
+in the directory \verb|bin|. The source code can be found in
+\verb|src/utils| and \verb|src/max2|.
+
+\section{Common command line arguments}
+The RADS utilities share a number of command line arguments for selecting the
+data set and to indicate how the data set is to be sliced and manipulated.
+These arguments, of which only the \Code{sat=} argument is required (the rest are optional)
+are explained in this Section.
+
+When a program adds a different meaning to one of these arguments,
+it is explained in the program description in the next Sections.
+The order in which the arguments appear on the command line is generally irrelevant, and some
+may appear more than once. However,
+later appearances of the same argument may overrule earlier ones.
+
+In the following, the different arguments are listed. When the argument has
+an optional part, it is shown within square brackets. The variable part of the
+arguments is written in \emph{italics}.
+
+\subsection{Data set specifiers}
+\label{sec:required}
+\begin{description}
+\item[\code{sat=\CODE{altimeter}[/\CODE{phase}]} or
+      \code{sat=\CODE{altimeter}[:\CODE{phase}]}] Specifies the altimeter mission
+and (optionally) its mission phase. The \CODE{altimeter} can be indicated by its
+two-character code listed in Table~\ref{tab:rads4_sats}, or by its name. For example,
+\Code{e1}
+and \Code{ERS-1} are both allowed. The \CODE{phase} is a one-character indicator, which
+defaults to \Code{b} for Geosat, \Code{g} for \ers1, \Code{b} for \nvsat1, and
+\Code{a} for all other satellites.
+For example:
+\begin{tabbing}
+\verb|sat=ERS-1/c|~~ \= Selects \ers1 phase C (Multi-disciplinary Phase) \\
+\verb|sat=tx| \> Selects TOPEX (not Poseidon) data \\
+\verb|sat=e1| \> Selects \ers1 Tandem Mission data (Phase G) \\
+\verb|sat=gs/a| \> Selects Geosat Geodetic Phase data
+\end{tabbing}
+Note that both a slash (/) or a colon (:) can be used as a delimeter between the altimeter
+and the mission phase. This is the only argument that should always appear on the
+command line.
+
+
+\subsection{Data selection arguments}
+\label{sec:optional}
+\begin{description}
+\item[\code{nml=\CODE{namelist}}] Loads \CODE{namelist} in additional to
+system-wide and user-defined namelists.
+
+
+\item[\code{lim:\CODE{datatype}=\CODE{low},\CODE{high}}] Sets the editing
+limits for a certain data type. The \CODE{datatype} is a number between 0 and 99,
+explained in Section~\ref{sec:datafields}. The arguments \CODE{low} and \CODE{high}
+overrule the limits set in the namelists by \code{limits(1,\emph{datatype})} and
+\code{limits(2,\emph{datatype})}. Example:
+\begin{tabbing}
+\verb|lim:19=0,20|~~ \= Set the editing limits of wind speed to 0 to 20 m/s
+\end{tabbing}
+
+\item[\code{h=\CODE{low},\CODE{high}}] Sets the editing
+limits for sea level anomaly. It
+overrules the limits set in the namelists by \verb|limits(1,0)| and
+\verb|limits(2,0)|. The following examples have the same effect:
+\begin{tabbing}
+\verb|lim:0=-10,10|~~ \= \kill
+\verb|h=-10,10| \> Set the editing limits of sea level anomaly to -10 to +10 m \\
+\verb|lim:0=-10,10| \> (same as above)
+\end{tabbing}
+
+\item[\code{sel=\CODE{sel1}[,\CODE{sel2}[,...]]}] Selects one or more data fields for
+output. The numbers \CODE{sel1}, \CODE{sel2}, \emph{etc.}, are the data field
+descriptors explained in Section~\ref{sec:datafields}. The numbers can be in the
+range 0-99 or 100-9999. Several \Code{sel=} arguments may appear on the command line.
+Examples:
+\begin{tabbing}
+\verb|sel=12 sel=1207,2|~~ \= \kill
+\verb|sel=0| \> Output sea level anomaly only \\
+\verb|sel=12,1207,2| \> Output default and GOT00.2 ocean tide and latitude \\
+\verb|sel=12 sel=1207,2| \> (same as above)
+\end{tabbing}
+
+\item[\code{opt=\CODE{descriptor}[,...]}] Overrules the option number specified in the
+namelists. For example:
+\begin{tabbing}
+\verb|opt=1207|~~ \= Make GOT00.2 the default ocean tide
+\end{tabbing}
+Each \Code{opt=} argument can contain one or more descriptors. Also, \Code{opt=} arguments
+can be repeated. Hence, the following combinations of \Code{opt=} arguments are equivalent:
+\begin{tabbing}
+\verb|opt=1207,1307 opt=1601|~~ \= \kill
+\verb|opt=1207,1307,1601| \> Make GOT00.2 the default ocean and load tide \\
+\verb|opt=1207,1307 opt=1601| \> and EGM96 the default reference surface
+\end{tabbing}
+
+\item[\code{fact:\CODE{datatype}=\CODE{factor}}] Changes the multiplication
+factor for a certain data type in the construction of the sea level anomaly.
+The \CODE{datatype} is a number between 0 and 99,
+explained in Section~\ref{sec:datafields}. The argument \CODE{factor}
+overrules the value set in the namelists by \code{factors(\emph{datatype})}.
+Example:
+\begin{tabbing}
+\verb|fact:15=0|~~ \= No longer account for sea state bias in the sea level anomaly
+\end{tabbing}
+
+\item[\code{debug=\CODE{level}}] Sets the debugging level. The higher the level
+the more output is provided. Useful levels are:
+\begin{tabbing}
+\verb|debug=0|~~ \= Most silent mode \\
+\verb|debug=1|~~ \> Provide some information on running process \\
+\verb|debug=2|~~ \> Level 2 and higher produces a lot of output
+\end{tabbing}
+
+\item[\code{-v}] Increased the debugging level by 1. Using one \Code{-v}
+is the same as using \Code{debug=1}; \Code{-v -v} is equivalent to \Code{debug=2}.
+
+\end{description}
+
+
+
+
+\section{\prog{radscolin}}
+\label{sec:radscolin}
+The program \prog{radscolin} creates collinear tracks (in a rather straightforward
+way). No smoothing or interpolation is performed. The data are ``gridded'' based on
+their time with respect to the equator passages. The measurements are simply collected in
+bins of predefined length (1 second by default), after which the data falling in those
+bins for each specified pass are listed in a way similar to \prog{rads2asc}
+(Section~\ref{sec:rads2asc}). No averaging or differencing is performed.
+
+The program will output only those bins in which data can be found for all specified
+repeat cycles, unless the \Code{-r} option is used.
+
+The output is a list of ASCII records per bin, containing the data fields selected by
+the \Code{sel=} option, for each of the specified cycles. In the current
+implementation 20 data fields from 400 different cycles can be compared (while the product of the number of data
+fields and the number of tracks can be no more than 2000). In contrast
+to \prog{rads2asc} the time, latitude and longitude are not listed, unless requested
+with the \Code{sel=} option.
+
+\subsubsection{Syntax}
+\Code{radscolin \CODE{data set specifiers} [\CODE{data selection arguments}]}
+
+\subsubsection{Data set specifiers}
+The data set specifiers (\Code{sat=}, \Code{cycle=} and
+\Code{pass=}) have the same meaning as described in Section~\ref{sec:required}.
+\begin{description}
+\item[\code{sat=\CODE{altimeter}[:\CODE{phase}]},
+      [ \code{cycle=\CODE{first}[,\CODE{last}]} ]
+and   [ \code{pass=\CODE{first}[,\CODE{last}]}] ]  \\
+These arguments come in sets for each satellite, except for the \Code{pass=} option, which
+applies to all satellites. If collinear tracks are selected from a single satellite (within the same mission)
+one set of \Code{sat=}, with the optional \Code{cycle=} and/or \Code{pass=} is
+sufficient; for multi-satellite collinear tracks one additional pair of \Code{sat=} and \Code{cycle=}
+specifiers is needed for each satellite.
+Just as in the case of \prog{rads2asc}, if the \Code{pass=} argument is omitted, all passes
+within the cycles will used. If the \Code{cycle=} argument is omitted, all cycles for that satellite
+(and mission) will be process
+Examples:
+\begin{tabbing}
+\verb|sat=e2 pass=57,302|~~ \= \kill
+\verb|sat=e2 cycle=0,15| \> Print all collinear passes in \ers2 cycles 0-15 \\
+\verb|sat=e2 pass=57,302| \> Print collinear passes 57 through 302 in all \ers2 cycles \\
+\verb|sat=e2 cycle=77,79 sat=n1 cycle=10,12| \\
+~~~Print collinears of \ers2 cycles 77-79 and Envisat cycles 10-12
+\end{tabbing}
+\end{description}
+
+\subsubsection{Data selection arguments}
+The optional data selection arguments are described in Section~\ref{sec:optional}. Those that are
+given a slightly different meaning in \prog{radscolin} and additional optional
+parameters are listed below.
+\begin{description}
+\item[\code{dt=\CODE{binsize}}] Specify the minimum bin size (in seconds). Default is
+\Code{dt=0.97}.
+\item[\code{-r}] Normally, only records are printed in which sea level anomalies are
+available for all cycles. With the \Code{-r} option, all records are printed in which
+at least one cycle has the required data.
+\item[\code{-r\#}] Reject the data when there are less than \Code{\#} tracks with sea
+level anomalies.
+By default \Code{\#} is the total number of selected cycles.
+\item[\code{-v}] Has no effect.
+\end{description}
+When you have not included sea level anomalies (\Code{0}) as one of the items after
+\Code{sel=}, \prog{radscolin} will reject data based on the first data item specified.
+
+\subsubsection{Example}
+Assume you have installed a file \verb|getraw.nml| as described in
+Section~\ref{sec:namelists}. Then issue the command
+\small
+\begin{verbatim}
+radscolin sat=e2 cycle=0,2 pass=915,1000,2 sel=2,0,17,19 -r
+\end{verbatim}
+\normalsize
+The program will print to standard output latitude, sea level anomaly, significant wave
+height and wind speed for all odd passes between 915 and 999 and cycles 0, 1 and 2.
+Each record will show these four quantities for each of the three cycles. With the \Code{-r}
+option also records with invalid sea level anomalies are printed, as shown here:
+\script[tiny]{inc/radscolin-r.out}
+When the \Code{-r} is omitted there will be no records with sea level anomalies
+equal to NaN. That means all cycles ought to have data, which is highly restrictive.
+The output will then be:
+\script[tiny]{inc/radscolin.out}
+To get all records in which \emph{at least one} cycle has valid sea level anomalies, use
+the argument \Code{-r1} on the command line.
+
+\section{\prog{max2}}
+\label{sec:max2}
+The program \prog{max2} is a crossover generating program, based on the age-old
+\prog{max} program. Due to this heritage \prog{max2} has some archaic command line
+arguments and produces some historical binary formats.
+However, here only the arguments and options relevant to most RADS users are
+described. This includes the provision of an
+output file that can be easily read and is configurable.
+
+The crossover generator can take a long sequence of cycles and create crossovers for
+all crossing passes. However, it is most efficient when the time period between the
+passes is limited to half the length of the repeat cycle.
+To limit the time interval, create a file \verb|max.nml| as follows:
+\script{max.nml}
+The indices of \verb|dtxo(i,j)| indicate the satellite numbers given in
+Table~\ref{tab:rads4_sats}. This file will overrule any settings in the system-wide
+namelist \verb|$RADSDATAROOT/nml/max.nml|. Other information essential to
+\prog{max2} comes from the namelist \verb|$RADSDATAROOT/nml/satcat.nml|.
+
+The output file will list the
+latitude and longitude of the crossover plus the time of the two crossing passes and
+any additional data field for each of the passes. For single-satellite crossovers
+first the interpolated value of the data field on the ascending pass is listed,
+then the value on the descending pass. For dual-satellite crossovers the values
+are listed for each satellite in the order as the \Code{sat=} options appear.
+When the \Code{-d} option is used,
+not the value for each pass, but the difference is provided as output.
+
+It is important to realise that the difference of, for example, wind speed may suddenly
+be negative, whereas the data field itself normally is positive. This might lead to
+problems in the output, since \prog{max2} uses the output formats specified in the
+general and satellite-specific \verb|getraw.nml| namelists, which may not have allowed
+for negative numbers to appear in such data fields. In the case of the wind speed, using the
+\verb|f7.3| format, a number up to \verb|99.999| can be printed out, but any value beyond
+\verb|-9.999| will be printed as asterisk. You can avoid the problem by increasing the size
+of the format specifier to \verb|f8.3|, as explained in Section~\ref{sec:namelists}.
+
+\subsubsection{Syntax}
+\Code{max2 \CODE{data set specifiers} [\CODE{data selection arguments}]} \CODE{prefix}
+\\[1ex]
+for large jobs (particularly dual-satellite jobs and jobs with a multitude of
+requested data fields) there is a version with more
+memory: \prog{max2\_big}.
+
+\subsubsection{Data set specifiers}
+The data set specifiers (\Code{sat=}, \Code{cycle=} and
+\Code{pass=}) have the same meaning as described in Section~\ref{sec:required},
+except that the \CODE{step} argument of \Code{pass=} is ignored.
+One additional (and required) argument (\CODE{prefix}) serves as the prefix to the output file
+names.
+\begin{description}
+\item[\code{sat=\CODE{altimeter}[:\CODE{phase}]},
+      [ \code{cycle=\CODE{first}[,\CODE{last}]} ]
+and   [ \code{pass=\CODE{first}[,\CODE{last}]}] ]  \\
+These arguments come in sets for each satellite. If only single-satellite
+crossovers (within the same mission)
+are created one set of \Code{sat=}, with the optional \Code{cycle=} and/or \Code{pass=} is
+sufficient; for dual-satellite crossovers two sets of these parameters are
+needed. Just as in the case of \prog{rads2asc}, if the \Code{pass=} argument is omitted, all passes
+within the cycles will used. If the \Code{cycle=} argument is omitted, all cycles for that satellite
+(and mission) will be process
+Examples:
+\begin{tabbing}
+\verb|sat=e2 pass=57,302|~~ \= \kill
+\verb|sat=e2 cycle=1| \> Make crossovers within \ers2 cycle 1 \\
+\verb|sat=e2 cycle=0,15| \> Make crossovers spanning \ers2 cycles 0-15 \\
+\verb|sat=e2 pass=57,302| \> Make crossovers from passes 57 through 302 in all \ers2 cycles \\
+\verb|sat=e2 pass=57 sat=e2 pass=302| \\
+~~~Make crossovers at the crossing of passes 57 and 302 in all \ers2 cycles \\
+\verb|sat=e2 cycle=0,15 sat=tx cycle=96,151| \\
+~~~Make crossovers between \ers2 cycles 0-15 and TOPEX cycles 96-151
+\end{tabbing}
+
+\item[\CODE{prefix}] is the prefix to all output file names. For each of the
+output files, a different extension will be added to the prefix. In the general
+case presented here, the only output file is \code{\emph{prefix}.rxf}.
+\end{description}
+
+\subsubsection{Data selection arguments}
+The optional data selection arguments are described in Section~\ref{sec:optional}.
+Those that are
+given a slightly different meaning in \prog{max2} and additional optional
+parameters are listed below.
+\begin{description}
+\item[\code{-v}] Has no effect.
+\item[\code{sel=\CODE{sel1}[,\CODE{sel2}[,...]]}] Specifies up to 10 data fields that
+will be included in the output files. When omitted, \Code{sel=0} is assumed. For
+more information on the \Code{sel=} argument, see Section~\ref{sec:optional}.
+\item[\code{-x2}] Same as \Code{sel=0,17,19}.
+\item[\code{-x3}] Same as \Code{sel=0,17,10,5}.
+\item[\code{-sA}] Generate both single- and dual-satellite crossovers (default).
+\item[\code{-sS}] Generate only single-satellite crossovers.
+\item[\code{-sD}] Generate only   dual-satellite crossovers.
+\item[\code{-d}] List differences on crossovers, not both values.
+\end{description}
+
+\subsubsection{Example}
+Assume you have installed a file \verb|getraw.nml| as described in
+Section~\ref{sec:namelists} and the \verb|max.nml| file described above.
+Then issue the command
+\small
+\begin{verbatim}
+max2 sat=e2 cycle=0,1 sel=0,1,17 xovers
+\end{verbatim}
+\normalsize
+The program will print to standard output the following information:
+\script[tiny]{inc/max_v.out}
+And the crossover file \verb|xovers.rxf| will contain the following lines.
+\script[tiny]{inc/max.out}
+
+\chapter{Creating your own program to read RADS data}
+\label{ch:programming}
+
+Before other \prog{GETRAW} routines can be used, \verb|GETRAW_INIT|
+must be called to
+specify the satellite. Several alternative satellite names
+(specified in a namelist)
+are possible. The routine also loads default values for several options.
+These default values are specified in a general namelist
+\verb|$RADSDATAROOT/nml/getraw.nml| and in satellite- and/or mission-specific namelists
+\verb|$RADSDATAROOT/nml/getraw_SS.nml|. See Table~\ref{tab:datafields}
+for a full list of these options. The values in
+these namelists can also be overruled or augmented by files
+\verb|getraw.nml| and \verb|getraw_SS.nml| in the working
+directory.
+
+Optionally, one can call \verb|GETRAW_LIMITS| and/or
+\verb|GETRAW_OPTIONS| to change the limits for data editing and the
+preferred flavours of the various data fields.
+
+Finally, \verb|GETRAW| loads a single altimeter pass into memory and
+then returns the data values in SI units.
+Some selection codes do not refer directly to a data stored in the
+data files, but refer to functions of one or more data fields.
+Most notorious, of course, is the sea level anomaly, that is created as a linear
+combination of a satellite altitude, altimeter range and a number of geophysical
+corrections.
+All the requested data (including possible additional data needed to
+construct the data) is
+quality checked using the default limits or those specified by
+\verb|GETRAW_LIMITS|.
+\verb|GETRAW_OPTIONS| and \verb|GETRAW_FACTORS| can be used to modify
+the construction of the sea level anomaly.
+
+As a generic altimeter data user you do not want to do anything else
+than calling \verb|GETRAW|. However, before the first call to this
+subroutine, one should use \verb|GETRAW_INIT| to specify the satellite.
+The user can also enhance the data selection by adding one or more
+calls to \verb|GETRAW_OPTIONS|, \verb|GETRAW_FACTORS| and/or
+\verb|GETRAW_LIMITS|.
+
+Finally, \verb|GETRAW_STAT| can be called to print
+out the statistics of the data reading and editing.
+
+The following example will retrieve time, latitude, longitude, fully
+corrected sea level anomaly, and mean sea surface height from ten passes
+out of the data base. Only data over the Southern hemisphere is returned.
+
+\script{radstest.f}
+
+\appendix
+\chapter{RADS Subroutine Descriptions}
+\label{app:routines}
+
+For a full description of the use of each of the routines, consult the
+subroutine descriptions below.
+
+\section{The implementation of \prog{GETRAW}}
+\scriptsize
+\input{../../src/lib/getraw_init}
+\input{../../src/lib/getraw}
+\input{../../src/lib/getraw_options}
+\input{../../src/lib/getraw_factors}
+\input{../../src/lib/getraw_limits}
+\input{../../src/lib/getraw_stat}
+\normalsize
+
+\section{Supporting routines}
+\label{sec:support}
+\scriptsize
+\input{../../src/lib/radsargs1}
+\input{../../src/lib/radsargs2}
+\normalsize
+
+\chapter{Database Layout}
+\label{app:database}
+This chapter is added for those who have the desire to understand how the data
+base is built. It is of little of no consequence if you do not read it, but
+may give you a better insight when you do.
+
+RADS was first conceived in 1998. The data base had a format similar to most
+GDR products, in which the record length is fixed, and the order and specification
+of the various data fields is likewise unchangeable.
+There were several reasons to change the format of the RADS data base.
+\begin{itemize}
+\item The RADS v1.0 format is rather inflexible.
+\item The record length of 80 characters limits the extension with
+additional fields.
+\item Some satellites do not require all fields, hence disk space is
+used inefficiently.
+\item Testing extra or new geophysical corrections is difficult without
+impact for other users.
+\item Any change to the format requires a complete reproduction of the
+data and has similar impact to the programs that read the data base.
+\end{itemize}
+
+Just changing the format was \textbf{no option}. It also requires the
+coding and use
+of a new \prog{GETRAW} routine. Reading the data
+directly with a C or FORTRAN \verb|read| statement should be avoided.
+The format change was paired with the generation of a \prog{GETRAW}
+routine that not only reads the data, but also converts it to the
+appropriate units, does error checking and data screening.
+
+\section{Advantages of the netCDF format}
+The netCDF format is extremely flexible, and platform independent. Here are some of the key elements that made us chose the netCDF format of the altimeter data.
+\begin{description}
+\item[Pass files:] The idea of pass files is kept. It seems
+the best way to deal with altimeter data.
+The naming convention of the pass files is not much of a concern to
+the \prog{GETRAW} subroutine, the format for this is fed by a namelist
+entry.
+\item[Meta data:] The meta data is part of the data files. This makes the data files
+self-descriptive, so not much additional information is needed. This allows also other programs (outside RADS) to make sense of the data.
+\item[``Rotated'' data file:] The word ``rotated'' refers to the idea that the conventional GDR data is record oriented (one record contains a variety of different fields), while the netCDF files are column, or field oriented (each "record" contains data collected on different times).
+\item[Order:] The order in which the data fields are stored in the product
+has become irrelevant. Information about the field order
+is contained in the meta data.
+\item[Flexibility:] The idea of fixed record lengths is left. Reading is no longer performed by fixed record length Fortran read statements, but by netCDF read statements. Although this requires extra coding, it is much more system-independent, and allows easy augmentation of the data files.
+\item[Byte representation:] The netCDF library takes care of the issue of byte representation that makes it possible even to use single and double floats, not only integers. 
+\end{description}
+
+\section{Data structure}
+The RADS netCDF data files are filled field by field, instead of record by
+record. That looks strange at first, but in the end this provides the
+most flexible solution to add or remove fields at will. One may even use
+a similar format for SLA (sea level anomaly) files.
+
+The conventional way to construct an altimeter product is record by
+record. A \textbf{record} is a combination of measurement and model
+information pertaining to a single time tag. These measurement and model
+values are called \textbf{fields}. A conventional altimeter product would have, for example, $n$ data
+records of $m$ fields each.
+
+In the netCDF format the columns and
+rows in the data product are exchanged. The number of ``records'' is now equal to
+the number of different data fields ($m$). Each record contains the $n$
+values pertaining to each of the time tags. Since a data field can be
+either 1, 2, or 4 bytes long, the records are not of equal length.
+The data fields remain, preferably, of integer type. But floats can be used as well.
+
+It is believed that in this way, the format of the data file is flexible
+enough to allow additions of data fields or remove data fields at will,
+without having impact on the user and his/her software.
+
+The rotated way of data storage has an additional unforeseen advantage.
+Synchronising data sets can be sped up significantly using the program
+\prog{rsync} (freeware, binaries available). This program can do
+synchronisation of files across the network while sending only the
+changes, and not the whole file. This means that when a field is added,
+simply the extra record is transferred and pasted into the remote file.
+In case of an update of a column, the old one will be removed and the
+new one is put in place.
+
+To learn more about the netCDF files, see the UCAR netCDF web site.
+
+
+\section{Role of the meta data}
+
+The netCDF meta data contain sufficient information to
+``understand'' the contents of the file. This is \textbf{more} than just
+specifying the number of records and data fields. It also specified the variable name, data unit, scale factor, offset, etc.
+All information that can be used directly by any software to convert the data in a humanly readable form.
+
+\section{A remnant of the past: the RMF file}
+Next to the netCDF data files, RADS still has a remnant of the past: the \verb|getraw.rmf| files. These files were previously used as meta files but now only contain a few extra tricks to replace data fields or compute them on the fly.
+The RMF files are a compilation of \textbf{free-format}
+ASCII lines of mixed text and values. The start of the record (\ie, the
+first word, or \emph{key})
+specifies the meaning of the line. When parsing the lines \prog{GETRAW}
+simply ignores all lines that start with
+an unknown key. The key is recognised by its first
+5 letters. The order of the lines is irrelevant.
+
+Each key is followed by one or more values or character strings (within
+quotes). The values and strings are separated from the key and from
+each other by one or more spaces or tabs.
+
+\begin{description}
+\item[@RADS\_RMF\_V2.2] The first line specifies that this is a RADS RMF
+version 2.2 file
+\item[\# \textrm{or} \%] Lines starting with \verb|#| or \verb|%| can
+be used to enter comments. They are ignored by \prog{GETRAW}.
+\item[CONST] indicates a constant. Obvious candidates of data types that
+are stored as constants are altimeter biases. But also slowly varying
+values that can be assumed constant over one pass can be stored as a
+constant. The key is followed by the data field descriptor
+(an integer number) followed by a string
+denoting the meaning of this field and the unit.
+\item[MATH] specifies a function written as a sequence of operators
+on constants or data columns. The formulation is much like the GMT
+program \prog{gmtmath}. The key (\verb|MATH|) is followed by:
+\begin{itemize}
+\item The data field descriptor.
+\item A character string expressing the mathematical function.
+\item A string describing the function.
+\end{itemize}
+For a description of all mathematical operators see Chapter~\ref{ch:math}.
+\item[ALIAS] points to another field. Its arguments are:
+\begin{itemize}
+\item The data field descriptor.
+\item The data field descriptor the previous argument is pointing to.
+\item A character string that describes the alias.
+\end{itemize}
+\item[UNDEF] removes a previously defined field from memory. It has
+only one argument, the field descriptor of that has to be erased.
+\end{description}
+
+\chapter{Math operators}
+\label{ch:math}
+The mathematical expressions that can be used on \verb|MATH| records are
+very similar to the program \verb|gmtmath| of the GMT plotting package. The
+expressions are parsed from left to right and are to be written in a Reverse
+Polish Notation. This means that, for example, $A+B=$ is written as \verb|A B ADD =|.
+The expression always needs to end in an equal sign (\verb|=|).
+
+The expressions operate on column data, so in the previous example, all elements
+of the vector A is are added to the corresponding elements of vector B. The output is a
+new vector. To use data fields as vectors, use a dollar sign (\verb|$|) followed
+by the field number. If the data is to be tested against the predefined limits, use
+a percent sign (\verb|%|) followed by the field number. Examples: \verb|$1207| and
+\verb|%1207|.
+
+A large number of operaturs can be used, as described in Table~\ref{tab:math}. The functions
+take 0, 1, 2, or 3 columns as input, and return 1, 2, or 3 columns at the top of the
+stack. Table~\ref{tab:math} also indicates the number of input and output columns.
+Constants (like \verb|E| and \verb|PI|) and values (like \verb|2| or \verb|3.14d0|)
+do not take any input.
+
+\input{math}
+
+\chapter{Version History}
+\label{ch:history}
+\section{Version 1, November 1998}
+RADS was first conceived in November 1998. RADS Version 1, as it is now referred to, was
+much less flexible than the current version. But it has the principle idea of providing a
+generic data base with a software interface that would do editing on the fly. However,
+unlike RADS Version 2, it did not allow any flexibility in the data content or format,
+nor in the way the editing was performed.
+
+\section{Version 2, December 2000}
+RADS Version 2 was developed in December 2000, and was a mayor improvement over its
+predecessor. It required the regeneration of the data base (which until then only
+included TOPEX/Poseidon, \ers1 and \ers2 data) and the development of new tools for the
+generation and manipulation of the data. This is the version as described in this user
+handbook.
+
+But also RADS Version 2 has had its improvements over the years,
+of which the most important ones are listed in this and the next Sections.
+\begin{itemize}
+\item Data of Geosat, GFO, Jason-1, and Envisat are added to the data base.
+\item Provide also C- and S-band measurements for dual-frequency altimeters.
+\item TOPEX significant wave heights are patched for the period when the Side-A altimeter
+is deteriorating, such that they maintain, on average, a constant offset with the \ers2
+wave heights.
+\item FES99 and GOT00.2 ocean tides are added to all data sets.
+\item ETOPO2 topography is added to all data sets.
+\item CODE GIM, JPL GIM and IRI95 ionospheric delay corrections are added for all data
+since September 1998.
+\item Adding global mean ocean pressure to the meta files.
+\item Gradual adding of new functionalities, like on the fly application of operators on
+the data.
+\item Data can be created both in big or little endian format.
+\end{itemize}
+
+\section{Version 2.1, June 2003}
+This is a mayor revision of the RADS data set and software. Although the old data base is
+compatible with the new software, and visa versa, we recommend to update both the
+software and the data base. Note that the new namelists do not work with the old
+software.
+
+What is new in the software?
+\begin{itemize}
+\item Namelists specific to each altimeter mission phase can be used.
+\item User specific namelists (for general, satellite-specific or mission-specific
+settings) can be created in \verb|~/.rads|. Same for \verb|getraw.rmf| files.
+\item The \Code{pass=} and \Code{cycle=} command-line arguments need no longer be
+specified both. RADS now "knows" the number of passes in a cycle, and the number of
+cycles in the mission phase.
+\item The \prog{radsargs1} and \prog{radsargs2} have been better designed. Most
+arguments from \prog{radsargs1} are moved to \prog{radsargs2}. \emph{To use these
+new routines in the programs you created yourself, you need to change your code!}
+\item The arguments of \prog{radscolin} are rearranged, similar to \prog{max2}; \prog{radscolin}
+also allows more tracks to be compared.
+\item On-the-fly interpolation of grids implemented.
+\item New organisation of source directories into utilities, tools, utilities
+under development, and supporting tools.
+\item Namelists are adjusted to reflect the new data holdings.
+\item Source, namelists and scripts are added to CVS tree.
+\end{itemize}
+
+What is new in the data base?
+\begin{itemize}
+\item The GOT00.1 and CLS01 mean sea surface models have been added to all data sets.
+\item The EGM96 geoid and GOT00.1 and CLS01 mean sea surface models are now 
+interpolated using bi-cubic
+splines. This provides much better results, particularly for EGM96.
+\item The OSU MSS95 mean sea surface model (using bi-linear interpolation)
+is still available but will be depreciated in the near future.
+\item The routines for FES2002 and GOT00.2 have been improved to avoid errors at
+the sub-millimetre level.
+\item FES99 has been recomputed after fixing a bug in the FES tide prediction software.
+\item The CSR 3.0 and FES95.2.1 ocean tide models have been removed.
+\item The routines for solid earth tide and Modified Chelton and Wentz (wind) model have
+been improved to avoid errors at the sub-millimetre level.
+\item The drift in the \ers2 microwave radiometer brightness temperature has been
+compensated.
+\item The GFZ and JGM-3 orbits on the \ers2 products have been removed.
+\item Added IRI95 ionospheric delay correction to all data sets.
+\item Added JPL GIM ionospheric delay on all data sets since September 1998; removed the
+CODE GIM ionospheric delay.
+\end{itemize}
+
+What is new in the namelists (settings)?
+\begin{itemize}
+\item Special settings per altimeter mission phase can now be used.
+\item Namelists now include pass and cycle ranges.
+\item The following fields have become default:
+\begin{itemize}
+\item Inverse barometer correction referenced to the global mean pressure over oceans
+(1003), instead of the correction that did not include the mean pressure correction
+(1001)
+\item GOT00.2 ocean and load tide (1207, 1307) instead of CSR 3.0 tides (1201, 1301)
+\item CLS01 mean sea surface as reference (1605) instead of OSU MSS95 (1602)
+\end{itemize}
+\item For GFO and Geosat: extended number of averaged 10-Hz measurements from 9-10 to 8-10.
+\end{itemize}
+
+\section{Version 2.2, December 2004}
+During the year several changes have been made to the data base as well as to the software.
+Because of the implementation of new record types in the meta files, the data base is
+not compatible with older software versions. Both the namelists and software needs to be
+upgraded to work with the latest implementation of the data base.
+
+What is new in the software?
+\begin{itemize}
+\item Several minor bugs have been patched.
+\item Because of problems on SUN platforms with the recursive calling of the subroutine
+\verb|LOAD_ANY|, some reworking of the code had to be undertaken. The redesign was
+trivial, except for \verb|LOAD_FUNC|, which has now been depreciated and replaced by
+the much more flexible \verb|LOAD_MATH|.
+\item The \verb|ALIAS| record was introduced. This makes is easy to assign more than
+one field number to the same data.
+\item The \verb|MATH| record was introduced. See description in this manual.
+\item Invalid data is now set to NaN (Not-A-Number) instead of 1.D+30. Use the function
+\verb|ISNAN| to trap them.
+\end{itemize}
+
+What is new in the data base?
+\begin{itemize}
+\item Many fields have been added, particularly for TOPEX.
+\item GFO has now all PGS7777b orbits.
+\item FES2004 is replacing FES2002.
+\item Envisat data corrected for drifts.
+\item Geosat data undergoing reconstruction.
+\item New microwave radiometer drift corrections for ERS-1, ERS-2, Envisat and T/P.
+\end{itemize}
+
+\section{Version 3.0, February 2008}
+
+What is new in the software?
+\begin{itemize}
+\item RMF and RDF files replaced by netCDF files.
+\item Provide better interface with GMT.
+\end{itemize}
+
+\section{Version 3.1, June 2008}
+
+What is new in the software?
+\begin{itemize}
+\item Introduced \prog{configure} to configure the software. This removes the \verb|sysdep| directory and the system dependent include directories.
+\item Environment variable \verb|RADSROOT| no longer used/necessary. \verb|RADSDATAROOT| can be used to point to the data base.
+\item \verb|nml| directory moved the \verb|data/nml|.
+\item All scripts are installed from the \verb|src| subdirectories, nothing remains in \verb|bin|.
+\item When upgrading using CVS, please remove the directories \verb|bin|, \verb|lib|, and \verb|src|. Then checkout \verb|src| anew.
+Move drectory \verb|nml| to the data directory.
+\end{itemize}
+
+What is new in the data base?
+\begin{itemize}
+\item GGM02C ITRF2000 and ITRF2005 orbits for TOPEX and Jason-1.
+\item Range bias between TOPEX side A and B fixed.
+\item New tide models GOT 4.7, WebTide Arctic8d, WebTide Hudson.
+\item New surface models EGM2008 MSS, EGM2008 geoid, DNSC08 MSS, DNSC08 bathymetry.
+\end{itemize}
+
+\end{document}
+
 

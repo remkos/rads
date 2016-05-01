@@ -118,12 +118,12 @@ write (*,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
 '  -r, --reject-on-nan VAR   Reject records if variable VAR on -V specifier is NaN'/ &
-'  -r #                      Reject records if data item number # on -V specifier is NaN'/ &
+'  -r NR                     Reject records if data item number NR on -V specifier is NaN'/ &
 '  -r 0, -r none, -r         Do not reject records with NaN values'/ &
 '  -r n, -r any              Reject records if any value is NaN'/ &
-'                      Note: If no -r option is given -rsla is assumed'/ &
+'                      Note: If no -r option is given -r sla is assumed'/ &
 '  --step N                  Step through records with stride n (default: 1)'/ &
-'  --maxrec N                Specify maximum number of output records (default: unlimited)'/ &
+'  --maxrec NREC             Specify maximum number of output records (default: unlimited)'/ &
 '  -o, --output OUTNAME      Specify name of a single output file or (when ending in /) directory'/ &
 '                            name for pass files; default is pass files in current directory')
 stop

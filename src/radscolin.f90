@@ -175,7 +175,7 @@ contains
 subroutine synopsis
 if (rads_version ('Make collinear data sets from RADS')) return
 call rads_synopsis
-write (stderr,1300)
+write (*,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
 '  --dt DT                   Set minimum bin size in seconds (default is determined by satellite)'/ &
@@ -194,7 +194,7 @@ write (stderr,1300)
 '      --diff                Compute difference between first and second half of selected passes (implies --keep)'/ &
 '  -f, --force               Force comparison, even when missions are not considered collinear'/ &
 '  -o, --output [FILENAME]   Create netCDF output by pass (default is ascii output to stdout). Optionally specify'/ &
-'                            FILENAME including "#", to be replaced by the psss number. Default is "radscolin_p#.nc"'/ &
+'                            FILENAME including "#", to be replaced by the pass number. Default is "radscolin_p#.nc"'/ &
 '  --diff                    Compute the collinear difference between the first and second half of selected tracks')
 stop
 end subroutine synopsis

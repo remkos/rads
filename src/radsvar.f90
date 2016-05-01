@@ -91,7 +91,7 @@ contains
 subroutine synopsis
 if (rads_version ('Make list of RADS variables')) return
 call rads_synopsis
-write (stderr,1300)
+write (*,1300)
 1300 format (/ &
 'With the option "-V VAR", program specific [program_options] are:'/ &
 '  -d FACTOR                 Scale the plotting range for differences by FACTOR (def: 1)'/ &

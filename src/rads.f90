@@ -2,6 +2,172 @@
 ! SUMMARY
 ! RADS main module
 !
+! SYNOPSIS
+module rads
+use typesizes
+use rads_grid, only: grid
+
+! * Parameters
+! Dimensions
+integer(fourbyteint), parameter :: rads_var_chunk = 100, rads_varl = 40, &
+	rads_naml = 160, rads_cmdl = 320, rads_strl = 1600, rads_hstl = 3200, &
+	rads_cyclistl = 50, rads_optl = 50, rads_max_branches = 5
+! RADS4 data types
+integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, &
+	rads_type_flagmasks = 2, rads_type_flagvalues = 3, rads_type_time = 11, &
+	rads_type_lat = 12, rads_type_lon = 13, rads_type_dim = 14
+! RADS4 data sources
+integer(fourbyteint), parameter :: rads_src_none = 0, rads_src_nc_var = 10, &
+	rads_src_nc_att = 11, rads_src_math = 20, rads_src_grid_lininter = 30, &
+	rads_src_grid_splinter = 31, rads_src_grid_query = 32, &
+	rads_src_constant = 40, rads_src_flags = 50, rads_src_tpj = 60
+! RADS4 warnings
+integer(fourbyteint), parameter :: rads_warn_nc_file = -3
+! RADS4 errors
+integer(fourbyteint), parameter :: rads_noerr = 0, &
+	rads_err_nc_file = 1, rads_err_nc_parse = 2, rads_err_nc_close = 3, rads_err_memory = 4, &
+	rads_err_var = 5, rads_err_source = 6, rads_err_nc_var = 7, rads_err_nc_get = 8, &
+	rads_err_xml_parse = 9, rads_err_xml_file = 10, rads_err_alias = 11, rads_err_math = 12, &
+	rads_err_cycle = 13, rads_err_nc_create = 14, rads_err_nc_put = 15
+! Additional RADS4 helpers
+character(len=1), parameter :: rads_linefeed = char(10), rads_noedit = '_'
+! RADS3 errors or incompatibilities
+integer(fourbyteint), parameter :: rads_err_incompat = 101, rads_err_noinit = 102
+integer(twobyteint), parameter :: rads_nofield = -1
+! Math constants
+real(eightbytereal), parameter :: pi = 3.1415926535897932d0, rad = pi/180d0
+! I/O parameters
+integer, parameter :: stderr = 0, stdin = 5, stdout = 6
+
+! * Variables
+! I/O variables
+integer(fourbyteint), save :: rads_verbose = 0       ! Verbosity level
+integer(fourbyteint), save :: rads_log_unit = stdout ! Unit number for statistics logging
+
+! * RADS4 variable structures
+type :: rads_varinfo                                 ! Information on variable used by RADS
+	character(len=rads_varl) :: name                 ! Short name of variable used by RADS
+	character(len=rads_naml) :: long_name            ! Long name (description) of variable
+	character(len=rads_naml) :: standard_name        ! Optional CF 'standard' name ('' if none)
+	character(len=rads_naml) :: source               ! Optional data source ('' if none)
+	character(len=rads_naml) :: parameters           ! Optional link to model parameters ('' if none)
+	character(len=rads_strl) :: dataname             ! Name associated with data (e.g. netCDF var name)
+	character(len=rads_cmdl) :: flag_meanings        ! Optional meaning of flag values ('' if none)
+	character(len=rads_cmdl) :: quality_flag         ! Quality flag(s) associated with var ('' if none)
+	character(len=rads_cmdl) :: comment              ! Optional comment ('' if none)
+	character(len=rads_varl) :: units                ! Optional units of variable ('' if none)
+	character(len=rads_varl) :: format               ! Fortran format for output
+	character(len=rads_varl) :: gridx, gridy         ! RADS variable names of the grid x and y coords
+	type(grid), pointer :: grid                      ! Pointer to grid (if data source is grid)
+	real(eightbytereal) :: default                   ! Optional default value (Inf if not set)
+	real(eightbytereal) :: limits(2)                 ! Lower and upper limit for editing
+	real(eightbytereal) :: plot_range(2)             ! Suggested range for plotting
+	real(eightbytereal) :: add_offset, scale_factor  ! Offset and scale factor in case of netCDF
+	real(eightbytereal) :: xmin, xmax, mean, sum2    ! Minimum, maximum, mean, sum squared deviation
+	logical :: boz_format                            ! Format starts with B, O or Z.
+	integer(fourbyteint) :: ndims                    ! Number of dimensions of variable
+	integer(fourbyteint) :: brid                     ! Branch ID (default 1)
+	integer(fourbyteint) :: nctype, varid            ! netCDF data type (nf90_int, etc.) and var ID
+	integer(fourbyteint) :: datatype                 ! Type of data (one of rads_type_*)
+	integer(fourbyteint) :: datasrc                  ! Retrieval source (one of rads_src_*)
+	integer(fourbyteint) :: cycle, pass              ! Last processed cycle and pass
+	integer(fourbyteint) :: selected, rejected       ! Number of selected or rejected measurements
+endtype
+
+type :: rads_var                                     ! Information on variable or alias
+	character(len=rads_varl), pointer :: name        ! Pointer to short name of variable (or alias)
+	character(len=rads_naml), pointer :: long_name   ! Pointer to long name (description) of variable
+	type(rads_varinfo), pointer :: info, inf1, inf2  ! Links to structs of type(rads_varinfo)
+	logical(twobyteint) :: noedit                    ! .true. if editing is suspended
+	integer(twobyteint) :: field(2)                  ! RADS3 field numbers (rads_nofield = none)
+endtype
+
+type :: rads_cyclist                                 ! List of cycles
+	integer(fourbyteint) :: n, i                     ! Number of elements in list, additional value
+	integer(fourbyteint) :: list(rads_cyclistl)      ! List of values
+endtype
+
+type :: rads_phase                                   ! Information about altimeter mission phase
+	character(len=rads_varl) :: name, mission        ! Name (1-letter), and mission description
+	integer(fourbyteint) :: cycles(2), passes        ! Cycle range and maximum number of passes
+	real(eightbytereal) :: start_time, end_time      ! Start time and end time of this phase
+	real(eightbytereal) :: ref_time, ref_lon         ! Time and lon of equator crossing of "ref. pass"
+	integer(fourbyteint) :: ref_cycle, ref_pass      ! Cycle and pass number of "reference pass"
+	real(eightbytereal) :: pass_seconds              ! Length of pass in seconds
+	real(eightbytereal) :: repeat_days               ! Length of repeat period in days
+	real(eightbytereal) :: repeat_shift              ! Eastward shift of track pattern for near repeats
+	integer(fourbyteint) :: repeat_nodal             ! Length of repeat period in nodal days
+	integer(fourbyteint) :: repeat_passes            ! Number of passes per repeat period
+	type(rads_cyclist), pointer :: subcycles         ! Subcycle definition (if requested)
+endtype
+
+type :: rads_sat                                     ! Information on altimeter mission
+	character(len=rads_naml) :: userroot             ! Root directory of current user (i.e. $HOME)
+	character(len=rads_naml) :: dataroot             ! Root directory of RADS data (i.e. $RADSDATAROOT)
+	character(len=rads_varl) :: branch(rads_max_branches) ! Name of optional branches
+	character(len=rads_varl) :: spec                 ! Temporary holding space for satellite specs
+	character(len=rads_cmdl) :: command              ! Command line
+	character(len=rads_naml), pointer :: glob_att(:) ! Global attributes
+	character(len=8) :: satellite                    ! Satellite name
+	real(eightbytereal) :: dt1hz                     ! "1 Hz" sampling interval
+	real(eightbytereal) :: frequency(2)              ! Frequency (GHz) of primary and secondary channel
+	real(eightbytereal) :: inclination               ! Satellite inclination (deg)
+	real(eightbytereal) :: eqlonlim(0:1,2)           ! Equator lon limits for asc. and desc. passes
+	real(eightbytereal) :: centroid(3)               ! Lon, lat, distance (in rad) selection criteria
+	real(eightbytereal) :: xover_params(2)           ! Crossover parameters used in radsxoconv
+	integer(fourbyteint) :: cycles(3),passes(3)      ! Cycle and pass limits and steps
+	integer(fourbyteint) :: error                    ! Error code (positive = fatal, negative = warning)
+	integer(fourbyteint) :: pass_stat(7)             ! Stats of rejection at start of rads_open_pass
+	integer(fourbyteint) :: total_read, total_inside ! Total nr of measurements read and inside region
+	integer(fourbyteint) :: nvar, nsel               ! Nr of available and selected vars and aliases
+	logical :: n_hz_output                           ! Produce multi-Hz output
+	character(len=2) :: sat                          ! 2-Letter satellite abbreviation
+	integer(twobyteint) :: satid                     ! Numerical satellite identifier
+	type(rads_cyclist), pointer :: excl_cycles       ! Excluded cycles (if requested)
+	type(rads_var), pointer :: var(:)                ! List of available variables and aliases
+	type(rads_var), pointer :: sel(:)                ! List of selected variables and aliases
+	type(rads_var), pointer :: time, lat, lon        ! Pointers to time, lat, lon variables
+	type(rads_phase), pointer :: phases(:)           ! Definitions of all mission phases
+	type(rads_phase), pointer :: phase               ! Pointer to current phase
+endtype
+
+type :: rads_file                                    ! Information on RADS data file
+	integer(fourbyteint) :: ncid                     ! NetCDF ID of pass file
+	character(len=rads_cmdl) :: name                 ! Name of the netCDF pass file
+endtype
+
+type :: rads_pass                                    ! Pass structure
+	character(len=rads_strl) :: original             ! Name of the original (GDR) pass file(s)
+	character(len=rads_hstl), pointer :: history     ! File creation history
+	real(eightbytereal) :: equator_time, equator_lon ! Equator time and longitude
+	real(eightbytereal) :: start_time, end_time      ! Start and end time of pass
+	real(eightbytereal), pointer :: tll(:,:)         ! Time, lat, lon matrix
+	integer(twobyteint), pointer :: flags(:)         ! Array of engineering flags
+	logical :: rw                                    ! NetCDF file opened for read/write
+	integer(fourbyteint) :: cycle, pass              ! Cycle and pass number
+	integer(fourbyteint) :: nlogs                    ! Number of RADS3 log entries
+	integer(fourbyteint) :: ndata                    ! Number of data points (1-Hz)
+	integer(fourbyteint) :: n_hz, n_wvf              ! Size second/third dimension (0=none)
+	integer(fourbyteint) :: first_meas, last_meas    ! Index of first and last point in region
+	integer(fourbyteint) :: time_dims                ! Dimensions of time/lat/lon stored
+	integer(fourbyteint) :: trkid                    ! Numerical track identifiers
+	type (rads_file) :: fileinfo(rads_max_branches)  ! File information for pass files
+	type (rads_sat), pointer :: S                    ! Pointer to satellite/mission structure
+	type (rads_pass), pointer :: next                ! Pointer to next pass in linked list
+endtype
+
+type :: rads_option                                  ! Information on command line options
+	character(len=rads_varl) :: opt                  ! Option (without the - or --)
+	character(len=rads_cmdl) :: arg                  ! Option argument
+	integer :: id                                    ! Identifier in form 10*nsat + i
+endtype
+
+! These command line options can be accessed by RADS programs
+type(rads_option), allocatable, target, save :: &
+	rads_opt(:)                                      ! List of command line options
+integer(fourbyteint), save :: rads_nopt = 0          ! Number of command line options saved
+
+!
 ! PURPOSE
 ! This module provides the main functionalities for the RADS4 software.
 ! To use any of the following subroutines and functions, add the following
@@ -23,175 +189,24 @@
 ! GNU Lesser General Public License for more details.
 !****-------------------------------------------------------------------
 
-module rads
-use typesizes
-use rads_grid, only: grid
-
-! Dimensions
-integer(fourbyteint), parameter :: rads_var_chunk = 100, rads_varl = 40, rads_naml = 160, rads_cmdl = 320, &
-	rads_strl = 1600, rads_hstl = 3200, rads_cyclistl = 50, rads_optl = 50, rads_max_branches = 5
-! RADS4 data types
-integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, rads_type_flagmasks = 2, rads_type_flagvalues = 3, &
-	rads_type_time = 11, rads_type_lat = 12, rads_type_lon = 13, rads_type_dim = 14
-! RADS4 data sources
-integer(fourbyteint), parameter :: rads_src_none = 0, rads_src_nc_var = 10, rads_src_nc_att = 11, &
-	rads_src_math = 20, rads_src_grid_lininter = 30, rads_src_grid_splinter = 31, rads_src_grid_query = 32, &
-	rads_src_constant = 40, rads_src_flags = 50, rads_src_tpj = 60
-! RADS4 warnings
-integer(fourbyteint), parameter :: rads_warn_nc_file = -3
-! RADS4 errors
-integer(fourbyteint), parameter :: rads_noerr = 0, &
-	rads_err_nc_file = 1, rads_err_nc_parse = 2, rads_err_nc_close = 3, rads_err_memory = 4, &
-	rads_err_var = 5, rads_err_source = 6, rads_err_nc_var = 7, rads_err_nc_get = 8, &
-	rads_err_xml_parse = 9, rads_err_xml_file = 10, rads_err_alias = 11, rads_err_math = 12, &
-	rads_err_cycle = 13, rads_err_nc_create = 14, rads_err_nc_put = 15
-! RADS3 errors or incompatibilities
-integer(fourbyteint) :: rads_err_incompat = 101, rads_err_noinit = 102
-integer(twobyteint), parameter :: rads_nofield = -1
-real(eightbytereal), parameter :: pi = 3.1415926535897932d0, rad = pi/180d0
 real(eightbytereal), parameter, private :: nan = transfer ((/not(0_fourbyteint),not(0_fourbyteint)/),0d0)
 integer(onebyteint), parameter, private :: flag_values(0:15) = &
 	int((/0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15/), onebyteint)
 integer(twobyteint), parameter, private :: flag_masks (0:15) = &
 	int((/1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,-32768/),twobyteint)
 integer(fourbyteint), parameter, private :: id_sat = 1, id_xml = 2, id_alias = 3, id_misc = 4, id_var = 5
-character(len=1), parameter :: rads_linefeed = char(10), rads_noedit = '_'
-integer, parameter :: stderr = 0, stdin = 5, stdout = 6
 
 include 'config.f90'
 include 'rads_version.f90'
-
-private :: rads_traxxing, rads_free_sat_struct, rads_free_pass_struct, rads_free_var_struct, rads_set_limits_by_flagmask
-
-type :: rads_varinfo
-	character(len=rads_varl) :: name                 ! Short name of variable used by RADS
-	character(len=rads_naml) :: long_name            ! Long name (description) of variable
-	character(len=rads_naml) :: standard_name        ! Optional pre-described CF-compliant 'standard' name ('' if not available)
-	character(len=rads_naml) :: source               ! Optional data source ('' if none)
-	character(len=rads_naml) :: parameters           ! Optional link to parameters for production ('' if none)
-	character(len=rads_strl) :: dataname             ! Name associated with data (e.g. netCDF var name, math string)
-	character(len=rads_cmdl) :: flag_meanings        ! Optional meaning of flag values ('' if none)
-	character(len=rads_cmdl) :: quality_flag         ! Quality flag(s) associated with this variable ('' if none)
-	character(len=rads_cmdl) :: comment              ! Optional comment ('' if none)
-	character(len=rads_varl) :: units                ! Optional units of variable ('' if none)
-	character(len=rads_varl) :: format               ! Fortran format for output
-	character(len=rads_varl) :: gridx, gridy         ! RADS variable names of the grid x and y coordinates
-	type(grid), pointer :: grid                      ! Pointer to grid for interpolation (if data source is grid)
-	real(eightbytereal) :: default                   ! Optional default value (Inf if not set)
-	real(eightbytereal) :: limits(2)                 ! Lower and upper limit for editing
-	real(eightbytereal) :: plot_range(2)             ! Suggested range for plotting
-	real(eightbytereal) :: add_offset, scale_factor  ! Offset and scale factor in case of netCDF
-	real(eightbytereal) :: xmin, xmax, mean, sum2    ! Minimum, maximum, mean, sum squared deviation
-	logical :: boz_format                            ! Format starts with B, O or Z.
-	integer(fourbyteint) :: ndims                    ! Number of dimensions of variable
-	integer(fourbyteint) :: brid                     ! Branch ID (default 1)
-	integer(fourbyteint) :: nctype, varid            ! netCDF data type (nf90_int, etc.) and variable ID
-	integer(fourbyteint) :: datatype                 ! Type of data (rads_type_other|flagmasks|flagvalues|time|lat|lon|dim)
-	integer(fourbyteint) :: datasrc                  ! Retrieval source (rads_src_nc_var|nc_att|math|grid_lininter|grid_splinter|grid_query|constant|flags)
-	integer(fourbyteint) :: cycle, pass              ! Last processed cycle and pass
-	integer(fourbyteint) :: selected, rejected       ! Number of selected or rejected measurements
-endtype
-
-type :: rads_var
-	character(len=rads_varl), pointer :: name        ! Pointer to short name of variable (or alias thereof)
-	character(len=rads_naml), pointer :: long_name   ! Pointer to long name (description) of variable
-	type(rads_varinfo), pointer :: info, inf1, inf2  ! Links to structs of type(rads_varinfo)
-	logical(twobyteint) :: noedit                    ! .true. if editing is suspended
-	integer(twobyteint) :: field(2)                  ! RADS3 field numbers (rads_nofield = none)
-endtype
-
-type :: rads_cyclist
-	integer(fourbyteint) :: n, i                     ! Number of elements in list, additional value
-	integer(fourbyteint) :: list(rads_cyclistl)      ! List of values
-endtype
-
-type :: rads_phase
-	character(len=rads_varl) :: name, mission        ! Name (1-letter), and mission description
-	integer(fourbyteint) :: cycles(2), passes        ! Cycle range and maximum number of passes
-	real(eightbytereal) :: start_time, end_time      ! Start time and end time of this phase
-	real(eightbytereal) :: ref_time, ref_lon         ! Time and longitude of equator crossing of "reference pass"
-	integer(fourbyteint) :: ref_cycle, ref_pass      ! Cycle and pass number of "reference pass"
-	real(eightbytereal) :: pass_seconds              ! Length of pass in seconds
-	real(eightbytereal) :: repeat_days               ! Length of repeat period in days
-	real(eightbytereal) :: repeat_shift              ! Eastward shift of track pattern for near repeats
-	integer(fourbyteint) :: repeat_nodal             ! Length of repeat period in nodal days
-	integer(fourbyteint) :: repeat_passes            ! Number of passes per repeat period
-	type(rads_cyclist), pointer :: subcycles         ! Subcycle definition (if requested)
-endtype
-
-type :: rads_sat
-	character(len=rads_naml) :: userroot             ! Root directory of current user (i.e. $HOME)
-	character(len=rads_naml) :: dataroot             ! Root directory of RADS data directory (i.e. $RADSDATAROOT)
-	character(len=rads_varl) :: branch(rads_max_branches) ! Name of optional branches
-	character(len=rads_varl) :: spec                 ! Temporary holding space for satellite specification
-	character(len=rads_cmdl) :: command              ! Command line
-	character(len=rads_naml), pointer :: glob_att(:) ! Global attributes
-	character(len=8) :: satellite                    ! Satellite name
-	real(eightbytereal) :: dt1hz                     ! "1 Hz" sampling interval
-	real(eightbytereal) :: frequency(2)              ! Frequency (GHz) of primary and secondary channel
-	real(eightbytereal) :: inclination               ! Satellite inclination (deg)
-	real(eightbytereal) :: eqlonlim(0:1,2)           ! Equator longitude limits for ascending and descending passes
-	real(eightbytereal) :: centroid(3)               ! Longitude, latitude, distance (in radians) selection criteria
-	real(eightbytereal) :: xover_params(2)           ! Crossover parameters used in radsxoconv
-	integer(fourbyteint) :: cycles(3),passes(3)      ! Cycle and pass limits and steps
-	integer(fourbyteint) :: error                    ! Error code (positive is fatal, negative is warning)
-	integer(fourbyteint) :: pass_stat(7)             ! Statistics of rejection at start of rads_open_pass
-	integer(fourbyteint) :: total_read, total_inside ! Total number of measurements read and inside region
-	integer(fourbyteint) :: nvar, nsel               ! Number of available and selected variables and aliases
-	logical :: n_hz_output                           ! Produce multi-Hz output
-	character(len=2) :: sat                          ! 2-Letter satellite abbreviation
-	integer(twobyteint) :: satid                     ! Numerical satellite identifier
-	type(rads_cyclist), pointer :: excl_cycles       ! Excluded cycles (if requested)
-	type(rads_var), pointer :: var(:)                ! List of all (possibly) available variables and aliases
-	type(rads_var), pointer :: sel(:)                ! List of selected variables and aliases
-	type(rads_var), pointer :: time, lat, lon        ! Pointers to time, lat, lon variables
-	type(rads_phase), pointer :: phases(:), phase    ! Definitions of all mission phases and pointer to current phase
-endtype
-
-type :: rads_file
-	integer(fourbyteint) :: ncid                     ! NetCDF ID of pass file
-	character(len=rads_cmdl) :: name                 ! Name of the netCDF pass file
-endtype
-
-type :: rads_pass
-	character(len=rads_strl) :: original             ! Name of the original (GDR) pass file(s)
-	character(len=rads_hstl), pointer :: history     ! File creation history
-	real(eightbytereal) :: equator_time, equator_lon ! Equator time and longitude
-	real(eightbytereal) :: start_time, end_time      ! Start and end time of pass
-	real(eightbytereal), pointer :: tll(:,:)         ! Time, lat, lon matrix
-	integer(twobyteint), pointer :: flags(:)         ! Array of engineering flags
-	logical :: rw                                    ! NetCDF file opened for read/write
-	integer(fourbyteint) :: cycle, pass              ! Cycle and pass number
-	integer(fourbyteint) :: nlogs                    ! Number of RADS3 log entries
-	integer(fourbyteint) :: ndata, n_hz, n_wvf       ! Number of data points (1-Hz) and second/third dimension (0=none)
-	integer(fourbyteint) :: first_meas, last_meas    ! Measurement index of first and last point in region
-	integer(fourbyteint) :: time_dims                ! Dimensions of time/lat/lon stored
-	integer(fourbyteint) :: trkid                    ! Numerical track identifiers
-	type (rads_file) :: fileinfo(rads_max_branches)  ! File information for pass files
-	type (rads_sat), pointer :: S                    ! Pointer to satellite/mission structure
-	type (rads_pass), pointer :: next                ! Pointer to next pass in linked list
-endtype
-
-type :: rads_option
-	character(len=rads_varl) :: opt                  ! Option (without the - or --)
-	character(len=rads_cmdl) :: arg                  ! Option argument
-	integer :: id                                    ! Identifier in form 10*nsat + i
-endtype
 
 ! Some private variables to keep
 
 character(len=*), parameter, private :: default_short_optlist = 'S:X:vqV:C:P:A:F:R:L:Q:Z:', &
 	default_long_optlist = ' t: h: args: sat: xml: debug: verbose log: quiet var: sel: cycle: pass: alias:' // &
-	' cmp: compress: fmt: format: lat: lon: time: sla: limits: opt: mjd: sec: ymd: doy: quality_flag: region:'
+	' cmp: compress: fmt: format: lat: lon: time: sla: limits: opt: mjd: sec: ymd: doy: quality-flag: quality_flag: region:'
 character(len=rads_strl), save, private :: rads_optlist = default_short_optlist // default_long_optlist
 
-! These options can be accessed by RADS programs
-
-type(rads_option), allocatable, target, save :: &
-	rads_opt(:)                                      ! List of command line options
-integer(fourbyteint), save :: rads_nopt = 0          ! Number of command line options saved
-integer(fourbyteint) :: rads_verbose = 0             ! Verbosity level
-integer(fourbyteint) :: rads_log_unit = stdout       ! Unit number for statistics logging
+private :: rads_traxxing, rads_free_sat_struct, rads_free_pass_struct, rads_free_var_struct, rads_set_limits_by_flagmask
 
 !****f* rads/rads_init
 ! SUMMARY
@@ -242,9 +257,9 @@ integer(fourbyteint) :: rads_log_unit = stdout       ! Unit number for statistic
 ! be controlled by setting rads_log_unit up front (default = stdout).
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  sat      : (optional) Satellite/mission abbreviation
-!  xml      : (optional) Array of names of additional XML files to be loaded
+! S        : Satellite/mission dependent structure
+! sat      : (optional) Satellite/mission abbreviation
+! xml      : (optional) Array of names of additional XML files to be loaded
 !****-------------------------------------------------------------------
 private :: rads_init_sat_0d, rads_init_sat_1d, &
 	rads_init_cmd_0d, rads_init_cmd_1d, rads_load_options, rads_parse_options
@@ -268,7 +283,7 @@ end interface rads_init
 ! global arrays.
 !
 ! ARGUMENT
-!  S        : Satellite/mission dependent struct or array of structs
+! S        : Satellite/mission dependent struct or array of structs
 !****-------------------------------------------------------------------
 private :: rads_end_0d, rads_end_1d
 interface rads_end
@@ -284,7 +299,9 @@ end interface rads_end
 ! recursive subroutine rads_get_var (S, P, var, data, noedit)
 ! type(rads_sat), intent(inout) :: S
 ! type(rads_pass), intent(inout) :: P
-! character(len=*) <or> integer(fourbyteint) <or> type(rads_var), intent(in) :: var
+! character(len=*) :: var
+! <or> integer(fourbyteint) :: var
+! <or> type(rads_var), intent(in) :: var
 ! real(eightbytereal), intent(out) :: data(:)
 ! logical, intent(in), optional :: noedit
 !
@@ -300,18 +317,18 @@ end interface rads_end
 ! then NaN is returned in the array <data>.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  P        : Pass dependent structure
-!  var      : (string) Name of the variable to be read.
-!                      If <var> ends with % editing is skipped.
-!             (integer) Field number.
-!             (type(rads_var)) Variable struct (e.g. S%sel(i))
-!  data     : Data returned by this routine
-!  noedit   : (optional) Set to .true. to skip editing on limits and/or
-!             quality flags; set to .false. to allow editing (default)
+! S        : Satellite/mission dependent structure
+! P        : Pass dependent structure
+! var      : (string) Name of the variable to be read.
+!                     If <var> ends with % editing is skipped.
+!            (integer) Field number.
+!            (type(rads_var)) Variable struct (e.g. S%sel(i))
+! data     : Data returned by this routine
+! noedit   : (optional) Set to .true. to skip editing on limits and/or
+!            quality flags; set to .false. to allow editing (default)
 !
-! ERROR CODE:
-!  S%error  : rads_noerr, rads_err_var, rads_err_memory, rads_err_source
+! ERROR CODE
+! S%error  : rads_noerr, rads_err_var, rads_err_memory, rads_err_source
 !****-------------------------------------------------------------------
 private :: rads_get_var_by_name, rads_get_var_by_var, rads_get_var_by_number, &
 	rads_get_var_by_name_2d, rads_get_var_helper, rads_get_var_common
@@ -330,8 +347,8 @@ end interface rads_get_var
 ! subroutine rads_def_var (S, P, var, nctype, scale_factor, add_offset, ndims)
 ! type(rads_sat), intent(inout) :: S
 ! type(rads_pass), intent(inout) :: P
-! type(rads_var), intent(in) :: var <or> var(:) <or>
-!     character(len=*), intent(in) :: var
+! type(rads_var), intent(in) :: var <or> var(:)
+! <or> character(len=*), intent(in) :: var
 ! integer(fourbyteint), intent(in), optional :: nctype, ndims
 ! real(eightbytereal), intent(in), optional :: scale_factor, add_offset
 !
@@ -346,16 +363,16 @@ end interface rads_get_var
 ! be used to overrule those value in the <var%info> struct.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  P        : Pass structure
-!  var      : Structure(s) of variable(s) of type(rads_var) or name of variable
-!  nctype   : (optional) Data type in netCDF file
-!  scale_factor : (optional) Value of the scale_factor attribute
-!  add_offset : (optional) Value of the add_offset attribute
-!  ndims    : (optional) Number of dimensions of the variable
+! S        : Satellite/mission dependent structure
+! P        : Pass structure
+! var      : Structure(s) of variable(s) of type(rads_var) or name of variable
+! nctype   : (optional) Data type in netCDF file
+! scale_factor : (optional) Value of the scale_factor attribute
+! add_offset : (optional) Value of the add_offset attribute
+! ndims    : (optional) Number of dimensions of the variable
 !
 ! ERROR CODE
-!  S%error  : rads_noerr, rads_err_nc_var
+! S%error  : rads_noerr, rads_err_nc_var
 !****-------------------------------------------------------------------
 private :: rads_def_var_by_var_0d, rads_def_var_by_var_1d, rads_def_var_by_name
 interface rads_def_var
@@ -393,14 +410,14 @@ end interface rads_def_var
 ! For example: start=101 first skips 100 records.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  P        : Pass structure
-!  var      : Structure of variable of type(rads_var)
-!  data     : Data to be written (in original (SI) units)
-!  start    : Position of the first data point in the file
+! S        : Satellite/mission dependent structure
+! P        : Pass structure
+! var      : Structure of variable of type(rads_var)
+! data     : Data to be written (in original (SI) units)
+! start    : Position of the first data point in the file
 !
 ! ERROR CODE
-!  S%error  : rads_noerr, rads_err_nc_put
+! S%error  : rads_noerr, rads_err_nc_put
 !****-------------------------------------------------------------------
 private :: rads_put_var_helper, &
 	rads_put_var_by_var_0d, rads_put_var_by_name_0d, &
@@ -436,7 +453,7 @@ end interface rads_put_var
 ! on unit <rads_log_unit>.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
+! S        : Satellite/mission dependent structure
 !****-------------------------------------------------------------------
 private :: rads_stat_0d, rads_stat_1d
 interface rads_stat
@@ -458,11 +475,11 @@ end interface rads_stat
 ! This will allocate the array S%sel and update counter S%nsel.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  string   : String of variables
+! S        : Satellite/mission dependent structure
+! string   : String of variables
 !
 ! ERROR CODE
-!  S%error  : rads_err_var
+! S%error  : rads_err_var
 !****-------------------------------------------------------------------
 private :: rads_parse_varlist_0d, rads_parse_varlist_1d
 interface rads_parse_varlist
@@ -491,13 +508,13 @@ character(len=*), intent(in), optional :: xml(:)
 ! all the information in the stuct <S>.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  sat      : Satellite/mission abbreviation
-!  xml      : Array of additional XML files to be loaded
-!  verbose  : (optional) verbosity level (default = 0)
+! S        : Satellite/mission dependent structure
+! sat      : Satellite/mission abbreviation
+! xml      : Array of additional XML files to be loaded
+! verbose  : (optional) verbosity level (default = 0)
 !
 ! ERROR CODE
-!  S%error  : rads_noerr, rads_err_xml_file, rads_err_xml_parse, rads_err_var
+! S%error  : rads_noerr, rads_err_xml_file, rads_err_xml_parse, rads_err_var
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: i
 
@@ -650,7 +667,6 @@ end subroutine rads_init_cmd_1d
 !
 ! SYNOPSIS
 pure subroutine rads_init_sat_struct (S)
-use rads_misc
 type(rads_sat), intent(inout) :: S
 !
 ! PURPOSE
@@ -658,7 +674,7 @@ type(rads_sat), intent(inout) :: S
 ! It is later updated in rads_init_sat_0d.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
+! S        : Satellite/mission dependent structure
 !****-------------------------------------------------------------------
 ! gfortran 4.4.1 segfaults on the next line if this routine is made pure or elemental,
 ! so please leave it as a normal routine.
@@ -679,7 +695,7 @@ type(rads_sat), intent(inout) :: S
 ! memory in it. It then reinitialises a clean struct.
 !
 ! ARGUMENT
-!  S        : Satellite/mission dependent structure
+! S        : Satellite/mission dependent structure
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: i, ios
 if (S%sat == '') return
@@ -707,8 +723,8 @@ type(rads_pass), intent(inout) :: P
 ! This is only really necessary prior to calling rads_create_pass.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  P        : Pass dependent structure
+! S        : Satellite/mission dependent structure
+! P        : Pass dependent structure
 !****-------------------------------------------------------------------
 ! gfortran 4.4.1 segfaults on the next line if this routine is made pure or elemental,
 ! so please leave it as a normal routine.
@@ -734,8 +750,8 @@ logical, optional, intent(in) :: unlink
 ! Afterwards the routine reinitialises a clean struct.
 !
 ! ARGUMENT
-!  S        : Satellite/mission dependent structure
-!  P        : Pass dependent structure
+! S        : Satellite/mission dependent structure
+! P        : Pass dependent structure
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: ios
 if (.not.present(unlink) .or. .not.unlink) then
@@ -761,9 +777,9 @@ logical, intent(in) :: alias
 ! that it prevents removing info structs used elsewhere.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  var      : Variable struct to be freed
-!  alias    : .true. if called to create alias
+! S        : Satellite/mission dependent structure
+! var      : Variable struct to be freed
+! alias    : .true. if called to create alias
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: i, n, ios
 type(rads_varinfo), pointer :: info
@@ -819,7 +835,7 @@ character(len=*), intent(in), optional :: optlist
 ! before the common ones, the long options will be placed after them.
 !
 ! ARGUMENT
-!  optlist  : (optional) list of command specific short and long options
+! optlist  : (optional) list of command specific short and long options
 !****-------------------------------------------------------------------
 integer :: i
 if (.not.present(optlist)) return
@@ -864,7 +880,7 @@ integer, intent(out) :: nsat
 ! The value <nsat> returns the total amount of -S options.
 !
 ! ARGUMENTS
-!  nsat     : Number of '-S' or '--sat' options
+! nsat     : Number of '-S' or '--sat' options
 !****-------------------------------------------------------------------
 integer :: ios, iunit, i, nopt
 type(rads_option), pointer :: opt(:)
@@ -982,8 +998,8 @@ type(rads_option), intent(in) :: opt(:)
 ! backward compatible options sel= and var=.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  opt      : Array of options (usually command line arguments)
+! S        : Satellite/mission dependent structure
+! opt      : Array of options (usually command line arguments)
 !****-------------------------------------------------------------------
 integer :: i
 do i = 1,size(opt)
@@ -1040,7 +1056,7 @@ case ('lat', 'lon', 'sla')
 case ('L', 'limits')
 	call rads_set_limits (S, opt%arg(:j-1), string=opt%arg(j+1:), iostat=ios)
 	if (ios > 0) call rads_opt_error (opt%opt, opt%arg)
-case ('Q', 'quality_flag')
+case ('Q', 'quality-flag', 'quality_flag')
 	if (j > 0) then
 		call rads_set_quality_flag (S, opt%arg(:j-1), opt%arg(j+1:))
 	else
@@ -1092,11 +1108,11 @@ character(len=*), intent(in) :: string
 ! This will allocate the array S%sel and update counter S%nsel.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  string   : String of variables
+! S        : Satellite/mission dependent structure
+! string   : String of variables
 !
 ! ERROR CODE
-!  S%error  : rads_err_var
+! S%error  : rads_err_var
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: i0, i1, n, noedit
 type(rads_var), pointer :: temp(:), var
@@ -1170,8 +1186,8 @@ type(rads_sat), intent(inout) :: S
 ! require that -S or --sat is one of the command line options.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  optlist  : (optional) list of command specific short and long options
+! S        : Satellite/mission dependent structure
+! optlist  : (optional) list of command specific short and long options
 !****-------------------------------------------------------------------
 integer :: nsat
 call rads_load_options (nsat)
@@ -1238,14 +1254,14 @@ logical, intent(in), optional :: rw
 ! The file opened with this routine should be closed by using rads_close_pass.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  P        : Pass structure
-!  cycle    : Cycle number
-!  pass     : Pass number
-!  rw       : (optional) Set read/write permission (def: read only)
+! S        : Satellite/mission dependent structure
+! P        : Pass structure
+! cycle    : Cycle number
+! pass     : Pass number
+! rw       : (optional) Set read/write permission (def: read only)
 !
 ! ERROR CODE
-!  S%error  : rads_noerr, rads_warn_nc_file, rads_err_nc_parse
+! S%error  : rads_noerr, rads_warn_nc_file, rads_err_nc_parse
 !****-------------------------------------------------------------------
 character(len=40) :: date
 character(len=5) :: hz
@@ -1519,12 +1535,12 @@ logical, intent(in), optional :: keep
 ! deallocate the time, lat and lon elements of the <P> structure.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  P        : Pass structure
-!  keep     : Keep the P%tll matrix (destroy by default)
+! S        : Satellite/mission dependent structure
+! P        : Pass structure
+! keep     : Keep the P%tll matrix (destroy by default)
 !
 ! ERROR CODE
-!  S%error  : rads_noerr, rads_err_nc_close
+! S%error  : rads_noerr, rads_err_nc_close
 !****-------------------------------------------------------------------
 integer :: i
 integer(fourbyteint) :: ncid
@@ -2172,12 +2188,12 @@ character(len=*), intent(in) :: filename
 ! fatal = .true.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  filename : XML file name
-!  fatal    : If .true., then all warnings are fatal.
+! S        : Satellite/mission dependent structure
+! filename : XML file name
+! fatal    : If .true., then all warnings are fatal.
 !
 ! ERROR CODE
-!  S%error  : rads_noerr, rads_err_xml_parse, rads_err_xml_file
+! S%error  : rads_noerr, rads_err_xml_parse, rads_err_xml_file
 !****-------------------------------------------------------------------
 type(xml_parse) :: X
 integer, parameter :: max_lvl = 20
@@ -2737,13 +2753,13 @@ type(rads_var), pointer :: ptr
 !      from <tgt> and return its pointer
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  varname  : Name of the RADS variable
-!  tgt      : (optional) target pointer (see above)
-!  rads_varptr : Pointer to the structure for <varname>
+! S        : Satellite/mission dependent structure
+! varname  : Name of the RADS variable
+! tgt      : (optional) target pointer (see above)
+! rads_varptr : Pointer to the structure for <varname>
 !
 ! ERROR CODE
-!  S%error  : rads_noerr, rads_err_var
+! S%error  : rads_noerr, rads_err_var
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: i, n
 type(rads_var), pointer :: temp(:)
@@ -2850,13 +2866,13 @@ integer(twobyteint), intent(in), optional :: field(2)
 ! Up to three variables can be specified, separated by spaces or commas.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  alias    : New alias for (an) existing variable(s)
-!  varname  : Existing variable name(s)
-!  field    : (optional) new field numbers to associate with alias
+! S        : Satellite/mission dependent structure
+! alias    : New alias for (an) existing variable(s)
+! varname  : Existing variable name(s)
+! field    : (optional) new field numbers to associate with alias
 !
 ! ERROR CODE
-!  S%error  : rads_noerr, rads_err_alias, rads_err_var
+! S%error  : rads_noerr, rads_err_alias, rads_err_var
 !****-------------------------------------------------------------------
 type(rads_var), pointer :: tgt, src
 integer :: i0, i1, n_alias, l0, l1, l2, i
@@ -2951,15 +2967,15 @@ integer(fourbyteint), intent(out), optional :: iostat
 ! (following the separator) is set, the other value is left unchanged.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  varname  : Variable name
-!  lo, hi   : Lower and upper limit
-!  string   : String of up to two values, with separating whitespace
-!             or comma or slash.
-!  iostat   : (optional) iostat code from reading string
+! S        : Satellite/mission dependent structure
+! varname  : Variable name
+! lo, hi   : Lower and upper limit
+! string   : String of up to two values, with separating whitespace
+!            or comma or slash.
+! iostat   : (optional) iostat code from reading string
 !
 ! ERROR CODE
-!  S%error  : rads_noerr, rads_err_var
+! S%error  : rads_noerr, rads_err_var
 !****-------------------------------------------------------------------
 type(rads_var), pointer :: var
 var => rads_varptr (S, varname)
@@ -3054,13 +3070,13 @@ character(len=*), intent(in) :: string
 ! edit out data.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  string   : String of three or four values with separating whitespace.
-!             For rectangular region: W/E/S/N.
-!             For circular region: E/N/radius (radius in degrees).
+! S        : Satellite/mission dependent structure
+! string   : String of three or four values with separating whitespace.
+!            For rectangular region: W/E/S/N.
+!            For circular region: E/N/radius (radius in degrees).
 !
 ! ERROR CODE
-!  S%error  : rads_noerr, rads_err_var
+! S%error  : rads_noerr, rads_err_var
 !****-------------------------------------------------------------------
 real(eightbytereal) :: r(4), x
 r = nan
@@ -3101,12 +3117,12 @@ character(len=*), intent(in) :: varname, format
 ! variable in RADS.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  varname  : Variable name
-!  format   : FORTRAN format specifier (e.g. 'f10.3')
+! S        : Satellite/mission dependent structure
+! varname  : Variable name
+! format   : FORTRAN format specifier (e.g. 'f10.3')
 !
 ! ERROR CODE
-!  S%error  : rads_noerr, rads_err_var
+! S%error  : rads_noerr, rads_err_var
 !****-------------------------------------------------------------------
 type(rads_var), pointer :: var
 var => rads_varptr(S, varname)
@@ -3136,12 +3152,12 @@ character(len=*), intent(in) :: varname, format
 ! Instead of commas, spaces or slashes can be used as separators.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  varname  : Variable name
-!  format   : Binary storage specification (e.g. int2,1e-3)
+! S        : Satellite/mission dependent structure
+! varname  : Variable name
+! format   : Binary storage specification (e.g. int2,1e-3)
 !
 ! ERROR CODE
-!  S%error  : rads_noerr, rads_err_var
+! S%error  : rads_noerr, rads_err_var
 !****-------------------------------------------------------------------
 character(len=len(format)) :: temp
 integer :: i, ios
@@ -3189,13 +3205,13 @@ character(len=*), intent(in) :: varname, flag
 ! not already contained in that set).
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  varname  : Variable name
-!  flag     : Name of the variable that needs to be checked to validate
+! S        : Satellite/mission dependent structure
+! varname  : Variable name
+! flag     : Name of the variable that needs to be checked to validate
 !             <varname>.
 !
 ! ERROR CODE
-!  S%error  : rads_noerr, rads_err_var
+! S%error  : rads_noerr, rads_err_var
 !****-------------------------------------------------------------------
 type(rads_var), pointer :: var
 var => rads_varptr(S, varname)
@@ -3226,8 +3242,8 @@ integer(fourbyteint), optional, intent(in) :: unit
 !  long_name [values: flag_meanings]
 !
 ! ARGUMENTS
-!  var      : Pointer to variable
-!  unit     : Fortran output unit (6 = stdout (default), 0 = stderr)
+! var      : Pointer to variable
+! unit     : Fortran output unit (6 = stdout (default), 0 = stderr)
 !****-------------------------------------------------------------------
 integer :: iunit, i, i0, i1
 iunit = stdout
@@ -3362,7 +3378,7 @@ character(len=*), intent(in) :: string
 ! This routine terminates RADS after printing an error message.
 !
 ! ARGUMENT
-!  string   : Error message
+! string   : Error message
 !****-------------------------------------------------------------------
 character(len=rads_naml) :: progname
 call getarg (0, progname)
@@ -3387,13 +3403,13 @@ type(rads_pass), intent(in), optional :: P
 ! The message is subpressed when -q is used (rads_verbose < 0)
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  ierr     : Error code
-!  string   : Error message
-!  P        : If used, it will add the pass file name at the end of <string>
+! S        : Satellite/mission dependent structure
+! ierr     : Error code
+! string   : Error message
+! P        : If used, it will add the pass file name at the end of <string>
 !
 ! ERROR CODE
-!  S%error  : Will be set to ierr when not rads_noerr
+! S%error  : Will be set to ierr when not rads_noerr
 !****-------------------------------------------------------------------
 call rads_message (string, P)
 if (ierr /= rads_noerr) S%error = ierr
@@ -3414,8 +3430,8 @@ type(rads_pass), intent(in), optional :: P
 ! The message is subpressed when -q is used (rads_verbose < 0)
 !
 ! ARGUMENTS
-!  string   : Error message
-!  P        : If used, it will add the pass file name at the end of <string>
+! string   : Error message
+! P        : If used, it will add the pass file name at the end of <string>
 !****-------------------------------------------------------------------
 if (rads_verbose < 0) then
 	! Remain quiet
@@ -3440,8 +3456,8 @@ character(len=*), intent(in) :: opt, arg
 ! The message is subpressed when -q is used (rads_verbose < 0)
 !
 ! ARGUMENTS
-!  opt      : Command line option
-!  arg      : Argument of the command line option
+! opt      : Command line option
+! arg      : Argument of the command line option
 !****-------------------------------------------------------------------
 if (opt == ':') then ! Unknown option
 	call rads_message ('Unknown option '//trim(arg)//' skipped')
@@ -3486,12 +3502,12 @@ logical :: rads_version
 !    Return value is .true.
 !
 ! ARGUMENTS
-!  description : One-line description of program
-!  unit        : Fortran output unit (6 = stdout (default), 0 = stderr)
-!  flag        : Use string in replacement of first command line argument
+! description : One-line description of program
+! unit        : Fortran output unit (6 = stdout (default), 0 = stderr)
+! flag        : Use string in replacement of first command line argument
 !
 ! RETURN VALUE
-!  rads_version: .false. if output is of type 3, otherwise .true.
+! rads_version: .false. if output is of type 3, otherwise .true.
 !****-------------------------------------------------------------------
 integer :: iunit
 character(len=rads_naml) :: progname, arg
@@ -3533,7 +3549,7 @@ integer(fourbyteint), intent(in), optional :: unit
 ! RADS programs.
 !
 ! ARGUMENTS
-!  unit        : Fortran output unit (6 = stdout (default), 0 = stderr)
+! unit        : Fortran output unit (6 = stdout (default), 0 = stderr)
 !****-------------------------------------------------------------------
 integer :: iunit
 character(len=rads_naml) :: progname
@@ -3552,14 +3568,14 @@ write (iunit, 1300) trim(progname)
 '  -A, --alias VAR1=VAR2     Use variable VAR2 when VAR1 is requested'/ &
 '  -C, --cycle C0[,C1[,DC]]  Specify first and last cycle and modulo'/ &
 '  -F, --fmt, --format VAR=FMT'/ &
-'                            Specify the Fortran format used to print VAR (for ASCII output only)'/ &
+'                            Specify Fortran format used to print VAR (for ASCII output only)'/ &
 '  -L, --limits VAR=MIN,MAX  Specify edit data range for variable VAR'/ &
 '  --lon LON0,LON1           Specify longitude boundaries (deg)'/ &
 '  --lat LAT0,LAT1           Specify latitude  boundaries (deg)'/ &
 '  -P, --pass P0[,P1[,DP]]   Specify first and last pass and modulo; alternatively use -Pa'/ &
-'                            (--pass asc) or -Pd (--pass des) to restrict selection to ascending or'/ &
-'                            descending passes only'/ &
-'  -Q, --quality_flag VAR=FLAG'/&
+'                            (--pass asc) or -Pd (--pass des) to restrict selection to'/ &
+'                            ascending or descending passes only'/ &
+'  -Q, --quality-flag VAR=FLAG'/&
 '                            Check variable FLAG when validating variable VAR'/ &
 '  -R, --region LON0,LON1,LAT0,LAT1'/ &
 '                            Specify rectangular region (deg)'/ &
@@ -3567,27 +3583,28 @@ write (iunit, 1300) trim(progname)
 '                            Specify circular region (deg)' / &
 '  --sla SLA0,SLA1           Specify range for SLA (m)'/ &
 '  --time T0,T1              Specify time selection (optionally use --ymd, --doy,'/ &
-'                            or --sec for [YY]YYMMDD[HHMMSS], YYDDD, or SEC85)'/ &
+'                            or --sec for [YY]YYMMDD[HHMMSS], [YY]YYDDD, or SEC85)'/ &
 '  -V, --var VAR1,...        Select variables to be read'/ &
-'  -X, --xml XMLFILE         Load XMLFILE in addition to defaults'/ &
-'  -Z, --cmp, --compress type[,scale[,offset]]'/ &
-'                            Specify binary output format (for netCDF out); type is one of:'/ &
-'                            int1, int2, int4, real, dble; scale and offset are optional (def: 1,0)'// &
-'Still working for backwards Compatibility with RADS 3 are options:'/ &
+'  -X, --xml XMLFILE         Load configuration file XMLFILE in addition to the defaults'/ &
+'  -Z, --cmp, --compress VAR=TYPE[,SCALE[,OFFSET]]'/ &
+'                            Specify binary output format for variable VAR (netCDF only); TYPE'/ &
+'                            is one of: int1, int2, int4, real, dble; SCALE and OFFSET are'/ &
+'                            optional (def: 1,0)'// &
+'Still working for backward compatibility with RADS3 are options:'/ &
 '  --h H0,H1                 Specify range for SLA (m) (now --sla H0,H1)'/ &
-'  --opt J                   Use selection code J when J/100 requested (now -A VAR1=VAR2)'/ &
-'  --opt I=J                 Set option for data item I to J (now -A VAR1=VAR2)'/ &
+'  --opt J                   Use field number J when J/100 requested (now -A VAR1=VAR2)'/ &
+'  --opt I=J                 Make field I (range 1-99) and alias for field J (now -A VAR1=VAR2)'/ &
 '  --sel VAR1,...            Select variables to read'// &
 'Common [rads_options] are:'/ &
-'  --args FILENAME           Get any of the above arguments from FILENAME (one argument per line)'/ &
+'  --args FILENAME           Get all command line arguments from FILENAME (1 argument per line)'/ &
+'  --debug LEVEL             Set debug/verbosity level'/ &
 '  --help                    Print this syntax massage'/ &
 '  --log FILENAME            Send statistics to FILENAME (default is standard output)'/ &
 '  -q, --quiet               Suppress warning messages (but keeps fatal error messages)'/ &
 '  -v, --verbose             Increase verbosity level'/ &
-'  --debug LEVEL             Set debug/verbosity level'/ &
-'  --version                 Version info'/ &
-'  --                        Terminates all options; all following command-line arguments are considered'/ &
-'                            non-option arguments, even if they begin with a hyphen.')
+'  --version                 Print version info only'/ &
+'  --                        Terminates all options; all following command-line arguments are'/ &
+'                            considered non-option arguments, even if they begin with a hyphen')
 end subroutine rads_synopsis
 
 !****if* rads/rads_get_phase
@@ -3611,9 +3628,9 @@ type(rads_phase), pointer :: phase
 ! entire phase name.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  name     : Name of phase
-!  allow_new: Allow the creation of a new phase
+! S        : Satellite/mission dependent structure
+! name     : Name of phase
+! allow_new: Allow the creation of a new phase
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: i, n
 type(rads_phase), pointer :: temp(:)
@@ -3665,11 +3682,11 @@ integer(fourbyteint) :: rads_time_to_cycle
 ! which that epoch falls.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  time     : Time in seconds since 1985
+! S        : Satellite/mission dependent structure
+! time     : Time in seconds since 1985
 !
 ! RETURN VALUE
-!  rads_time_to_cycle : Cycle number in which <time> falls
+! rads_time_to_cycle : Cycle number in which <time> falls
 !****-------------------------------------------------------------------
 integer :: i, j, n
 real(eightbytereal) :: d, t0, x
@@ -3711,11 +3728,11 @@ real(eightbytereal) :: rads_cycle_to_time
 ! Given a cycle number, estimate the start time of that cycle.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  cycle    : Cycle number
+! S        : Satellite/mission dependent structure
+! cycle    : Cycle number
 !
 ! RETURN VALUE
-!  rads_cycle_to_time : Start time of <cycle> in seconds since 1985
+! rads_cycle_to_time : Start time of <cycle> in seconds since 1985
 !****-------------------------------------------------------------------
 integer :: i, cc, pp
 real(eightbytereal) :: d, t0
@@ -3766,7 +3783,7 @@ type(rads_sat), intent(inout) :: S
 ! equator passage for ascending and descending tracks, resp.
 !
 ! ARGUMENT
-!  S        : Satellite/mission dependent structure
+! S        : Satellite/mission dependent structure
 !****-------------------------------------------------------------------
 real(eightbytereal) :: u(2),l(2),latmax
 integer(fourbyteint) :: i
@@ -3826,9 +3843,9 @@ integer(fourbyteint), intent(in) :: nselpass
 ! called before every call of rads_close_pass.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  P        : Pass structure
-!  nselpass : Number of measurements selected in this pass
+! S        : Satellite/mission dependent structure
+! P        : Pass structure
+! nselpass : Number of measurements selected in this pass
 !****-------------------------------------------------------------------
 integer :: pos_old = 50, lin_old = -1, cycle_old = -1, pos, lin, i
 
@@ -3900,10 +3917,10 @@ integer(fourbyteint), intent(out) :: idx
 ! any other value         quit program with error message
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  opt      : Command line option name ('r' or 'reject-on-nan')
-!  arg      : Command line option argument
-!  idx      : Index value
+! S        : Satellite/mission dependent structure
+! opt      : Command line option name ('r' or 'reject-on-nan')
+! arg      : Command line option argument
+! idx      : Index value
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: i
 select case (arg)
@@ -3971,15 +3988,15 @@ character(len=*), intent(in), optional :: name
 ! P%fileinfo will be updated.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  P        : Pass structure
-!  ndata    : Length of the primary ('time') dimension (use 0 for unlimited)
-!  n_hz     : Number of multi-Hertz data per second
-!  n_wvf    : Number of waveform gates
-!  name     : Name of directory in which to store pass file, or file name
+! S        : Satellite/mission dependent structure
+! P        : Pass structure
+! ndata    : Length of the primary ('time') dimension (use 0 for unlimited)
+! n_hz     : Number of multi-Hertz data per second
+! n_wvf    : Number of waveform gates
+! name     : Name of directory in which to store pass file, or file name
 !
 ! ERROR CODE
-!  S%error  : rads_noerr, rads_err_nc_create
+! S%error  : rads_noerr, rads_err_nc_create
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: i, l, e
 logical :: exist
@@ -4086,8 +4103,8 @@ type(rads_pass), intent(inout) :: P
 ! six decimals.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  P        : Pass structure
+! S        : Satellite/mission dependent structure
+! P        : Pass structure
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: e, ncid
 character(len=26) :: date(3)
@@ -4131,8 +4148,8 @@ type(rads_pass), intent(inout) :: P
 ! Note that P%history will not be updated.
 !
 ! ARGUMENTS
-!  S        : Satellite/mission dependent structure
-!  P        : Pass structure
+! S        : Satellite/mission dependent structure
+! P        : Pass structure
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: e, i, ncid
 character(len=8) :: log

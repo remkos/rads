@@ -17,7 +17,8 @@
 !+
 ! This program adjusts the contents of RADS altimeter data files
 ! with values computed from ECMWF operational meteorological models.
-! The models provide sea level pressure or wet tropospheric correction.
+! The models provide sea level pressure, wet tropospheric correction, or
+! wind speed.
 !
 ! Input grids are found in the directory ${ALTIM}/data/ecmwf.
 !
@@ -60,7 +61,7 @@ character(rads_cmdl) :: path
 integer(fourbyteint) :: hex, hexold=-99999
 type(airtideinfo) :: airinfo
 real(eightbytereal), parameter :: rad2=2d0*atan(1d0)/45d0
-logical :: dry_on=.false., wet_on=.false., ib_on=.false., air_on=.false., new=.false., error
+logical :: dry_on=.false., wet_on=.false., ib_on=.false., air_on=.false., wind_on=.false., new=.false., error
 
 ! Model data
 
@@ -68,14 +69,14 @@ integer(fourbyteint), parameter :: np_max=2140702, nj_max=1280
 type :: model_
 	integer(fourbytereal) :: nj, np, ip, pl(nj_max), ql(nj_max), idx(4)
 	real(eightbytereal) :: glat(np_max), glon(np_max), w(4)
-	real(eightbytereal) :: slp(np_max), wet(np_max)
+	real(eightbytereal) :: slp(np_max), wet(np_max), u10(np_max), v10(np_max)
 end type
 type(model_) :: m1, m2
 
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('dwain dry wet air ib all new')
+call rads_set_options ('dwiaun dry wet air ib all wind new')
 call rads_init (S)
 
 ! Get ${ALTIM}/data/ecmwf/ directory
@@ -94,6 +95,8 @@ do j = 1,rads_nopt
 		air_on = .true.
 	case ('i', 'ib')
 		ib_on = .true.
+	case ('u', 'wind')
+		wind_on = .true.
 	case ('n', 'new')
 		new = .true.
 	case ('all')
@@ -136,6 +139,7 @@ write (*,1310)
 '  -a, --air                 Add air tide' / &
 '  -i, --ib                  Add static inverse barometer correction' / &
 '  --all                     All of the above' / &
+'  -u, --wind                Add ECMWF wind speed' / &
 '  -n, --new                 Only add variables when not yet existing')
 stop
 end subroutine synopsis
@@ -148,7 +152,7 @@ subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
 integer(fourbyteint) :: i, ncid
 real(eightbytereal) :: time(n), lat(n), lon(n), h(n), surface_type(n), dry(n), wet(n), ib(n), air(n), &
-	f1, f2, g1, g2, slp, dslp, slp0
+	u10(n), v10(n), f1, f2, g1, g2, slp, dslp, slp0
 
 call log_pass (P)
 
@@ -256,6 +260,13 @@ do i = 1,n
 	if (wet_on) then
 		wet(i) = f1 * dot_product (m1%w,m1%wet(m1%idx)) + f2 * dot_product (m2%w,m2%wet(m2%idx))
 	endif
+
+! Interpolate wind speed (both components) in space and time
+
+	if (wind_on) then
+		u10(i) = f1 * dot_product (m1%w,m1%u10(m1%idx)) + f2 * dot_product (m2%w,m2%u10(m2%idx))
+		v10(i) = f1 * dot_product (m1%w,m1%v10(m1%idx)) + f2 * dot_product (m2%w,m2%v10(m2%idx))
+	endif
 enddo
 
 ! If no more fields are determined, abort.
@@ -273,11 +284,19 @@ if (dry_on) call rads_def_var (S, P, 'dry_tropo_ecmwf')
 if (wet_on) call rads_def_var (S, P, 'wet_tropo_ecmwf')
 if (ib_on ) call rads_def_var (S, P, 'inv_bar_static')
 if (air_on) call rads_def_var (S, P, 'dry_tropo_airtide')
+if (wind_on) then
+	call rads_def_var (S, P, 'wind_speed_ecmwf_u')
+	call rads_def_var (S, P, 'wind_speed_ecmwf_v')
+endif
 
 if (dry_on) call rads_put_var (S, P, 'dry_tropo_ecmwf', dry)
 if (wet_on) call rads_put_var (S, P, 'wet_tropo_ecmwf', wet)
 if (ib_on ) call rads_put_var (S, P, 'inv_bar_static', ib)
 if (air_on) call rads_put_var (S, P, 'dry_tropo_airtide', air)
+if (wind_on) then
+	call rads_put_var (S, P, 'wind_speed_ecmwf_u', u10)
+	call rads_put_var (S, P, 'wind_speed_ecmwf_v', v10)
+endif
 
 call log_records (n)
 end subroutine process_pass
@@ -292,9 +311,12 @@ type(model_), intent(inout) :: model
 logical :: get_gribs
 !
 ! Input are mean sea level pressure files in the form
-! ${ALTIM}/data/ecmwf/2011/msl_20111207_120000.grb
+! ${ALTIM}/data/ecmwf/2016/msl_20160107_120000.grb
 ! and wet tropospheric correction files of the form
-! ${ALTIM}/data/ecmwf/2011/wet_20111207_120000.grb
+! ${ALTIM}/data/ecmwf/2016/wet_20160107_120000.grb
+! and vector wind speed files of the form
+! ${ALTIM}/data/ecmwf/2016/u10_20160107_120000.grb
+! ${ALTIM}/data/ecmwf/2016/v10_20160107_120000.grb
 !
 ! <hex> specifies the number of 6-hourly blocks since 1 Jan 1985.
 ! Data is stored in a buffer <model>
@@ -309,20 +331,26 @@ if (dry_on .or. ib_on) then
 endif
 if (wet_on) then
 	if (get_grib(hex,model,'wet',get_lat)) return
+	get_lat = .false.
+endif
+if (wind_on) then
+	if (get_grib(hex,model,'u10',get_lat)) return
+	get_lat = .false.
+	if (get_grib(hex,model,'v10',get_lat)) return
 endif
 get_gribs = .false.
 end function get_gribs
 
 !-----------------------------------------------------------------------
 
-function get_grib (hex, model, type, getlat)
+function get_grib (hex, model, type, get_lat)
 integer(fourbyteint), intent(in) :: hex
 type(model_), intent(inout) :: model
 character(len=3), intent(in) :: type
-logical, intent(in) :: getlat
+logical, intent(in) :: get_lat
 logical :: get_grib
 character(len=rads_cmdl) :: filenm
-integer(fourbyteint) :: fileid,gribid,i,l,status,strf1985
+integer(fourbyteint) :: fileid, gribid, i, l, status, strf1985
 
 600 format ('(',a,')')
 1300 format (a,': ',a)
@@ -357,7 +385,7 @@ endif
 model%ip = 1
 
 ! Read latitude band scructure
-if (getlat) then
+if (get_lat) then
 	call grib_get(gribid,'pl',model%pl)
 	model%ql(1) = 1
 	do i = 2,model%nj
@@ -365,11 +393,16 @@ if (getlat) then
 	enddo
 endif
 
-if (type == 'msl') then
+select case (type)
+case ('msl')
 	call grib_get_data(gribid,model%glat,model%glon,model%slp)
-else
+case ('wet')
 	call grib_get_data(gribid,model%glat,model%glon,model%wet)
-endif
+case ('u10')
+	call grib_get_data(gribid,model%glat,model%glon,model%u10)
+case ('v10')
+	call grib_get_data(gribid,model%glat,model%glon,model%v10)
+end select
 
 ! Close file
 call grib_release(gribid)
