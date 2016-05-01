@@ -15,13 +15,13 @@ The only requirements to run the code are:
 * For downloading and synchronising the data base: the rsync program.
 
 ## Distribution
-Tarballs are released on [GitHub 'releases' page](https://https://github.com/remkos/rads/releases).
+Tarballs are released on [GitHub 'releases' page](https://github.com/remkos/rads/releases).
 
 ## Bug reports and feature requests
-Please submit your bug reports or feature requests, and track existing ones, on the [GitHub 'issues' page](https://https://github.com/remkos/rads/issues). To add content will need to [sign up to GitHub](https://github.com/join?source=header-home).
+Please submit your bug reports or feature requests, and track existing ones, on the [GitHub 'issues' page](https://github.com/remkos/rads/issues). To add content will need to [sign up to GitHub](https://github.com/join?source=header-home).
 
 ## Version History
-Following is a history of releases on [GitHub](https://https://github.com/remkos/rads/releases), newest to oldest.
+Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 
 ### v4.2.1 (22 Mar 2016)
 * Moved directory "include" to "src/include" to avoid clash with default location for "include".
