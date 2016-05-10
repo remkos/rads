@@ -13,7 +13,7 @@
 % GNU Lesser General Public License for more details.
 %-----------------------------------------------------------------------
 
-\documentclass[a4paper,11pt,openany,natbib]{thesis}
+\documentclass[a4paper,11pt,openany,natbib,nomargin]{thesis}
 \usepackage{palatino}
 \usepackage{newpxmath}
 \usepackage{verbatim}
@@ -64,10 +64,9 @@ Variable & field & name & units & sat & range & note \\
 
 \makeindex
 
-\title{RADS version \vernum \\ ~ \\
-Data Manual}
+\title{RADS Data Manual}
 \author{Remko Scharroo}
-\date{\today}
+\date{Version \vernum\\\today}
 
 \begin{document}
 
@@ -318,7 +317,7 @@ Generally, the temporal spacing of the model grids is 6 hours, while the spatial
 To remedy this problem an air tide correction is applied to the sea level pressure, by removing the air tide from the 6-hourly grids before spatio-temporal interpolation and then adding the air tide back for the time and location of the measurement. This correction is already applied to the ECMWF dry tropospheric correction on the Jason-2 GDRs; for all others it is corrected in the RADS processing.
 
 \begin{vartable}
-\var{dry_tropo_ecmwf} & 701 & ECWMF dry tropo corr & m & all, but g1 gs & -2.4 -2.1 & \ref{item:dry_tropo_ecmwf} \\
+\var{dry_tropo_ecmwf} & 701 & ECWMF dry tropo corr & m & all but g1 gs & -2.4 -2.1 & \ref{item:dry_tropo_ecmwf} \\
 \var{dry_tropo_ncep}  & 702 & NCEP dry tropo corr  & m & all & -2.4 -2.1 & \ref{item:dry_tropo_ncep}, \ref{item:dry_tropo_lakes} \\
 \var{dry_tropo_era}   & 709 & ERA Interim dry tropo corr   & m & all & -2.4 -2.1 & \ref{item:dry_tropo_era}, \ref{item:dry_tropo_lakes} \\
 \var{dry_tropo_airtide} & 4901 & air tide corr     & m & c2 e1 j1 pn tx & & \ref{item:dry_tropo_airtide} \\
@@ -353,7 +352,7 @@ The radiometer wet tropospheric correction for ERS-1, ERS-2, and Envisat is base
                     &     &                           &   & pn tx & -0.6 -0.001 & \ref{item:wet_tropo_rad_tp} \\
                     &     &                           &   & e2 & -0.6 0.0 & \ref{item:wet_tropo_rad_e2} \\
                     &     &                           &   & e1 g1 j1 j2 j3 & -0.6 0.0 & \\
-\var{wet_tropo_ecmwf} & 802 & ECMWF wet tropo corr    & m & all, but g1 gs & -0.6 0.0 & \ref{item:wet_tropo_ecmwf} \\
+\var{wet_tropo_ecmwf} & 802 & ECMWF wet tropo corr    & m & all but g1 gs & -0.6 0.0 & \ref{item:wet_tropo_ecmwf} \\
 \var{wet_tropo_ncep} & 803 & NCEP wet tropo corr      & m & all & -0.6 0.0 & \ref{item:wet_tropo_ncep} \\
 \var{wet_tropo_nvap} & 804 & NASA NVAP wet tropo corr & m & gs & -0.6 0.0 & \ref{item:wet_tropo_nvap} \\
 \var{wet_tropo_tovs_ssmi} & 805 & TOVS/SSMI wet tropo corr & m & gs & -0.6 0.0 & \ref{item:wet_tropo_tovs_ssmi} \\
@@ -837,6 +836,21 @@ The coastal proximity parameter is a dimensionless measure of the effect of land
 \var{dist_coast} & 45, 4501 & distance to coast & km & all && \\
 \var{prox_coast} & 4502 & coastal proximity parameter && all && \\
 \end{vartable}
+
+\section{Basin codes}
+Eric Leuliette (NOAA) divided the world's larger water bodies into 39 different ocean basins, enclosed seas and lakes, giving each of them a separate numerical code. This has been represented in a grid with a 5'$\times$5' resolution as shown in Figure~\ref{fig:basin_codes}. This grid is queried to the nearest grid point when creating the RADS data and stored as the variable \var{basin_code}. For land areas a default value of NaN is stored.
+
+This field allows users to separate the selected data by region, or select data from just a single region. Normally data from all regions is selected.
+
+\begin{vartable}
+\var{basin_code} & 36, 3601 & basin code & - & all && \\
+\end{vartable}
+
+\begin{figure}
+\includegraphics[width=\textwidth]{basin_codes}
+\caption{Basin codes. The different colours relate to the various numerical identifiers used for each ocean basin, enclosed sea or lake.}
+\label{fig:basin_codes}
+\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \bibliography{altim}
