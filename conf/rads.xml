@@ -962,7 +962,7 @@ Global RADS configuration file
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
 	<plot_range>-0.15 0.02</plot_range>
-	<data>iono_alt_mle3</data>
+	<data>iono_alt_plrm</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
@@ -1231,6 +1231,7 @@ Global RADS configuration file
 	<source>BM3 model</source>
 	<units>m</units>
 	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
 	<data>ssb_bm3</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -1242,6 +1243,7 @@ Global RADS configuration file
 	<source>CLS</source>
 	<units>m</units>
 	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
 	<data>ssb_cls</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -1253,6 +1255,7 @@ Global RADS configuration file
 	<source>CSR</source>
 	<units>m</units>
 	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
 	<data>ssb_csr</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -1270,6 +1273,7 @@ Global RADS configuration file
 	<parameters sat="sa">sa_ssb_hyb.nc?ssb_hyb</parameters>
 	<units>m</units>
 	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
 	<data>ssb_hyb</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -1280,6 +1284,7 @@ Global RADS configuration file
 	<source>CLS</source>
 	<units>m</units>
 	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
 	<data>ssb_cls_c</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -1290,6 +1295,7 @@ Global RADS configuration file
 	<source>CLS</source>
 	<units>m</units>
 	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
 	<data>ssb_cls_mle3</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -1301,6 +1307,7 @@ Global RADS configuration file
 	<source>CLS</source>
 	<units>m</units>
 	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
 	<data>ssb_cls_plrm</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -1315,6 +1322,7 @@ Global RADS configuration file
 	<parameters sat="j2 j3">ssb_col_J2_Ku_mle4_1_36_v2012ostst.nc</parameters>
 	<units>m</units>
 	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
 	<data>ssb_tran2012</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -1325,6 +1333,7 @@ Global RADS configuration file
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<units>m</units>
 	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
 	<data>ssb_walsh</data>
 	<format>f6.3</format>
 	<compress>int2 1e-3</compress>
@@ -1335,6 +1344,7 @@ Global RADS configuration file
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<units>m</units>
 	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
 	<data>ssb_retrk</data>
 	<format>f6.3</format>
 	<compress>int2 1e-3</compress>
@@ -1565,7 +1575,7 @@ Global RADS configuration file
 		<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 		<units>dB</units>
 		<limits>6 27</limits>
-		<plot_range>8 18</plot_range>
+		<plot_range>7 17</plot_range>
 		<data>sig0_ka</data>
 		<format>f6.3</format>
 		<compress>int2 1e-3</compress>
@@ -1578,7 +1588,7 @@ Global RADS configuration file
 		<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 		<units>dB</units>
 		<limits>6 27</limits>
-		<plot_range>8 18</plot_range>
+		<plot_range>7 17</plot_range>
 		<data>sig0_ku</data>
 		<format>f6.2</format>
 		<compress>int2 1e-2</compress>
@@ -1590,7 +1600,7 @@ Global RADS configuration file
 	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 	<units>dB</units>
 	<limits>6 27</limits>
-	<plot_range>8 18</plot_range>
+	<plot_range>10 20</plot_range>
 	<data>sig0_c</data>
 	<format>f6.2</format>
 	<compress>int2 1e-2</compress>
@@ -2098,7 +2108,7 @@ Global RADS configuration file
 		<standard_name>surface_brightness_temperature</standard_name>
 		<source>radiometer</source>
 		<units>K</units>
-		<plot_range>160 260</plot_range>
+		<plot_range>120 260</plot_range>
 		<data>tb_238</data>
 		<format>f6.2</format>
 		<compress>int2 1e-2</compress>
@@ -2126,7 +2136,7 @@ Global RADS configuration file
 		<standard_name>surface_brightness_temperature</standard_name>
 		<source>radiometer</source>
 		<units>K</units>
-		<plot_range>160 240</plot_range>
+		<plot_range>140 200</plot_range>
 		<data>tb_365</data>
 		<format>f6.2</format>
 		<compress>int2 1e-2</compress>
@@ -2375,6 +2385,7 @@ Global RADS configuration file
 <var name="flags" field="2601 26">
 	<long_name>flag word</long_name>
 	<limits>65512 0</limits>
+	<limits sat="3a">65448 0</limits> <!--Temporary value, deselecting radiometer land flag-->
 	<limits sat="c2">32 0</limits>
 	<limits sat="g1">65384 0</limits>
 	<limits sat="gs">51176 0</limits>
@@ -2738,26 +2749,27 @@ Global RADS configuration file
 	<default>0</default>
 	<compress>int2 1e-4</compress>
 </var>
-<var name="off_nadir_angle_pf" field="3003" sat="c2 j2 j3 pn">
+<var name="off_nadir_angle_pf" field="3003" sat="3a 3b c2 j2 j3 pn">
 	<long_name>off-nadir pointing angle from platform</long_name>
 	<units>degrees</units>
 	<data>off_nadir_angle2_pf SQRT</data>
-	<data sat="c2">attitude_pitch attitude_roll HYPOT</data>
+	<data sat="3a 3b c2">attitude_pitch attitude_roll HYPOT</data>
 	<data sat="pn tx">off_nadir_angle_pf</data> <!--T/P and CryoSat store off-nadir angle, not squared-->
 	<plot_range>0.00 0.01</plot_range>
 	<format>f5.3</format>
 	<compress>int2 1e-3</compress>
 </var>
-<var name="off_nadir_angle2_pf" field="3004" sat="c2 j1 j2 j3 pn">
+<var name="off_nadir_angle2_pf" field="3004" sat="3a 3b c2 j1 j2 j3 pn">
 	<long_name>off-nadir pointing angle squared from platform</long_name>
 	<units>degrees^2</units>
 	<data>off_nadir_angle2_pf</data>
+	<data sat="3a 3b c2">attitude_pitch attitude_roll R2</data>
 	<data sat="pn tx">off_nadir_angle_pf SQR</data> <!--Compute attitude^2 from attitude-->
 	<format>f7.4</format>
 	<default>0</default>
 	<compress>int2 1e-4</compress>
 </var>
-<var name="off_nadir_angle2_wf_rms_ku" field="3005" sat="c2">
+<var name="off_nadir_angle2_wf_rms_ku" field="3005" sat="3a 3b c2">
 	<long_name>std dev of off-nadir pointing angle squared from waveform</long_name>
 	<units>degrees^2</units>
 	<plot_range>0.0 0.04</plot_range>
@@ -2765,7 +2777,7 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 </var>
-<var name="attitude_pitch" field="3006" sat="c2">
+<var name="attitude_pitch" field="3006" sat="3a 3b c2">
 	<long_name>platform pitch angle</long_name>
 	<units>degrees</units>
 	<data>attitude_pitch</data>
@@ -2781,7 +2793,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<dimensions>2</dimensions>
 </var>
-<var name="attitude_roll" field="3007" sat="c2">
+<var name="attitude_roll" field="3007" sat="3a 3b c2">
 	<long_name>platform roll angle</long_name>
 	<units>degrees</units>
 	<data>attitude_roll</data>
@@ -3301,7 +3313,7 @@ Global RADS configuration file
 	<comment>Negative numbers are inland, positive numbers are offshore</comment>
 </var>
 
-<var name="prox_coast" field="4502" sat="c2 j1 j2 j3 n1 pn sa tx">
+<var name="prox_coast" field="4502" sat="3a 3b c2 j1 j2 j3 n1 pn sa tx">
 	<long_name>coastal proximity parameter</long_name>
 	<source>NOC Southampton</source>
 	<parameters>CoastalProximity_v2_1.nc</parameters>
@@ -3438,7 +3450,7 @@ Global RADS configuration file
 		<mission>Exact Repeat Mission</mission>
 		<cycles>0 999</cycles>
 		<repeat>27 770</repeat>
-		<ref_pass>2016-03-01 08:14:33 206.339350 1 442</ref_pass><!--May need to update this value-->
+		<ref_pass>2016-04-12T13:28:42 127.78 3 105</ref_pass><!--May need to update this value-->
 		<start_time>2016-03-01</start_time>
 	</phase>
 </if>
@@ -3454,7 +3466,7 @@ Global RADS configuration file
 		<mission>Exact Repeat Mission</mission>
 		<cycles>0 999</cycles>
 		<repeat>27 770</repeat>
-		<ref_pass>2017-10-01 00:00:00 0.624790 1 1</ref_pass><!--Need to update this value-->
+		<ref_pass>2017-10-01T00:00:00 0.624790 1 1</ref_pass><!--Need to update this value-->
 		<start_time>2017-10-01</start_time><!--Need to update this value-->
 	</phase>
 </if>

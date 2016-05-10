@@ -59,7 +59,7 @@ program rads_gen_s3
 ! range_numval_* - Nr of averaged range measurements
 ! topo_dtm2000 - Bathymetry
 ! tb_238 - Brightness temperature (23.8 GHz)
-! tb_340 - Brightness temperature (34.0 GHz)
+! tb_365 - Brightness temperature (36.5 GHz)
 ! flags, flags_plrm - Engineering flags
 ! swh_rms_* - Std dev of SWH
 ! sig0_rms_* - Std dev of sigma0
@@ -191,7 +191,7 @@ do
 
 	flags = 0
 	call nc2f ('instr_op_mode_01',0,lim=1)			! bit  0: Altimeter mode
-	call nc2f ('corrected_off_nadir_angle_wf_ocean_01_ku',1)	! bit  1: Quality off-nadir pointing
+	call nc2f ('val_alt_off_nadir_angle_wf_ocean_01_plrm_ku',1)	! bit  1: Quality off-nadir pointing
 	call nc2f ('surf_type_01',2,val=2)				! bit  2: Continental ice
 	call nc2f ('range_ocean_qual_01_c',3)			! bit  3: Quality dual-frequency iono
 	call nc2f ('surf_type_01',4,lim=2)				! bit  4: Water/land
@@ -291,7 +291,11 @@ do
 	call cpy_var ('sig0_ocean_rms_01_ku','sig0_rms_ku')
 	call cpy_var ('sig0_ocean_rms_01_plrm_ku','sig0_rms_ku_plrm')
 	call cpy_var ('sig0_ocean_rms_01_c','sig0_rms_c')
-	call cpy_var ('corrected_off_nadir_angle_wf_ocean_01_ku', 'off_nadir_angle2_wf_ku')
+	call cpy_var ('corrected_off_nadir_angle_wf_ocean_01_ku corrected_off_nadir_angle_wf_ocean_01_plrm_ku AND', &
+		'off_nadir_angle2_wf_ku')
+	call cpy_var ('off_nadir_angle_rms_01_ku off_nadir_angle_rms_01_plrm_ku AND', 'off_nadir_angle2_wf_rms_ku')
+	call cpy_var ('off_nadir_pitch_angle_pf_01', 'attitude_pitch')
+	call cpy_var ('off_nadir_roll_angle_pf_01', 'attitude_roll')
 	call cpy_var ('atm_cor_sig0_01_ku', 'dsig0_atmos_ku')
 	call cpy_var ('atm_cor_sig0_01_c', 'dsig0_atmos_c')
 	call cpy_var ('rad_liquid_water_01_ku', 'liquid_water_rad')
