@@ -44,8 +44,8 @@ logical :: has_sel = .false., has_f = .false., boz_format = .false.
 integer(fourbyteint) :: reject = -1
 
 ! For statistics
-integer, parameter :: no_stat = 0, pass_stat = 1, cycle_stat = 2
-integer :: stat_mode = no_stat, nselpass = 0
+integer :: nselpass = 0
+character(len=1) :: stat_mode = ''
 type :: stat_type
 	integer(fourbyteint) :: nr
 	real(eightbytereal) :: mean, sum2, xmin, xmax
@@ -55,7 +55,7 @@ real(eightbytereal), allocatable :: r(:), q(:)
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('r::fs:o:cp reject-on-nan:: step: list: output: maxrec:')
+call rads_set_options ('r::fs:o:cp reject-on-nan:: stat: step: list: output: maxrec:')
 call rads_init (Sats)
 if (any(Sats%error /= rads_noerr)) call rads_exit ('Fatal error')
 
@@ -76,18 +76,10 @@ do i = 1,rads_nopt
 		has_f = .true.
 	case ('sel')
 		has_sel = .true.
-	case ('s')
-		if (rads_opt(i)%arg == 'p') then
-			stat_mode = pass_stat
-		else if (rads_opt(i)%arg == 'c') then
-			stat_mode = cycle_stat
-		else
-			stat_mode = no_stat
-		endif
-	case ('c')
-		stat_mode = cycle_stat
-	case ('p')
-		stat_mode = pass_stat
+	case ('s', 'stat')
+		stat_mode = rads_opt(i)%arg(1:1)
+	case ('c', 'p')
+		stat_mode = rads_opt(i)%opt(1:1)
 	case ('maxrec')
 		read (rads_opt(i)%arg, *, iostat=ios) nselmax
 		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
@@ -124,9 +116,9 @@ do j = 1,msat
 	if (S%nsel == 0) call rads_exit ('No variables are selected for satellite '//trim(S%sat))
 
 	! Per-cycle statistics cannot be done for per-pass files
-	if (outname == '' .and. stat_mode == cycle_stat) then
-		call rads_error (S, rads_noerr, 'Cannot do per-cycle statistics for per-pass files. -sc ignored')
-		stat_mode = no_stat
+	if (outname == '' .and. stat_mode == 'c') then
+		call rads_error (S, rads_noerr, 'Cannot do per-cycle statistics for per-pass files. -s c ignored')
+		stat_mode = ''
 	endif
 
 	! If no -r option was used and SLA is among the selected variables, remember its index
@@ -178,8 +170,9 @@ do j = 1,msat
 
 		! Print out per-cycle statistics, it requested
 		pass = nrpass
-		if (stat_mode == cycle_stat) call print_stat
+		if (stat_mode == 'c') call print_stat
 	enddo
+	if (stat_mode == 'a') call print_stat
 760 format(/'Maximum number of output records reached (',i0,' >= ',i0,')')
 
 	! Finish progress bar
@@ -214,7 +207,7 @@ write (*,1300)
 '  -r n, -r any              Reject records if any value is NaN'/ &
 '                      Note: If no -r option is given -r sla is assumed'/ &
 '  -f                        Do not start with time,lat,lon in output (only with --sel)'/ &
-'  -s c|p                    Include statistics per cycle (c) or per pass (p)'/ &
+'  -s, --stat a|c|p          Include statistics for all data (a), per cycle (c), or per pass (p)'/ &
 '  --step N                  Step through records with stride N (default = 1)'/ &
 '  --list FILENAME           Specify file name in which to write list of output files'/ &
 '  --maxrec NREC             Specify maximum number of output records (default = unlimited)'/ &
@@ -256,8 +249,8 @@ do i = 1,ndata,step
 	endif
 	nselpass = nselpass + 1
 
-	! Update the pass-by-pass or cycle-by-cycle statistics
-	if (stat_mode /= no_stat) then
+	! Update the cumulative statistics
+	if (stat_mode /= '') then
 		stat%nr = stat%nr + 1
 		stat%xmin = min(stat%xmin, data(i,:))
 		stat%xmax = max(stat%xmax, data(i,:))
@@ -280,7 +273,7 @@ nseltot = nseltot + nselpass
 nrpass = nrpass + 1
 
 ! Print out pass statistics and reset them, if requested
-if (stat_mode == pass_stat) call print_stat
+if (stat_mode == 'p') call print_stat
 
 ! Close per-pass output file
 if (outname /= '') then

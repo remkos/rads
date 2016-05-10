@@ -2613,7 +2613,7 @@ do i = 1,nattr
 	endif
 enddo
 has_name = (name /= '')
-if (.not.has_name) call xmlparse_error ('Tag <'//trim(tag)//'> requires name attribute')
+if (.not.has_name) call xmlparse_error ('Tag <'//trim(tag)//'> requires ''name'' attribute')
 end function has_name
 
 subroutine assign_or_append (string)
@@ -3932,7 +3932,7 @@ case default
 	if (arg(1:1) >= '0' .and. arg(1:1) <= '9') then
 		idx = 0
 		read (arg, *, iostat=i) idx
-		if (idx < 1 .or. idx > S%nsel) call rads_exit ('Option -'//trim(opt)//'# used with invalid value')
+		if (idx < 1 .or. idx > S%nsel) call rads_exit ('Option -'//trim(opt)//' NR used with invalid value')
 	else
 		do i = 1,S%nsel
 			if (arg == S%sel(i)%name .or. arg == S%sel(i)%info%name) then
@@ -3940,7 +3940,7 @@ case default
 				return
 			endif
 		enddo
-		call rads_exit ('Option -'//trim(opt)//'<varname> does not refer to variable specified on -V option')
+		call rads_exit ('Option -'//trim(opt)//' <varname> does not refer to variable specified on -V option')
 	endif
 end select
 end subroutine rads_parse_r_option

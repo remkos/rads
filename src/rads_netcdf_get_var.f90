@@ -44,6 +44,10 @@ do
 		array = array * temp
 	case ('DIV')
 		array = array / temp
+	case ('AND')
+		where (isnan_(array)) array = temp
+	case ('R2')
+		array = array*array + temp*temp
 	case default
 		if (index('.+-0123456789', varnm(ia:ia)) > 0) then
 			scale_factor = 0d0

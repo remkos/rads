@@ -48,6 +48,7 @@
 \newcommand\loptb[2]{\lopt{#1}~\url{#2}}
 \newcommand\soptc[2]{\sopt{#1}~\emph{#2}}
 \newcommand\loptc[2]{\lopt{#1}~\emph{#2}}
+\newcommand\opt[2]{\sopt{#1}~~~~\lopt{#2}}
 \newcommand\optc[3]{\soptc{#1}{#3}~~~~\loptc{#2}{#3}}
 \newcommand\alias[1]{\emph{alias of} \var{#1}}
 \newcommand{\script}[2][tiny]{\begingroup\verbatimfont{\csname #1\endcsname}\verbatiminput{#2}\endgroup}
@@ -70,10 +71,9 @@
 
 \makeindex
 
-\title{RADS version \vernum \\ ~ \\
-User Manual}
+\title{RADS User Manual}
 \author{Remko Scharroo}
-\date{\today}
+\date{Version \vernum\\\today}
 
 \begin{document}
 
@@ -507,9 +507,23 @@ Note that the use of these types of options can be tricky, as any value that doe
 \end{description}
 
 \subsection{Long options}
-To make it a bit less hard to understand (or to remember) some of the options, quite often an alternative "long option", starting with two hyphens is provided. As can be seen in the \prog{radsstat4} help, the short option \sopt{v} can also be written as \lopt{verbose}. But any shorter version of the long option, as long at it is unique can be used. So \url{--verb} is allowed as well.
+To make it a bit less hard to understand (or to remember) some of the options, quite often an alternative "long option", starting with two hyphens is provided. As can be seen in the \prog{radsstat4} help, the short option \sopt{v} can also be written as \lopt{verbose}. But any shorter version of the long option, as long at it is unique, can be used. So \url{--verb} is allowed as well.
 
-Just like short options, long options can have no argument, a required argument, or an optional argument. But long options cannot be combined into one, and they have to be separated by whitespace (one or more spaces or tabs) from the option.
+Just like short options, long options can have no argument, a required argument, or an optional argument. But long options cannot be combined into one, while short options can.
+
+There are a few alternative ways of combining a long option with its required or optional argument.
+\begin{itemize}
+\item One can always use whitespace (spaces or tabs) to separate the long option from its argument.
+\item If the argument contains an equal sign ('=') then one can also use a colon to separate the long option and its argument.
+\item If the argument does not contain an equal sign, then an equal sign can be used to separate the long option and the argument.
+\end{itemize}
+For example, either of the following syntaxes can be used:
+\begin{verbatim}
+    --cycle 10,20 --limits sla=-1,1
+    --cycle=10/20 --limits:sla=-1/1
+    --cyc 10-20   --lim sla=-1,1
+    --cyc=10,20   --lim:sla=-1,1
+\end{verbatim}
 
 \section{Common options}
 \label{sec:common_options}
@@ -622,9 +636,9 @@ Set debug/verbosity level to \emph{LEVEL}.
 Print the syntax of the command and all its arguments.
 \item[\loptc{log}{FILENAME}] ~\\
 Write statistics and other log information to file \emph{FILENAME} (default is standard output).
-\item[\sopt{q}~~~~\lopt{quiet}] ~\\
+\item[\opt{q}{quiet}] ~\\
 Suppress warning messages (but keeps fatal error messages).
-\item[\sopt{v}~~~~\lopt{verbose}] ~\\
+\item[\opt{v}{verbose}] ~\\
 Increase the verbosity level (warnings and debugging). This option can be used numerous times, increasing verbosity by one level each time.
 \item[\lopt{version}] ~\\
 Print the program version only.
@@ -767,7 +781,7 @@ For more details, see the description of the command line options in the next Se
 For a full explanation of the command line options that are common to most RADS4 programs, see Section~\ref{sec:common_options}.
 
 \subsection{Program specific options}
-The command line options that are specific to \prog{rads2nc} are listed here. Notice that they have some in common with \prog{rads2asc4} (Section~\ref{sec:rads2arc4}).
+The command line options that are specific to \prog{rads2nc} are listed here. Notice that they have some in common with \prog{rads2asc4} (Section~\ref{sec:rads2asc4}).
 \begin{description}
 \item[\optc{r}{reject-on-nan}{VAR}] ~\\
 Do not output records when the value of variable \emph{VAR}, given as an argument to the \sopt{V} or \lopt{VAR} option, is set to NaN. By default records for which the sea level anomaly (if requested) is set to NaN are rejected.
@@ -796,11 +810,13 @@ Just as \prog{rads2asc4} the program \prog{rads2nc} will now print to standard o
 
 \section{radscolin4}
 \label{sec:radscolin4}
-The program \prog{radscolin4} creates collinear tracks (in a rather straightforward way). No smoothing or interpolation is performed. The data are ``gridded'' based on their time with respect to the equator passages. The measurements are simply collected in bins of predefined length (1 second by default), after which the data falling in those bins for each specified pass are listed in a way similar to \prog{rads2asc4} (Section~\ref{sec:rads2asc4}). No averaging or differencing is performed.
+The program \prog{radscolin4} creates collinear tracks (in a rather straightforward way). No smoothing or interpolation is performed. The data are ``gridded'' based on their time with respect to the equator passages. The measurements are simply collected in bins of predefined length. By default this is the 1-Hz sampling rate of the specific mission), but it can be altered with the \lopt{dt} option. Then the data falling in those bins for each specified pass are output in a way similar to \prog{rads2asc4} (Section~\ref{sec:rads2asc4}) or \prog{rads2nc} (Section~\ref{sec:rads2nc}). No averaging or differencing is performed.
 
-The program will output only those bins in which data can be found for all specified repeat cycles, unless the \sopt{r} option is used.
+This program can also be used to compute differences between two different altimeter missions, as long as they are collinear. Some variance to the strict collinearity is allowed when using the \sopt{f} or \lopt{force} option. See Section~\ref{sec:multi-mission} for more info on using the command line when multiple missions are involved.
 
-The output is a list of ASCII records per bin, containing the variables selected by the \sopt{V} or \lopt{var} option, for each of the specified cycles. \emph{In the current implementation 20 data fields from 400 different cycles can be compared (while the product of the number of data fields and the number of tracks can be no more than 2000).}
+The program will output only those bins in which valid sea level anomalies can be found for all specified repeat cycles, unless the \sopt{r} option is used.
+
+The output are one record for each bin, containing the variables selected by the \sopt{V} or \lopt{var} option, for each of the specified cycles. The output can be either ASCII (the default) or netCDF (with the \sopt{o} or \lopt{output}) option.
 
 This program can be called as \prog{radscolin}, or as \prog{rads2colin4} to avoid conflicts with an already installed RADS3.
 
@@ -811,9 +827,44 @@ This program can be called as \prog{radscolin}, or as \prog{rads2colin4} to avoi
 For a full explanation of the command line options that are common to most RADS4 programs, see Section~\ref{sec:common_options}.
 
 \subsection{Program specific options}
-The command line options that are specific to \prog{radscolin4} are listed here. Notice that they have some in common with \prog{rads2asc4} (Section~\ref{sec:rads2asc4}).
+The command line options that are specific to \prog{radscolin4} are listed here. Notice that the \sopt{r} option is somewhat different than that of \prog{rads2asc4} (Section~\ref{sec:rads2asc4}) and \prog{rads2nc} (Section~\ref{sec:rads2nc}).
+\begin{description}
+\item[\loptc{dt}{DT}] Set the minimum bin size in seconds. The default is the maximum 1-Hz sampling rate of the missions selected.
+\item[\loptc{step}{N}] Write out only one out of N bins along track.
+\item[\soptc{r}{NR}] ~\\
+Reject stacked data when there are fewer than NR tracks with valid sea level anomaly values (assuming it was used with the \sopt{V} option).
+\item[\soptb{r}{0}~~~~\soptb{r}{none}~~~~\sopt{r}] ~\\
+When either of these is used, keep the stacked data in the output, even when they are NaN.
+\item[\soptb{r}{n}~~~~\soptb{r}{any}] ~\\
+Reject stacked data when data on any track is NaN. This is the default behavious.
+\item[\opt{k}{keep}] ~\\
+Keep all the passes in the output, even those that do not have any valid data in the selected area. By default, passes without any valid values are removed from the output.
+\item[\opt{a}{mean}] ~\\
+Output the mean value in each stacked bin in addition to the values in each collinear pass. 
+\item[\opt{s}{stddev}] ~\\
+Output the standard deviation in each stacked bin in addition to the values in each collinear pass. 
+\item[\opt{l}{minmax}] ~\\
+Output the minimum and maximum in each stacked bin in addition to the values in each collinear pass. 
+\item[\opt{d}{no-pass}] ~\\
+Do not output the values in each individual collinear pass.
+\item[\opt{t}{no-track}] ~\\
+Do not print the along-track data (applies to ASCII output only).
+\item[\opt{c}{cumul}] ~\\
+Print cumulative statistics (applies to ASCII output only).
+\item[\lopt{diff}] ~\\
+Compute the difference between the first and the second half of the selected passes. This is practical when computing the difference between two missions. It implies \lopt{keep}.
+\item[\opt{f}{force}] ~\\
+Force collinear track comparison, even when missions are not strictly considered collinear.
+\item[\optc{o}{output}{[FILENAME]}] ~\\
+Create netCDF output files per pass. The default is ASCII output to standard output. Optionally specify a \emph{FILENAME} including the hash character ('\#'), which will be replaced by the pass number. The default netCDF output file name is \verb|radscolin_p#.nc|.
+\end{description}
 
 \subsection{Examples}
+Assuming a default configuration, we issue the following command:
+\begin{verbatim}
+$ radscolin -S e2 -C 0,2 -P 915,1000,2 -R -8,42,28,48 -V lat,sla,swh
+\end{verbatim}
+This command creates to following results to print to standard output:
 \script{sub/radscolin4.out}
 \script{sub/radscolin4-r.out}
 

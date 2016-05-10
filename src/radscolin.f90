@@ -28,9 +28,9 @@ use rads_time
 
 integer(fourbyteint), parameter :: msat = 20
 type(rads_sat) :: S(msat)
-integer(fourbyteint) :: nsel = 0, reject = 9999, cycle, pass, i, j, ios, &
+integer(fourbyteint) :: nsel = 0, reject = -2, cycle, pass, i, j, ios, &
 	nbins, nsat = 0, ntrx = 0, ntrx1, ntrx2, ntrx3, ntrx4, type_sla = 1, step = 1, ncols
-real(eightbytereal) :: dt = 0.97d0
+real(eightbytereal) :: dt = 0d0
 character(len=rads_naml) :: prefix = 'radscolin_p', suffix = '.nc', satlist
 logical :: ascii = .true., out_data = .true., out_mean = .false., out_sdev = .false., out_extr = .false., out_diff = .false., &
 	out_track = .true., out_cumul = .false., keep = .false., force = .false., boz_format = .false.
@@ -52,7 +52,8 @@ character(len=rads_strl) :: format_string
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('acdefklnNo::r::st cumul diff dt: extremes force keep mean minmax no-pass no-track output:: stddev step:')
+call rads_set_options ('acdefklnNo::r::st ' // &
+	'cumul diff dt: reject-on-nan:: extremes force keep mean minmax no-pass no-track output:: stddev step:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 
@@ -84,12 +85,8 @@ enddo
 ! Scan command line arguments
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
-	case ('r')
-		if (rads_opt(i)%arg /= 'n' .and. rads_opt(i)%arg /= 'any') then
-			reject = 0
-			read (rads_opt(i)%arg, *, iostat=ios) reject
-			if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
-		endif
+	case ('r', 'reject-on-nan')
+		call parse_r_option (S(1), rads_opt(i)%opt, rads_opt(i)%arg)
 	case ('step')
 		read (rads_opt(i)%arg, *, iostat=ios) step
 		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
@@ -172,6 +169,35 @@ contains
 
 !***********************************************************************
 
+subroutine parse_r_option (S, opt, arg)
+type(rads_sat), intent(in) :: S
+character(len=*), intent(in) :: opt, arg
+integer(fourbyteint) :: i
+select case (arg)
+case ('n', 'any')
+	reject = -2
+case ('', '0', 'none')
+	reject = 0
+case ('all')
+	type_sla = 0
+case default
+	if (arg(1:1) >= '0' .and. arg(1:1) <= '9') then
+		reject = 0
+		read (arg, *, iostat=i) reject
+	else
+		do i = 1,S%nsel
+			if (arg == S%sel(i)%name .or. arg == S%sel(i)%info%name) then
+				type_sla = i
+				return
+			endif
+		enddo
+		call rads_exit ('Option -'//trim(opt)//' <varname> does not refer to variable specified on -V option')
+	endif
+end select
+end subroutine parse_r_option
+
+!***********************************************************************
+
 subroutine synopsis
 if (rads_version ('Make collinear data sets from RADS')) return
 call rads_synopsis
@@ -179,23 +205,27 @@ write (*,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
 '  --dt DT                   Set minimum bin size in seconds (default is determined by satellite)'/ &
-'  --step N                  Write out only every N points along track'/ &
-'  -r #                      Reject stacked data when there are fewer than # tracks with valid SLA values'/ &
+'  --step N                  Write out only one out of N bins along track'/ &
+'  -r, --reject-on-nan VAR   Base rejection criteria (below) on VAR; default is ''sla'' or 1st on -V'/ &
+'  -r NR                     Reject stacked data when fewer than NR tracks with valid values'/ &
 '  -r 0, -r none, -r         Keep all stacked data points, even NaN'/ &
 '  -r n, -r any              Reject stacked data when data on any track is NaN (default)'/ &
 '                      Note: If no -r option is given, -r any is assumed'/ &
-'  -k, --keep                Keep all passes, even the ones that do not have data in the selected area'/ &
+'  -k, --keep                Keep all passes, even those that do not have data in the selected area'/ &
 '  -a, --mean                Output mean in addition to pass data'/ &
 '  -s, --stddev              Output standard deviation in addition to pass data'/ &
 '  -l, --minmax              Output minimum and maximum in addition to pass data'/ &
 '  -d, --no-pass             Do not output pass data'/ &
 '  -t, --no-track            Do not print along-track data (ascii output only)'/ &
 '  -c, --cumul               Output cumulative statistics (ascii output only) (implies --keep)'/ &
-'      --diff                Compute difference between first and second half of selected passes (implies --keep)'/ &
+'      --diff                Compute difference between first and second half of selected passes'/ &
+'                            (implies --keep)'/ &
 '  -f, --force               Force comparison, even when missions are not considered collinear'/ &
-'  -o, --output [FILENAME]   Create netCDF output by pass (default is ascii output to stdout). Optionally specify'/ &
-'                            FILENAME including "#", to be replaced by the pass number. Default is "radscolin_p#.nc"'/ &
-'  --diff                    Compute the collinear difference between the first and second half of selected tracks')
+'  -o, --output [FILENAME]   Create netCDF output by pass (default is ascii output to stdout).'/ &
+'                            Optionally specify FILENAME including "#", to be replaced by the pass'/ &
+'                            number. Default is "radscolin_p#.nc"'/ &
+'  --diff                    Compute the collinear difference between the first and second half of'/ &
+'                            selected tracks')
 stop
 end subroutine synopsis
 
@@ -205,7 +235,7 @@ end subroutine synopsis
 subroutine process_pass
 real(eightbytereal), allocatable :: temp(:)
 integer, allocatable :: bin(:)
-integer :: i, j, k, m, ndata
+integer :: i, j, j0, j1, k, m, ndata
 type(rads_pass) :: P
 
 ! Initialize
@@ -277,18 +307,29 @@ info(ntrx2) = info_ ('stddev', 0, 9002, 9999)
 info(ntrx3) = info_ ('   min', 0, 9003, 9999)
 info(ntrx4) = info_ ('   max', 0, 9004, 9999)
 
+! Determine which range of selected variables to scan for NaNs
+if (type_sla == 0) then ! This signals: check all variables
+	j0 = 1; j1 = nsel
+else
+	j0 = type_sla; j1 = type_sla
+endif
+
 ! If reject == 0, count number of SLA measurements per bin, also the NaNs
 ! Else, count the number of non-NaN SLA measurements per bin
 ! In both cases, set mask to non-NaN SLA measurements only
-if (reject == 0) then
-	forall (k=-nbins:nbins) nr_in_bin(k) = count(mask(1:ntrx,k))
-	mask = isan_(data(:,type_sla,:))
+if (reject == 0) then ! This signals: ignore NaNs
+	forall (k=-nbins:nbins)
+		nr_in_bin(k) = count(mask(1:ntrx,k))
+		forall (i=1:ntrx) mask(i,k) = all(isan_(data(i,j0:j1,k)))
+	end forall
 else
-	mask = isan_(data(:,type_sla,:))
-	forall (k=-nbins:nbins) nr_in_bin(k) = count(mask(1:ntrx,k))
+	forall (k=-nbins:nbins)
+		forall (i=1:ntrx) mask(i,k) = all(isan_(data(i,j0:j1,k)))
+		nr_in_bin(k) = count(mask(1:ntrx,k))
+	end forall
 	! Set to zero the bins that not reach the threshold number
 	k = reject
-	if (reject == 9999) k = ntrx
+	if (reject == -2) k = ntrx
 	where (nr_in_bin < k) nr_in_bin = 0
 endif
 
@@ -309,7 +350,7 @@ do k = -nbins,nbins
 enddo
 data(ntrx2,:,:) = sqrt(data(ntrx2,:,:)) ! Variance to std dev
 ! Mask out NaN statistics
-mask(ntrx1:ntrx4,:) = isan_(data(ntrx1:ntrx4,type_sla,:))
+forall (i=ntrx1:ntrx4,k=-nbins:nbins) mask(i,k) = all(isan_(data(i,j0:j1,k)))
 
 ! Compute per-track statistics (vertically)
 do i = 1,ntrx4

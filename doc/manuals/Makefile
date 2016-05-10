@@ -28,6 +28,7 @@ PROGS_HLP = $(foreach prog,$(PROGS),sub/$(prog).hlp)
 PROGS_OUT = $(foreach prog,$(PROGS) $(PROGS_EXTRA),sub/$(prog).out)
 TABS_TEX = sub/rads_math.tab
 HLP = sub/rads2asc4.hlp sub
+SEPARATOR =	echo "............  lines removed .............................."
 
 #-----------------------------------------------------------------------
 # What to create?
@@ -82,54 +83,40 @@ sub/%.hlp:	../../src/%
 # Make command output and logs
 #-----------------------------------------------------------------------
 
-sub/rads2asc4.out:	../../src/rads2asc4
-	PATH=../../src rads2asc4 -S e2 -C 0 -P 901,1000,2 -V time_ymdhms,lat,lon,sla,swh,wind_speed -R -8,42,28,48 -o rads2asc4.asc -v > sub/rads2asc4.log 0>&2
-	head -n 19 rads2asc4.asc > $@
-	echo "............  lines removed .............................." >> $@
-	tail -n 4 rads2asc4.asc >> $@
-	rm -f rads2asc4.asc
+sub/rads2asc4.out:	Makefile ../../src/rads2asc4
+	PATH=../../src rads2asc4 -S e2 -C 0 -P 901,1000,2 -V time_ymdhms,lat,lon,sla,swh,wind_speed -R -8,42,28,48 -o $(@F) -v > $(@:.out=.log) 0>&2
+	(head -n 19 $(@F); $(SEPARATOR); tail -n 4 $(@F)) > $@
+	rm -f $(@F)
 
-sub/rads2nc.out:	../../src/rads2nc
-	PATH=../../src rads2nc -S e2 -C 0 -P 901,1000,2 -V time,lat,lon,sla,swh,wind_speed -R -8,42,28,48 -o rads2nc.nc -v > sub/rads2nc.log 0>&2
-	ncdump rads2nc.nc | head -n 73 | sed 's/	/    /g' > $@
-	echo "............  lines removed .............................." >> $@
-	ncdump rads2nc.nc | tail -n 5 >> $@
-	rm -f rads2nc.nc
+sub/rads2nc.out:	Makefile ../../src/rads2nc
+	PATH=../../src rads2nc -S e2 -C 0 -P 901,1000,2 -V time,lat,lon,sla,swh,wind_speed -R -8,42,28,48 -o $(@F) -v > $(@:.out=.log) 0>&2
+	(ncdump $(@F) | head -n 73 | sed 's/	/    /g'; $(SEPARATOR); ncdump $(@F) | tail -n 5) > $@
+	rm -f $(@F)
 
-sub/rads2grd4.out:	../../src/rads2grd4
-	PATH=../../src rads2grd4 -S e2 -C 0 -P 901,1000,2 -V wind_speed,swh,sla -c > rads2grd4.out
-	head -n 16 rads2grd4.out > $@
-	echo "............... lines removed ..............." >> $@
-	tail -n 4 rads2grd4.out >> $@
-	rm -f rads2grd4.out
+sub/rads2grd4.out:	Makefile ../../src/rads2grd4
+	PATH=../../src rads2grd4 -S e2 -C 0 -P 901,1000,2 -V wind_speed,swh,sla -c > $(@F)
+	(head -n 16 $(@F); $(SEPARATOR); tail -n 4 $(@F)) > $@
+	rm -f $(@F)
 
-sub/rads2grd4-o.out:	../../src/rads2grd4
-	PATH=../../src rads2grd4 -S e2 -C 0 -P 901,1000,2 -V wind_speed,swh,sla -c -o rads2grd4.nc
-	ncdump rads2grd4.nc | head -n 42 | sed 's/	/    /g' > $@
-	echo "............... lines removed ..............." >> $@
-	ncdump rads2grd4.nc | tail -n 5 >> $@
-	rm -f rads2grd4.nc
+sub/rads2grd4-o.out:	Makefile ../../src/rads2grd4
+	PATH=../../src rads2grd4 -S e2 -C 0 -P 901,1000,2 -V wind_speed,swh,sla -c -o $(@F)
+	(ncdump $(@F) | head -n 42 | sed 's/	/    /g'; $(SEPARATOR); ncdump $(@F) | tail -n 5) > $@
+	rm -f $(@F)
 
-sub/radscolin4.out:	../../src/radscolin4
-	PATH=../../src radscolin -S e2 -C 0,2 -P 915,1000,2 -V lat,sla,swh,wind_speed > radscolin4.out
-	head -n 18 radscolin4.out > $@
-	echo "......................... lines removed ............................." >> $@
-	tail -n 4 radscolin4.out >> $@
-	rm -f radscolin4.out
+sub/radscolin4.out:	Makefile ../../src/radscolin4
+	PATH=../../src radscolin4 -S e2 -C 0,2 -P 915,1000,2 -R -8,42,28,48 -V lat,sla,swh > $(@F)
+	(head -n 18 $(@F); $(SEPARATOR); tail -n 4 $(@F)) > $@
+	rm -f $(@F)
 
-sub/radscolin4-r.out:	../../src/radscolin4
-	PATH=../../src radscolin -S e2 -C 0,2 -P 915,1000,2 -V lat,sla,swh,wind_speed -r > radscolin4-r.out
-	head -n 18 radscolin4-r.out > $@
-	echo "......................... lines removed ............................." >> $@
-	tail -n 4 radscolin4-r.out >> $@
-	rm -f radscolin4-r.out
+sub/radscolin4-r.out:	Makefile ../../src/radscolin4
+	PATH=../../src radscolin4 -S e2 -C 0,2 -P 915,1000,2 -R -8,42,28,48 -V lat,sla,swh -r > $(@F)
+	(head -n 18 $(@F); $(SEPARATOR); tail -n 4 $(@F)) > $@
+	rm -f $(@F)
 
 inc/max.out:		getraw.nml max.nml $(RADSROOT)/bin/max2
 	rm -f xovers.rxf
 	max2 sat=e2 cycle=0,1 sel=0,1,17 xovers > inc/max_v.out
-	head -18 xovers.rxf > $@
-	echo "............................. lines removed .............................................." >> $@
-	tail -4 xovers.rxf >> $@
+	(head -18 xovers.rxf; $(SEPARATOR); tail -4 xovers.rxf) > $@
 	rm -f xovers.rxf
 
 #-----------------------------------------------------------------------
