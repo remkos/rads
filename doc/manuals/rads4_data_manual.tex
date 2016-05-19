@@ -156,7 +156,7 @@ If the time tags on the original GDR data include a bias, the orbit has either b
 \var{alt_reaper_esoc} & 423 & REAPER/ESOC altitude & m & e1 e2 && \ref{item:alt_reaper} \\
 \var{alt_std1404}  & 424 & GSFC/Std1404 altitude & m & j2 && \ref{item:alt_std1404} \\
 \var{alt_gdre}     & 425 & CNES GDR-E altitude & m & c2 j2 j3 sa && \ref{item:alt_gdre} \\
-\var{alt_slcci}    & 426 & GFZ/SLCCI altitude & m & n1 pn tx && \ref{item:alt_slcci} \\
+\var{alt_slcci}    & 426 & GFZ/SLCCI altitude & m & e1 e2 j1 j2 n1 pn tx && \ref{item:alt_slcci} \\
 \hline
 \var{alt} & 4 & \alias{alt_gdre} \var{alt_cnes} & & c2 && \ref{item:alt}\\
 \var{alt} & 4 & \alias{alt_reaper} \var{alt_gfz} & & e1 e2 && \ref{item:alt} \\
@@ -184,7 +184,7 @@ If the time tags on the original GDR data include a bias, the orbit has either b
 \item Orbits produced by the REAPER project. A combined solution and individual solutions created by DEOS (TU Delft), GFZ and ESOC are available \citep{rudenko2011}.\label{item:alt_reaper}
 \item Orbits provided by GSFC using their standards "Std1404". They are "GDR-E compatible".\label{item:alt_std1404}
 \item Orbits produced by CNES under strict Jason GDR-E standards (baseline for the production of orbits since April 2015) \citep{ids2015}.\label{item:alt_gdre}
-\item Orbits produced by GFZ in the framework of the ESA Sea Level CCI project. The particular version of the orbits used in RADS are designated VER06 (CCI14), and are based on the EIGEN-6S2A gravity field model \citep{rudenko2014}.\label{item:alt_slcci}
+\item Orbits produced by GFZ in the framework of the ESA Sea Level CCI project. RADS initially included version VER06 of these orbits (based on the EIGEN-6S2A gravity field model) \citep{rudenko2014} for ERS-1, ERS-2, Envisat and TOPEX/Poseidon. Any data produced since 18 May 2016 (which includes Jason-1 and Jason-2) incorporated version VER11 of these orbits and are based on the EIGEN-6S4 gravity field model \citep{rudenko2015,rudenko2016}.\label{item:alt_slcci}
 \item The variable \var{alt} refers to the preferred (best) orbit solution for each satellite. If two variable names are mentioned, RADS picks the first one by preference; it that is not available, the second variable is used.\label{item:alt}
 \end{notes}
 
@@ -470,6 +470,8 @@ Tides are expressed as the sum of a (large) number of \emph{waves} with differen
 Tide models generally only include the diurnal and semi-diurnal waves (those around a period of 12 and 24 hours). On top of that there are secondary and tertiary waves with periods of a week or longer. Most of these waves can be expressed by a simple latitude and time dependent equilibrium model (the long-period equilibrium tide). The FES2004 ocean tide model also includes the non-equilibrium component of the monthly, fortnightly, tri-monthly, and weekly tides.
 
 Although the FES and GOT models are global, they are limited in scope. Over land, the ocean tide is not defined and will be set to the NaN value. In some coastal regions, where the models may likely not be defined, the ocean tide value is set to NaN as well.
+
+For a very elaborate and thorough accuracy assessment of most of these tide models, we highly recommend reading the work by \citet{stammer2014}.
 
 \begin{vartable}
 \var{tide_ocean_fes04} & 1213 & FES2004 ocean tide & m & all & -5 5 & \ref{item:tide_ocean_fes04} \\

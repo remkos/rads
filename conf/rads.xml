@@ -462,8 +462,8 @@ Global RADS configuration file
 	<compress sat="j1 j2 j3 tx">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_slcci" field="426" sat="e1 e2 n1 pn tx">
-	<long_name>GFZ/SLCCI orbital altitude</long_name>
+<var name="alt_slcci" field="426" sat="e1 e2 j1 j2 n1 pn tx">
+	<long_name>GFZ/SLCCI/VER11 orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>ESA SLCCI project</source>
 	<parameters>gfz_slcci</parameters>

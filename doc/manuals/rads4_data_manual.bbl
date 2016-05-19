@@ -1,4 +1,4 @@
-\begin{thebibliography}{83}
+\begin{thebibliography}{86}
 \providecommand{\natexlab}[1]{#1}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
@@ -347,6 +347,20 @@ Rudenko, S., D.~Dettmering, S.~Esselborn, T.~Sch{\"o}ne, C.~F{\"o}rste, J.-M.
   global and regional mean sea level trends, \textit{Adv.\ Space Res.},
   \textit{54}(1), 92--118, \doi{10.106/j.asr.2014.03.010}.
 
+\bibitem[{\textit{Rudenko et~al.}(2015)\textit{Rudenko, Neumayer, Dettmering,
+  Esselborn, Sch{\"o}ne, and Raimondo}}]{rudenko2015}
+Rudenko, S., K.-H. Neumayer, D.~Dettmering, S.~Esselborn, T.~Sch{\"o}ne, and
+  J.~C. Raimondo (2015), New orbits of {ERS-1}, {ERS-2}, {TOPEX/Poseidon},
+  {Envisat}, {Jason-1} and {Jason-2} for altimetry applications and their
+  validation, Ocean Science Topography Science Team Meeting, Reston, Virginia,
+  20-23 October 2015.
+
+\bibitem[{\textit{Rudenko et~al.}(2016)\textit{Rudenko, Neumayer, Dettmering,
+  Esselborn, Sch{\"o}ne, and Raimondo}}]{rudenko2016}
+Rudenko, S., K.-H. Neumayer, D.~Dettmering, S.~Esselborn, T.~Sch{\"o}ne, and
+  J.~C. Raimondo (2016), Improvements in precise orbits of altimetry satellites
+  and their altimetry validation, (under preparation).
+
 \bibitem[{\textit{Ruf et~al.}(1996)\textit{Ruf, Dewan, and
   Sabramanya}}]{ruf1996}
 Ruf, C.~S., R.~P. Dewan, and B.~Sabramanya (1996), Combined microwave
@@ -404,6 +418,11 @@ Shako, R., C.~F{\"o}rste, O.~Abrikosov, S.~Bruinsma, J.~C. Marty, J.-M.
 Smith, W. H.~F., and D.~T. Sandwell (1994), Bathymetric prediction from dense
   satellite altimetry and sparse shipboard bathymetry, \textit{J.\ Geophys.\
   Res.}, \textit{99}(B11), 21,803--21,824.
+
+\bibitem[{\textit{Stammer et~al.}(2014)}]{stammer2014}
+Stammer, D., et~al. (2014), Accuracy assessment of global barotropic ocean tide
+  models, \textit{Rev.\ Geophys.}, \textit{52}(3), 243--282,
+  \doi{10.1002/2014RG000450}.
 
 \bibitem[{\textit{Stenseng et~al.}(2015)\textit{Stenseng, Piccioni, Andersen,
   and Knudsen}}]{stenseng2015}
