@@ -437,7 +437,8 @@ call nfs (nf90_put_att (ncid, varid(1), 'flag_meanings', trim(satlist)))
 call nfs (nf90_put_att (ncid, varid(1), 'comment', 'Satellite IDs relate to the different missions'))
 call nfs (nf90_def_var (ncid, 'cycle', nf90_int2, dimid(2:2), varid(2)))
 call nfs (nf90_put_att (ncid, varid(2), 'long_name', 'cycle number'))
-call nfs (nf90_put_att (ncid, varid(2), 'comment', 'Cycle number 9001 denotes "mean", 9002 denotes "standard deviation"'))
+call nfs (nf90_put_att (ncid, varid(2), &
+	'comment', 'Cycle number; 9001 = mean; 9002 = standard deviation; 9003 = minimum; 9004 = maximum'))
 
 ! Define bin info
 call nfs (nf90_def_var (ncid, 'bin', nf90_int2, dimid(1:1), varid(3)))
