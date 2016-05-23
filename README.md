@@ -5,8 +5,13 @@ The Radar Altimeter Database System (RADS) was developed by the Delft Institute 
 ## Development
 The RADS database and code has gone through various generations. NetCDF datasets were introduced in version 3, while the software more or less stayed the same as in version 2. This new version is a complete rewrite of the code, making it much easier to configure, handle, and expand, and for the first time taking all the advantages of the underlying netCDF data and the linear algebra provided by Fortran 90.
 
+## Documentation
+There are two manuals that cover the use of the RADS software and the contents of the RADS data base:
+* [RADS User Manual](https://github.com/remkos/rads/raw/master/doc/manuals/rads4_user_manual.pdf)
+* [RADS Data Manual](https://github.com/remkos/rads/raw/master/doc/manuals/rads4_data_manual.pdf)
+
 ## Requirements
-The only requirements to run the code are:
+The only requirements to compile and run the code are:
 * A unix type environment (Linux, Mac OS X, etc.).
 * The make command.
 * A fortran compiler (preferrably gfortran, but others like f90, f95, xlf90, xlf95 and ifort are known to work as well)
@@ -22,6 +27,20 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 
 ## Version History
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
+
+### v4.2.2 (future release)
+* Updated Jason-1 SLCCI orbits to Version 11 for ERS-1, ERS-2, Envisat, Jason-1, Jason-2, and TOPEX/Poseidon.
+* Changed reference frame offset for CryoSat-2 Baseline C data from -26 to -34 mm.
+* Major additions to the user manual.
+* Changes and additions to configuration files for Jason-3 and Sentinel-3A.
+* All help output to be sent to standard output (not standard error).
+* rads2grd: --fmt replaced by --line-format, variable name in netCDF now always ${var}_mean and ${var}_stddev, even when only one variable is used.
+* Updated global attributes to be written in new netCDF files.
+* --quality_flag replaced by --quality-flag (with backward compatibility).
+* Made adaptations for Jason-1 GDR-E (to be released later).
+* Change format of time field to f17.6 in advance of 2016-09-09 when extra digit will be added.
+* Bug fix (issue #89).
+* Bug fix: updated missing building dependencies.
 
 ### v4.2.1 (22 Mar 2016)
 * Moved directory "include" to "src/include" to avoid clash with default location for "include".
