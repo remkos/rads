@@ -19,7 +19,7 @@ include ../config.mk
 INCLUDES= config.f90 rads_version.f90
 
 # Objects
-OBJS1   = rads_netcdf.o rads_time.o rads_misc.o rads_grid.o rads_geo.o rads_math.o xmlparse.o
+OBJS1   = rads_time.o rads_misc.o rads_grid.o rads_geo.o rads_math.o rads_netcdf.o xmlparse.o
 OBJS    = $(OBJS1) rads.o rads3.o
 
 # .mod files created by the objects
@@ -63,7 +63,7 @@ install:	all
 #-----------------------------------------------------------------------
 
 rads_math.o:	rads_misc.mod rads_time.mod
-rads_netcdf.o:	rads_netcdf_get_var.f90 include/nf90_message.f90 ../devel/nf90_message.f90
+rads_netcdf.o:	rads_misc.mod rads_netcdf_get_var.f90 include/nf90_message.f90 ../devel/nf90_message.f90
 rads.o:			$(MODS1) $(INCLUDES) include/rads_tpj.f90 ../devel/rads_tpj.f90
 rads3.o:		rads.mod
 $(PROGS):		$(LIB)
