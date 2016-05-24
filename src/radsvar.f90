@@ -228,13 +228,14 @@ real(eightbytereal), intent(inout) :: rng(2)
 real(eightbytereal), intent(out) :: bin
 ! Compute bin size; will be NaN when not requested
 bin = (rng(2)-rng(1)) / intervals
+if (intervals == 0) return
 if (round) call round_up (bin)	! Round if requested
 ! Adjust bin size if it is below the data resolution
 if (info%nctype /= nf90_real .and. info%nctype /= nf90_double .and. bin <= info%scale_factor) then
 	bin = info%scale_factor
 endif
-	rng(1) = (nint(rng(1)/bin)-0.5d0)*bin
-	rng(2) = (nint(rng(2)/bin)+0.5d0)*bin
+rng(1) = (nint(rng(1)/bin)-0.5d0)*bin
+rng(2) = (nint(rng(2)/bin)+0.5d0)*bin
 end subroutine adjust_range
 
 subroutine list (type, var)
