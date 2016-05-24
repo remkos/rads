@@ -3452,7 +3452,7 @@ Global RADS configuration file
 	<xover_params>0.05 0.05</xover_params><!--Need to verify-->
 	<phase name="a">
 		<mission>Exact Repeat Mission</mission>
-		<cycles>0 999</cycles>
+		<cycles>0 99</cycles>
 		<repeat>27 770</repeat>
 		<ref_pass>2016-04-12T13:28:42 127.78 3 105</ref_pass><!--May need to update this value-->
 		<start_time>2016-03-01</start_time>
@@ -3468,7 +3468,7 @@ Global RADS configuration file
 	<xover_params>0.05 0.05</xover_params><!--Need to verify-->
 	<phase name="a">
 		<mission>Exact Repeat Mission</mission>
-		<cycles>0 999</cycles>
+		<cycles>0 99</cycles>
 		<repeat>27 770</repeat>
 		<ref_pass>2017-10-01T00:00:00 0.624790 1 1</ref_pass><!--Need to update this value-->
 		<start_time>2017-10-01</start_time><!--Need to update this value-->

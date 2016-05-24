@@ -28,7 +28,7 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 ## Version History
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 
-### v4.2.2 (future release)
+### v4.2.2 (24 May 2016)
 * Updated Jason-1 SLCCI orbits to Version 11 for ERS-1, ERS-2, Envisat, Jason-1, Jason-2, and TOPEX/Poseidon.
 * Changed reference frame offset for CryoSat-2 Baseline C data from -26 to -34 mm.
 * Major additions to the user manual.
