@@ -989,6 +989,7 @@ Global RADS configuration file
 	<source>ECMWF</source>
 	<units>m</units>
 	<limits>-1 1</limits>
+	<plot_range>-0.4 0.6</plot_range>
 	<data>inv_bar_static</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -1009,6 +1010,7 @@ Global RADS configuration file
 	<source>MOG2D-G</source>
 	<units>m</units>
 	<limits>-1 1</limits>
+	<plot_range>-0.4 0.6</plot_range>
 	<data>inv_bar_mog2d</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
@@ -1018,6 +1020,7 @@ Global RADS configuration file
 	<long_name>MOK2D inverse barometer correction</long_name>
 	<units>m</units>
 	<limits>-1 1</limits>
+	<plot_range>-0.4 0.6</plot_range>
 	<data>inv_bar_static 0.9603 MUL 0.0025 SUB</data>
 	<data sat="e1 e2">inv_bar_static 0.9555 MUL 0.0028 ADD</data>
 	<data sat="g1 gs">inv_bar_static 0.9740 MUL 0.0022 SUB</data>

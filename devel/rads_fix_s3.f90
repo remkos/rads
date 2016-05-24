@@ -119,12 +119,12 @@ if (lmwr) then
 	call rads_get_var (S, P, 'tb_238', tb23, .true.)
 	call rads_get_var (S, P, 'tb_365', tb36, .true.)
 	call rads_get_var (S, P, 'dsig0_atmos_ku', atten_ku, .true.)
-	sig0_ku = sig0_ku - atten_ku
+	sig0_ku = sig0_ku - atten_ku	! Remove applied attenuation first
 	do i = 1,n
 		atten_ku(i) = nn_l2_mwr (tb23(i), tb36(i), sig0_ku(i), 1)
 		wet(i)      = nn_l2_mwr (tb23(i), tb36(i), sig0_ku(i), 3)
 	enddo
-	sig0_ku = sig0_ku + atten_ku
+	sig0_ku = sig0_ku + atten_ku	! Add the recomputed attenuation back
 endif
 
 ! Adjust wind speed
