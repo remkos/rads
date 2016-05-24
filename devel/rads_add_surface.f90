@@ -59,9 +59,9 @@ enddo
 ! Load the surface_type grid
 
 if (sentinel) then
-	call parseenv ('${ALTIM}/data/landmask.nc', filename)
+	call parseenv ('${ALTIM}/data/surface_type/S3__SR_2_SURFAX_ver2.nc', filename)
 else
-	call parseenv ('${ALTIM}/data/S3__SR_2_SURFAX_ver2.nc', filename)
+	call parseenv ('${ALTIM}/data/landmask.nc', filename)
 endif
 call log_string ('Loading mask '//filename)
 if (grid_load (filename, info) /= 0) call rads_exit ('Error loading surface type grid')
