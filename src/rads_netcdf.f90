@@ -305,7 +305,6 @@ end subroutine nfs
 
 subroutine get_var_1d (ncid, varnm, array)
 use netcdf
-use rads_misc, only: isnan_
 integer(fourbyteint), intent(in) :: ncid
 character(len=*), intent(in) :: varnm
 real(eightbytereal), intent(out) :: array(:)
@@ -315,7 +314,6 @@ end subroutine get_var_1d
 
 subroutine get_var_2d (ncid, varnm, array)
 use netcdf
-use rads_misc, only: isnan_
 integer(fourbyteint), intent(in) :: ncid
 character(len=*), intent(in) :: varnm
 real(eightbytereal), intent(out) :: array(:,:)

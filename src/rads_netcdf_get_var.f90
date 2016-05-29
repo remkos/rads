@@ -45,7 +45,7 @@ do
 	case ('DIV')
 		array = array / temp
 	case ('AND')
-		where (isnan_(array)) array = temp
+		where (array /= array) array = temp
 	case ('R2')
 		array = array*array + temp*temp
 	case default
