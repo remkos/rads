@@ -814,9 +814,9 @@ The program \prog{radscolin4} creates collinear tracks (in a rather straightforw
 
 This program can also be used to compute differences between two different altimeter missions, as long as they are collinear. Some variance to the strict collinearity is allowed when using the \sopt{f} or \lopt{force} option. See Section~\ref{sec:multi-mission} for more info on using the command line when multiple missions are involved.
 
-The program will output only those bins in which valid sea level anomalies can be found for all specified repeat cycles, unless the \sopt{r} option is used.
+The program will output only those bins in which valid sea level anomalies can be found for all specified repeat cycles, unless the \sopt{r} option is used. This behaviour of \sopt{r} is significantly different from \prog{rads2asc4} and \prog{rads2nc}. See the syntax description below. 
 
-The output are one record for each bin, containing the variables selected by the \sopt{V} or \lopt{var} option, for each of the specified cycles. The output can be either ASCII (the default) or netCDF (with the \sopt{o} or \lopt{output}) option.
+The output are one record for each bin, containing the variables selected by the \sopt{V} or \lopt{var} option, for each of the specified cycles. The output can be either ASCII (the default) or netCDF (with the \sopt{o} or \lopt{output}) option. In the case of ASCII, normally only the passes with some valid data are output. Using the option \sopt{k} or \lopt{keep} keeps all passes, irrespectively.
 
 This program can be called as \prog{radscolin}, or as \prog{rads2colin4} to avoid conflicts with an already installed RADS3.
 
@@ -831,12 +831,14 @@ The command line options that are specific to \prog{radscolin4} are listed here.
 \begin{description}
 \item[\loptc{dt}{DT}] Set the minimum bin size in seconds. The default is the maximum 1-Hz sampling rate of the missions selected.
 \item[\loptc{step}{N}] Write out only one out of N bins along track.
+\item[\optc{r}{reject-on-nan}{VAR}] ~\\
+Base the count of ``valid passes'' on variable whether \emph{VAR} is not NaN. By default \prog{radscolin4} looks for the validity of the variable \var{sla}, if used in the list of variables on the \sopt{V} option. If \var{sla} is not used, the first variable is checked for validity.
 \item[\soptc{r}{NR}] ~\\
-Reject stacked data when there are fewer than NR tracks with valid sea level anomaly values (assuming it was used with the \sopt{V} option).
+Reject stacked data when there are fewer than NR tracks with valid values. Which variable is used to determine ``valid'' is explained above.
 \item[\soptb{r}{0}~~~~\soptb{r}{none}~~~~\sopt{r}] ~\\
 When either of these is used, keep the stacked data in the output, even when they are NaN.
 \item[\soptb{r}{n}~~~~\soptb{r}{any}] ~\\
-Reject stacked data when data on any track is NaN. This is the default behavious.
+Reject stacked data when data on any track is NaN. This is the default behaviour.
 \item[\opt{k}{keep}] ~\\
 Keep all the passes in the output, even those that do not have any valid data in the selected area. By default, passes without any valid values are removed from the output.
 \item[\opt{a}{mean}] ~\\
