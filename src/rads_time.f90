@@ -87,7 +87,7 @@ integer(fourbyteint), intent(in) :: yy, mm, dd
 integer(fourbyteint), intent(out) :: mjd
 !
 ! Converts year, month and date to modified julian dates.
-! This routine works both with year numbers in one of two forms:
+! This routine works with year numbers in one of two forms:
 ! 2-digit numbers: assumes the year is between 1955 and 2054.
 ! 4-digit years: either 19xx or 20xx (works for 1901-2099)
 !
@@ -244,9 +244,13 @@ if (present(sep)) then
 else
 	x = ' '
 endif
-call sec85ymdhms (sec, yy, mm, dd, hh, mn, ss)
-write (strf1985f_dble, '(i4.4,2("-",i2.2),a1,2(i2.2,":"),i2.2,f7.6)') &
+if (sec /= sec) then	! NaN
+	strf1985f_dble = '****-**-**' // sep // '**:**:**.******'
+else
+	call sec85ymdhms (sec, yy, mm, dd, hh, mn, ss)
+	write (strf1985f_dble, '(i4.4,2("-",i2.2),a1,2(i2.2,":"),i2.2,f7.6)') &
 		yy, mm, dd, x, hh, mn, floor(ss), modulo(ss,1d0)
+endif
 end function strf1985f_dble
 
 !****if* rads_time/strf1985f_int4 -- Construct date string from seconds since 1985
@@ -280,52 +284,97 @@ character(len=1), intent(in), optional :: sep
 real(eightbytereal) :: strp1985f
 !
 ! PURPOSE
-! This routine reads a string of the form YYYY-MM-DDxHH:MM:SS.SSSSSS
-! or YYYYMMDDxHHMMSS.SSSSSS or YYYY-DDDxHH:MM:SS.SSSSSS, where x is
-! any character, and converts it to a seconds since 1.0 Jan 1985.
+! This routine reads a date&time string in one of the following forms:
+! [YY]YY-MM-DDxHH:MM:SS[.SSS]
+! [YY]YY-DDDxHH:MM:SS[.SSS]
+! [YY]YYMMDDxHHMMSS[.SSS]
+! [YY]YYDDDxHHMMSS[.SSS]
+! [YY]YYMMDDHHMMSS[.SSS]
+! [YY]YYDDDHHMMSS[.SSS]
+! [YY]YYMMDD[.DDD]
+! [YY]YYDDD[.DDD]
+! where x is any non-numerical character, and then converts the date
+! date&time string to seconds since 1.0 Jan 1985.
 ! Fractional seconds can be included or the HH:MM:SS or HHMMSS part can
 ! be omitted entirely (to produce 00:00:00).
-! Also specifying only part of the time string is allowed, however the
-! date (first 8 characters) has to be complete.
+! Fractional days can be used as well.
+! When a separator is used, it is also possible to specify only part of
+! the time string (e.g. HH:MM), but the date string always has to be
+! complete.
+!
+! This routine works with year numbers in one of two forms:
+! 2-digit numbers: assumes the year is between 1955 and 2054.
+! 4-digit years: either 19xx or 20xx (works for 1901-2099)
 !
 ! If <sep> is specified, then the character between the date and time
-! part of the string has to be the character specified by <sep>.
+! part of the string has to be the character specified by <sep>, but
+! it can be left out when there is no time string.
+!
+! When the string does not comply to any of these formats, the NaN
+! value is returned.
 !
 ! ARGUMENTS
-! string    : Character string of time
+! string    : Character string of date and time
 ! sep       : (Optional) Required separator between date and time
 !
 ! RETURN VALUE
-! strp1985f : Seconds since 1.0 Jan 1985
+! strp1985f : Seconds since 1.0 Jan 1985 (NaN on failure)
 !****-------------------------------------------------------------------
-integer(fourbyteint) :: yy,mm,dd,hh,mn,ss,mjd,ios,l
-real(eightbytereal) :: fs
+integer(fourbyteint) :: yy,mm,dd,hh,mn,mjd,ios,ll,lp,ls
+real(eightbytereal) :: df,ss
 real(eightbytereal), parameter :: nan = transfer ((/not(0_fourbyteint),not(0_fourbyteint)/),0d0)
 ! Set defaults
-hh = 0 ; mn = 0 ; ss = 0 ; fs = 0d0 ; strp1985f = nan
-l = len_trim(string)
-! There have to be at least eight characters
-if (l < 8) return
-! Which format do we have?
-if (string(8:8) == '-') then ! YYYY-MM-DD
-	if (l < 10) return
-	if (present(sep) .and. (l < 11 .or. string(11:11) /= sep)) return	! sep has to be there
-	read (string, '(i4,5(1x,i2))', iostat=ios) yy,mm,dd,hh,mn,ss
-	if (l > 20) read (string(20:), *, iostat=ios) fs
-else if (string(5:5) == '-') then ! YYYY-DDD
-	if (l < 8) return
-	if (present(sep) .and. (l < 9 .or. string(9:9) /= sep)) return	! sep has to be there
-	read (string, '(i4,1x,i3,3(1x,i2))', iostat=ios) yy,dd,hh,mn,ss
-	mm = 1 ! You can actually use 2000-01-DDD in ymd2mjd
-	if (l > 16) read (string(16:), *, iostat=ios) fs
-else ! YYYYMMDD (probably)
-	if (l < 8) return
-	if (present(sep) .and. (l < 9 .or. string(9:9) /= sep)) return	! sep has to be there
-	read (string, '(i4,2i2,1x,3i2)', iostat=ios) yy,mm,dd,hh,mn,ss
-	if (l > 16) read (string(16:), *, iostat=ios) fs
+yy = 0; mm = 1; dd = 0; df = 0d0; hh = 0; mn = 0; ss = 0d0; strp1985f = nan
+ll = len_trim(string)		! Length of string
+lp = index(string,'.') - 1	! Length of string before period
+if (lp <= 0) lp = ll
+do ls = 1,ll
+	if ((string(ls:ls) < '0' .or. string(ls:ls) > '9') .and. string(ls:ls) /= '-') exit
+enddo
+if (present(sep) .and. ll > ls .and. string(ls+1:ls+1) /= sep) return	! Required seperator not there
+ls = ls - 1	! Length of string before separator
+if (ls == 10 .and. string(8:8) == '-') then	! YYYY-MM-DDxHH:MM:SS
+	read (string, '(i4,4(1x,i2),1x,f15.0)', iostat=ios) yy,mm,dd,hh,mn,ss
+else if (ls == 8 .and. string(5:5) == '-') then	! YYYY-DDDxHH:MM:SS
+	read (string, '(i4,1x,i3,2(1x,i2),1x,f15.0)', iostat=ios) yy,dd,hh,mn,ss
+else if (ls == 8 .and. string(6:6) == '-') then	! YY-MM-DDxHH:MM:SS
+	read (string, '(i2,4(1x,i2),1x,f15.0)', iostat=ios) yy,mm,dd,hh,mn,ss
+else if (ls == 6 .and. string(3:3) == '-') then	! YY-DDDxHH:MM:SS
+	read (string, '(i2,1x,i3,2(1x,i2),1x,f15.0)', iostat=ios) yy,dd,hh,mn,ss
+else if (ls == 8 .and. lp > 8) then	! YYYYMMDDxHHMMSS
+	read (string, '(i4,2i2,1x,2i2,f15.0)', iostat=ios) yy,mm,dd,hh,mn,ss
+else if (ls == 7 .and. lp > 7) then	! YYYYDDDxHHMMSS
+	read (string, '(i4,i3,1x,2i2,f15.0)', iostat=ios) yy,dd,hh,mn,ss
+else if (ls == 6 .and. lp > 6) then	! YYMMDDxHHMMSS
+	read (string, '(3i2,1x,2i2,f15.0)', iostat=ios) yy,mm,dd,hh,mn,ss
+else if (ls == 5 .and. lp > 5) then	! YYDDDxHHMMSS
+	read (string, '(i2,i3,1x,2i2,f15.0)', iostat=ios) yy,dd,hh,mn,ss
+else if (lp == 14) then	! YYYYMMDDHHMMSS
+	read (string, '(i4,4i2,f15.0)') yy,mm,dd,hh,mn,ss
+else if (lp == 13) then	! YYYYDDDHHMMSS
+	read (string, '(i4,i3,2i2,f15.0)') yy,dd,hh,mn,ss
+else if (lp == 12) then	! YYMMDDHHMMSS
+	read (string, '(5i2,f15.0)') yy,mm,dd,hh,mn,ss
+else if (lp == 11) then	! YYDDDHHMMSS
+	read (string, '(i2,i3,2i2,f15.0)') yy,dd,hh,mn,ss
+else if (lp == 8) then	! YYYYMMDD
+	read (string, '(i4,2i2,f15.0)') yy,mm,dd,df
+else if (lp == 7) then	! YYYYDDD
+	read (string, '(i4,i3,f15.0)') yy,dd,df
+else if (lp == 6) then	! YYMMDD
+	read (string, '(3i2,f15.0)') yy,mm,dd,df
+else if (lp == 5) then	! YYYYDDD
+	read (string, '(i2,i3,f15.0)') yy,dd,df
+else
+	return	! Not a proper format
 endif
+
+! Quit is format is incorrect
+if (ios /= 0) return
+
+! Now convert to seconds from 1985
 call ymd2mjd(yy,mm,dd,mjd)
-strp1985f = (mjd - 46066) * 86400d0 + hh * 3600d0 + mn * 60d0 + ss + fs
+strp1985f = (mjd + df - 46066) * 86400d0 + hh * 3600d0 + mn * 60d0 + ss
 end function strp1985f
 
 !****f* rads_time/sec85 -- Convert MJD or YYMMDD or YYDDD to SEC85
