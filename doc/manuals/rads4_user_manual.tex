@@ -646,6 +646,34 @@ Print the program version only.
 Terminates all command line options; all following command-line arguments are considered non-option arguments, even if they begin with a hyphen.
 \end{description}
 
+\section{Order of the options}
+\label{sec:order_options}
+When processing the data of a single satellite the order of the command line options is irrelevant, with the exception that options that appear later (further to the right) on the command line overrules any similar options that appear earlier. For example \sopt{q} \sopt{v} will produce verbose output, as \sopt{v} overrules the earlier \sopt{q}.
+
+Yet, there is a more complicated order in which the command line options are processed by the RADS library:
+\begin{enumerate}
+\item Process some input/output options: \lopt{args}, \lopt{debug}, \lopt{help}, \lopt{log}, \sopt{q}, \lopt{quiet}, \sopt{v}, \lopt{verbose}, \lopt{version}.  
+\item Process the satellite mission selector \sopt{S} or \lopt{sat}.
+\item Process possible additional XML files indicated by the \sopt{X} or \lopt{xml} options.
+\item Process any alias definitions specified by the \sopt{A} or \lopt{alias} options.
+\item Process miscellaneous common options not mentioned elsewhere in this list.
+\item Process the variable selection defined by the \sopt{V} or \lopt{var} options.
+\item Process program-specific options.
+\end{enumerate}
+Each of these groups of options are processed left to right. This order is common to all RADS programs discussed later in this Chapter, as they all use the RADS library to scan the command line.
+
+When processing multiple satellites at the time (for example when creating dual-satellite crossovers with \prog{radsxogen}), it matters whether you put common options before or after mission selector (\sopt{S} or \lopt{sat}). The order then determines whether the option is unique to a single mission, or applies to all. The rule is as follows:
+\begin{itemize}
+\item Common options ahead of the first mission selector apply to all missions.
+\item Common options after the first mission selector apply to the last mission selector to the right of the option.
+\item Program-specific options can be put anywhere.
+\end{itemize}
+This means, for example:
+
+\begin{alltt}
+$ \prog{radsxogen} [\emph{common options}] \soptb{S}{e1} [\emph{e1 options}] \soptb{S}{e2} [\emph{e2 options}]
+\end{alltt}
+
 \section{rads2asc4}
 \label{sec:rads2asc4}
 The program \prog{rads2asc4} lists a selection of the RADS4 data base in one ASCII file or in several pass-by-pass ASCII files. These files contain a header per pass with a description of the data content followed by one record for each measurement that passes the selection criteria. The records are build up of columns, separated by white space, listing various data fields. Which data fields are listed (and in which order they are listed) is determined by the command line argument \sopt{V} or \lopt{var}. 
@@ -812,7 +840,7 @@ Just as \prog{rads2asc4} the program \prog{rads2nc} will now print to standard o
 \label{sec:radscolin4}
 The program \prog{radscolin4} creates collinear tracks (in a rather straightforward way). No smoothing or interpolation is performed. The data are ``gridded'' based on their time with respect to the equator passages. The measurements are simply collected in bins of predefined length. By default this is the 1-Hz sampling rate of the specific mission), but it can be altered with the \lopt{dt} option. Then the data falling in those bins for each specified pass are output in a way similar to \prog{rads2asc4} (Section~\ref{sec:rads2asc4}) or \prog{rads2nc} (Section~\ref{sec:rads2nc}). No averaging or differencing is performed.
 
-This program can also be used to compute differences between two different altimeter missions, as long as they are collinear. Some variance to the strict collinearity is allowed when using the \sopt{f} or \lopt{force} option. See Section~\ref{sec:multi-mission} for more info on using the command line when multiple missions are involved.
+This program can also be used to compute differences between two different altimeter missions, as long as they are collinear. Some variance to the strict collinearity is allowed when using the \sopt{f} or \lopt{force} option. See Section~\ref{sec:order_options} for more info on using the command line when multiple missions are involved.
 
 The program will output only those bins in which valid sea level anomalies can be found for all specified repeat cycles, unless the \sopt{r} option is used. This behaviour of \sopt{r} is significantly different from \prog{rads2asc4} and \prog{rads2nc}. See the syntax description below. 
 
