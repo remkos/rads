@@ -386,7 +386,7 @@ cycle2 = max(S2%cycles(1), rads_time_to_cycle (S2, t0))
 ! Nullify all pointers
 nullify (P2, top, prev)
 
-600 format (a,3i6)
+600 format (a,2i5,i8)
 
 ! Cycle through cycles and passes for S1
 do cycle1 = S1%cycles(1), S1%cycles(2)
