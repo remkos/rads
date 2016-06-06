@@ -76,3 +76,4 @@ src/radsxogen
 src/radsxolist
 src/radsxostat
 rads_fix_s3
+rads_gen_h2

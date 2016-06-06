@@ -23,7 +23,7 @@ MAN = rads4_data_manual.pdf rads4_user_manual.pdf
 SUBS = rads rads_geo rads_grid rads_math rads_misc rads_netcdf rads_time
 SUBS_TEX = $(foreach sub,$(SUBS),sub/$(sub).tex)
 PROGS = rads2asc4 rads2nc rads2grd4 radscolin4
-PROGS_EXTRA = rads2grd4-o radscolin4-r
+PROGS_EXTRA = rads2grd4-o radscolin4-r radsstat4-h
 PROGS_HLP = $(foreach prog,$(PROGS),sub/$(prog).hlp)
 PROGS_OUT = $(foreach prog,$(PROGS) $(PROGS_EXTRA),sub/$(prog).out)
 TABS_TEX = sub/rads_math.tab
@@ -82,6 +82,9 @@ sub/%.hlp:	../../src/%
 #-----------------------------------------------------------------------
 # Make command output and logs
 #-----------------------------------------------------------------------
+
+sub/radsstat4-h.out:	Makefile ../../src/radsstat4
+	PATH=../../src radsstat4 --help | egrep 'radsstat|are:|is:|-l,|-o,|-v,|-L,|-C,|-S,|^$$' | uniq > $@
 
 sub/rads2asc4.out:	Makefile ../../src/rads2asc4
 	PATH=../../src rads2asc4 -S e2 -C 0 -P 901,1000,2 -V time_ymdhms,lat,lon,sla,swh,wind_speed -R -8,42,28,48 -o $(@F) -v > $(@:.out=.log) 0>&2

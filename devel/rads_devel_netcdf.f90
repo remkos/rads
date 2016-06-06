@@ -80,13 +80,26 @@ do i = 1,nvar
 	var(i)%empty = all(isnan_(var(i)%d(1:nrec)))
 enddo
 if (any(var(1:nvar)%empty)) then
-	write (rads_log_unit,551,advance='no') 'No'
+	write (rads_log_unit,551,advance='no') 'Empty:'
 	do i = 1,nvar
 		if (var(i)%empty) write (rads_log_unit,551,advance='no') trim(var(i)%v%name)
 	enddo
 	write (rads_log_unit,551,advance='no') '... '
 endif
 551 format (1x,a)
+
+! Do the same for records that are all zero
+do i = 1,nvar
+	var(i)%empty = all(var(i)%d(1:nrec) == 0d0)
+enddo
+if (any(var(1:nvar)%empty)) then
+	write (rads_log_unit,551,advance='no') 'All zero:'
+	do i = 1,nvar
+		if (var(i)%empty) write (rads_log_unit,551,advance='no') trim(var(i)%v%name)
+	enddo
+	write (rads_log_unit,551,advance='no') '... '
+endif
+
 
 ! Open output file
 call rads_create_pass (S, P, nrec)

@@ -38,8 +38,8 @@ program rads_gen_s3
 ! time - Time since 1 Jan 85
 ! lat - Latitude
 ! lon - Longitude
-! alt_gdrd - Orbit altitude
-! alt_rate - Orbit altitude rate
+! alt_gdrd - Orbital altitude
+! alt_rate - Orbital altitude rate
 ! range_* - Ocean range (retracked)
 ! dry_tropo_ecmwf - ECMWF dry tropospheric correction
 ! wet_tropo_ecmwf - ECMWF wet tropo correction
@@ -179,6 +179,9 @@ do
 ! Determine L2 processing version
 
 	call nfs(nf90_get_att(ncid,nf90_global,'references',arg))
+
+! Store input file name
+
 	i = index(infile, '/', .true.) + 1
 	P%original = trim(infile(i:)) // ' (' // arg // ')'
 
@@ -233,7 +236,6 @@ do
 	call cpy_var ('range_ocean_01_ku','range_ku')
 	call cpy_var ('range_ocean_01_plrm_ku','range_ku_plrm')
 	call cpy_var ('range_ocean_01_c','range_c')
-! Add PLRM ranges?
 ! Add zero or meas altitude tropo measurements?
 	call cpy_var ('mod_dry_tropo_cor_meas_altitude_01', 'dry_tropo_ecmwf')
 	call cpy_var ('rad_wet_tropo_cor_01_ku', 'wet_tropo_rad')

@@ -23,7 +23,7 @@ PROGS	= rads_add_dual rads_add_ecmwf rads_add_era rads_add_flags rads_add_grid \
 		rads_add_refframe rads_add_sla rads_add_ssb rads_add_sst rads_add_surface \
 		rads_add_tide rads_add_webtide rads_add_ww3_222 rads_add_ww3_314 \
 		rads_fix_c2 rads_fix_eqtime rads_fix_j1 rads_fix_j2 rads_fix_j3 rads_fix_reaper rads_fix_s3 rads_fix_sa \
-		rads_gen_c2_l1r rads_gen_j1 rads_gen_j2 rads_gen_j3 rads_gen_reaper rads_gen_s3 \
+		rads_gen_c2_l1r rads_gen_h2 rads_gen_j1 rads_gen_j2 rads_gen_j3 rads_gen_reaper rads_gen_s3 \
 		rads_gen_saral rads_gen_tx_rgdr ogdrsplit s3combine
 
 # RADS library and linked libraries
@@ -31,7 +31,7 @@ LIB     = ../src/librads.a $(ALTIM)/lib/rssubs.a
 LDLIBS  = $(NETCDF_LIB) $(GRIB)
 
 # Shell scripts
-SCRIPTS = rads_add_common rads_gen_c2_l1r.sh rads_gen_c2_l1r_new.sh \
+SCRIPTS = rads_add_common rads_gen_c2_l1r.sh rads_gen_c2_l1r_new.sh rads_gen_h2.sh \
 		rads_gen_j1.sh rads_gen_j2.sh rads_gen_j2_new.sh rads_gen_j2_new_calval.sh \
 		rads_gen_j3.sh rads_gen_j3_new.sh rads_gen_j3_new_calval.sh \
 		rads_gen_tx_rgdr.sh rads_gen_saral.sh rads_gen_saral_new.sh \
@@ -55,7 +55,7 @@ man:	$(MAN)
 # Object dependencies
 #-----------------------------------------------------------------------
 
-rads_gen_j1 rads_gen_j2 rads_gen_j3 rads_gen_saral rads_gen_s3 rads_gen_tx_rgdr:	rads_devel_netcdf.o rads_gen.o
+rads_gen_h2 rads_gen_j1 rads_gen_j2 rads_gen_j3 rads_gen_saral rads_gen_s3 rads_gen_tx_rgdr:	rads_devel_netcdf.o rads_gen.o
 rads_gen_c2_l1r rads_gen_reaper:	rads_gen.o
 rads_add_iono:	$(ALTIM)/lib/iono.a $(ALTIM)/lib/iri2007tec.a
 rads_add_ecmwf rads_add_era rads_add_ncep rads_add_tide rads_add_webtide:	$(ALTIM)/lib/tides.a
