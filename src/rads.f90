@@ -733,20 +733,17 @@ P = rads_pass ('', null(), nan, nan, nan, nan, null(), null(), .false., 0, 0, 0,
 P%S => S
 end subroutine rads_init_pass_struct
 
-!****if* rads/rads_free_sat_struct
+!****if* rads/rads_free_pass_struct
 ! SUMMARY
 ! Free all allocated memory from rads_pass struct and reinitialise
 !
 ! SYNOPSIS
-subroutine rads_free_pass_struct (S, P, unlink)
+subroutine rads_free_pass_struct (S, P)
 type(rads_sat), intent(in) :: S
 type(rads_pass), intent(inout) :: P
-logical, optional, intent(in) :: unlink
 !
 ! PURPOSE
-! This routine frees the <P> struct of type rads_pass. If <unlink>
-! is set to .true. the allocated memory is merely unlinked, otherwise
-! all allocated memory is destroyed.
+! This routine frees the <P> struct of type rads_pass.
 ! Afterwards the routine reinitialises a clean struct.
 !
 ! ARGUMENT
@@ -754,9 +751,7 @@ logical, optional, intent(in) :: unlink
 ! P        : Pass dependent structure
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: ios
-if (.not.present(unlink) .or. .not.unlink) then
-	deallocate (P%history, P%flags, P%tll, stat=ios)
-endif
+deallocate (P%history, P%flags, P%tll, stat=ios)
 call rads_init_pass_struct (S, P)
 end subroutine rads_free_pass_struct
 
@@ -1277,7 +1272,7 @@ P%cycle = cycle
 P%pass = pass
 ascdes = modulo(pass,2)	! 1 if ascending, 0 if descending
 
-if (rads_verbose >= 2) write (*,'(a,2i5)') 'Checking cycle/pass : ',cycle,pass
+if (rads_verbose >= 2) write (*,'(a,a3,2i5)') 'Checking sat/cycle/pass : ',S%sat,cycle,pass
 
 ! Do checking on cycle limits
 if (cycle < S%cycles(1) .or. cycle > S%cycles(2)) then
@@ -1528,7 +1523,7 @@ logical, intent(in), optional :: keep
 ! The routine will reset the ncid element of the <P> structure to
 ! indicate that the passfile is closed.
 ! If <keep> is set to .true., then the history, flags, time, lat, and lon
-! elements the <P> structure are kept. That is they are not deallocated
+! elements the <P> structure are kept. I.e., they are not deallocated
 ! but only their links are removed. Otherwise, they are deallocated along
 ! with the log entries.
 ! A second call to rads_close_pass without the keep argment can subsequently
@@ -1550,7 +1545,7 @@ do i = 1,rads_max_branches
 	if (ncid > 0 .and. nft(nf90_close(ncid))) S%error = rads_err_nc_close
 enddo
 P%fileinfo = rads_file (0, '')
-call rads_free_pass_struct (S, P, keep)
+if (.not.present(keep) .or. .not.keep) call rads_free_pass_struct (S, P)
 end subroutine rads_close_pass
 
 !****if* rads/rads_get_var_by_number
