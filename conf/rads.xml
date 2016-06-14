@@ -1247,6 +1247,7 @@ Global RADS configuration file
 <var name="ssb_cls" field="1502" sat="2a 3a 3b j1 j2 j3 n1 tx">
 	<long_name>CLS non-parametric sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<parameters sat="3a 3b">ssb_col_J2_Ku_mle4_1_36_v2012ostst.nc</parameters>
 	<source>CLS</source>
 	<units>m</units>
 	<limits>-1 1</limits>
@@ -1311,6 +1312,7 @@ Global RADS configuration file
 <var name="ssb_cls_plrm" field="1514" sat="3a 3b">
 	<long_name>CLS non-parametric sea state bias (PLRM)</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<parameters>ssb_col_J2_Ku_mle4_1_36_v2012ostst.nc</parameters>
 	<source>CLS</source>
 	<units>m</units>
 	<limits>-1 1</limits>
@@ -1323,10 +1325,14 @@ Global RADS configuration file
 <var name="ssb_tran2012" field="1513" sat="j1 j2 j3">
 	<long_name>Tran et al. 2012 non-parametric sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
-	<source sat="j1">Tran et al. 2012 (ssb_col_J1_1_111_v2012ostst.rs)</source>
-	<source sat="j2 j3">Tran et al. 2012 (ssb_col_J2_Ku_mle4_1_36_v2012ostst.rs)</source>
-	<parameters sat="j1">ssb_col_J1_1_111_v2012ostst.nc</parameters>
-	<parameters sat="j2 j3">ssb_col_J2_Ku_mle4_1_36_v2012ostst.nc</parameters>
+	<if sat="j1">
+		<source>Tran et al. 2012 (ssb_col_J1_1_111_v2012ostst.rs)</source>
+		<parameters>ssb_col_J1_1_111_v2012ostst.nc</parameters>
+	</if>
+	<else>
+		<source>Tran et al. 2012 (ssb_col_J2_Ku_mle4_1_36_v2012ostst.rs)</source>
+		<parameters>ssb_col_J2_Ku_mle4_1_36_v2012ostst.nc</parameters>
+	</else>
 	<units>m</units>
 	<limits>-1 1</limits>
 	<plot_range>-0.30 0.05</plot_range>
