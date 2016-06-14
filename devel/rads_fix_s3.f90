@@ -41,13 +41,14 @@ type(rads_pass) :: P
 
 real(eightbytereal), parameter :: dsig0_ku = 0.0d0, dsig0_c = 3.3d0	! Ku- and C-band Sigma0 bias
 real(eightbytereal), parameter :: dtb_238 = 2.0d0, dtb_365 = 3.0d0	! Rough values from MTR presentation by M. Frery.
+real(eightbytereal), parameter :: drange = 59.3d-3 ! Range bias in earlier rep_002 data
 integer(fourbyteint) :: i, cyc, pass
-logical :: lsig0 = .false., lwind = .false., ltb = .false., lmwr = .false.
+logical :: lsig0 = .false., lwind = .false., ltb = .false., lmwr = .false., lrange = .false.
 
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options (' sig0 wind tb mwr all')
+call rads_set_options (' sig0 wind tb mwr all range')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
@@ -64,6 +65,8 @@ do i = 1,rads_nopt
 		lwind = .true.
 		ltb = .true.
 		lmwr = .true.
+	case ('range')
+		lrange = .true.
 	end select
 enddo
 
@@ -85,7 +88,7 @@ contains
 
 subroutine synopsis (flag)
 character(len=*), optional :: flag
-if (rads_version ('Patch Jason-3 data for several anomalies', flag=flag)) return
+if (rads_version ('Patch Sentinel-3 data for several anomalies', flag=flag)) return
 call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
@@ -94,7 +97,8 @@ write (*,1310)
 '  --wind                    Update wind speed using Envisat model' / &
 '  --tb                      Adjust brightness temperatures for apparent biases' / &
 '  --mwr                     Update radiometer wet parameters' / &
-'  --all                     All of the above')
+'  --all                     All of the above' / &
+'  --range                   Subtract 59.3 mm from Ku- and C-band ranges')
 stop
 end subroutine synopsis
 
@@ -105,7 +109,7 @@ end subroutine synopsis
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
 real(eightbytereal) :: sig0_ku(n), sig0_c(n), atten_ku(n), atten_c(n), wind(n), tb_238(n), tb_365(n), &
-	wet_tropo_ecmwf(n), wet_tropo_rad(n)
+	wet_tropo_ecmwf(n), wet_tropo_rad(n), range_ku(n), range_ku_plrm(n), range_c(n), ssha(n), ssha_plrm(n)
 integer(fourbyteint) :: i
 
 call log_pass (P)
@@ -147,7 +151,7 @@ endif
 ! Add the attenuation correction to sigma0
 
 if (lsig0) then
-	where (isnan_(atten_ku)) atten_ku = 0.258d0 - 2.182d0 * wet_tropo_ecmwf
+	where (isnan_(atten_ku)) atten_ku = 0.118d0 - 0.456d0 * wet_tropo_ecmwf
 	where (isnan_(atten_c))  atten_c  = 0.09d0
 	sig0_ku = sig0_ku + atten_ku
 	sig0_c  = sig0_c  + atten_c
@@ -156,6 +160,16 @@ endif
 ! Adjust wind speed
 
 if (lwind) wind = wind_ecmwf (sig0_ku)
+
+! Update ranges
+
+if (lrange) then
+	call rads_get_var (S, P, 'range_ku', range_ku, .true.)
+	call rads_get_var (S, P, 'range_ku_plrm', range_ku_plrm, .true.)
+	call rads_get_var (S, P, 'range_c', range_c, .true.)
+	call rads_get_var (S, P, 'ssha', ssha, .true.)
+	call rads_get_var (S, P, 'ssha_plrm', ssha_plrm, .true.)
+endif
 
 ! Update history
 
@@ -176,6 +190,13 @@ if (ltb) then
 endif
 if (lwind) call rads_put_var (S, P, 'wind_speed_alt', wind)
 if (lmwr) call rads_put_var (S, P, 'wet_tropo_rad', wet_tropo_rad)
+if (lrange) then
+	call rads_put_var (S, P, 'range_ku', range_ku - drange)
+	call rads_put_var (S, P, 'range_ku_plrm', range_ku_plrm - drange)
+	call rads_put_var (S, P, 'range_c', range_c - drange)
+	call rads_put_var (S, P, 'ssha', ssha + drange)
+	call rads_put_var (S, P, 'ssha_plrm', ssha_plrm + drange)
+endif
 
 call log_records (n)
 end subroutine process_pass

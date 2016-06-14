@@ -120,7 +120,7 @@ Global RADS configuration file
 	<units>m</units>
 	<limits>-3 3</limits>
 	<plot_range>-0.4 0.4</plot_range>
-	<data>ssha_mle3</data>
+	<data>ssha_plrm</data>
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>Sea level from satellite altitude - range - all altimetric corrections.
