@@ -2245,7 +2245,7 @@ do
 	if (tag == 'else' .or. tag == 'elseif') then
 		if (tags(X%level) /= 'if' .and. tags(X%level) /= 'elseif') &
 			call xmlparse_error ('Opening tag <'//trim(tag)//'> follows closing tag </'//trim(tags(X%level))//'>')
-		if (.not.endskip) skip_level = X%level
+		if (.not.endskip .and. skip_level == 0) skip_level = X%level
 	endif
 
 	! Process opening tags
@@ -2301,7 +2301,7 @@ do
 			info => var%info
 		end select
 	enddo
-	if (skip == 1) then
+	if (skip == 1 .and. skip_level == 0) then
 		skip_level = X%level
 		cycle
 	endif
