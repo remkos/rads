@@ -301,7 +301,7 @@ do
 	call cpy_var ('atm_cor_sig0_01_ku', 'dsig0_atmos_ku')
 	call cpy_var ('atm_cor_sig0_01_c', 'dsig0_atmos_c')
 	call cpy_var ('rad_liquid_water_01_ku', 'liquid_water_rad')
-	call cpy_var ('rad_wet_tropo_cor_01_ku', 'water_vapor_rad')
+	call cpy_var ('rad_water_vapor_01_ku', 'water_vapor_rad')
 	call cpy_var ('ssha_01_ku', 'ssha')
 	call cpy_var ('ssha_01_plrm_ku', 'ssha_plrm')
 

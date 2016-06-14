@@ -1656,7 +1656,7 @@ Global RADS configuration file
 	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 	<units>dB</units>
 	<limits>6 27</limits>
-	<plot_range>8 18</plot_range>
+	<plot_range>7 17</plot_range>
 	<data>sig0_ku_mle3</data>
 	<format>f6.2</format>
 	<compress>int2 1e-2</compress>
@@ -1666,7 +1666,7 @@ Global RADS configuration file
 	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 	<units>dB</units>
 	<limits>6 27</limits>
-	<plot_range>8 18</plot_range>
+	<plot_range>7 17</plot_range>
 	<data>sig0_ku_plrm</data>
 	<format>f6.2</format>
 	<compress>int2 1e-2</compress>
@@ -2218,7 +2218,7 @@ Global RADS configuration file
 <var name="flag_alt_oper_mode" field="2516" sat="3a 3b c2 e1 j1 j2 j3 n1 pn tx">
 	<long_name>altimeter operating mode</long_name>
 	<flag_values>nominal bad</flag_values>
-	<flag_values sat="c2">LRM SAR</flag_values>
+	<flag_values sat="3a 3b c2">LRM SAR</flag_values>
 	<flag_values sat="e1">sptr_available sptr_not_available</flag_values>
 	<flag_values sat="j1 j2 j3 n1">side_A side_B</flag_values>
 	<plot_range>0 1</plot_range>

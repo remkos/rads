@@ -28,6 +28,7 @@
 program rads_fix_s3
 
 use rads
+use rads_misc
 use rads_devel
 use meteo_subs
 
@@ -38,7 +39,7 @@ type(rads_pass) :: P
 
 ! Other local variables
 
-real(eightbytereal), parameter :: dsig0_ku = -30.0d0, dsig0_c = -5.5d0	! Ku- and C-band Sigma0 bias
+real(eightbytereal), parameter :: dsig0_ku = 0.0d0, dsig0_c = 3.3d0	! Ku- and C-band Sigma0 bias
 real(eightbytereal), parameter :: dtb_238 = 2.0d0, dtb_365 = 3.0d0	! Rough values from MTR presentation by M. Frery.
 integer(fourbyteint) :: i, cyc, pass
 logical :: lsig0 = .false., lwind = .false., ltb = .false., lmwr = .false.
@@ -89,7 +90,7 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
-'  --sig0                    Adjust backscatter coefficient for apparent biases' / &
+'  --sig0                    Adjust backscatter coefficient for apparent biases and attenuation' / &
 '  --wind                    Update wind speed using Envisat model' / &
 '  --tb                      Adjust brightness temperatures for apparent biases' / &
 '  --mwr                     Update radiometer wet parameters' / &
@@ -103,15 +104,22 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-real(eightbytereal) :: sig0_ku(n), sig0_c(n), atten_ku(n), wind(n), tb_238(n), tb_365(n), wet(n)
+real(eightbytereal) :: sig0_ku(n), sig0_c(n), atten_ku(n), atten_c(n), wind(n), tb_238(n), tb_365(n), &
+	wet_tropo_ecmwf(n), wet_tropo_rad(n)
 integer(fourbyteint) :: i
 
 call log_pass (P)
 
-! Adjust backscatter for bias
-
 call rads_get_var (S, P, 'sig0_ku', sig0_ku, .true.)
 call rads_get_var (S, P, 'sig0_c', sig0_c, .true.)
+call rads_get_var (S, P, 'dsig0_atmos_ku', atten_ku, .true.)
+call rads_get_var (S, P, 'dsig0_atmos_c', atten_c, .true.)
+call rads_get_var (S, P, 'tb_238', tb_238, .true.)
+call rads_get_var (S, P, 'tb_365', tb_365, .true.)
+call rads_get_var (S, P, 'wet_tropo_ecmwf', wet_tropo_ecmwf, .true.)
+
+! Adjust backscatter for bias
+
 if (lsig0) then
 	sig0_ku = sig0_ku + dsig0_ku
 	sig0_c  = sig0_c  + dsig0_c
@@ -119,23 +127,30 @@ endif
 
 ! Adjust brightness temperatures for bias
 
-call rads_get_var (S, P, 'tb_238', tb_238, .true.)
-call rads_get_var (S, P, 'tb_365', tb_365, .true.)
 if (ltb) then
 	tb_238 = tb_238 + dtb_238
 	tb_365 = tb_365 + dtb_365
 endif
 
 ! Adjust radiometer parameters using Envisat NN model
+! Note that the original sig0 is NOT corrected for atmospheric attenuation
 
 if (lmwr) then
-	call rads_get_var (S, P, 'dsig0_atmos_ku', atten_ku, .true.)
-	sig0_ku = sig0_ku - atten_ku	! Remove applied attenuation first
 	do i = 1,n
-		atten_ku(i) = nn_l2_mwr (tb_238(i), tb_365(i), sig0_ku(i), 1)
-		wet(i)      = nn_l2_mwr (tb_238(i), tb_365(i), sig0_ku(i), 3)
+		atten_ku(i)      = nn_l2_mwr (tb_238(i), tb_365(i), sig0_ku(i), 1)
+		wet_tropo_rad(i) = nn_l2_mwr (tb_238(i), tb_365(i), sig0_ku(i), 3)
 	enddo
-	sig0_ku = sig0_ku + atten_ku	! Add the recomputed attenuation back
+endif
+
+! Fill in the defaulted attenuation values with functional form of ECMWF wet tropo correction
+! (See notes of 2016-04-14 "Simple backup for sig0 attenuation")
+! Add the attenuation correction to sigma0
+
+if (lsig0) then
+	where (isnan_(atten_ku)) atten_ku = 0.258d0 - 2.182d0 * wet_tropo_ecmwf
+	where (isnan_(atten_c))  atten_c  = 0.09d0
+	sig0_ku = sig0_ku + atten_ku
+	sig0_c  = sig0_c  + atten_c
 endif
 
 ! Adjust wind speed
@@ -152,13 +167,15 @@ call rads_put_history (S, P)
 if (lsig0) then
 	call rads_put_var (S, P, 'sig0_ku', sig0_ku)
 	call rads_put_var (S, P, 'sig0_c' , sig0_c)
+	call rads_put_var (S, P, 'dsig0_atmos_ku', atten_ku)
+	call rads_put_var (S, P, 'dsig0_atmos_c' , atten_c)
 endif
 if (ltb) then
 	call rads_put_var (S, P, 'tb_238', tb_238)
 	call rads_put_var (S, P, 'tb_365', tb_365)
 endif
 if (lwind) call rads_put_var (S, P, 'wind_speed_alt', wind)
-if (lmwr) call rads_put_var (S, P, 'wet_tropo_rad', wet)
+if (lmwr) call rads_put_var (S, P, 'wet_tropo_rad', wet_tropo_rad)
 
 call log_records (n)
 end subroutine process_pass
