@@ -367,7 +367,7 @@ The radiometer wet tropospheric correction for ERS-1, ERS-2, and Envisat is base
 
 \begin{notes}
 \item Because of model bias and noise, allow positive values.\label{item:wet_tropo_rad_n1}
-\item Need to exclude bogus zero values from TMR measurements.\label{item:wet_tropo_rad_tp}
+\item The TOPEX Microwave Radiometer (TMR) measurements values come from the TMR Replacement Product, version 1.0 (\url{https://podaac.jpl.nasa.gov/dataset/TOPEX_L2_OST_TMR_Replacement}). The upper limit of -0.001~m for the radiometer wet tropospheric correction is needed to exclude bogus zero values.\label{item:wet_tropo_rad_tp}
 \item ERS-2 MWR is not available from 2009-05-04 to 2010-01-15.\label{item:wet_tropo_rad_e2}
 \item The ECMWF correction is actually computed by integrating several layers of the atmosphere, rather than using the simplified form discussed above. The meteorological fields on which this correction is based are from the ECMWF operational analysis runs. That means that numerous changes to the models and their resolution create an unstable reference for long-term studies. Please verify any of the ECMWF model results against the other models.\label{item:wet_tropo_ecmwf}
 \item NCEP reanalysis model used for this correction has \emph{not} gone through any updates, so from that point of view the correction should be consistent over time. However, this older model also is less accurate and has a lower resolution ($2.5\deg\times2.5\deg$) than the ECMWF analysis fields.\label{item:wet_tropo_ncep}
