@@ -277,7 +277,8 @@ end function strf1985f_int4
 !****f* rads_time/strp1985f -- Parse date string and convert it to seconds since 1985
 !
 ! SYNOPSIS
-elemental function strp1985f (string, sep)
+!elemental
+function strp1985f (string, sep)
 use typesizes
 character(len=*), intent(in) :: string
 character(len=1), intent(in), optional :: sep
@@ -325,46 +326,55 @@ real(eightbytereal) :: df,ss
 real(eightbytereal), parameter :: nan = transfer ((/not(0_fourbyteint),not(0_fourbyteint)/),0d0)
 ! Set defaults
 yy = 0; mm = 1; dd = 0; df = 0d0; hh = 0; mn = 0; ss = 0d0; strp1985f = nan
-ll = len_trim(string)		! Length of string
-lp = index(string,'.') - 1	! Length of string before period
+
+! Length of string before possible time zone indications
+do ll = len_trim(string),1,-1
+	if (string(ll:ll) >= '0' .and. string(ll:ll) <= '9') exit
+enddo
+
+! Length of string before period
+lp = index(string,'.') - 1
 if (lp <= 0) lp = ll
+
+! Length of string before the separator
 do ls = 1,ll
 	if ((string(ls:ls) < '0' .or. string(ls:ls) > '9') .and. string(ls:ls) /= '-') exit
 enddo
 if (present(sep) .and. ll > ls .and. string(ls+1:ls+1) /= sep) return	! Required seperator not there
-ls = ls - 1	! Length of string before separator
+ls = ls - 1
+
 if (ls == 10 .and. string(8:8) == '-') then	! YYYY-MM-DDxHH:MM:SS
-	read (string, '(i4,4(1x,i2),1x,f15.0)', iostat=ios) yy,mm,dd,hh,mn,ss
+	read (string(:ll), '(i4,4(1x,i2),1x,f15.0)', iostat=ios) yy,mm,dd,hh,mn,ss
 else if (ls == 8 .and. string(5:5) == '-') then	! YYYY-DDDxHH:MM:SS
-	read (string, '(i4,1x,i3,2(1x,i2),1x,f15.0)', iostat=ios) yy,dd,hh,mn,ss
+	read (string(:ll), '(i4,1x,i3,2(1x,i2),1x,f15.0)', iostat=ios) yy,dd,hh,mn,ss
 else if (ls == 8 .and. string(6:6) == '-') then	! YY-MM-DDxHH:MM:SS
-	read (string, '(i2,4(1x,i2),1x,f15.0)', iostat=ios) yy,mm,dd,hh,mn,ss
+	read (string(:ll), '(i2,4(1x,i2),1x,f15.0)', iostat=ios) yy,mm,dd,hh,mn,ss
 else if (ls == 6 .and. string(3:3) == '-') then	! YY-DDDxHH:MM:SS
-	read (string, '(i2,1x,i3,2(1x,i2),1x,f15.0)', iostat=ios) yy,dd,hh,mn,ss
+	read (string(:ll), '(i2,1x,i3,2(1x,i2),1x,f15.0)', iostat=ios) yy,dd,hh,mn,ss
 else if (ls == 8 .and. lp > 8) then	! YYYYMMDDxHHMMSS
-	read (string, '(i4,2i2,1x,2i2,f15.0)', iostat=ios) yy,mm,dd,hh,mn,ss
+	read (string(:ll), '(i4,2i2,1x,2i2,f15.0)', iostat=ios) yy,mm,dd,hh,mn,ss
 else if (ls == 7 .and. lp > 7) then	! YYYYDDDxHHMMSS
-	read (string, '(i4,i3,1x,2i2,f15.0)', iostat=ios) yy,dd,hh,mn,ss
+	read (string(:ll), '(i4,i3,1x,2i2,f15.0)', iostat=ios) yy,dd,hh,mn,ss
 else if (ls == 6 .and. lp > 6) then	! YYMMDDxHHMMSS
-	read (string, '(3i2,1x,2i2,f15.0)', iostat=ios) yy,mm,dd,hh,mn,ss
+	read (string(:ll), '(3i2,1x,2i2,f15.0)', iostat=ios) yy,mm,dd,hh,mn,ss
 else if (ls == 5 .and. lp > 5) then	! YYDDDxHHMMSS
-	read (string, '(i2,i3,1x,2i2,f15.0)', iostat=ios) yy,dd,hh,mn,ss
+	read (string(:ll), '(i2,i3,1x,2i2,f15.0)', iostat=ios) yy,dd,hh,mn,ss
 else if (lp == 14) then	! YYYYMMDDHHMMSS
-	read (string, '(i4,4i2,f15.0)') yy,mm,dd,hh,mn,ss
+	read (string(:ll), '(i4,4i2,f15.0)') yy,mm,dd,hh,mn,ss
 else if (lp == 13) then	! YYYYDDDHHMMSS
-	read (string, '(i4,i3,2i2,f15.0)') yy,dd,hh,mn,ss
+	read (string(:ll), '(i4,i3,2i2,f15.0)') yy,dd,hh,mn,ss
 else if (lp == 12) then	! YYMMDDHHMMSS
-	read (string, '(5i2,f15.0)') yy,mm,dd,hh,mn,ss
+	read (string(:ll), '(5i2,f15.0)') yy,mm,dd,hh,mn,ss
 else if (lp == 11) then	! YYDDDHHMMSS
-	read (string, '(i2,i3,2i2,f15.0)') yy,dd,hh,mn,ss
+	read (string(:ll), '(i2,i3,2i2,f15.0)') yy,dd,hh,mn,ss
 else if (lp == 8) then	! YYYYMMDD
-	read (string, '(i4,2i2,f15.0)') yy,mm,dd,df
+	read (string(:ll), '(i4,2i2,f15.0)') yy,mm,dd,df
 else if (lp == 7) then	! YYYYDDD
-	read (string, '(i4,i3,f15.0)') yy,dd,df
+	read (string(:ll), '(i4,i3,f15.0)') yy,dd,df
 else if (lp == 6) then	! YYMMDD
-	read (string, '(3i2,f15.0)') yy,mm,dd,df
+	read (string(:ll), '(3i2,f15.0)') yy,mm,dd,df
 else if (lp == 5) then	! YYYYDDD
-	read (string, '(i2,i3,f15.0)') yy,dd,df
+	read (string(:ll), '(i2,i3,f15.0)') yy,dd,df
 else
 	return	! Not a proper format
 endif
