@@ -35,7 +35,8 @@ use rads_misc
 type(rads_sat) :: S
 type(rads_pass) :: P
 integer(fourbyteint) :: cyc, pass, i
-logical :: update = .false., mle3 = .false.
+logical :: update = .false.
+character(len=5) :: ext = ''
 
 ! Initialise
 
@@ -50,9 +51,12 @@ do i = 1,rads_nopt
 		update = .true.
 	case ('m', 'multi-hz')
 		S%n_hz_output = .true.
-	case ('mle')
-		mle3 = (rads_opt(i)%arg == '3')
+	case ('mle')	! For backward compatibility only
+		if (rads_opt(i)%arg == '3') ext = '_mle3'
 		call rads_read_xml (S, trim(S%dataroot)//'/conf/mle3.xml')
+	case ('x', 'ext')
+		ext = '_' // rads_opt(i)%arg(:4)
+		call rads_read_xml (S, trim(S%dataroot)//'/conf/'//trim(rads_opt(i)%arg)//'.xml')
 	end select
 enddo
 
@@ -81,7 +85,7 @@ write (*,1310)
 'Additional [processing_options] are:'/ &
 '  --all                     (Has no effect)'/ &
 '  -m, --multi-hz            Do multi-Hertz SLA (only)'/ &
-'  --mle=3                   Produce SSHA based on MLE3 (only)'/ &
+'  -x, --ext EXT             Produce field ssha_EXT (e.g. mle3 or plrm)' / &
 '  -u, --update              Update files only when there are changes')
 stop
 end subroutine synopsis
@@ -95,22 +99,16 @@ integer(fourbyteint), intent(in) :: n
 integer(fourbyteint) :: i
 real(eightbytereal) :: sla(n), tmp(n)
 real(eightbytereal), parameter :: dz = 1d-4
-character(len=5) :: ext
 
 call log_pass (P)
 
 ! Get sea level anomaly
 
-if (S%n_hz_output) then
-	write (ext, '("_",i2.2,"hz")') P%n_hz
-else
-	ext = ''
-endif
+if (S%n_hz_output) write (ext, '("_",i2.2,"hz")') P%n_hz
 call rads_get_var (S, P, 'sla'//ext, sla)
 
 ! If requested, check for changes first
 
-if (mle3) ext = '_mle3'
 if (update) then
 	i = rads_verbose; rads_verbose = -1 ! Temporarily suspend warning
 	call rads_get_var (S, P, 'ssha'//ext, tmp, .true.)
