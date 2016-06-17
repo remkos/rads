@@ -43,25 +43,38 @@ type(rads_pass) :: P
 integer(fourbyteint) :: ntot, cyc, pass, i
 integer(fourbyteint), parameter :: nmax = 3000000
 integer(twobyteint) :: mask = 2072 ! Bits 3, 4, 11
-character(len=5) :: mle = ''
-real(eightbytereal) :: twin = 35d0, iwin = 8d0
+character(len=5) :: ext = ''
+real(eightbytereal) :: twin = 35d0, iwin = 8d0, f
 real(eightbytereal) :: time(nmax), lat(nmax), flags(nmax), iono1(nmax), iono2(nmax)
+logical :: recompute = .false.
 
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options ('b:i:m:t: mle: mask: iwin: twin:')
+call rads_set_options ('b:i:m:t:x:r mle: ext: mask: iwin: twin: recompute')
 call rads_init (S)
+
+! Determine conversion factor from TEC units to ionospheric delay in metres
+! and mean altitude.
+
+f = 1d0/(1d0-(S%frequency(1)/S%frequency(2))**2)
+
+! Check options
+
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
-	case ('m', 'mle')
-		if (rads_opt(i)%arg == '3') mle = '_mle3'
+	case ('m', 'mle')	! For backward compatibility only
+		if (rads_opt(i)%arg == '3') ext = '_mle3'
+	case ('x', 'ext')
+		ext = '_' // rads_opt(i)%arg(:4)
 	case ('i', 'iwin')
 		read (rads_opt(i)%arg,*) iwin
 	case ('b', 'mask')
 		read (rads_opt(i)%arg,*) mask
 	case ('t', 'twin')
 		read (rads_opt(i)%arg,*) twin
+	case ('r', 'recompute')
+		recompute = .true.
 	end select
 enddo
 
@@ -105,7 +118,8 @@ write (*,1310) mask, iwin, twin
 '  -b, --mask MASK           Exclude data based on bitmap MASK (default:',i5,')' / &
 '  -i, --iwin IWIN           Set editing range for iono data [cm] (default:',f4.0,')' / &
 '  -t, --twin TWIN           Set box car filter length [sec] (default:' f4.0,')' / &
-'  -m, --mle 3               Use MLE3 parameters (Jason-2 specific)')
+'  -r, --recompute           (Re)compute ionospheric correction from delta range' / &
+'  -x, --ext EXT             Use parameters with extension _EXT (e.g. mle3 or plrm)')
 stop
 end subroutine synopsis
 
@@ -115,13 +129,21 @@ end subroutine synopsis
 
 subroutine read_pass (n)
 integer(fourbyteint), intent(in) :: n
+real(eightbytereal) :: range_ku(n), range_c(n), ssb_ku(n), ssb_c(n)
 
 ! Read all the required variables
 
 call rads_get_var (S, P, 'time', time(ntot+1:ntot+n), .true.)
 call rads_get_var (S, P, 'lat', lat(ntot+1:ntot+n), .true.)
-call rads_get_var (S, P, 'flags' // mle, flags(ntot+1:ntot+n), .true.)
-call rads_get_var (S, P, 'iono_alt' // mle, iono1(ntot+1:ntot+n), .true.)
+call rads_get_var (S, P, 'flags' // ext, flags(ntot+1:ntot+n), .true.)
+call rads_get_var (S, P, 'iono_alt' // ext, iono1(ntot+1:ntot+n), .true.)
+if (recompute) then
+	call rads_get_var (S, P, 'range_ku' // ext, range_ku, .true.)
+	call rads_get_var (S, P, 'range_c', range_c, .true.)
+	call rads_get_var (S, P, 'ssb_tran2012' // ext, ssb_ku, .true.)
+	call rads_get_var (S, P, 'ssb_tran2012_c', ssb_c, .true.)
+	iono1(ntot+1:ntot+n) = f * ((range_c + ssb_c) - (range_ku + ssb_ku))
+endif
 ntot = ntot + n
 end subroutine read_pass
 
@@ -217,8 +239,10 @@ call rads_put_history (S, P)
 
 ! Define to output variable and write out the data
 
-call rads_def_var (S, P, 'iono_alt_smooth' // mle)
-call rads_put_var (S, P, 'iono_alt_smooth' // mle , iono2(ntot+1:ntot+n))
+if (recompute) call rads_def_var (S, P, 'iono_alt' // ext)
+call rads_def_var (S, P, 'iono_alt_smooth' // ext)
+if (recompute) call rads_put_var (S, P, 'iono_alt' // ext, iono1(ntot+1:ntot+n))
+call rads_put_var (S, P, 'iono_alt_smooth' // ext, iono2(ntot+1:ntot+n))
 ntot = ntot+n
 call log_records (n)
 end subroutine write_pass
