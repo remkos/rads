@@ -60,7 +60,7 @@ Global RADS configuration file
 	<quality_flag>swh sig0 range_rms range_numval flags</quality_flag>
 	<quality_flag sat="3a 3b e1 e2 g1 j1 j2 j3 n1 tx" action="append">swh_rms</quality_flag>
 	<quality_flag sat="3a 3b j1 j2 j3" action="append">sig0_rms</quality_flag>
-	<quality_flag sat="3a 3b e2 j1 j2 j3" action="append">attitude</quality_flag>
+	<quality_flag sat="e2 j1 j2 j3" action="append">attitude</quality_flag><!--attitude not included for Sentinel-3 because there is no altimeter value in SAR mode (only PLRM)-->
 	<quality_flag sat="c2 n1 sa" action="append">peakiness</quality_flag>
 	<comment>Sea level determined from satellite altitude - range - all altimetric corrections</comment>
 </var>
@@ -75,8 +75,23 @@ Global RADS configuration file
 	<data>alt_20hz range_20hz SUB dry_tropo SUB wet_tropo SUB iono SUB inv_bar SUB tide_solid SUB tide_ocean SUB tide_load SUB
 		tide_pole SUB ssb SUB mss SUB ref_frame_offset SUB</data>
 	<quality_flag>swh sig0 range_rms range_numval flags peakiness</quality_flag>
-	<comment>Sea level determined from satellite 20-Hz altitude - range - all altimetric corrections</comment>
+	<comment>Sea level determined from satellite 20-Hz altitude - 20-Hz range - all altimetric corrections</comment>
 </var>
+<var name="sla_plrm" sat="3a">
+	<long_name>sea level anomaly (PLRM)</long_name>
+	<standard_name>sea_surface_height_above_sea_level</standard_name>
+	<units>m</units>
+	<limits>-3 3</limits>
+	<plot_range>-0.8 0.0</plot_range>
+	<plot_range sat="3a">-0.3 0.5</plot_range>
+	<format>f8.4</format>
+	<compress>int2 1e-4</compress>
+	<data>alt range_ku_plrm SUB dry_tropo SUB wet_tropo SUB iono_alt_plrm SUB inv_bar SUB tide_solid SUB tide_ocean SUB tide_load SUB
+		tide_pole SUB ssb_tran2012_plrm SUB mss SUB ref_frame_offset_plrm SUB</data>
+	<quality_flag>swh_ku_plrm sig0__ku_plrm range_rms_ku_plrm range_numval_ku_plrm flags swh_rms_plrm sig0_rms_plrm attitude</quality_flag>
+	<comment>Sea level determined from satellite altitude - PLRM range - all (PLRM) altimetric corrections</comment>
+</var>
+
 
 <var name="ssha">
 	<long_name>sea surface height anomaly</long_name>
@@ -112,7 +127,7 @@ Global RADS configuration file
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>Sea level from satellite altitude - range - all altimetric corrections.
-		These values were computed when the data set was created, in contrast to the sla variable.</comment>
+		These values were computed when the data set was created, in contrast to the sla_mle3 variable.</comment>
 </var>
 <var name="ssha_plrm" sat="3a 3b">
 	<long_name>sea surface height anomaly (PLRM)</long_name>
@@ -124,7 +139,7 @@ Global RADS configuration file
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>Sea level from satellite altitude - range - all altimetric corrections.
-		These values were computed when the data set was created, in contrast to the sla variable.</comment>
+		These values were computed when the data set was created, in contrast to the sla_plrm variable.</comment>
 </var>
 
 <var name="time" field="101 1">
@@ -1286,7 +1301,7 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 </var>
-<var name="ssb_cls_c" field="1505" sat="2a 3a 3b j1 j2 j3">
+<var name="ssb_cls_c" field="1505" sat="2a j1 j2 j3">
 	<long_name>CLS non-parametric sea state bias (C-band)</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<source>CLS</source>
@@ -1309,34 +1324,47 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
-<var name="ssb_cls_plrm" field="1514" sat="3a 3b">
-	<long_name>CLS non-parametric sea state bias (PLRM)</long_name>
-	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
-	<parameters>ssb_col_J2_Ku_mle4_1_36_v2012ostst.nc</parameters>
-	<source>CLS</source>
-	<units>m</units>
-	<limits>-1 1</limits>
-	<plot_range>-0.30 0.05</plot_range>
-	<data>ssb_cls_plrm</data>
-	<format>f7.4</format>
-	<compress>int2 1e-4</compress>
-	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
-</var>
-<var name="ssb_tran2012" field="1513" sat="j1 j2 j3">
+<var name="ssb_tran2012" field="1513" sat="3a 3b j1 j2 j3">
 	<long_name>Tran et al. 2012 non-parametric sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<if sat="j1">
 		<source>Tran et al. 2012 (ssb_col_J1_1_111_v2012ostst.rs)</source>
-		<parameters>ssb_col_J1_1_111_v2012ostst.nc</parameters>
+		<parameters>ssb_col_J1_1_111_v2012ostst.nc -xwind_speed_alt</parameters>
 	</if>
 	<else>
 		<source>Tran et al. 2012 (ssb_col_J2_Ku_mle4_1_36_v2012ostst.rs)</source>
-		<parameters>ssb_col_J2_Ku_mle4_1_36_v2012ostst.nc</parameters>
+		<parameters>ssb_col_J2_Ku_mle4_1_36_v2012ostst.nc -xwind_speed_alt</parameters>
 	</else>
 	<units>m</units>
 	<limits>-1 1</limits>
 	<plot_range>-0.30 0.05</plot_range>
 	<data>ssb_tran2012</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
+</var>
+<var name="ssb_tran2012_plrm" field="1514" sat="3a 3b">
+	<long_name>CLS non-parametric sea state bias (PLRM)</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<source>Tran et al. 2012 (ssb_col_J2_Ku_mle4_1_36_v2012ostst.rs)</source>
+	<parameters>ssb_col_J2_Ku_mle4_1_36_v2012ostst.nc -xwind_speed_alt_plrm -yswh_ku_plrm</parameters>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
+	<data>ssb_tran2012_plrm</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
+</var>
+<var name="ssb_tran2012_c" field="1515" sat="3a 3b">
+	<long_name>CLS non-parametric sea state bias (C-band)</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<source>Tran et al. 2012 (ssb_col_J2_Ku_mle4_1_36_v2012ostst.rs)</source>
+	<parameters>S3A_SSB_C_tmp.nc -xwind_speed_alt</parameters>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
+	<data>ssb_tran2012_c</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
@@ -1365,7 +1393,8 @@ Global RADS configuration file
 </var>
 <alias name="ssb" field="15" sat="e1 e2 pn">ssb_bm3</alias>
 <alias name="ssb" field="15" sat="c2 g1 gs sa">ssb_hyb</alias>
-<alias name="ssb" field="15" sat="2a 3a 3b j1 j2 j3 n1 tx">ssb_cls</alias>
+<alias name="ssb" field="15" sat="2a j1 j2 j3 n1 tx">ssb_cls</alias>
+<alias name="ssb" field="15" sat="3a 3b">ssb_tran2012</alias>
 
 <var name="geoid_egm96" field="1601" sat="3a 3b j2 j3 sa tx.r50">
 	<long_name>EGM96 geoid height</long_name>
@@ -2754,6 +2783,15 @@ Global RADS configuration file
 	</var>
 	<alias name="attitude" field="30">off_nadir_angle2_wf_ku</alias>
 </else>
+<var name="off_nadir_angle2_wf_ku_plrm" sat="3a 3b">
+	<long_name>off-nadir pointing angle squared from waveform (PLRM)</long_name>
+	<units>degrees^2</units>
+	<plot_range>-0.04 0.08</plot_range>
+	<data>off_nadir_angle2_wf_ku_plrm</data>
+	<format>f7.4</format>
+	<default>0</default>
+	<compress>int2 1e-4</compress>
+</var>
 <var name="off_nadir_angle2_wf_ku_retrk" sat="tx.r50">
 	<long_name>off-nadir pointing angle squared from retracked Ku-band waveform</long_name>
 	<units>degrees^2</units>
@@ -2831,7 +2869,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<dimensions>2</dimensions>
 </var>
-<var name="attitude_yaw" field="3008" sat="c2">
+<var name="attitude_yaw" field="3008" sat="3a 3b c2">
 	<long_name>platform yaw angle</long_name>
 	<units>degrees</units>
 	<data>attitude_yaw</data>
@@ -3211,6 +3249,14 @@ Global RADS configuration file
 	<long_name>reference frame offset (MLE3)</long_name>
 	<units>m</units>
 	<data>ref_frame_offset_mle3</data>
+	<format>f7.4</format>
+	<default>0</default>
+	<compress>int2 1e-4</compress>
+</var>
+<var name="ref_frame_offset_plrm" field="3812" sat="3a 3b">
+	<long_name>reference frame offset (PLRM)</long_name>
+	<units>m</units>
+	<data>ref_frame_offset_plrm</data>
 	<format>f7.4</format>
 	<default>0</default>
 	<compress>int2 1e-4</compress>

@@ -48,7 +48,7 @@ program rads_gen_s3
 ! iono_gim - GIM ionosphetic correction
 ! inv_bar_static - Inverse barometer
 ! inv_bar_mog2d - MOG2D
-! ssb_cls_* - SSB
+! ssb_tran2012_* - SSB
 ! swh_* - Significant wave height
 ! sig0_* - Sigma0
 ! wind_speed_alt_* - Altimeter wind speed (not _c)
@@ -255,9 +255,9 @@ do
 	call cpy_var ('load_tide_sol1_01', 'tide_load_got48')
 	call cpy_var ('load_tide_sol2_01', 'tide_load_fes04')
 	call cpy_var ('pole_tide_01', 'tide_pole')
-	call cpy_var ('sea_state_bias_01_ku', 'ssb_cls')
-	call cpy_var ('sea_state_bias_01_plrm_ku', 'ssb_cls_plrm')
-	call cpy_var ('sea_state_bias_01_c', 'ssb_cls_c')
+	call cpy_var ('sea_state_bias_01_ku', 'ssb_tran2012')
+	call cpy_var ('sea_state_bias_01_plrm_ku', 'ssb_tran2012_plrm')
+	call cpy_var ('sea_state_bias_01_c', 'ssb_tran2012_c')
 	call get_var (ncid, 'geoid_01', a)
 	call new_var ('geoid_egm2008', a + dh)
 	call get_var (ncid, 'mean_sea_surf_sol1_01', a)
@@ -293,11 +293,14 @@ do
 	call cpy_var ('sig0_ocean_rms_01_ku','sig0_rms_ku')
 	call cpy_var ('sig0_ocean_rms_01_plrm_ku','sig0_rms_ku_plrm')
 	call cpy_var ('sig0_ocean_rms_01_c','sig0_rms_c')
+	! In case of SAR, there is no estimated attitude, so we rely on the PLRM values.
+	! It may not be good to use these for editing (?)
 	call cpy_var ('corrected_off_nadir_angle_wf_ocean_01_ku corrected_off_nadir_angle_wf_ocean_01_plrm_ku AND', &
 		'off_nadir_angle2_wf_ku')
 	call cpy_var ('off_nadir_angle_rms_01_ku off_nadir_angle_rms_01_plrm_ku AND', 'off_nadir_angle2_wf_rms_ku')
 	call cpy_var ('off_nadir_pitch_angle_pf_01', 'attitude_pitch')
 	call cpy_var ('off_nadir_roll_angle_pf_01', 'attitude_roll')
+	call cpy_var ('off_nadir_yaw_angle_pf_01', 'attitude_yaw')
 	call cpy_var ('atm_cor_sig0_01_ku', 'dsig0_atmos_ku')
 	call cpy_var ('atm_cor_sig0_01_c', 'dsig0_atmos_c')
 	call cpy_var ('rad_liquid_water_01_ku', 'liquid_water_rad')
