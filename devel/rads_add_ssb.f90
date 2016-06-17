@@ -39,9 +39,9 @@ type(rads_pass) :: P
 
 ! Other local variables
 
-character(len=rads_cmdl) :: path
-character(len=rads_varl) :: ssb_model = 'ssb_hyb'
-integer(fourbyteint) :: i, cyc, pass
+character(len=rads_cmdl) :: src
+character(len=rads_varl) :: ssb_model = 'ssb_hyb', xvar = 'sig0', yvar = 'swh'
+integer(fourbyteint) :: i, j, cyc, pass
 type(grid) :: info
 type(rads_var), pointer :: var
 logical :: lssb = .false., lwind = .false., saral
@@ -69,8 +69,16 @@ enddo
 
 if (lssb) then
 	var => rads_varptr (S, ssb_model)
-	call parseenv ('${ALTIM}/data/models/' // var%info%parameters, path)
-	if (grid_load(path,info) /= 0) call rads_exit ('Error loading '//trim(path))
+	call parseenv ('${ALTIM}/data/models/' // var%info%parameters, src)
+	i = index(src, ' -x')
+	j = index(src(i+1:), ' ')
+	if (i > 0) xvar = src(i+3:i+j)
+	i = index(src, ' -y')
+	j = index(src(i+1:), ' ')
+	if (i > 0) yvar = src(i+3:i+j)
+	i = index(src, ' ')
+	if (i > 0) src = src(:i-1)
+	if (grid_load(src,info) /= 0) call rads_exit ('Error loading '//trim(src))
 endif
 
 ! Run process for all files
@@ -126,14 +134,12 @@ endif
 ! load wind or sigma0 depending on the x-coordinate of the SSB grid, and load swh always
 
 if (lssb) then
-	if (index(info%xname, 'backscatter') > 0 .or. index(info%xname, 'sigma0') > 0) then
-		if (.not.lwind) call rads_get_var (S, P, 'sig0', xval, .true.)
-	else if (lwind) then
+	if (lwind) then
 		xval = wind
 	else
-		call rads_get_var (S, P, 'wind_speed_alt', xval, .true.)
+		call rads_get_var (S, P, xvar, xval, .true.)
 	endif
-	call rads_get_var (S, P, 'swh', yval, .true.)
+	call rads_get_var (S, P, yvar, yval, .true.)
 	do i = 1,n
 		x = xval(i)
 		if (x < info%xmin) x = info%xmin
