@@ -87,8 +87,8 @@ Global RADS configuration file
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
 	<data>alt range_ku_plrm SUB dry_tropo SUB wet_tropo SUB iono_alt_plrm SUB inv_bar SUB tide_solid SUB tide_ocean SUB tide_load SUB
-		tide_pole SUB ssb_tran2012_plrm SUB mss SUB ref_frame_offset_plrm SUB</data>
-	<quality_flag>swh_ku_plrm sig0__ku_plrm range_rms_ku_plrm range_numval_ku_plrm flags swh_rms_plrm sig0_rms_plrm attitude</quality_flag>
+		tide_pole SUB ssb_cls_plrm SUB mss SUB ref_frame_offset_plrm SUB</data>
+	<quality_flag>swh_ku_plrm sig0_ku_plrm range_rms_ku_plrm range_numval_ku_plrm flags swh_rms_ku_plrm sig0_rms_ku_plrm attitude</quality_flag>
 	<comment>Sea level determined from satellite altitude - PLRM range - all (PLRM) altimetric corrections</comment>
 </var>
 
@@ -998,6 +998,18 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
+<var name="iono_alt_smooth_plrm" field="913" sat="3a 3b">
+	<long_name>smoothed dual-frequency ionospheric correction (PLRM)</long_name>
+	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
+	<source>dual-frequency altimeter after smoothing</source>
+	<units>m</units>
+	<limits>-0.4 0.04</limits>
+	<plot_range>-0.15 0.02</plot_range>
+	<data>iono_alt_smooth_plrm</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
+</var>
 <alias name="iono" field="9" sat="e1 gs pn">iono_nic09</alias>
 <alias name="iono" field="9" sat="c2 e2 g1 sa">iono_gim iono_nic09</alias>
 <alias name="iono" field="9" sat="2a 3a 3b j1 j2 j3 n1 tx">iono_alt_smooth iono_gim iono_nic09</alias>
@@ -1262,7 +1274,7 @@ Global RADS configuration file
 <var name="ssb_cls" field="1502" sat="2a 3a 3b j1 j2 j3 n1 tx">
 	<long_name>CLS non-parametric sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
-	<parameters sat="3a 3b">ssb_col_J2_Ku_mle4_1_36_v2012ostst.nc</parameters>
+	<parameters sat="3a 3b">MainAuxSSBTable_J2_2012.nc?ssb_ku -xwind_speed_alt</parameters>
 	<source>CLS</source>
 	<units>m</units>
 	<limits>-1 1</limits>
@@ -1301,16 +1313,21 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 </var>
-<var name="ssb_cls_c" field="1505" sat="2a j1 j2 j3">
+<var name="ssb_cls_c" field="1505" sat="2a 3a 3b j1 j2 j3">
 	<long_name>CLS non-parametric sea state bias (C-band)</long_name>
+	<long_name sat="3a 3b">Tran et al. 2012 non-parametric sea state bias (C-band)</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<parameters sat="3a 3b">MainAuxSSBTable_J2_2012.nc?ssb_c -xwind_speed_alt</parameters>
 	<source>CLS</source>
+	<source sat="3a 3b">Tran et al., 2012</source>
 	<units>m</units>
 	<limits>-1 1</limits>
 	<plot_range>-0.30 0.05</plot_range>
 	<data>ssb_cls_c</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
+	<comment>This sea state bias correction is added to C-band range when determining ionospheric correction.</comment>
+	<comment sat="3a 3b" edit="append">This model is actually based on Jason-2 data and not Sentinel-3, and will be replaced later.</comment>
 </var>
 <var name="ssb_cls_mle3" field="1512" sat="j2 j3">
 	<long_name>CLS non-parametric sea state bias (MLE3)</long_name>
@@ -1324,7 +1341,20 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
-<var name="ssb_tran2012" field="1513" sat="3a 3b j1 j2 j3">
+<var name="ssb_cls_plrm" field="1514" sat="3a 3b">
+	<long_name>Tran et al. 2012 non-parametric sea state bias (PLRM)</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<source>Tran et al. 2012</source>
+	<parameters>MainAuxSSBTable_J2_2012.nc?ssb_ku -xwind_speed_alt_plrm -yswh_ku_plrm</parameters>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
+	<data>ssb_cls_plrm</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A sea state bias correction must be added to range to correct for sea state delays. This model is actually based on Jason-2 data and not Sentinel-3, and will be replaced later.</comment>
+</var>
+<var name="ssb_tran2012" field="1513" sat="j1 j2 j3">
 	<long_name>Tran et al. 2012 non-parametric sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<if sat="j1">
@@ -1339,32 +1369,6 @@ Global RADS configuration file
 	<limits>-1 1</limits>
 	<plot_range>-0.30 0.05</plot_range>
 	<data>ssb_tran2012</data>
-	<format>f7.4</format>
-	<compress>int2 1e-4</compress>
-	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
-</var>
-<var name="ssb_tran2012_plrm" field="1514" sat="3a 3b">
-	<long_name>CLS non-parametric sea state bias (PLRM)</long_name>
-	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
-	<source>Tran et al. 2012 (ssb_col_J2_Ku_mle4_1_36_v2012ostst.rs)</source>
-	<parameters>ssb_col_J2_Ku_mle4_1_36_v2012ostst.nc -xwind_speed_alt_plrm -yswh_ku_plrm</parameters>
-	<units>m</units>
-	<limits>-1 1</limits>
-	<plot_range>-0.30 0.05</plot_range>
-	<data>ssb_tran2012_plrm</data>
-	<format>f7.4</format>
-	<compress>int2 1e-4</compress>
-	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
-</var>
-<var name="ssb_tran2012_c" field="1515" sat="3a 3b">
-	<long_name>CLS non-parametric sea state bias (C-band)</long_name>
-	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
-	<source>Tran et al. 2012 (ssb_col_J2_Ku_mle4_1_36_v2012ostst.rs)</source>
-	<parameters>S3A_SSB_C_tmp.nc -xwind_speed_alt</parameters>
-	<units>m</units>
-	<limits>-1 1</limits>
-	<plot_range>-0.30 0.05</plot_range>
-	<data>ssb_tran2012_c</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
@@ -1393,8 +1397,7 @@ Global RADS configuration file
 </var>
 <alias name="ssb" field="15" sat="e1 e2 pn">ssb_bm3</alias>
 <alias name="ssb" field="15" sat="c2 g1 gs sa">ssb_hyb</alias>
-<alias name="ssb" field="15" sat="2a j1 j2 j3 n1 tx">ssb_cls</alias>
-<alias name="ssb" field="15" sat="3a 3b">ssb_tran2012</alias>
+<alias name="ssb" field="15" sat="2a 3a 3b j1 j2 j3 n1 tx">ssb_cls</alias>
 
 <var name="geoid_egm96" field="1601" sat="3a 3b j2 j3 sa tx.r50">
 	<long_name>EGM96 geoid height</long_name>

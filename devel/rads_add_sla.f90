@@ -41,7 +41,7 @@ character(len=5) :: ext = ''
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('mu mle: multi-hz update all')
+call rads_set_options ('mux: mle: multi-hz update ext: all')
 call rads_init (S)
 
 ! Check all options

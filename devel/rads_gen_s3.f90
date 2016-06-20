@@ -41,6 +41,8 @@ program rads_gen_s3
 ! alt_gdrd - Orbital altitude
 ! alt_rate - Orbital altitude rate
 ! range_* - Ocean range (retracked)
+! range_rms_* - Std dev of range
+! range_numval_* - Nr of averaged range measurements
 ! dry_tropo_ecmwf - ECMWF dry tropospheric correction
 ! wet_tropo_ecmwf - ECMWF wet tropo correction
 ! wet_tropo_rad - Radiometer wet tropo correction
@@ -48,24 +50,31 @@ program rads_gen_s3
 ! iono_gim - GIM ionosphetic correction
 ! inv_bar_static - Inverse barometer
 ! inv_bar_mog2d - MOG2D
-! ssb_tran2012_* - SSB
+! ssb_cls_* - SSB
 ! swh_* - Significant wave height
-! sig0_* - Sigma0
+! swh_rms_* - Std dev of SWH
+! sig0_* - Sigma0 (not corrected for attenuation ... will be done in rads_fix_s3)
+! sig0_rms_* - Std dev of sigma0
+! dsig0_atmos_* - Atmospheric attenuation of sigma0 (not _plrm)
 ! wind_speed_alt_* - Altimeter wind speed (not _c)
 ! wind_speed_rad - Radiometer wind speed
 ! wind_speed_ecmwf_u - ECMWF wind speed (U)
 ! wind_speed_ecmwf_v - ECMWF wind speed (V)
-! range_rms_* - Std dev of range
-! range_numval_* - Nr of averaged range measurements
-! topo_dtm2000 - Bathymetry
+! tide_ocean/load_got48 - GOT4.8 ocean and load tide
+! tide_ocean/load_fes04 - FES2004 ocean  and loadtide
+! tide_pole - Pole tide
+! tide_solid - Solid earth tide
+! topo_ace2 - ACE2 topography
+! geoid_egm2008 - EGM2008 geoid
+! mss_cnescls11 - CNES/CLS11 mean sea surface
+! mss_dtu10 - DTU10 mean sea surface
 ! tb_238 - Brightness temperature (23.8 GHz)
 ! tb_365 - Brightness temperature (36.5 GHz)
 ! flags, flags_plrm - Engineering flags
-! swh_rms_* - Std dev of SWH
-! sig0_rms_* - Std dev of sigma0
-! off_nadir_angle2_wf_ku - Mispointing from waveform squared
+! off_nadir_angle2_wf_* - Mispointing from waveform squared (not _c)
 ! rad_liquid_water - Liquid water content
 ! rad_water_vapor - Water vapor content
+! ssha_* - Sea surface height anomaly (not _c)
 !
 ! Extensions _* are:
 ! _ku:      Ku-band retracked from SAR
@@ -255,9 +264,9 @@ do
 	call cpy_var ('load_tide_sol1_01', 'tide_load_got48')
 	call cpy_var ('load_tide_sol2_01', 'tide_load_fes04')
 	call cpy_var ('pole_tide_01', 'tide_pole')
-	call cpy_var ('sea_state_bias_01_ku', 'ssb_tran2012')
-	call cpy_var ('sea_state_bias_01_plrm_ku', 'ssb_tran2012_plrm')
-	call cpy_var ('sea_state_bias_01_c', 'ssb_tran2012_c')
+	call cpy_var ('sea_state_bias_01_ku', 'ssb_cls')
+	call cpy_var ('sea_state_bias_01_plrm_ku', 'ssb_cls_plrm')
+	call cpy_var ('sea_state_bias_01_c', 'ssb_cls_c')
 	call get_var (ncid, 'geoid_01', a)
 	call new_var ('geoid_egm2008', a + dh)
 	call get_var (ncid, 'mean_sea_surf_sol1_01', a)

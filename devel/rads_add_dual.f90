@@ -140,8 +140,8 @@ call rads_get_var (S, P, 'iono_alt' // ext, iono1(ntot+1:ntot+n), .true.)
 if (recompute) then
 	call rads_get_var (S, P, 'range_ku' // ext, range_ku, .true.)
 	call rads_get_var (S, P, 'range_c', range_c, .true.)
-	call rads_get_var (S, P, 'ssb_tran2012' // ext, ssb_ku, .true.)
-	call rads_get_var (S, P, 'ssb_tran2012_c', ssb_c, .true.)
+	call rads_get_var (S, P, 'ssb_cls' // ext, ssb_ku, .true.)
+	call rads_get_var (S, P, 'ssb_cls_c', ssb_c, .true.)
 	iono1(ntot+1:ntot+n) = f * ((range_c + ssb_c) - (range_ku + ssb_ku))
 endif
 ntot = ntot + n
