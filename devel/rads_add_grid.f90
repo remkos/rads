@@ -71,7 +71,8 @@ do k = 1,S%nsel
 
 	grd(k)%rate = 0d0
 	i = index(src, ' -t')
-	if (i > 0) read (src(i+3:), *, iostat=ios) grd(k)%rate
+	j = index(src(i+1:), ' ')
+	if (i > 0) read (src(i+3:i+j), *, iostat=ios) grd(k)%rate
 
 	grd(k)%xvar = 'lon'
 	i = index(src, ' -x')

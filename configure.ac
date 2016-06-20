@@ -71,20 +71,6 @@ fi
 AC_MSG_RESULT([$enable_devel])
 
 # -----------------------------------------------------------------
-# Are you a git repository?
-# -----------------------------------------------------------------
-AC_MSG_CHECKING([whether this is a git repository])
-if test -f .git/index ; then
-	GIT_INDEX='../.git/index'
-	have_git='yes'
-else
-	GIT_INDEX=''
-	have_git='no'
-fi
-AC_MSG_RESULT([$have_git])
-AC_SUBST(GIT_INDEX)
-
-# -----------------------------------------------------------------
 # Default settings come from nf-config
 # -----------------------------------------------------------------
 AC_PATH_PROG([nf_config], [nf-config], [$with_nf_config])

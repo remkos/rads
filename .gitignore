@@ -66,7 +66,6 @@ src/rads2xgf
 src/rads3test
 src/rads_sample
 src/rads_test
-src/rads_version.f90
 src/radscolin
 src/radscolin4
 src/radsreconfig

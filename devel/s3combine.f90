@@ -96,6 +96,10 @@ do
 	call nfs(nf90_get_att(ncid1,nf90_global,'cycle_number',cycle_in))
 	call nfs(nf90_get_att(ncid1,nf90_global,'product_name',product_name))
 
+! We have pass number 771 on input ... this belongs to the next cycle
+
+	call next_cycle (cycle_in, pass_in)
+
 ! For first file: set cycle/pass number to input ones
 
 	if (pass_number == 0) then
@@ -112,10 +116,7 @@ do
 				call copyfile (i0, i-1)
 				i0 = i
 				pass_number = pass_number + 1
-				if (pass_number > 770) then
-					cycle_number = cycle_number + 1
-					pass_number = 1
-				endif
+				call next_cycle (cycle_number, pass_number)
 			endif
 		enddo
 	else
@@ -128,6 +129,17 @@ do
 enddo
 
 contains
+
+!***********************************************************************
+! Start the next cycle when the pass number rolls over
+
+subroutine next_cycle (cycle, pass)
+integer(fourbyteint), intent(inout) :: cycle, pass
+if (pass > 770) then
+	cycle = cycle + pass / 770
+	pass = modulo(pass-1,770) + 1
+endif
+end subroutine next_cycle
 
 !***********************************************************************
 ! Copy the contents of the input file to a new output file

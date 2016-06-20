@@ -30,7 +30,7 @@ integer(fourbyteint) :: ncid, i, icol, ios, nvar, nxo_in, nxo_out, ntrk, nxml = 
 real(eightbytereal), allocatable :: var(:,:,:), stat(:,:,:), binstat(:,:,:), tbiasstat(:,:)
 integer(fourbyteint), allocatable :: track(:,:), binnr(:,:), bincount(:)
 character(len=rads_naml), allocatable :: long_name(:)
-logical, allocatable :: boz(:), mask(:), binmask(:)
+logical, allocatable :: is_alt(:), boz(:), mask(:), binmask(:)
 type :: trk_
 	real(eightbytereal) :: equator_lon, equator_time, start_time, end_time
 	integer(twobyteint) :: nr_alt, nr_xover, satid, cycle, pass
@@ -54,7 +54,7 @@ character(len=3*msat) :: satlist = '', use_sats = ''
 type(rads_sat) :: S
 character(len=*), parameter :: optlist = &
 	'S:X:e::b::o:r:dsnltp sat: xml: lon: lat: dt: edit:: bin:: order: replace: dual single nolist both-legs both-times ' // &
-	' time: ymd: doy: sec: check-flag: full-year tbias:: pass-info'
+	' time: ymd: doy: sec: check-flag: full-year tbias add-tbias: sub-tbias: pass-info'
 
 integer(fourbyteint) :: var0 = 0, check_flag = -1
 logical :: diff = .true., stat_only, singles = .true., duals = .true., xostat, fullyear = .false., &
@@ -134,8 +134,11 @@ do
 		fullyear = .true.
 	case ('tbias')
 		ltbias = .true.
+	case ('add-tbias', 'sub-tbias')
 		read (optarg, *, iostat=ios) tbias
 		if (ios > 0) call rads_opt_error (optopt, optarg)
+		tbias = tbias * 1d-3
+		if (optopt == 'sub-tbias') tbias = -tbias
 	case ('p', 'pass-info')
 		pass_info = .true.
 	case ('check-flag')
@@ -220,7 +223,8 @@ else ! New style xover file
 	nvar = id_track - 4
 	id_offset = 3
 endif
-allocate (track(2,nxo_in), trk(ntrk), var(2,nxo_in,-1:nvar), stat(2,-1:nvar,5), mask(nxo_in), long_name(-2:nvar), boz(nvar))
+allocate (track(2,nxo_in), trk(ntrk), var(2,nxo_in,-1:nvar), stat(2,-1:nvar,5), mask(nxo_in), long_name(-2:nvar), &
+		is_alt(nvar), boz(nvar))
 call get_var_1d (get_varid('lat'), var(1,:,-1), long_name(-2))
 call get_var_1d (get_varid('lon'), var(2,:,-1), long_name(-1))
 call get_var_2d (get_varid('time'), var(:,:,0), long_name(0))
@@ -268,14 +272,18 @@ do i = 1,nvar
 		fmt_str = trim(fmt_str) // trim(ptr%info%format) // ',1x,' // trim(ptr%info%format) // ',1x,'
 	endif
 	boz(i) = ptr%info%boz_format
+	is_alt(i) = ptr%info%standard_name == 'height_above_reference_ellipsoid' .or. &
+		ptr%info%standard_name == 'sea_surface_height_above_sea_level'
 	if (varnm == 'sla') id_sla = i
 	if (varnm == 'alt_rate') id_alt_rate = i
 enddo
 fmt_str(len_trim(fmt_str)-3:) = ')'
 
-! Try if we can generate a timing bias
+! Try if we can generate a time tag bias
 if (ltbias .and. (id_sla == 0 .or. id_alt_rate == 0)) &
-	call rads_exit ('Cannot compute timing bias without both SLA and ALT_RATE present')
+	call rads_exit ('Cannot compute time tag bias without both SLA and ALT_RATE present')
+if (tbias /= 0 .and. id_alt_rate == 0) &
+	call rads_exit ('Cannot adjust for time tag bias without ALT_RATE present')
 
 ! Exchange any correction if requested
 do i = 1,nvar_replace
@@ -292,8 +300,13 @@ enddo
 id_flag = 0
 if (check_flag >= 0) id_flag = get_varid('flag_alt_oper_mode') - id_offset
 
-! Remove the effect of a timing bias (tbias in ms) on SLA, if requested
-if (tbias /= 0d0) var(:,:,id_sla) = var(:,:,id_sla) - tbias * 1d-3 * var(:,:,id_alt_rate)
+! Adjust for a time tag bias (tbias in ms) on TIME, SLA and all ALT fields, if requested
+if (tbias /= 0d0) then
+	var(:,:,0) = var(:,:,0) + tbias
+	do i = 1,nvar
+		if (is_alt(i)) var(:,:,i) = var(:,:,i) + tbias * var(:,:,id_alt_rate)
+	enddo
+endif
 
 ! Close netCDF file
 call nfs (nf90_close (ncid))
@@ -343,13 +356,13 @@ write (*,610) nxo_out
 
 ! If no xovers: skip the rest
 if (nxo_out == 0) then
-	deallocate (track, trk, var, stat, mask, long_name, boz)
+	deallocate (track, trk, var, stat, mask, long_name, is_alt, boz)
 	return
 endif
 
 ! If stats are to be binned, assign bins
 if (bin > 0d0) then
-	allocate (binnr(2,nxo_in),binmask(nxo_in))
+	allocate (binnr(2,nxo_in), binmask(nxo_in))
 	binnr = floor(var(:,:,0)/bin/day)
 endif
 
@@ -384,7 +397,7 @@ if (.not.xostat) then
 	endif
 	if (bin > 0d0 .and. ltbias) then
 		icol = icol + 2
-		write (*,612) icol-1,icol,'timing bias [ms]'
+		write (*,612) icol-1,icol,'time tag bias [ms]'
 	endif
 	if (pass_info) then
 		icol = icol + 2
@@ -455,7 +468,7 @@ enddo
 if (.not.stat_only .and. bin == 0d0) then
 	do i = 1,nxo_in
 		if (.not.mask(i)) cycle
-		call print_data (var(:,i,:), pass_info)
+		call print_data (var(:,i,:), .not.pass_info)
 		if (.not.pass_info) cycle
 		trkid = track(:,i)
 		write (*,632) trk(trkid)%satid,trk(trkid)%cycle,trk(trkid)%pass
@@ -467,7 +480,7 @@ if (bin > 0d0) then
 	! Statistics per bin
 	k1 = minval(binnr)
 	k2 = maxval(binnr)
-	allocate (bincount(k1:k2),binstat(2,-1:nvar,k1:k2),tbiasstat(2,k1:k2))
+	allocate (bincount(k1:k2), binstat(2,-1:nvar,k1:k2), tbiasstat(2,k1:k2))
 	bincount = 0
 	binstat = 0d0
 	tbiasstat = 0d0
@@ -484,10 +497,10 @@ if (bin > 0d0) then
 		call mjd2ymd (nint(k*bin)+46066,yy,mm,dd)
 		if (.not.fullyear) yy = modulo(yy,100)
 		write (*,630,advance='no') yy,mm,dd,bincount(k)
-		call print_data (binstat(:,:,k),ltbias)
+		call print_data (binstat(:,:,k), .not.ltbias)
 		if (ltbias) write(*,631) tbiasstat(2,k)/tbiasstat(1,k)*1d3, sqrt(1d0/tbiasstat(1,k))*1d3
 	enddo
-	deallocate (bincount,binstat,tbiasstat)
+	deallocate (bincount, binstat, tbiasstat)
 else if (xostat) then
 	write (*,640) 'MIN','MAX','MEAN','RMS','STDDEV'
 	write (*,645) trim(long_name(-2)),stat(1,-1,:)
@@ -498,12 +511,12 @@ else if (xostat) then
 	enddo
 	if (ltbias .and. diff) then
 		call solve_tbias (pack(var(1,:,id_sla),mask),pack(var(1,:,id_alt_rate),mask),mean,sigma)
-		write (*,646) 'timing bias [ms]', mean*1d3, sigma*1d3
+		write (*,646) 'time tag bias [ms]', mean*1d3, sigma*1d3
 	endif
 else
 	do i = 1,5
 		write (*,650,advance='no') statname(i)
-		call print_data (stat(:,:,i))
+		call print_data (stat(:,:,i), .true.)
 	enddo
 endif
 630 format (3i0.2,i9,1x)
@@ -544,7 +557,11 @@ endif
 '  -s, --single              Select single satellite crossovers only'/ &
 '  -l, --both-legs           Write out both xover values (default is differences)'/ &
 '  -t, --both-times          Write out both times (default is difference)'/ &
-'  --tbias [VAL]             Remove timing bias and/or estimate timing bias (when possible)'/ &
+'  --tbias                   Determine time tag bias (requires variables sla and alt_rate)'/ &
+'  --add-tbias VAL           Add (apply) effect of time tag bias (VAL in ms)'/ &
+'                            (requires variable alt_rate)'/ &
+'  --sub-tbias VAL           Subtract (remove) effect of time tag bias (VAL in ms)'/ &
+'                            (requires variable alt_rate)'/ &
 '  -o, --order TYPE          Order of the xover values (or difference), where TYPE is one of:'/ &
 '                              A|a = ascending-descending or vv'/ &
 '                              H|h = higher-lower satellite or vv'/ &
@@ -604,28 +621,26 @@ end subroutine get_var_2d
 !***********************************************************************
 ! Print a single line of data (take care of flags)
 
-subroutine print_data (x, no_advance)
+subroutine print_data (x, advance)
 real(eightbytereal), intent(inout) :: x(2,-1:nvar)
-logical, optional :: no_advance
+logical, intent(in) :: advance
 integer :: j
-character(len=3) :: advance
+character(len=3) :: yes_no
 ! In the following we would have liked to use nint8 in the transfer
 ! function, but an 8-byte integer is not guaranteed to work, so we use
-! padded 4-byte integers instead
-if (.not.present(no_advance)) then
-	advance = 'yes'
-else if (no_advance) then
-	advance = 'no'
+! padded 4-byte integers instead.
+if (advance) then
+	yes_no = 'yes'
 else
-	advance = 'yes'
+	yes_no = 'no'
 endif
 do j = 1,nvar
 	if (boz(j)) call bit_transfer (x(:,j))
 enddo
 if (diff) then
-	write (*,fmt_str,advance=advance) x(:,-1:var0-1),x(1,var0:nvar)
+	write (*,fmt_str,advance=yes_no) x(:,-1:var0-1), x(1,var0:nvar)
 else
-	write (*,fmt_str,advance=advance) x(:,:)
+	write (*,fmt_str,advance=yes_no) x(:,:)
 endif
 end subroutine print_data
 
@@ -672,6 +687,6 @@ binstat(1,:,k) = binstat(1,:,k) + val(1,:)
 binstat(2,-1:var0-1,k) = binstat(2,-1:var0-1,k) + val(2,-1:var0-1)
 binstat(2,var0:nvar,k) = binstat(2,var0:nvar,k) + val(1,var0:nvar) ** 2
 bincount(k) = bincount(k) + 1
-if (ltbias) tbiasstat(:,k) = tbiasstat(:,k) + w * val(1,id_alt_rate) * (/ val(1,id_alt_rate),val(1,id_sla) /)
+if (ltbias) tbiasstat(:,k) = tbiasstat(:,k) + w * val(1,id_alt_rate) * (/ val(1,id_alt_rate), val(1,id_sla) /)
 end subroutine update_stat
 end program radsxolist

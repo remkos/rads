@@ -197,7 +197,6 @@ integer(twobyteint), parameter, private :: flag_masks (0:15) = &
 integer(fourbyteint), parameter, private :: id_sat = 1, id_xml = 2, id_alias = 3, id_misc = 4, id_var = 5
 
 include 'config.f90'
-include 'rads_version.f90'
 
 ! Some private variables to keep
 

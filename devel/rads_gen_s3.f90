@@ -38,9 +38,11 @@ program rads_gen_s3
 ! time - Time since 1 Jan 85
 ! lat - Latitude
 ! lon - Longitude
-! alt_gdrd - Orbit altitude
-! alt_rate - Orbit altitude rate
+! alt_gdrd - Orbital altitude
+! alt_rate - Orbital altitude rate
 ! range_* - Ocean range (retracked)
+! range_rms_* - Std dev of range
+! range_numval_* - Nr of averaged range measurements
 ! dry_tropo_ecmwf - ECMWF dry tropospheric correction
 ! wet_tropo_ecmwf - ECMWF wet tropo correction
 ! wet_tropo_rad - Radiometer wet tropo correction
@@ -50,22 +52,29 @@ program rads_gen_s3
 ! inv_bar_mog2d - MOG2D
 ! ssb_cls_* - SSB
 ! swh_* - Significant wave height
-! sig0_* - Sigma0
+! swh_rms_* - Std dev of SWH
+! sig0_* - Sigma0 (not corrected for attenuation ... will be done in rads_fix_s3)
+! sig0_rms_* - Std dev of sigma0
+! dsig0_atmos_* - Atmospheric attenuation of sigma0 (not _plrm)
 ! wind_speed_alt_* - Altimeter wind speed (not _c)
 ! wind_speed_rad - Radiometer wind speed
 ! wind_speed_ecmwf_u - ECMWF wind speed (U)
 ! wind_speed_ecmwf_v - ECMWF wind speed (V)
-! range_rms_* - Std dev of range
-! range_numval_* - Nr of averaged range measurements
-! topo_dtm2000 - Bathymetry
+! tide_ocean/load_got48 - GOT4.8 ocean and load tide
+! tide_ocean/load_fes04 - FES2004 ocean  and loadtide
+! tide_pole - Pole tide
+! tide_solid - Solid earth tide
+! topo_ace2 - ACE2 topography
+! geoid_egm2008 - EGM2008 geoid
+! mss_cnescls11 - CNES/CLS11 mean sea surface
+! mss_dtu10 - DTU10 mean sea surface
 ! tb_238 - Brightness temperature (23.8 GHz)
 ! tb_365 - Brightness temperature (36.5 GHz)
 ! flags, flags_plrm - Engineering flags
-! swh_rms_* - Std dev of SWH
-! sig0_rms_* - Std dev of sigma0
-! off_nadir_angle2_wf_ku - Mispointing from waveform squared
+! off_nadir_angle2_wf_* - Mispointing from waveform squared (not _c)
 ! rad_liquid_water - Liquid water content
 ! rad_water_vapor - Water vapor content
+! ssha_* - Sea surface height anomaly (not _c)
 !
 ! Extensions _* are:
 ! _ku:      Ku-band retracked from SAR
@@ -179,6 +188,9 @@ do
 ! Determine L2 processing version
 
 	call nfs(nf90_get_att(ncid,nf90_global,'references',arg))
+
+! Store input file name
+
 	i = index(infile, '/', .true.) + 1
 	P%original = trim(infile(i:)) // ' (' // arg // ')'
 
@@ -233,7 +245,6 @@ do
 	call cpy_var ('range_ocean_01_ku','range_ku')
 	call cpy_var ('range_ocean_01_plrm_ku','range_ku_plrm')
 	call cpy_var ('range_ocean_01_c','range_c')
-! Add PLRM ranges?
 ! Add zero or meas altitude tropo measurements?
 	call cpy_var ('mod_dry_tropo_cor_meas_altitude_01', 'dry_tropo_ecmwf')
 	call cpy_var ('rad_wet_tropo_cor_01_ku', 'wet_tropo_rad')
@@ -291,15 +302,18 @@ do
 	call cpy_var ('sig0_ocean_rms_01_ku','sig0_rms_ku')
 	call cpy_var ('sig0_ocean_rms_01_plrm_ku','sig0_rms_ku_plrm')
 	call cpy_var ('sig0_ocean_rms_01_c','sig0_rms_c')
+	! In case of SAR, there is no estimated attitude, so we rely on the PLRM values.
+	! It may not be good to use these for editing (?)
 	call cpy_var ('corrected_off_nadir_angle_wf_ocean_01_ku corrected_off_nadir_angle_wf_ocean_01_plrm_ku AND', &
 		'off_nadir_angle2_wf_ku')
 	call cpy_var ('off_nadir_angle_rms_01_ku off_nadir_angle_rms_01_plrm_ku AND', 'off_nadir_angle2_wf_rms_ku')
 	call cpy_var ('off_nadir_pitch_angle_pf_01', 'attitude_pitch')
 	call cpy_var ('off_nadir_roll_angle_pf_01', 'attitude_roll')
+	call cpy_var ('off_nadir_yaw_angle_pf_01', 'attitude_yaw')
 	call cpy_var ('atm_cor_sig0_01_ku', 'dsig0_atmos_ku')
 	call cpy_var ('atm_cor_sig0_01_c', 'dsig0_atmos_c')
 	call cpy_var ('rad_liquid_water_01_ku', 'liquid_water_rad')
-	call cpy_var ('rad_wet_tropo_cor_01_ku', 'water_vapor_rad')
+	call cpy_var ('rad_water_vapor_01_ku', 'water_vapor_rad')
 	call cpy_var ('ssha_01_ku', 'ssha')
 	call cpy_var ('ssha_01_plrm_ku', 'ssha_plrm')
 

@@ -659,7 +659,6 @@ LDFLAGS
 FCFLAGS
 FC
 nf_config
-GIT_INDEX
 CONFIGURE_OPTIONS
 target_os
 target_vendor
@@ -2248,22 +2247,6 @@ if ! test "x$enable_devel" = "xyes" ; then
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_devel" >&5
 $as_echo "$enable_devel" >&6; }
-
-# -----------------------------------------------------------------
-# Are you a git repository?
-# -----------------------------------------------------------------
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether this is a git repository" >&5
-$as_echo_n "checking whether this is a git repository... " >&6; }
-if test -f .git/index ; then
-	GIT_INDEX='../.git/index'
-	have_git='yes'
-else
-	GIT_INDEX=''
-	have_git='no'
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_git" >&5
-$as_echo "$have_git" >&6; }
-
 
 # -----------------------------------------------------------------
 # Default settings come from nf-config
