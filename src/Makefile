@@ -16,7 +16,7 @@
 include ../config.mk
 
 # Include file
-INCLUDES= config.f90 rads_version.f90
+INCLUDES= config.f90
 
 # Objects
 OBJS1   = rads_time.o rads_misc.o rads_grid.o rads_geo.o rads_math.o rads_netcdf.o xmlparse.o
@@ -76,14 +76,11 @@ radsxogen:		spline.o
 config.f90:	../config.mk
 	printf "character(len=rads_naml), parameter :: radsdataroot = '%s'\n" $(datadir) > $@
 	printf "logical, parameter :: little_endian = .%s.\n" $(LITTLE_ENDIAN) >> $@
+	printf "character(len=rads_varl), parameter :: rads_version_id = '%s'\n" $(PACKAGE_VERSION) >> $@
 
 rads-config:	rads-config.in
 	@echo "Error: Need to run configure in main directory first"
 	@exit 1
-
-rads_version.f90:	$(GIT_INDEX)
-	printf "character(len=rads_varl), parameter :: rads_version_id = '%s'\n" \
-	`if test -f ../.git/index; then git describe --tags; else echo "$(PACKAGE_VERSION)"; fi` > $@
 
 #-----------------------------------------------------------------------
 # How to create the library

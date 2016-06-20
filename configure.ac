@@ -19,7 +19,7 @@
 # -----------------------------------------------------------------
 # Define and show package version
 # -----------------------------------------------------------------
-AC_INIT([RADS], [4.2.3], [remko@altimetrics.com])
+AC_INIT([RADS], [4.2.4], [remko@altimetrics.com])
 AC_PREREQ([2.67])
 AC_MSG_NOTICE([AC_PACKAGE_NAME, version AC_PACKAGE_VERSION])
 
@@ -69,20 +69,6 @@ if ! test "x$enable_devel" = "xyes" ; then
 	enable_devel=no
 fi
 AC_MSG_RESULT([$enable_devel])
-
-# -----------------------------------------------------------------
-# Are you a git repository?
-# -----------------------------------------------------------------
-AC_MSG_CHECKING([whether this is a git repository])
-if test -f .git/index ; then
-	GIT_INDEX='../.git/index'
-	have_git='yes'
-else
-	GIT_INDEX=''
-	have_git='no'
-fi
-AC_MSG_RESULT([$have_git])
-AC_SUBST(GIT_INDEX)
 
 # -----------------------------------------------------------------
 # Default settings come from nf-config
