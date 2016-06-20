@@ -108,13 +108,15 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-real(eightbytereal) :: sig0_ku(n), sig0_c(n), atten_ku(n), atten_c(n), wind(n), tb_238(n), tb_365(n), &
-	wet_tropo_ecmwf(n), wet_tropo_rad(n), range_ku(n), range_ku_plrm(n), range_c(n), ssha(n), ssha_plrm(n)
+real(eightbytereal) :: sig0_ku(n), sig0_ku_plrm(n), sig0_c(n), atten_ku(n), atten_c(n), tb_238(n), tb_365(n), &
+	wet_tropo_ecmwf(n), wet_tropo_rad(n), range_ku(n), range_ku_plrm(n), range_c(n), ssha(n), ssha_plrm(n), &
+	wind_speed_alt(n), wind_speed_alt_plrm(n)
 integer(fourbyteint) :: i
 
 call log_pass (P)
 
 call rads_get_var (S, P, 'sig0_ku', sig0_ku, .true.)
+call rads_get_var (S, P, 'sig0_ku_plrm', sig0_ku_plrm, .true.)
 call rads_get_var (S, P, 'sig0_c', sig0_c, .true.)
 call rads_get_var (S, P, 'dsig0_atmos_ku', atten_ku, .true.)
 call rads_get_var (S, P, 'dsig0_atmos_c', atten_c, .true.)
@@ -126,7 +128,8 @@ call rads_get_var (S, P, 'wet_tropo_ecmwf', wet_tropo_ecmwf, .true.)
 
 if (lsig0) then
 	sig0_ku = sig0_ku + dsig0_ku
-	sig0_c  = sig0_c  + dsig0_c
+	sig0_ku_plrm = sig0_ku_plrm + dsig0_ku
+	sig0_c = sig0_c + dsig0_c
 endif
 
 ! Adjust brightness temperatures for bias
@@ -154,12 +157,16 @@ if (lsig0) then
 	where (isnan_(atten_ku)) atten_ku = 0.118d0 - 0.456d0 * wet_tropo_ecmwf
 	where (isnan_(atten_c))  atten_c  = 0.09d0
 	sig0_ku = sig0_ku + atten_ku
-	sig0_c  = sig0_c  + atten_c
+	sig0_ku_plrm = sig0_ku_plrm + atten_ku
+	sig0_c = sig0_c + atten_c
 endif
 
 ! Adjust wind speed
 
-if (lwind) wind = wind_ecmwf (sig0_ku)
+if (lwind) then
+	wind_speed_alt = wind_ecmwf (sig0_ku)
+	wind_speed_alt_plrm = wind_ecmwf (sig0_ku_plrm)
+endif
 
 ! Update ranges
 
@@ -188,7 +195,10 @@ if (ltb) then
 	call rads_put_var (S, P, 'tb_238', tb_238)
 	call rads_put_var (S, P, 'tb_365', tb_365)
 endif
-if (lwind) call rads_put_var (S, P, 'wind_speed_alt', wind)
+if (lwind) then
+	call rads_put_var (S, P, 'wind_speed_alt', wind_speed_alt)
+	call rads_put_var (S, P, 'wind_speed_alt_plrm', wind_speed_alt_plrm)
+endif
 if (lmwr) call rads_put_var (S, P, 'wet_tropo_rad', wet_tropo_rad)
 if (lrange) then
 	call rads_put_var (S, P, 'range_ku', range_ku - drange)
