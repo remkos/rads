@@ -1299,7 +1299,6 @@ Global RADS configuration file
 <var name="ssb_cls" field="1502" sat="2a 3a 3b j1 j2 j3 n1 tx">
 	<long_name>CLS non-parametric sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
-	<parameters sat="3a 3b">MainAuxSSBTable_J2_2012.nc?ssb_ku -xwind_speed_alt</parameters>
 	<source>CLS</source>
 	<units>m</units>
 	<limits>-1 1</limits>
@@ -1308,6 +1307,12 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
+	<if sat="3a 3b">
+		<long_name>Tran et al. 2012 non-parametric sea state bias</long_name>
+		<parameters>MainAuxSSBTable_J2_2012.nc?ssb_ku -xwind_speed_alt</parameters>
+		<source>Tran et al., 2012</source>
+		<comment edit="append">This model is actually based on Jason-2 data and not Sentinel-3, and will be replaced later.</comment>
+	</if>
 </var>
 <var name="ssb_csr" field="1503" sat="tx">
 	<long_name>CSR sea state bias</long_name>
@@ -1340,11 +1345,8 @@ Global RADS configuration file
 </var>
 <var name="ssb_cls_c" field="1505" sat="2a 3a 3b j1 j2 j3">
 	<long_name>CLS non-parametric sea state bias (C-band)</long_name>
-	<long_name sat="3a 3b">Tran et al. 2012 non-parametric sea state bias (C-band)</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
-	<parameters sat="3a 3b">MainAuxSSBTable_J2_2012.nc?ssb_c -xwind_speed_alt</parameters>
 	<source>CLS</source>
-	<source sat="3a 3b">Tran et al., 2012</source>
 	<units>m</units>
 	<limits>-1 1</limits>
 	<plot_range>-0.30 0.05</plot_range>
@@ -1352,7 +1354,12 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>This sea state bias correction is added to C-band range when determining ionospheric correction.</comment>
-	<comment sat="3a 3b" edit="append">This model is actually based on Jason-2 data and not Sentinel-3, and will be replaced later.</comment>
+	<if sat="3a 3b">
+		<long_name>Tran et al. 2012 non-parametric sea state bias (C-band)</long_name>
+		<parameters>MainAuxSSBTable_J2_2012.nc?ssb_c -xwind_speed_alt</parameters>
+		<source>Tran et al., 2012</source>
+		<comment edit="append">This model is actually based on Jason-2 data and not Sentinel-3, and will be replaced later.</comment>
+	</if>
 </var>
 <var name="ssb_cls_mle3" field="1512" sat="j2 j3">
 	<long_name>CLS non-parametric sea state bias (MLE3)</long_name>
