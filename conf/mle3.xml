@@ -17,22 +17,24 @@ Jason-2 and Jason-3: Use MLE3 data (instead of default MLE4)
 -->
 
 <if sat="j2 j3">
-	<alias name="range" field="6">range_ku_mle3</alias>
-	<alias name="iono" field="9">iono_alt_smooth_mle3</alias>
-	<alias name="ssb" field="15">ssb_cls_mle3</alias>
-	<alias name="swh" field="17">swh_ku_mle3</alias>
-	<alias name="sig0" field="18">sig0_ku_mle3</alias>
-	<alias name="wind_speed" field="19">wind_speed_alt_mle3</alias>
-	<alias name="range_rms" field="20">range_rms_ku_mle3</alias>
-	<alias name="range_numval" field="21">range_numval_ku_mle3</alias>
-	<alias name="swh_rms" field="28">swh_rms_ku_mle3</alias>
-	<alias name="sig0_rms" field="29">sig0_rms_ku_mle3</alias>
+	<alias name="range">range_ku_mle3</alias>
+	<alias name="iono">iono_alt_smooth_mle3</alias>
+	<alias name="ssb">ssb_cls_mle3</alias>
+	<alias name="swh">swh_ku_mle3</alias>
+	<alias name="sig0">sig0_ku_mle3</alias>
+	<alias name="wind_speed">wind_speed_alt_mle3</alias>
+	<alias name="range_rms">range_rms_ku_mle3</alias>
+	<alias name="range_numval">range_numval_ku_mle3</alias>
+	<alias name="swh_rms">swh_rms_ku_mle3</alias>
+	<alias name="sig0_rms">sig0_rms_ku_mle3</alias>
 	<var name="sla">
+		<long_name>sea level anomaly (MLE3)</long_name>
 		<data action="delete">ref_frame_offset SUB</data>
 		<data action="append">ref_frame_offset_mle3 SUB</data>
 		<quality_flag action="delete">flags</quality_flag>
 		<quality_flag action="append">flags_mle3</quality_flag>
 		<quality_flag action="delete">attitude</quality_flag> <!--Because this is based on MLE4-->
+		<comment>Sea level determined from satellite altitude - MLE3 range - all (MLE3) altimetric corrections</comment>
 	</var>
 	<var name="ssha">
 		<long_name>sea surface height anomaly (MLE3)</long_name>

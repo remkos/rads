@@ -77,7 +77,20 @@ Global RADS configuration file
 	<quality_flag>swh sig0 range_rms range_numval flags peakiness</quality_flag>
 	<comment>Sea level determined from satellite 20-Hz altitude - 20-Hz range - all altimetric corrections</comment>
 </var>
-<var name="sla_plrm" sat="3a">
+<var name="sla_mle3" sat="j2 j3">
+	<long_name>sea level anomaly (MLE3)</long_name>
+	<standard_name>sea_surface_height_above_sea_level</standard_name>
+	<units>m</units>
+	<limits>-3 3</limits>
+	<plot_range>-0.4 0.4</plot_range>
+	<format>f8.4</format>
+	<compress>int2 1e-4</compress>
+	<data>alt range_ku_mle3 SUB dry_tropo SUB wet_tropo SUB iono_alt_smooth_mle3 SUB inv_bar SUB tide_solid SUB tide_ocean SUB tide_load SUB
+		tide_pole SUB ssb_cls_mle3 SUB mss SUB ref_frame_offset_mle3 SUB</data>
+	<quality_flag>swh_ku_mle3 sig0_ku_mle3 range_rms_ku_mle3 range_numval_ku_mle3 flags_mle3 swh_rms_ku_mle3 sig0_rms_ku_mle3</quality_flag>
+	<comment>Sea level determined from satellite altitude - MLE3 range - all (MLE3) altimetric corrections</comment>
+</var>
+<var name="sla_plrm" sat="3a 3b">
 	<long_name>sea level anomaly (PLRM)</long_name>
 	<standard_name>sea_surface_height_above_sea_level</standard_name>
 	<units>m</units>
@@ -823,6 +836,18 @@ Global RADS configuration file
 	<limits>-0.6 0.0</limits>
 	<plot_range>-0.4 0.0</plot_range>
 	<data>wet_tropo_rad_enh</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
+</var>
+<var name="wet_tropo_comp" field="811" sat="3a 3b">
+	<long_name>composite wet tropospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
+	<source>radiometer and external model and radiometer data</source>
+	<units>m</units>
+	<limits>-0.6 0.0</limits>
+	<plot_range>-0.4 0.0</plot_range>
+	<data>wet_tropo_comp</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
@@ -2955,7 +2980,7 @@ Global RADS configuration file
 <var name="dsig0_atmos_ku" field="3203" sat="2a 3a 3b c2 e1 e2 j1 j2 j3 n1 pn tx">
 	<long_name>Ku-band backscatter coefficient correction due to atmosphere/attitude</long_name>
 	<units>dB</units>
-	<plot_range>0 1</plot_range>
+	<plot_range>0 0.5</plot_range>
 	<data>dsig0_atmos_ku</data>
 	<default>0.22</default>
 	<format>f4.2</format>
