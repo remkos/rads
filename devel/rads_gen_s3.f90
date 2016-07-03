@@ -249,6 +249,7 @@ do
 	call cpy_var ('mod_dry_tropo_cor_meas_altitude_01', 'dry_tropo_ecmwf')
 	call cpy_var ('rad_wet_tropo_cor_01_ku', 'wet_tropo_rad')
 	call cpy_var ('mod_wet_tropo_cor_meas_altitude_01', 'wet_tropo_ecmwf')
+	call cpy_var ('comp_wet_tropo_cor_01_ku', 'wet_tropo_comp')
 	call cpy_var ('iono_cor_alt_01_ku', 'iono_alt')
 	call cpy_var ('iono_cor_alt_01_plrm_ku', 'iono_alt_plrm')
 	if (.not.nrt) call cpy_var ('iono_cor_gim_01_ku', 'iono_gim')
@@ -292,10 +293,8 @@ do
 	call cpy_var ('odle_01', 'topo_ace2')
 	call cpy_var ('tb_238_01','tb_238')
 	call cpy_var ('tb_365_01','tb_365')
-	a = flags
-	call new_var ('flags', a)
-	a = flags_plrm
-	call new_var ('flags_plrm', a)
+	call new_var ('flags', dble(flags))
+	call new_var ('flags_plrm', dble(flags_plrm))
 	call cpy_var ('swh_ocean_rms_01_ku','swh_rms_ku')
 	call cpy_var ('swh_ocean_rms_01_plrm_ku','swh_rms_ku_plrm')
 	call cpy_var ('swh_ocean_rms_01_c','swh_rms_c')

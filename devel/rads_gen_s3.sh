@@ -2,7 +2,7 @@
 org=3a.${1}0
 fix=3a.${1}1
 rm -rf $RADSROOT/data/${org} $RADSROOT/data/${fix}
-ls c???/*.nc | rads_gen_s3 -S${org}
+find c??? -name "*.nc" | sort | rads_gen_s3 -S${org}
 cp -pr $RADSROOT/data/${org} $RADSROOT/data/${fix}
 
 # Fix erroneous COG on earlier data
@@ -16,7 +16,8 @@ rads_add_ssb -S${fix} --ssb=ssb_cls_plrm
 # Recompute dual freq iono and smooth it
 rads_add_dual -S${fix} --recompute
 rads_add_dual -S${fix} --recompute --ext=plrm
-# Add POE orbit
+# Add MOE (and POE) orbit
+rads_add_orbit -S${fix} -Valt_cnes --dir=moe_doris
 rads_add_orbit -S${fix} -Valt_cnes --dir=poe
 # General geophysical corrections
 rads_add_common -S${fix}
