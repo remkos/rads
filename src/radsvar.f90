@@ -234,8 +234,8 @@ if (round) call round_up (bin)	! Round if requested
 if (info%nctype /= nf90_real .and. info%nctype /= nf90_double .and. bin <= info%scale_factor) then
 	bin = info%scale_factor
 endif
-rng(1) = (nint(rng(1)/bin)-0.5d0)*bin
-rng(2) = (nint(rng(2)/bin)+0.5d0)*bin
+rng(1) = (nint(rng(1)/bin)-0.49d0)*bin
+rng(2) = (nint(rng(2)/bin)+0.51d0)*bin
 end subroutine adjust_range
 
 subroutine list (type, var)
