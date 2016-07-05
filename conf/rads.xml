@@ -3871,11 +3871,18 @@ Global RADS configuration file
 	<xover_params>0.05 0.05</xover_params>
 	<phase name="a">
 		<mission>Multi-disciplinary Phase</mission>
-		<cycles>0 99</cycles>
+		<cycles>0 36</cycles>
 		<repeat>35.0 1002</repeat>
 		<ref_pass>2013-03-14T06:04:39 0.13 1 1</ref_pass>
 		<start_time>2013-02-25</start_time>
 	</phase>
+	<phase name="b">
+		<mission>Drifting Phase</mission>
+		<cycles>100 999</cycles>
+		<repeat>35.0 1002</repeat>
+		<ref_pass>2016-07-04T13:18:09 251.07 100 1</ref_pass>
+		<start_time>2016-06-29</start_time>
+	</phase>	
 </if>
 
 <if sat="ss">
