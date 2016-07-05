@@ -126,7 +126,7 @@ do
 
 ! Check if input is GDR-D
 
-	if (index(infile,'_2PT') <= 0) then
+	if (index(infile,'_2PT') <= 0 && index(infile,'_2Pd') <= 0) then
 		call log_string ('Error: this is not GDR-T', .true.)
 		cycle
 	endif
