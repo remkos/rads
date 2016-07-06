@@ -80,6 +80,7 @@ use netcdf
 
 integer(fourbyteint) :: ios, i, j
 character(len=rads_cmdl) :: infile, arg
+character(len=1) :: phasenm = ''
 
 ! Header variables
 
