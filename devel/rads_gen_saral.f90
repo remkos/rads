@@ -155,7 +155,8 @@ do
 
 	if (cyclenr < 100) then
 		phasenm = 'a'
-	else
+	else ! Phase B GDRs start with cycle 100, but have been renumbered to start with cycle 36
+		cyclenr = cyclenr - 64
 		phasenm = 'b'
 	endif
 	if (S%phase%name /= phasenm) S%phase => rads_get_phase (S, phasenm)

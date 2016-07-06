@@ -3878,8 +3878,8 @@ Global RADS configuration file
 	</phase>
 	<phase name="b">
 		<mission>Drifting Phase</mission>
-		<cycles>100 999</cycles>
-		<repeat>35.0 1002</repeat>
+		<cycles>36 99</cycles>
+		<repeat>35.0 1002 -2.36</repeat>
 		<ref_pass>2016-07-04T13:18:09 251.07 100 1</ref_pass>
 		<start_time>2016-07-04T12:00:00</start_time>
 	</phase>
