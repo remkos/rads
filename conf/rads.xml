@@ -3881,7 +3881,7 @@ Global RADS configuration file
 		<cycles>100 999</cycles>
 		<repeat>35.0 1002</repeat>
 		<ref_pass>2016-07-04T13:18:09 251.07 100 1</ref_pass>
-		<start_time>2016-06-29</start_time>
+		<start_time>2016-07-04</start_time>
 	</phase>	
 </if>
 
