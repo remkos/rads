@@ -151,10 +151,11 @@ do
 		cycle
 	endif
 
-! Update phase name if required                                                                                                                       
+! Update phase name if required
+
 	if (cyclenr < 100) then
 		phasenm = 'a'
-	else if (cyclenr < 999) then
+	else
 		phasenm = 'b'
 	endif
 	if (S%phase%name /= phasenm) S%phase => rads_get_phase (S, phasenm)
