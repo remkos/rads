@@ -665,7 +665,7 @@ end subroutine rads_init_cmd_1d
 ! Initialize empty rads_sat struct
 !
 ! SYNOPSIS
-pure subroutine rads_init_sat_struct (S)
+subroutine rads_init_sat_struct (S)
 type(rads_sat), intent(inout) :: S
 !
 ! PURPOSE
@@ -675,7 +675,7 @@ type(rads_sat), intent(inout) :: S
 ! ARGUMENTS
 ! S        : Satellite/mission dependent structure
 !****-------------------------------------------------------------------
-! gfortran 4.4.1 segfaults on the next line if this routine is made pure or elemental,
+! gfortran 4.3.4 to 4.4.1 segfault on the next line if this routine is made pure or elemental,
 ! so please leave it as a normal routine.
 S = rads_sat ('', '', '', '', '', null(), '', 1d0, (/13.8d0, nan/), 90d0, nan, nan, nan, 1, 1, rads_noerr, &
 	0, 0, 0, 0, 0, .false., '', 0, null(), null(), null(), null(), null(), null(), null(), null())
@@ -686,7 +686,7 @@ end subroutine rads_init_sat_struct
 ! Free all allocated memory from rads_sat struct and reinitialise
 !
 ! SYNOPSIS
-pure subroutine rads_free_sat_struct (S)
+subroutine rads_free_sat_struct (S)
 type(rads_sat), intent(inout) :: S
 !
 ! PURPOSE
