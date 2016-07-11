@@ -53,6 +53,7 @@ integer(fourbyteint) :: nr, minnr=2, cycle, pass, i, &
 real(eightbytereal), allocatable :: lat_w(:)
 real(eightbytereal) :: sini, step=1d0, x0, y0, res(2)=(/3d0,1d0/), start_time
 type :: stat
+	integer(fourbyteint) :: nr
 	real(eightbytereal) :: wgt, mean, sum2, xmin, xmax
 end type
 type(stat), allocatable :: box(:,:,:), tot(:)
@@ -263,6 +264,7 @@ subroutine update_stat (box, z)
 type(stat), intent(inout) :: box
 real(eightbytereal), intent(in) :: z
 if (isnan_(z)) return
+box%nr   = box%nr   + 1
 box%wgt  = box%wgt  + 1d0
 box%mean = box%mean + z
 box%sum2 = box%sum2 + z*z
@@ -285,21 +287,22 @@ if (nr < minnr) then
 endif
 
 ! Init global stats
-tot = stat(0d0, 0d0, 0d0, nan, nan)
+tot = stat(0, 0d0, 0d0, 0d0, nan, nan)
 
 ! Cycle trough all boxes and determine overall weighted mean
 do ky=1,ny
 	do kx=1,nx
-		if (box(1,kx,ky)%wgt == 0d0) cycle ! Skip empty boxes
+		if (box(0,kx,ky)%nr == 0) cycle ! Skip empty boxes
 
 		! Determine the weight
 		if (wmode == 0) then
-			w = lat_w(ky) / box(1,kx,ky)%wgt
+			w = lat_w(ky) / box(0,kx,ky)%wgt
 		else
 			w = lat_w(ky)
 		endif
 
 		! Update overall statistics
+		tot(:)%nr   = tot(:)%nr   + box(:,kx,ky)%nr
 		tot(:)%wgt  = tot(:)%wgt  + w * box(:,kx,ky)%wgt
 		tot(:)%mean = tot(:)%mean + w * box(:,kx,ky)%mean
 		tot(:)%sum2 = tot(:)%sum2 + w * box(:,kx,ky)%sum2
@@ -311,11 +314,11 @@ enddo
 ! Divide by total weight to compute overall weighted mean and standard deviation
 
 tot%mean = tot%mean / tot%wgt
-if (nr > 1) then
-	tot%sum2 = sqrt(max(tot%sum2 / tot%wgt - tot%mean*tot%mean, 0d0) * nr / (nr - 1d0)) ! max() avoids tiny negatives
-else
+where (tot%nr > 1)
+	tot%sum2 = sqrt(max(tot%sum2 / tot%wgt - tot%mean*tot%mean, 0d0) * tot%nr / (tot%nr - 1d0)) ! max() avoids tiny negatives
+else where
 	tot%sum2 = nan
-endif
+end where
 
 ! Write out statistics in ASCII
 if (ascii) then
@@ -382,7 +385,7 @@ end subroutine output_stat
 ! Initialise statistics
 
 subroutine init_stat
-box = stat(0d0, 0d0, 0d0, nan, nan)
+box = stat(0, 0d0, 0d0, 0d0, nan, nan)
 nr = 0
 start_time = nan
 end subroutine init_stat
