@@ -223,9 +223,7 @@ write (*,1300)
 '  -f, --force               Force comparison, even when missions are not considered collinear'/ &
 '  -o, --output [FILENAME]   Create netCDF output by pass (default is ascii output to stdout).'/ &
 '                            Optionally specify FILENAME including "#", to be replaced by the pass'/ &
-'                            number. Default is "radscolin_p#.nc"'/ &
-'  --diff                    Compute the collinear difference between the first and second half of'/ &
-'                            selected tracks')
+'                            number. Default is "radscolin_p#.nc"')
 stop
 end subroutine synopsis
 
