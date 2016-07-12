@@ -134,7 +134,7 @@ endif
 ! load wind or sigma0 depending on the x-coordinate of the SSB grid, and load swh always
 
 if (lssb) then
-	if (lwind) then
+	if (lwind .and. xvar == 'wind_speed_alt') then
 		xval = wind
 	else
 		call rads_get_var (S, P, xvar, xval, .true.)
