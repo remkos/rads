@@ -96,33 +96,29 @@ do
 	call nfs(nf90_get_att(ncid1,nf90_global,'cycle_number',cycle_in))
 	call nfs(nf90_get_att(ncid1,nf90_global,'product_name',product_name))
 
-! We have pass number 771 on input ... this belongs to the next cycle
+! We may have pass number 771 on input ... this belongs to the next cycle
 
 	call next_cycle (cycle_in, pass_in)
 
-! For first file: set cycle/pass number to input ones
+! Set cycle/pass number to input ones (applies up to rollover to next pass)
 
-	if (pass_number == 0) then
-		pass_number = pass_in
-		cycle_number = cycle_in
-	endif
+	pass_number = pass_in
+	cycle_number = cycle_in
 
-! Look if files rolled/rolls over to new pass
+! Split the pass where they roll over to new pass
 
 	i0 = 1
-	if (cycle_in == cycle_number .and. pass_in == pass_number) then
-		do i = 2,nrec
-			if (lat(i) > lat(i-1) .neqv. modulo(pass_number,2) == 1) then
-				call copyfile (i0, i-1)
-				i0 = i
-				pass_number = pass_number + 1
-				call next_cycle (cycle_number, pass_number)
-			endif
-		enddo
-	else
-		pass_number = pass_in
-		cycle_number = cycle_in
-	endif
+	do i = 2,nrec
+		if (lat(i) > lat(i-1) .neqv. modulo(pass_number,2) == 1) then
+			call copyfile (i0, i-1)
+			i0 = i
+			pass_number = pass_number + 1
+			call next_cycle (cycle_number, pass_number)
+		endif
+	enddo
+
+! Copy the remaining bit of the input file
+
 	call copyfile (i0, nrec)
 	call nfs(nf90_close(ncid1))
 	deallocate (time, lat)
@@ -136,7 +132,7 @@ contains
 subroutine next_cycle (cycle, pass)
 integer(fourbyteint), intent(inout) :: cycle, pass
 if (pass > 770) then
-	cycle = cycle + pass / 770
+	cycle = cycle + (pass-1) / 770
 	pass = modulo(pass-1,770) + 1
 endif
 end subroutine next_cycle
