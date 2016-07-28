@@ -23,11 +23,12 @@
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
 
+# For the time being: only process NRT data
 days=2
-types="nrt stc ntc"
+#types="nrt stc ntc"
 types="nrt"
 
-# Process only NRT/STC/NTC data for the last three days (including current)
+# Process only NRT data for the last three days (including current)
 d0=`date -u -v -${days}d +%Y%m%d 2>&1` || d0=`date -u --date="${days} days ago" +%Y%m%d`
 
 for type in ${types}; do
@@ -51,9 +52,6 @@ for type in ${types}; do
 	date >  $log 2>&1
 	rads_gen_s3 -S${fix} --ymd=$d0 < $lst >> $log 2>&1
 
-# Do the patches to fix directory                                                                                                               
-# Fix erroneous COG on earlier data
-	rads_fix_s3     -S${fix} --ymd=20160401000000,20160424230055 --range >> $log 2>&1
 # Make the remaining fixes
 	rads_fix_s3     -S${fix} --all >> $log 2>&1
 # Recompute SSB
