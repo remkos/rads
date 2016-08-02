@@ -32,12 +32,23 @@ use rads_netcdf
 use typesizes
 use netcdf
 
+! Scruct to store input file information
+
+type :: fileinfo
+	integer(fourbyteint) :: ncid, rec0, rec1, nrec
+	real(eightbytereal) :: time0, time1
+	character(len=rads_cmdl) :: filenm
+end type
+type(fileinfo) :: fin(20)
+
+! General variables
+
 character(len=rads_cmdl) :: arg, filenm, dimnm, destdir, product_name
 character(len=rads_strl) :: exclude_list = ','
 integer(fourbyteint), parameter :: mpass = 254 * 500
 real(eightbytereal), parameter :: sec2000 = 473299200d0
 integer(fourbyteint) :: i0, i, ncid1, nrec, ios, varid, n_ignore = 0, nr_passes = 770, &
-	pass_number = 0, cycle_number = 0, pass_in, cycle_in
+	pass_number = 0, cycle_number = 0, pass_in, cycle_in, last_time = 0, nfile = 0
 real(eightbytereal), allocatable :: time(:), lat(:)
 logical :: backsearch = .false.
 
@@ -74,13 +85,8 @@ enddo
 ! Open the input file(s)
 
 do
-
-! Read file name
-
-610 format ('Combining : ',a)
 	read (*,'(a)',iostat=ios) filenm
-	if (ios /= 0) stop
-	write (*,610) trim(filenm)
+	if (ios /= 0) exit
 	call nfs(nf90_open(filenm,nf90_nowrite,ncid1))
 
 ! Read the time dimension
@@ -100,29 +106,56 @@ do
 
 	call next_cycle (cycle_in, pass_in)
 
-! Set cycle/pass number to input ones (applies up to rollover to next pass)
+! Write out buffer it we are in a new pass
 
-	pass_number = pass_in
-	cycle_number = cycle_in
+	if (pass_in /= pass_number .or. cycle_in /= cycle_number) then
+		call write_output (0)
+		pass_number = pass_in
+		cycle_number = cycle_in
+	endif
+	nfile = nfile + 1
 
-! Split the pass where they roll over to new pass
+! First advance to beyond the last time tag
 
 	i0 = 1
-	do i = 2,nrec
+	do while (nint(time(i0)) <= last_time)
+		i0 = i0 + 1
+	enddo
+
+! Split the pass where they roll over to a new pass
+
+	do i = max(2,i0),nrec
 		if (lat(i) > lat(i-1) .neqv. modulo(pass_number,2) == 1) then
-			call copyfile (i0, i-1)
+			fin(nfile)%ncid = ncid1
+			fin(nfile)%rec0 = i0
+			fin(nfile)%rec1 = i-1
+			fin(nfile)%nrec = nrec
+			fin(nfile)%time0 = time(i0)
+			fin(nfile)%time1 = time(i-1)
+			fin(nfile)%filenm = filenm
+			call write_output (1)
 			i0 = i
 			pass_number = pass_number + 1
 			call next_cycle (cycle_number, pass_number)
 		endif
 	enddo
 
-! Copy the remaining bit of the input file
+! Assign the remaining bit of the input file to the next output file
 
-	call copyfile (i0, nrec)
-	call nfs(nf90_close(ncid1))
+	fin(nfile)%ncid = ncid1
+	fin(nfile)%rec0 = i0
+	fin(nfile)%rec1 = nrec
+	fin(nfile)%nrec = nrec
+	fin(nfile)%time0 = time(i0)
+	fin(nfile)%time1 = time(nrec)
+	fin(nfile)%filenm = filenm
+	last_time = nint(time(nrec))
 	deallocate (time, lat)
 enddo
+
+! Dump the remainder of the input files to output
+
+call write_output (0)
 
 contains
 
@@ -138,29 +171,30 @@ endif
 end subroutine next_cycle
 
 !***********************************************************************
-! Copy the contents of the input file to a new output file
+! Write whatever has been buffered so far to an output file
 
-subroutine copyfile (rec0, rec1)
-integer(fourbyteint), intent(inout) :: rec0
-integer(fourbyteint), intent(in) :: rec1
-integer(fourbyteint) :: nrec,ncid2,varid,varid2,xtype,ndims,dimids(2),natts,i,nvars,idxin(2)=1,idxut(2)=1,dimlen
+subroutine write_output (nfile_left)
+integer(fourbyteint), intent(in) :: nfile_left
+integer(fourbyteint) :: nrec,ncid1,ncid2,varid1,varid2,xtype,ndims,dimids(2),natts,i,n,nvars,idxin(2)=1,idxut(2)=1,nout
 character(len=rads_naml) :: dirnm,prdnm,outnm,attnm,varnm
-real(eightbytereal) :: time2(2)
-real(eightbytereal), allocatable :: time1(:), darr1(:)
+real(eightbytereal), allocatable :: darr1(:)
 integer(fourbyteint), allocatable :: iarr1(:)
 logical :: exist
 character(len=26) :: date(2)
 
-! Skip empty data chunks
+! How many records are buffered?
 
-if (rec1 < rec0) return
-call nfs(nf90_inquire(ncid1,nvariables=nvars,nattributes=natts))
+nrec = sum(fin(1:nfile)%rec1 - fin(1:nfile)%rec0 + 1)
+
+! Skip if there is nothing left
+
+if (nrec == 0) return
 
 ! Open the output file. Make directory if needed.
 
 605 format (a,'/c',i3.3)
 610 format (a,i3.3,'_',i3.3,a,'.nc')
-620 format ('... Records : ',3i6,' : ',a,1x,a,' - ',a,a)
+620 format (a,' : ',3i6,' : ',a,' - ',a,1x,a,1x,a)
 
 write (dirnm,605) trim(destdir),cycle_number
 inquire (file=dirnm,exist=exist)
@@ -169,84 +203,58 @@ write (prdnm,610) product_name(:15),cycle_number,pass_number,product_name(77:94)
 outnm = trim(dirnm) // '/' // trim(prdnm)
 inquire (file=outnm,exist=exist)
 
+! If exist, then keep the file if the buffer is smaller or equal in size
+! If it is larger, delete the existing file
+
 if (exist) then
-
-! Match up the last time in the existing file with times in the input file
-
-	call nfs(nf90_open(outnm,nf90_write,ncid2))
-	call nfs(nf90_set_fill(ncid2,nf90_nofill,i))
-	call nfs(nf90_inquire_dimension(ncid2,1,len=dimlen))
-	allocate (time1(dimlen))
-	call nfs(nf90_get_var(ncid2,1,time1))
-	if (backsearch) then
-		do while (time1(dimlen) > time(rec0) .and. dimlen > 0)
-			dimlen = dimlen -1
+	call nfs(nf90_open(outnm,nf90_nowrite,ncid2))
+	call nfs(nf90_inquire_dimension(ncid2,1,len=nout))
+	call nfs(nf90_close(ncid2))
+	if (nrec <= nout) then
+		do i = 1, nfile - nfile_left
+			call nfs(nf90_close(fin(i)%ncid))
 		enddo
-	else
-		do while (time(rec0) < time1(dimlen)+0.5d0 .and. rec0 <= rec1)
-			rec0 = rec0 + 1
-		enddo
-	endif
-	nrec = rec1 - rec0 + 1
-	if (nrec <= 0) then
-		call nfs(nf90_close(ncid2))
+		nfile = nfile_left
 		return
 	endif
-	call nfs(nf90_redef(ncid2))
-	if (dimlen > 0) then
-		time2(1) = time1(1)
-	else
-		time2(1) = time(rec0)
-	endif
-	deallocate (time1)
-
-else
+	call system('rm -f '//outnm)
+endif
 
 ! Create a new file
 
-	call nfs(nf90_create(outnm,nf90_write+nf90_nofill,ncid2))
-	call nfs(nf90_set_fill(ncid2,nf90_nofill,i))
-	dimlen = 0
+call nfs(nf90_create(outnm,nf90_write+nf90_nofill,ncid2))
+call nfs(nf90_set_fill(ncid2,nf90_nofill,i))
 
 ! Create the time dimension
 
-	call nfs(nf90_def_dim(ncid2,'time_01',nf90_unlimited,i))
-	time2(1) = time(rec0)
+call nfs(nf90_def_dim(ncid2,'time_01',nrec,i))
 
 ! Copy all the variable definitions and attributes
 
-	varid2 = 0
-	do varid = 0, nvars
-		if (varid > 0) then
-			call nfs(nf90_inquire_variable(ncid1,varid,varnm,xtype,ndims,dimids,natts))
-			! Skip all listed excluded variables, all 20-Hz variables
-			! Skip also all uint variables because the netCDF library doesn't work with them
-			! (they occur only in enhanced_measurements.nc)
-			if (excluded(varnm) .or. ndims > 1 .or. dimids(1) > 1 .or. xtype == nf90_uint) cycle
-			call nfs(nf90_def_var(ncid2,varnm,xtype,dimids(1:ndims),varid2))
-		endif
-		do i = 1,natts
-			call nfs(nf90_inq_attname(ncid1,varid,i,attnm))
-			call nfs(nf90_copy_att(ncid1,varid,attnm,ncid2,varid2))
-		enddo
+ncid1 = fin(1)%ncid
+call nfs(nf90_inquire(ncid1,nvariables=nvars,nattributes=natts))
+varid2 = 0
+do varid1 = 0, nvars
+	if (varid1 > 0) then
+		call nfs(nf90_inquire_variable(ncid1,varid1,varnm,xtype,ndims,dimids,natts))
+		! Skip all listed excluded variables, all 20-Hz variables
+		! Skip also all uint variables because the netCDF library doesn't work with them
+		! (they occur only in enhanced_measurements.nc)
+		if (excluded(varnm) .or. ndims > 1 .or. dimids(1) > 1 .or. xtype == nf90_uint) cycle
+		call nfs(nf90_def_var(ncid2,varnm,xtype,dimids(1:ndims),varid2))
+	endif
+	do i = 1,natts
+		call nfs(nf90_inq_attname(ncid1,varid1,i,attnm))
+		call nfs(nf90_copy_att(ncid1,varid1,attnm,ncid2,varid2))
 	enddo
-endif
-
-! Initialize
-
-nrec = rec1 - rec0 + 1
-idxin(2) = rec0
-idxut(2) = dimlen + 1
-time2(2) = time(rec1)
-call strf1985f(date(1),time(rec0)+sec2000)
-call strf1985f(date(2),time(rec1)+sec2000)
-write (*,620) rec0,rec1,nrec,trim(outnm),date(1:2)
-call strf1985f(date(1),time2(1)+sec2000)
-call strf1985f(date(2),time2(2)+sec2000)
-
-allocate (darr1(nrec),iarr1(nrec))
+enddo
 
 ! Overwrite cycle/pass attributes and product name
+
+call strf1985f(date(1),fin(1)%time0+sec2000)
+call strf1985f(date(2),fin(nfile)%time1+sec2000)
+
+write (*,620) 'Creating',1,nrec,nrec,date(1:2),'>',trim(outnm)
 
 call nfs(nf90_put_att(ncid2,nf90_global,'product_name',prdnm))
 call nfs(nf90_put_att(ncid2,nf90_global,'cycle_number',cycle_number))
@@ -258,25 +266,42 @@ call nfs(nf90_enddef(ncid2))
 
 ! Copy all data elements
 
-varid2 = 0
-do varid = 1,nvars
-	call nfs(nf90_inquire_variable(ncid1,varid,varnm,xtype,ndims,dimids,natts))
-	if (excluded(varnm) .or. ndims > 1 .or. dimids(1) > 1 .or. xtype == nf90_uint) cycle
-	varid2 = varid2 + 1
-	if (xtype == nf90_double) then
-		call nfs(nf90_get_var(ncid1,varid ,darr1,idxin(2:2)))
-		call nfs(nf90_put_var(ncid2,varid2,darr1,idxut(2:2)))
-	else
-		call nfs(nf90_get_var(ncid1,varid ,iarr1,idxin(2:2)))
-		call nfs(nf90_put_var(ncid2,varid2,iarr1,idxut(2:2)))
-	endif
+nout = 0
+do i = 1,nfile
+	call strf1985f(date(1),fin(i)%time0+sec2000)
+	call strf1985f(date(2),fin(i)%time1+sec2000)
+	n = fin(i)%rec1 - fin(i)%rec0 + 1
+	allocate (darr1(n),iarr1(n))
+	write (*,620) '.. input',fin(i)%rec0,fin(i)%rec1,fin(i)%nrec,date(1:2),'<',trim(fin(i)%filenm)
+	ncid1 = fin(i)%ncid
+	idxin(2) = fin(i)%rec0
+	idxut(2) = nout + 1
+	varid2 = 0
+	do varid1 = 1,nvars
+		call nfs(nf90_inquire_variable(ncid1,varid1,varnm,xtype,ndims,dimids,natts))
+		if (excluded(varnm) .or. ndims > 1 .or. dimids(1) > 1 .or. xtype == nf90_uint) cycle
+		varid2 = varid2 + 1
+		if (xtype == nf90_double) then
+			call nfs(nf90_get_var(ncid1,varid1,darr1,idxin(2:2)))
+			call nfs(nf90_put_var(ncid2,varid2,darr1,idxut(2:2)))
+		else
+			call nfs(nf90_get_var(ncid1,varid1,iarr1,idxin(2:2)))
+			call nfs(nf90_put_var(ncid2,varid2,iarr1,idxut(2:2)))
+		endif
+	enddo
+	nout = nout + fin(i)%rec1 - fin(i)%rec0
+	deallocate (darr1,iarr1)
 enddo
 
-deallocate (darr1,iarr1)
+! Close input and output
 
+do i = 1, nfile - nfile_left
+	call nfs(nf90_close(fin(i)%ncid))
+enddo
 call nfs(nf90_close(ncid2))
+nfile = nfile_left
 
-end subroutine copyfile
+end subroutine write_output
 
 function excluded (varnm)
 character(len=*), intent(in) :: varnm
