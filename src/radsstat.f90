@@ -96,7 +96,7 @@ do i = 1,rads_nopt
 		wmode = 2
 	case ('s')
 		wmode = 3
-	case ('l')
+	case ('l', 'minmax')
 		lstat = 4
 	case ('full-year')
 		fullyear = .true.
