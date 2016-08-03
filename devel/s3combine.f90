@@ -289,7 +289,7 @@ do i = 1,nfile
 			call nfs(nf90_put_var(ncid2,varid2,iarr1,idxut(2:2)))
 		endif
 	enddo
-	nout = nout + fin(i)%rec1 - fin(i)%rec0
+	nout = nout + n
 	deallocate (darr1,iarr1)
 enddo
 
