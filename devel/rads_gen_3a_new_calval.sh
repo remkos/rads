@@ -24,9 +24,8 @@
 . rads_sandbox.sh
 
 # For the time being: only process NRT data
-days=2
-#types="nrt stc ntc"
-types="nrt"
+days=${days:-2}
+types="${types:-nrt}"
 
 # Process only NRT data for the last three days (including current)
 d0=`date -u -v -${days}d +%Y%m%d 2>&1` || d0=`date -u --date="${days} days ago" +%Y%m%d`
@@ -38,7 +37,7 @@ for type in ${types}; do
 
 	org=3a.${type}0
 	rads_open_sandbox $org
-	lst=$SANDBOX/rads_gen_3a_calval_new.lst
+	lst=$SANDBOX/rads_gen_3a_new_calval.lst
 	find $type/c??? -name "*.nc" -a -newer $mrk | sort > $lst
 	date >  $log 2>&1
 	rads_gen_s3 -S${org} --ymd=$d0 < $lst >> $log 2>&1
@@ -47,7 +46,7 @@ for type in ${types}; do
 # Now process do the same again, and do the post-processing
 	fix=3a.${types}1
 	rads_open_sandbox $fix
-	lst=$SANDBOX/rads_gen_3a_calval_new.lst
+	lst=$SANDBOX/rads_gen_3a_new_calval.lst
 	find $type/c??? -name "*.nc" -a -newer $mrk | sort > $lst
 	date >  $log 2>&1
 	rads_gen_s3 -S${fix} --ymd=$d0 < $lst >> $log 2>&1

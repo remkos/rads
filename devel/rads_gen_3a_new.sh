@@ -24,8 +24,7 @@
 . rads_sandbox.sh
 
 # Process NRT/STC/NTC data
-#types="nrt stc ntc"
-types="nrt"
+types="${types:-nrt}"
 
 for type in ${types}; do
 	case $type in
