@@ -1260,8 +1260,7 @@ logical, intent(in), optional :: rw
 character(len=40) :: date
 character(len=5) :: hz
 character(len=rads_strl) :: string
-integer(fourbyteint) :: i, j1, j2, k, ascdes, cc, pp, ncid
-real(eightbytereal) :: d
+integer(fourbyteint) :: i, j1, j2, k, ascdes, ncid
 real(eightbytereal), pointer :: temp(:,:)
 
 ! Initialise
@@ -1271,7 +1270,7 @@ P%cycle = cycle
 P%pass = pass
 ascdes = modulo(pass,2)	! 1 if ascending, 0 if descending
 
-if (rads_verbose >= 2) write (*,'(a,a3,2i5)') 'Checking sat/cycle/pass : ',S%sat,cycle,pass
+if (rads_verbose >= 2) write (*,'(a,a3,2i5)') 'Checking sat/cycle/pass : ', S%sat, cycle, pass
 
 ! Do checking on cycle limits
 if (cycle < S%cycles(1) .or. cycle > S%cycles(2)) then
@@ -1296,24 +1295,8 @@ if (pass < S%passes(1) .or. pass > S%passes(2) .or. pass > S%phase%passes) then
 	return
 endif
 
-! Make estimates of the equator time and longitude and time range, which helps screening
-! For constructions with subcycles, convert first to "real" cycle/pass number
-if (associated(S%phase%subcycles)) then
-	cc = cycle - S%phase%subcycles%i
-	pp = S%phase%subcycles%list(modulo(cc,S%phase%subcycles%n)+1) + pass
-	cc = cc / S%phase%subcycles%n + 1
-else
-	cc = cycle
-	pp = pass
-endif
-d = S%phase%pass_seconds
-P%equator_time = S%phase%ref_time + ((cc - S%phase%ref_cycle) * S%phase%repeat_passes + (pp - S%phase%ref_pass)) * d
-P%start_time = P%equator_time - 0.5d0 * d
-P%end_time = P%equator_time + 0.5d0 * d
-d = -S%phase%repeat_nodal * 360d0 / S%phase%repeat_passes ! Longitude advance per pass due to precession of node and earth rotation
-P%equator_lon = modulo(S%phase%ref_lon + (pp - S%phase%ref_pass) * d + modulo(pp - S%phase%ref_pass,2) * 180d0, 360d0)
-if (rads_verbose >= 4) write (*,'(a,3f15.3,f12.6)') 'Estimated start/end/equator time/longitude = ', &
-	P%start_time, P%end_time, P%equator_time, P%equator_lon
+! Predict equator crossing info
+call rads_predict_equator (S, P, cycle, pass)
 
 ! Do checking of pass ends on the time criteria (only when such are given)
 if (.not.all(isnan_(S%time%info%limits))) then
@@ -1325,9 +1308,8 @@ if (.not.all(isnan_(S%time%info%limits))) then
 endif
 
 ! Do checking of equator longitude on the longitude criteria (only when those are limiting)
-d = P%equator_lon
 if (S%eqlonlim(ascdes,2) - S%eqlonlim(ascdes,1) < 360d0) then
-	if (checklon(S%eqlonlim(ascdes,:),d)) then
+	if (checklon(S%eqlonlim(ascdes,:),P%equator_lon)) then
 		if (rads_verbose >= 2) write (*,'(a,3f12.6)') 'Bail out on estimated equator longitude:', &
 			S%eqlonlim(ascdes,:), P%equator_lon
 		S%pass_stat(4+ascdes) = S%pass_stat(4+ascdes) + 1
@@ -1546,6 +1528,54 @@ enddo
 P%fileinfo = rads_file (0, '')
 if (.not.present(keep) .or. .not.keep) call rads_free_pass_struct (S, P)
 end subroutine rads_close_pass
+
+!****f* rads/rads_predict_equator
+! SUMMARY
+! Predict equator crossing time and longitude
+!
+! SYNOPSIS
+subroutine rads_predict_equator (S, P, cycle, pass)
+type(rads_sat), intent(in) :: S
+type(rads_pass), intent(inout) :: P
+integer(fourbyteint), intent(in) :: cycle, pass
+!
+! PURPOSE
+! This routine estimates the equator time and longitude, as well
+! as the start and end time of a given cycle and pass.
+!
+! The routine works for exact repeat orbits as well as drifting
+! orbits.
+!
+! The estimated variables (equator_time, equator_lon, start_time, end_time)
+! are returned in the pass struct <P>.
+!
+! ARGUMENTS
+! S        : Satellite/mission dependent structure
+! P        : Pass structure
+! cycle    : Cycle number
+! pass     : Pass number
+!****-------------------------------------------------------------------
+integer(fourbyteint) :: cc, pp
+real(eightbytereal) :: d
+
+! For constructions with subcycles, convert first to "real" cycle/pass number
+if (associated(S%phase%subcycles)) then
+	cc = cycle - S%phase%subcycles%i
+	pp = S%phase%subcycles%list(modulo(cc,S%phase%subcycles%n)+1) + pass
+	cc = cc / S%phase%subcycles%n + 1
+else
+	cc = cycle
+	pp = pass
+endif
+d = S%phase%pass_seconds
+P%equator_time = S%phase%ref_time + ((cc - S%phase%ref_cycle) * S%phase%repeat_passes + (pp - S%phase%ref_pass)) * d
+P%start_time = P%equator_time - 0.5d0 * d
+P%end_time = P%equator_time + 0.5d0 * d
+d = -S%phase%repeat_nodal * 360d0 / S%phase%repeat_passes ! Longitude advance per pass due to precession of node and earth rotation
+P%equator_lon = modulo(S%phase%ref_lon + (pp - S%phase%ref_pass) * d + modulo(pp - S%phase%ref_pass,2) * 180d0, 360d0)
+if (rads_verbose >= 4) write (*,'(a,3f15.3,f12.6)') 'Estimated start/end/equator time/longitude = ', &
+	P%start_time, P%end_time, P%equator_time, P%equator_lon
+end subroutine rads_predict_equator
 
 !****if* rads/rads_get_var_by_number
 ! SUMMARY
