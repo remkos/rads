@@ -36,20 +36,22 @@ use netcdf
 
 type :: fileinfo
 	integer(fourbyteint) :: ncid, rec0, rec1, nrec
-	real(eightbytereal) :: time0, time1
+	real(eightbytereal) :: time0, time1, lat0, lat1, lon0, lon1
 	character(len=rads_cmdl) :: filenm
 end type
 type(fileinfo) :: fin(20)
 
 ! General variables
 
-character(len=rads_cmdl) :: arg, filenm, dimnm, destdir, product_name
+type(rads_sat) :: S
+type(rads_pass) :: P
+character(len=rads_cmdl) :: arg, filenm, dimnm, destdir, product_name, mission_name
 character(len=rads_strl) :: exclude_list = ','
 integer(fourbyteint), parameter :: mpass = 254 * 500
 real(eightbytereal), parameter :: sec2000 = 473299200d0
 integer(fourbyteint) :: i0, i, ncid1, nrec, ios, varid, n_ignore = 0, nr_passes = 770, &
 	pass_number = 0, cycle_number = 0, pass_in, cycle_in, last_time = 0, nfile = 0
-real(eightbytereal), allocatable :: time(:), lat(:)
+real(eightbytereal), allocatable :: time(:), lat(:), lon(:)
 logical :: backsearch = .false.
 
 ! Print description, if requested
@@ -82,22 +84,38 @@ do i = 1,iargc()
 	endif
 enddo
 
-! Open the input file(s)
+! Cycle through all input files
 
 do
 	read (*,'(a)',iostat=ios) filenm
 	if (ios /= 0) exit
+
+! Open the input file
+
 	call nfs(nf90_open(filenm,nf90_nowrite,ncid1))
+
+! Init RADS, just to get some Sentinel-3 parameters
+
+	call nfs(nf90_get_att(ncid1,nf90_global,'mission_name',mission_name))
+	if (mission_name(:10) == 'Sentinel 3') then
+		call rads_init (S, mission_name(10:11))
+	else
+		call rads_exit ('Error: unknown mission name: '//trim(mission_name))
+	endif
 
 ! Read the time dimension
 
 	call nfs(nf90_inquire_dimension(ncid1,1,dimnm,nrec))
 	if (dimnm /= 'time_01') stop 'Error reading time dimension'
-	allocate (time(nrec),lat(nrec))
+	allocate (time(nrec),lat(nrec),lon(nrec))
 	call nfs(nf90_inq_varid(ncid1,'time_01',varid))
 	call nfs(nf90_get_var(ncid1,varid,time))
 	call nfs(nf90_inq_varid(ncid1,'lat_01',varid))
 	call nfs(nf90_get_var(ncid1,varid,lat))
+	lat = lat * 1d-6
+	call nfs(nf90_inq_varid(ncid1,'lon_01',varid))
+	call nfs(nf90_get_var(ncid1,varid,lon))
+	lon = lon * 1d-6
 	call nfs(nf90_get_att(ncid1,nf90_global,'pass_number',pass_in))
 	call nfs(nf90_get_att(ncid1,nf90_global,'cycle_number',cycle_in))
 	call nfs(nf90_get_att(ncid1,nf90_global,'product_name',product_name))
@@ -132,6 +150,10 @@ do
 			fin(nfile)%nrec = nrec
 			fin(nfile)%time0 = time(i0)
 			fin(nfile)%time1 = time(i-1)
+			fin(nfile)%lat0 = lat(i0)
+			fin(nfile)%lat1 = lat(i-1)
+			fin(nfile)%lon0 = lon(i0)
+			fin(nfile)%lon1 = lon(i-1)
 			fin(nfile)%filenm = filenm
 			call write_output (1)
 			i0 = i
@@ -148,14 +170,19 @@ do
 	fin(nfile)%nrec = nrec
 	fin(nfile)%time0 = time(i0)
 	fin(nfile)%time1 = time(nrec)
+	fin(nfile)%lat0 = lat(i0)
+	fin(nfile)%lat1 = lat(nrec)
+	fin(nfile)%lon0 = lon(i0)
+	fin(nfile)%lon1 = lon(nrec)
 	fin(nfile)%filenm = filenm
 	last_time = nint(time(nrec))
-	deallocate (time, lat)
+	deallocate (time, lat, lon)
 enddo
 
 ! Dump the remainder of the input files to output
 
 call write_output (0)
+call rads_end (S)
 
 contains
 
@@ -180,7 +207,7 @@ character(len=rads_naml) :: dirnm,prdnm,outnm,attnm,varnm
 real(eightbytereal), allocatable :: darr1(:)
 integer(fourbyteint), allocatable :: iarr1(:)
 logical :: exist
-character(len=26) :: date(2)
+character(len=26) :: date(3)
 
 ! How many records are buffered?
 
@@ -249,10 +276,17 @@ do varid1 = 0, nvars
 	enddo
 enddo
 
-! Overwrite cycle/pass attributes and product name
+! Convert times to date strings
 
 call strf1985f(date(1),fin(1)%time0+sec2000)
 call strf1985f(date(2),fin(nfile)%time1+sec2000)
+call strf1985f(date(3),P%equator_time)
+
+! Determine equator crossing information
+
+call rads_predict_equator (S, P, cycle_number, pass_number)
+
+! Overwrite some attributes and product name
 
 write (*,620) 'Creating',1,nrec,nrec,date(1:2),'>',trim(outnm)
 
@@ -260,8 +294,14 @@ call nfs(nf90_put_att(ncid2,nf90_global,'product_name',prdnm))
 call nfs(nf90_put_att(ncid2,nf90_global,'cycle_number',cycle_number))
 call nfs(nf90_put_att(ncid2,nf90_global,'pass_number',pass_number))
 call nfs(nf90_put_att(ncid2,nf90_global,'absolute_pass_number',(cycle_number-1)*nr_passes+pass_number-54))
+call nfs(nf90_put_att(ncid2,nf90_global,'equator_time',date(3)))
+call nfs(nf90_put_att(ncid2,nf90_global,'equator_longitude',P%equator_lon))
 call nfs(nf90_put_att(ncid2,nf90_global,'first_meas_time',date(1)))
 call nfs(nf90_put_att(ncid2,nf90_global,'last_meas_time',date(2)))
+call nfs(nf90_put_att(ncid2,nf90_global,'first_meas_lat',fin(1)%lat0))
+call nfs(nf90_put_att(ncid2,nf90_global,'last_meas_lat',fin(nfile)%lat1))
+call nfs(nf90_put_att(ncid2,nf90_global,'first_meas_lon',fin(1)%lon0))
+call nfs(nf90_put_att(ncid2,nf90_global,'last_meas_lon',fin(nfile)%lon1))
 call nfs(nf90_enddef(ncid2))
 
 ! Copy all data elements
