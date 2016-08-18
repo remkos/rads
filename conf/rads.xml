@@ -3563,7 +3563,7 @@ Global RADS configuration file
 		<mission>Exact Repeat Mission</mission>
 		<cycles>0 99</cycles>
 		<repeat>27 770</repeat>
-		<ref_pass>2016-04-12T13:28:42 127.78 3 105</ref_pass><!--May need to update this value-->
+		<ref_pass>2016-06-28T21:57:26 0.627 6 1</ref_pass>
 		<start_time>2016-03-01</start_time>
 	</phase>
 </if>

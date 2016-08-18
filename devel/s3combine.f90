@@ -276,15 +276,15 @@ do varid1 = 0, nvars
 	enddo
 enddo
 
+! Determine equator crossing information
+
+call rads_predict_equator (S, P, cycle_number, pass_number)
+
 ! Convert times to date strings
 
 call strf1985f(date(1),fin(1)%time0+sec2000)
 call strf1985f(date(2),fin(nfile)%time1+sec2000)
 call strf1985f(date(3),P%equator_time)
-
-! Determine equator crossing information
-
-call rads_predict_equator (S, P, cycle_number, pass_number)
 
 ! Overwrite some attributes and product name
 
