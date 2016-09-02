@@ -14,12 +14,12 @@
 # GNU Lesser General Public License for more details.
 #-----------------------------------------------------------------------
 #
-# Convert latest Jason-3 OGDR/IGDR files to RADS, only during Cal/Val phase
+# Convert latest Jason-3 OGDR/IGDR/GDR files to RADS, only during Cal/Val phase
 #
-# The most recently updated data in the OGDR/IGDR files
-# will be processed. Four directories will be created, two called
-# j3.ogdr0 and j3.igdr0 for the (mostly) original OGDRs, two called
-# j3.ogdr and j3.igdr which includes post-processing.
+# The most recently updated data in the OGDR/IGDR/GDR files
+# will be processed. Four directories will be created, three called
+# j3.ogdr0, j3.igdr0, and j3.gdr0 for the (mostly) original O/I/GDRs, three called
+# j3.ogdr, j3.igdr, and j3.gdr which include post-processing.
 #
 # syntax: rads_gen_j3_new_calval.sh
 #-----------------------------------------------------------------------
@@ -28,12 +28,13 @@
 # Check arguments
 
 days=3
-types="ogdr igdr"
-while getopts "iod:" arg; do
+types="ogdr igdr gdr"
+while getopts "iogd:" arg; do
 	case $arg in
 		d) days=$OPTARG ;;
 		o) types=ogdr ;;
 		i) types=igdr ;;
+		g) types=gdr ;;
 	esac
 done
 
@@ -41,8 +42,8 @@ done
 
 d0=`date -u -v -${days}d +%Y%m%d 2>&1` || d0=`date -u --date="${days} days ago" +%Y%m%d`
 
-# Run this for ogdr or igdr depending on the arguments on the command line.
-# Default is doing both!
+# Run this for ogdr, igdr, or gdr depending on the arguments on the command line.
+# Default is doing all three!
 
 for type in ${types}; do
 
