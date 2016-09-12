@@ -78,6 +78,7 @@ case $type in
 	*)
 		find ${type}/c??? -name "JA3_*.nc" -a -newer $omrk | sort > $lst
 		rads_gen_j3 --ymd=$d0 $options < $lst			>> $log 2>&1
+		rads_add_orbit   $options -Valt_cnes --dir=gdr-e-moe --equator --loc-7 --rate	>> $log 2>&1
 		;;
 esac
 
@@ -85,7 +86,6 @@ esac
 
 rads_fix_j3      $options --all					>> $log 2>&1
 rads_add_ssb     $options --ssb=ssb_tran2012	>> $log 2>&1
-rads_add_orbit   $options -Valt_cnes --dir=gdr-e-moe --equator --loc-7 --rate	>> $log 2>&1
 rads_add_iono    $options --all					>> $log 2>&1
 rads_add_common  $options						>> $log 2>&1
 rads_add_dual    $options						>> $log 2>&1
