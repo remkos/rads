@@ -266,14 +266,14 @@ $ cd /rads
 $ rsync -avz --del radsuser@rads.tudelft.nl::rads/tables .
 \end{verbatim}
 
-If you need to use \prog{rsync} regularly to synchronise the RADS data base and you do not want to enter the password every time, you can set up the environment variable \verb|RSYNC_PASSWD| by one of the following methods (depending on the shell):
+If you need to use \prog{rsync} regularly to synchronise the RADS data base and you do not want to enter the password every time, you can set up the environment variable \verb|RSYNC_PASSWORD| by one of the following methods (depending on the shell):
 \begin{verbatim}
-   export RSYNC_PASSWD=radspasswd    # under sh or bash
-   setenv RSYNC_PASSWD radspasswd    # under csh or tcsh
+   export RSYNC_PASSWORD=radspasswd    # under sh or bash
+   setenv RSYNC_PASSWORD radspasswd    # under csh or tcsh
 \end{verbatim}
 If you are using the \prog{bash} or \prog{sh} shell, you can do it all in one line, for example:
 \begin{verbatim}
-   RSYNC_PASSWD=radspasswd \
+   RSYNC_PASSWORD=radspasswd \
       rsync -avz --del radsuser@rads.tudelft.nl::rads/data .
 \end{verbatim}
 Obviously, the password is \textbf{not} simply \texttt{radspasswd}.
