@@ -202,18 +202,19 @@ do
 ! Compile flag bits
 
 	flags = 0
-	call nc2f ('instr_op_mode_01',0,lim=1)			! bit  0: Altimeter mode
+	call nc2f ('instr_op_mode_01',0,ge=1)			! bit  0: Altimeter mode
 	call nc2f ('val_alt_off_nadir_angle_wf_ocean_01_plrm_ku',1)	! bit  1: Quality off-nadir pointing
-	call nc2f ('surf_type_01',2,val=2)				! bit  2: Continental ice
+	call nc2f ('surf_type_01',2,eq=2)				! bit  2: Continental ice
 	call nc2f ('range_ocean_qual_01_c',3)			! bit  3: Quality dual-frequency iono
-	call nc2f ('surf_type_01',4,lim=2)				! bit  4: Water/land
-	call nc2f ('surf_type_01',5,lim=1)				! bit  5: Ocean/other
-	call nc2f ('rad_surf_type_01',6,lim=2)			! bit  6: Radiometer land flag
+	call nc2f ('surf_type_01',4,ge=2)				! bit  4: Water/land
+	call nc2f ('surf_type_01',5,ge=1)				! bit  5: Ocean/other
+	call nc2f ('rad_surf_type_01',6,ge=2)			! bit  6: Radiometer land flag
 	call nc2f ('rain_flag_01_ku',7)
 	call nc2f ('open_sea_ice_flag_01_ku',7)			! bit  7: Altimeter rain or ice flag
 	call nc2f ('rain_flag_01_ku',8)					! bit  8: Altimeter rain flag
 	call nc2f ('tb_238_quality_flag_01',9)			! bit  9: Quality 23.8 GHz channel
 	call nc2f ('tb_365_quality_flag_01',10)			! bit 10: Quality 36.5 GHz channel
+	call nc2f ('orbit_data_type',15,le=1)			! bit 15: Quality of orbit
 
 ! Now do specifics for PLRM
 
@@ -274,33 +275,33 @@ do
 	call new_var ('mss_cnescls11', a + dh)
 	call get_var (ncid, 'mean_sea_surf_sol2_01', a)
 	call new_var ('mss_dtu10', a + dh)
-	call cpy_var ('swh_ocean_01_ku','swh_ku')
-	call cpy_var ('swh_ocean_01_plrm_ku','swh_ku_plrm')
-	call cpy_var ('swh_ocean_01_c','swh_c')
-	call cpy_var ('sig0_ocean_01_ku','sig0_ku')
-	call cpy_var ('sig0_ocean_01_plrm_ku','sig0_ku_plrm')
-	call cpy_var ('sig0_ocean_01_c','sig0_c')
-	call cpy_var ('wind_speed_alt_01_ku','wind_speed_alt')
-	call cpy_var ('wind_speed_alt_01_plrm_ku','wind_speed_alt_plrm')
+	call cpy_var ('swh_ocean_01_ku', 'swh_ku')
+	call cpy_var ('swh_ocean_01_plrm_ku', 'swh_ku_plrm')
+	call cpy_var ('swh_ocean_01_c', 'swh_c')
+	call cpy_var ('sig0_ocean_01_ku', 'sig0_ku')
+	call cpy_var ('sig0_ocean_01_plrm_ku', 'sig0_ku_plrm')
+	call cpy_var ('sig0_ocean_01_c', 'sig0_c')
+	call cpy_var ('wind_speed_alt_01_ku', 'wind_speed_alt')
+	call cpy_var ('wind_speed_alt_01_plrm_ku', 'wind_speed_alt_plrm')
 	call cpy_var ('wind_speed_mod_u_01', 'wind_speed_ecmwf_u')
 	call cpy_var ('wind_speed_mod_v_01', 'wind_speed_ecmwf_v')
-	call cpy_var ('range_ocean_rms_01_ku','range_rms_ku')
-	call cpy_var ('range_ocean_rms_01_plrm_ku','range_rms_ku_plrm')
-	call cpy_var ('range_ocean_rms_01_c','range_rms_c')
-	call cpy_var ('range_ocean_numval_01_ku','range_numval_ku')
-	call cpy_var ('range_ocean_numval_01_plrm_ku','range_numval_ku_plrm')
-	call cpy_var ('range_ocean_numval_01_c','range_numval_c')
+	call cpy_var ('range_ocean_rms_01_ku', 'range_rms_ku')
+	call cpy_var ('range_ocean_rms_01_plrm_ku', 'range_rms_ku_plrm')
+	call cpy_var ('range_ocean_rms_01_c', 'range_rms_c')
+	call cpy_var ('range_ocean_numval_01_ku', 'range_numval_ku')
+	call cpy_var ('range_ocean_numval_01_plrm_ku', 'range_numval_ku_plrm')
+	call cpy_var ('range_ocean_numval_01_c', 'range_numval_c')
 	call cpy_var ('odle_01', 'topo_ace2')
 	call cpy_var ('tb_238_01','tb_238')
 	call cpy_var ('tb_365_01','tb_365')
 	call new_var ('flags', dble(flags))
 	call new_var ('flags_plrm', dble(flags_plrm))
-	call cpy_var ('swh_ocean_rms_01_ku','swh_rms_ku')
-	call cpy_var ('swh_ocean_rms_01_plrm_ku','swh_rms_ku_plrm')
-	call cpy_var ('swh_ocean_rms_01_c','swh_rms_c')
-	call cpy_var ('sig0_ocean_rms_01_ku','sig0_rms_ku')
-	call cpy_var ('sig0_ocean_rms_01_plrm_ku','sig0_rms_ku_plrm')
-	call cpy_var ('sig0_ocean_rms_01_c','sig0_rms_c')
+	call cpy_var ('swh_ocean_rms_01_ku', 'swh_rms_ku')
+	call cpy_var ('swh_ocean_rms_01_plrm_ku', 'swh_rms_ku_plrm')
+	call cpy_var ('swh_ocean_rms_01_c', 'swh_rms_c')
+	call cpy_var ('sig0_ocean_rms_01_ku', 'sig0_rms_ku')
+	call cpy_var ('sig0_ocean_rms_01_plrm_ku', 'sig0_rms_ku_plrm')
+	call cpy_var ('sig0_ocean_rms_01_c', 'sig0_rms_c')
 	! In case of SAR, there is no estimated attitude, so we rely on the PLRM values.
 	! It may not be good to use these for editing (?)
 	call cpy_var ('corrected_off_nadir_angle_wf_ocean_01_ku corrected_off_nadir_angle_wf_ocean_01_plrm_ku AND', &
@@ -315,6 +316,7 @@ do
 	call cpy_var ('rad_water_vapor_01_ku', 'water_vapor_rad')
 	call cpy_var ('ssha_01_ku', 'ssha')
 	call cpy_var ('ssha_01_plrm_ku', 'ssha_plrm')
+	call cpy_var ('orbit_data_type')
 
 ! Dump the data
 

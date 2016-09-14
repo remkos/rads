@@ -2449,7 +2449,7 @@ Global RADS configuration file
 	<compress>int1</compress>
 </var>
 
-<var name="qual_orbit" field="2515 25" sat="c2 e1 e2 j1 pn sa">
+<var name="qual_orbit" field="2515 25" sat="3a 3b c2 e1 e2 j1 pn sa">
 	<long_name>quality of the orbit determination</long_name>
 	<standard_name>height_above_reference_ellipsoid status_flag</standard_name>
 	<flag_values>ok degraded</flag_values>
@@ -3491,6 +3491,19 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Change of land elevation relative to geoid due to GIA since 1 Jan 2000</comment>
 </var>
+
+<var name="orbit_data_type" sat="3a 3b">
+	<long_name>type of data file used for orbit computation</long_name>
+	<standard_name>height_above_reference_ellipsoid status_flag</standard_name>
+	<flag_values>prediction navatt doris_nav gnss_roe doris_moe poe</flag_values>
+	<plot_range>0 5</plot_range>
+	<data>orbit_data_type</data>
+	<format>z1</format>
+	<compress>int1</compress>
+	<comment>Indication about which orbit file and type was used for orbit interpolation</comment>
+</var>
+
+<!-- "Global attributes" -->
 
 <var name="first_meas_time" field="9901 99">
 	<long_name>time of first measurement in pass</long_name>
