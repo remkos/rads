@@ -192,7 +192,7 @@ do
 	flags = 0
 	call get_var (ncid, 'alton', a)
 	if (any(a /= 1d0)) call log_string ('Error: wrong altimeter found in data', .true.)
-	call nc2f ('instr_state_topex', 0, val=8)		! bit  0: Altimeter Side A/B
+	call nc2f ('instr_state_topex', 0, eq=8)		! bit  0: Altimeter Side A/B
 !	call nc2f ('qual_alt_1hz_off_nadir_angle_wf',1)	! bit  1: Quality off-nadir pointing
 	call nc2f ('instr_state_tmr', 2, mask=32) ! #5	! bit  2: TMR status (0=Channel 21A, 1=Channel 21B)
 	call nc2f ('alt_bad_1', 3, mask=64)	! #6		! bit  3: Quality dual-frequency iono

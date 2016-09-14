@@ -192,11 +192,11 @@ do
 	flags = 0
 	call nc2f ('alt_state_flag_oper',0)				! bit  0: Altimeter Side A/B
 	call nc2f ('qual_alt_1hz_off_nadir_angle_wf_ku',1)	! bit  1: Quality off-nadir pointing
-	call nc2f ('surface_type',2,val=2)				! bit  2: Continental ice
+	call nc2f ('surface_type',2,eq=2)				! bit  2: Continental ice
 	call nc2f ('qual_alt_1hz_range_c',3)			! bit  3: Quality dual-frequency iono
-	call nc2f ('surface_type',4,lim=2)				! bit  4: Water/land
-	call nc2f ('surface_type',5,lim=1)				! bit  5: Ocean/other
-	call nc2f ('rad_surf_type',6,lim=2)				! bit  6: Radiometer land flag
+	call nc2f ('surface_type',4,ge=2)				! bit  4: Water/land
+	call nc2f ('surface_type',5,ge=1)				! bit  5: Ocean/other
+	call nc2f ('rad_surf_type',6,ge=2)				! bit  6: Radiometer land flag
 	call nc2f ('rain_flag',7)
 	call nc2f ('ice_flag',7)						! bit  7: Altimeter rain or ice flag
 	call nc2f ('rad_rain_flag',8)

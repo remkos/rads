@@ -187,11 +187,11 @@ do
 	flags = 0
 	call nc2f ('alt_state_flag',0)			! bit  0: Altimeter mode
 !	call nc2f ('val_alt_off_nadir_angle_wf_ocean_01_plrm_ku',1)	! bit  1: Quality off-nadir pointing
-!	call nc2f ('surf_type_01',2,val=2)				! bit  2: Continental ice
+!	call nc2f ('surf_type_01',2,eq=2)				! bit  2: Continental ice
 !	call nc2f ('range_ocean_qual_01_c',3)			! bit  3: Quality dual-frequency iono
-	call nc2f ('surface_type',4,lim=2)				! bit  4: Water/land
-	call nc2f ('surface_type',5,lim=1)				! bit  5: Ocean/other
-	call nc2f ('rad_surf_type',6,lim=2)				! bit  6: Radiometer land flag
+	call nc2f ('surface_type',4,ge=2)				! bit  4: Water/land
+	call nc2f ('surface_type',5,ge=1)				! bit  5: Ocean/other
+	call nc2f ('rad_surf_type',6,ge=2)				! bit  6: Radiometer land flag
 	call nc2f ('rain_flag',7)
 	call nc2f ('ice_flag',7)						! bit  7: Altimeter rain or ice flag
 	call nc2f ('rain_flag',8)						! bit  8: Altimeter rain flag
@@ -200,7 +200,7 @@ do
 	call nc2f ('alt_echo_type',11)					! bit 11: Quality range
 !	call nc2f ('swh_ocean_qual_01_plrm_ku',12)		! bit 12: Quality SWH
 !	call nc2f ('sig0_ocean_qual_01_plrm_ku',13)		! bit 13: Quality Sigma0
-!	call nc2f ('orb_state_flag',15,lim=1)			! bit 15: Quality orbit
+!	call nc2f ('orb_state_flag',15,ge=1)			! bit 15: Quality orbit
 	a = flags
 	call new_var ('flags', a)
 

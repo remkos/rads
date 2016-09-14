@@ -124,17 +124,18 @@ end subroutine put_rads
 ! nc2f: Load flag field, then set corresponding bit in RADS
 ! varnm : source variable name
 ! bit   : RADS bit to be set when value == 1
-! lim   : set bit when value >= lim (optional)
-! val   : set bit when value == val (optional, default = 1)
+! eq    : set bit when value == val (optional, default = 1)
 ! neq   : set bit when value /= val (optional)
-! mask  : set bit when iand(value,mask) /= 0
+! ge    : set bit when value >= val (optional)
+! le    : set bit when value <= val (optional)
+! mask  : set bit when iand(value,mask) /= 0 (optional)
 
-subroutine nc2f (varnm, bit, lim, val, neq, mask)
+subroutine nc2f (varnm, bit, eq, neq, ge, le, mask)
 use rads_netcdf
 use netcdf
 character(len=*), intent(in) :: varnm
 integer(fourbyteint), intent(in) :: bit
-integer(fourbyteint), optional, intent(in) :: lim, val, neq, mask
+integer(fourbyteint), optional, intent(in) :: eq, neq, ge, le, mask
 integer(twobyteint) :: flag(mrec), flag2d(1:1,1:nrec)
 integer(fourbyteint) :: i, ival, ndims, varid
 
@@ -146,9 +147,13 @@ if (ndims == 2) then	! Reduce 2D flags to 1D array
 else
 	call nfs(nf90_get_var(ncid,varid,flag(1:nrec)))
 endif
-if (present(lim)) then	! Set flag when value >= lim
+if (present(ge)) then	! Set flag when value >= ge
 	do i = 1,nrec
-		if (flag(i) >= lim) flags(i) = ibset(flags(i),bit)
+		if (flag(i) >= ge) flags(i) = ibset(flags(i),bit)
+	enddo
+else if (present(le)) then	! Set flag when value <= le
+	do i = 1,nrec
+		if (flag(i) <= le) flags(i) = ibset(flags(i),bit)
 	enddo
 else if (present(neq)) then	! Set flag when value /= neq
 	do i = 1,nrec
@@ -158,9 +163,9 @@ else if (present(mask)) then	! Set flag when value and mask have common set bits
 	do i = 1,nrec
 		if (iand(flag(i),mask) /= 0) flags(i) = ibset(flags(i),bit)
 	enddo
-else	! Set flag when value == 1, or when value == val (when given)
+else	! Set flag when value == 1, or when value == eq (when given)
 	ival = 1
-	if (present(val)) ival = val
+	if (present(eq)) ival = eq
 	do i = 1,nrec
 		if (flag(i) == ival) flags(i) = ibset(flags(i),bit)
 	enddo
