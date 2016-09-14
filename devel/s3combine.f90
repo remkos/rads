@@ -314,7 +314,7 @@ enddo
 
 ! Add the orbit data type
 
-call nfs(nf90_def_var(ncid2,'orb_data_type',nf90_byte,dimid2,varid3))
+call nfs(nf90_def_var(ncid2,'orbit_data_type',nf90_byte,dimid2,varid3))
 call nfs(nf90_put_att(ncid2,varid3,'long_name','Type of data file used for orbit computation'))
 call nfs(nf90_put_att(ncid2,varid3,'_FillValue',127_onebyteint))
 call nfs(nf90_put_att(ncid2,varid3,'flag_values',flag_values))
