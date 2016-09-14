@@ -35,7 +35,7 @@ use netcdf
 ! Scruct to store input file information
 
 type :: fileinfo
-	integer(fourbyteint) :: ncid, rec0, rec1, nrec
+	integer(fourbyteint) :: ncid, rec0, rec1, nrec, type
 	real(eightbytereal) :: time0, time1, lat0, lat1, lon0, lon1
 	character(len=rads_cmdl) :: filenm
 end type
@@ -45,12 +45,12 @@ type(fileinfo) :: fin(20)
 
 type(rads_sat) :: S
 type(rads_pass) :: P
-character(len=rads_cmdl) :: arg, filenm, dimnm, destdir, product_name, mission_name
+character(len=rads_cmdl) :: arg, filenm, dimnm, destdir, product_name, mission_name, xref_orbit_data
 character(len=rads_strl) :: exclude_list = ','
 integer(fourbyteint), parameter :: mpass = 254 * 500
 real(eightbytereal), parameter :: sec2000 = 473299200d0
 integer(fourbyteint) :: i0, i, ncid1, nrec, ios, varid, n_ignore = 0, nr_passes = 770, &
-	pass_number = 0, cycle_number = 0, pass_in, cycle_in, last_time = 0, nfile = 0
+	pass_number = 0, cycle_number = 0, pass_in, cycle_in, last_time = 0, nfile = 0, orbit_type
 real(eightbytereal), allocatable :: time(:), lat(:), lon(:)
 logical :: backsearch = .false.
 
@@ -92,7 +92,10 @@ do
 
 ! Open the input file
 
-	call nfs(nf90_open(filenm,nf90_nowrite,ncid1))
+	if (nft(nf90_open(filenm,nf90_nowrite,ncid1))) then
+		call rads_message ('Error while opening file: '//filenm)
+		cycle
+	endif
 
 ! Init RADS, just to get some Sentinel-3 parameters
 
@@ -100,8 +103,16 @@ do
 	if (mission_name(:10) == 'Sentinel 3') then
 		call rads_init (S, mission_name(10:11))
 	else
-		call rads_exit ('Error: unknown mission name: '//trim(mission_name))
+		call rads_exit ('Error: unknown mission name: '//mission_name)
 	endif
+
+! Read global attributes
+
+	call nfs(nf90_get_att(ncid1,nf90_global,'pass_number',pass_in))
+	call nfs(nf90_get_att(ncid1,nf90_global,'cycle_number',cycle_in))
+	call nfs(nf90_get_att(ncid1,nf90_global,'product_name',product_name))
+	call nfs(nf90_get_att(ncid1,nf90_global,'xref_orbit_data',xref_orbit_data))
+	orbit_type = which_orbit_type (xref_orbit_data)
 
 ! Read the time dimension
 
@@ -116,9 +127,6 @@ do
 	call nfs(nf90_inq_varid(ncid1,'lon_01',varid))
 	call nfs(nf90_get_var(ncid1,varid,lon))
 	lon = lon * 1d-6
-	call nfs(nf90_get_att(ncid1,nf90_global,'pass_number',pass_in))
-	call nfs(nf90_get_att(ncid1,nf90_global,'cycle_number',cycle_in))
-	call nfs(nf90_get_att(ncid1,nf90_global,'product_name',product_name))
 
 ! We may have pass number 771 on input ... this belongs to the next cycle
 
@@ -155,6 +163,7 @@ do
 			fin(nfile)%lon0 = lon(i0)
 			fin(nfile)%lon1 = lon(i-1)
 			fin(nfile)%filenm = filenm
+			fin(nfile)%type = orbit_type
 			call write_output (1)
 			i0 = i
 			pass_number = pass_number + 1
@@ -175,6 +184,7 @@ do
 	fin(nfile)%lon0 = lon(i0)
 	fin(nfile)%lon1 = lon(nrec)
 	fin(nfile)%filenm = filenm
+	fin(nfile)%type = orbit_type
 	last_time = nint(time(nrec))
 	deallocate (time, lat, lon)
 enddo
@@ -185,6 +195,33 @@ call write_output (0)
 call rads_end (S)
 
 contains
+
+!***********************************************************************
+! Determine the type of orbit used
+
+function which_orbit_type (xref_orbit_data)
+integer :: which_orbit_type
+character(len=*), intent(in) :: xref_orbit_data
+select case (xref_orbit_data(10:12))
+case ('POE')
+	which_orbit_type = 6
+case ('MOE')
+	which_orbit_type = 5
+case ('ROE')
+	which_orbit_type = 4
+case ('NAV')
+	which_orbit_type = 3
+case ('NAT')
+	which_orbit_type = 2
+case ('FPO')
+	which_orbit_type = 1
+case ('MDO')
+	which_orbit_type = 0
+case default
+	which_orbit_type = 127_onebyteint
+end select
+write (0,*) which_orbit_type
+end function which_orbit_type
 
 !***********************************************************************
 ! Start the next cycle when the pass number rolls over
@@ -202,12 +239,14 @@ end subroutine next_cycle
 
 subroutine write_output (nfile_left)
 integer(fourbyteint), intent(in) :: nfile_left
-integer(fourbyteint) :: nrec,ncid1,ncid2,varid1,varid2,xtype,ndims,dimids(2),natts,i,n,nvars,idxin(2)=1,idxut(2)=1,nout
-character(len=rads_naml) :: dirnm,prdnm,outnm,attnm,varnm
+integer(fourbyteint) :: nrec, ncid1, ncid2, varid1, varid2, varid3, xtype, ndims, &
+	dimids(2), dimid2, natts, i, n, nvars, idxin(2)=1, idxut(2)=1, nout
+character(len=rads_naml) :: dirnm, prdnm, outnm, attnm, varnm
 real(eightbytereal), allocatable :: darr1(:)
 integer(fourbyteint), allocatable :: iarr1(:)
 logical :: exist
 character(len=26) :: date(3)
+integer(onebyteint), parameter :: flag_values(0:6) = int((/0,1,2,3,4,5,6/), onebyteint)
 
 ! How many records are buffered?
 
@@ -254,7 +293,7 @@ call nfs(nf90_set_fill(ncid2,nf90_nofill,i))
 
 ! Create the time dimension
 
-call nfs(nf90_def_dim(ncid2,'time_01',nrec,i))
+call nfs(nf90_def_dim(ncid2,'time_01',nrec,dimid2))
 
 ! Copy all the variable definitions and attributes
 
@@ -275,6 +314,15 @@ do varid1 = 0, nvars
 		call nfs(nf90_copy_att(ncid1,varid1,attnm,ncid2,varid2))
 	enddo
 enddo
+
+! Add the orbit data type
+
+call nfs(nf90_def_var(ncid2,'orb_data_type',nf90_byte,dimid2,varid3))
+call nfs(nf90_put_att(ncid2,varid3,'long_name','Type of data file used for orbit computation'))
+call nfs(nf90_put_att(ncid2,varid3,'_FillValue',127_onebyteint))
+call nfs(nf90_put_att(ncid2,varid3,'flag_values',flag_values))
+call nfs(nf90_put_att(ncid2,varid3,'flag_meanings','model prediction navatt doris_nav roe moe poe'))
+call nfs(nf90_put_att(ncid2,varid3,'coordinates','lon_01 lat_01'))
 
 ! Determine equator crossing information
 
@@ -329,6 +377,8 @@ do i = 1,nfile
 			call nfs(nf90_put_var(ncid2,varid2,iarr1,idxut(2:2)))
 		endif
 	enddo
+	iarr1 = fin(i)%type
+	call nfs(nf90_put_var(ncid2,varid3,iarr1,idxut(2:2)))
 	nout = nout + n
 	deallocate (darr1,iarr1)
 enddo
