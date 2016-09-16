@@ -37,7 +37,7 @@ AC_CANONICAL_SYSTEM
 # -----------------------------------------------------------------
 # Specify user options
 # -----------------------------------------------------------------
-AC_ARG_WITH([nf-config],  [  --with-nf-config=dir       Full path to nf-config [[auto]]])
+AC_ARG_WITH([nf-config],  [  --with-nf-config=dir       Full path to nf-config (or nc-config) [[auto]]])
 AC_ARG_WITH([netcdf-inc], [  --with-netcdf-inc=dir      Specify location of the netCDF include file [[auto]]])
 AC_ARG_WITH([netcdf-lib], [  --with-netcdf-lib=dir:dir  Specify location of the netCDF library.  Use colon-separator if Fortran library is in separate directory [[auto]]])
 AC_ARG_ENABLE([debug],    [  --enable-debug             Compile with debugging options [[off]]])
@@ -73,7 +73,7 @@ AC_MSG_RESULT([$enable_devel])
 # -----------------------------------------------------------------
 # Default settings come from nf-config
 # -----------------------------------------------------------------
-AC_PATH_PROG([nf_config], [nf-config], [$with_nf_config])
+AC_PATH_PROGS([nf_config], [nf-config] [nc-config], [$with_nf_config])
 
 # -----------------------------------------------------------------
 # Find Fortran 90 compilers.

@@ -1350,7 +1350,7 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-nf-config=dir       Full path to nf-config [auto]
+  --with-nf-config=dir       Full path to nf-config (or nc-config) [auto]
   --with-netcdf-inc=dir      Specify location of the netCDF include file [auto]
   --with-netcdf-lib=dir:dir  Specify location of the netCDF library.  Use colon-separator if Fortran library is in separate directory [auto]
 
@@ -2251,8 +2251,10 @@ $as_echo "$enable_devel" >&6; }
 # -----------------------------------------------------------------
 # Default settings come from nf-config
 # -----------------------------------------------------------------
-# Extract the first word of "nf-config", so it can be a program name with args.
-set dummy nf-config; ac_word=$2
+for ac_prog in nf-config nc-config
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
 if ${ac_cv_path_nf_config+:} false; then :
@@ -2278,7 +2280,6 @@ done
   done
 IFS=$as_save_IFS
 
-  test -z "$ac_cv_path_nf_config" && ac_cv_path_nf_config="$with_nf_config"
   ;;
 esac
 fi
@@ -2291,6 +2292,10 @@ else
 $as_echo "no" >&6; }
 fi
 
+
+  test -n "$nf_config" && break
+done
+test -n "$nf_config" || nf_config="$with_nf_config"
 
 
 # -----------------------------------------------------------------
