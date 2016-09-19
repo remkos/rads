@@ -47,6 +47,7 @@ type(rads_sat) :: S
 type(rads_pass) :: P
 character(len=rads_cmdl) :: arg, filenm, dimnm, destdir, product_name, mission_name, xref_orbit_data
 character(len=rads_strl) :: exclude_list = ','
+character(len=2) :: sat = ''
 integer(fourbyteint), parameter :: mpass = 254 * 500
 real(eightbytereal), parameter :: sec2000 = 473299200d0
 integer(fourbyteint) :: i0, i, ncid1, nrec, ios, varid, n_ignore = 0, nr_passes = 770, &
@@ -97,13 +98,21 @@ do
 		cycle
 	endif
 
-! Init RADS, just to get some Sentinel-3 parameters
+! Init RADS, just to get some Sentinel-3 parameters.
+! Do this only once, and make sure the user is only feeding 3A or 3B files.
 
 	call nfs(nf90_get_att(ncid1,nf90_global,'mission_name',mission_name))
-	if (mission_name(:10) == 'Sentinel 3') then
-		call rads_init (S, mission_name(10:11))
-	else
-		call rads_exit ('Error: unknown mission name: '//mission_name)
+	if (mission_name(:10) /= 'Sentinel 3') then
+		call rads_message ('Unknown mission name "'//trim(mission_name)// &
+			'"; skipped file: '//filenm)
+		cycle
+	else if (sat == '') then
+		sat = mission_name(10:11)
+		call rads_init (S, sat)
+	else if (sat /= mission_name(10:11)) then
+		call rads_message ('Mission name "'//trim(mission_name)// &
+			'" not same as former; skipped file: '//filenm)
+		cycle
 	endif
 
 ! Read global attributes
@@ -191,8 +200,10 @@ enddo
 
 ! Dump the remainder of the input files to output
 
-call write_output (0)
-call rads_end (S)
+if (sat /= '') then
+	call write_output (0)
+	call rads_end (S)
+endif
 
 contains
 
