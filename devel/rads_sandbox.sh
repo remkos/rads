@@ -21,7 +21,8 @@
 # rads_close_sandbox - move data from RADS sandbox and remove the sandbox
 # Usage: rads_close_sandbox [additional-rsync-options]
 
-. radsconfig.sh
+export RADSDATAROOT=`rads-config --datadir`
+export RADSROOT=${RADSDATAROOT%/data*}
 
 rads_job=`basename $0 .sh`
 
