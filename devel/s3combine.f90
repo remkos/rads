@@ -50,10 +50,9 @@ character(len=rads_strl) :: exclude_list = ','
 character(len=2) :: sat = ''
 integer(fourbyteint), parameter :: mpass = 254 * 500
 real(eightbytereal), parameter :: sec2000 = 473299200d0
-integer(fourbyteint) :: i0, i, ncid1, nrec, ios, varid, n_ignore = 0, nr_passes = 770, &
+integer(fourbyteint) :: i0, i, ncid1, nrec, ios, varid, in_max = huge(fourbyteint), nr_passes = 770, &
 	pass_number = 0, cycle_number = 0, pass_in, cycle_in, last_time = 0, nfile = 0, orbit_type
 real(eightbytereal), allocatable :: time(:), lat(:), lon(:)
-logical :: backsearch = .false.
 
 ! Print description, if requested
 
@@ -66,18 +65,15 @@ endif
 '  destdir           : Destination directory (appends c???/*.nc)'/ &
 '  list              : List of input files names'// &
 'where [options] are:' / &
-'  -b                : Allow backsearch in already combined files, overwriting with newer' / &
-'  -iNRECS           : Ignore up to NRECS record chunks to move to existing files (def: 0)' / &
+'  -mMAXREC          : Maximum number of records allowed at input' / &
 '  -xVAR1[,VAR2,...] : Exclude variable(s) from copying')
 
 ! Read options and destination directory
 
 do i = 1,iargc()
 	call getarg (i,arg)
-	if (arg(:2) == '-b') then
-		backsearch = .true.
-	else if (arg(:2) == '-i') then
-		read (arg(3:),*) n_ignore
+	if (arg(:2) == '-m') then
+		read (arg(3:), *, iostat=ios) in_max
 	else if (arg(:2) == '-x') then
 		exclude_list = trim(exclude_list) // arg(3:len_trim(arg)) // ','
 	else
@@ -127,9 +123,16 @@ do
 
 	call nfs(nf90_inquire_dimension(ncid1,1,dimnm,nrec))
 	if (dimnm /= 'time_01') stop 'Error reading time dimension'
+	if (nrec > in_max) then
+		call rads_message ('Too many measurements in input file, skipped: '//filenm)
+		cycle
+	endif
 	allocate (time(nrec),lat(nrec),lon(nrec))
 	call nfs(nf90_inq_varid(ncid1,'time_01',varid))
 	call nfs(nf90_get_var(ncid1,varid,time))
+
+! Read latitude and longitude
+
 	call nfs(nf90_inq_varid(ncid1,'lat_01',varid))
 	call nfs(nf90_get_var(ncid1,varid,lat))
 	lat = lat * 1d-6
