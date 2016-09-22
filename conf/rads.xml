@@ -3496,7 +3496,7 @@ Global RADS configuration file
 	<long_name>type of data file used for orbit computation</long_name>
 	<standard_name>height_above_reference_ellipsoid status_flag</standard_name>
 	<flag_values>prediction navatt doris_nav gnss_roe doris_moe poe</flag_values>
-	<plot_range>0 5</plot_range>
+	<limits>0 5</limits>
 	<data>orbit_data_type</data>
 	<format>z1</format>
 	<compress>int1</compress>

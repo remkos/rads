@@ -31,9 +31,9 @@ use netcdf
 
 type(rads_sat) :: S
 type(rads_pass) :: P
-integer(fourbyteint) :: cycle, pass, i, ncid, ios, intervals = 0
+integer(fourbyteint) :: cycle, pass, i, l, ncid, ios, intervals = 0
 type(rads_var), pointer :: var
-logical :: show_x = .false., round = .false.
+logical :: show_x = .false., round = .false., noedit = .false.
 real(eightbytereal) :: factor = 1d0
 character(len=rads_varl) :: prefix = ''
 
@@ -48,7 +48,13 @@ nullify (var)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
 	case ('V', 'var', 'sel')
-		var => rads_varptr(S, rads_opt(i)%arg)
+		l = len_trim(rads_opt(i)%arg)
+		if (rads_opt(i)%arg(l:l) == '_') then
+			var => rads_varptr(S, rads_opt(i)%arg(:l-1))
+			noedit = .true.
+		else
+			var => rads_varptr(S, rads_opt(i)%arg)
+		endif
 	case ('d')
 		read (rads_opt(i)%arg, *, iostat=ios) factor
 	case ('i')
@@ -110,8 +116,8 @@ type(rads_varinfo), pointer :: info
 real(eightbytereal) :: plot_bin, diff_range(2), diff_bin
 info => var%info
 
-! If no plot_range then copy limits
-if (all(isnan_(info%plot_range))) info%plot_range = info%limits
+! If no plot_range or no editing, then copy limits
+if (all(isnan_(info%plot_range)) .or. noedit) info%plot_range = info%limits
 
 ! Centre and scale plot_range to get diff_range for plotting differences
 diff_range = factor * (info%plot_range - 0.5d0 * sum(info%plot_range))
