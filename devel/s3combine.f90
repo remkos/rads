@@ -218,16 +218,18 @@ integer :: which_orbit_type
 character(len=*), intent(in) :: xref_orbit_data
 select case (xref_orbit_data(10:12))
 case ('POE')
-	which_orbit_type = 5
+	which_orbit_type = 6
 case ('MDO')
-	which_orbit_type = 4
+	which_orbit_type = 5
 case ('ROE')
-	which_orbit_type = 3
+	which_orbit_type = 4
 case ('NAV')
-	which_orbit_type = 2
+	which_orbit_type = 3
 case ('NAT')
-	which_orbit_type = 1
+	which_orbit_type = 2
 case ('FPO')
+	which_orbit_type = 1
+case ('OSF')
 	which_orbit_type = 0
 case default
 	which_orbit_type = 127_onebyteint
@@ -257,7 +259,7 @@ real(eightbytereal), allocatable :: darr1(:)
 integer(fourbyteint), allocatable :: iarr1(:)
 logical :: exist
 character(len=26) :: date(3)
-integer(onebyteint), parameter :: flag_values(0:5) = int((/0,1,2,3,4,5/), onebyteint)
+integer(onebyteint), parameter :: flag_values(0:6) = int((/0,1,2,3,4,5,6/), onebyteint)
 
 ! How many records are buffered?
 
@@ -332,7 +334,7 @@ call nfs(nf90_def_var(ncid2,'orbit_data_type',nf90_byte,dimid2,varid3))
 call nfs(nf90_put_att(ncid2,varid3,'long_name','Type of data file used for orbit computation'))
 call nfs(nf90_put_att(ncid2,varid3,'_FillValue',127_onebyteint))
 call nfs(nf90_put_att(ncid2,varid3,'flag_values',flag_values))
-call nfs(nf90_put_att(ncid2,varid3,'flag_meanings','prediction navatt doris_nav gnss_roe doris_moe poe'))
+call nfs(nf90_put_att(ncid2,varid3,'flag_meanings','scenario prediction navatt doris_nav gnss_roe doris_moe poe'))
 call nfs(nf90_put_att(ncid2,varid3,'coordinates','lon_01 lat_01'))
 
 ! Determine equator crossing information

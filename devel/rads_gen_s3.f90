@@ -97,7 +97,7 @@ character(len=rads_cmdl) :: infile, arg
 
 ! Header variables
 
-integer(fourbyteint) :: cyclenr, passnr, varid
+integer(fourbyteint) :: cyclenr, passnr, varid, orbit_data_type_offset
 real(eightbytereal) :: equator_time
 logical :: nrt
 
@@ -189,6 +189,16 @@ do
 
 	call nfs(nf90_get_att(ncid,nf90_global,'references',arg))
 
+! Check for orbit data type
+
+	i = nf90_inq_varid(ncid,'orbit_data_type',varid)
+	i = nf90_get_att(ncid,varid,'flag_meanings',arg)
+	if (arg(1:4) == 'scen') then
+		orbit_data_type_offset = 0
+	else
+		orbit_data_type_offset = 1
+	endif
+
 ! Store input file name
 
 	i = index(infile, '/', .true.) + 1
@@ -214,7 +224,7 @@ do
 	call nc2f ('rain_flag_01_ku',8)					! bit  8: Altimeter rain flag
 	call nc2f ('tb_238_quality_flag_01',9)			! bit  9: Quality 23.8 GHz channel
 	call nc2f ('tb_365_quality_flag_01',10)			! bit 10: Quality 36.5 GHz channel
-	call nc2f ('orbit_data_type',15,le=1)			! bit 15: Quality of orbit
+	call nc2f ('orbit_data_type',15,le=2-orbit_data_type_offset)			! bit 15: Quality of orbit
 
 ! Now do specifics for PLRM
 
@@ -316,7 +326,8 @@ do
 	call cpy_var ('rad_water_vapor_01_ku', 'water_vapor_rad')
 	call cpy_var ('ssha_01_ku', 'ssha')
 	call cpy_var ('ssha_01_plrm_ku', 'ssha_plrm')
-	call cpy_var ('orbit_data_type')
+	call get_var (ncid, 'orbit_data_type', a)
+	call new_var ('orbit_data_type', a + orbit_data_type_offset)
 
 ! Dump the data
 
