@@ -48,6 +48,7 @@ type(rads_pass) :: P
 character(len=rads_cmdl) :: arg, filenm, dimnm, destdir, product_name, mission_name, xref_orbit_data
 character(len=rads_strl) :: exclude_list = ','
 character(len=2) :: sat = ''
+character(len=26) :: date(3)
 integer(fourbyteint), parameter :: mpass = 254 * 500
 real(eightbytereal), parameter :: sec2000 = 473299200d0
 integer(fourbyteint) :: i0, i, ncid1, nrec, ios, varid, in_max = huge(fourbyteint), nr_passes = 770, &
@@ -101,6 +102,7 @@ do
 	if (mission_name(:10) /= 'Sentinel 3') then
 		call rads_message ('Unknown mission name "'//trim(mission_name)// &
 			'"; skipped file: '//filenm)
+		call nfs(nf90_close(ncid1))
 		cycle
 	else if (sat == '') then
 		sat = mission_name(10:11)
@@ -108,6 +110,7 @@ do
 	else if (sat /= mission_name(10:11)) then
 		call rads_message ('Mission name "'//trim(mission_name)// &
 			'" not same as former; skipped file: '//filenm)
+		call nfs(nf90_close(ncid1))
 		cycle
 	endif
 
@@ -125,6 +128,7 @@ do
 	if (dimnm /= 'time_01') stop 'Error reading time dimension'
 	if (nrec > in_max) then
 		call rads_message ('Too many measurements in input file, skipped: '//filenm)
+		call nfs(nf90_close(ncid1))
 		cycle
 	endif
 	allocate (time(nrec),lat(nrec),lon(nrec))
@@ -147,68 +151,74 @@ do
 ! Write out buffer it we are in a new pass
 
 	if (pass_in /= pass_number .or. cycle_in /= cycle_number) then
-		call write_output (0)
+		call write_output
+		nfile = 0
 		pass_number = pass_in
 		cycle_number = cycle_in
 	endif
 	nfile = nfile + 1
+	if (nfile > 20) call rads_exit ('Number of granules too large (> 20)')
 
 ! First advance to beyond the last time tag
+! If none of the records are after last_time, skip the input file
 
-	i0 = 1
-	do while (nint(time(i0)) <= last_time)
-		i0 = i0 + 1
+	do i0 = 1, nrec
+		if (time(i0) > last_time) exit
 	enddo
+	if (i0 > nrec) then
+		call write_line ('Skipping',1,nrec,nrec,time(1),time(nrec),'<',filenm)
+		call nfs(nf90_close(ncid1))
+		cycle
+	endif
+
+! Store the info on this file
+
+	fin(nfile)%ncid = ncid1
+	fin(nfile)%nrec = nrec
+	fin(nfile)%filenm = filenm
+	fin(nfile)%type = orbit_type
+	call fill_fin (i0, nrec)
 
 ! Split the pass where they roll over to a new pass
 
 	do i = max(2,i0),nrec
 		if (lat(i) > lat(i-1) .neqv. modulo(pass_number,2) == 1) then
-			fin(nfile)%ncid = ncid1
-			fin(nfile)%rec0 = i0
-			fin(nfile)%rec1 = i-1
-			fin(nfile)%nrec = nrec
-			fin(nfile)%time0 = time(i0)
-			fin(nfile)%time1 = time(i-1)
-			fin(nfile)%lat0 = lat(i0)
-			fin(nfile)%lat1 = lat(i-1)
-			fin(nfile)%lon0 = lon(i0)
-			fin(nfile)%lon1 = lon(i-1)
-			fin(nfile)%filenm = filenm
-			fin(nfile)%type = orbit_type
-			call write_output (1)
-			i0 = i
+			call fill_fin (i0, i-1)
+			call write_output
+			fin(1) = fin(nfile)
+			nfile = 1
+			call fill_fin (i, nrec)
 			pass_number = pass_number + 1
 			call next_cycle (cycle_number, pass_number)
 		endif
 	enddo
 
-! Assign the remaining bit of the input file to the next output file
+! Deallocate time and location arrays
 
-	fin(nfile)%ncid = ncid1
-	fin(nfile)%rec0 = i0
-	fin(nfile)%rec1 = nrec
-	fin(nfile)%nrec = nrec
-	fin(nfile)%time0 = time(i0)
-	fin(nfile)%time1 = time(nrec)
-	fin(nfile)%lat0 = lat(i0)
-	fin(nfile)%lat1 = lat(nrec)
-	fin(nfile)%lon0 = lon(i0)
-	fin(nfile)%lon1 = lon(nrec)
-	fin(nfile)%filenm = filenm
-	fin(nfile)%type = orbit_type
-	last_time = nint(time(nrec))
 	deallocate (time, lat, lon)
 enddo
 
 ! Dump the remainder of the input files to output
 
-if (sat /= '') then
-	call write_output (0)
-	call rads_end (S)
-endif
+call write_output
+if (sat /= '') call rads_end (S)
 
 contains
+
+!***********************************************************************
+! Fill the array of file information
+
+subroutine fill_fin (i0, i1)
+integer, intent(in) :: i0, i1
+fin(nfile)%rec0 = i0
+fin(nfile)%rec1 = i1
+fin(nfile)%time0 = time(i0)
+fin(nfile)%time1 = time(i1)
+fin(nfile)%lat0 = lat(i0)
+fin(nfile)%lat1 = lat(i1)
+fin(nfile)%lon0 = lon(i0)
+fin(nfile)%lon1 = lon(i1)
+end subroutine fill_fin
 
 !***********************************************************************
 ! Determine the type of orbit used
@@ -250,30 +260,25 @@ end subroutine next_cycle
 !***********************************************************************
 ! Write whatever has been buffered so far to an output file
 
-subroutine write_output (nfile_left)
-integer(fourbyteint), intent(in) :: nfile_left
+subroutine write_output
 integer(fourbyteint) :: nrec, ncid1, ncid2, varid1, varid2, varid3, xtype, ndims, &
-	dimids(2), dimid2, natts, i, n, nvars, idxin(2)=1, idxut(2)=1, nout
+	dimids(2), dimid2, natts, i, nvars, idxin(2)=1, idxut(2)=1, nout
 character(len=rads_naml) :: dirnm, prdnm, outnm, attnm, varnm
 real(eightbytereal), allocatable :: darr1(:)
 integer(fourbyteint), allocatable :: iarr1(:)
 logical :: exist
-character(len=26) :: date(3)
 integer(onebyteint), parameter :: flag_values(0:6) = int((/0,1,2,3,4,5,6/), onebyteint)
 
-! How many records are buffered?
-
-nrec = sum(fin(1:nfile)%rec1 - fin(1:nfile)%rec0 + 1)
-
+! How many records are buffered for output?
 ! Skip if there is nothing left
 
-if (nrec == 0) return
+if (nfile == 0) return
+nrec = sum(fin(1:nfile)%rec1 - fin(1:nfile)%rec0 + 1)
 
 ! Open the output file. Make directory if needed.
 
 605 format (a,'/c',i3.3)
 610 format (a,i3.3,'_',i3.3,a,'.nc')
-620 format (a,' : ',3i6,' : ',a,' - ',a,1x,a,1x,a)
 
 write (dirnm,605) trim(destdir),cycle_number
 inquire (file=dirnm,exist=exist)
@@ -290,10 +295,12 @@ if (exist) then
 	call nfs(nf90_inquire_dimension(ncid2,1,len=nout))
 	call nfs(nf90_close(ncid2))
 	if (nrec <= nout) then
-		do i = 1, nfile - nfile_left
-			call nfs(nf90_close(fin(i)%ncid))
+		do i = 1, nfile
+			call write_line ('Skipping', fin(i)%rec0, fin(i)%rec1, fin(i)%nrec, &
+				fin(i)%time0, fin(i)%time1, '<', fin(i)%filenm)
+			! Release netCDF file when reaching end
+			if (fin(i)%rec1 == fin(i)%nrec) call nfs(nf90_close(fin(i)%ncid))
 		enddo
-		nfile = nfile_left
 		return
 	endif
 	call system('rm -f '//outnm)
@@ -341,15 +348,10 @@ call nfs(nf90_put_att(ncid2,varid3,'coordinates','lon_01 lat_01'))
 
 call rads_predict_equator (S, P, cycle_number, pass_number)
 
-! Convert times to date strings
-
-call strf1985f(date(1),fin(1)%time0+sec2000)
-call strf1985f(date(2),fin(nfile)%time1+sec2000)
-call strf1985f(date(3),P%equator_time)
-
 ! Overwrite some attributes and product name
 
-write (*,620) 'Creating',1,nrec,nrec,date(1:2),'>',trim(outnm)
+call write_line ('Creating', 1, nrec, nrec, fin(1)%time0, fin(nfile)%time1,'>', outnm)
+call strf1985f(date(3),P%equator_time)
 
 call nfs(nf90_put_att(ncid2,nf90_global,'product_name',prdnm))
 call nfs(nf90_put_att(ncid2,nf90_global,'cycle_number',cycle_number))
@@ -369,11 +371,11 @@ call nfs(nf90_enddef(ncid2))
 
 nout = 0
 do i = 1,nfile
-	call strf1985f(date(1),fin(i)%time0+sec2000)
-	call strf1985f(date(2),fin(i)%time1+sec2000)
-	n = fin(i)%rec1 - fin(i)%rec0 + 1
-	allocate (darr1(n),iarr1(n))
-	write (*,620) '.. input',fin(i)%rec0,fin(i)%rec1,fin(i)%nrec,date(1:2),'<',trim(fin(i)%filenm)
+	nrec = fin(i)%rec1 - fin(i)%rec0 + 1
+	if (nrec == 0) stop "nrec == 0"
+	allocate (darr1(nrec),iarr1(nrec))
+	call write_line ('.. input', fin(i)%rec0, fin(i)%rec1, fin(i)%nrec, &
+		fin(i)%time0, fin(i)%time1, '<', fin(i)%filenm)
 	ncid1 = fin(i)%ncid
 	idxin(2) = fin(i)%rec0
 	idxut(2) = nout + 1
@@ -392,19 +394,28 @@ do i = 1,nfile
 	enddo
 	iarr1 = fin(i)%type
 	call nfs(nf90_put_var(ncid2,varid3,iarr1,idxut(2:2)))
-	nout = nout + n
+	nout = nout + nrec
 	deallocate (darr1,iarr1)
+	! Release netCDF file when reaching end
+	if (fin(i)%rec1 == fin(i)%nrec) call nfs(nf90_close(fin(i)%ncid))
 enddo
 
-! Close input and output
+! Close output
 
-do i = 1, nfile - nfile_left
-	call nfs(nf90_close(fin(i)%ncid))
-enddo
 call nfs(nf90_close(ncid2))
-nfile = nfile_left
 
 end subroutine write_output
+
+subroutine write_line (word, rec0, rec1, nrec, time0, time1, dir, filenm)
+character(len=*), intent(in) :: word, dir, filenm
+integer, intent(in) :: rec0, rec1, nrec
+real(eightbytereal), intent(in) :: time0, time1
+call strf1985f(date(1),time0+sec2000)
+call strf1985f(date(2),time1+sec2000)
+write (*,620) word, rec0, rec1, nrec, date(1:2), dir, trim(filenm)
+620 format (a,' : ',3i6,' : ',a,' - ',a,1x,a1,1x,a)
+end subroutine write_line
+
 
 function excluded (varnm)
 character(len=*), intent(in) :: varnm
