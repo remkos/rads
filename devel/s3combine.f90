@@ -389,7 +389,7 @@ do i = 1,nfile
 	do varid1 = 1,nvars
 		call nfs(nf90_inquire_variable(ncid1,varid1,varnm,xtype,ndims,dimids,natts))
 		if (excluded(varnm) .or. ndims > 1 .or. dimids(1) > 1 .or. xtype == nf90_uint) cycle
-		varid2 = varid2 + 1
+		call nfs(nf90_inq_varid(ncid2,varnm,varid2))
 		if (xtype == nf90_double) then
 			call nfs(nf90_get_var(ncid1,varid1,darr1,idxin(2:2)))
 			call nfs(nf90_put_var(ncid2,varid2,darr1,idxut(2:2)))
