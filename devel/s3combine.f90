@@ -52,8 +52,9 @@ character(len=26) :: date(3)
 integer(fourbyteint), parameter :: mpass = 254 * 500
 real(eightbytereal), parameter :: sec2000 = 473299200d0
 integer(fourbyteint) :: i0, i, ncid1, nrec, ios, varid, in_max = huge(fourbyteint), nr_passes = 770, &
-	pass_number = 0, cycle_number = 0, pass_in, cycle_in, last_time = 0, nfile = 0, orbit_type
+	pass_number = 0, cycle_number = 0, pass_in, cycle_in, nfile = 0, orbit_type
 real(eightbytereal), allocatable :: time(:), lat(:), lon(:)
+real(eightbytereal) :: last_time = 0
 
 ! Print description, if requested
 
@@ -150,48 +151,45 @@ do
 
 ! Write out buffer it we are in a new pass
 
-	if (pass_in /= pass_number .or. cycle_in /= cycle_number) then
+	if (cycle_in * 1000 + pass_in > cycle_number * 1000 + pass_number) then
 		call write_output
-		nfile = 0
 		pass_number = pass_in
 		cycle_number = cycle_in
 	endif
-	nfile = nfile + 1
-	if (nfile > 20) call rads_exit ('Number of granules too large (> 20)')
 
 ! First advance to beyond the last time tag
-! If none of the records are after last_time, skip the input file
 
 	do i0 = 1, nrec
 		if (time(i0) > last_time) exit
 	enddo
+	if (i0 > 1) call write_line ('... skip', 1, i0-1, nrec, time(1), time(i0-1), '<', filenm)
+
+! If none of the records are after last_time, skip the whole input file
+
 	if (i0 > nrec) then
-		call write_line ('Skipping',1,nrec,nrec,time(1),time(nrec),'<',filenm)
 		call nfs(nf90_close(ncid1))
+		deallocate (time, lat, lon)
 		cycle
 	endif
-
-! Store the info on this file
-
-	fin(nfile)%ncid = ncid1
-	fin(nfile)%nrec = nrec
-	fin(nfile)%filenm = filenm
-	fin(nfile)%type = orbit_type
-	call fill_fin (i0, nrec)
+	last_time = time(nrec)
 
 ! Split the pass where they roll over to a new pass
+! Also skip duplicated measurements within a single file
 
 	do i = max(2,i0),nrec
-		if (lat(i) > lat(i-1) .neqv. modulo(pass_number,2) == 1) then
+		if (time(i) == time(i-1)) then
+			call fill_fin (i0, i-2)
+			call write_line ('... skip', i-1, i-1, nrec, time(i-1), time(i-1), '<', filenm)
+			i0 = i
+		else if (lat(i) > lat(i-1) .neqv. modulo(pass_number,2) == 1) then
 			call fill_fin (i0, i-1)
 			call write_output
-			fin(1) = fin(nfile)
-			nfile = 1
-			call fill_fin (i, nrec)
+			i0 = i
 			pass_number = pass_number + 1
 			call next_cycle (cycle_number, pass_number)
 		endif
 	enddo
+	call fill_fin (i0, nrec)
 
 ! Deallocate time and location arrays
 
@@ -210,6 +208,12 @@ contains
 
 subroutine fill_fin (i0, i1)
 integer, intent(in) :: i0, i1
+nfile = nfile + 1
+if (nfile > 20) call rads_exit ('Number of granules too large (> 20)')
+fin(nfile)%ncid = ncid1
+fin(nfile)%nrec = nrec
+fin(nfile)%filenm = filenm
+fin(nfile)%type = orbit_type
 fin(nfile)%rec0 = i0
 fin(nfile)%rec1 = i1
 fin(nfile)%time0 = time(i0)
@@ -218,6 +222,7 @@ fin(nfile)%lat0 = lat(i0)
 fin(nfile)%lat1 = lat(i1)
 fin(nfile)%lon0 = lon(i0)
 fin(nfile)%lon1 = lon(i1)
+call write_line ('.. input', i0, i1, nrec, time(i0), time(i1), '<', filenm)
 end subroutine fill_fin
 
 !***********************************************************************
@@ -293,18 +298,21 @@ inquire (file=outnm,exist=exist)
 if (exist) then
 	call nfs(nf90_open(outnm,nf90_nowrite,ncid2))
 	call nfs(nf90_inquire_dimension(ncid2,1,len=nout))
+	call nfs(nf90_get_att(ncid2,nf90_global,'first_meas_time',date(1)))
+	call nfs(nf90_get_att(ncid2,nf90_global,'last_meas_time',date(2)))
 	call nfs(nf90_close(ncid2))
 	if (nrec <= nout) then
 		do i = 1, nfile
-			call write_line ('Skipping', fin(i)%rec0, fin(i)%rec1, fin(i)%nrec, &
-				fin(i)%time0, fin(i)%time1, '<', fin(i)%filenm)
 			! Release netCDF file when reaching end
 			if (fin(i)%rec1 == fin(i)%nrec) call nfs(nf90_close(fin(i)%ncid))
 		enddo
+		write (*,620) 'Keeping ', 1, nout, nout, date(1:2), '>', trim(outnm)
+		nfile = 0
 		return
 	endif
 	call system('rm -f '//outnm)
 endif
+620 format (a,' : ',3i6,' : ',a,' - ',a,1x,a1,1x,a)
 
 ! Create a new file
 
@@ -374,8 +382,6 @@ do i = 1,nfile
 	nrec = fin(i)%rec1 - fin(i)%rec0 + 1
 	if (nrec == 0) stop "nrec == 0"
 	allocate (darr1(nrec),iarr1(nrec))
-	call write_line ('.. input', fin(i)%rec0, fin(i)%rec1, fin(i)%nrec, &
-		fin(i)%time0, fin(i)%time1, '<', fin(i)%filenm)
 	ncid1 = fin(i)%ncid
 	idxin(2) = fin(i)%rec0
 	idxut(2) = nout + 1
@@ -403,6 +409,7 @@ enddo
 ! Close output
 
 call nfs(nf90_close(ncid2))
+nfile = 0
 
 end subroutine write_output
 
