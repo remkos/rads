@@ -185,10 +185,6 @@ do
 	call nfs(nf90_get_att(ncid,nf90_global,'last_meas_time',arg))
 	P%end_time = strp1985f(arg)
 
-! Determine L2 processing version
-
-	call nfs(nf90_get_att(ncid,nf90_global,'references',arg))
-
 ! Check for orbit data type
 
 	i = nf90_inq_varid(ncid,'orbit_data_type',varid)
@@ -199,10 +195,14 @@ do
 		orbit_data_type_offset = 1
 	endif
 
+! Determine L2 processing version
+
+	call nfs(nf90_get_att(ncid,nf90_global,'source',arg))
+
 ! Store input file name
 
 	i = index(infile, '/', .true.) + 1
-	P%original = trim(infile(i:)) // ' (' // arg // ')'
+	P%original = trim(infile(i:)) // ' (' // trim(arg) // ')'
 
 ! Allocate variables
 
