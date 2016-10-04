@@ -2461,11 +2461,24 @@ Global RADS configuration file
 
 <var name="surface_type" field="2517">
 	<long_name>surface type</long_name>
-	<flag_values>open_ocean unused enclosed_sea_or_lake land continental_ice floating_ice salted_basin</flag_values>
+	<flag_values>open_ocean unused enclosed_sea_or_lake land continental_ice</flag_values>
 	<data source="flags">surface_type</data>
+	<source>GSHHG 2.3.6 coastlines</source>
+	<plot_range>0 4</plot_range>
+	<parameters>surface_type/landmask_GSHHG_2.3.6.nc</parameters>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+
+<var name="surface_class" field="2518" sat="3a 3b">
+	<long_name>surface classification</long_name>
+	<flag_values>open_ocean land continental_water aquatic_vegetation continental_ice_snow floating_ice salted_basin</flag_values>
+	<parameters>surface_type/S3__SR_2_SURFAX_ver2b.nc</parameters>
+	<data>surface_class</data>
 	<plot_range>0 6</plot_range>
 	<format>z1</format>
 	<compress>int1</compress>
+	<comment>Computed from a mask built with MODIS and GlobCover data</comment>
 </var>
 
 <var name="flags" field="2601 26">

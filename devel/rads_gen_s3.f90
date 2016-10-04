@@ -214,10 +214,11 @@ do
 	flags = 0
 	call nc2f ('instr_op_mode_01',0,ge=1)			! bit  0: Altimeter mode
 	call nc2f ('val_alt_off_nadir_angle_wf_ocean_01_plrm_ku',1)	! bit  1: Quality off-nadir pointing
-	call nc2f ('surf_type_01',2,eq=2)				! bit  2: Continental ice
+	call nc2f ('surf_class_01',2,eq=4)				! bit  2: Continental ice
 	call nc2f ('range_ocean_qual_01_c',3)			! bit  3: Quality dual-frequency iono
-	call nc2f ('surf_type_01',4,ge=2)				! bit  4: Water/land
-	call nc2f ('surf_type_01',5,ge=1)				! bit  5: Ocean/other
+	call nc2f ('surf_class_01',4,eq=1)
+	call nc2f ('surf_class_01',4,ge=3)				! bit  4: Water/land
+	call nc2f ('surf_class_01',5,ge=1)				! bit  5: Ocean/other
 	call nc2f ('rad_surf_type_01',6,ge=2)			! bit  6: Radiometer land flag
 	call nc2f ('rain_flag_01_ku',7)
 	call nc2f ('open_sea_ice_flag_01_ku',7)			! bit  7: Altimeter rain or ice flag
@@ -328,6 +329,7 @@ do
 	call cpy_var ('ssha_01_plrm_ku', 'ssha_plrm')
 	call get_var (ncid, 'orbit_data_type', a)
 	call new_var ('orbit_data_type', a + orbit_data_type_offset)
+	call cpy_var ('surf_class_01', 'surface_class')
 
 ! Dump the data
 
