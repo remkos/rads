@@ -33,6 +33,7 @@ use rads_devel
 type(rads_sat) :: S
 type(rads_pass) :: P
 type(grid) :: info
+type(rads_var), pointer :: var
 integer :: i
 
 ! Command line arguments
@@ -56,13 +57,15 @@ do i = 1,rads_nopt
 	end select
 enddo
 
-! Load the surface_type grid
+! Load the surface type/class grid
 
 if (sentinel) then
-	call parseenv ('${ALTIM}/data/surface_type/S3__SR_2_SURFAX_ver2.nc', filename)
+	var => rads_varptr (S, 'surface_class')
 else
-	call parseenv ('${ALTIM}/data/landmask.nc', filename)
+	var => rads_varptr (S, 'surface_type')
 endif
+call parseenv ('${ALTIM}/data/' // var%info%parameters, filename)
+
 call log_string ('Loading mask '//filename)
 if (grid_load (filename, info) /= 0) call rads_exit ('Error loading surface type grid')
 call log_string ('done', .true.)
@@ -159,7 +162,6 @@ do i = 1,n
 	! When using 7-level Sentinel-3 mask
 	if (sentinel) then
 		surf = nint(grid_query (info, lon(i), lat(i)))
-		if (surf == 1 .or. surf == 7) surf = 3 ! land, undefined
 
 	! When using old-style GMT land mask
 	else if (btest(flag,2) .or. surf == 4) then	! continental ice
@@ -170,24 +172,24 @@ do i = 1,n
 		if (surf == 4) surf = 2 ! pond
 	endif
 
-	! Set of clear bits
+	! Clear or set bits
 	! bit 2: continental ice
-	if (surf == 4) then
-		flag = ibset (flag, 2)
-	else
+	if (surf /= 4) then
 		flag = ibclr (flag, 2)
+	else
+		flag = ibset (flag, 2)
 	endif
 	! bit 4: water/dry
-	if (surf >= 3) then
-		flag = ibset (flag, 4)
-	else
+	if (surf == 0 .or. surf == 2) then
 		flag = ibclr (flag, 4)
+	else
+		flag = ibset (flag, 4)
 	endif
 	! bit 5: ocean/land
-	if (surf >= 2) then
-		flag = ibset (flag, 4)
-	else
+	if (surf == 0) then
 		flag = ibclr (flag, 4)
+	else
+		flag = ibset (flag, 4)
 	endif
 
 	! Store the values in array
@@ -199,9 +201,9 @@ enddo
 
 call rads_put_history (S, P)
 call rads_def_var (S, P, 'flags')
-call rads_def_var (S, P, 'surface_type')
+call rads_def_var (S, P, var)
 call rads_put_var (S, P, 'flags', flags)
-call rads_put_var (S, P, 'surface_type', surface_type)
+call rads_put_var (S, P, var, surface_type)
 
 call log_records (n)
 end subroutine process_pass
