@@ -28,6 +28,14 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 ## Version History
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 
+### v4.2.5 (6 Oct 2016)
+* Updates to manuals (e.g., issue #99).
+* Numerous updates for the generation of RADS data for Sentinel-3 and Jason-3 (developer tools only).
+* Bug fix: nesting of \<if\> tags could go wrong when reading XML files.
+* Installation: use nc-config if nf-config is not supplied.
+* Adjustments for SARAL Drift Mission
+* Preparation for Jason-2 Interleaved Mission.
+
 ### v4.2.4 (6 June 2016)
 * Bug fix (issue #97), which prevented radsxogen from running properly. This error was introduced in the master on 1 May 2016 (v4.2.2).
 * Enhancements to the user manual.
