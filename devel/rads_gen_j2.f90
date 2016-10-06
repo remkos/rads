@@ -85,6 +85,7 @@ use netcdf
 
 integer(fourbyteint) :: i, j, ios
 character(len=rads_cmdl) :: infile, arg
+character(len=1) :: phasenm = ''
 
 ! Header variables
 
@@ -160,6 +161,15 @@ do
 		call log_string ('Skipped', .true.)
 		cycle
 	endif
+
+! Update phase name if required
+
+	if (cyclenr < 305) then
+		phasenm = 'a'
+	else
+		phasenm = 'b'
+	endif
+	if (S%phase%name /= phasenm) S%phase => rads_get_phase (S, phasenm)
 
 ! Store relevant info
 

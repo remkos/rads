@@ -3796,10 +3796,17 @@ Global RADS configuration file
 	<xover_params>0.04 0.035</xover_params>
 	<phase name="a">
 		<mission>Exact Repeat Mission</mission>
-		<cycles>0 999</cycles>
+		<cycles>0 303</cycles>
 		<repeat>9.91564280 254</repeat>
 		<ref_pass>2008-07-12T01:48:13 99.92 1 1</ref_pass>
 		<start_time>2008-07-04</start_time>
+	</phase>
+	<phase name="b">
+		<mission>Interleaved Mission</mission>
+		<cycles>305 999</cycles>
+		<repeat>9.91564280 254</repeat>
+		<ref_pass>2016-10-17T09:24:23 98.50 306 1</ref_pass><!--May need to be changed-->
+		<start_time>2016-10-14</start_time>
 	</phase>
 </if>
 
