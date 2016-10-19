@@ -67,7 +67,7 @@ program rads_gen_s3
 ! topo_ace2 - ACE2 topography
 ! geoid_egm2008 - EGM2008 geoid
 ! mss_cnescls11 - CNES/CLS11 mean sea surface
-! mss_dtu10 - DTU10 mean sea surface
+! mss_dtu13 - DTU13 mean sea surface
 ! tb_238 - Brightness temperature (23.8 GHz)
 ! tb_365 - Brightness temperature (36.5 GHz)
 ! flags, flags_plrm - Engineering flags
@@ -285,7 +285,7 @@ do
 	call get_var (ncid, 'mean_sea_surf_sol1_01', a)
 	call new_var ('mss_cnescls11', a + dh)
 	call get_var (ncid, 'mean_sea_surf_sol2_01', a)
-	call new_var ('mss_dtu10', a + dh)
+	call new_var ('mss_dtu13', a + dh)
 	call cpy_var ('swh_ocean_01_ku', 'swh_ku')
 	call cpy_var ('swh_ocean_01_plrm_ku', 'swh_ku_plrm')
 	call cpy_var ('swh_ocean_01_c', 'swh_c')
