@@ -60,7 +60,7 @@ program rads_gen_s3
 ! wind_speed_rad - Radiometer wind speed
 ! wind_speed_ecmwf_u - ECMWF wind speed (U)
 ! wind_speed_ecmwf_v - ECMWF wind speed (V)
-! tide_ocean/load_got48 - GOT4.8 ocean and load tide
+! tide_ocean/load_got410 - GOT4.10c ocean and load tide
 ! tide_ocean/load_fes04 - FES2004 ocean  and loadtide
 ! tide_pole - Pole tide
 ! tide_solid - Solid earth tide
@@ -272,9 +272,9 @@ do
 		call cpy_var ('inv_bar_cor_01 hf_fluct_cor_01 ADD', 'inv_bar_mog2d')
 	endif
 	call cpy_var ('solid_earth_tide_01', 'tide_solid')
-	call cpy_var ('ocean_tide_sol1_01 load_tide_sol1_01 SUB', 'tide_ocean_got48')
+	call cpy_var ('ocean_tide_sol1_01 load_tide_sol1_01 SUB', 'tide_ocean_got410')
 	call cpy_var ('ocean_tide_sol2_01 load_tide_sol2_01 SUB', 'tide_ocean_fes04')
-	call cpy_var ('load_tide_sol1_01', 'tide_load_got48')
+	call cpy_var ('load_tide_sol1_01', 'tide_load_got410')
 	call cpy_var ('load_tide_sol2_01', 'tide_load_fes04')
 	call cpy_var ('pole_tide_01', 'tide_pole')
 	call cpy_var ('sea_state_bias_01_ku', 'ssb_cls')
