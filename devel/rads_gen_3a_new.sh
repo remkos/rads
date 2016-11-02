@@ -60,6 +60,7 @@ rads_add_orbit  $options -Valt_cnes --dir=poe >> $log 2>&1
 rads_add_common $options >> $log 2>&1
 rads_add_mog2d  $options >> $log 2>&1
 rads_add_ncep   $options -gdwi >> $log 2>&1
+rads_add_ecmwf  $options -dwui >> $log 2>&1
 rads_add_iono   $options -gn >> $log 2>&1
 # Redetermine SSHA
 rads_add_sla    $options >> $log 2>&1

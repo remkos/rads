@@ -65,6 +65,7 @@ for type in ${types}; do
 	rads_add_common -S${fix} >> $log 2>&1
 	rads_add_mog2d  -S${fix} >> $log 2>&1
 	rads_add_ncep   -S${fix} -gdwi >> $log 2>&1
+	rads_add_ecmwf  -S${fix} -dwui >> $log 2>&1
 	rads_add_iono   -S${fix} -gn >> $log 2>&1
 # Redetermine SSHA
 	rads_add_sla    -S${fix} >> $log 2>&1
