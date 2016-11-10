@@ -1500,6 +1500,7 @@ Global RADS configuration file
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
 </var>
+<!--
 <var name="mss_dtu10" field="1614">
 	<long_name>DTU10 mean sea surface height</long_name>
 	<source>DTU10</source>
@@ -1509,6 +1510,7 @@ Global RADS configuration file
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
 </var>
+-->
 <var name="mss_cnescls11" field="1615">
 	<long_name>CNES-CLS11 mean sea surface height</long_name>
 	<source>CNES-CLS11</source>
@@ -3288,7 +3290,7 @@ Global RADS configuration file
 	<parameters sat="g1">  70   0  0  0 0</parameters>
 	<parameters sat="j1">  83   0  0  0 0</parameters>
 	<parameters sat="j2"> -18   0  0  0 0</parameters>
-	<parameters sat="j3">   0   0  0  0 0</parameters>
+	<parameters sat="j3"> -46   0  0  0 0</parameters>
 	<parameters sat="n1"> 449   0  0  0 0</parameters>
 	<parameters sat="pn"> -15   0  0  0 0</parameters>
 	<parameters sat="sa"> -61   0  0  0 0</parameters>

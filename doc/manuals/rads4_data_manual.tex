@@ -548,7 +548,6 @@ Another reference surface is the geoid (the theoretical mean sea surface in abse
 
 \begin{vartable}
 \var{mss_egm2008} & 1610 & EGM2008 mean sea surface & m & all & -200 200 & \ref{item:mss_egm2008} \\
-\var{mss_dtu10} & 1613 & DTU10 mean sea surface & m & e1 e2 gs g1 tx n1 j1 & -200 200 & \ref{item:mss_dtu10} \\
 \var{mss_cls11} & 1614 & CNES-CLS11 mean sea surface & m & all & -200 200 & \ref{item:mss_cls11} \\
 \var{mss_dtu13} & 1616 & DTU13 mean sea surface & m & all & -200 200 & \ref{item:mss_dtu13} \\
 \var{mss_dtu15} & 1616 & DTU15 mean sea surface & m & c2 j2 j3 sa & -200 200 & \ref{item:mss_dtu15} \\
@@ -562,7 +561,6 @@ Another reference surface is the geoid (the theoretical mean sea surface in abse
 
 \begin{notes}
 \item Combined geoid and mean sea surface solution \citep{pavlis2008}.\label{item:mss_egm2008}\label{item:geoid_egm2008}
-\item The DTU10 mean sea surface model was created at DTU and based on RADS altimeter data \citep{andersen2010}. It is a follow-on of the DNSC08 mean sea surface model \citep{andersen2009}. \textbf{This field is slated to be removed from all datasets.}\label{item:mss_dtu10}
 \item Newest iteration of mean sea surface models at CNES/CLS \citep{schaeffer2012}.\label{item:mss_cls11}
 \item The DTU13MSS is the penultimate release of the global high-resolution mean sea surface from DTU Space, which includes two major advances over DTU10MSS. First, the time series have been extended to 20 years from 17 years. Second, the DTU13MSS ingests Cryosat-2 SAR lead data in order to map the high latitude parts of the Arctic Ocean. In high-latitude regions a combination of joint ERS-1/ERS-2/ENVISAT and Cryosat-2 altimetry have been used. Also, the Jason-1 geodetic mission has been used for the DTU13MSS \citep{andersen2013a}. This is the default mean sea surface model and is used as reference for the sea level anomaly variable (\var{sla}).\label{item:mss_dtu13}
 \item The DTU15MSS is the latest state-of-the-art of the global high-resolution mean sea surface derived by DTU Space from satellite altimetry. The main improvement over DTU13 is the inclusion of four years of CryoSat-2 data, with a new treatment of orbit errors and ice classification \citep{stenseng2015}.\textbf{This model is slowly phased in into RADS4 and is intended to replace in the near future DTU13 as the default mean sea surface.}\label{item:mss_dtu15}
@@ -823,7 +821,7 @@ V10 of SRTM30\_PLUS was released in May 2014.
 For more information about SRTM30\_PLUS, please see:
 \url{http://topex.ucsd.edu/WWW_html/srtm30_plus.html}
 \label{item:topo_srtm30plus}
-\item The DTU10 topography/bathymetry model was derived from altimeter data together with the DTU10 mean sea surface model (\var{mss_dtu10}) \citep{andersen2010} and is an update of the DNSC08 bathymetry model \citep{andersen2009a}. It is not clear where the topographic (land) data stem from. The model is interpolated to the altimeter ground track location.\label{item:topo_dtu10}
+\item The DTU10 topography/bathymetry model was derived from altimeter data together with the DTU10 mean sea surface model \citep{andersen2010} and is an update of the DNSC08 bathymetry model \citep{andersen2009a}. It is not clear where the topographic (land) data stem from. The model is interpolated to the altimeter ground track location.\label{item:topo_dtu10}
 \end{notes}
 
 \section{Distance from coast and coastal proximity parameter}
