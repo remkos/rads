@@ -79,7 +79,7 @@ program rads_gen_jason
 !
 ! Extensions _* are:
 ! _ku:      Ku-band retracked with MLE4
-! _ku_mle3: Ku-band retracked with MLE3
+! _ku_mle3: Ku-band retracked with MLE3 (not for Jason-1)
 ! _c:       C-band
 !-----------------------------------------------------------------------
 use rads
@@ -101,7 +101,7 @@ character(len=1) :: phasenm = ''
 
 integer(fourbyteint) :: cyclenr, passnr, varid
 real(eightbytereal) :: equator_time
-logical :: ogdr = .false., gdre = .false.
+logical :: ogdr = .false., gdre = .false., mle3 = .true.
 
 ! Data variables
 
@@ -159,6 +159,7 @@ do
 ! Get the mission name and initialise RADS (if not done before)
 
 	call nfs(nf90_get_att(ncid,nf90_global,'mission_name',arg))
+	mle3 = (arg /= 'Jason-1')
 	select case (arg)
 	case ('Jason-1')
 		arg = 'j1'
@@ -265,13 +266,15 @@ do
 
 ! Now do specifics for MLE3 (not used for the time being)
 
-	flags_save = flags	! Keep flags for later
-	call nc2f ('qual_alt_1hz_range_ku_mle3',3)		! bit  3: Quality dual-frequency iono
-	call nc2f ('qual_alt_1hz_range_ku_mle3',11)		! bit 11: Quality range
-	call nc2f ('qual_alt_1hz_swh_ku_mle3',12)		! bit 12: Quality SWH
-	call nc2f ('qual_alt_1hz_sig0_ku_mle3',13)		! bit 13: Quality Sigma0
-	flags_mle3 = flags	! Copy result for MLE3
-	flags = flags_save	! Continue with MLE4 flags
+	if (mle3) then
+		flags_save = flags	! Keep flags for later
+		call nc2f ('qual_alt_1hz_range_ku_mle3',3)		! bit  3: Quality dual-frequency iono
+		call nc2f ('qual_alt_1hz_range_ku_mle3',11)		! bit 11: Quality range
+		call nc2f ('qual_alt_1hz_swh_ku_mle3',12)		! bit 12: Quality SWH
+		call nc2f ('qual_alt_1hz_sig0_ku_mle3',13)		! bit 13: Quality Sigma0
+		flags_mle3 = flags	! Copy result for MLE3
+		flags = flags_save	! Continue with MLE4 flags
+	endif
 
 ! Redo the last ones for MLE4
 
@@ -293,13 +296,13 @@ do
 	endif
 	call cpy_var ('orb_alt_rate', 'alt_rate')
 	call cpy_var ('range_ku')
-	call cpy_var ('range_ku_mle3')
+	if (mle3) call cpy_var ('range_ku_mle3')
 	call cpy_var ('range_c')
 	call cpy_var ('model_dry_tropo_corr', 'dry_tropo_ecmwf')
 	call cpy_var ('rad_wet_tropo_corr', 'wet_tropo_rad')
 	call cpy_var ('model_wet_tropo_corr', 'wet_tropo_ecmwf')
 	call cpy_var ('iono_corr_alt_ku', 'iono_alt')
-	call cpy_var ('iono_corr_alt_ku_mle3', 'iono_alt_mle3')
+	if (mle3) call cpy_var ('iono_corr_alt_ku_mle3', 'iono_alt_mle3')
 	if (.not.ogdr) call cpy_var ('iono_corr_gim_ku', 'iono_gim')
 	call cpy_var ('inv_bar_corr', 'inv_bar_static')
 	if (ogdr) then
@@ -310,9 +313,9 @@ do
 	call cpy_var ('solid_earth_tide', 'tide_solid')
 	if (gdre) then
 		call cpy_var ('ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got410')
-		call cpy_var ('ocean_tide_sol2 load_tide_sol2 SUB', 'tide_ocean_got48')
+		call cpy_var ('ocean_tide_sol2 load_tide_sol2 SUB', 'tide_ocean_fes14')
 		call cpy_var ('load_tide_sol1', 'tide_load_got410')
-		call cpy_var ('load_tide_sol2', 'tide_load_got48')
+		call cpy_var ('load_tide_sol2', 'tide_load_fes14')
 	else
 		call cpy_var ('ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got48')
 		call cpy_var ('ocean_tide_sol2 load_tide_sol2 SUB', 'tide_ocean_fes04')
@@ -321,7 +324,7 @@ do
 	endif
 	call cpy_var ('pole_tide', 'tide_pole')
 	call cpy_var ('sea_state_bias_ku', 'ssb_cls')
-	call cpy_var ('sea_state_bias_ku_mle3', 'ssb_cls_mle3')
+	if (mle3) call cpy_var ('sea_state_bias_ku_mle3', 'ssb_cls_mle3')
 	call cpy_var ('sea_state_bias_c', 'ssb_cls_c')
 	if (gdre) then
 		call cpy_var ('geoid', 'geoid_egm2008')
@@ -330,21 +333,21 @@ do
 	endif
 	call cpy_var ('mean_sea_surface', 'mss_cnescls11')
 	call cpy_var ('swh_ku')
-	call cpy_var ('swh_ku_mle3')
+	if (mle3) call cpy_var ('swh_ku_mle3')
 	call cpy_var ('swh_c')
 	call cpy_var ('sig0_ku')
-	call cpy_var ('sig0_ku_mle3')
+	if (mle3) call cpy_var ('sig0_ku_mle3')
 	call cpy_var ('sig0_c')
 	call cpy_var ('wind_speed_alt')
-	call cpy_var ('wind_speed_alt_mle3')
+	if (mle3) call cpy_var ('wind_speed_alt_mle3')
 	call cpy_var ('wind_speed_rad')
 	call cpy_var ('wind_speed_model_u', 'wind_speed_ecmwf_u')
 	call cpy_var ('wind_speed_model_v', 'wind_speed_ecmwf_v')
 	call cpy_var ('range_rms_ku')
-	call cpy_var ('range_rms_ku_mle3')
+	if (mle3) call cpy_var ('range_rms_ku_mle3')
 	call cpy_var ('range_rms_c')
 	call cpy_var ('range_numval_ku')
-	call cpy_var ('range_numval_ku_mle3')
+	if (mle3) call cpy_var ('range_numval_ku_mle3')
 	call cpy_var ('range_numval_c')
 	call cpy_var ('bathymetry', 'topo_dtm2000')
 	call cpy_var ('tb_187')
@@ -352,13 +355,15 @@ do
 	call cpy_var ('tb_340')
 	a = flags
 	call new_var ('flags', a)
-	a = flags_mle3
-	call new_var ('flags_mle3', a)
+	if (mle3) then
+		a = flags_mle3
+		call new_var ('flags_mle3', a)
+	endif
 	call cpy_var ('swh_rms_ku')
-	call cpy_var ('swh_rms_ku_mle3')
+	if (mle3) call cpy_var ('swh_rms_ku_mle3')
 	call cpy_var ('swh_rms_c')
 	call cpy_var ('sig0_rms_ku')
-	call cpy_var ('sig0_rms_ku_mle3')
+	if (mle3) call cpy_var ('sig0_rms_ku_mle3')
 	call cpy_var ('sig0_rms_c')
 	call cpy_var ('off_nadir_angle_wf_ku', 'off_nadir_angle2_wf_ku')
 	call cpy_var ('atmos_corr_sig0_ku', 'dsig0_atmos_ku')
@@ -366,7 +371,7 @@ do
 	call cpy_var ('rad_liquid_water', 'liquid_water_rad')
 	call cpy_var ('rad_water_vapor', 'water_vapor_rad')
 	call cpy_var ('ssha', 'ssha')
-	call cpy_var ('ssha_mle3', 'ssha_mle3')
+	if (mle3) call cpy_var ('ssha_mle3')
 
 ! Dump the data
 
