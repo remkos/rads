@@ -13,24 +13,33 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*rads_gen_jason -- Converts Jason-3 data to RADS
+!*rads_gen_jason -- Converts Jason-1/2/3 data to RADS
 !+
 program rads_gen_jason
 
-! This program reads Jason-3 (O/I)GDR files and converts them to the RADS format,
-! written into files $RADSDATAROOT/data/j3/a/j3pPPPPcCCC.nc.
+! This program reads Jason-1/2/3 (O/I)GDR files and converts them to the RADS format,
+! written into files $RADSDATAROOT/data/jJ/a/jJpPPPPcCCC.nc.
+!    jJ = Jason satellite abbreviation
 !  PPPP = relative pass number
 !   CCC = cycle number
 !
 ! syntax: rads_gen_jason [options] < list_of_JASON3_file_names
 !
-! This program handles Jason-3 OGDR, IGDR and GDR files in netCDF format.
+! This program handles Jason-1, -2 and -3 OGDR, IGDR and GDR files in netCDF format.
 ! The format is described in:
 !
-! [1] Jason-3 Products Handbook, SALP-MU-M-OP-16118-CN (CNES)
+! [1] IGDR and GDR Jason Products, AVISO and PODAAC User Handbook,
+!     SMM-MU-M5-OP-13184-CN (AVISO), JPL D-21352 (PODAAC),
+!     Edition 4.0, June 2008
+!
+! [2] OSTM/Jason-2 Products Handbook, SALP-MU-M-OP-15815-CN (CNES),
+!     EUM/OPS-JAS/MAN/08/0041 (EUMETSAT), OSTM-29-1237 (JPL),
+!     Version 1.8, 1 Dec 2011.
+!
+! [3] Jason-3 Products Handbook, SALP-MU-M-OP-16118-CN (CNES)
 !     Version 1.0, 9 July 2012
 !
-! [2] SALP Products Specification - Volume 30: Jason-3 Products
+! [4] SALP Products Specification - Volume 30: Jason-3 Products
 !     SALP-ST-M-EA-16122-CN, Version 1.2, 9 December 2013
 !-----------------------------------------------------------------------
 !
@@ -38,7 +47,7 @@ program rads_gen_jason
 ! time - Time since 1 Jan 85
 ! lat - Latitude
 ! lon - Longitude
-! alt_gdre - Orbit altitude
+! alt_gdrd, alt_gdre - Orbit altitude
 ! alt_rate - Orbit altitude rate
 ! range_* - Ocean range (retracked)
 ! dry_tropo_ecmwf - ECMWF dry tropospheric correction
@@ -84,14 +93,15 @@ use netcdf
 
 ! Command line arguments
 
-integer(fourbyteint) :: ios, i, j
+integer(fourbyteint) :: ios, i, j, q, r
 character(len=rads_cmdl) :: infile, arg
+character(len=1) :: phasenm = ''
 
 ! Header variables
 
 integer(fourbyteint) :: cyclenr, passnr, varid
 real(eightbytereal) :: equator_time
-logical :: ogdr
+logical :: ogdr = .false., gdre = .false.
 
 ! Data variables
 
@@ -104,9 +114,9 @@ real(eightbytereal), parameter :: sec2000=473299200d0	! UTC seconds from 1 Jan 1
 ! Initialise
 
 call synopsis
-call rads_gen_getopt ('j3')
+call rads_gen_getopt ('')
 call synopsis ('--head')
-call rads_init (S, sat)
+if (sat /= '') call rads_init (S, sat)
 
 !----------------------------------------------------------------------
 ! Read all file names from standard input
@@ -124,10 +134,14 @@ do
 		cycle
 	endif
 
-! Check if input is GDR-D
+! Check if input is GDR-T/D or GDR-E
 
-	if (index(infile,'_2PT') <= 0 .and. index(infile,'_2Pd') <= 0) then
-		call log_string ('Error: this is not GDR-T', .true.)
+	if (index(infile,'_2PT') > 0 .and. index(infile,'_2Pd') > 0) then
+		gdre = .false.
+	else if (index(infile,'_2Pe') > 0) then
+		gdre = .true.
+	else
+		call log_string ('Error: this is not GDR-T, GDR-d, or GDR-e', .true.)
 		cycle
 	endif
 
@@ -141,11 +155,29 @@ do
 		call log_string ('Error: too many measurements', .true.)
 		cycle
 	endif
+
+! Get the mission name and initialise RADS (if not done before)
+
 	call nfs(nf90_get_att(ncid,nf90_global,'mission_name',arg))
-	if (arg /= 'Jason-3') then
-		call log_string ('Error: wrong misson-name found in header', .true.)
+	select case (arg)
+	case ('Jason-1')
+		arg = 'j1'
+	case ('OSTM/Jason-2')
+		arg = 'j2'
+	case ('Jason-3')
+		arg = 'j3'
+	case default
+		call log_string ('Error: wrong misson_name found in header', .true.)
+		cycle
+	end select
+	if (sat == '') then
+		call rads_init (S, arg)
+	else if (S%sat /= arg(:2)) then
+		call log_string ('Error: wrong misson_name found in header', .true.)
 		cycle
 	endif
+
+! Read rest of global attributes
 
 	call nfs(nf90_get_att(ncid,nf90_global,'title',arg))
 	ogdr = (arg(:4) == 'OGDR')
@@ -161,6 +193,31 @@ do
 		call log_string ('Skipped', .true.)
 		cycle
 	endif
+
+! Update phase name if required
+
+	if (S%sat == 'j1' .and. cyclenr > 374) then
+		phasenm = 'c'
+		! Redetermine subcycle numbering
+		r = (cyclenr - 500) * 280 + (passnr - 1)
+		q = (r/10438) * 43
+		r = modulo(r,10438)
+		q = q + (r/4608) * 19
+		r = modulo(r,4608)
+		q = q + (r/1222) * 5
+		r = modulo(r,1222)
+		q = q + (r/280)
+		r = modulo(r,280)
+		cyclenr = q + 382
+		passnr = r + 1
+	else if (S%sat == 'j1' .and. cyclenr > 261) then
+		phasenm = 'b'
+	else if (S%sat == 'j2' .and. cyclenr > 304) then
+		phasenm = 'b'
+	else
+		phasenm = 'a'
+	endif
+	if (S%phase%name /= phasenm) S%phase => rads_get_phase (S, phasenm)
 
 ! Store relevant info
 
@@ -229,7 +286,11 @@ do
 	call new_var ('time', a + sec2000)
 	call cpy_var ('lat')
 	call cpy_var ('lon')
-	call cpy_var ('alt', 'alt_gdre')
+	if (S%sat == 'j2' .and. cyclenr < 254) then ! Jason-2 before Cycle 254 was GDR-D orbit
+		call cpy_var ('alt', 'alt_gdrd')
+	else ! All Jason-1 and Jason-3 data, as well as more recent Jason-2 data
+		call cpy_var ('alt', 'alt_gdre')
+	endif
 	call cpy_var ('orb_alt_rate', 'alt_rate')
 	call cpy_var ('range_ku')
 	call cpy_var ('range_ku_mle3')
@@ -247,15 +308,26 @@ do
 		call cpy_var ('inv_bar_corr hf_fluctuations_corr ADD', 'inv_bar_mog2d')
 	endif
 	call cpy_var ('solid_earth_tide', 'tide_solid')
-	call cpy_var ('ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got48')
-	call cpy_var ('ocean_tide_sol2 load_tide_sol2 SUB', 'tide_ocean_fes04')
-	call cpy_var ('load_tide_sol1', 'tide_load_got48')
-	call cpy_var ('load_tide_sol2', 'tide_load_fes04')
+	if (gdre) then
+		call cpy_var ('ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got410')
+		call cpy_var ('ocean_tide_sol2 load_tide_sol2 SUB', 'tide_ocean_got48')
+		call cpy_var ('load_tide_sol1', 'tide_load_got410')
+		call cpy_var ('load_tide_sol2', 'tide_load_got48')
+	else
+		call cpy_var ('ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got48')
+		call cpy_var ('ocean_tide_sol2 load_tide_sol2 SUB', 'tide_ocean_fes04')
+		call cpy_var ('load_tide_sol1', 'tide_load_got48')
+		call cpy_var ('load_tide_sol2', 'tide_load_fes04')
+	endif
 	call cpy_var ('pole_tide', 'tide_pole')
 	call cpy_var ('sea_state_bias_ku', 'ssb_cls')
 	call cpy_var ('sea_state_bias_ku_mle3', 'ssb_cls_mle3')
 	call cpy_var ('sea_state_bias_c', 'ssb_cls_c')
-	call cpy_var ('geoid', 'geoid_egm96')
+	if (gdre) then
+		call cpy_var ('geoid', 'geoid_egm2008')
+	else
+		call cpy_var ('geoid', 'geoid_egm96')
+	endif
 	call cpy_var ('mean_sea_surface', 'mss_cnescls11')
 	call cpy_var ('swh_ku')
 	call cpy_var ('swh_ku_mle3')
@@ -314,12 +386,12 @@ contains
 
 subroutine synopsis (flag)
 character(len=*), optional :: flag
-if (rads_version ('Write Jason-3 data to RADS', flag=flag)) return
-call synopsis_devel (' < list_of_JASON3_file_names')
+if (rads_version ('Write Jason-1/2/3 data to RADS', flag=flag)) return
+call synopsis_devel (' < list_of_jason_file_names')
 write (*,1310)
 1310 format (/ &
-'This program converts Jason-3 OGDR/IGDR/GDR files to RADS data' / &
-'files with the name $RADSDATAROOT/data/j3/a/pPPPP/j3pPPPPcCCC.nc.' / &
+'This program converts Jason-1/2/3 OGDR/IGDR/GDR files to RADS data' / &
+'files with the name $RADSDATAROOT/data/jJ/a/pPPPP/jJpPPPPcCCC.nc.' / &
 'The directory is created automatically and old files are overwritten.')
 stop
 end subroutine synopsis

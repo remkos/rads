@@ -16,7 +16,7 @@
 !*rads_fix_j1 -- Patch RADS altimeter files of Jason-1 for various anomalies
 !
 ! This program makes numerous patches to the Jason-1 RADS data processed
-! by rads_gen_j1. These patches include:
+! by rads_gen_jason. These patches include:
 !
 ! dry:
 ! - Take a jump out of the time series

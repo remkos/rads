@@ -33,7 +33,7 @@ for tar in $*; do
 		*) dir=$tar ;;
 	esac
 	ls $dir/JA2_???_2P*.nc > $lst
-	rads_gen_j2	$options < $lst					>> $log 2>&1
+	rads_gen_jason	$options < $lst					>> $log 2>&1
 	case $tar in
 		*.t?z) chmod -R u+w $dir; rm -rf $dir ;;
 	esac

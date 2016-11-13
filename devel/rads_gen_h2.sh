@@ -14,9 +14,9 @@
 # GNU Lesser General Public License for more details.
 #-----------------------------------------------------------------------
 #
-# Convert Jason-2 O/I/GDR files to RADS
+# Convert HY-2A IGDR files to RADS
 #
-# syntax: rads_gen_j2.sh <directories>
+# syntax: rads_gen_h2.sh <directories>
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
 

@@ -16,7 +16,7 @@
 !*rads_fix_j2 -- Patch RADS altimeter files of Jason-2 for various anomalies
 !
 ! This program makes numerous patches to the Jason-2 RADS data processed
-! by rads_gen_j2. These patches include:
+! by rads_gen_jason. These patches include:
 !
 ! sig0:
 ! - Adjust backscatter coefficient for apparent off-nadir angle
