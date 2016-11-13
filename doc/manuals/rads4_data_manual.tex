@@ -482,6 +482,8 @@ For a very elaborate and thorough accuracy assessment of most of these tide mode
 \var{tide_ocean_got410}& 1222 & GOT4.10 ocean tide & m & all & -5 5 & \ref{item:tide_ocean_got410} \\
 \var{tide_load_got410} & 1322 & GOT4.10 load  tide & m & all & -0.5 0.5 & \ref{item:tide_load_got410} \\
 \var{tide_ocean_fes12} & 1223 & FES2012 ocean tide & m & all & -5 5 & \ref{item:tide_ocean_fes12} \\
+\var{tide_ocean_fes14} & 1224 & FES2014 ocean tide & m & all & -5 5 & \ref{item:tide_ocean_fes14} \\
+\var{tide_load_fes14}  & 1324 & FES2014 load  tide & m & all & -0.5 0.5 & \ref{item:tide_load_fes14} \\
 \var{tide_equil}       & 3901 & long-period equilib.\ tide & m & all & -1 1 & \ref{item:tide_equil} \\
 \var{tide_non_equil}   & 3902 & long-period non-equil.\ tide & m & all & -1 1 & \ref{item:tide_non_equil} \\
 \hline
@@ -499,6 +501,8 @@ For a very elaborate and thorough accuracy assessment of most of these tide mode
 \item FES2012 (Finite Element Solution 2012) takes advantage of longer altimeter time series, improved modelling, and data assimilation techniques, and more accurate and higher resolution ocean bathymetry. A new global finite element grid (with approx.\ 1.5 million nodes) was used to create a  'free' solution (independent of in situ and remote-sensing data) that has twice accuracy of the FES2004 version. The 'free' solution was assimilated with long-term altimetry data from TOPEX/POSEIDON, Jason-1, Jason-2, ERS-1, ERS-2, and ENVISAT. The FES2012 solution shows particular improvement in coastal and shelf regions, but not in overall open ocean statistics.
 
 Please note that tide loading effects have not yet been computed for FES2012, and therefore you should use the load tide from one the GOT load tide models with the ocean tide from FES2012. Since the load tide models are global, this would not limit the area for which you can determine geocentric tides (ocean plus load tides). \url{http://www.aviso.oceanobs.com/en/data/products/auxiliary-products/global-tide-fes2004-fes99/description-fes2012.html}\label{item:tide_ocean_fes12}
+\item FES2014 (Finite Element Solution 2014) is an update of the former FES2012, with a higher resolution (1/16\deg{}), and its own load tide model. It is based on a hydrodynamic model that assimilates with from TOPEX/POSEIDON, Jason-1, Jason-2, ERS-1, ERS-2, and ENVISAT. The model is also extended into the coast to improve the data coverage.
+\url{http://www.aviso.altimetry.fr/en/data/products/auxiliary-products/global-tide-fes.html}\label{item:tide_ocean_fes14}\label{item:tide_load_fes14}
 \item The equilibrium ocean tide includes 15 tidal spectrum lines from the Cartwright-Tayler-Edden tables \citep{cartwright1971,cartwright1973} plus an additional 123 second and third order waves \citep{tamura1987}.\label{item:tide_equil}
 \item The four long-period non-equlibrium ocean tidal components (Mm, Mf, Mtm, and MSqm) from the FES2004 model are represented in \var{tide_non_equil}. The equilibrium parts of those have been removed to avoid double accounting.\label{item:tide_non_equil}
 \end{notes}
