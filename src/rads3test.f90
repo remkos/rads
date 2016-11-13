@@ -16,7 +16,7 @@
 use rads3
 
 integer maxdata
-parameter (maxdata=3500)
+parameter (maxdata=3600)
 real*8 eqtime,eqlon
 real*8 data(maxdata,2),time(maxdata),dlon(maxdata),dlat(maxdata)
 integer*4 cycle,pass,select(2),ndata,verbose,i
