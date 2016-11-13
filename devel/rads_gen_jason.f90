@@ -13,16 +13,16 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*rads_gen_j3 -- Converts Jason-3 data to RADS
+!*rads_gen_jason -- Converts Jason-3 data to RADS
 !+
-program rads_gen_j3
+program rads_gen_jason
 
 ! This program reads Jason-3 (O/I)GDR files and converts them to the RADS format,
 ! written into files $RADSDATAROOT/data/j3/a/j3pPPPPcCCC.nc.
 !  PPPP = relative pass number
 !   CCC = cycle number
 !
-! syntax: rads_gen_j3 [options] < list_of_JASON3_file_names
+! syntax: rads_gen_jason [options] < list_of_JASON3_file_names
 !
 ! This program handles Jason-3 OGDR, IGDR and GDR files in netCDF format.
 ! The format is described in:
@@ -324,4 +324,4 @@ write (*,1310)
 stop
 end subroutine synopsis
 
-end program rads_gen_j3
+end program rads_gen_jason

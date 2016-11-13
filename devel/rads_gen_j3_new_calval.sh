@@ -57,11 +57,11 @@ TZ=UTC touch -t ${d0}0000 $omrk
 case $type in
 	gdr)
 		find ${type}/cycle_??? -name "JA3_*.nc" -a -newer $omrk | sort > $lst
-		rads_gen_j3 $options < $lst			>> $log 2>&1
+		rads_gen_jason $options < $lst			>> $log 2>&1
 		;;
 	*)
 		find ${type}/c??? -name "JA3_*.nc" -a -newer $omrk | sort > $lst
-		rads_gen_j3 --ymd=$d0 $options < $lst			>> $log 2>&1
+		rads_gen_jason --ymd=$d0 $options < $lst			>> $log 2>&1
 		;;
 esac
 
@@ -73,11 +73,11 @@ rads_open_sandbox j3.${type}
 case $type in
 	gdr)
 		find ${type}/cycle_??? -name "JA3_*.nc" -a -newer $omrk | sort > $lst
-		rads_gen_j3 $options < $lst			>> $log 2>&1
+		rads_gen_jason $options < $lst			>> $log 2>&1
 		;;
 	*)
 		find ${type}/c??? -name "JA3_*.nc" -a -newer $omrk | sort > $lst
-		rads_gen_j3 --ymd=$d0 $options < $lst			>> $log 2>&1
+		rads_gen_jason --ymd=$d0 $options < $lst			>> $log 2>&1
 		rads_add_orbit   $options -Valt_cnes --dir=gdr-e-moe --equator --loc-7 --rate	>> $log 2>&1
 		;;
 esac

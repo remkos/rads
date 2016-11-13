@@ -16,7 +16,7 @@
 !*rads_fix_j3 -- Patch RADS altimeter files of Jason-3 for various anomalies
 !
 ! This program makes numerous patches to the Jason-3 RADS data processed
-! by rads_gen_j3. These patches include:
+! by rads_gen_jason. These patches include:
 !
 ! sig0:
 ! - Adjust backscatter coefficient for apparent off-nadir angle
