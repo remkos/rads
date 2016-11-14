@@ -243,7 +243,7 @@ do
 	call cpy_var ('swh_rms', 'swh_rms_ka')
 	call cpy_var ('sig0', 'sig0_ka')
 	call cpy_var ('atmos_corr_sig0', 'dsig0_atmos_ka')
-	if (patch == 1) call cpy_var ('atmos_corr_sig0', 'dsig0_atmos_nn_ka')
+	call cpy_var ('atmos_corr_sig0', 'dsig0_atmos_nn_ka', patch == 1)
 	call cpy_var ('off_nadir_angle_wf', 'off_nadir_angle2_wf_ka')
 	call cpy_var ('tb_k', 'tb_238')
 	call cpy_var ('tb_ka', 'tb_370')

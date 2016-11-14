@@ -264,7 +264,7 @@ do
 	call cpy_var ('comp_wet_tropo_cor_01_ku', 'wet_tropo_comp')
 	call cpy_var ('iono_cor_alt_01_ku', 'iono_alt')
 	call cpy_var ('iono_cor_alt_01_plrm_ku', 'iono_alt_plrm')
-	if (.not.nrt) call cpy_var ('iono_cor_gim_01_ku', 'iono_gim')
+	call cpy_var ('iono_cor_gim_01_ku', 'iono_gim', .not.nrt)
 	call cpy_var ('inv_bar_cor_01', 'inv_bar_static')
 	if (nrt) then
 		call cpy_var ('inv_bar_cor_01', 'inv_bar_mog2d')

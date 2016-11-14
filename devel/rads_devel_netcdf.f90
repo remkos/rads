@@ -31,24 +31,59 @@ type(var_) :: var(mvar)
 type(rads_sat) :: S
 type(rads_pass) :: P
 
-contains
-
 !-----------------------------------------------------------------------
 ! Copy variable to RADS
 !-----------------------------------------------------------------------
+!
+! subroutine cpy_var (varin, varout, do)
+! use rads_devel
+! use rads_netcdf
+! character(len=*), intent(in) :: varin
+! character(len=*), intent(in), optional :: varout
+! Copy variable 'varin' from input (GDR) file to 'varout' in RADS output file.
+! When 'varout' is omitted, varout=varin.
+! When 'do' is present and false, the action is skipped.
+private :: cpy_var_1_do, cpy_var_2_do, cpy_var_1, cpy_var_2
+interface cpy_var
+	module procedure cpy_var_1
+	module procedure cpy_var_1_do
+	module procedure cpy_var_2
+	module procedure cpy_var_2_do
+end interface cpy_var
 
-subroutine cpy_var (varin, varout)
-use rads_devel
+contains
+
+subroutine cpy_var_1 (varin)
 use rads_netcdf
 character(len=*), intent(in) :: varin
-character(len=*), intent(in), optional :: varout
 call get_var (ncid, varin, a)
-if (present(varout)) then
-	call new_var (varout, a)
-else
-	call new_var (varin, a)
-endif
-end subroutine cpy_var
+call new_var (varin, a)
+end subroutine cpy_var_1
+
+subroutine cpy_var_1_do (varin, do)
+use rads_netcdf
+character(len=*), intent(in) :: varin
+logical, intent(in) :: do
+if (.not.do) return
+call get_var (ncid, varin, a)
+call new_var (varin, a)
+end subroutine cpy_var_1_do
+
+subroutine cpy_var_2 (varin, varout)
+use rads_netcdf
+character(len=*), intent(in) :: varin, varout
+call get_var (ncid, varin, a)
+call new_var (varout, a)
+end subroutine cpy_var_2
+
+subroutine cpy_var_2_do (varin, varout, do)
+use rads_netcdf
+character(len=*), intent(in) :: varin, varout
+logical, intent(in) :: do
+if (.not.do) return
+call get_var (ncid, varin, a)
+call new_var (varout, a)
+end subroutine cpy_var_2_do
 
 !-----------------------------------------------------------------------
 ! Create new RADS variable
