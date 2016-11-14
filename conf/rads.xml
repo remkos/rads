@@ -1203,16 +1203,16 @@ Global RADS configuration file
 	<compress>int4 1e-4</compress>
 	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
 </var>
-<var name="tide_ocean_fes14" field="1224">
-	<long_name>FES2014 ocean tide</long_name>
-	<source>FES2014</source>
+<var name="tide_ocean_fes14b" field="1224">
+	<long_name>FES2014b ocean tide</long_name>
+	<source>FES2014b (extrapolated)</source>
 	<units>m</units>
 	<limits>-5 5</limits>
 	<plot_range>-2 2</plot_range>
 	<data>tide_ocean_fes14</data>
 	<format>f7.4</format>
 	<compress>int4 1e-4</compress>
-	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
+	<comment>Ocean tide variation including equilibrium and non-equilibrium tides, extrapolated into the coast</comment>
 </var>
 
 <alias name="tide_ocean" field="12">tide_ocean_got410</alias>
@@ -1282,8 +1282,8 @@ Global RADS configuration file
 	<comment>Load tide variation to be added to ocean tide</comment>
 </var>
 <var name="tide_load_fes14" field="1324">
-	<long_name>FES2014 load tide</long_name>
-	<source>FES2014</source>
+	<long_name>FES2014a load tide</long_name>
+	<source>FES2014a</source>
 	<units>m</units>
 	<limits>-0.5 0.5</limits>
 	<data>tide_load_fes14</data>
