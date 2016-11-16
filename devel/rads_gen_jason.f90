@@ -136,7 +136,7 @@ do
 
 ! Check if input is GDR-T/D or GDR-E
 
-	if (index(infile,'_2PT') > 0 .and. index(infile,'_2Pd') > 0) then
+	if (index(infile,'_2PT') > 0 .or. index(infile,'_2Pd') > 0) then
 		gdre = .false.
 	else if (index(infile,'_2Pe') > 0) then
 		gdre = .true.
