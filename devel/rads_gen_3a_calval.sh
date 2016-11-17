@@ -27,45 +27,45 @@
 . rads_sandbox.sh
 
 # Determine type
-type=$(dirname $1)
-type=$(basename $type)
+type=$(basename $1)
+type=$(dirname $type)
 
 # Process "unadultered" files
-org=3a.${type}0
-rads_open_sandbox $org
-find $* -name standard_measurement.nc | sort	> $lst
+dir=3a.${type}0
+rads_open_sandbox $dir
+find $* -name standard_measurement.nc | sort		> $lst
 date >  $log 2>&1
-rads_gen_s3 -S${org} --ymd=$d0 < $lst				>> $log 2>&1
+rads_gen_s3 	$options --ymd=$d0 < $lst			>> $log 2>&1
 rads_close_sandbox
 
 # Now process do the same again, and do the post-processing
-fix=3a.${types}1
-rads_open_sandbox $fix
-find $* -name standard_measurement.nc | sort	> $lst
+dir=3a.${type}1
+rads_open_sandbox $dir
+find $* -name standard_measurement.nc | sort		> $lst
 date >  $log 2>&1
-rads_gen_s3 -S${fix} --ymd=$d0 < $lst				>> $log 2>&1
+rads_gen_s3 	$options --ymd=$d0 < $lst			>> $log 2>&1
 
 # Make the remaining fixes
-rads_fix_s3     -S${fix} --all						>> $log 2>&1
+rads_fix_s3     $options --all						>> $log 2>&1
 # Recompute SSB
-rads_add_ssb    -S${fix} --ssb=ssb_cls				>> $log 2>&1
-rads_add_ssb    -S${fix} --ssb=ssb_cls_c			>> $log 2>&1
-rads_add_ssb    -S${fix} --ssb=ssb_cls_plrm			>> $log 2>&1
+rads_add_ssb    $options --ssb=ssb_cls				>> $log 2>&1
+rads_add_ssb    $options --ssb=ssb_cls_c			>> $log 2>&1
+rads_add_ssb    $options --ssb=ssb_cls_plrm			>> $log 2>&1
 # Recompute dual freq iono and smooth it
-rads_add_dual   -S${fix} --recompute				>> $log 2>&1
-rads_add_dual   -S${fix} --recompute --ext=plrm		>> $log 2>&1
+rads_add_dual   $options --recompute				>> $log 2>&1
+rads_add_dual   $options --recompute --ext=plrm		>> $log 2>&1
 # Add MOE (and POE) orbit
-rads_add_orbit  -S${fix} -Valt_cnes --dir=moe_doris	>> $log 2>&1
-rads_add_orbit  -S${fix} -Valt_cnes --dir=poe		>> $log 2>&1
+rads_add_orbit  $options -Valt_cnes --dir=moe_doris	>> $log 2>&1
+rads_add_orbit  $options -Valt_cnes --dir=poe		>> $log 2>&1
 # General geophysical corrections
-rads_add_common -S${fix}							>> $log 2>&1
-rads_add_mog2d  -S${fix}							>> $log 2>&1
-rads_add_ncep   -S${fix} -gdwi						>> $log 2>&1
-rads_add_ecmwf  -S${fix} -dwui						>> $log 2>&1
-rads_add_iono   -S${fix} -gn						>> $log 2>&1
+rads_add_common $options							>> $log 2>&1
+rads_add_mog2d  $options							>> $log 2>&1
+rads_add_ncep   $options -gdwi						>> $log 2>&1
+rads_add_ecmwf  $options -dwui						>> $log 2>&1
+rads_add_iono   $options -gn						>> $log 2>&1
 # Redetermine SSHA
-rads_add_sla    -S${fix}							>> $log 2>&1
-rads_add_sla    -S${fix} --ext=plrm					>> $log 2>&1
+rads_add_sla    $options							>> $log 2>&1
+rads_add_sla    $options --ext=plrm					>> $log 2>&1
 
 date												>> $log 2>&1
 rads_close_sandbox
