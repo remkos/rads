@@ -27,8 +27,8 @@
 . rads_sandbox.sh
 
 # Determine type
-type=$(basename $1)
-type=$(dirname $type)
+type=$(dirname $1)
+type=$(basename $type)
 
 # Process "unadultered" files
 dir=3a.${type}0
