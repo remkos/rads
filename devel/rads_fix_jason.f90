@@ -13,7 +13,7 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*rads_fix_j2 -- Patch RADS altimeter files of Jason-2 for various anomalies
+!*rads_fix_jason -- Patch RADS altimeter files of Jason-2 for various anomalies
 !
 ! This program makes numerous patches to the Jason-2 RADS data processed
 ! by rads_gen_jason. These patches include:
@@ -28,14 +28,14 @@
 ! wind:
 ! - Recompute wind speed from adjusted sigma0 based on Collard model
 !
-! usage: rads_fix_j2 [data-selectors] [options]
+! usage: rads_fix_jason [data-selectors] [options]
 !
 ! References:
 ! Quartly, G. D., Optimizing sigma0 information from Jason-2 altimeter,
 ! IEEE Geosci. Rem. Sens. Lett., 6(3), 398–402,
 ! doi:10.1109/LGRS.2009.2013973, 2009.
 !-----------------------------------------------------------------------
-program rads_fix_j2
+program rads_fix_jason
 
 use rads
 use rads_devel
@@ -163,4 +163,4 @@ if (lwind) call rads_put_var (S, P, 'wind_speed_alt', u)
 call log_records (n)
 end subroutine process_pass
 
-end program rads_fix_j2
+end program rads_fix_jason
