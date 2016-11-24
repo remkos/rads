@@ -22,7 +22,7 @@ PROGS	= rads_add_dual rads_add_ecmwf rads_add_era rads_add_flags rads_add_grid \
 		rads_add_ib rads_add_iono rads_add_mog2d rads_add_ncep rads_add_orbit \
 		rads_add_refframe rads_add_sla rads_add_ssb rads_add_sst rads_add_surface \
 		rads_add_tide rads_add_webtide rads_add_ww3_222 rads_add_ww3_314 \
-		rads_fix_c2 rads_fix_eqtime rads_fix_j1 rads_fix_jason rads_fix_j3 rads_fix_reaper rads_fix_s3 rads_fix_sa \
+		rads_fix_c2 rads_fix_eqtime rads_fix_j1 rads_fix_jason rads_fix_reaper rads_fix_s3 rads_fix_sa \
 		rads_gen_c2_l1r rads_gen_h2 rads_gen_jason rads_gen_reaper rads_gen_s3 \
 		rads_gen_saral rads_gen_tx_rgdr ogdrsplit s3combine
 

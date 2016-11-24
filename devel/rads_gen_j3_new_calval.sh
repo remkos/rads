@@ -84,7 +84,7 @@ esac
 
 # Do the patches to all data
 
-rads_fix_j3      $options --all					>> $log 2>&1
+rads_fix_jason   $options --all					>> $log 2>&1
 rads_add_ssb     $options --ssb=ssb_tran2012	>> $log 2>&1
 rads_add_iono    $options --all					>> $log 2>&1
 rads_add_common  $options						>> $log 2>&1
