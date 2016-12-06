@@ -42,10 +42,10 @@ type(rads_pass) :: P
 
 ! Other local variables
 
-real(eightbytereal), parameter :: dsig0_ku = 0.0d0, dsig0_c = 3.3d0	! Ku- and C-band Sigma0 bias
+real(eightbytereal) :: dsig0_ku = 0.0d0, dsig0_c = 3.3d0	! Default Ku- and C-band Sigma0 bias
 real(eightbytereal), parameter :: dtb_238 = 2.0d0, dtb_365 = 3.0d0	! Rough values from MTR presentation by M. Frery.
 real(eightbytereal), parameter :: drange = 59.3d-3 ! Range bias in earlier rep_002 data
-integer(fourbyteint) :: i, cyc, pass
+integer(fourbyteint) :: i, cyc, pass, ios
 logical :: latten = .false., lsig0 = .false., lwind = .false., ltb = .false., lmwr = .false., lrange = .false.
 
 ! Scan command line for options
@@ -59,6 +59,7 @@ do i = 1,rads_nopt
 		latten = .true.
 	case ('sig0')
 		lsig0 = .true.
+		read(rads_opt(i)%arg,*,iostat=ios) dsig0_ku, dsig0_c
 	case ('wind')
 		lwind = .true.
 	case ('tb')
@@ -98,7 +99,7 @@ write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
 '  --atten                   Replace NaN attenuation with ECMWF derivation' / &
-'  --sig0                    Adjust backscatter coefficient for apparent biases and attenuation' / &
+'  --sig0[=dKu,dC]           Adjust backscatter coefficient for apparent biases and attenuation [0,3.3]' / &
 '  --wind                    Update wind speed using Envisat model' / &
 '  --all                     All of the above' / &
 '  --tb                      Adjust brightness temperatures for apparent biases' / &
