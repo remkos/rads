@@ -73,7 +73,9 @@ rads_open_sandbox j3.${type}
 case $type in
 	gdr)
 		find ${type}/cycle_??? -name "JA3_*.nc" -a -newer $omrk | sort > $lst
-		rads_gen_jason $options < $lst			>> $log 2>&1
+		if [ -s $lst ]; then
+			rads_gen_jason $options < $lst			>> $log 2>&1
+		fi
 		;;
 	*)
 		find ${type}/c??? -name "JA3_*.nc" -a -newer $omrk | sort > $lst
