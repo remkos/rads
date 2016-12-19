@@ -26,6 +26,8 @@
 rads_open_sandbox 3a
 lst=$SANDBOX/rads_gen_3a.lst
 
+date										>  $log 2>&1
+
 for tar in $*; do
 	case $tar in
 		*.txz) tar -xJf $tar; dir=`basename $tar .txz` ;;
@@ -33,8 +35,10 @@ for tar in $*; do
 		*) dir=$tar ;;
 	esac
 	find $dir -name "*.nc" -a -newer $mrk | sort > $lst
-	date										>  $log 2>&1
 	rads_gen_s3 $options --ymd=$d0 < $lst		>> $log 2>&1
+	case $tar in
+		*.t?z) chmod -R u+w $dir; rm -rf $dir ;;
+	esac
 done
 
 # Make the remaining fixes
