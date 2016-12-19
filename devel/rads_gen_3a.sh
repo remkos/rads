@@ -34,7 +34,7 @@ for tar in $*; do
 		*.tgz) tar -xzf $tar; dir=`basename $tar .tgz` ;;
 		*) dir=$tar ;;
 	esac
-	find $dir -name "*.nc" -a -newer $mrk | sort > $lst
+	find $dir -name "*.nc" | sort > $lst
 	rads_gen_s3 $options --ymd=$d0 < $lst		>> $log 2>&1
 	case $tar in
 		*.t?z) chmod -R u+w $dir; rm -rf $dir ;;
