@@ -24,13 +24,15 @@
 . rads_sandbox.sh
 
 # For the time being: only process NRT data
-days=${days:-2}
 types="${types:-nrt}"
 
-# Process only NRT data for the last three days (including current)
-d0=`date -u -v -${days}d +%Y%m%d 2>&1` || d0=`date -u --date="${days} days ago" +%Y%m%d`
-
 for type in ${types}; do
+	case $type in
+	nrt) days=2 ;;
+	stc) days=3 ;;
+	ntc) days=3 ;;
+	esac
+	d0=`date -u -v -${days}d +%Y%m%d 2>&1` || d0=`date -u --date="${days} days ago" +%Y%m%d`
 
 	mrk=$type/.bookmark
 	TZ=UTC touch -t ${d0}0000 $mrk
