@@ -24,14 +24,10 @@
 . rads_sandbox.sh
 
 # Process NRT/STC/NTC data
-types="${types:-nrt}"
+types=${types:-nrt}
+days=${days:-3}
 
 for type in ${types}; do
-	case $type in
-	nrt) days=2 ;;
-	stc) days=3 ;;
-	ntc) days=3 ;;
-	esac
 	d0=`date -u -v -${days}d +%Y%m%d 2>&1` || d0=`date -u --date="${days} days ago" +%Y%m%d`
 
 	mrk=$type/.bookmark
