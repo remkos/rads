@@ -24,12 +24,11 @@
 . rads_sandbox.sh
 
 # Process NRT/STC/NTC data
-types=${types:-nrt}
+types="${types:-nrt}"
 days=${days:-3}
+d0=`date -u -v -${days}d +%Y%m%d 2>&1` || d0=`date -u --date="${days} days ago" +%Y%m%d`
 
 for type in ${types}; do
-	d0=`date -u -v -${days}d +%Y%m%d 2>&1` || d0=`date -u --date="${days} days ago" +%Y%m%d`
-
 	mrk=$type/.bookmark
 	TZ=UTC touch -t ${d0}0000 $mrk
 
