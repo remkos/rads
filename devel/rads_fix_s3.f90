@@ -191,6 +191,7 @@ call rads_put_history (S, P)
 
 if (lsig0) then
 	call rads_put_var (S, P, 'sig0_ku', sig0_ku)
+	call rads_put_var (S, P, 'sig0_ku_plrm', sig0_ku_plrm)
 	call rads_put_var (S, P, 'sig0_c' , sig0_c)
 endif
 if (ltb) then
