@@ -52,7 +52,8 @@ character(len=26) :: date(3)
 integer(fourbyteint), parameter :: mpass = 254 * 500
 real(eightbytereal), parameter :: sec2000 = 473299200d0
 integer(fourbyteint) :: i0, i, ncid1, nrec, ios, varid, in_max = huge(fourbyteint), nr_passes = 770, &
-	pass_number = 0, cycle_number = 0, pass_in, cycle_in, nfile = 0, orbit_type
+	pass_number = 0, cycle_number = 0, pass_in, cycle_in, nfile = 0, orbit_type, absolute_pass_number, &
+	absolute_rev_number
 real(eightbytereal), allocatable :: time(:), lat(:), lon(:)
 real(eightbytereal) :: last_time = 0
 
@@ -119,9 +120,15 @@ do
 
 	call nfs(nf90_get_att(ncid1,nf90_global,'pass_number',pass_in))
 	call nfs(nf90_get_att(ncid1,nf90_global,'cycle_number',cycle_in))
+	call nfs(nf90_get_att(ncid1,nf90_global,'absolute_pass_number',absolute_pass_number))
+	call nfs(nf90_get_att(ncid1,nf90_global,'absolute_rev_number',absolute_rev_number))
 	call nfs(nf90_get_att(ncid1,nf90_global,'product_name',product_name))
 	call nfs(nf90_get_att(ncid1,nf90_global,'xref_orbit_data',xref_orbit_data))
 	orbit_type = which_orbit_type (xref_orbit_data)
+
+! Fix an anomaly in the REF data during March 2017
+
+	if (absolute_rev_number < 5800 .and. cycle_in > 16) cycle_in = cycle_in - 2
 
 ! Read the time dimension
 
@@ -352,8 +359,10 @@ call nfs(nf90_put_att(ncid2,varid3,'flag_values',flag_values))
 call nfs(nf90_put_att(ncid2,varid3,'flag_meanings','scenario prediction navatt doris_nav gnss_roe doris_moe poe'))
 call nfs(nf90_put_att(ncid2,varid3,'coordinates','lon_01 lat_01'))
 
-! Determine equator crossing information
+! Determine absolute pass, rev, and equator crossing information
 
+absolute_pass_number = (cycle_number-1)*nr_passes+pass_number-54
+absolute_rev_number = absolute_pass_number / 2
 call rads_predict_equator (S, P, cycle_number, pass_number)
 
 ! Overwrite some attributes and product name
@@ -364,7 +373,8 @@ call strf1985f(date(3),P%equator_time)
 call nfs(nf90_put_att(ncid2,nf90_global,'product_name',prdnm))
 call nfs(nf90_put_att(ncid2,nf90_global,'cycle_number',cycle_number))
 call nfs(nf90_put_att(ncid2,nf90_global,'pass_number',pass_number))
-call nfs(nf90_put_att(ncid2,nf90_global,'absolute_pass_number',(cycle_number-1)*nr_passes+pass_number-54))
+call nfs(nf90_put_att(ncid2,nf90_global,'absolute_pass_number',absolute_pass_number))
+call nfs(nf90_put_att(ncid2,nf90_global,'absolute_rev_number',absolute_rev_number))
 call nfs(nf90_put_att(ncid2,nf90_global,'equator_time',date(3)))
 call nfs(nf90_put_att(ncid2,nf90_global,'equator_longitude',P%equator_lon))
 call nfs(nf90_put_att(ncid2,nf90_global,'first_meas_time',date(1)))
