@@ -128,7 +128,8 @@ do
 
 ! Fix an anomaly in the REF data during March 2017
 
-	if (absolute_rev_number < 5800 .and. cycle_in > 16) cycle_in = cycle_in - 2
+	if (product_name(83:87) == 'MAR_F' .and. absolute_rev_number < 5700 .and. cycle_in > 15) &
+		cycle_in = cycle_in - 2
 
 ! Read the time dimension
 
