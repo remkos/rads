@@ -1063,7 +1063,18 @@ Global RADS configuration file
 </var>
 <var name="inv_bar_mog2d" field="1004">
 	<long_name>MOG2D dynamic atmospheric correction</long_name>
-	<source>MOG2D-G</source>
+	<source>CNES/CNRS-LEGOS/CLS MOG2D-G HR barotropic model with ECMWF forcing</source>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.4 0.6</plot_range>
+	<data>inv_bar_mog2d</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Combined low and high frequency effect of atmospheric pressure and wind on sea surface height</comment>
+</var>
+<var name="inv_bar_mog2d_era" field="1004">
+	<long_name>MOG2D dynamic atmospheric correction</long_name>
+	<source>CNES/CNRS-LEGOS/CLS MOG2D-G HR barotropic model with ERA-Interim forcing</source>
 	<units>m</units>
 	<limits>-1 1</limits>
 	<plot_range>-0.4 0.6</plot_range>
