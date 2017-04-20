@@ -24,6 +24,9 @@ program rads_gen_s3
 !
 ! syntax: rads_gen_s3 [options] < list_of_Sentinel3_file_names
 !
+! where [options] include:
+!  --min-rec <min_rec> : Specify minimum number of records per pass to process.
+!
 ! This program handles Sentinel-3 standard_measurement files in netCDF format.
 ! The format is described in:
 !
@@ -114,7 +117,7 @@ real(eightbytereal) :: dhellips
 ! Initialise
 
 call synopsis
-call rads_gen_getopt ('3a')
+call rads_gen_getopt ('3a', ' min-rec:')
 call synopsis ('--head')
 call rads_init (S, sat)
 
@@ -147,14 +150,18 @@ do
 	call nfs(nf90_inq_dimid(ncid,'time_01',varid))
 	call nfs(nf90_inquire_dimension(ncid,varid,len=nrec))
 	if (nrec == 0) then
+		call log_string ('Error: file skipped: no measurements', .true.)
+		cycle
+	else if (nrec < min_rec) then
+		call log_string ('Warning: file skipped: too few measurements', .true.)
 		cycle
 	else if (nrec > mrec) then
-		call log_string ('Error: too many measurements', .true.)
+		call log_string ('Error: file skipped: too many measurements', .true.)
 		cycle
 	endif
 	call nfs(nf90_get_att(ncid,nf90_global,'mission_name',arg))
 	if (arg /= 'Sentinel 3A') then
-		call log_string ('Error: wrong misson-name found in header', .true.)
+		call log_string ('Error: file skipped: wrong misson-name found in header', .true.)
 		cycle
 	endif
 
@@ -353,6 +360,8 @@ if (rads_version ('Write Sentinel-3 data to RADS', flag=flag)) return
 call synopsis_devel (' < list_of_Sentinel3_file_names')
 write (*,1310)
 1310 format (/ &
+'Additional [processing_options] are:' / &
+'  --min-rec=MIN_REC         Specify minimum number of records per pass to process' // &
 'This program converts Sentinel-3 NRT/STC/NTC files to RADS data' / &
 'files with the name $RADSDATAROOT/data/s3/a/pPPPP/s3pPPPPcCCC.nc.' / &
 'The directory is created automatically and old files are overwritten.')

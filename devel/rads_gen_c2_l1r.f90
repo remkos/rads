@@ -133,7 +133,7 @@ integer(fourbyteint) :: i, j, m, oldcyc=0, oldpass=0, mle=3
 ! Initialise
 
 call synopsis
-call rads_gen_getopt ('c2')
+call rads_gen_getopt ('c2', 'mw with-20hz with-wvf')
 call synopsis ('--head')
 call rads_init (S, sat)
 

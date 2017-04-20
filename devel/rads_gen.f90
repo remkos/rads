@@ -18,17 +18,18 @@ use rads, only: fourbyteint, eightbytereal, rads_cmdl, rads_varl
 
 ! Command line arguments
 
-integer(fourbyteint) :: cycles(2), nhz=0, nwvf=0
+integer(fourbyteint) :: cycles(2), nhz=0, nwvf=0, min_rec=0
 real(eightbytereal) :: times(2)
 character(len=rads_varl) :: sat
 
 contains
 
-subroutine rads_gen_getopt (satname)
+subroutine rads_gen_getopt (satname, options)
 use rads
 use rads_misc
 use rads_time
 character(len=*), intent(in) :: satname
+character(len=*), intent(in), optional :: options
 character(len=rads_varl) :: optopt, optarg
 integer(fourbyteint) :: ios
 
@@ -41,8 +42,8 @@ sat = satname
 ! Scan command line for options
 
 do
-	if (sat == 'c2') then
-		call getopt ('mwvC:S: verbose debug: sat: cycle: t: mjd: sec: ymd: doy: with-20hz with-wvf', optopt, optarg)
+	if (present(options)) then
+		call getopt ('vC:S:'//options//' verbose debug: sat: cycle: t: mjd: sec: ymd: doy:', optopt, optarg)
 	else
 		call getopt ('vC:S: verbose debug: sat: cycle: t: mjd: sec: ymd: doy:', optopt, optarg)
 	endif
@@ -75,14 +76,16 @@ do
 		if (cycles(2) < cycles(1)) cycles(2) = cycles(1)
 	case ('S', 'sat')
 		sat = optarg
+	case ('time', 't:', 'sec', 'mjd', 'doy', 'ymd')
+		call dateopt (optopt, optarg, times(1), times(2), iostat=ios)
+		if (ios > 0) call rads_opt_error (optopt, optarg)
 	case ('m', 'with-20hz')
 		nhz = 20
 	case ('w', 'with-wvf')
 		nwvf = 256
 		nhz = 20
-	case ('time', 't:', 'sec', 'mjd', 'doy', 'ymd') ! Finally try date arguments
-		call dateopt (optopt, optarg, times(1), times(2), iostat=ios)
-		if (ios > 0) call rads_opt_error (optopt, optarg)
+	case ('min-rec')
+		read (optarg, *, iostat=ios) min_rec
 	end select
 enddo
 

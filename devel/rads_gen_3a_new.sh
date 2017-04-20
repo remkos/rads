@@ -36,7 +36,7 @@ for type in ${types}; do
 	lst=$SANDBOX/rads_gen_3a_new.lst
 	find $type/c??? -name "*.nc" -a -newer $mrk | sort > $lst
 	date >  $log 2>&1
-	rads_gen_s3 $options --ymd=$d0 < $lst >> $log 2>&1
+	rads_gen_s3 $options --min-rec=6 --ymd=$d0 < $lst >> $log 2>&1
 done
 
 # Make the remaining fixes

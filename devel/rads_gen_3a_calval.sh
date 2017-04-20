@@ -35,7 +35,7 @@ dir=3a.${type}0
 rads_open_sandbox $dir
 find $* -name "*.nc" | sort		> $lst
 date >  $log 2>&1
-rads_gen_s3 	$options < $lst						>> $log 2>&1
+rads_gen_s3 	$options --min-rec=6 < $lst			>> $log 2>&1
 rads_close_sandbox
 
 # Now process do the same again, and do the post-processing
@@ -43,7 +43,7 @@ dir=3a.${type}1
 rads_open_sandbox $dir
 find $* -name "*.nc" | sort		> $lst
 date >  $log 2>&1
-rads_gen_s3 	$options < $lst						>> $log 2>&1
+rads_gen_s3 	$options --min-rec=6 < $lst			>> $log 2>&1
 
 # Make the remaining fixes
 rads_fix_s3     $options --all						>> $log 2>&1

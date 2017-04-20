@@ -36,7 +36,7 @@ for type in ${types}; do
 	rads_open_sandbox $dir
 	find $type/c??? -name "*.nc" -a -newer $mrk | sort > $lst
 	date >  $log 2>&1
-	rads_gen_s3		$options --ymd=$d0 < $lst			>> $log 2>&1
+	rads_gen_s3		$options --min-rec=6 --ymd=$d0 < $lst >> $log 2>&1
 	rads_close_sandbox
 
 # Now process do the same again, and do the post-processing
@@ -44,7 +44,7 @@ for type in ${types}; do
 	rads_open_sandbox $dir
 	find $type/c??? -name "*.nc" -a -newer $mrk | sort > $lst
 	date >  $log 2>&1
-	rads_gen_s3		$options --ymd=$d0 < $lst			>> $log 2>&1
+	rads_gen_s3		$options --min-rec=6 --ymd=$d0 < $lst	>> $log 2>&1
 
 # Make the remaining fixes
 	rads_fix_s3     $options --all						>> $log 2>&1
