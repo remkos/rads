@@ -68,7 +68,7 @@ for type in ${types}; do
 	rads_add_sla    $options							>> $log 2>&1
 	rads_add_sla    $options --ext=plrm					>> $log 2>&1
 
-	date
+	date												>> $log 2>&1
 
 	rads_close_sandbox
 

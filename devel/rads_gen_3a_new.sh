@@ -35,33 +35,32 @@ for type in ${types}; do
 	rads_open_sandbox 3a
 	lst=$SANDBOX/rads_gen_3a_new.lst
 	find $type/c??? -name "*.nc" -a -newer $mrk | sort > $lst
-	date >  $log 2>&1
+	date											>  $log 2>&1
 	rads_gen_s3 $options --min-rec=6 --ymd=$d0 < $lst >> $log 2>&1
 done
 
 # Make the remaining fixes
-rads_fix_s3     $options --all >> $log 2>&1
+rads_fix_s3     $options --all						>> $log 2>&1
 # Recompute SSB
-rads_add_ssb    $options --ssb=ssb_cls >> $log 2>&1
-rads_add_ssb    $options --ssb=ssb_cls_c >> $log 2>&1
-rads_add_ssb    $options --ssb=ssb_cls_plrm >> $log 2>&1
+rads_add_ssb    $options --ssb=ssb_cls				>> $log 2>&1
+rads_add_ssb    $options --ssb=ssb_cls_c			>> $log 2>&1
+rads_add_ssb    $options --ssb=ssb_cls_plrm			>> $log 2>&1
 # Recompute dual freq iono and smooth it
-rads_add_dual   $options --recompute >> $log 2>&1
-rads_add_dual   $options --recompute --ext=plrm >> $log 2>&1
+rads_add_dual   $options --recompute				>> $log 2>&1
+rads_add_dual   $options --recompute --ext=plrm		>> $log 2>&1
 # Add MOE (and POE) orbit
 rads_add_orbit  $options -Valt_cnes --dir=moe_doris >> $log 2>&1
-rads_add_orbit  $options -Valt_cnes --dir=poe >> $log 2>&1
+rads_add_orbit  $options -Valt_cnes --dir=poe		>> $log 2>&1
 # General geophysical corrections
-rads_add_common $options >> $log 2>&1
-rads_add_mog2d  $options >> $log 2>&1
-rads_add_ncep   $options -gdwi >> $log 2>&1
-rads_add_ecmwf  $options -dwui >> $log 2>&1
-rads_add_iono   $options -all >> $log 2>&1
+rads_add_common $options							>> $log 2>&1
+rads_add_mog2d  $options							>> $log 2>&1
+rads_add_ncep   $options -gdwi						>> $log 2>&1
+rads_add_ecmwf  $options -dwui						>> $log 2>&1
+rads_add_iono   $options -all						>> $log 2>&1
 # Redetermine SSHA
-rads_add_sla    $options >> $log 2>&1
-rads_add_sla    $options --ext=plrm >> $log 2>&1
+rads_add_sla    $options							>> $log 2>&1
+rads_add_sla    $options --ext=plrm					>> $log 2>&1
 
-date
+date												>> $log 2>&1
 
 rads_close_sandbox
-
