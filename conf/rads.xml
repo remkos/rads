@@ -3872,7 +3872,7 @@ Global RADS configuration file
 		<cycles>0 999</cycles>
 		<repeat>9.91564280 254</repeat>
 		<ref_pass>2016-02-17T10:56:52 99.92 1 1</ref_pass>
-		<start_time>2016-01-19</start_time>
+		<start_time>2016-02-12</start_time>
 	</phase>
 </if>
 
