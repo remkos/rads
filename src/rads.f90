@@ -30,7 +30,7 @@ integer(fourbyteint), parameter :: rads_noerr = 0, &
 	rads_err_xml_parse = 9, rads_err_xml_file = 10, rads_err_alias = 11, rads_err_math = 12, &
 	rads_err_cycle = 13, rads_err_nc_create = 14, rads_err_nc_put = 15
 ! Additional RADS4 helpers
-character(len=1), parameter :: rads_linefeed = char(10), rads_noedit = '_'
+character(len=1), parameter :: rads_linefeed = char(10), rads_tab = char(9), rads_noedit = '_'
 ! RADS3 errors or incompatibilities
 integer(fourbyteint), parameter :: rads_err_incompat = 101, rads_err_noinit = 102
 integer(twobyteint), parameter :: rads_nofield = -1
