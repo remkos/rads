@@ -3695,26 +3695,27 @@ if (rads_verbose >= 4) write (*,'(a,3f15.3,f12.6)') 'Estimated start/end/equator
 	P%start_time, P%end_time, P%equator_time, P%equator_lon
 end subroutine rads_predict_equator
 
-!****if* rads/rads_time_to_cycle
+!****if* rads/rads_time_to_cycle_pass
 ! SUMMARY
-! Determine cycle number for given epoch
+! Determine cycle and pass number for given epoch
 !
 ! SYNOPSIS
-function rads_time_to_cycle (S, time)
+subroutine rads_time_to_cycle_pass (S, time, cycle, pass)
 type(rads_sat), intent(inout) :: S
 real(eightbytereal), intent(in) :: time
-integer(fourbyteint) :: rads_time_to_cycle
+integer(fourbyteint), intent(out) :: cycle, pass
 !
 ! PURPOSE
-! Given an epoch <time> in seconds since 1985, determine the cycle in
-! which that epoch falls.
+! Given an epoch <time> in seconds since 1985, determine the cycle
+! number and pass number in which that epoch falls.
 !
 ! ARGUMENTS
 ! S        : Satellite/mission dependent structure
 ! time     : Time in seconds since 1985
 !
 ! RETURN VALUE
-! rads_time_to_cycle : Cycle number in which <time> falls
+! cycle    : Cycle number in which <time> falls
+! pass     : Pass number in which <time> falls
 !****-------------------------------------------------------------------
 integer :: i, j, n
 real(eightbytereal) :: d, t0, x
@@ -3729,19 +3730,46 @@ enddo
 ! Estimate the cycle from the time
 d = S%phases(i)%pass_seconds
 t0 = S%phases(i)%ref_time - (S%phases(i)%ref_pass - 0.5d0) * d ! Time of start of ref_cycle
-x = time - t0
-rads_time_to_cycle = floor(x / (S%phases(i)%repeat_days * 86400d0)) + S%phases(i)%ref_cycle
+x = (time - t0) / (S%phases(i)%repeat_days * 86400d0) + S%phases(i)%ref_cycle
+cycle = floor(x)
+pass = int((x - cycle) * S%phases(i)%passes + 1)
 
 ! When there are subcycles, compute the subcycle number
 if (associated(S%phases(i)%subcycles)) then
-	x = x - (rads_time_to_cycle - S%phases(i)%ref_cycle) * (S%phases(i)%repeat_days * 86400d0)
-	rads_time_to_cycle = (rads_time_to_cycle - 1) * S%phases(i)%subcycles%n + S%phases(i)%subcycles%i
+	x = (time - t0) - (rads_time_to_cycle - S%phases(i)%ref_cycle) * (S%phases(i)%repeat_days * 86400d0)
+	cycle = (cycle - 1) * S%phases(i)%subcycles%n + S%phases(i)%subcycles%i
 	n = floor(x / d)
 	do j = 2,S%phases(i)%subcycles%n
 		if (S%phases(i)%subcycles%list(j) > n) exit
-		rads_time_to_cycle = rads_time_to_cycle + 1
+		cycle = cycle + 1
 	enddo
+	pass = n - S%phases(i)%subcycles%list(j-1) + 1
 endif
+end subroutine rads_time_to_cycle_pass
+
+!****if* rads/rads_time_to_cycle
+! SUMMARY
+! Determine cycle number for given epoch
+!
+! SYNOPSIS
+function rads_time_to_cycle (S, time)
+type(rads_sat), intent(inout) :: S
+real(eightbytereal), intent(in) :: time
+integer(fourbyteint) :: rads_time_to_cycle
+!
+! PURPOSE
+! Given an epoch <time> in seconds since 1985, determine the cycle
+! number in which that epoch falls.
+!
+! ARGUMENTS
+! S        : Satellite/mission dependent structure
+! time     : Time in seconds since 1985
+!
+! RETURN VALUE
+! rads_time_to_cycle : Cycle number in which <time> falls
+!****-------------------------------------------------------------------
+integer(fourbyteint) :: pass
+call rads_time_to_cycle_pass (S, time, rads_time_to_cycle, pass)
 end function rads_time_to_cycle
 
 !***********************************************************************
