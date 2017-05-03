@@ -3700,10 +3700,11 @@ end subroutine rads_predict_equator
 ! Determine cycle and pass number for given epoch
 !
 ! SYNOPSIS
-subroutine rads_time_to_cycle_pass (S, time, cycle, pass)
+subroutine rads_time_to_cycle_pass (S, time, cycle, pass, phase)
 type(rads_sat), intent(inout) :: S
 real(eightbytereal), intent(in) :: time
 integer(fourbyteint), intent(out) :: cycle, pass
+type(rads_phase), intent(out), optional, pointer :: phase
 !
 ! PURPOSE
 ! Given an epoch <time> in seconds since 1985, determine the cycle
@@ -3716,6 +3717,7 @@ integer(fourbyteint), intent(out) :: cycle, pass
 ! RETURN VALUE
 ! cycle    : Cycle number in which <time> falls
 ! pass     : Pass number in which <time> falls
+! phase    : (Optional) Link to the phase in which <time> falls
 !****-------------------------------------------------------------------
 integer :: i, j, n
 real(eightbytereal) :: d, t0, x
@@ -3745,6 +3747,9 @@ if (associated(S%phases(i)%subcycles)) then
 	enddo
 	pass = n - S%phases(i)%subcycles%list(j-1) + 1
 endif
+
+! Link the phase, if required
+if (present(phase)) phase => S%phases(i)
 end subroutine rads_time_to_cycle_pass
 
 !****if* rads/rads_time_to_cycle
