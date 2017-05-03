@@ -49,9 +49,10 @@ character(len=rads_cmdl) :: dir = ''
 
 ! Other variables
 
-integer(fourbyteint) :: ios, cycle, pass
-real(eightbytereal) :: min_lat, max_lat, time
+integer(fourbyteint) :: ios, cycle, pass, abs_orbit
+real(eightbytereal) :: min_lat, max_lat, time, time_step = 0d0
 character(len=26) :: date
+type(rads_phase), pointer :: phase
 
 ! Scan command line for options
 
@@ -92,24 +93,30 @@ endif
 
 ! Determine threshold of latitudes
 
-min_lat = dt * 0.1d0
+min_lat = dt * 0.1d0	! Keep significant margin with 0.1 degrees per second
 max_lat = min(S%inclination, 180d0 - S%inclination) - min_lat
 
 ! Start with start time
 
 time = floor(S%time%info%limits(1))
-info(0)%time = time
-info(1)%time = time + dt
-call get_orbit (0)
-call get_orbit (1)
 
 ! Run until no orbits left, in search of equator crossings and polar crossovers
 
 do
+	time = time + time_step
 	if (time > S%time%info%limits(2)) exit
-	info(-1:0) = info(0:1)
-	info(1)%time = time+dt
-	call get_orbit (1)
+	if (time_step == dt) then	! Normal step by dt
+		info(-1:0) = info(0:1)
+		info(1)%time = time + dt
+	else	! Upon initialisation (time_step = 0) or after large jump (time_step > dt)
+		info(-1)%time = time - dt
+		call get_orbit (-1)
+		info( 0)%time = time
+		call get_orbit ( 0)
+		time_step = dt
+	endif
+	info( 1)%time = time + dt
+	call get_orbit ( 1)
 	if (ios > 0) exit
 	if (abs(info(0)%lat) < min_lat) then
 		call find_equator
@@ -119,7 +126,7 @@ do
 	time = time + dt
 enddo
 
-! Extend the list by 2 weeks (200 orbits)
+! Extend the list by approx. 2 weeks (200 orbits)
 
 if (norf >= 5) then
 	diff%time = orf(norf)%time - orf(norf-4)%time
@@ -145,11 +152,15 @@ write (*,600)
 ! Print out all the equator crossings and polar crossovers
 
 do i = 1,norf
-	call rads_time_to_cycle_pass (S, orf(i)%time + 100d0, cycle, pass)
+	call rads_time_to_cycle_pass (S, orf(i)%time + 100d0, cycle, pass, phase)
 	date = strf1985f (orf(i)%time)
 	date(5:5) = '/'
 	date(8:8) = '/'
-	write (*,610) date(1:23),rads_tab,cycle,rads_tab,pass,rads_tab,99999,rads_tab, &
+	! Compute the absolute orbit number (add 2*ref_orbit first to avoid dividing negative numbers)
+	abs_orbit = (phase%ref_orbit * 2 + (cycle - phase%ref_cycle) * phase%passes + (pass - phase%ref_pass)) / 2
+	! Subtract 1 for the start of a pass (large negative latitude)
+	if (orf(i)%lat < -min_lat) abs_orbit = abs_orbit - 1
+	write (*,610) date(1:23),rads_tab,cycle,rads_tab,pass,rads_tab,abs_orbit,rads_tab, &
 		modulo(orf(i)%lon,360d0),rads_tab,orf(i)%lat
 enddo
 610 format(a,a1,i3.3,a1,i5.5,a1,i5.5,a1,f6.2,a1,f6.2)
@@ -225,6 +236,7 @@ norf = norf + 1
 if (norf > morf) call rads_exit ('Too many ORF records')
 orf(norf)%time = time
 ios = getorb (time, orf(norf)%lat, orf(norf)%lon, alt, dir, rads_verbose > 0)
+time_step = 1200d0	! Jump 20 minutes (quarter revolution ahead)
 end subroutine store_orf
 
 end program make_orf
