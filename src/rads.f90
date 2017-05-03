@@ -93,6 +93,7 @@ type :: rads_phase                                   ! Information about altimet
 	real(eightbytereal) :: start_time, end_time      ! Start time and end time of this phase
 	real(eightbytereal) :: ref_time, ref_lon         ! Time and lon of equator crossing of "ref. pass"
 	integer(fourbyteint) :: ref_cycle, ref_pass      ! Cycle and pass number of "reference pass"
+	integer(fourbyteint) :: ref_orbit                ! Absolute orbit nr of "reference pass" (at eq.)
 	real(eightbytereal) :: pass_seconds              ! Length of pass in seconds
 	real(eightbytereal) :: repeat_days               ! Length of repeat period in days
 	real(eightbytereal) :: repeat_shift              ! Eastward shift of track pattern for near repeats
@@ -2343,7 +2344,8 @@ do
 		i = index(val(1),' ') ! Position of first space
 		phase%ref_time = strp1985f(val(1)(:i-1))
 		phase%ref_pass = 1
-		read (val(1)(i:), *, iostat=ios) phase%ref_lon, phase%ref_cycle, phase%ref_pass
+		phase%ref_orbit = 1
+		read (val(1)(i:), *, iostat=ios) phase%ref_lon, phase%ref_cycle, phase%ref_pass, phase%ref_orbit
 
 	case ('start_time')
 		phase%start_time = strp1985f(val(1))
@@ -3643,7 +3645,7 @@ else
 endif
 
 ! Initialize the new phase information and direct the pointer
-S%phases(n) = rads_phase (name(1:1), '', (/999,0/), 0, nan, nan, nan, nan, 0, 0, nan, nan, nan, 0, 0, null())
+S%phases(n) = rads_phase (name(1:1), '', (/999,0/), 0, nan, nan, nan, nan, 0, 0, 0, nan, nan, nan, 0, 0, null())
 phase => S%phases(n)
 end function rads_get_phase
 

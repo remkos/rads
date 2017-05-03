@@ -3639,7 +3639,7 @@ Global RADS configuration file
 		<mission>Exact Repeat Mission</mission>
 		<cycles>0 99</cycles>
 		<repeat>27 770</repeat>
-		<ref_pass>2016-06-28T21:57:26 0.627 6 1</ref_pass>
+		<ref_pass>2016-06-28T21:57:26 0.627 6 1 1899</ref_pass>
 		<start_time>2016-03-01</start_time>
 	</phase>
 </if>
@@ -3848,14 +3848,14 @@ Global RADS configuration file
 		<mission>Exact Repeat Mission</mission>
 		<cycles>0 303</cycles>
 		<repeat>9.91564280 254</repeat>
-		<ref_pass>2008-07-12T01:48:13 99.92 1 1</ref_pass>
+		<ref_pass>2008-07-12T01:48:13 99.92 1 1 102</ref_pass>
 		<start_time>2008-07-04</start_time>
 	</phase>
 	<phase name="b">
 		<mission>Interleaved Mission</mission>
 		<cycles>305 999</cycles>
 		<repeat>9.91564280 254</repeat>
-		<ref_pass>2016-10-17T09:24:23 98.50 306 1</ref_pass><!--May need to be changed-->
+		<ref_pass>2016-10-17T09:24:22 98.51 306 1 38774</ref_pass>
 		<start_time>2016-10-14</start_time>
 	</phase>
 </if>
@@ -3871,7 +3871,7 @@ Global RADS configuration file
 		<mission>Exact Repeat Mission</mission>
 		<cycles>0 999</cycles>
 		<repeat>9.91564280 254</repeat>
-		<ref_pass>2016-02-17T10:56:52 99.92 1 1</ref_pass>
+		<ref_pass>2016-02-17T10:56:52 99.92 1 1 385</ref_pass>
 		<start_time>2016-02-12</start_time>
 	</phase>
 </if>
@@ -3956,14 +3956,14 @@ Global RADS configuration file
 		<mission>Multi-disciplinary Phase</mission>
 		<cycles>0 35</cycles>
 		<repeat>35.0 1002</repeat>
-		<ref_pass>2013-03-14T06:04:39 0.13 1 1</ref_pass>
+		<ref_pass>2013-03-14T06:04:39 0.13 1 1 240</ref_pass>
 		<start_time>2013-02-25</start_time>
 	</phase>
 	<phase name="b">
 		<mission>Drifting Phase</mission>
 		<cycles>36 99</cycles>
 		<repeat>35.0 1002 -2.36</repeat>
-		<ref_pass>2016-07-04T13:18:09 251.07 36 1</ref_pass>
+		<ref_pass>2016-07-04T13:18:09 251.07 36 1 17536</ref_pass>
 		<start_time>2016-07-04T12:00:00</start_time>
 	</phase>
 </if>
