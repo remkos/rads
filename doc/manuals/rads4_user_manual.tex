@@ -427,12 +427,12 @@ A number of tags are employed to give general information about the various alti
 \item[\ctag{xover_params}] Parameters used in \prog{radsxogen}.
 \item[\ctag{phase}] A block of tags that apply to a given mission phase.
 \item[\ctag{mission}] Name of the mission phase.
-\item[\ctag{cycles}] First and last cycle number in this phase.
-\item[\ctag{repeat}] Length of the repeat cycle (not subcycle) in days and passes (half revolutions) in this phase.
-\item[\ctag{ref_pass}] Time of the equator crossing, longitude of the equator crossing, cycle number (not subcycle number) and pass number of reference pass in this phase.
-\item[\ctag{start_time}] Start time of the mission phase.
+\item[\ctag{cycles}] First and last cycle number in this mission phase.
+\item[\ctag{repeat}] Length of the repeat cycle (not subcycle) in days and passes (half revolutions) in this mission phase.
+\item[\ctag{ref_pass}] Date (and time) of a reference equator crossing, longitude of this equator crossing, cycle number (not subcycle number), pass number in this mission phase phase, and absolute orbit number. If the absolute orbit number is not given, 1 is assumed. This line provides the reference for the cycle and pass numbering.
+\item[\ctag{start_time}] Start data (and time) of the mission phase.
 \end{description}
-In the above, time epochs can be written as \emph{yyyy}-\emph{mm}-\emph{dd}T\emph{hh}:\emph{mm}:\emph{ss}, where the part from 'T' onward can be omitted in whole or in part. 
+In the above, date (and time) epochs can be written as \emph{yyyy}-\emph{mm}-\emph{dd}T\emph{hh}:\emph{mm}:\emph{ss}, where the part from 'T' onward can be omitted in whole or in part. 
 
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
