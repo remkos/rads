@@ -3740,7 +3740,7 @@ pass = int((x - cycle) * S%phases(i)%passes + 1)
 
 ! When there are subcycles, compute the subcycle number
 if (associated(S%phases(i)%subcycles)) then
-	x = (time - t0) - (rads_time_to_cycle - S%phases(i)%ref_cycle) * (S%phases(i)%repeat_days * 86400d0)
+	x = (time - t0) - (cycle - S%phases(i)%ref_cycle) * (S%phases(i)%repeat_days * 86400d0)
 	cycle = (cycle - 1) * S%phases(i)%subcycles%n + S%phases(i)%subcycles%i
 	n = floor(x / d)
 	do j = 2,S%phases(i)%subcycles%n
