@@ -52,7 +52,6 @@ character(len=rads_cmdl) :: dir = ''
 integer(fourbyteint) :: ios, cycle, pass, abs_orbit
 real(eightbytereal) :: min_lat, max_lat, time, time_step = 0d0
 character(len=26) :: date
-type(rads_phase), pointer :: phase
 
 ! Scan command line for options
 
@@ -152,12 +151,12 @@ write (*,600)
 ! Print out all the equator crossings and polar crossovers
 
 do i = 1,norf
-	call rads_time_to_cycle_pass (S, orf(i)%time + 100d0, cycle, pass, phase)
+	call rads_time_to_cycle_pass (S, orf(i)%time + 100d0, cycle, pass)
 	date = strf1985f (orf(i)%time)
 	date(5:5) = '/'
 	date(8:8) = '/'
 	! Compute the absolute orbit number (add 2*ref_orbit first to avoid dividing negative numbers)
-	abs_orbit = (phase%ref_orbit * 2 + (cycle - phase%ref_cycle) * phase%passes + (pass - phase%ref_pass)) / 2
+	abs_orbit = (S%phase%ref_orbit * 2 + (cycle - S%phase%ref_cycle) * S%phase%passes + (pass - S%phase%ref_pass)) / 2
 	! Subtract 1 for the start of a pass (large negative latitude)
 	if (orf(i)%lat < -min_lat) abs_orbit = abs_orbit - 1
 	write (*,610) date(1:23),rads_tab,cycle,rads_tab,pass,rads_tab,abs_orbit,rads_tab, &

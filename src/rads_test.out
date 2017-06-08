@@ -50,241 +50,244 @@ Eqlonlim =  -278.279070 -278.279070  278.279070  278.279070
  41 inv_bar_static                          inv_bar_static                           1002   -1       -1.0000        1.0000
  42 inv_bar_global                          inv_bar_global                           1003   -1       -1.0000        1.0000
  43 inv_bar_mog2d                           inv_bar_mog2d                            1004   -1       -1.0000        1.0000
- 44 inv_bar_mok2d                           inv_bar_mok2d                              -1   -1       -1.0000        1.0000
- 45 inv_bar_mog2d_mean                      inv_bar_mog2d_mean                       1005   -1       -1.0000        1.0000
- 46 inv_bar                                 inv_bar_mog2d                              10   -1       -1.0000        1.0000
- 47 tide_solid                              tide_solid                               1101   11       -1.0000        1.0000
- 48 tide_ocean_fes04                        tide_ocean_fes04                         1213   -1       -5.0000        5.0000
- 49 tide_ocean_webtide                      tide_ocean_webtide                       1215   -1       -5.0000        5.0000
- 50 tide_ocean_got48                        tide_ocean_got48                         1219   -1       -5.0000        5.0000
- 51 tide_ocean_got410                       tide_ocean_got410                        1222   -1       -5.0000        5.0000
- 52 tide_ocean_fes12                        tide_ocean_fes12                         1223   -1       -5.0000        5.0000
- 53 tide_ocean                              tide_ocean_got410                          12   -1       -5.0000        5.0000
- 54 tide_load_fes04                         tide_load_fes04                          1313   -1       -0.5000        0.5000
- 55 tide_load_got48                         tide_load_got48                          1319   -1       -0.5000        0.5000
- 56 tide_load_got410                        tide_load_got410                         1322   -1       -0.5000        0.5000
- 57 tide_load                               tide_load_got410                           13   -1       -0.5000        0.5000
- 58 tide_pole                               tide_pole                                1401   14       -0.1000        0.1000
- 59 ssb_bm3                                 ssb_bm3                                  1501   -1       -1.0000        1.0000
- 60 ssb                                     ssb_bm3                                    15   -1       -1.0000        1.0000
- 61 geoid_egm2008                           geoid_egm2008                            1610   -1           NaN           NaN
- 62 geoid                                   geoid_egm2008                              -1   -1           NaN           NaN
- 63 mss_egm2008                             mss_egm2008                              1611   -1           NaN           NaN
- 64 mss_ucl04                               mss_ucl04                                1613   -1           NaN           NaN
- 65 mss_dtu10                               mss_dtu10                                1614   -1           NaN           NaN
- 66 mss_cnescls11                           mss_cnescls11                            1615   -1           NaN           NaN
- 67 mss_dtu13                               mss_dtu13                                1616   -1           NaN           NaN
- 68 geoid_eigen6                            geoid_eigen6                             1617   -1           NaN           NaN
- 69 mss_dtu15                               mss_dtu15                                1618   -1           NaN           NaN
- 70 mss                                     mss_dtu13                                  16   -1           NaN           NaN
- 71 swh_ku                                  swh_ku                                   1701   -1        0.0000        8.0000
- 72 swh                                     swh_ku                                     17   -1        0.0000        8.0000
- 73 sig0_ku                                 sig0_ku                                  1801   -1        6.0000       27.0000
- 74 sig0                                    sig0_ku                                    18   -1        6.0000       27.0000
- 75 wind_speed_alt                          wind_speed_alt                           1901   -1       -1.0000       30.0000
- 76 wind_speed_ecmwf_u                      wind_speed_ecmwf_u                       1903   -1      -30.0000       30.0000
- 77 wind_speed_ecmwf_v                      wind_speed_ecmwf_v                       1904   -1      -30.0000       30.0000
- 78 wind_speed_ecmwf                        wind_speed_ecmwf                           -1   -1        0.0000       30.0000
- 79 wind_speed                              wind_speed_alt                             19   -1       -1.0000       30.0000
- 80 range_rms_norm                          range_rms_norm                           2001   -1        0.0000        0.4000
- 81 range_rms_ku                            range_rms_ku                             2002   -1        0.0000        0.4000
- 82 range_rms                               range_rms_ku                               20   -1        0.0000        0.4000
- 83 range_numval_ku                         range_numval_ku                          2101   -1       16.5000       20.5000
- 84 range_numval                            range_numval_ku                            21   -1       16.5000       20.5000
- 85 topo_srtm30plus                         topo_srtm30plus                          2204   -1           NaN           NaN
- 86 topo_dtu10                              topo_dtu10                               2205   -1           NaN           NaN
- 87 topo_macess                             topo_macess                              2206   -1           NaN           NaN
- 88 topo_ace2                               topo_ace2                                2207   -1           NaN           NaN
- 89 topo                                    topo_srtm30plus                            22   -1           NaN           NaN
- 90 tb_238                                  tb_238                                   2302   -1           NaN           NaN
- 91 tb2                                     tb_238                                     23   -1           NaN           NaN
- 92 tb_365                                  tb_365                                   2303   -1           NaN           NaN
- 93 tb3                                     tb_365                                     -1   -1           NaN           NaN
- 94 peakiness_ku                            peakiness_ku                             2401   -1           NaN           NaN
- 95 peakiness                               peakiness_ku                               24   -1           NaN           NaN
- 96 flag_alt_oper_mode                      flag_alt_oper_mode                       2516   -1           NaN           NaN
- 97 qual_sptr                               qual_sptr                                2516   -1           NaN           NaN
- 98 flag_water                              flag_water                               2504   -1           NaN           NaN
- 99 flag_ocean                              flag_ocean                               2505   -1        0.0000        0.0000
-100 surface_type_rad                        surface_type_rad                         2506   -1        0.0000        0.0000
-101 qual_rad_rain_ice                       qual_rad_rain_ice                        2508   -1        0.0000        0.0000
-102 qual_rad_tb                             qual_rad_tb                              2509   -1        3.0000        0.0000
-103 qual_range                              qual_range                               2511   -1        0.0000        0.0000
-104 qual_swh                                qual_swh                                 2512   -1        0.0000        0.0000
-105 qual_sig0                               qual_sig0                                2513   -1        0.0000        0.0000
-106 flag_alt_track_mode                     flag_alt_track_mode                      2514   -1        0.0000        0.0000
-107 qual_orbit                              qual_orbit                               2515   25        0.0000        0.0000
-108 surface_type                            surface_type                             2517   -1           NaN           NaN
-109 flags                                   flags                                    2601   26    65512.0000        0.0000
-110 drange_ku                               drange_ku                                2701   -1           NaN           NaN
-111 drange_cal                              drange_cal                               2702   -1           NaN           NaN
-112 drange_uso                              drange_uso                               2703   -1           NaN           NaN
-113 drange_fm                               drange_fm                                2704   -1           NaN           NaN
-114 drange_sptr                             drange_sptr                              2709   -1           NaN           NaN
-115 drange                                  drange_ku                                  27   -1           NaN           NaN
-116 swh_rms_norm                            swh_rms_norm                             2801   -1        0.0000        2.1000
-117 swh_rms_ku                              swh_rms_ku                               2802   -1        0.0000        2.1000
-118 swh_rms                                 swh_rms_ku                                 28   -1        0.0000        2.1000
-119 sig0_rms_norm                           sig0_rms_norm                            2901   -1           NaN           NaN
-120 sig0_rms_ku                             sig0_rms_ku                              2902   -1        0.0000        1.0000
-121 sig0_rms                                sig0_rms_ku                                29   -1        0.0000        1.0000
-122 off_nadir_angle_wf_ku                   off_nadir_angle_wf_ku                    3001   -1           NaN           NaN
-123 off_nadir_angle2_wf_ku                  off_nadir_angle2_wf_ku                   3002   -1           NaN           NaN
-124 attitude                                off_nadir_angle2_wf_ku                     30   -1           NaN           NaN
-125 dsig0_ku                                dsig0_ku                                 3201   -1           NaN           NaN
-126 dsig0_atmos_ku                          dsig0_atmos_ku                           3203   -1           NaN           NaN
-127 dsig0                                   dsig0_ku                                   32   -1           NaN           NaN
-128 dsig0_atmos                             dsig0_atmos_ku                             -1   -1           NaN           NaN
-129 liquid_water_rad                        liquid_water_rad                         3301   33           NaN           NaN
-130 water_vapor_rad                         water_vapor_rad                          3302   -1           NaN           NaN
-131 mqe                                     mqe                                      3409   -1           NaN           NaN
-132 basin                                   basin                                    3601   36           NaN           NaN
-133 ref_frame_offset                        ref_frame_offset                         3801   38           NaN           NaN
-134 tide_equil                              tide_equil                               3901   39           NaN           NaN
-135 tide_non_equil                          tide_non_equil                           3902   -1           NaN           NaN
-136 tide_lunar_nodal                        tide_lunar_nodal                           -1   -1           NaN           NaN
-137 dist_coast                              dist_coast                               4501   45           NaN           NaN
-138 seaice_class                            seaice_class                             4601   46           NaN           NaN
-139 seaice_conc                             seaice_conc                              4701   47           NaN           NaN
-140 sst                                     sst                                      4801   48           NaN           NaN
-141 sst_mean                                sst_mean                                 4802   -1           NaN           NaN
-142 dry_tropo_airtide                       dry_tropo_airtide                        4901   49           NaN           NaN
-143 mss_annual                              mss_annual                               5001   50           NaN           NaN
-144 gia                                     gia                                      5101   51           NaN           NaN
-145 first_meas_time                         first_meas_time                          9901   99           NaN           NaN
-146 last_meas_time                          last_meas_time                           9902   -1           NaN           NaN
-147 eqtime                                  eqtime                                   9903   -1           NaN           NaN
-148 eqlon                                   eqlon                                    9904   -1           NaN           NaN
-149 cycle                                   cycle                                    9905   -1           NaN           NaN
-150 pass                                    pass                                     9906   -1           NaN           NaN
+ 44 inv_bar_mog2d_era                       inv_bar_mog2d_era                        1004   -1       -1.0000        1.0000
+ 45 inv_bar_mok2d                           inv_bar_mok2d                              -1   -1       -1.0000        1.0000
+ 46 inv_bar_mog2d_mean                      inv_bar_mog2d_mean                       1005   -1       -1.0000        1.0000
+ 47 inv_bar                                 inv_bar_mog2d                              10   -1       -1.0000        1.0000
+ 48 tide_solid                              tide_solid                               1101   11       -1.0000        1.0000
+ 49 tide_ocean_fes04                        tide_ocean_fes04                         1213   -1       -5.0000        5.0000
+ 50 tide_ocean_webtide                      tide_ocean_webtide                       1215   -1       -5.0000        5.0000
+ 51 tide_ocean_got48                        tide_ocean_got48                         1219   -1       -5.0000        5.0000
+ 52 tide_ocean_got410                       tide_ocean_got410                        1222   -1       -5.0000        5.0000
+ 53 tide_ocean_fes12                        tide_ocean_fes12                         1223   -1       -5.0000        5.0000
+ 54 tide_ocean_fes14b                       tide_ocean_fes14b                        1224   -1       -5.0000        5.0000
+ 55 tide_ocean                              tide_ocean_got410                          12   -1       -5.0000        5.0000
+ 56 tide_load_fes04                         tide_load_fes04                          1313   -1       -0.5000        0.5000
+ 57 tide_load_got48                         tide_load_got48                          1319   -1       -0.5000        0.5000
+ 58 tide_load_got410                        tide_load_got410                         1322   -1       -0.5000        0.5000
+ 59 tide_load_fes14                         tide_load_fes14                          1324   -1       -0.5000        0.5000
+ 60 tide_load                               tide_load_got410                           13   -1       -0.5000        0.5000
+ 61 tide_pole                               tide_pole                                1401   14       -0.1000        0.1000
+ 62 ssb_bm3                                 ssb_bm3                                  1501   -1       -1.0000        1.0000
+ 63 ssb                                     ssb_bm3                                    15   -1       -1.0000        1.0000
+ 64 geoid_egm2008                           geoid_egm2008                            1610   -1           NaN           NaN
+ 65 geoid                                   geoid_egm2008                              -1   -1           NaN           NaN
+ 66 mss_egm2008                             mss_egm2008                              1611   -1           NaN           NaN
+ 67 mss_ucl04                               mss_ucl04                                1613   -1           NaN           NaN
+ 68 mss_cnescls11                           mss_cnescls11                            1615   -1           NaN           NaN
+ 69 mss_dtu13                               mss_dtu13                                1616   -1           NaN           NaN
+ 70 geoid_eigen6                            geoid_eigen6                             1617   -1           NaN           NaN
+ 71 mss_dtu15                               mss_dtu15                                1618   -1           NaN           NaN
+ 72 mss                                     mss_dtu13                                  16   -1           NaN           NaN
+ 73 swh_ku                                  swh_ku                                   1701   -1        0.0000        8.0000
+ 74 swh                                     swh_ku                                     17   -1        0.0000        8.0000
+ 75 sig0_ku                                 sig0_ku                                  1801   -1        6.0000       27.0000
+ 76 sig0                                    sig0_ku                                    18   -1        6.0000       27.0000
+ 77 wind_speed_alt                          wind_speed_alt                           1901   -1       -1.0000       30.0000
+ 78 wind_speed_ecmwf_u                      wind_speed_ecmwf_u                       1903   -1      -30.0000       30.0000
+ 79 wind_speed_ecmwf_v                      wind_speed_ecmwf_v                       1904   -1      -30.0000       30.0000
+ 80 wind_speed_ecmwf                        wind_speed_ecmwf                           -1   -1        0.0000       30.0000
+ 81 wind_speed                              wind_speed_alt                             19   -1       -1.0000       30.0000
+ 82 range_rms_norm                          range_rms_norm                           2001   -1        0.0000        0.4000
+ 83 range_rms_ku                            range_rms_ku                             2002   -1        0.0000        0.4000
+ 84 range_rms                               range_rms_ku                               20   -1        0.0000        0.4000
+ 85 range_numval_ku                         range_numval_ku                          2101   -1       16.5000       20.5000
+ 86 range_numval                            range_numval_ku                            21   -1       16.5000       20.5000
+ 87 topo_srtm30plus                         topo_srtm30plus                          2204   -1           NaN           NaN
+ 88 topo_dtu10                              topo_dtu10                               2205   -1           NaN           NaN
+ 89 topo_macess                             topo_macess                              2206   -1           NaN           NaN
+ 90 topo_ace2                               topo_ace2                                2207   -1           NaN           NaN
+ 91 topo_etopo1                             topo_etopo1                              2208   -1           NaN           NaN
+ 92 topo                                    topo_srtm30plus                            22   -1           NaN           NaN
+ 93 tb_238                                  tb_238                                   2302   -1           NaN           NaN
+ 94 tb2                                     tb_238                                     23   -1           NaN           NaN
+ 95 tb_365                                  tb_365                                   2303   -1           NaN           NaN
+ 96 tb3                                     tb_365                                     -1   -1           NaN           NaN
+ 97 peakiness_ku                            peakiness_ku                             2401   -1           NaN           NaN
+ 98 peakiness                               peakiness_ku                               24   -1           NaN           NaN
+ 99 flag_alt_oper_mode                      flag_alt_oper_mode                       2516   -1           NaN           NaN
+100 qual_sptr                               qual_sptr                                2516   -1           NaN           NaN
+101 flag_water                              flag_water                               2504   -1           NaN           NaN
+102 flag_ocean                              flag_ocean                               2505   -1        0.0000        0.0000
+103 surface_type_rad                        surface_type_rad                         2506   -1        0.0000        0.0000
+104 qual_rad_rain_ice                       qual_rad_rain_ice                        2508   -1        0.0000        0.0000
+105 qual_rad_tb                             qual_rad_tb                              2509   -1        3.0000        0.0000
+106 qual_range                              qual_range                               2511   -1        0.0000        0.0000
+107 qual_swh                                qual_swh                                 2512   -1        0.0000        0.0000
+108 qual_sig0                               qual_sig0                                2513   -1        0.0000        0.0000
+109 flag_alt_track_mode                     flag_alt_track_mode                      2514   -1        0.0000        0.0000
+110 qual_orbit                              qual_orbit                               2515   25        0.0000        0.0000
+111 surface_type                            surface_type                             2517   -1           NaN           NaN
+112 flags                                   flags                                    2601   26    65512.0000        0.0000
+113 drange_ku                               drange_ku                                2701   -1           NaN           NaN
+114 drange_cal                              drange_cal                               2702   -1           NaN           NaN
+115 drange_uso                              drange_uso                               2703   -1           NaN           NaN
+116 drange_fm                               drange_fm                                2704   -1           NaN           NaN
+117 drange_sptr                             drange_sptr                              2709   -1           NaN           NaN
+118 drange                                  drange_ku                                  27   -1           NaN           NaN
+119 swh_rms_norm                            swh_rms_norm                             2801   -1        0.0000        2.1000
+120 swh_rms_ku                              swh_rms_ku                               2802   -1        0.0000        2.1000
+121 swh_rms                                 swh_rms_ku                                 28   -1        0.0000        2.1000
+122 sig0_rms_norm                           sig0_rms_norm                            2901   -1           NaN           NaN
+123 sig0_rms_ku                             sig0_rms_ku                              2902   -1        0.0000        1.0000
+124 sig0_rms                                sig0_rms_ku                                29   -1        0.0000        1.0000
+125 off_nadir_angle_wf_ku                   off_nadir_angle_wf_ku                    3001   -1           NaN           NaN
+126 off_nadir_angle2_wf_ku                  off_nadir_angle2_wf_ku                   3002   -1           NaN           NaN
+127 attitude                                off_nadir_angle2_wf_ku                     30   -1           NaN           NaN
+128 dsig0_ku                                dsig0_ku                                 3201   -1           NaN           NaN
+129 dsig0_atmos_ku                          dsig0_atmos_ku                           3203   -1           NaN           NaN
+130 dsig0                                   dsig0_ku                                   32   -1           NaN           NaN
+131 dsig0_atmos                             dsig0_atmos_ku                             -1   -1           NaN           NaN
+132 liquid_water_rad                        liquid_water_rad                         3301   33           NaN           NaN
+133 water_vapor_rad                         water_vapor_rad                          3302   -1           NaN           NaN
+134 mqe                                     mqe                                      3409   -1           NaN           NaN
+135 basin                                   basin                                    3601   36           NaN           NaN
+136 ref_frame_offset                        ref_frame_offset                         3801   38           NaN           NaN
+137 tide_equil                              tide_equil                               3901   39           NaN           NaN
+138 tide_non_equil                          tide_non_equil                           3902   -1           NaN           NaN
+139 tide_lunar_nodal                        tide_lunar_nodal                           -1   -1           NaN           NaN
+140 dist_coast                              dist_coast                               4501   45           NaN           NaN
+141 seaice_class                            seaice_class                             4601   46           NaN           NaN
+142 seaice_conc                             seaice_conc                              4701   47           NaN           NaN
+143 sst                                     sst                                      4801   48           NaN           NaN
+144 sst_mean                                sst_mean                                 4802   -1           NaN           NaN
+145 dry_tropo_airtide                       dry_tropo_airtide                        4901   49           NaN           NaN
+146 mss_annual                              mss_annual                               5001   50           NaN           NaN
+147 gia                                     gia                                      5101   51           NaN           NaN
+148 first_meas_time                         first_meas_time                          9901   99           NaN           NaN
+149 last_meas_time                          last_meas_time                           9902   -1           NaN           NaN
+150 eqtime                                  eqtime                                   9903   -1           NaN           NaN
+151 eqlon                                   eqlon                                    9904   -1           NaN           NaN
+152 cycle                                   cycle                                    9905   -1           NaN           NaN
+153 pass                                    pass                                     9906   -1           NaN           NaN
 Eqlonlim =   -99.092603 -105.851374  135.851374  129.092603
 debug =     3
-Checking cycle/pass :    19    1
+Checking sat/cycle/pass :  e1   19    1
 Bail out on estimated time:  212284800.000  212371200.000  212103263.023  212106276.977
-Checking cycle/pass :    19    2
+Checking sat/cycle/pass :  e1   19    2
 Bail out on estimated time:  212284800.000  212371200.000  212106276.977  212109290.930
-Checking cycle/pass :    19    3
+Checking sat/cycle/pass :  e1   19    3
 Bail out on estimated time:  212284800.000  212371200.000  212109290.930  212112304.884
-Checking cycle/pass :    19    4
+Checking sat/cycle/pass :  e1   19    4
 Bail out on estimated time:  212284800.000  212371200.000  212112304.884  212115318.837
-Checking cycle/pass :    19    5
+Checking sat/cycle/pass :  e1   19    5
 Bail out on estimated time:  212284800.000  212371200.000  212115318.837  212118332.791
-Checking cycle/pass :    19    6
+Checking sat/cycle/pass :  e1   19    6
 Bail out on estimated time:  212284800.000  212371200.000  212118332.791  212121346.744
-Checking cycle/pass :    19    7
+Checking sat/cycle/pass :  e1   19    7
 Bail out on estimated time:  212284800.000  212371200.000  212121346.744  212124360.698
-Checking cycle/pass :    19    8
+Checking sat/cycle/pass :  e1   19    8
 Bail out on estimated time:  212284800.000  212371200.000  212124360.698  212127374.651
-Checking cycle/pass :    19    9
+Checking sat/cycle/pass :  e1   19    9
 Bail out on estimated time:  212284800.000  212371200.000  212127374.651  212130388.605
-Checking cycle/pass :    19   10
+Checking sat/cycle/pass :  e1   19   10
 Bail out on estimated time:  212284800.000  212371200.000  212130388.605  212133402.558
-Checking cycle/pass :    19   11
+Checking sat/cycle/pass :  e1   19   11
 Bail out on estimated time:  212284800.000  212371200.000  212133402.558  212136416.512
-Checking cycle/pass :    19   12
+Checking sat/cycle/pass :  e1   19   12
 Bail out on estimated time:  212284800.000  212371200.000  212136416.512  212139430.465
-Checking cycle/pass :    19   13
+Checking sat/cycle/pass :  e1   19   13
 Bail out on estimated time:  212284800.000  212371200.000  212139430.465  212142444.419
-Checking cycle/pass :    19   14
+Checking sat/cycle/pass :  e1   19   14
 Bail out on estimated time:  212284800.000  212371200.000  212142444.419  212145458.372
-Checking cycle/pass :    19   15
+Checking sat/cycle/pass :  e1   19   15
 Bail out on estimated time:  212284800.000  212371200.000  212145458.372  212148472.326
-Checking cycle/pass :    19   16
+Checking sat/cycle/pass :  e1   19   16
 Bail out on estimated time:  212284800.000  212371200.000  212148472.326  212151486.279
-Checking cycle/pass :    19   17
+Checking sat/cycle/pass :  e1   19   17
 Bail out on estimated time:  212284800.000  212371200.000  212151486.279  212154500.233
-Checking cycle/pass :    19   18
+Checking sat/cycle/pass :  e1   19   18
 Bail out on estimated time:  212284800.000  212371200.000  212154500.233  212157514.186
-Checking cycle/pass :    19   19
+Checking sat/cycle/pass :  e1   19   19
 Bail out on estimated time:  212284800.000  212371200.000  212157514.186  212160528.140
-Checking cycle/pass :    19   20
+Checking sat/cycle/pass :  e1   19   20
 Bail out on estimated time:  212284800.000  212371200.000  212160528.140  212163542.093
-Checking cycle/pass :    19   21
+Checking sat/cycle/pass :  e1   19   21
 Bail out on estimated time:  212284800.000  212371200.000  212163542.093  212166556.047
-Checking cycle/pass :    19   22
+Checking sat/cycle/pass :  e1   19   22
 Bail out on estimated time:  212284800.000  212371200.000  212166556.047  212169570.000
-Checking cycle/pass :    19   23
+Checking sat/cycle/pass :  e1   19   23
 Bail out on estimated time:  212284800.000  212371200.000  212169570.000  212172583.953
-Checking cycle/pass :    19   24
+Checking sat/cycle/pass :  e1   19   24
 Bail out on estimated time:  212284800.000  212371200.000  212172583.953  212175597.907
-Checking cycle/pass :    19   25
+Checking sat/cycle/pass :  e1   19   25
 Bail out on estimated time:  212284800.000  212371200.000  212175597.907  212178611.860
-Checking cycle/pass :    19   26
+Checking sat/cycle/pass :  e1   19   26
 Bail out on estimated time:  212284800.000  212371200.000  212178611.860  212181625.814
-Checking cycle/pass :    19   27
+Checking sat/cycle/pass :  e1   19   27
 Bail out on estimated time:  212284800.000  212371200.000  212181625.814  212184639.767
-Checking cycle/pass :    19   28
+Checking sat/cycle/pass :  e1   19   28
 Bail out on estimated time:  212284800.000  212371200.000  212184639.767  212187653.721
-Checking cycle/pass :    19   29
+Checking sat/cycle/pass :  e1   19   29
 Bail out on estimated time:  212284800.000  212371200.000  212187653.721  212190667.674
-Checking cycle/pass :    19   30
+Checking sat/cycle/pass :  e1   19   30
 Bail out on estimated time:  212284800.000  212371200.000  212190667.674  212193681.628
-Checking cycle/pass :    19   31
+Checking sat/cycle/pass :  e1   19   31
 Bail out on estimated time:  212284800.000  212371200.000  212193681.628  212196695.581
-Checking cycle/pass :    19   32
+Checking sat/cycle/pass :  e1   19   32
 Bail out on estimated time:  212284800.000  212371200.000  212196695.581  212199709.535
-Checking cycle/pass :    19   33
+Checking sat/cycle/pass :  e1   19   33
 Bail out on estimated time:  212284800.000  212371200.000  212199709.535  212202723.488
-Checking cycle/pass :    19   34
+Checking sat/cycle/pass :  e1   19   34
 Bail out on estimated time:  212284800.000  212371200.000  212202723.488  212205737.442
-Checking cycle/pass :    19   35
+Checking sat/cycle/pass :  e1   19   35
 Bail out on estimated time:  212284800.000  212371200.000  212205737.442  212208751.395
-Checking cycle/pass :    19   36
+Checking sat/cycle/pass :  e1   19   36
 Bail out on estimated time:  212284800.000  212371200.000  212208751.395  212211765.349
-Checking cycle/pass :    19   37
+Checking sat/cycle/pass :  e1   19   37
 Bail out on estimated time:  212284800.000  212371200.000  212211765.349  212214779.302
-Checking cycle/pass :    19   38
+Checking sat/cycle/pass :  e1   19   38
 Bail out on estimated time:  212284800.000  212371200.000  212214779.302  212217793.256
-Checking cycle/pass :    19   39
+Checking sat/cycle/pass :  e1   19   39
 Bail out on estimated time:  212284800.000  212371200.000  212217793.256  212220807.209
-Checking cycle/pass :    19   40
+Checking sat/cycle/pass :  e1   19   40
 Bail out on estimated time:  212284800.000  212371200.000  212220807.209  212223821.163
-Checking cycle/pass :    19   41
+Checking sat/cycle/pass :  e1   19   41
 Bail out on estimated time:  212284800.000  212371200.000  212223821.163  212226835.116
-Checking cycle/pass :    19   42
+Checking sat/cycle/pass :  e1   19   42
 Bail out on estimated time:  212284800.000  212371200.000  212226835.116  212229849.070
-Checking cycle/pass :    19   43
+Checking sat/cycle/pass :  e1   19   43
 Bail out on estimated time:  212284800.000  212371200.000  212229849.070  212232863.023
-Checking cycle/pass :    19   44
+Checking sat/cycle/pass :  e1   19   44
 Bail out on estimated time:  212284800.000  212371200.000  212232863.023  212235876.977
-Checking cycle/pass :    19   45
+Checking sat/cycle/pass :  e1   19   45
 Bail out on estimated time:  212284800.000  212371200.000  212235876.977  212238890.930
-Checking cycle/pass :    19   46
+Checking sat/cycle/pass :  e1   19   46
 Bail out on estimated time:  212284800.000  212371200.000  212238890.930  212241904.884
-Checking cycle/pass :    19   47
+Checking sat/cycle/pass :  e1   19   47
 Bail out on estimated time:  212284800.000  212371200.000  212241904.884  212244918.837
-Checking cycle/pass :    19   48
+Checking sat/cycle/pass :  e1   19   48
 Bail out on estimated time:  212284800.000  212371200.000  212244918.837  212247932.791
-Checking cycle/pass :    19   49
+Checking sat/cycle/pass :  e1   19   49
 Bail out on estimated time:  212284800.000  212371200.000  212247932.791  212250946.744
-Checking cycle/pass :    19   50
+Checking sat/cycle/pass :  e1   19   50
 Bail out on estimated time:  212284800.000  212371200.000  212250946.744  212253960.698
-Checking cycle/pass :    19   51
+Checking sat/cycle/pass :  e1   19   51
 Bail out on estimated time:  212284800.000  212371200.000  212253960.698  212256974.651
-Checking cycle/pass :    19   52
+Checking sat/cycle/pass :  e1   19   52
 Bail out on estimated time:  212284800.000  212371200.000  212256974.651  212259988.605
-Checking cycle/pass :    19   53
+Checking sat/cycle/pass :  e1   19   53
 Bail out on estimated time:  212284800.000  212371200.000  212259988.605  212263002.558
-Checking cycle/pass :    19   54
+Checking sat/cycle/pass :  e1   19   54
 Bail out on estimated time:  212284800.000  212371200.000  212263002.558  212266016.512
-Checking cycle/pass :    19   55
+Checking sat/cycle/pass :  e1   19   55
 Bail out on estimated time:  212284800.000  212371200.000  212266016.512  212269030.465
-Checking cycle/pass :    19   56
+Checking sat/cycle/pass :  e1   19   56
 Bail out on estimated time:  212284800.000  212371200.000  212269030.465  212272044.419
-Checking cycle/pass :    19   57
+Checking sat/cycle/pass :  e1   19   57
 Bail out on estimated time:  212284800.000  212371200.000  212272044.419  212275058.372
-Checking cycle/pass :    19   58
+Checking sat/cycle/pass :  e1   19   58
 Bail out on estimated time:  212284800.000  212371200.000  212275058.372  212278072.326
-Checking cycle/pass :    19   59
+Checking sat/cycle/pass :  e1   19   59
 Bail out on estimated time:  212284800.000  212371200.000  212278072.326  212281086.279
-Checking cycle/pass :    19   60
+Checking sat/cycle/pass :  e1   19   60
 Bail out on estimated time:  212284800.000  212371200.000  212281086.279  212284100.233
-Checking cycle/pass :    19   61
+Checking sat/cycle/pass :  e1   19   61
 Opening for read only: /rads/data/e1/a/c019/e1p0061c019.nc
 Start/end/equator time/longitude =   212285607.468  212284395.961  212287111.315  -25.854613
 cycle, pass, ndata =     19    61  1336
 Start rads_get_var
-time                                    data(1), data(ndata) =  212284800.477201 212286112.252400
+time                                    data(1), data(ndata) =   212284800.477201  212286112.252400
 lat                                     data(1), data(ndata) =  -47.622206  29.948693
 lon                                     data(1), data(ndata) =   -13.093074  -32.882569
 sla                                     data(1), data(ndata) =    0.0288      NaN
@@ -293,14 +296,14 @@ tide_ocean                              data(1), data(ndata) =   0.2601  0.3223
 flags                                   data(1), data(ndata) =  0000000000000001 0010100000000001
 pass                                    data(1), data(ndata) =    61.   61.
 drange                                  data(1), data(ndata) =   0.409  0.409
-Checking cycle/pass :    19   62
+Checking sat/cycle/pass :  e1   19   62
 Bail out on estimated equator longitude:  -99.092603  135.851374  141.573488
-Checking cycle/pass :    19   63
+Checking sat/cycle/pass :  e1   19   63
 Opening for read only: /rads/data/e1/a/c019/e1p0063c019.nc
 Start/end/equator time/longitude =   212291635.319  212290371.508  212293123.542  -50.971441
 cycle, pass, ndata =     19    63   883
 Start rads_get_var
-time                                    data(1), data(ndata) =  212290788.191404 212292140.086470
+time                                    data(1), data(ndata) =   212290788.191404  212292140.086470
 lat                                     data(1), data(ndata) =  -49.951446  29.946936
 lon                                     data(1), data(ndata) =   -37.232113  -57.998546
 sla                                     data(1), data(ndata) =   -0.1087  -0.1359
@@ -309,12 +312,12 @@ tide_ocean                              data(1), data(ndata) =  -0.1898  0.1147
 flags                                   data(1), data(ndata) =  0000000000000001 0000000000000001
 pass                                    data(1), data(ndata) =    63.   63.
 drange                                  data(1), data(ndata) =   0.409  0.409
-Checking cycle/pass :    19   64
+Checking sat/cycle/pass :  e1   19   64
 Opening for read only: /rads/data/e1/a/c019/e1p0064c019.nc
 Start/end/equator time/longitude =   212294644.893  212293199.022  212295782.618  116.488290
 cycle, pass, ndata =     19    64   939
 Start rads_get_var
-time                                    data(1), data(ndata) =  212294388.838828 212295492.666303
+time                                    data(1), data(ndata) =   212294388.838828  212295492.666303
 lat                                     data(1), data(ndata) =   15.214791 -49.997988
 lon                                     data(1), data(ndata) =   119.877023  102.731559
 sla                                     data(1), data(ndata) =       NaN  -0.0388
@@ -323,12 +326,12 @@ tide_ocean                              data(1), data(ndata) =   0.2679 -0.1332
 flags                                   data(1), data(ndata) =  0010000001000001 0000000000000001
 pass                                    data(1), data(ndata) =    64.   64.
 drange                                  data(1), data(ndata) =   0.409  0.409
-Checking cycle/pass :    19   65
+Checking sat/cycle/pass :  e1   19   65
 Opening for read only: /rads/data/e1/a/c019/e1p0065c019.nc
 Start/end/equator time/longitude =   212297663.207  212296318.113  212299161.771  -76.087319
 cycle, pass, ndata =     19    65   556
 Start rads_get_var
-time                                    data(1), data(ndata) =  212296816.031833 212298154.134665
+time                                    data(1), data(ndata) =   212296816.031833  212298154.134665
 lat                                     data(1), data(ndata) =  -49.955764  29.129536
 lon                                     data(1), data(ndata) =   -62.348502  -82.894196
 sla                                     data(1), data(ndata) =   -0.1500      NaN
@@ -337,12 +340,12 @@ tide_ocean                              data(1), data(ndata) =   0.4823  0.1089
 flags                                   data(1), data(ndata) =  0000000000000001 0000000001000001
 pass                                    data(1), data(ndata) =    65.   65.
 drange                                  data(1), data(ndata) =   0.409  0.409
-Checking cycle/pass :    19   66
+Checking sat/cycle/pass :  e1   19   66
 Opening for read only: /rads/data/e1/a/c019/e1p0066c019.nc
 Start/end/equator time/longitude =   212300672.808  212299179.862  212301833.036   91.373141
 cycle, pass, ndata =     19    66  1133
 Start rads_get_var
-time                                    data(1), data(ndata) =  212300409.170225 212301520.141010
+time                                    data(1), data(ndata) =   212300409.170225  212301520.141010
 lat                                     data(1), data(ndata) =   15.664330 -49.969879
 lon                                     data(1), data(ndata) =    94.865311   77.629721
 sla                                     data(1), data(ndata) =       NaN   0.2322
@@ -351,12 +354,12 @@ tide_ocean                              data(1), data(ndata) =   1.1633  0.0124
 flags                                   data(1), data(ndata) =  0010000001000001 0000000000000001
 pass                                    data(1), data(ndata) =    66.   66.
 drange                                  data(1), data(ndata) =   0.409  0.409
-Checking cycle/pass :    19   67
+Checking sat/cycle/pass :  e1   19   67
 Opening for read only: /rads/data/e1/a/c019/e1p0067c019.nc
 Start/end/equator time/longitude =   212303691.198  212302255.808  212305180.447  258.797404
 cycle, pass, ndata =     19    67   114
 Start rads_get_var
-time                                    data(1), data(ndata) =  212302843.467233 212302954.252373
+time                                    data(1), data(ndata) =   212302843.467233  212302954.252373
 lat                                     data(1), data(ndata) =  -49.989100 -43.542752
 lon                                     data(1), data(ndata) =   -87.450517  -89.994708
 sla                                     data(1), data(ndata) =    0.0324   0.1098
@@ -365,12 +368,12 @@ tide_ocean                              data(1), data(ndata) =   0.2558  0.2242
 flags                                   data(1), data(ndata) =  0000000000000001 0000000000000001
 pass                                    data(1), data(ndata) =    67.   67.
 drange                                  data(1), data(ndata) =   0.409  0.409
-Checking cycle/pass :    19   68
+Checking sat/cycle/pass :  e1   19   68
 Opening for read only: /rads/data/e1/a/c019/e1p0068c019.nc
 Start/end/equator time/longitude =   212306700.770  212305199.861  212307896.159   66.257263
 cycle, pass, ndata =     19    68  1216
 Start rads_get_var
-time                                    data(1), data(ndata) =  212306355.924728 212307548.317620
+time                                    data(1), data(ndata) =   212306355.924728  212307548.317620
 lat                                     data(1), data(ndata) =   20.482001 -49.980561
 lon                                     data(1), data(ndata) =    70.883192   52.508599
 sla                                     data(1), data(ndata) =       NaN   0.1017
@@ -379,14 +382,14 @@ tide_ocean                              data(1), data(ndata) =   0.8341  0.0769
 flags                                   data(1), data(ndata) =  0011000001000001 0000000000000001
 pass                                    data(1), data(ndata) =    68.   68.
 drange                                  data(1), data(ndata) =   0.409  0.409
-Checking cycle/pass :    19   69
+Checking sat/cycle/pass :  e1   19   69
 Bail out on estimated equator longitude: -105.851374  129.092603  233.666512
-Checking cycle/pass :    19   70
+Checking sat/cycle/pass :  e1   19   70
 Opening for read only: /rads/data/e1/a/c019/e1p0070c019.nc
 Start/end/equator time/longitude =   212312728.729  212311331.734  212314238.136   41.140714
 cycle, pass, ndata =     19    70   703
 Start rads_get_var
-time                                    data(1), data(ndata) =  212312233.505169 212313575.948333
+time                                    data(1), data(ndata) =   212312233.505169  212313575.948333
 lat                                     data(1), data(ndata) =   29.385776 -49.961015
 lon                                     data(1), data(ndata) =    48.016033   27.398872
 sla                                     data(1), data(ndata) =       NaN   0.1969
@@ -395,14 +398,14 @@ tide_ocean                              data(1), data(ndata) =   0.7182 -0.4614
 flags                                   data(1), data(ndata) =  0000000001000001 0000000000000001
 pass                                    data(1), data(ndata) =    70.   70.
 drange                                  data(1), data(ndata) =   0.409  0.409
-Checking cycle/pass :    19   71
+Checking sat/cycle/pass :  e1   19   71
 Bail out on estimated equator longitude: -105.851374  129.092603  208.550233
-Checking cycle/pass :    19   72
+Checking sat/cycle/pass :  e1   19   72
 Opening for read only: /rads/data/e1/a/c019/e1p0072c019.nc
 Start/end/equator time/longitude =   212318756.630  212317271.944  212320249.104   16.024047
 cycle, pass, ndata =     19    72   586
 Start rads_get_var
-time                                    data(1), data(ndata) =  212318936.392131 212319604.424992
+time                                    data(1), data(ndata) =   212318936.392131  212319604.424992
 lat                                     data(1), data(ndata) =  -10.677991 -49.994765
 lon                                     data(1), data(ndata) =    13.665313    2.266221
 sla                                     data(1), data(ndata) =       NaN  -0.0674
@@ -411,14 +414,14 @@ tide_ocean                              data(1), data(ndata) =  -0.5473 -0.0934
 flags                                   data(1), data(ndata) =  0010000001000001 0000000000000001
 pass                                    data(1), data(ndata) =    72.   72.
 drange                                  data(1), data(ndata) =   0.409  0.409
-Checking cycle/pass :    19   73
+Checking sat/cycle/pass :  e1   19   73
 Bail out on estimated equator longitude: -105.851374  129.092603  183.433953
-Checking cycle/pass :    19   74
+Checking sat/cycle/pass :  e1   19   74
 Opening for read only: /rads/data/e1/a/c019/e1p0074c019.nc
 Start/end/equator time/longitude =   212324784.516  212323336.425  212326214.890   -9.092655
 cycle, pass, ndata =     19    74   941
 Start rads_get_var
-time                                    data(1), data(ndata) =  212324709.838310 212325631.423136
+time                                    data(1), data(ndata) =   212324709.838310  212325631.423136
 lat                                     data(1), data(ndata) =    4.438303 -49.944270
 lon                                     data(1), data(ndata) =    -8.118870  -22.829080
 sla                                     data(1), data(ndata) =       NaN   0.1048
@@ -427,14 +430,14 @@ tide_ocean                              data(1), data(ndata) =  -0.4661  0.2107
 flags                                   data(1), data(ndata) =  0010000001000001 0000000000000001
 pass                                    data(1), data(ndata) =    74.   74.
 drange                                  data(1), data(ndata) =   0.409  0.409
-Checking cycle/pass :    19   75
+Checking sat/cycle/pass :  e1   19   75
 Bail out on estimated equator longitude: -105.851374  129.092603  158.317674
-Checking cycle/pass :    19   76
+Checking sat/cycle/pass :  e1   19   76
 Opening for read only: /rads/data/e1/a/c019/e1p0076c019.nc
 Start/end/equator time/longitude =   212330812.347  212329319.192  212332171.670  -34.208747
 cycle, pass, ndata =     19    76  1290
 Start rads_get_var
-time                                    data(1), data(ndata) =  212330307.225188 212331659.974014
+time                                    data(1), data(ndata) =   212330307.225188  212331659.974014
 lat                                     data(1), data(ndata) =   29.971884 -49.987247
 lon                                     data(1), data(ndata) =   -27.174876  -47.963643
 sla                                     data(1), data(ndata) =    0.0717  -0.1076
@@ -443,14 +446,14 @@ tide_ocean                              data(1), data(ndata) =   0.5319 -0.1214
 flags                                   data(1), data(ndata) =  0000000000000001 0000000000000001
 pass                                    data(1), data(ndata) =    76.   76.
 drange                                  data(1), data(ndata) =   0.409  0.409
-Checking cycle/pass :    19   77
+Checking sat/cycle/pass :  e1   19   77
 Bail out on estimated equator longitude: -105.851374  129.092603  133.201395
-Checking cycle/pass :    19   78
+Checking sat/cycle/pass :  e1   19   78
 Opening for read only: /rads/data/e1/a/c019/e1p0078c019.nc
 Start/end/equator time/longitude =   212336840.203  212335362.468  212338347.539  -59.324664
 cycle, pass, ndata =     19    78   409
 Start rads_get_var
-time                                    data(1), data(ndata) =  212336335.578068 212337682.784903
+time                                    data(1), data(ndata) =   212336335.578068  212337682.784903
 lat                                     data(1), data(ndata) =   29.943130 -49.695255
 lon                                     data(1), data(ndata) =   -52.299778  -72.950366
 sla                                     data(1), data(ndata) =   -0.1034      NaN
@@ -459,12 +462,12 @@ tide_ocean                              data(1), data(ndata) =   0.1599     NaN
 flags                                   data(1), data(ndata) =  0000000000000001 0010000001110001
 pass                                    data(1), data(ndata) =    78.   78.
 drange                                  data(1), data(ndata) =   0.409  0.409
-Checking cycle/pass :    19   79
+Checking sat/cycle/pass :  e1   19   79
 Opening for read only: /rads/data/e1/a/c019/e1p0079c019.nc
 Start/end/equator time/longitude =   212339858.568  212338350.698  212341349.135  108.098290
 cycle, pass, ndata =     19    79   697
 Start rads_get_var
-time                                    data(1), data(ndata) =  212339089.606963 212340276.905618
+time                                    data(1), data(ndata) =   212339089.606963  212340276.905618
 lat                                     data(1), data(ndata) =  -45.409499  24.834953
 lon                                     data(1), data(ndata) =   119.993337  102.402497
 sla                                     data(1), data(ndata) =   -0.0763      NaN
@@ -473,12 +476,12 @@ tide_ocean                              data(1), data(ndata) =   0.2083     NaN
 flags                                   data(1), data(ndata) =  0000000000000001 0000000001110001
 pass                                    data(1), data(ndata) =    79.   79.
 drange                                  data(1), data(ndata) =   0.409  0.409
-Checking cycle/pass :    19   80
+Checking sat/cycle/pass :  e1   19   80
 Opening for read only: /rads/data/e1/a/c019/e1p0080c019.nc
 Start/end/equator time/longitude =   212342868.184  212341382.106  212344377.040  -84.441312
 cycle, pass, ndata =     19    80   889
 Start rads_get_var
-time                                    data(1), data(ndata) =  212342363.009562 212343277.525786
+time                                    data(1), data(ndata) =   212342363.009562  212343277.525786
 lat                                     data(1), data(ndata) =   29.975249 -24.281877
 lon                                     data(1), data(ndata) =   -77.408514  -89.999502
 sla                                     data(1), data(ndata) =    0.0799  -0.0547
@@ -487,12 +490,12 @@ tide_ocean                              data(1), data(ndata) =  -0.1074 -0.0298
 flags                                   data(1), data(ndata) =  0000000000000001 0000000000000001
 pass                                    data(1), data(ndata) =    80.   80.
 drange                                  data(1), data(ndata) =   0.409  0.409
-Checking cycle/pass :    19   81
+Checking sat/cycle/pass :  e1   19   81
 Opening for read only: /rads/data/e1/a/c019/e1p0081c019.nc
 Start/end/equator time/longitude =   212345886.549  212344378.021  212347343.577   82.980945
 cycle, pass, ndata =     19    81  1037
 Start rads_get_var
-time                                    data(1), data(ndata) =  212345039.447648 212346097.423568
+time                                    data(1), data(ndata) =   212345039.447648  212346097.423568
 lat                                     data(1), data(ndata) =  -49.951764  12.529642
 lon                                     data(1), data(ndata) =    96.716875   80.205538
 sla                                     data(1), data(ndata) =   -0.0012      NaN
@@ -501,14 +504,14 @@ tide_ocean                              data(1), data(ndata) =   0.0979     NaN
 flags                                   data(1), data(ndata) =  0000000000000001 0000000001000001
 pass                                    data(1), data(ndata) =    81.   81.
 drange                                  data(1), data(ndata) =   0.409  0.409
-Checking cycle/pass :    19   82
+Checking sat/cycle/pass :  e1   19   82
 Bail out on estimated equator longitude:  -99.092603  135.851374  250.410698
-Checking cycle/pass :    19   83
+Checking sat/cycle/pass :  e1   19   83
 Opening for read only: /rads/data/e1/a/c019/e1p0083c019.nc
 Start/end/equator time/longitude =   212351914.534  212350764.239  212353384.337   57.864073
 cycle, pass, ndata =     19    83  1217
 Start rads_get_var
-time                                    data(1), data(ndata) =  212351067.401602 212352410.095742
+time                                    data(1), data(ndata) =   212351067.401602  212352410.095742
 lat                                     data(1), data(ndata) =  -49.954571  29.403729
 lon                                     data(1), data(ndata) =    71.601206   50.984213
 sla                                     data(1), data(ndata) =       NaN      NaN
@@ -517,14 +520,14 @@ tide_ocean                              data(1), data(ndata) =   0.4719     NaN
 flags                                   data(1), data(ndata) =  0000000000000001 0000011001110001
 pass                                    data(1), data(ndata) =    83.   83.
 drange                                  data(1), data(ndata) =   0.409  0.409
-Checking cycle/pass :    19   84
+Checking sat/cycle/pass :  e1   19   84
 Bail out on estimated equator longitude:  -99.092603  135.851374  225.294419
-Checking cycle/pass :    19   85
+Checking sat/cycle/pass :  e1   19   85
 Opening for read only: /rads/data/e1/a/c019/e1p0085c019.nc
 Start/end/equator time/longitude =   212357942.483  212356799.916  212359428.594   32.747942
 cycle, pass, ndata =     19    85   588
 Start rads_get_var
-time                                    data(1), data(ndata) =  212357094.678311 212357967.415488
+time                                    data(1), data(ndata) =   212357094.678311  212357967.415488
 lat                                     data(1), data(ndata) =  -49.993388   1.481695
 lon                                     data(1), data(ndata) =    46.504197   32.423278
 sla                                     data(1), data(ndata) =   -0.0595      NaN
@@ -533,14 +536,14 @@ tide_ocean                              data(1), data(ndata) =  -0.1438     NaN
 flags                                   data(1), data(ndata) =  0000000000000001 0010000001110001
 pass                                    data(1), data(ndata) =    85.   85.
 drange                                  data(1), data(ndata) =   0.409  0.409
-Checking cycle/pass :    19   86
+Checking sat/cycle/pass :  e1   19   86
 Bail out on estimated equator longitude:  -99.092603  135.851374  200.178140
-Checking cycle/pass :    20    1
+Checking sat/cycle/pass :  e1   20    1
 Opening for read only: /rads/data/e1/a/c020/e1p0001c020.nc
 Start/end/equator time/longitude =   212363970.351  212362774.311  212365454.233    7.632405
 cycle, pass, ndata =     20     1   940
 Start rads_get_var
-time                                    data(1), data(ndata) =  212363122.727236 212364043.322804
+time                                    data(1), data(ndata) =   212363122.727236  212364043.322804
 lat                                     data(1), data(ndata) =  -49.982179   4.336632
 lon                                     data(1), data(ndata) =    21.385518    6.680979
 sla                                     data(1), data(ndata) =    0.0680      NaN
@@ -549,14 +552,14 @@ tide_ocean                              data(1), data(ndata) =  -0.3303     NaN
 flags                                   data(1), data(ndata) =  0000000000000001 0000000001110001
 pass                                    data(1), data(ndata) =     1.    1.
 drange                                  data(1), data(ndata) =   0.409  0.409
-Checking cycle/pass :    20    2
+Checking sat/cycle/pass :  e1   20    2
 Bail out on estimated equator longitude:  -99.092603  135.851374  175.061860
-Checking cycle/pass :    20    3
+Checking sat/cycle/pass :  e1   20    3
 Opening for read only: /rads/data/e1/a/c020/e1p0003c020.nc
 Start/end/equator time/longitude =   212369998.184  212368789.000  212371502.756  -17.483073
 cycle, pass, ndata =     20     3  1378
 Start rads_get_var
-time                                    data(1), data(ndata) =  212369151.116737 212370503.088219
+time                                    data(1), data(ndata) =   212369151.116737  212370503.088219
 lat                                     data(1), data(ndata) =  -49.949125  29.955961
 lon                                     data(1), data(ndata) =    -3.743877  -24.512824
 sla                                     data(1), data(ndata) =   -0.0124   0.0303
@@ -565,176 +568,176 @@ tide_ocean                              data(1), data(ndata) =   0.2313  0.3308
 flags                                   data(1), data(ndata) =  0000000000000001 0000000000000001
 pass                                    data(1), data(ndata) =     3.    3.
 drange                                  data(1), data(ndata) =   0.409  0.409
-Checking cycle/pass :    20    4
+Checking sat/cycle/pass :  e1   20    4
 Bail out on estimated time:  212284800.000  212371200.000  212371504.884  212374518.837
-Checking cycle/pass :    20    5
+Checking sat/cycle/pass :  e1   20    5
 Bail out on estimated time:  212284800.000  212371200.000  212374518.837  212377532.791
-Checking cycle/pass :    20    6
+Checking sat/cycle/pass :  e1   20    6
 Bail out on estimated time:  212284800.000  212371200.000  212377532.791  212380546.744
-Checking cycle/pass :    20    7
+Checking sat/cycle/pass :  e1   20    7
 Bail out on estimated time:  212284800.000  212371200.000  212380546.744  212383560.698
-Checking cycle/pass :    20    8
+Checking sat/cycle/pass :  e1   20    8
 Bail out on estimated time:  212284800.000  212371200.000  212383560.698  212386574.651
-Checking cycle/pass :    20    9
+Checking sat/cycle/pass :  e1   20    9
 Bail out on estimated time:  212284800.000  212371200.000  212386574.651  212389588.605
-Checking cycle/pass :    20   10
+Checking sat/cycle/pass :  e1   20   10
 Bail out on estimated time:  212284800.000  212371200.000  212389588.605  212392602.558
-Checking cycle/pass :    20   11
+Checking sat/cycle/pass :  e1   20   11
 Bail out on estimated time:  212284800.000  212371200.000  212392602.558  212395616.512
-Checking cycle/pass :    20   12
+Checking sat/cycle/pass :  e1   20   12
 Bail out on estimated time:  212284800.000  212371200.000  212395616.512  212398630.465
-Checking cycle/pass :    20   13
+Checking sat/cycle/pass :  e1   20   13
 Bail out on estimated time:  212284800.000  212371200.000  212398630.465  212401644.419
-Checking cycle/pass :    20   14
+Checking sat/cycle/pass :  e1   20   14
 Bail out on estimated time:  212284800.000  212371200.000  212401644.419  212404658.372
-Checking cycle/pass :    20   15
+Checking sat/cycle/pass :  e1   20   15
 Bail out on estimated time:  212284800.000  212371200.000  212404658.372  212407672.326
-Checking cycle/pass :    20   16
+Checking sat/cycle/pass :  e1   20   16
 Bail out on estimated time:  212284800.000  212371200.000  212407672.326  212410686.279
-Checking cycle/pass :    20   17
+Checking sat/cycle/pass :  e1   20   17
 Bail out on estimated time:  212284800.000  212371200.000  212410686.279  212413700.233
-Checking cycle/pass :    20   18
+Checking sat/cycle/pass :  e1   20   18
 Bail out on estimated time:  212284800.000  212371200.000  212413700.233  212416714.186
-Checking cycle/pass :    20   19
+Checking sat/cycle/pass :  e1   20   19
 Bail out on estimated time:  212284800.000  212371200.000  212416714.186  212419728.140
-Checking cycle/pass :    20   20
+Checking sat/cycle/pass :  e1   20   20
 Bail out on estimated time:  212284800.000  212371200.000  212419728.140  212422742.093
-Checking cycle/pass :    20   21
+Checking sat/cycle/pass :  e1   20   21
 Bail out on estimated time:  212284800.000  212371200.000  212422742.093  212425756.047
-Checking cycle/pass :    20   22
+Checking sat/cycle/pass :  e1   20   22
 Bail out on estimated time:  212284800.000  212371200.000  212425756.047  212428770.000
-Checking cycle/pass :    20   23
+Checking sat/cycle/pass :  e1   20   23
 Bail out on estimated time:  212284800.000  212371200.000  212428770.000  212431783.953
-Checking cycle/pass :    20   24
+Checking sat/cycle/pass :  e1   20   24
 Bail out on estimated time:  212284800.000  212371200.000  212431783.953  212434797.907
-Checking cycle/pass :    20   25
+Checking sat/cycle/pass :  e1   20   25
 Bail out on estimated time:  212284800.000  212371200.000  212434797.907  212437811.860
-Checking cycle/pass :    20   26
+Checking sat/cycle/pass :  e1   20   26
 Bail out on estimated time:  212284800.000  212371200.000  212437811.860  212440825.814
-Checking cycle/pass :    20   27
+Checking sat/cycle/pass :  e1   20   27
 Bail out on estimated time:  212284800.000  212371200.000  212440825.814  212443839.767
-Checking cycle/pass :    20   28
+Checking sat/cycle/pass :  e1   20   28
 Bail out on estimated time:  212284800.000  212371200.000  212443839.767  212446853.721
-Checking cycle/pass :    20   29
+Checking sat/cycle/pass :  e1   20   29
 Bail out on estimated time:  212284800.000  212371200.000  212446853.721  212449867.674
-Checking cycle/pass :    20   30
+Checking sat/cycle/pass :  e1   20   30
 Bail out on estimated time:  212284800.000  212371200.000  212449867.674  212452881.628
-Checking cycle/pass :    20   31
+Checking sat/cycle/pass :  e1   20   31
 Bail out on estimated time:  212284800.000  212371200.000  212452881.628  212455895.581
-Checking cycle/pass :    20   32
+Checking sat/cycle/pass :  e1   20   32
 Bail out on estimated time:  212284800.000  212371200.000  212455895.581  212458909.535
-Checking cycle/pass :    20   33
+Checking sat/cycle/pass :  e1   20   33
 Bail out on estimated time:  212284800.000  212371200.000  212458909.535  212461923.488
-Checking cycle/pass :    20   34
+Checking sat/cycle/pass :  e1   20   34
 Bail out on estimated time:  212284800.000  212371200.000  212461923.488  212464937.442
-Checking cycle/pass :    20   35
+Checking sat/cycle/pass :  e1   20   35
 Bail out on estimated time:  212284800.000  212371200.000  212464937.442  212467951.395
-Checking cycle/pass :    20   36
+Checking sat/cycle/pass :  e1   20   36
 Bail out on estimated time:  212284800.000  212371200.000  212467951.395  212470965.349
-Checking cycle/pass :    20   37
+Checking sat/cycle/pass :  e1   20   37
 Bail out on estimated time:  212284800.000  212371200.000  212470965.349  212473979.302
-Checking cycle/pass :    20   38
+Checking sat/cycle/pass :  e1   20   38
 Bail out on estimated time:  212284800.000  212371200.000  212473979.302  212476993.256
-Checking cycle/pass :    20   39
+Checking sat/cycle/pass :  e1   20   39
 Bail out on estimated time:  212284800.000  212371200.000  212476993.256  212480007.209
-Checking cycle/pass :    20   40
+Checking sat/cycle/pass :  e1   20   40
 Bail out on estimated time:  212284800.000  212371200.000  212480007.209  212483021.163
-Checking cycle/pass :    20   41
+Checking sat/cycle/pass :  e1   20   41
 Bail out on estimated time:  212284800.000  212371200.000  212483021.163  212486035.116
-Checking cycle/pass :    20   42
+Checking sat/cycle/pass :  e1   20   42
 Bail out on estimated time:  212284800.000  212371200.000  212486035.116  212489049.070
-Checking cycle/pass :    20   43
+Checking sat/cycle/pass :  e1   20   43
 Bail out on estimated time:  212284800.000  212371200.000  212489049.070  212492063.023
-Checking cycle/pass :    20   44
+Checking sat/cycle/pass :  e1   20   44
 Bail out on estimated time:  212284800.000  212371200.000  212492063.023  212495076.977
-Checking cycle/pass :    20   45
+Checking sat/cycle/pass :  e1   20   45
 Bail out on estimated time:  212284800.000  212371200.000  212495076.977  212498090.930
-Checking cycle/pass :    20   46
+Checking sat/cycle/pass :  e1   20   46
 Bail out on estimated time:  212284800.000  212371200.000  212498090.930  212501104.884
-Checking cycle/pass :    20   47
+Checking sat/cycle/pass :  e1   20   47
 Bail out on estimated time:  212284800.000  212371200.000  212501104.884  212504118.837
-Checking cycle/pass :    20   48
+Checking sat/cycle/pass :  e1   20   48
 Bail out on estimated time:  212284800.000  212371200.000  212504118.837  212507132.791
-Checking cycle/pass :    20   49
+Checking sat/cycle/pass :  e1   20   49
 Bail out on estimated time:  212284800.000  212371200.000  212507132.791  212510146.744
-Checking cycle/pass :    20   50
+Checking sat/cycle/pass :  e1   20   50
 Bail out on estimated time:  212284800.000  212371200.000  212510146.744  212513160.698
-Checking cycle/pass :    20   51
+Checking sat/cycle/pass :  e1   20   51
 Bail out on estimated time:  212284800.000  212371200.000  212513160.698  212516174.651
-Checking cycle/pass :    20   52
+Checking sat/cycle/pass :  e1   20   52
 Bail out on estimated time:  212284800.000  212371200.000  212516174.651  212519188.605
-Checking cycle/pass :    20   53
+Checking sat/cycle/pass :  e1   20   53
 Bail out on estimated time:  212284800.000  212371200.000  212519188.605  212522202.558
-Checking cycle/pass :    20   54
+Checking sat/cycle/pass :  e1   20   54
 Bail out on estimated time:  212284800.000  212371200.000  212522202.558  212525216.512
-Checking cycle/pass :    20   55
+Checking sat/cycle/pass :  e1   20   55
 Bail out on estimated time:  212284800.000  212371200.000  212525216.512  212528230.465
-Checking cycle/pass :    20   56
+Checking sat/cycle/pass :  e1   20   56
 Bail out on estimated time:  212284800.000  212371200.000  212528230.465  212531244.419
-Checking cycle/pass :    20   57
+Checking sat/cycle/pass :  e1   20   57
 Bail out on estimated time:  212284800.000  212371200.000  212531244.419  212534258.372
-Checking cycle/pass :    20   58
+Checking sat/cycle/pass :  e1   20   58
 Bail out on estimated time:  212284800.000  212371200.000  212534258.372  212537272.326
-Checking cycle/pass :    20   59
+Checking sat/cycle/pass :  e1   20   59
 Bail out on estimated time:  212284800.000  212371200.000  212537272.326  212540286.279
-Checking cycle/pass :    20   60
+Checking sat/cycle/pass :  e1   20   60
 Bail out on estimated time:  212284800.000  212371200.000  212540286.279  212543300.233
-Checking cycle/pass :    20   61
+Checking sat/cycle/pass :  e1   20   61
 Bail out on estimated time:  212284800.000  212371200.000  212543300.233  212546314.186
-Checking cycle/pass :    20   62
+Checking sat/cycle/pass :  e1   20   62
 Bail out on estimated time:  212284800.000  212371200.000  212546314.186  212549328.140
-Checking cycle/pass :    20   63
+Checking sat/cycle/pass :  e1   20   63
 Bail out on estimated time:  212284800.000  212371200.000  212549328.140  212552342.093
-Checking cycle/pass :    20   64
+Checking sat/cycle/pass :  e1   20   64
 Bail out on estimated time:  212284800.000  212371200.000  212552342.093  212555356.047
-Checking cycle/pass :    20   65
+Checking sat/cycle/pass :  e1   20   65
 Bail out on estimated time:  212284800.000  212371200.000  212555356.047  212558370.000
-Checking cycle/pass :    20   66
+Checking sat/cycle/pass :  e1   20   66
 Bail out on estimated time:  212284800.000  212371200.000  212558370.000  212561383.953
-Checking cycle/pass :    20   67
+Checking sat/cycle/pass :  e1   20   67
 Bail out on estimated time:  212284800.000  212371200.000  212561383.953  212564397.907
-Checking cycle/pass :    20   68
+Checking sat/cycle/pass :  e1   20   68
 Bail out on estimated time:  212284800.000  212371200.000  212564397.907  212567411.860
-Checking cycle/pass :    20   69
+Checking sat/cycle/pass :  e1   20   69
 Bail out on estimated time:  212284800.000  212371200.000  212567411.860  212570425.814
-Checking cycle/pass :    20   70
+Checking sat/cycle/pass :  e1   20   70
 Bail out on estimated time:  212284800.000  212371200.000  212570425.814  212573439.767
-Checking cycle/pass :    20   71
+Checking sat/cycle/pass :  e1   20   71
 Bail out on estimated time:  212284800.000  212371200.000  212573439.767  212576453.721
-Checking cycle/pass :    20   72
+Checking sat/cycle/pass :  e1   20   72
 Bail out on estimated time:  212284800.000  212371200.000  212576453.721  212579467.674
-Checking cycle/pass :    20   73
+Checking sat/cycle/pass :  e1   20   73
 Bail out on estimated time:  212284800.000  212371200.000  212579467.674  212582481.628
-Checking cycle/pass :    20   74
+Checking sat/cycle/pass :  e1   20   74
 Bail out on estimated time:  212284800.000  212371200.000  212582481.628  212585495.581
-Checking cycle/pass :    20   75
+Checking sat/cycle/pass :  e1   20   75
 Bail out on estimated time:  212284800.000  212371200.000  212585495.581  212588509.535
-Checking cycle/pass :    20   76
+Checking sat/cycle/pass :  e1   20   76
 Bail out on estimated time:  212284800.000  212371200.000  212588509.535  212591523.488
-Checking cycle/pass :    20   77
+Checking sat/cycle/pass :  e1   20   77
 Bail out on estimated time:  212284800.000  212371200.000  212591523.488  212594537.442
-Checking cycle/pass :    20   78
+Checking sat/cycle/pass :  e1   20   78
 Bail out on estimated time:  212284800.000  212371200.000  212594537.442  212597551.395
-Checking cycle/pass :    20   79
+Checking sat/cycle/pass :  e1   20   79
 Bail out on estimated time:  212284800.000  212371200.000  212597551.395  212600565.349
-Checking cycle/pass :    20   80
+Checking sat/cycle/pass :  e1   20   80
 Bail out on estimated time:  212284800.000  212371200.000  212600565.349  212603579.302
-Checking cycle/pass :    20   81
+Checking sat/cycle/pass :  e1   20   81
 Bail out on estimated time:  212284800.000  212371200.000  212603579.302  212606593.256
-Checking cycle/pass :    20   82
+Checking sat/cycle/pass :  e1   20   82
 Bail out on estimated time:  212284800.000  212371200.000  212606593.256  212609607.209
-Checking cycle/pass :    20   83
+Checking sat/cycle/pass :  e1   20   83
 Bail out on estimated time:  212284800.000  212371200.000  212609607.209  212612621.163
-Checking cycle/pass :    20   84
+Checking sat/cycle/pass :  e1   20   84
 Bail out on estimated time:  212284800.000  212371200.000  212612621.163  212615635.116
-Checking cycle/pass :    20   85
+Checking sat/cycle/pass :  e1   20   85
 Bail out on estimated time:  212284800.000  212371200.000  212615635.116  212618649.070
-Checking cycle/pass :    20   86
+Checking sat/cycle/pass :  e1   20   86
 Bail out on estimated time:  212284800.000  212371200.000  212618649.070  212621663.023
 Start rads_end
 ######################################################################################################################################
 # Editing statistics for ERS-1 (e1)
-# Created: 2016-03-01 12:23:37 UTC: rads_test -vvv -Se1/a --ymd=19910924,19910925 -R-90/120/-50/30 -Vtime,lat,lon,sla,12_,tide_ocean_,flags_,pass,drange
+# Created: 2017-06-08 14:11:22 UTC: rads_test -vvv -Se1/a --ymd=19910924,19910925 -R-90/120/-50/30 -Vtime,lat,lon,sla,12_,tide_ocean_,flags_,pass,drange
 #
 # PASSES QUERIED                                           172
 #
@@ -780,4 +783,4 @@ Start rads_end
 # pass number []                                   0     16852         NaN         NaN       1.000      85.000      62.645      25.165
 ######################################################################################################################################
 End of program
-CLOCK, CPU =   0.0460   0.0429
+CLOCK, CPU =   0.0620   0.0597

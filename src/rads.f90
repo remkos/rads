@@ -3661,7 +3661,7 @@ integer(fourbyteint), intent(in) :: cycle, pass
 !
 ! PURPOSE
 ! This routine estimates the equator time and longitude, as well
-! as the start and end time of a given cycle and pass.
+! as the start and end time of a given <cycle> and <pass>.
 !
 ! The routine works for exact repeat orbits as well as drifting
 ! orbits.
@@ -3702,24 +3702,22 @@ end subroutine rads_predict_equator
 ! Determine cycle and pass number for given epoch
 !
 ! SYNOPSIS
-subroutine rads_time_to_cycle_pass (S, time, cycle, pass, phase)
+subroutine rads_time_to_cycle_pass (S, time, cycle, pass)
 type(rads_sat), intent(inout) :: S
 real(eightbytereal), intent(in) :: time
 integer(fourbyteint), intent(out) :: cycle, pass
-type(rads_phase), intent(out), optional, pointer :: phase
 !
 ! PURPOSE
-! Given an epoch <time> in seconds since 1985, determine the cycle
-! number and pass number in which that epoch falls.
+! Given an epoch <time> in seconds since 1985, determine the <cycle>
+! number and <pass> number in which that epoch falls.
+! This routine also updates the <S%phase> pointer to point to the
+! appropriate structure containing the phase information.
 !
 ! ARGUMENTS
 ! S        : Satellite/mission dependent structure
 ! time     : Time in seconds since 1985
-!
-! RETURN VALUE
 ! cycle    : Cycle number in which <time> falls
 ! pass     : Pass number in which <time> falls
-! phase    : (Optional) Link to the phase in which <time> falls
 !****-------------------------------------------------------------------
 integer :: i, j, n
 real(eightbytereal) :: d, t0, x
@@ -3750,8 +3748,8 @@ if (associated(S%phases(i)%subcycles)) then
 	pass = n - S%phases(i)%subcycles%list(j-1) + 1
 endif
 
-! Link the phase, if required
-if (present(phase)) phase => S%phases(i)
+! Link the phase
+S%phase => S%phases(i)
 end subroutine rads_time_to_cycle_pass
 
 !****if* rads/rads_time_to_cycle
