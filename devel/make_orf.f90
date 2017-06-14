@@ -92,7 +92,7 @@ endif
 
 ! Determine threshold of latitudes
 
-min_lat = dt * 0.2d0	! Keep significant margin with 0.2 degrees per second
+min_lat = dt * 0.1d0	! Keep significant margin with 0.1 degrees per second
 max_lat = min(S%inclination, 180d0 - S%inclination) - min_lat
 
 ! Start with start time
