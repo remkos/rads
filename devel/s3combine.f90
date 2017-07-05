@@ -54,13 +54,14 @@ type(orfinfo) :: orf(200000)
 character(len=rads_cmdl) :: arg, filenm, dimnm, destdir, product_name, xref_orbit_data
 character(len=rads_strl) :: exclude_list = ','
 character(len=26) :: date(3)
+character(len=15) :: newer_than = '00000000T000000'
 integer(fourbyteint), parameter :: mpass = 254 * 500
 real(eightbytereal), parameter :: sec2000 = 473299200d0
 integer(fourbyteint) :: i0, i, ncid1, nrec, ios, varid, in_max = huge(fourbyteint), nr_passes = 770, &
-	pass_number = 0, cycle_number = 0, nfile = 0, orbit_type, absolute_pass_number, &
-	absolute_rev_number, ipass
+	nfile = 0, orbit_type, ipass = 1, ipass0 = 0
 real(eightbytereal), allocatable :: time(:), lat(:), lon(:)
 real(eightbytereal) :: last_time = 0
+logical :: first = .true.
 
 ! Print description, if requested
 
@@ -74,6 +75,7 @@ endif
 '  list              : List of input files names'// &
 'where [options] are:' / &
 '  -mMAXREC          : Maximum number of records allowed at input' / &
+'  -pDATE            : Skip data before given processing date (yymmddThhmmss)' / &
 '  -xVAR1[,VAR2,...] : Exclude variable(s) from copying')
 
 ! First determine filetype
@@ -93,6 +95,8 @@ do i = 1,iargc()
 	call getarg (i,arg)
 	if (arg(:2) == '-m') then
 		read (arg(3:), *, iostat=ios) in_max
+	else if (arg(:2) == '-p') then
+		newer_than = arg(3:)
 	else if (arg(:2) == '-x') then
 		exclude_list = trim(exclude_list) // arg(3:len_trim(arg)) // ','
 	else
@@ -103,6 +107,14 @@ enddo
 ! Cycle through all input files
 
 do
+
+! Read the next file name
+
+	if (.not.first) then
+		read (*,'(a)',iostat=ios) filenm
+		if (ios /= 0) exit
+	endif
+	first = .false.
 
 ! Open the input file
 
@@ -126,9 +138,18 @@ do
 		call nfs(nf90_close(ncid1))
 		cycle
 	endif
+	if (allocated(time)) deallocate (time, lat, lon)
 	allocate (time(nrec),lat(nrec),lon(nrec))
 	call nfs(nf90_inq_varid(ncid1,'time_01',varid))
 	call nfs(nf90_get_var(ncid1,varid,time))
+
+! Check processing time
+
+	if (product_name(49:63) < newer_than) then
+		call nfs(nf90_close(ncid1))
+		call write_line ('.... old', 1, nrec, nrec, time(1), time(nrec), '<', filenm)
+		cycle
+	endif
 
 ! Read latitude and longitude
 
@@ -138,15 +159,6 @@ do
 	call nfs(nf90_inq_varid(ncid1,'lon_01',varid))
 	call nfs(nf90_get_var(ncid1,varid,lon))
 	lon = lon * 1d-6
-
-! Determine cycle and pass from first input point
-
-	ipass = 0
-	call which_cycle_pass (time(1))
-
-! Write out buffer it we are in a new pass
-
-	if (orf(ipass)%cycle /= cycle_number .or. orf(ipass)%pass /= pass_number) call write_output
 
 ! First advance to beyond the last time tag
 
@@ -159,21 +171,25 @@ do
 
 	if (i0 > nrec) then
 		call nfs(nf90_close(ncid1))
-		deallocate (time, lat, lon)
 		cycle
 	endif
+
+! Check if the first input point is in a new pass
+
+	call which_pass (time(i0))
+	if (ipass /= ipass0) call write_output
 	last_time = time(nrec)
 
-! Split the pass where they roll over to a new pass
-! Also skip duplicated measurements within a single file
+! Also duplicated measurements within a single file
+! Split pass when entering into a new pass
 
 	do i = max(2,i0),nrec
-		call which_cycle_pass (time(i))
+		call which_pass (time(i))
 		if (time(i) == time(i-1)) then
 			call fill_fin (i0, i-2)
 			call write_line ('... skip', i-1, i-1, nrec, time(i-1), time(i-1), '<', filenm)
 			i0 = i
-		else if (orf(ipass)%cycle /= cycle_number .or. orf(ipass)%pass /= pass_number) then
+		else if (ipass /= ipass0) then
 			call fill_fin (i0, i-1)
 			call write_output
 			i0 = i
@@ -184,11 +200,6 @@ do
 ! Deallocate time and location arrays
 
 	deallocate (time, lat, lon)
-
-! Read the next filename
-
-	read (*,'(a)',iostat=ios) filenm
-	if (ios /= 0) exit
 
 enddo
 
@@ -307,30 +318,44 @@ end function which_orbit_type
 !***********************************************************************
 ! Determine the corresponding record from ORF
 
-subroutine which_cycle_pass (time)
+subroutine which_pass (time)
 real(eightbytereal), intent(in) :: time
+do while (time < orf(ipass)%starttime)
+	ipass = ipass - 1
+	if (ipass < 1) stop 'Times are beyond limits of ORF file'
+enddo
 do while (time > orf(ipass+1)%starttime)
 	ipass = ipass + 1
 	if (orf(ipass)%cycle < 0) stop 'Times are beyond limits of ORF file'
 enddo
-end subroutine which_cycle_pass
+end subroutine which_pass
 
 !***********************************************************************
 ! Write whatever has been buffered so far to an output file
 
 subroutine write_output
 integer(fourbyteint) :: nrec, ncid1, ncid2, varid1, varid2, varid3, xtype, ndims, &
-	dimids(2), dimid2, natts, i, nvars, idxin(2)=1, idxut(2)=1, nout
+	dimids(2), dimid2, natts, i, nvars, idxin(2)=1, idxut(2)=1, nout, &
+	cycle_number, pass_number, absolute_pass_number, absolute_rev_number
+real(eightbytereal) :: equator_time, equator_longitude
 character(len=rads_naml) :: dirnm, prdnm, outnm, attnm, varnm
 real(eightbytereal), allocatable :: darr1(:)
 integer(fourbyteint), allocatable :: iarr1(:)
 logical :: exist
 integer(onebyteint), parameter :: flag_values(0:6) = int((/0,1,2,3,4,5,6/), onebyteint)
 
+! Retrieve the pass variables
+
+cycle_number = orf(ipass0)%cycle
+pass_number = orf(ipass0)%pass
+equator_time = orf(ipass0)%eqtime
+equator_longitude = orf(ipass0)%eqlon
+ipass0 = ipass
+
 ! How many records are buffered for output?
 ! Skip if there is nothing left
 
-if (nfile == 0) return
+if (nfile == 0 .or. ipass0 == 0) return
 nrec = sum(fin(1:nfile)%rec1 - fin(1:nfile)%rec0 + 1)
 
 ! Open the output file. Make directory if needed.
@@ -413,7 +438,7 @@ absolute_rev_number = absolute_pass_number / 2
 ! Overwrite some attributes and product name
 
 call write_line ('Creating', 1, nrec, nrec, fin(1)%time0, fin(nfile)%time1,'>', outnm)
-call strf1985f(date(3),orf(ipass)%eqtime)
+call strf1985f(date(3),equator_time)
 
 call nfs(nf90_put_att(ncid2,nf90_global,'product_name',prdnm))
 call nfs(nf90_put_att(ncid2,nf90_global,'cycle_number',cycle_number))
@@ -421,7 +446,7 @@ call nfs(nf90_put_att(ncid2,nf90_global,'pass_number',pass_number))
 call nfs(nf90_put_att(ncid2,nf90_global,'absolute_pass_number',absolute_pass_number))
 call nfs(nf90_put_att(ncid2,nf90_global,'absolute_rev_number',absolute_rev_number))
 call nfs(nf90_put_att(ncid2,nf90_global,'equator_time',date(3)))
-call nfs(nf90_put_att(ncid2,nf90_global,'equator_longitude',orf(ipass)%eqlon))
+call nfs(nf90_put_att(ncid2,nf90_global,'equator_longitude',equator_longitude))
 call nfs(nf90_put_att(ncid2,nf90_global,'first_meas_time',date(1)))
 call nfs(nf90_put_att(ncid2,nf90_global,'last_meas_time',date(2)))
 call nfs(nf90_put_att(ncid2,nf90_global,'first_meas_lat',fin(1)%lat0))
@@ -465,8 +490,6 @@ enddo
 
 call nfs(nf90_close(ncid2))
 nfile = 0
-pass_number = orf(ipass)%cycle
-cycle_number = orf(ipass)%pass
 
 end subroutine write_output
 
