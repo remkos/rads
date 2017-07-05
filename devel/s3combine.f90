@@ -41,19 +41,24 @@ type :: fileinfo
 end type
 type(fileinfo) :: fin(20)
 
+! Struct to store the records from ORF file
+
+type :: orfinfo
+	integer(fourbyteint) :: cycle, pass
+	real(eightbytereal) :: starttime, eqtime, eqlon
+end type
+type(orfinfo) :: orf(200000)
+
 ! General variables
 
-type(rads_sat) :: S
-type(rads_pass) :: P
-character(len=rads_cmdl) :: arg, filenm, dimnm, destdir, product_name, mission_name, xref_orbit_data
+character(len=rads_cmdl) :: arg, filenm, dimnm, destdir, product_name, xref_orbit_data
 character(len=rads_strl) :: exclude_list = ','
-character(len=2) :: sat = ''
 character(len=26) :: date(3)
 integer(fourbyteint), parameter :: mpass = 254 * 500
 real(eightbytereal), parameter :: sec2000 = 473299200d0
 integer(fourbyteint) :: i0, i, ncid1, nrec, ios, varid, in_max = huge(fourbyteint), nr_passes = 770, &
-	pass_number = 0, cycle_number = 0, pass_in, cycle_in, nfile = 0, orbit_type, absolute_pass_number, &
-	absolute_rev_number
+	pass_number = 0, cycle_number = 0, nfile = 0, orbit_type, absolute_pass_number, &
+	absolute_rev_number, ipass
 real(eightbytereal), allocatable :: time(:), lat(:), lon(:)
 real(eightbytereal) :: last_time = 0
 
@@ -71,6 +76,17 @@ endif
 '  -mMAXREC          : Maximum number of records allowed at input' / &
 '  -xVAR1[,VAR2,...] : Exclude variable(s) from copying')
 
+! First determine filetype
+
+read (*,'(a)',iostat=ios) filenm
+if (ios /= 0) stop
+i = index(filenm,'.SEN3')
+if (i == 0) stop 'Wrong filetype'
+
+! Get ORF file
+
+call read_orf (filenm(i-94:i-92), orf)
+
 ! Read options and destination directory
 
 do i = 1,iargc()
@@ -87,8 +103,6 @@ enddo
 ! Cycle through all input files
 
 do
-	read (*,'(a)',iostat=ios) filenm
-	if (ios /= 0) exit
 
 ! Open the input file
 
@@ -97,39 +111,11 @@ do
 		cycle
 	endif
 
-! Init RADS, just to get some Sentinel-3 parameters.
-! Do this only once, and make sure the user is only feeding 3A or 3B files.
-
-	call nfs(nf90_get_att(ncid1,nf90_global,'mission_name',mission_name))
-	if (mission_name(:10) /= 'Sentinel 3') then
-		call rads_message ('Unknown mission name "'//trim(mission_name)// &
-			'"; skipped file: '//filenm)
-		call nfs(nf90_close(ncid1))
-		cycle
-	else if (sat == '') then
-		sat = mission_name(10:11)
-		call rads_init (S, sat)
-	else if (sat /= mission_name(10:11)) then
-		call rads_message ('Mission name "'//trim(mission_name)// &
-			'" not same as former; skipped file: '//filenm)
-		call nfs(nf90_close(ncid1))
-		cycle
-	endif
-
 ! Read global attributes
 
-	call nfs(nf90_get_att(ncid1,nf90_global,'pass_number',pass_in))
-	call nfs(nf90_get_att(ncid1,nf90_global,'cycle_number',cycle_in))
-	call nfs(nf90_get_att(ncid1,nf90_global,'absolute_pass_number',absolute_pass_number))
-	call nfs(nf90_get_att(ncid1,nf90_global,'absolute_rev_number',absolute_rev_number))
 	call nfs(nf90_get_att(ncid1,nf90_global,'product_name',product_name))
 	call nfs(nf90_get_att(ncid1,nf90_global,'xref_orbit_data',xref_orbit_data))
 	orbit_type = which_orbit_type (xref_orbit_data)
-
-! Fix an anomaly in the REF data during March 2017
-
-	if (product_name(83:87) == 'MAR_F' .and. absolute_rev_number < 5700 .and. cycle_in > 15) &
-		cycle_in = cycle_in - 2
 
 ! Read the time dimension
 
@@ -153,17 +139,14 @@ do
 	call nfs(nf90_get_var(ncid1,varid,lon))
 	lon = lon * 1d-6
 
-! We may have pass number 771 on input ... this belongs to the next cycle
+! Determine cycle and pass from first input point
 
-	call next_cycle (cycle_in, pass_in)
+	ipass = 0
+	call which_cycle_pass (time(1))
 
 ! Write out buffer it we are in a new pass
 
-	if (cycle_in * 1000 + pass_in > cycle_number * 1000 + pass_number) then
-		call write_output
-		pass_number = pass_in
-		cycle_number = cycle_in
-	endif
+	if (orf(ipass)%cycle /= cycle_number .or. orf(ipass)%pass /= pass_number) call write_output
 
 ! First advance to beyond the last time tag
 
@@ -185,16 +168,15 @@ do
 ! Also skip duplicated measurements within a single file
 
 	do i = max(2,i0),nrec
+		call which_cycle_pass (time(i))
 		if (time(i) == time(i-1)) then
 			call fill_fin (i0, i-2)
 			call write_line ('... skip', i-1, i-1, nrec, time(i-1), time(i-1), '<', filenm)
 			i0 = i
-		else if (lat(i) > lat(i-1) .neqv. modulo(pass_number,2) == 1) then
+		else if (orf(ipass)%cycle /= cycle_number .or. orf(ipass)%pass /= pass_number) then
 			call fill_fin (i0, i-1)
 			call write_output
 			i0 = i
-			pass_number = pass_number + 1
-			call next_cycle (cycle_number, pass_number)
 		endif
 	enddo
 	call fill_fin (i0, nrec)
@@ -202,14 +184,77 @@ do
 ! Deallocate time and location arrays
 
 	deallocate (time, lat, lon)
+
+! Read the next filename
+
+	read (*,'(a)',iostat=ios) filenm
+	if (ios /= 0) exit
+
 enddo
 
 ! Dump the remainder of the input files to output
 
 call write_output
-if (sat /= '') call rads_end (S)
 
 contains
+
+!***********************************************************************
+! Read Orbital Revolution File (ORF)
+
+subroutine read_orf (sat, orf)
+character(len=3), intent(in) :: sat
+type(orfinfo), intent(inout) :: orf(:)
+character(len=320) :: line
+integer :: hash, mjd, yy, mm, dd, hh, mn, ios, npass
+real(eightbytereal) :: ss, lon, lat
+
+! Open the equator crossing table
+
+select case (sat)
+case ('S3A')
+	call parseenv ('${ALTIM}/data/ODR.SNTNL-3A/orf.txt', line)
+case ('S3B')
+	call parseenv ('${ALTIM}/data/ODR.SNTNL-3B/orf.txt', line)
+case default
+	stop 'Wrong satellite code'
+end select
+open (10, file=line, status='old')
+
+! Initialise with dummy values
+
+orf = orfinfo (-1, -1, nan, nan, nan)
+
+! Skip until after the lines starting with #
+
+hash = 0
+do while (hash < 5)
+	read (10,550,iostat=ios) line
+	if (ios /= 0) stop 'Premature end of file'
+	if (line(:1) == '#') hash = hash + 1
+enddo
+
+! Read the equator crossing table
+
+npass = 1
+do
+	read (10,550,iostat=ios) line
+	if (ios /= 0) exit
+	read (line,600) yy,mm,dd,hh,mn,ss,orf(npass)%cycle,orf(npass)%pass,lon,lat
+	call ymd2mjd(yy,mm,dd,mjd)
+	ss = (mjd-51544)*86400d0 + hh*3600d0 + mn*60d0 + ss
+	if (abs(lat) > 1) then
+		orf(npass)%starttime = ss
+	else
+		orf(npass)%eqtime = ss
+		orf(npass)%eqlon = lon
+		npass=npass + 1
+	endif
+enddo
+close (10)
+550 format (a)
+600 format (i4,4(1x,i2),1x,f6.3,1x,i3,1x,i5,6x,2(1x,f6.2))
+
+end subroutine read_orf
 
 !***********************************************************************
 ! Fill the array of file information
@@ -260,15 +305,15 @@ end select
 end function which_orbit_type
 
 !***********************************************************************
-! Start the next cycle when the pass number rolls over
+! Determine the corresponding record from ORF
 
-subroutine next_cycle (cycle, pass)
-integer(fourbyteint), intent(inout) :: cycle, pass
-if (pass > 770) then
-	cycle = cycle + (pass-1) / 770
-	pass = modulo(pass-1,770) + 1
-endif
-end subroutine next_cycle
+subroutine which_cycle_pass (time)
+real(eightbytereal), intent(in) :: time
+do while (time > orf(ipass+1)%starttime)
+	ipass = ipass + 1
+	if (orf(ipass)%cycle < 0) stop 'Times are beyond limits of ORF file'
+enddo
+end subroutine which_cycle_pass
 
 !***********************************************************************
 ! Write whatever has been buffered so far to an output file
@@ -364,12 +409,11 @@ call nfs(nf90_put_att(ncid2,varid3,'coordinates','lon_01 lat_01'))
 
 absolute_pass_number = (cycle_number-1)*nr_passes+pass_number-54
 absolute_rev_number = absolute_pass_number / 2
-call rads_predict_equator (S, P, cycle_number, pass_number)
 
 ! Overwrite some attributes and product name
 
 call write_line ('Creating', 1, nrec, nrec, fin(1)%time0, fin(nfile)%time1,'>', outnm)
-call strf1985f(date(3),P%equator_time)
+call strf1985f(date(3),orf(ipass)%eqtime)
 
 call nfs(nf90_put_att(ncid2,nf90_global,'product_name',prdnm))
 call nfs(nf90_put_att(ncid2,nf90_global,'cycle_number',cycle_number))
@@ -377,7 +421,7 @@ call nfs(nf90_put_att(ncid2,nf90_global,'pass_number',pass_number))
 call nfs(nf90_put_att(ncid2,nf90_global,'absolute_pass_number',absolute_pass_number))
 call nfs(nf90_put_att(ncid2,nf90_global,'absolute_rev_number',absolute_rev_number))
 call nfs(nf90_put_att(ncid2,nf90_global,'equator_time',date(3)))
-call nfs(nf90_put_att(ncid2,nf90_global,'equator_longitude',P%equator_lon))
+call nfs(nf90_put_att(ncid2,nf90_global,'equator_longitude',orf(ipass)%eqlon))
 call nfs(nf90_put_att(ncid2,nf90_global,'first_meas_time',date(1)))
 call nfs(nf90_put_att(ncid2,nf90_global,'last_meas_time',date(2)))
 call nfs(nf90_put_att(ncid2,nf90_global,'first_meas_lat',fin(1)%lat0))
@@ -421,6 +465,8 @@ enddo
 
 call nfs(nf90_close(ncid2))
 nfile = 0
+pass_number = orf(ipass)%cycle
+cycle_number = orf(ipass)%pass
 
 end subroutine write_output
 
@@ -433,7 +479,6 @@ call strf1985f(date(2),time1+sec2000)
 write (*,620) word, rec0, rec1, nrec, date(1:2), dir, trim(filenm)
 620 format (a,' : ',3i6,' : ',a,' - ',a,1x,a1,1x,a)
 end subroutine write_line
-
 
 function excluded (varnm)
 character(len=*), intent(in) :: varnm
