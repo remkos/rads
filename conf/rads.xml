@@ -3854,10 +3854,17 @@ Global RADS configuration file
 	</phase>
 	<phase name="b">
 		<mission>Interleaved Mission</mission>
-		<cycles>305 999</cycles>
+		<cycles>305 327</cycles>
 		<repeat>9.91564280 254</repeat>
 		<ref_pass>2016-10-17T09:24:22 98.51 306 1 38774</ref_pass>
 		<start_time>2016-10-14</start_time>
+	</phase>
+	<phase name="c">
+		<mission>Geodetic Mission</mission>
+		<cycles>328 999</cycles>
+		<repeat>9.91564280 254</repeat>
+		<ref_pass>2016-10-17T09:24:22 98.51 306 1 38774</ref_pass>
+		<start_time>2017-07-07</start_time>
 	</phase>
 </if>
 

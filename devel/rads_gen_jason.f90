@@ -213,6 +213,8 @@ do
 		passnr = r + 1
 	else if (S%sat == 'j1' .and. cyclenr > 261) then
 		phasenm = 'b'
+	else if (S%sat == 'j2' .and. cyclenr > 327) then
+		phasenm = 'c'
 	else if (S%sat == 'j2' .and. cyclenr > 304) then
 		phasenm = 'b'
 	else
