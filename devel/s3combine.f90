@@ -348,7 +348,7 @@ integer(onebyteint), parameter :: flag_values(0:6) = int((/0,1,2,3,4,5,6/), oneb
 
 cycle_number = orf(ipass0)%cycle
 pass_number = orf(ipass0)%pass
-equator_time = orf(ipass0)%eqtime
+equator_time = orf(ipass0)%eqtime + sec2000
 equator_longitude = orf(ipass0)%eqlon
 ipass0 = ipass
 
