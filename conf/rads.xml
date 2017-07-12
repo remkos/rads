@@ -3860,11 +3860,12 @@ Global RADS configuration file
 		<start_time>2016-10-14</start_time>
 	</phase>
 	<phase name="c">
+		<!--This needs to be modified-->
 		<mission>Geodetic Mission</mission>
-		<cycles>328 999</cycles>
-		<repeat>9.91564280 254</repeat>
-		<ref_pass>2016-10-17T09:24:22 98.51 306 1 38774</ref_pass>
-		<start_time>2017-07-07</start_time>
+		<cycles>500 999</cycles>
+		<repeat>9.864011597 254</repeat>
+		<ref_pass>2017-07-11T09:08:46 4.57 500 31 50015</ref_pass>
+		<start_time>2017-07-10</start_time>
 	</phase>
 </if>
 
