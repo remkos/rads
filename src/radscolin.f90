@@ -29,10 +29,10 @@ use rads_time
 integer(fourbyteint), parameter :: msat = 20
 type(rads_sat) :: S(msat)
 integer(fourbyteint) :: nsel = 0, reject = -2, cycle, pass, i, j, ios, &
-	nbins, nsat = 0, ntrx = 0, ntrx1, ntrx2, ntrx3, ntrx4, type_sla = 1, step = 1, ncols
+	nbins, nsat = 0, ntrx = 0, ntrx1, ntrx2, ntrx3, ntrx4, type_sla = 1, out_diff = 0, step = 1, ncols
 real(eightbytereal) :: dt = 0d0
 character(len=rads_naml) :: prefix = 'radscolin_p', suffix = '.nc', satlist
-logical :: ascii = .true., out_data = .true., out_mean = .false., out_sdev = .false., out_extr = .false., out_diff = .false., &
+logical :: ascii = .true., out_data = .true., out_mean = .false., out_sdev = .false., out_extr = .false., &
 	out_track = .true., out_cumul = .false., keep = .false., force = .false., boz_format = .false.
 real(eightbytereal), allocatable :: data(:,:,:)
 logical, allocatable :: mask(:,:)
@@ -53,7 +53,7 @@ character(len=rads_strl) :: format_string
 ! Initialize RADS or issue help
 call synopsis
 call rads_set_options ('acdefklnNo::r::st ' // &
-	'cumul diff dt: reject-on-nan:: extremes force keep mean minmax no-pass no-track output:: stddev step:')
+	'cumul diff-no-coord diff dt: reject-on-nan:: extremes force keep mean minmax no-pass no-track output:: stddev step:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 
@@ -103,7 +103,10 @@ do i = 1,rads_nopt
 	case ('l', 'minmax')
 		out_extr = .true.
 	case ('diff')
-		out_diff = .true.
+		out_diff = 1
+		keep = .true.
+	case ('diff-no-coord')
+		out_diff = 2
 		keep = .true.
 	case ('d', 'no-pass')
 		out_data = .false.
@@ -133,7 +136,7 @@ if (.not.out_cumul) then
 else if (.not.ascii) then
 	call rads_message ('--cumul cannot be used together with -o or --output')
 	stop
-else if  (.not.out_diff .and. reject /= 0) then
+else if  (out_diff == 0 .and. reject /= 0) then
 	call rads_message ('--cumul requires --diff or -r')
 	stop
 endif
@@ -220,6 +223,7 @@ write (*,1300)
 '  -c, --cumul               Output cumulative statistics (ascii output only) (implies --keep)'/ &
 '      --diff                Compute difference between first and second half of selected passes'/ &
 '                            (implies --keep)'/ &
+'      --diff-no-coord       Same as --diff, but excluding coordinates from computing difference'/ &
 '  -f, --force               Force comparison, even when missions are not considered collinear'/ &
 '  -o, --output [FILENAME]   Create netCDF output by pass (default is ascii output to stdout).'/ &
 '                            Optionally specify FILENAME including "#", to be replaced by the pass'/ &
@@ -284,14 +288,17 @@ enddo
 if (ndata == 0) return
 
 ! If requested, do difference of first half and second half of tracks
-if (out_diff) then
+if (out_diff > 0) then
 	ntrx = ntrx / 2
-	do j = 1,ntrx
-		data(j,:,:) = data(j,:,:) - data(j+ntrx,:,:)
-		mask(j,:) = mask(j,:) .or. mask(j+ntrx,:)
+	do i = 1,ntrx
+		do j = 1,nsel
+			if (out_diff == 2 .and. &
+				S(nsat)%sel(j)%info%datatype < rads_type_time) data(i,j,:) = data(i,j,:) - data(i+ntrx,j,:)
+		enddo
+		mask(i,:) = mask(i,:) .or. mask(i+ntrx,:)
 	enddo
-	do j = 2*ntrx,ntrx+1,-1
-		info(j+2) = info(j)
+	do i = 2*ntrx,ntrx+1,-1
+		info(i+2) = info(i)
 	enddo
 endif
 
@@ -522,7 +529,7 @@ if (first .or. out_track) then
 		write (*,610) info(1:ntrx)%sat
 		write (*,615) info(1:ntrx)%cycle
 	endif
-	if (out_diff .and. out_data) then
+	if (out_diff > 0 .and. out_data) then
 		write (*,618)
 		write (*,610) info(ntrx+3:2*ntrx+2)%sat
 		write (*,615) info(ntrx+3:2*ntrx+2)%cycle
