@@ -333,7 +333,11 @@ do
 	else
 		call cpy_var ('geoid', 'geoid_egm96')
 	endif
-	call cpy_var ('mean_sea_surface', 'mss_cnescls11')
+	if (S%sat == 'j2' .and. S%phase%name == 'c') then
+		call cpy_var ('mean_sea_surface', 'mss_cnescls15')
+	else
+		call cpy_var ('mean_sea_surface', 'mss_cnescls11')
+	endif
 	call cpy_var ('swh_ku')
 	call cpy_var ('swh_ku_mle3', mle3)
 	call cpy_var ('swh_c')
