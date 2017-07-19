@@ -527,7 +527,7 @@ endif
 646 format ('# ',a,t43,32x,f16.4,16x,f16.4)
 650 format ('# ',a,' : ')
 
-deallocate (track, trk, var, stat, mask, long_name, boz)
+deallocate (track, trk, var, stat, mask, long_name, is_alt, boz)
 if (bin > 0d0) deallocate (binnr, binmask)
 end subroutine process
 
