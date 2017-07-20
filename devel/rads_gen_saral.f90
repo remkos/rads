@@ -247,7 +247,11 @@ do
 	call cpy_var ('off_nadir_angle_wf', 'off_nadir_angle2_wf_ka')
 	call cpy_var ('tb_k', 'tb_238')
 	call cpy_var ('tb_ka', 'tb_370')
-	call cpy_var ('mean_sea_surface', 'mss_cnescls11')
+	if (S%phase%name == 'b') then
+		call cpy_var ('mean_sea_surface', 'mss_cnescls15')
+	else
+		call cpy_var ('mean_sea_surface', 'mss_cnescls11')
+	endif
 	call cpy_var ('geoid', 'geoid_egm96')
 	call cpy_var ('bathymetry', 'topo_dtm2000')
 	call cpy_var ('inv_bar_corr', 'inv_bar_static')
