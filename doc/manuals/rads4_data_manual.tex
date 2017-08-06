@@ -726,12 +726,12 @@ where \var{flags_low} and \var{flags_high} are the lower and higher limit of \va
 In a future version of the data base the flag word \var{flags} will be phased out and only the more elementary flag variables that are now defined as aliases will be available.
 
 \begin{vartable}
-\var{flags} & 2601 & flag word & & c2 & 48 0 &  \\
-            &      &           & & e1 e2 j1 j2 j3 & 65512 0 &  \\
+\var{flags} & 2601 & flag word & & c2 & 32 0 &  \\
+            &      &           & & 3a e1 e2 j1 j2 j3 & 65512 0 &  \\
             &      &           & & g1 & 65384 0 & \\
             &      &           & & gs & 51176 0 & \\
             &      &           & & n1 & 36712 0 & \\
-            &      &           & & pn & 448 0 & \\
+            &      &           & & pn & 480 0 & \\
             &      &           & & tx & 49640 0 & \\
 \hline
             & 26   & \alias{flags} & & & & \\
