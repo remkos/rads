@@ -64,12 +64,12 @@ program rads_gen_s3
 ! wind_speed_ecmwf_u - ECMWF wind speed (U)
 ! wind_speed_ecmwf_v - ECMWF wind speed (V)
 ! tide_ocean/load_got410 - GOT4.10c ocean and load tide
-! tide_ocean/load_fes04 - FES2004 ocean  and loadtide
+! tide_ocean/load_fes04/fes14 - FES2004 or FES2014 ocean and load tide
 ! tide_pole - Pole tide
 ! tide_solid - Solid earth tide
 ! topo_ace2 - ACE2 topography
 ! geoid_egm2008 - EGM2008 geoid
-! mss_cnescls11 - CNES/CLS11 mean sea surface
+! mss_cnescls11/cnescls15 - CNES/CLS11 or CNES/CLS15 mean sea surface
 ! mss_dtu13 - DTU13 mean sea surface
 ! tb_238 - Brightness temperature (23.8 GHz)
 ! tb_365 - Brightness temperature (36.5 GHz)
@@ -107,6 +107,7 @@ logical :: nrt
 ! Data variables
 
 integer(twobyteint), allocatable :: flags_plrm(:), flags_save(:)
+character(len=2) :: mss_cnescls_ver = '11', tide_fes_ver = '04'
 
 ! Other local variables
 
@@ -171,6 +172,14 @@ do
 	call nfs(nf90_get_att(ncid,nf90_global,'pass_number',passnr))
 	call nfs(nf90_get_att(ncid,nf90_global,'equator_time',arg))
 	equator_time = strp1985f (arg)
+
+! Update the versions for MSS CNES-CLS and FES tides for PB 2.19 (IPF-SM-2 06.08) and later
+
+	call nfs(nf90_get_att(ncid,nf90_global,'source',arg))
+	if (arg(10:17) >= '06.08   ') then
+		mss_cnescls_ver = '15'
+		tide_fes_ver = '14'
+	endif
 
 ! Skip passes of which the cycle number or equator crossing time is outside the specified interval
 
@@ -280,9 +289,9 @@ do
 	endif
 	call cpy_var ('solid_earth_tide_01', 'tide_solid')
 	call cpy_var ('ocean_tide_sol1_01 load_tide_sol1_01 SUB', 'tide_ocean_got410')
-	call cpy_var ('ocean_tide_sol2_01 load_tide_sol2_01 SUB', 'tide_ocean_fes04')
+	call cpy_var ('ocean_tide_sol2_01 load_tide_sol2_01 SUB', 'tide_ocean_fes' // tide_fes_ver)
 	call cpy_var ('load_tide_sol1_01', 'tide_load_got410')
-	call cpy_var ('load_tide_sol2_01', 'tide_load_fes04')
+	call cpy_var ('load_tide_sol2_01', 'tide_load_fes' // tide_fes_ver)
 	call cpy_var ('pole_tide_01', 'tide_pole')
 	call cpy_var ('sea_state_bias_01_ku', 'ssb_cls')
 	call cpy_var ('sea_state_bias_01_plrm_ku', 'ssb_cls_plrm')
@@ -290,7 +299,7 @@ do
 	call get_var (ncid, 'geoid_01', a)
 	call new_var ('geoid_egm2008', a + dh)
 	call get_var (ncid, 'mean_sea_surf_sol1_01', a)
-	call new_var ('mss_cnescls11', a + dh)
+	call new_var ('mss_cnescls' // mss_cnescls_ver, a + dh)
 	call get_var (ncid, 'mean_sea_surf_sol2_01', a)
 	call new_var ('mss_dtu13', a + dh)
 	call cpy_var ('swh_ocean_01_ku', 'swh_ku')
