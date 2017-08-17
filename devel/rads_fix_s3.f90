@@ -18,13 +18,14 @@
 ! This program makes numerous patches to the Sentinel-3 RADS data processed
 ! by rads_gen_s3. These patches include:
 !
-!  --atten  Replace NaN attenuation with ECMWF derivation
-!  --sig0   Adjust backscatter coefficient for apparent biases and attenuation
-!  --wind   Update wind speed using Envisat model
-!  --all    All of the above
-!  --tb     Adjust brightness temperatures for apparent biases
-!  --mwr    Update radiometer wet parameters
-!  --range  Subtract 59.3 mm from Ku- and C-band ranges
+!  --atten                   Replace NaN attenuation with ECMWF derivation and add to sigma0
+!  --sig0[=dKu,dC]           Adjust sigma0 for apparent biases [0,3.3]
+!  --wind                    Update wind speed using Envisat model
+!  --tb                      Adjust brightness temperatures for apparent biases
+!  --mwr                     Update radiometer wet parameters
+!  --range                   Subtract 59.3 mm from Ku- and C-band ranges
+!  --all                      < PB 2.19: --atten --sig0 --wind
+!                            >= PB 2.19: --sig0
 !
 ! usage: rads_fix_s3 [data-selectors] [options]
 !-----------------------------------------------------------------------
@@ -46,7 +47,8 @@ real(eightbytereal) :: dsig0_ku = 0.0d0, dsig0_c = 3.3d0	! Default Ku- and C-ban
 real(eightbytereal), parameter :: dtb_238 = 2.0d0, dtb_365 = 3.0d0	! Rough values from MTR presentation by M. Frery.
 real(eightbytereal), parameter :: drange = 59.3d-3 ! Range bias in earlier rep_002 data
 integer(fourbyteint) :: i, cyc, pass, ios
-logical :: latten = .false., lsig0 = .false., lwind = .false., ltb = .false., lmwr = .false., lrange = .false.
+logical :: latten = .false., lsig0 = .false., lwind = .false., ltb = .false., lmwr = .false., lrange = .false., &
+	lall = .false.
 
 ! Scan command line for options
 
@@ -67,9 +69,7 @@ do i = 1,rads_nopt
 	case ('mwr')
 		lmwr = .true.
 	case ('all')
-		latten = .true.
-		lsig0 = .true.
-		lwind = .true.
+		lall = .true.
 	case ('range')
 		lrange = .true.
 	end select
@@ -98,13 +98,14 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
-'  --atten                   Replace NaN attenuation with ECMWF derivation' / &
-'  --sig0[=dKu,dC]           Adjust backscatter coefficient for apparent biases and attenuation [0,3.3]' / &
+'  --atten                   Replace NaN attenuation with ECMWF derivation and add to sigma0' / &
+'  --sig0[=dKu,dC]           Adjust sigma0 for apparent biases [0,3.3]' / &
 '  --wind                    Update wind speed using Envisat model' / &
-'  --all                     All of the above' / &
 '  --tb                      Adjust brightness temperatures for apparent biases' / &
 '  --mwr                     Update radiometer wet parameters' / &
-'  --range                   Subtract 59.3 mm from Ku- and C-band ranges')
+'  --range                   Subtract 59.3 mm from Ku- and C-band ranges' / &
+'  --all                      < PB 2.19: --atten --sig0 --wind' / &
+'                            >= PB 2.19: --sig0')
 stop
 end subroutine synopsis
 
@@ -121,11 +122,30 @@ integer(fourbyteint) :: i
 
 call log_pass (P)
 
-call rads_get_var (S, P, 'sig0_ku', sig0_ku, .true.)
-call rads_get_var (S, P, 'sig0_ku_plrm', sig0_ku_plrm, .true.)
-call rads_get_var (S, P, 'sig0_c', sig0_c, .true.)
-call rads_get_var (S, P, 'dsig0_atmos_ku', atten_ku, .true.)
-call rads_get_var (S, P, 'dsig0_atmos_c', atten_c, .true.)
+! Select meaning of --all based on processing baseline
+
+i = len_trim(P%original)
+if (.not.lall) then
+else if (P%original(i-5:i-1) < '06.08') then
+	latten = .true.
+	lsig0 = .true.
+	lwind = .true.
+else
+	latten = .false.
+	lsig0 = .true.
+	lwind = .false.
+endif
+
+if (latten .or. lsig0 .or. lmwr .or. lwind) then
+	call rads_get_var (S, P, 'sig0_ku', sig0_ku, .true.)
+	call rads_get_var (S, P, 'sig0_ku_plrm', sig0_ku_plrm, .true.)
+	call rads_get_var (S, P, 'sig0_c', sig0_c, .true.)
+endif
+if (latten) then
+	call rads_get_var (S, P, 'dsig0_atmos_ku', atten_ku, .true.)
+	call rads_get_var (S, P, 'dsig0_atmos_c', atten_c, .true.)
+	call rads_get_var (S, P, 'wet_tropo_ecmwf', wet_tropo_ecmwf, .true.)
+endif
 if (ltb .or. lmwr) then
 	call rads_get_var (S, P, 'tb_238', tb_238, .true.)
 	call rads_get_var (S, P, 'tb_365', tb_365, .true.)
@@ -150,19 +170,22 @@ endif
 
 ! Fill in the defaulted attenuation values with functional form of ECMWF wet tropo correction
 ! (See notes of 2016-04-14 "Simple backup for sig0 attenuation")
+! Add the attenuation correction to sigma0
 
 if (latten) then
-	call rads_get_var (S, P, 'wet_tropo_ecmwf', wet_tropo_ecmwf, .true.)
 	where (isnan_(atten_ku)) atten_ku = 0.118d0 - 0.456d0 * wet_tropo_ecmwf
 	where (isnan_(atten_c))  atten_c  = 0.09d0
+	sig0_ku = sig0_ku + atten_ku
+	sig0_ku_plrm = sig0_ku_plrm + atten_ku
+	sig0_c = sig0_c + atten_c
 endif
 
-! Add the attenuation correction to sigma0 and adjust for bias
+! Add apparent bias to sigma0
 
 if (lsig0) then
-	sig0_ku = sig0_ku + atten_ku + dsig0_ku
-	sig0_ku_plrm = sig0_ku_plrm + atten_ku + dsig0_ku
-	sig0_c = sig0_c + atten_c + dsig0_c
+	sig0_ku = sig0_ku + dsig0_ku
+	sig0_ku_plrm = sig0_ku_plrm + dsig0_ku
+	sig0_c = sig0_c + dsig0_c
 endif
 
 ! Adjust wind speed
@@ -189,7 +212,7 @@ call rads_put_history (S, P)
 
 ! Write out all the data
 
-if (lsig0) then
+if (lsig0 .or. latten) then
 	call rads_put_var (S, P, 'sig0_ku', sig0_ku)
 	call rads_put_var (S, P, 'sig0_ku_plrm', sig0_ku_plrm)
 	call rads_put_var (S, P, 'sig0_c' , sig0_c)
