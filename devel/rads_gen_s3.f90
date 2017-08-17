@@ -107,7 +107,7 @@ logical :: nrt
 ! Data variables
 
 integer(twobyteint), allocatable :: flags_plrm(:), flags_save(:)
-character(len=2) :: mss_cnescls_ver = '11', tide_fes_ver = '04'
+character(len=2) :: mss_cnescls_ver, mss_dtu_ver, tide_fes_ver
 
 ! Other local variables
 
@@ -178,6 +178,7 @@ do
 	call nfs(nf90_get_att(ncid,nf90_global,'source',arg))
 	if (arg(10:17) >= '06.08   ') then
 		mss_cnescls_ver = '15'
+		mss_dtu_ver = '15'
 		tide_fes_ver = '14'
 	endif
 
@@ -214,6 +215,19 @@ do
 ! Determine L2 processing version
 
 	call nfs(nf90_get_att(ncid,nf90_global,'source',arg))
+
+! Update the versions for MSS CNES-CLS and FES tides for PB 2.19 (IPF-SM-2 06.08) and later
+
+	if (arg(10:14) < '06.08') then
+		mss_cnescls_ver = '11'
+		mss_dtu_ver = '13'
+		tide_fes_ver = '04'
+	else
+		mss_cnescls_ver = '15'
+		mss_dtu_ver = '15'
+		tide_fes_ver = '14'
+		orbit_data_type_offset = -1
+	endif
 
 ! Store input file name
 
@@ -301,7 +315,7 @@ do
 	call get_var (ncid, 'mean_sea_surf_sol1_01', a)
 	call new_var ('mss_cnescls' // mss_cnescls_ver, a + dh)
 	call get_var (ncid, 'mean_sea_surf_sol2_01', a)
-	call new_var ('mss_dtu13', a + dh)
+	call new_var ('mss_dtu' // mss_dtu_ver, a + dh)
 	call cpy_var ('swh_ocean_01_ku', 'swh_ku')
 	call cpy_var ('swh_ocean_01_plrm_ku', 'swh_ku_plrm')
 	call cpy_var ('swh_ocean_01_c', 'swh_c')
@@ -343,8 +357,14 @@ do
 	call cpy_var ('rad_water_vapor_01_ku', 'water_vapor_rad')
 	call cpy_var ('ssha_01_ku', 'ssha')
 	call cpy_var ('ssha_01_plrm_ku', 'ssha_plrm')
-	call get_var (ncid, 'orbit_data_type', a)
-	call new_var ('orbit_data_type', a + orbit_data_type_offset)
+	if (orbit_data_type_offset < 0) then	! Straight copy of orbit_type_01
+		call cpy_var ('orbit_type_01', 'orbit_type')
+	else ! Convert orbit_data_type (old school, before PB 2.19)
+		call get_var (ncid, 'orbit_data_type', a)
+		a = a + orbit_data_type_offset
+		where (a > 4) a = a * 2 - 4
+		call new_var ('orbit_type', a)
+	endif
 	call cpy_var ('surf_class_01', 'surface_class')
 
 ! Dump the data
