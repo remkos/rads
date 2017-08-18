@@ -297,9 +297,9 @@ integer :: which_orbit_type
 character(len=*), intent(in) :: xref_orbit_data
 select case (xref_orbit_data(10:12))
 case ('POE')
-	which_orbit_type = 6
+	which_orbit_type = 8
 case ('MDO')
-	which_orbit_type = 5
+	which_orbit_type = 6
 case ('ROE')
 	which_orbit_type = 4
 case ('NAV')
@@ -342,7 +342,7 @@ character(len=rads_naml) :: dirnm, prdnm, outnm, attnm, varnm
 real(eightbytereal), allocatable :: darr1(:)
 integer(fourbyteint), allocatable :: iarr1(:)
 logical :: exist
-integer(onebyteint), parameter :: flag_values(0:6) = int((/0,1,2,3,4,5,6/), onebyteint)
+integer(onebyteint), parameter :: flag_values(0:8) = int((/0,1,2,3,4,5,6,7,8/), onebyteint)
 
 ! Retrieve the pass variables
 
@@ -421,14 +421,18 @@ do varid1 = 0, nvars
 	enddo
 enddo
 
-! Add the orbit data type
+! Add the orbit type (only for versions that do not have it already)
 
-call nfs(nf90_def_var(ncid2,'orbit_data_type',nf90_byte,dimid2,varid3))
-call nfs(nf90_put_att(ncid2,varid3,'long_name','Type of data file used for orbit computation'))
-call nfs(nf90_put_att(ncid2,varid3,'_FillValue',127_onebyteint))
-call nfs(nf90_put_att(ncid2,varid3,'flag_values',flag_values))
-call nfs(nf90_put_att(ncid2,varid3,'flag_meanings','scenario prediction navatt doris_nav gnss_roe doris_moe poe'))
-call nfs(nf90_put_att(ncid2,varid3,'coordinates','lon_01 lat_01'))
+if (nft(nf90_inq_varid(ncid1,'orbit_type',varid1))) then
+	call nfs(nf90_def_var(ncid2,'orbit_type',nf90_byte,dimid2,varid3))
+	call nfs(nf90_put_att(ncid2,varid3,'long_name','Orbit type flag : 1 Hz Ku band'))
+	call nfs(nf90_put_att(ncid2,varid3,'_FillValue',127_onebyteint))
+	call nfs(nf90_put_att(ncid2,varid3,'flag_values',flag_values))
+	call nfs(nf90_put_att(ncid2,varid3,'flag_meanings','osf fos navatt doris_nav gnss_roe pod_moe salp_moe pod_poe salp_poe'))
+	call nfs(nf90_put_att(ncid2,varid3,'coordinates','lon_01 lat_01'))
+else
+	varid3 = 0	! This signals that there is no need to write a new orbit_type variable
+endif
 
 ! Determine absolute pass, rev, and equator crossing information
 
@@ -479,7 +483,7 @@ do i = 1,nfile
 		endif
 	enddo
 	iarr1 = fin(i)%type
-	call nfs(nf90_put_var(ncid2,varid3,iarr1,idxut(2:2)))
+	if (varid3 > 0) call nfs(nf90_put_var(ncid2,varid3,iarr1,idxut(2:2)))
 	nout = nout + nrec
 	deallocate (darr1,iarr1)
 	! Release netCDF file when reaching end

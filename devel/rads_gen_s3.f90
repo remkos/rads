@@ -204,12 +204,14 @@ do
 
 ! Check for orbit data type
 
-	i = nf90_inq_varid(ncid,'orbit_data_type',varid)
-	i = nf90_get_att(ncid,varid,'flag_meanings',arg)
-	if (arg(1:4) == 'scen') then
-		orbit_data_type_offset = 0
-	else
-		orbit_data_type_offset = 1
+	orbit_data_type_offset = -1
+	if (nff(nf90_inq_varid(ncid,'orbit_data_type',varid))) then
+		i = nf90_get_att(ncid,varid,'flag_meanings',arg)
+		if (arg(1:4) == 'scen') then
+			orbit_data_type_offset = 0
+		else
+			orbit_data_type_offset = 1
+		endif
 	endif
 
 ! Determine L2 processing version
