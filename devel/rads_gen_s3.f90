@@ -258,7 +258,7 @@ do
 	call nc2f ('tb_238_quality_flag_01',9)			! bit  9: Quality 23.8 GHz channel
 	call nc2f ('tb_365_quality_flag_01',10)			! bit 10: Quality 36.5 GHz channel
 	if (orbit_type_offset < 0) then					! bit 15: Quality of orbit
-		call nc2f ('orbit_type',15,le=2-orbit_type_offset)
+		call nc2f ('orbit_type_01',15,le=2-orbit_type_offset)
 	else
 		call nc2f ('orbit_data_type',15,le=2-orbit_type_offset)
 	endif
