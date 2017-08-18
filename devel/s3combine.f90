@@ -423,15 +423,15 @@ enddo
 
 ! Add the orbit type (only for versions that do not have it already)
 
-if (nft(nf90_inq_varid(ncid1,'orbit_type',varid1))) then
-	call nfs(nf90_def_var(ncid2,'orbit_type',nf90_byte,dimid2,varid3))
+if (nft(nf90_inq_varid(ncid1,'orbit_type_01',varid1))) then
+	call nfs(nf90_def_var(ncid2,'orbit_type_01',nf90_byte,dimid2,varid3))
 	call nfs(nf90_put_att(ncid2,varid3,'long_name','Orbit type flag : 1 Hz Ku band'))
 	call nfs(nf90_put_att(ncid2,varid3,'_FillValue',127_onebyteint))
 	call nfs(nf90_put_att(ncid2,varid3,'flag_values',flag_values))
 	call nfs(nf90_put_att(ncid2,varid3,'flag_meanings','osf fos navatt doris_nav gnss_roe pod_moe salp_moe pod_poe salp_poe'))
 	call nfs(nf90_put_att(ncid2,varid3,'coordinates','lon_01 lat_01'))
 else
-	varid3 = 0	! This signals that there is no need to write a new orbit_type variable
+	varid3 = 0	! This signals that there is no need to write a new orbit_type_01 variable
 endif
 
 ! Determine absolute pass, rev, and equator crossing information

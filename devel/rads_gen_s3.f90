@@ -100,7 +100,7 @@ character(len=rads_cmdl) :: infile, arg
 
 ! Header variables
 
-integer(fourbyteint) :: cyclenr, passnr, varid, orbit_data_type_offset
+integer(fourbyteint) :: cyclenr, passnr, varid, orbit_type_offset
 real(eightbytereal) :: equator_time
 logical :: nrt
 
@@ -202,15 +202,16 @@ do
 	call nfs(nf90_get_att(ncid,nf90_global,'last_meas_time',arg))
 	P%end_time = strp1985f(arg)
 
-! Check for orbit data type
+! Check for orbit_type_01, otherwise take old orbit_data_type
 
-	orbit_data_type_offset = -1
-	if (nff(nf90_inq_varid(ncid,'orbit_data_type',varid))) then
+	orbit_type_offset = -1
+	if (nft(nf90_inq_varid(ncid,'orbit_type_01',varid))) then
+		i = nf90_inq_varid(ncid,'orbit_data_type',varid)
 		i = nf90_get_att(ncid,varid,'flag_meanings',arg)
 		if (arg(1:4) == 'scen') then
-			orbit_data_type_offset = 0
+			orbit_type_offset = 0
 		else
-			orbit_data_type_offset = 1
+			orbit_type_offset = 1
 		endif
 	endif
 
@@ -228,7 +229,6 @@ do
 		mss_cnescls_ver = '15'
 		mss_dtu_ver = '15'
 		tide_fes_ver = '14'
-		orbit_data_type_offset = -1
 	endif
 
 ! Store input file name
@@ -257,7 +257,11 @@ do
 	call nc2f ('rain_flag_01_ku',8)					! bit  8: Altimeter rain flag
 	call nc2f ('tb_238_quality_flag_01',9)			! bit  9: Quality 23.8 GHz channel
 	call nc2f ('tb_365_quality_flag_01',10)			! bit 10: Quality 36.5 GHz channel
-	call nc2f ('orbit_data_type',15,le=2-orbit_data_type_offset)			! bit 15: Quality of orbit
+	if (orbit_type_offset < 0) then					! bit 15: Quality of orbit
+		call nc2f ('orbit_type',15,le=2-orbit_type_offset)
+	else
+		call nc2f ('orbit_data_type',15,le=2-orbit_type_offset)
+	endif
 
 ! Now do specifics for PLRM
 
@@ -359,11 +363,11 @@ do
 	call cpy_var ('rad_water_vapor_01_ku', 'water_vapor_rad')
 	call cpy_var ('ssha_01_ku', 'ssha')
 	call cpy_var ('ssha_01_plrm_ku', 'ssha_plrm')
-	if (orbit_data_type_offset < 0) then	! Straight copy of orbit_type_01
+	if (orbit_type_offset < 0) then	! Straight copy of orbit_type_01
 		call cpy_var ('orbit_type_01', 'orbit_type')
 	else ! Convert orbit_data_type (old school, before PB 2.19)
 		call get_var (ncid, 'orbit_data_type', a)
-		a = a + orbit_data_type_offset
+		a = a + orbit_type_offset
 		where (a > 4) a = a * 2 - 4
 		call new_var ('orbit_type', a)
 	endif
