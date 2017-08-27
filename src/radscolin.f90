@@ -483,8 +483,8 @@ call nfs (nf90_put_att (ncid, varid(4), 'long_name', 'number of collinear measur
 ! Define global attibutes
 call nfs (nf90_put_att (ncid, nf90_global, 'Conventions', 'CF-1.5'))
 call nfs (nf90_put_att (ncid, nf90_global, 'title', 'RADS 4.0 collinear tracks file'))
-call nfs (nf90_put_att (ncid, nf90_global, 'institution', 'Altimetrics / NOAA / TU Delft'))
-call nfs (nf90_put_att (ncid, nf90_global, 'references', 'RADS Data Manual, Issue 4.0'))
+call nfs (nf90_put_att (ncid, nf90_global, 'institution', 'EUMETSAT / NOAA / TU Delft'))
+call nfs (nf90_put_att (ncid, nf90_global, 'references', 'RADS Data Manual, Version ' // trim(rads_version_id)))
 call nfs (nf90_put_att (ncid, nf90_global, 'pass_number', pass))
 call nfs (nf90_put_att (ncid, nf90_global, 'history', timestamp()//' UTC: '//trim(S(1)%command)))
 

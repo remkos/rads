@@ -20,9 +20,9 @@ Global RADS configuration file
 <global_attributes>
 	Conventions CF-1.7
 	title RADS 4 pass file
-	institution Altimetrics / EUMETSAT / NOAA / TU Delft
+	institution EUMETSAT / NOAA / TU Delft
 	source radar altimeter
-	references RADS Data Manual, Issue 4.2 or later
+	references RADS Data Manual, Version 4.2 or later
 	featureType point
 	ellipsoid TOPEX
 </global_attributes>

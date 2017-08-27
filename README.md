@@ -1,6 +1,6 @@
 # rads
 
-The Radar Altimeter Database System (RADS) was developed by the Delft Institute for Earth-Oriented Space Research and the NOAA Laboratory for Satellite Altimetry. Apart from actual altimeter data, RADS provides here a suite of applications and subroutines that simplify the reading, editing and handling of data from various radar altimeters. Although the actual content and layout of the underlying data products do not have to be identical for all altimeters, the user interface is. Also, the data base is easily expandable with additional data and/or additional corrections without impact to the user interface, or to the software in general. In fact, only in very few cases the software will need to be adjusted and recompiled, in even fewer cases adjustments to the actual tools will be required.
+The Radar Altimeter Database System (RADS) was developed by the Delft Institute for Earth-Oriented Space Research, the NOAA Laboratory for Satellite Altimetry, and EUMETSAT. Apart from actual altimeter data, RADS provides here a suite of applications and subroutines that simplify the reading, editing and handling of data from various radar altimeters. Although the actual content and layout of the underlying data products do not have to be identical for all altimeters, the user interface is. Also, the data base is easily expandable with additional data and/or additional corrections without impact to the user interface, or to the software in general. In fact, only in very few cases the software will need to be adjusted and recompiled, in even fewer cases adjustments to the actual tools will be required.
 
 ## Development
 The RADS database and code has gone through various generations. NetCDF datasets were introduced in version 3, while the software more or less stayed the same as in version 2. This new version is a complete rewrite of the code, making it much easier to configure, handle, and expand, and for the first time taking all the advantages of the underlying netCDF data and the linear algebra provided by Fortran 90.
@@ -28,12 +28,18 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 ## Version History
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 
+### v4.2.6 (27 Aug 2017)
+* New features in radscolin: --diff-no-coord and --diff1.
+* Numerous updates for the generation of RADS data for Sentinel-3, Jason-2, and Jason-3.
+* New variables for moderns mean sea surfaces and tide models.
+* Updates to user and data manuals.
+
 ### v4.2.5 (6 Oct 2016)
 * Updates to manuals (e.g., issue #99).
 * Numerous updates for the generation of RADS data for Sentinel-3 and Jason-3 (developer tools only).
 * Bug fix: nesting of \<if\> tags could go wrong when reading XML files.
 * Installation: use nc-config if nf-config is not supplied.
-* Adjustments for SARAL Drift Mission
+* Adjustments for SARAL Drift Mission.
 * Preparation for Jason-2 Interleaved Mission.
 
 ### v4.2.4 (6 June 2016)
