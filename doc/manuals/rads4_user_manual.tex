@@ -825,7 +825,7 @@ Just as \prog{rads2asc4} the program \prog{rads2nc} will now print to standard o
 \label{sec:radscolin4}
 The program \prog{radscolin4} creates collinear tracks (in a rather straightforward way). No smoothing or interpolation is performed. The data are ``gridded'' based on their time with respect to the equator passages. The measurements are simply collected in bins of predefined length. By default this is the 1-Hz sampling rate of the specific mission), but it can be altered with the \lopt{dt} option. Then the data falling in those bins for each specified pass are output in a way similar to \prog{rads2asc4} (Section~\ref{sec:rads2asc4}) or \prog{rads2nc} (Section~\ref{sec:rads2nc}). No averaging or differencing is performed.
 
-This program can also be used to compute differences between two different altimeter missions, as long as they are collinear. Some variance to the strict collinearity is allowed when using the \sopt{f} or \lopt{force} option. See Section~\ref{sec:order_options} for more info on using the command line when multiple missions are involved.
+This program can also be used to compute differences between two different altimeter missions (with \lopt{diff}, \lopt{diff-no-coord}, or \lopt{diff1}), as long as they are collinear. Some variance to the strict collinearity is allowed when using the \sopt{f} or \lopt{force} option. See Section~\ref{sec:order_options} for more info on using the command line when multiple missions are involved.
 
 The program will output only those bins in which valid sea level anomalies can be found for all specified repeat cycles, unless the \sopt{r} option is used. This behaviour of \sopt{r} is significantly different from \prog{rads2asc4} and \prog{rads2nc}. See the syntax description below. 
 
@@ -868,6 +868,10 @@ Do not print the along-track data (applies to ASCII output only).
 Print cumulative statistics (applies to ASCII output only).
 \item[\lopt{diff}] ~\\
 Compute the difference between the first and the second half of the selected passes. This is practical when computing the difference between two missions. It implies \lopt{keep}.
+\item[\lopt{diff-no-coord}] ~\\
+This is the same as \lopt{diff}, except that the coordinates (time, latitude and longitude) are not differenced, instead the first value is produced.
+\item[\lopt{diff1}] ~\\
+This is the same as \lopt{diff-no-coord}, except that in ascii printouts passes are printed chronologically, one cycle at a time, instead of the usual multiple columns for passes. This cannot be used in combination with statistics options (\sopt{a}, \sopt{s}, or \sopt{l})
 \item[\opt{f}{force}] ~\\
 Force collinear track comparison, even when missions are not strictly considered collinear.
 \item[\optc{o}{output}{[FILENAME]}] ~\\
@@ -884,7 +888,7 @@ This command creates to following results to print to standard output:
 
 To illustrate the impact of the \sopt{r} option, we also present here the result of the following command:
 \begin{alltt}
-$ radscolin -S e2 -C 0,2 -P 915,1000,2 -R -8,42,28,48 -V lat,sla,swh \sopt{r}
+$ radscolin -S e2 -C 0,2 -P 915,1000,2 -R -8,42,28,48 -V lat,sla,swh -r
 \end{alltt}
 \script{sub/radscolin4-r.out}
 

@@ -245,7 +245,7 @@ write (*,1300)
 '      --diff                Compute difference between first and second half of selected passes'/ &
 '                            (implies --keep)'/ &
 '      --diff-no-coord       Same as --diff, but excluding coordinates from computing difference'/ &
-'      --diff1               Same as --diff-no-coord, writing one pass at a time, chronologically'/ &
+'      --diff1               Same as --diff-no-coord, writing one cycle at a time, chronologically'/ &
 '                            (cannot be combined with -o, -a, -s, or -l)' / &
 '  -f, --force               Force comparison, even when missions are not considered collinear'/ &
 '  -o, --output [FILENAME]   Create netCDF output by pass (default is ascii output to stdout).'/ &

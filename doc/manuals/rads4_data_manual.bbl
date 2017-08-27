@@ -1,4 +1,4 @@
-\begin{thebibliography}{86}
+\begin{thebibliography}{85}
 \providecommand{\natexlab}[1]{#1}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
@@ -16,15 +16,9 @@ Ablain, M., M.-I. Pujol, S.~Philipps, and N.~Picot (2008), Assessment of
   {Jason-2} and {Jason-1} orbit quality from {SSH} analysis, Ocean Science
   Topography Science Team Meeting, Nice, France, 10-12 November 2008.
 
-\bibitem[{\textit{Andersen and Knudsen}(2009{\natexlab{a}})}]{andersen2009}
-Andersen, O.~B., and P.~Knudsen (2009{\natexlab{a}}), {DNSC08} mean sea surface
-  and mean dynamic topography models, \textit{J.\ Geophys.\ Res.},
-  \textit{114}, C11001, \doi{10.1029/2008JC005179}.
-
-\bibitem[{\textit{Andersen and Knudsen}(2009{\natexlab{b}})}]{andersen2009a}
-Andersen, O.~B., and P.~Knudsen (2009{\natexlab{b}}), The {DNSC08BAT}
-  bathymetry developed from satellite altimetry, \textit{Tech. rep.}, Danish
-  National Spacecenter.
+\bibitem[{\textit{Andersen and Knudsen}(2009)}]{andersen2009a}
+Andersen, O.~B., and P.~Knudsen (2009), The {DNSC08BAT} bathymetry developed
+  from satellite altimetry, \textit{Tech. rep.}, Danish National Spacecenter.
 
 \bibitem[{\textit{Andersen and Knudsen}(2010)}]{andersen2010}
 Andersen, O.~B., and P.~Knudsen (2010), The {DTU10} mean sea surface and mean
