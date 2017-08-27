@@ -47,13 +47,14 @@ type :: info_
 	integer(twobyteint) :: satid, cycle
 	integer(fourbyteint) :: ndata
 end type
-type(info_), allocatable :: info(:)
+type(info_), allocatable :: info(:), info_backup(:)
 character(len=rads_strl) :: format_string
 
 ! Initialize RADS or issue help
 call synopsis
 call rads_set_options ('acdefklnNo::r::st ' // &
-	'cumul diff-no-coord diff dt: reject-on-nan:: extremes force keep mean minmax no-pass no-track output:: stddev step:')
+	'cumul diff diff-no-coord diff1 dt: reject-on-nan:: extremes force keep mean minmax no-pass no-track ' // &
+	'output:: stddev step:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 
@@ -62,7 +63,8 @@ if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 do i = 1,msat
 	if (S(i)%sat == '') exit
 	if (S(i)%nsel == 0) call rads_parse_varlist (S(i), 'sla')
-	if (S(i)%nsel /= S(1)%nsel) call rads_exit ('Unequal amount of variables on sel= for different satellites')
+	if (S(i)%nsel /= S(1)%nsel) call rads_exit ('Unequal amount of variables requested for different missions')
+	if (S(i)%cycles(3) /= S(1)%cycles(3)) call rads_exit ('Cycle step size should be the same for all missions')
 	ntrx = ntrx + (S(i)%cycles(2) - S(i)%cycles(1)) / S(i)%cycles(3) + 1
 	dt = max(dt,S(i)%dt1hz)
 	nsat = i
@@ -108,6 +110,9 @@ do i = 1,rads_nopt
 	case ('diff-no-coord')
 		out_diff = 2
 		keep = .true.
+	case ('diff1')
+		out_diff = 3
+		keep = .true.
 	case ('d', 'no-pass')
 		out_data = .false.
 	case ('t', 'no-track')
@@ -134,25 +139,41 @@ enddo
 if (.not.out_cumul) then
 	! Continue
 else if (.not.ascii) then
-	call rads_message ('--cumul cannot be used together with -o or --output')
-	stop
+	call rads_exit ('--cumul cannot be used together with -o or --output')
 else if  (out_diff == 0 .and. reject /= 0) then
-	call rads_message ('--cumul requires --diff or -r')
-	stop
+	call rads_exit ('--cumul requires --diff or -r')
+endif
+
+! --diff1 not allowed together with --output, -a, -s, -l
+if (out_diff /= 3) then
+	! Continue
+else if (.not.ascii) then
+	call rads_exit ('--diff1 cannot be used together with -o or --output')
+else if (out_mean .or. out_sdev .or. out_extr) then
+	call rads_exit ('--diff1 cannot be used together with statistics (-a, -s, or -l)')
 endif
 
 ! Allocate data arrays
 nbins = nint(S(1)%phase%pass_seconds/dt * 0.6d0) ! Number of bins on either side of equator (20% margin)
 allocate (data(ntrx+4,nsel,-nbins:nbins), mask(ntrx+4,-nbins:nbins), nr_in_bin(-nbins:nbins), &
-	idx(-nbins:nbins), stat(ntrx+4,nsel), cumul_stat(ntrx+4,nsel), info(ntrx+4))
+	idx(-nbins:nbins), stat(ntrx+4,nsel), cumul_stat(ntrx+4,nsel), info(ntrx+4), info_backup(ntrx+4))
 
 forall (i=-nbins:nbins)	idx(i) = i
 cumul_stat = stat_ (0, 0d0, 0d0)
 
-! Read one pass for each satellites at a time
-do pass = S(1)%passes(1), S(1)%passes(2), S(1)%passes(3)
-	call process_pass
-enddo
+if (out_diff == 3) then
+	! Read one pass for collinear cycles across missions
+	do i = 0, S(1)%cycles(2)-S(1)%cycles(1), S(1)%cycles(3)
+		do pass = S(1)%passes(1), S(1)%passes(2), S(1)%passes(3)
+			call process_pass (S(:)%cycles(1)+i, S(:)%cycles(1)+i, 1)
+		enddo
+	enddo
+else
+	! Read one pass for all cycles and missions at a time
+	do pass = S(1)%passes(1), S(1)%passes(2), S(1)%passes(3)
+		call process_pass (S(:)%cycles(1), S(:)%cycles(2), S(1)%cycles(3))
+	enddo
+endif
 
 ! Write out cumulative stats, if requested
 if (out_cumul) then
@@ -166,7 +187,7 @@ endif
 call rads_end (S)
 
 ! Deallocate data arrays
-deallocate (data, mask, nr_in_bin, idx, stat, info)
+deallocate (data, mask, nr_in_bin, idx, stat, info, info_backup)
 
 contains
 
@@ -224,6 +245,8 @@ write (*,1300)
 '      --diff                Compute difference between first and second half of selected passes'/ &
 '                            (implies --keep)'/ &
 '      --diff-no-coord       Same as --diff, but excluding coordinates from computing difference'/ &
+'      --diff1               Same as --diff-no-coord, writing one pass at a time, chronologically'/ &
+'                            (cannot be combined with -o, -a, -s, or -l)' / &
 '  -f, --force               Force comparison, even when missions are not considered collinear'/ &
 '  -o, --output [FILENAME]   Create netCDF output by pass (default is ascii output to stdout).'/ &
 '                            Optionally specify FILENAME including "#", to be replaced by the pass'/ &
@@ -234,7 +257,8 @@ end subroutine synopsis
 !***********************************************************************
 ! Process the data for a single pass
 
-subroutine process_pass
+subroutine process_pass (cycle_start, cycle_stop, cycle_step)
+integer(fourbyteint) :: cycle_start(:), cycle_stop(:), cycle_step
 real(eightbytereal), allocatable :: temp(:)
 integer, allocatable :: bin(:)
 integer :: i, j, j0, j1, k, m, ndata
@@ -250,7 +274,7 @@ ndata = 0
 
 ! Read in data
 do m = 1,nsat
-	do cycle = S(m)%cycles(1), S(m)%cycles(2), S(m)%cycles(3)
+	do cycle = cycle_start(m), cycle_stop(m), cycle_step
 		call rads_open_pass (S(m), P, cycle, pass)
 		if (force) then
 			! Skip the next check, do collinear anyway
@@ -292,7 +316,7 @@ if (out_diff > 0) then
 	ntrx = ntrx / 2
 	do i = 1,ntrx
 		do j = 1,nsel
-			if (out_diff == 2 .and. &
+			if (out_diff < 2 .or. &
 				S(nsat)%sel(j)%info%datatype < rads_type_time) data(i,j,:) = data(i,j,:) - data(i+ntrx,j,:)
 		enddo
 		mask(i,:) = mask(i,:) .or. mask(i+ntrx,:)
@@ -302,7 +326,11 @@ if (out_diff > 0) then
 	enddo
 endif
 
+! Skip if there are no tracks selected
+if (ntrx == 0) return
+
 ! Specify the columns for statistics
+info_backup = info
 ntrx1 = ntrx + 1
 ntrx2 = ntrx + 2
 ntrx3 = ntrx + 3
@@ -531,8 +559,8 @@ if (first .or. out_track) then
 	endif
 	if (out_diff > 0 .and. out_data) then
 		write (*,618)
-		write (*,610) info(ntrx+3:2*ntrx+2)%sat
-		write (*,615) info(ntrx+3:2*ntrx+2)%cycle
+		write (*,610) info_backup(ntrx+3:2*ntrx+2)%sat
+		write (*,615) info_backup(ntrx+3:2*ntrx+2)%cycle
 	endif
 
 	! Describe variables
@@ -557,11 +585,11 @@ if (ncols == 0) then
 else if (ncols == 1) then
 	write (format_string,'("(a1,",a,",")') trim(S(nsat)%sel(1)%info%format)
 else
-	write (format_string,'("(a1,",a,",",i3,"(1x,",a,"),")') &
+	write (format_string,'("(a1,",a,",",i0,"(1x,",a,"),")') &
 		trim(S(nsat)%sel(1)%info%format),ncols-1,trim(S(nsat)%sel(1)%info%format)
 endif
 do i = 2,nsel
-	write (format_string(len_trim(format_string)+1:),'(i3,"(1x,",a,"),")') &
+	write (format_string(len_trim(format_string)+1:),'(i0,"(1x,",a,"),")') &
 		ncols,trim(S(nsat)%sel(i)%info%format)
 enddo
 format_string(len_trim(format_string)+1:) = '2i9,a)'
