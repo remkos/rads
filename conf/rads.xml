@@ -2426,7 +2426,7 @@ Global RADS configuration file
 	<compress>int1</compress>
 </var>
 
-<var name="qual_alt_rain_ice" field="2507" sat="g1 j1 j2 j3 n1 pn sa tx">
+<var name="qual_alt_rain_ice" field="2507" sat="3a 3b g1 j1 j2 j3 n1 pn sa tx">
 	<long_name>corruption of altimeter measurement (ice)</long_name>
 	<flag_values>no_ice ice</flag_values>
 	<plot_range>0 1</plot_range>
@@ -2439,7 +2439,7 @@ Global RADS configuration file
 	</if>
 </var>
 
-<var name="qual_rad_rain_ice" field="2508" sat="e1 e2 j1 j2 j3 n1 pn tx">
+<var name="qual_rad_rain_ice" field="2508" sat="3a 3b e1 e2 j1 j2 j3 n1 pn tx">
 	<long_name>corruption of radiometer measurement (rain or ice)</long_name>
 	<flag_values>ok rain_or_ice</flag_values>
 	<plot_range>0 1</plot_range>
@@ -2542,7 +2542,7 @@ Global RADS configuration file
 <var name="flags" field="2601 26">
 	<long_name>flag word</long_name>
 	<limits>65512 0</limits>
-	<limits sat="3a">65448 0</limits> <!--Temporary value, deselecting radiometer land flag-->
+	<limits sat="3a 3b">65448 0</limits> <!--Temporary value, deselecting radiometer land flag-->
 	<limits sat="c2">32 0</limits>
 	<limits sat="g1">65384 0</limits>
 	<limits sat="gs">51176 0</limits>
