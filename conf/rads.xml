@@ -3870,7 +3870,7 @@ Global RADS configuration file
 	<phase name="c">
 		<!--This may need to be modified-->
 		<mission>Geodetic Mission</mission>
-		<cycles>332 999</cycles>
+		<cycles>332 499</cycles>
 		<!--This is "real" cycle and pass, i.e. subcycle 332, pass 33-->
 		<repeat>367.84 9472</repeat>
 		<ref_pass>2017-07-11T11:00:37 336.37 332 33 50015</ref_pass>
