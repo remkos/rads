@@ -3868,12 +3868,18 @@ Global RADS configuration file
 		<start_time>2016-10-14</start_time>
 	</phase>
 	<phase name="c">
-		<!--This needs to be modified-->
+		<!--This may need to be modified-->
 		<mission>Geodetic Mission</mission>
-		<cycles>500 999 18.59</cycles>
-		<repeat>9.864011597 254</repeat>
-		<ref_pass>2017-07-11T09:08:46 4.57 500 31 50015</ref_pass>
-		<start_time>2017-07-10</start_time>
+		<cycles>332 999</cycles>
+		<!--This is "real" cycle and pass, i.e. subcycle 332, pass 33-->
+		<repeat>367.84 9472</repeat>
+		<ref_pass>2017-07-11T11:00:37 336.37 332 33 50015</ref_pass>
+		<start_time>2017-07-11</start_time>
+		<subcycles start="332">
+			434 434 434 434 332 434 434 434 332
+			434 434 434 434 332 434 434 434 332
+			434 434 434 434 332
+		</subcycles>
 	</phase>
 </if>
 

@@ -215,6 +215,18 @@ do
 		phasenm = 'b'
 	else if (S%sat == 'j2' .and. cyclenr > 327) then
 		phasenm = 'c'
+		! Redetermine subcycle numbering
+		r = (cyclenr - 500) * 254 + (passnr - 1)
+		q = (r/9472) * 23
+		r = modulo(r,9472)
+		q = q + (r/3702) * 9
+		r = modulo (r,3702)
+		q = q + (r/2068) * 5
+		r = modulo(r,2068)
+		q = q + (r/434)
+		r = modulo(r,434)
+		cyclenr = q + 332
+		passnr = r + 1
 	else if (S%sat == 'j2' .and. cyclenr > 304) then
 		phasenm = 'b'
 	else
