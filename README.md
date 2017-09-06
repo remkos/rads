@@ -28,10 +28,14 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 ## Version History
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 
+### v4.2.7 (7 Sep 2017)
+* Updates for Jason-2 Phase C ("tango")
+* Added definition of qual_alt_rain_ice and qual_rad_rain_ice to Sentinel-3.
+
 ### v4.2.6 (27 Aug 2017)
 * New features in radscolin: --diff-no-coord and --diff1.
 * Numerous updates for the generation of RADS data for Sentinel-3, Jason-2, and Jason-3.
-* New variables for moderns mean sea surfaces and tide models.
+* New variables for modern mean sea surfaces and tide models.
 * Updates to user and data manuals.
 
 ### v4.2.5 (6 Oct 2016)
