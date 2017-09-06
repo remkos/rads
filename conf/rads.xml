@@ -3873,7 +3873,7 @@ Global RADS configuration file
 		<cycles>332 499</cycles>
 		<!--This is "real" cycle and pass, i.e. subcycle 332, pass 33-->
 		<repeat>367.84 9472</repeat>
-		<ref_pass>2017-07-11T11:00:37 336.37 332 33 50015</ref_pass>
+		<ref_pass>2017-07-11T11:00:37 336.37 1 1</ref_pass>
 		<start_time>2017-07-11</start_time>
 		<subcycles start="332">
 			434 434 434 434 332 434 434 434 332
