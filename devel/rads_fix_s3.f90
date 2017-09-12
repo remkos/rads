@@ -69,7 +69,9 @@ do i = 1,rads_nopt
 	case ('mwr')
 		lmwr = .true.
 	case ('all')
-		lall = .true.
+		lall = .true.	! To later determine if --atten is to be used
+		lsig0 = .true.	! Use these two always
+		lwind = .true.
 	case ('range')
 		lrange = .true.
 	end select
@@ -104,8 +106,8 @@ write (*,1310)
 '  --tb                      Adjust brightness temperatures for apparent biases' / &
 '  --mwr                     Update radiometer wet parameters' / &
 '  --range                   Subtract 59.3 mm from Ku- and C-band ranges' / &
-'  --all                      < PB 2.19: --atten --sig0 --wind' / &
-'                            >= PB 2.19: --sig0')
+'  --all                     PB <  2.19: --atten --sig0 --wind' / &
+'                            PB >= 2.19: --sig0 --wind')
 stop
 end subroutine synopsis
 
@@ -122,19 +124,8 @@ integer(fourbyteint) :: i
 
 call log_pass (P)
 
-! Select meaning of --all based on processing baseline
-
 i = len_trim(P%original)
-if (.not.lall) then
-else if (P%original(i-5:i-1) < '06.08') then
-	latten = .true.
-	lsig0 = .true.
-	lwind = .true.
-else
-	latten = .false.
-	lsig0 = .true.
-	lwind = .false.
-endif
+if (lall) latten = (P%original(i-5:i-1) < '06.08')
 
 if (latten .or. lsig0 .or. lmwr .or. lwind) then
 	call rads_get_var (S, P, 'sig0_ku', sig0_ku, .true.)
