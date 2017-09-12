@@ -28,6 +28,9 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 ## Version History
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 
+### v4.2.8 (12 Sep 2017)
+* Fixed information on Jason-2 Phase C in rads.xml
+
 ### v4.2.7 (7 Sep 2017)
 * Updates for Jason-2 Phase C ("tango")
 * Added definition of qual_alt_rain_ice and qual_rad_rain_ice to Sentinel-3.

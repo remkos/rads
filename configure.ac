@@ -19,7 +19,7 @@
 # -----------------------------------------------------------------
 # Define and show package version
 # -----------------------------------------------------------------
-AC_INIT([RADS], [4.2.7], [remko.scharroo@eumetsat.int])
+AC_INIT([RADS], [4.2.8], [remko.scharroo@eumetsat.int])
 AC_PREREQ([2.67])
 AC_MSG_NOTICE([AC_PACKAGE_NAME, version AC_PACKAGE_VERSION])
 
