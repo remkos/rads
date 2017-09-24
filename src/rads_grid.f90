@@ -404,7 +404,7 @@ real(eightbytereal) :: grid_lininter
 ! using <grid_load>. Bi-linear interpolation is used whenever possible.
 !
 ! The location at which the grid is to be interpolated is given by
-! <x> and <y>. When the grid is geographical, the routine will attemp
+! <x> and <y>. When the grid is geographical, the routine will attempt
 ! to wrap <x> by a multiple of 360 degrees so that it is within the grid.
 !
 ! Upon exit, the function value grid_lininter will be the interpolated
