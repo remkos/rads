@@ -216,7 +216,7 @@ subroutine read_orf (sat, orf)
 character(len=3), intent(in) :: sat
 type(orfinfo), intent(inout) :: orf(:)
 character(len=320) :: line
-integer :: hash, mjd, yy, mm, dd, hh, mn, ios, npass
+integer :: hash, mjd, yy, mm, dd, hh, mn, ios, npass, orbitnr
 real(eightbytereal) :: ss, lon, lat
 
 ! Open the equator crossing table
@@ -250,9 +250,14 @@ npass = 1
 do
 	read (10,550,iostat=ios) line
 	if (ios /= 0) exit
-	read (line,600) yy,mm,dd,hh,mn,ss,orf(npass)%cycle,orf(npass)%pass,lon,lat
+	read (line(:23),601,iostat=ios) yy,mm,dd,hh,mn,ss
+	if (ios /= 0) exit
+	read (line(24:),*,iostat=ios) orf(npass)%cycle,orf(npass)%pass,orbitnr,lon,lat
+	if (ios /= 0) exit
+	! Convert date and time to seconds since 1-1-2000
 	call ymd2mjd(yy,mm,dd,mjd)
 	ss = (mjd-51544)*86400d0 + hh*3600d0 + mn*60d0 + ss
+	! Distinquish between rollover points (get starttime) and equator crossings (get eqtime and eqlon)
 	if (abs(lat) > 1) then
 		orf(npass)%starttime = ss
 	else
@@ -263,7 +268,7 @@ do
 enddo
 close (10)
 550 format (a)
-600 format (i4,4(1x,i2),1x,f6.3,1x,i3,1x,i5,6x,2(1x,f6.2))
+601 format (i4,4(1x,i2),1x,f6.3)
 
 end subroutine read_orf
 
