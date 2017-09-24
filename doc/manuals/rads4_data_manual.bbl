@@ -287,11 +287,12 @@ Mendes, V.~B., G.~Prates, L.~Santos, and R.~B. Langley (2000), An evaluation of
 Munk, W.~H., and G.~J.~F. MacDonald (1960), \textit{The Rotation of the Earth:
   A Geophysical Discussion}, Cambridge University Press, New York.
 
-\bibitem[{\textit{Pavlis et~al.}(2008)\textit{Pavlis, Holmes, Kenyon, and
-  Factor}}]{pavlis2008}
-Pavlis, N.~K., S.~A. Holmes, S.~C. Kenyon, and J.~K. Factor (2008), An {Earth}
-  gravitational model to degree 2160: {EGM2008}, presented at the 2008 General
-  Assembly of the European Geosciences Union, Vienna, Austria, April 13-18.
+\bibitem[{\textit{Pavlis et~al.}(2012)\textit{Pavlis, Holmes, Kenyon, and
+  Factor}}]{pavlis2012}
+Pavlis, N.~K., S.~A. Holmes, S.~C. Kenyon, and J.~K. Factor (2012), The
+  development and evaluation of the {Earth Gravitational Model} 2008
+  ({EGM2008}), \textit{J.\ Geophys.\ Res.}, \textit{117}, B04406,
+  \doi{10.1029/2011JB008916}.
 
 \bibitem[{\textit{Ponte and Ray}(2002)}]{ponte2002}
 Ponte, R.~M., and R.~D. Ray (2002), Atmospheric pressure corrections in geodesy

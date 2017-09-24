@@ -565,11 +565,13 @@ Another reference surface is the geoid (the theoretical mean sea surface in abse
 
 
 \begin{notes}
-\item Combined geoid and mean sea surface solution \citep{pavlis2008}..\textbf{The MSS EGM2008 model is slowly being removed from RADS4 as DTU15 and CNES/CLS 15 are much better alternatives.}\label{item:mss_egm2008}\label{item:geoid_egm2008}
+\item Combined geoid and mean sea surface solution \citep{pavlis2012}.
+\textbf{The MSS EGM2008 model is slowly being removed from RADS4 as DTU15 and CNES/CLS 15 are much better alternatives.}\label{item:mss_egm2008}\label{item:geoid_egm2008}
 \item Iteration of mean sea surface models at CNES/CLS from 2011, based on altimeter data from 1993 to 1999 \citep{schaeffer2012}.\label{item:mss_cnescls11}
 \item Latest iteration of mean sea surface models at CNES/CLS from 2015, based on altimeter data from 1993 to 2012 \citep{schaeffer2012}.\label{item:mss_cnescls15}
 \item The DTU13MSS is the penultimate release of the global high-resolution mean sea surface from DTU Space, which includes two major advances over DTU10MSS. First, the time series have been extended to 20 years from 17 years. Second, the DTU13MSS ingests Cryosat-2 SAR lead data in order to map the high latitude parts of the Arctic Ocean. In high-latitude regions a combination of joint ERS-1/ERS-2/ENVISAT and Cryosat-2 altimetry have been used. Also, the Jason-1 geodetic mission has been used for the DTU13MSS \citep{andersen2013a}. This is the default mean sea surface model and is used as reference for the sea level anomaly variable (\var{sla}).\label{item:mss_dtu13}
-\item The DTU15MSS is the latest state-of-the-art of the global high-resolution mean sea surface derived by DTU Space from satellite altimetry. The main improvement over DTU13 is the inclusion of four years of CryoSat-2 data, with a new treatment of orbit errors and ice classification \citep{stenseng2015}.\textbf{This model is slowly phased in into RADS4 and is intended to replace in the near future DTU13 as the default mean sea surface.}\label{item:mss_dtu15}
+\item The DTU15MSS is the latest state-of-the-art of the global high-resolution mean sea surface derived by DTU Space from satellite altimetry. The main improvement over DTU13 is the inclusion of four years of CryoSat-2 data, with a new treatment of orbit errors and ice classification \citep{stenseng2015}.
+\textbf{This model is slowly phased in into RADS4 and is intended to replace in the near future DTU13 as the default mean sea surface.}\label{item:mss_dtu15}
 \item The EIGEN-6C3stat geoid model has been generated in preparation for the final release of EIGEN-6C4. It was computed from a combination of LAGEOS, GRACE, and GOCE data, augmented with DTU13 surface gravity data to degree and order 1949 (corresponding to approximately 10 km spatial resolution). \citep{foerste2013,shako2014}. This is the default geoid model.\label{item:geoid_eigen6}
 \end{notes}
 
