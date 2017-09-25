@@ -48,7 +48,7 @@ character(len=1), intent(out) :: phasenm
 !  erspass : .TRUE. if the pass has changed
 !-----------------------------------------------------------------------
 logical :: new
-integer(fourbyteint) :: unit,freeunit,npass=0,pnt,olders=0,ios
+integer(fourbyteint) :: unit,npass=0,pnt,olders=0,ios
 integer(fourbyteint), parameter :: mpass=170000, mjd90=1826 ! Days from 1985 to 1990
 real(eightbytereal) :: mjd
 type :: passtable
@@ -69,7 +69,7 @@ if (ers == olders) then
 else
 	call parseenv ('${RADSROOT}/ext/reaper/', line)
 	write (line,610) trim(line), ers
-	unit = freeunit()
+	unit = getlun()
 	npass = 0
 	open (unit, file=line, status='old')
 	read (unit, *, iostat=ios) ! Skip header
