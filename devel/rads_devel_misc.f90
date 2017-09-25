@@ -17,7 +17,7 @@ use rads_misc
 character(len=3), intent(in) :: sat
 type(orfinfo), intent(inout) :: orf(:)
 character(len=320) :: line
-integer :: hash, mjd, yy, mm, dd, hh, mn, ios, npass, orbitnr
+integer :: hash, mjd, yy, mm, dd, hh, mn, ios, npass, orbitnr, unit
 real(eightbytereal) :: ss, lon, lat
 !
 ! This routine reads an ORF file for the given 3-letter satellite
@@ -38,7 +38,8 @@ case ('S3B')
 case default
 	stop 'Wrong satellite code'
 end select
-open (10, file=line, status='old')
+unit = getlun()
+open (unit, file=line, status='old')
 
 ! Initialise with dummy values
 
@@ -48,7 +49,7 @@ orf = orfinfo (-1, -1, nan, nan, nan)
 
 hash = 0
 do while (hash < 5)
-	read (10,550,iostat=ios) line
+	read (unit, 550, iostat=ios) line
 	if (ios /= 0) stop 'Premature end of file'
 	if (line(:1) == '#') hash = hash + 1
 enddo
@@ -57,7 +58,7 @@ enddo
 
 npass = 1
 do
-	read (10,550,iostat=ios) line
+	read (unit, 550, iostat=ios) line
 	if (ios /= 0) exit
 	read (line(:23),601,iostat=ios) yy,mm,dd,hh,mn,ss
 	if (ios /= 0) exit
@@ -75,7 +76,7 @@ do
 		npass=npass + 1
 	endif
 enddo
-close (10)
+close (unit)
 550 format (a)
 601 format (i4,4(1x,i2),1x,f6.3)
 
