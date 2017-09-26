@@ -101,12 +101,12 @@ end function nf90_inq_varid_warn
 ! Define dimension as a coordinate axis
 !
 ! SYNOPSIS
-subroutine nf90_def_axis (ncid, varnm, longname, units, nx, x0, x1, dimid, varid, xtype)
+subroutine nf90_def_axis (ncid, varnm, long_name, units, nx, x0, x1, dimid, varid, xtype)
 use netcdf
-character(len=*), intent(in) :: varnm,longname,units
-integer, intent(in) :: ncid,nx
+character(len=*), intent(in) :: varnm, long_name, units
+integer, intent(in) :: ncid, nx
 real(eightbytereal), intent(in) :: x0,x1
-integer, intent(out) :: dimid,varid
+integer, intent(out) :: dimid, varid
 integer, intent(in), optional :: xtype
 !
 ! This routine sets up a dimension and its associated variable in a netCDF
@@ -116,9 +116,9 @@ integer, intent(in), optional :: xtype
 ! To fill the coordinate array, use nf90_put_axis after closing the define
 ! stage.
 !
-! The string <longname> can either contain the 'long_name' attribute or
+! The string <long_name> can either contain the 'long_name' attribute or
 ! both the 'long_name' and 'units' attribute. In the latter case one can use,
-! for example, longname = 'height [m]' and units = '[]', which will make this
+! for example, long_name = 'height [m]' and units = '[]', which will make this
 ! routine extract the 'm' as unit.
 !
 ! When creating an 'unlimited' dimension, specify nx as nf90_unlimited (or 0).
@@ -126,7 +126,7 @@ integer, intent(in), optional :: xtype
 ! ARGUMENTS
 ! ncid     : NetCDF file ID
 ! varnm    : (short) variable name
-! longname : Longer description of coordinate variable
+! long_name: Longer description of coordinate variable
 ! units    : Units of the coordinate variable
 ! nx       : Number of elements in coordinate array (can be nf90_unlimited)
 ! x0, x1   : Start and end of array
@@ -136,6 +136,7 @@ integer, intent(in), optional :: xtype
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: i, j, node_offset = 0
 real(eightbytereal) :: dx, xrange(2)
+character(len=160) :: tmp_long_name, tmp_units
 
 ! Create dimension and variable for this axis
 call nfs(nf90_def_dim(ncid,varnm,abs(nx),dimid))
@@ -147,17 +148,30 @@ endif
 
 ! Add attributes
 if (units == '[]' .or. units == '()') then
-	i = index(longname,units(1:1))
-	j = index(longname,units(2:2))
+	i = index(long_name,units(1:1))
+	j = index(long_name,units(2:2))
 	if (i > 0) then
-		call nfs(nf90_put_att(ncid,varid,'long_name',longname(:i-2)))
-	else if (longname /= ' ') then
-		call nfs(nf90_put_att(ncid,varid,'long_name',trim(longname)))
+		tmp_long_name = long_name(:i-2)
+	else
+		tmp_long_name = long_name
 	endif
-	if (j > i+1) call nfs(nf90_put_att(ncid,varid,'units',longname(i+1:j-1)))
+	if (j > i+1) then
+		tmp_units = long_name(i+1:j-1)
+	else
+		tmp_units = ''
+	endif
 else
-	if (longname /= ' ') call nfs(nf90_put_att(ncid,varid,'long_name',trim(longname)))
-	if (units /= ' ') call nfs(nf90_put_att(ncid,varid,'units',trim(units)))
+	tmp_long_name = long_name
+	tmp_units = units
+endif
+if (tmp_long_name /= ' ') call nfs(nf90_put_att(ncid,varid,'long_name',trim(tmp_long_name)))
+if (tmp_units /= ' ') call nfs(nf90_put_att(ncid,varid,'units',trim(units)))
+if (index(tmp_units, 'degrees_east') > 0) then
+	call nfs(nf90_put_att(ncid,varid,'standard_name','longitude'))
+	call nfs(nf90_put_att(ncid,varid,'axis','X'))
+else if (index(tmp_units, 'degrees_north') > 0) then
+	call nfs(nf90_put_att(ncid,varid,'standard_name','latitude'))
+	call nfs(nf90_put_att(ncid,varid,'axis','Y'))
 endif
 
 ! Check if node_offset was set
