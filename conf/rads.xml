@@ -2521,17 +2521,17 @@ Global RADS configuration file
 	<long_name>surface type</long_name>
 	<flag_values>open_ocean unused enclosed_sea_or_lake land continental_ice</flag_values>
 	<data source="flags">surface_type</data>
-	<source>GSHHG 2.3.6 coastlines</source>
+	<source>GSHHG 2.3.7 coastlines</source>
 	<plot_range>0 4</plot_range>
-	<parameters>surface_type/landmask_GSHHG_2.3.6.nc</parameters>
+	<parameters>surface_type/landmask_GSHHG_2.3.7.nc</parameters>
 	<format>z1</format>
 	<compress>int1</compress>
 </var>
 
-<var name="surface_class" field="2518" sat="3a 3b">
+<var name="surface_class" field="2518">
 	<long_name>surface classification</long_name>
 	<flag_values>open_ocean land continental_water aquatic_vegetation continental_ice_snow floating_ice salted_basin</flag_values>
-	<parameters>surface_type/S3__SR_2_SURFAX_ver2b.nc</parameters>
+	<parameters>surface_type/SurfaceClassification_ver2c.nc</parameters>
 	<data>surface_class</data>
 	<plot_range>0 6</plot_range>
 	<format>z1</format>
