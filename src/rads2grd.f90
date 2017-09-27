@@ -270,16 +270,17 @@ integer(fourbyteint), intent(in) :: nvar
 integer(fourbyteint) :: ncid,varid(nvar*2+3),dimid(2),j,k
 real(fourbytereal), parameter :: nan = transfer (not(0_fourbyteint),0e0)
 character(len=rads_varl) :: ext
+character(len=1) :: axis(2) = (/ 'X', 'Y' /)
 
 call nfs (nf90_create(grid_name,nf90_write+nf90_nofill,ncid))
-call nfs (nf90_put_att (ncid, nf90_global, 'Conventions', 'CF-1.5'))
+call nfs (nf90_put_att (ncid, nf90_global, 'Conventions', 'CF-1.7'))
 call nfs (nf90_put_att(ncid,nf90_global,'title',grid_name))
 call nfs (nf90_put_att(ncid,nf90_global,'history',timestamp()//' UTC: '//S(1)%command))
 if (all(c)) call nfs (nf90_put_att(ncid,nf90_global,'node_offset',1))
 
 do k = 1,2
 	call nf90_def_axis(ncid,S(1)%sel(k)%name,S(1)%sel(k)%long_name,S(1)%sel(k)%info%units,n(k), &
-		lo(k),hi(k),dimid(k),varid(k))
+		lo(k),hi(k),dimid(k),varid(k),axis(k),S(1)%sel(k)%info%standard_name)
 enddo
 
 ext = ''
