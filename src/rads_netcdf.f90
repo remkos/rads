@@ -101,13 +101,13 @@ end function nf90_inq_varid_warn
 ! Define dimension as a coordinate axis
 !
 ! SYNOPSIS
-subroutine nf90_def_axis (ncid, varnm, long_name, units, nx, x0, x1, dimid, varid, xtype)
+subroutine nf90_def_axis (ncid, varnm, long_name, units, nx, x0, x1, dimid, varid, axis, standard_name)
 use netcdf
 character(len=*), intent(in) :: varnm, long_name, units
 integer, intent(in) :: ncid, nx
 real(eightbytereal), intent(in) :: x0,x1
 integer, intent(out) :: dimid, varid
-integer, intent(in), optional :: xtype
+character(len=*), intent(in), optional :: axis, standard_name
 !
 ! This routine sets up a dimension and its associated variable in a netCDF
 ! file. Supply variable name, long name, units, number of elements, and range.
@@ -121,7 +121,10 @@ integer, intent(in), optional :: xtype
 ! for example, long_name = 'height [m]' and units = '[]', which will make this
 ! routine extract the 'm' as unit.
 !
-! When creating an 'unlimited' dimension, specify nx as nf90_unlimited (or 0).
+! The optional strings <axis> and <standard_name> can be added to add these
+! additional attributes to the coordinate variable.
+!
+! When creating an 'unlimited' dimension, specify <nx> as nf90_unlimited (or 0).
 !
 ! ARGUMENTS
 ! ncid     : NetCDF file ID
@@ -132,47 +135,33 @@ integer, intent(in), optional :: xtype
 ! x0, x1   : Start and end of array
 ! dimid    : NetCDF dimension ID
 ! varid    : NetCDF variable ID
-! xtype    : Type of variable (optional, default = nf90_double)
+! axis     : (Optional) string for axis attribute
+! standard_name : (Optional) string for standard_name attribute
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: i, j, node_offset = 0
 real(eightbytereal) :: dx, xrange(2)
-character(len=160) :: tmp_long_name, tmp_units
 
 ! Create dimension and variable for this axis
 call nfs(nf90_def_dim(ncid,varnm,abs(nx),dimid))
-if (present(xtype)) then
-	call nfs(nf90_def_var(ncid,varnm,xtype,dimid,varid))
-else
-	call nfs(nf90_def_var(ncid,varnm,nf90_double,dimid,varid))
-endif
+call nfs(nf90_def_var(ncid,varnm,nf90_double,dimid,varid))
 
 ! Add attributes
 if (units == '[]' .or. units == '()') then
 	i = index(long_name,units(1:1))
 	j = index(long_name,units(2:2))
 	if (i > 0) then
-		tmp_long_name = long_name(:i-2)
-	else
-		tmp_long_name = long_name
+		call nfs(nf90_put_att(ncid,varid,'long_name',long_name(:i-2)))
+	else if (long_name /= ' ') then
+		call nfs(nf90_put_att(ncid,varid,'long_name',trim(long_name)))
 	endif
-	if (j > i+1) then
-		tmp_units = long_name(i+1:j-1)
-	else
-		tmp_units = ''
-	endif
+	if (j > i+1) call nfs(nf90_put_att(ncid,varid,'units',long_name(i+1:j-1)))
 else
-	tmp_long_name = long_name
-	tmp_units = units
+	if (long_name /= '') call nfs(nf90_put_att(ncid,varid,'long_name',trim(long_name)))
+	if (units /= '') call nfs(nf90_put_att(ncid,varid,'units',trim(units)))
 endif
-if (tmp_long_name /= ' ') call nfs(nf90_put_att(ncid,varid,'long_name',trim(tmp_long_name)))
-if (tmp_units /= ' ') call nfs(nf90_put_att(ncid,varid,'units',trim(units)))
-if (index(tmp_units, 'degrees_east') > 0) then
-	call nfs(nf90_put_att(ncid,varid,'standard_name','longitude'))
-	call nfs(nf90_put_att(ncid,varid,'axis','X'))
-else if (index(tmp_units, 'degrees_north') > 0) then
-	call nfs(nf90_put_att(ncid,varid,'standard_name','latitude'))
-	call nfs(nf90_put_att(ncid,varid,'axis','Y'))
-endif
+if (present(standard_name) .and. standard_name /= '') call nfs(nf90_put_att(ncid,varid, &
+	'standard_name', trim(standard_name)))
+if (present(axis) .and. axis /= '') call nfs(nf90_put_att(ncid,varid,'axis',trim(axis)))
 
 ! Check if node_offset was set
 i = nf90_get_att(ncid,nf90_global,'node_offset',node_offset)
