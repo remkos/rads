@@ -138,8 +138,7 @@ character(len=*), intent(in), optional :: axis, standard_name
 ! axis     : (Optional) string for axis attribute
 ! standard_name : (Optional) string for standard_name attribute
 !****-------------------------------------------------------------------
-integer(fourbyteint) :: i, j, node_offset = 0
-real(eightbytereal) :: dx, xrange(2)
+integer(fourbyteint) :: i, j
 
 ! Create dimension and variable for this axis
 call nfs(nf90_def_dim(ncid,varnm,abs(nx),dimid))
@@ -163,19 +162,8 @@ if (present(standard_name) .and. standard_name /= '') call nfs(nf90_put_att(ncid
 	'standard_name', trim(standard_name)))
 if (present(axis) .and. axis /= '') call nfs(nf90_put_att(ncid,varid,'axis',trim(axis)))
 
-! Check if node_offset was set
-i = nf90_get_att(ncid,nf90_global,'node_offset',node_offset)
-
-! If so, extend range by half a bin in both directions
-if (node_offset == 0) then
-	xrange(1) = x0; xrange(2) = x1
-else
-	dx = (x1-x0)/(nx-1)/2d0
-	xrange(1) = x0 - dx; xrange(2) = x1 + dx
-endif
-
 ! Add "actual_range" attribute
-call nfs(nf90_put_att(ncid,varid,'actual_range',xrange))
+call nfs(nf90_put_att(ncid,varid,'actual_range',(/x0,x1/)))
 end subroutine nf90_def_axis
 
 !****f* rads_netcdf/nf90_put_axis
@@ -200,14 +188,14 @@ integer, intent(in), optional :: len
 ! len     : Length of the dimension (optional, only needed for unlimited
 !           dimension)
 !****-------------------------------------------------------------------
-integer :: dimid(1), nx, node_offset=0, i
+integer :: dimid(1), nx, node_offset, i
 real(eightbytereal), allocatable :: x(:)
 real(eightbytereal) :: xrange(2)
 call nfs(nf90_inquire_variable(ncid,varid,dimids=dimid))
 call nfs(nf90_inquire_dimension(ncid,dimid(1),len=nx))
 if (nx == nf90_unlimited) nx = len
 call nfs(nf90_get_att(ncid,varid,'actual_range',xrange))
-i = nf90_get_att(ncid,nf90_global,'node_offset',node_offset)
+if (nf90_get_att(ncid,nf90_global,'node_offset',node_offset) /= nf90_noerr) node_offset = 0
 allocate(x(nx))
 !
 ! This kind of prolonged way of filling x() is to make sure that:
