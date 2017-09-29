@@ -53,7 +53,7 @@ character(len=26) :: date(3)
 character(len=15) :: newer_than = '00000000T000000'
 integer(fourbyteint), parameter :: mpass = 254 * 500
 real(eightbytereal), parameter :: sec2000 = 473299200d0
-integer(fourbyteint) :: i0, i, ncid1, nrec, ios, varid, in_max = huge(fourbyteint), nr_passes = 770, &
+integer(fourbyteint) :: i0, i, ncid1, nrec, ios, varid, in_max = huge(fourbyteint), &
 	nfile = 0, orbit_type, ipass = 1, ipass0 = 0
 real(eightbytereal), allocatable :: time(:), lat(:), lon(:)
 real(eightbytereal) :: last_time = 0
@@ -286,6 +286,10 @@ integer(onebyteint), parameter :: flag_values(0:8) = int((/0,1,2,3,4,5,6,7,8/), 
 
 cycle_number = orf(ipass0)%cycle
 pass_number = orf(ipass0)%pass
+
+absolute_pass_number = orf(ipass0)%abs_pass
+absolute_rev_number = absolute_pass_number / 2
+
 equator_time = orf(ipass0)%eqtime + sec2000
 equator_longitude = orf(ipass0)%eqlon
 ipass0 = ipass
@@ -371,11 +375,6 @@ if (nft(nf90_inq_varid(ncid1,'orbit_type_01',varid1))) then
 else
 	varid3 = 0	! This signals that there is no need to write a new orbit_type_01 variable
 endif
-
-! Determine absolute pass, rev, and equator crossing information
-
-absolute_pass_number = (cycle_number-1)*nr_passes+pass_number-54
-absolute_rev_number = absolute_pass_number / 2
 
 ! Overwrite some attributes and product name
 

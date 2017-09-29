@@ -4,7 +4,7 @@ use typesizes
 ! Struct to store the records from ORF file
 
 type :: orfinfo
-	integer(fourbyteint) :: cycle, pass
+	integer(fourbyteint) :: cycle, pass, abs_pass
 	real(eightbytereal) :: starttime, eqtime, eqlon
 end type
 
@@ -17,7 +17,7 @@ use rads_misc
 character(len=3), intent(in) :: sat
 type(orfinfo), intent(inout) :: orf(:)
 character(len=320) :: line
-integer :: hash, mjd, yy, mm, dd, hh, mn, ios, npass, orbitnr, unit
+integer :: hash, mjd, yy, mm, dd, hh, mn, ios, npass, orbitnr, unit, nr_passes, abs_pass_offset
 real(eightbytereal) :: ss, lon, lat
 !
 ! This routine reads an ORF file for the given 3-letter satellite
@@ -30,11 +30,25 @@ real(eightbytereal) :: ss, lon, lat
 
 ! Open the equator crossing table
 
+nr_passes = 254
+abs_pass_offset = 0
 select case (sat)
+case ('JA1')
+	call parseenv ('${RADSROOT}/ext/j1/JA1_ORF.txt', line)
+case ('JA2')
+	call parseenv ('${RADSROOT}/ext/j2/JA2_ORF.txt', line)
+case ('JA3')
+	call parseenv ('${RADSROOT}/ext/j3/JA3_ORF.txt', line)
+case ('SRL')
+	call parseenv ('${RADSROOT}/ext/sa/SRL_ORF.txt', line)
+	nr_passes = 1024
 case ('S3A')
 	call parseenv ('${ALTIM}/data/ODR.SNTNL-3A/orf.txt', line)
+	nr_passes = 770
+	abs_pass_offset = -54
 case ('S3B')
 	call parseenv ('${ALTIM}/data/ODR.SNTNL-3B/orf.txt', line)
+	nr_passes = 770
 case default
 	stop 'Wrong satellite code'
 end select
@@ -43,7 +57,7 @@ open (unit, file=line, status='old')
 
 ! Initialise with dummy values
 
-orf = orfinfo (-1, -1, nan, nan, nan)
+orf = orfinfo (-1, -1, -1, nan, nan, nan)
 
 ! Skip until after the lines starting with #
 
@@ -63,6 +77,7 @@ do
 	read (line(:23),601,iostat=ios) yy,mm,dd,hh,mn,ss
 	if (ios /= 0) exit
 	read (line(24:),*,iostat=ios) orf(npass)%cycle,orf(npass)%pass,orbitnr,lon,lat
+	orf(npass)%abs_pass = (orf(npass)%cycle - 1) * nr_passes + orf(npass)%pass + abs_pass_offset
 	if (ios /= 0) exit
 	! Convert date and time to seconds since 1-1-2000
 	call ymd2mjd(yy,mm,dd,mjd)
