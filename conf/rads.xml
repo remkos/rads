@@ -166,6 +166,7 @@ Global RADS configuration file
 </var>
 <var name="time_rel_eq" field="102">
 	<long_name>time relative to equator crossing</long_name>
+	<standard_name>time</standard_name>
 	<units>s</units>
 	<data>time eqtime SUB</data>
 	<comment>UTC time relative to the equator crossing (negative is before, positive is after)</comment>
@@ -173,6 +174,7 @@ Global RADS configuration file
 </var>
 <var name="time_local_solar" field="103">
 	<long_name>local solar time of day</long_name>
+	<standard_name>time</standard_name>
 	<units>s</units>
 	<data>time lon 240 MUL ADD 86400 FMOD</data>
 	<comment>Local solar time (in seconds) since start of the solar day</comment>
@@ -180,6 +182,7 @@ Global RADS configuration file
 </var>
 <var name="time_ymdhms" field="104">
 	<long_name>time</long_name>
+	<standard_name>time</standard_name>
 	<units>yymmddhhmmss</units>
 	<data>time YMDHMS</data>
 	<comment>UTC time formatted as yymmddhhmmss</comment>
@@ -2521,17 +2524,17 @@ Global RADS configuration file
 	<long_name>surface type</long_name>
 	<flag_values>open_ocean unused enclosed_sea_or_lake land continental_ice</flag_values>
 	<data source="flags">surface_type</data>
-	<source>GSHHG 2.3.7 coastlines</source>
+	<source>GSHHG 2.3.6 coastlines</source>
 	<plot_range>0 4</plot_range>
-	<parameters>surface_type/landmask_GSHHG_2.3.7.nc</parameters>
+	<parameters>surface_type/landmask_GSHHG_2.3.6.nc</parameters>
 	<format>z1</format>
 	<compress>int1</compress>
 </var>
 
-<var name="surface_class" field="2518">
+<var name="surface_class" field="2518" sat="3a 3b">
 	<long_name>surface classification</long_name>
 	<flag_values>open_ocean land continental_water aquatic_vegetation continental_ice_snow floating_ice salted_basin</flag_values>
-	<parameters>surface_type/SurfaceClassification_ver2c.nc</parameters>
+	<parameters>surface_type/S3__SR_2_SURFAX_ver2b.nc</parameters>
 	<data>surface_class</data>
 	<plot_range>0 6</plot_range>
 	<format>z1</format>
