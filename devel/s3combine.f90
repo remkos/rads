@@ -79,7 +79,7 @@ endif
 read (*,'(a)',iostat=ios) filenm
 if (ios /= 0) stop
 i = index(filenm,'.SEN3')
-if (i == 0) stop 'Wrong filetype'
+if (i == 0) call rads_exit ('Wrong filetype')
 
 ! Get ORF file
 
@@ -128,7 +128,7 @@ do
 ! Read the time dimension
 
 	call nfs(nf90_inquire_dimension(ncid1,1,dimnm,nrec))
-	if (dimnm /= 'time_01') stop 'Error reading time dimension'
+	if (dimnm /= 'time_01') call rads_exit ('Error reading time dimension')
 	if (nrec > in_max) then
 		call rads_message ('Too many measurements in input file, skipped: '//filenm)
 		call nfs(nf90_close(ncid1))
@@ -260,11 +260,11 @@ subroutine which_pass (time)
 real(eightbytereal), intent(in) :: time
 do while (time < orf(ipass)%starttime)
 	ipass = ipass - 1
-	if (ipass < 1) stop 'Times are beyond limits of ORF file'
+	if (ipass < 1) call rads_exit ('Times are beyond limits of ORF file')
 enddo
 do while (time > orf(ipass+1)%starttime)
 	ipass = ipass + 1
-	if (orf(ipass)%cycle < 0) stop 'Times are beyond limits of ORF file'
+	if (orf(ipass)%cycle < 0) call rads_exit ('Times are beyond limits of ORF file')
 enddo
 end subroutine which_pass
 

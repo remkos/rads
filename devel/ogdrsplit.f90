@@ -29,16 +29,20 @@ program ogdrsplit
 use rads
 use rads_misc
 use rads_netcdf
-use typesizes
+use rads_devel_misc
 use netcdf
 
-character(len=rads_cmdl) :: orf, arg, filenm, dimnm, filetype, destdir
+! Struct for orbit info
+
+type(orfinfo) :: orf(200000)
+
+! General variables
+
+character(len=rads_cmdl) :: arg, filenm, dimnm, filetype, destdir
 character(len=rads_strl) :: exclude_list = ','
-integer(fourbyteint), parameter :: mpass = 254 * 500
 real(eightbytereal), parameter :: sec2000 = 473299200d0
-integer(fourbyteint) :: l, yy, mm, dd, hh, mn, cycle(mpass), pass(mpass), npass, ipass, i0, i, ncid1, &
-	nrec, nhz, hash, mjd, ios, varid, n_ignore = 0, nr_passes, max_dim = 2
-real(eightbytereal) :: ss, lon, lat, eqtime(mpass), eqlon(mpass), starttime(mpass)
+integer(fourbyteint) :: l, ipass, i0, i, ncid1, &
+	nrec, nhz, ios, varid, n_ignore = 0, max_dim = 2
 real(eightbytereal), allocatable :: time(:)
 
 ! Print description, if requested
@@ -61,61 +65,15 @@ endif
 read (*,550,iostat=ios) filenm
 if (ios /= 0) stop
 l = index(filenm,'_2P')
-if (l == 0) stop 'Wrong filetype'
+if (l == 0) call rads_exit ('Wrong filetype')
 do i = l-1,5,-1
 	if (filenm(i:i) == '_') exit
 enddo
 filetype = filenm(i-3:l+3)
 
-! Open the equator crossing table
+! Get ORF file
 
-nr_passes = 254
-select case (filetype(:3))
-case ('JA1')
-	call parseenv ('${RADSROOT}/ext/j1/JA1_ORF.txt', orf)
-case ('JA2')
-	call parseenv ('${RADSROOT}/ext/j2/JA2_ORF.txt', orf)
-case ('JA3')
-	call parseenv ('${RADSROOT}/ext/j3/JA3_ORF.txt', orf)
-case ('SRL')
-	call parseenv ('${RADSROOT}/ext/sa/SRL_ORF.txt', orf)
-	nr_passes = 1024
-case default
-	stop 'Wrong filetype'
-end select
-open (10, file=orf, status='old')
-
-! Skip until after the lines starting with #
-
-hash = 0
-do while (hash < 5)
-	read (10,550,iostat=ios) orf
-	if (ios /= 0) stop 'Premature end of file'
-	if (orf(:1) == '#') hash = hash + 1
-enddo
-
-! Read the equator crossing table
-
-npass = 1
-do
-	read (10,550,iostat=ios) orf
-	if (ios /= 0) exit
-	read (orf,600) yy,mm,dd,hh,mn,ss,cycle(npass),pass(npass),lon,lat
-	call ymd2mjd(yy,mm,dd,mjd)
-	ss = (mjd-51544)*86400d0 + hh*3600d0 + mn*60d0 + ss
-	if (abs(lat) > 1) then
-		starttime(npass) = ss
-	else
-		eqtime(npass) = ss
-		eqlon(npass) = lon
-		npass=npass + 1
-	endif
-enddo
-close (10)
-npass = npass - 1
-550 format (a)
-600 format (i4,4(1x,i2),1x,f6.3,1x,i3,1x,i5,6x,2(1x,f6.2))
-610 format ('Splitting : ',a)
+call read_orf (filetype, orf)
 
 ! Read options and destination directory
 
@@ -140,12 +98,12 @@ do
 ! Read the time dimension
 
 	call nfs(nf90_inquire_dimension(ncid1,1,dimnm,nrec))
-	if (dimnm /= 'time') stop 'Error reading time dimension'
+	if (dimnm /= 'time') call rads_exit ('Error reading time dimension')
 	if (nft(nf90_inquire_dimension(ncid1,2,dimnm,nhz))) then
 		! No second dimension in OGDR-GPS or OGDR-SSH files
 		nhz = 1
 	else
-		if (dimnm /= 'meas_ind') stop 'Error reading meas_ind dimension'
+		if (dimnm /= 'meas_ind') call rads_exit ('Error reading meas_ind dimension')
 	endif
 	allocate (time(nrec))
 	call nfs(nf90_inq_varid(ncid1,'time',varid))
@@ -154,14 +112,13 @@ do
 
 ! Check time with equator crossing table
 
-	if (time(nrec) > starttime(npass)) stop 'Times are beyond equator crossing table'
-
 	ipass = 1
 	i0 = 1
 	do i = 1,nrec
-		do while (time(i) > starttime(ipass+1))
+		do while (time(i) > orf(ipass+1)%starttime)
 			call copyfile(i0,i-1)
 			ipass = ipass + 1
+			if (orf(ipass)%cycle < 0) call rads_exit ('Times are beyond limits of ORF file')
 			i0 = i
 		enddo
 	enddo
@@ -174,6 +131,11 @@ do
 	read (*,550,iostat=ios) filenm
 	if (ios /= 0) exit
 enddo
+
+! Formats
+
+550 format (a)
+610 format ('Splitting : ',a)
 
 contains
 
@@ -203,13 +165,13 @@ call nfs(nf90_inquire(ncid1,nvariables=nvars,nattributes=natts))
 611 format (a,'/c',i3.3,'/',a,'P',i3.3,'_',i4.4,'.nc') ! SRL format
 620 format ('... Records : ',3i6,' : ',a,1x,a,' - ',a,a)
 
-write (outnm,605) trim(destdir),cycle(ipass)
+write (outnm,605) trim(destdir),orf(ipass)%cycle
 inquire (file=outnm,exist=exist)
 if (.not.exist) call system('mkdir -p '//outnm)
 if (filetype(:3) == 'SRL') then
-	write (outnm,611) trim(destdir),cycle(ipass),trim(filetype),cycle(ipass),pass(ipass)
+	write (outnm,611) trim(destdir),orf(ipass)%cycle,trim(filetype),orf(ipass)%cycle,orf(ipass)%pass
 else
-	write (outnm,610) trim(destdir),cycle(ipass),trim(filetype),cycle(ipass),pass(ipass)
+	write (outnm,610) trim(destdir),orf(ipass)%cycle,trim(filetype),orf(ipass)%cycle,orf(ipass)%pass
 endif
 inquire (file=outnm,exist=exist)
 
@@ -278,17 +240,17 @@ call strf1985f(date(2),time(rec1)+sec2000)
 write (*,620) rec0,rec1,nrec,trim(outnm),date(1:2)
 call strf1985f(date(1),time2(1)+sec2000)
 call strf1985f(date(2),time2(2)+sec2000)
-call strf1985f(date(3),eqtime(ipass)+sec2000)
+call strf1985f(date(3),orf(ipass)%eqtime+sec2000)
 
 allocate (darr1(nrec),darr2(nhz,nrec),iarr1(nrec),iarr2(nhz,nrec),iarr3(nhz))
 
 ! Overwrite cycle/pass attributes
 
-call nfs(nf90_put_att(ncid2,nf90_global,'cycle_number',cycle(ipass)))
-call nfs(nf90_put_att(ncid2,nf90_global,'pass_number',pass(ipass)))
-call nfs(nf90_put_att(ncid2,nf90_global,'absolute_pass_number',(cycle(ipass)-1)*nr_passes+pass(ipass)))
+call nfs(nf90_put_att(ncid2,nf90_global,'cycle_number',orf(ipass)%cycle))
+call nfs(nf90_put_att(ncid2,nf90_global,'pass_number',orf(ipass)%pass))
+call nfs(nf90_put_att(ncid2,nf90_global,'absolute_pass_number',orf(ipass)%abs_pass))
 call nfs(nf90_put_att(ncid2,nf90_global,'equator_time',date(3)))
-call nfs(nf90_put_att(ncid2,nf90_global,'equator_longitude',eqlon(ipass)))
+call nfs(nf90_put_att(ncid2,nf90_global,'equator_longitude',orf(ipass)%eqlon))
 call nfs(nf90_put_att(ncid2,nf90_global,'first_meas_time',date(1)))
 call nfs(nf90_put_att(ncid2,nf90_global,'last_meas_time',date(2)))
 call nfs(nf90_put_att(ncid2,nf90_global,'original',trim(filenm)))
