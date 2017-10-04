@@ -116,6 +116,10 @@ character(len=*), intent(in), optional :: axis, standard_name
 ! To fill the coordinate array, use nf90_put_axis after closing the define
 ! stage.
 !
+! To force pixel orientation, first add the global attribute node_offset = 1.
+! In case of pixel orientation the range <x0> to <x1> includes the outer edges
+! of the cells.
+!
 ! The string <long_name> can either contain the 'long_name' attribute or
 ! both the 'long_name' and 'units' attribute. In the latter case one can use,
 ! for example, long_name = 'height [m]' and units = '[]', which will make this
@@ -132,13 +136,14 @@ character(len=*), intent(in), optional :: axis, standard_name
 ! long_name: Longer description of coordinate variable
 ! units    : Units of the coordinate variable
 ! nx       : Number of elements in coordinate array (can be nf90_unlimited)
-! x0, x1   : Start and end of array
+! x0, x1   : Start and end of axis
 ! dimid    : NetCDF dimension ID
 ! varid    : NetCDF variable ID
 ! axis     : (Optional) string for axis attribute
 ! standard_name : (Optional) string for standard_name attribute
 !****-------------------------------------------------------------------
-integer(fourbyteint) :: i, j
+integer(fourbyteint) :: i, j, node_offset
+real(eightbytereal) :: dx = 0d0
 
 ! Create dimension and variable for this axis
 call nfs(nf90_def_dim(ncid,varnm,abs(nx),dimid))
@@ -162,8 +167,14 @@ if (present(standard_name) .and. standard_name /= '') call nfs(nf90_put_att(ncid
 	'standard_name', trim(standard_name)))
 if (present(axis) .and. axis /= '') call nfs(nf90_put_att(ncid,varid,'axis',trim(axis)))
 
-! Add "actual_range" attribute
-call nfs(nf90_put_att(ncid,varid,'actual_range',(/x0,x1/)))
+! Get global attribute 'node_offset' to see if we are pixel oriented
+if (nf90_get_att(ncid,nf90_global,'node_offset',node_offset) /= nf90_noerr) node_offset = 0
+
+! Add 'valid_min', 'valid_max' and 'grid_step' attributes for our CLS colleagues
+dx = (x1-x0) / (nx-1+node_offset)
+call nfs(nf90_put_att(ncid,varid,'valid_min',x0+node_offset*dx/2d0))
+call nfs(nf90_put_att(ncid,varid,'valid_max',x1-node_offset*dx/2d0))
+call nfs(nf90_put_att(ncid,varid,'grid_step',dx))
 end subroutine nf90_def_axis
 
 !****f* rads_netcdf/nf90_put_axis
@@ -188,14 +199,14 @@ integer, intent(in), optional :: len
 ! len     : Length of the dimension (optional, only needed for unlimited
 !           dimension)
 !****-------------------------------------------------------------------
-integer :: dimid(1), nx, node_offset, i
+integer :: dimid(1), nx, i
 real(eightbytereal), allocatable :: x(:)
-real(eightbytereal) :: xrange(2)
+real(eightbytereal) :: x0, x1
 call nfs(nf90_inquire_variable(ncid,varid,dimids=dimid))
 call nfs(nf90_inquire_dimension(ncid,dimid(1),len=nx))
 if (nx == nf90_unlimited) nx = len
-call nfs(nf90_get_att(ncid,varid,'actual_range',xrange))
-if (nf90_get_att(ncid,nf90_global,'node_offset',node_offset) /= nf90_noerr) node_offset = 0
+call nfs(nf90_get_att(ncid,varid,'valid_min',x0))
+call nfs(nf90_get_att(ncid,varid,'valid_max',x1))
 allocate(x(nx))
 !
 ! This kind of prolonged way of filling x() is to make sure that:
@@ -204,17 +215,11 @@ allocate(x(nx))
 ! (3) Intermediate values are as close as possible to intended numbers
 ! The alternative, to add multiples of dx is prone to increasing errors
 !
-if (node_offset == 0) then
-	x(1) = xrange(1)
-	do i = 2,nx-1
-		x(i) = (xrange(1)*(nx-i)+xrange(2)*(i-1))/(nx-1)
-	enddo
-	x(nx) = xrange(2)
-else
-	do i = 1,nx
-		x(i) = (xrange(1)*(nx-i+0.5d0)+xrange(2)*(i-0.5d0))/(nx)
-	enddo
-endif
+x(1) = x0
+do i = 2,nx-1
+	x(i) = (x0*(nx-i)+x1*(i-1))/(nx-1)
+enddo
+x(nx) = x1
 call nfs(nf90_put_var(ncid,varid,x))
 deallocate(x)
 end subroutine nf90_put_axis
