@@ -14,7 +14,7 @@
 #-----------------------------------------------------------------------
 
 include ../config.mk
-GRIB := $(shell pkg-config --libs grib_api_f90)
+GRIB := $(shell pkg-config --libs eccodes_f90 2>/dev/null || pkg-config --libs grib_api_f90 2>/dev/null)
 PLM = $(ALTIM)/src/geograph/p_lm.o
 
 # Programs to create
