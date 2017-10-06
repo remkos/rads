@@ -16,7 +16,7 @@
 include ../config.mk
 
 # Include file
-INCLUDES= config.f90
+CONFIG  = config.f90
 
 # Objects
 OBJS1   = rads_time.o rads_misc.o rads_grid.o rads_geo.o rads_math.o rads_netcdf.o xmlparse.o
@@ -25,6 +25,9 @@ OBJS    = $(OBJS1) rads.o rads3.o
 # .mod files created by the objects
 MODS1   = $(OBJS1:.o=.mod)
 MODS    = $(OBJS:.o=.mod)
+
+# Includes
+INCLUDES= $(DEVEL_FLAGS) -Iinclude $(MOD_FLAG). $(NETCDF_INC)
 
 # RADS library and linked libraries
 LIB     = librads.a
@@ -64,7 +67,7 @@ install:	all
 
 rads_math.o:	rads_misc.mod rads_time.mod
 rads_netcdf.o:	rads_misc.mod rads_netcdf_get_var.f90 include/nf90_message.f90 ../devel/nf90_message.f90
-rads.o:			$(MODS1) $(INCLUDES) include/rads_tpj.f90 ../devel/rads_tpj.f90
+rads.o:			$(MODS1) $(CONFIG) include/rads_tpj.f90 ../devel/rads_tpj.f90
 rads3.o:		rads.mod
 $(PROGS):		$(LIB)
 radsxogen:		spline.o
@@ -120,4 +123,4 @@ $(PROGS_L4):	%4:	%
 clean:
 	$(RM) $(LIB) $(PROGS) *.o *.mod
 spotless:	clean
-	$(RM) $(INCLUDES)
+	$(RM) $(CONFIG)
