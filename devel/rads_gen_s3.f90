@@ -312,6 +312,8 @@ do
 	call cpy_var ('ocean_tide_sol2_01 load_tide_sol2_01 SUB', 'tide_ocean_fes' // tide_fes_ver)
 	call cpy_var ('load_tide_sol1_01', 'tide_load_got410')
 	call cpy_var ('load_tide_sol2_01', 'tide_load_fes' // tide_fes_ver)
+	call cpy_var ('ocean_tide_eq_01', 'tide_equil')
+	call cpy_var ('ocean_tide_non_eq_01', 'tide_non_equil')
 	call cpy_var ('pole_tide_01', 'tide_pole')
 	call cpy_var ('sea_state_bias_01_ku', 'ssb_cls')
 	call cpy_var ('sea_state_bias_01_plrm_ku', 'ssb_cls_plrm')
