@@ -172,8 +172,8 @@ if (nf90_get_att(ncid,nf90_global,'node_offset',node_offset) /= nf90_noerr) node
 
 ! Add 'valid_min', 'valid_max' and 'grid_step' attributes for our CLS colleagues
 dx = (x1-x0) / (nx-1)
-call nfs(nf90_put_att(ncid,varid,'valid_min',x0+node_offset*dx/2d0))
-call nfs(nf90_put_att(ncid,varid,'valid_max',x1-node_offset*dx/2d0))
+call nfs(nf90_put_att(ncid,varid,'valid_min',x0))
+call nfs(nf90_put_att(ncid,varid,'valid_max',x1))
 call nfs(nf90_put_att(ncid,varid,'grid_step',dx))
 end subroutine nf90_def_axis
 
