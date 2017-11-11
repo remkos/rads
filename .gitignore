@@ -75,3 +75,4 @@ src/radsxogen
 src/radsxolist
 src/radsxostat
 rads_add_seaice
+rads_fix_tx

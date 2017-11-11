@@ -2600,15 +2600,19 @@ Global RADS configuration file
 	</flag_masks>
 </var>
 
-<var name="drange_ku" field="2701" sat="2a c2 e1 e2 gs n1 tx.r50">
+<var name="drange_ku" field="2701" sat="2a c2 e1 e2 gs n1 tx">
 	<long_name>Ku-band range bias</long_name>
 	<long_name sat="tx.r50">net instrument correction to Ku-band range</long_name>
+	<long_name sat="tx">Cal1 range correction</long_name>
 	<long_name sat="c2">Ku-band retracker range (relative to window delay)</long_name>
 	<units>m</units>
 	<data>drange_ku</data>
 	<compress>int2 1e-3</compress>
+	<compress sat="tx">int2 1e-4</compress>
 	<format>f6.3</format>
+	<format sat="tx">f7.4</format>
 	<comment>Range correction already added to range</comment>
+	<comment sat="tx">This correction was added back to the Ku-band range</comment>
 </var>
 <var name="drange_ku_retrk" sat="tx.r50">
 	<long_name>net instrument correction to retracked Ku-band range</long_name>
