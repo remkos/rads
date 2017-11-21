@@ -1196,15 +1196,15 @@ Global RADS configuration file
 </var>
 -->
 <var name="tide_ocean_got410" field="1222">
-	<long_name>GOT4.10c ocean tide</long_name>
-	<source>GOT4.10c</source>
+	<long_name>GOT4.10c ocean tide (extrapolated)</long_name>
+	<source>GOT4.10c (extrapolated)</source>
 	<units>m</units>
 	<limits>-5 5</limits>
 	<plot_range>-2 2</plot_range>
 	<data>tide_ocean_got410</data>
 	<format>f7.4</format>
 	<compress>int4 1e-4</compress>
-	<comment>Ocean tide variation including long-period equilibrium tides</comment>
+	<comment>Ocean tide variation including long-period equilibrium tides, extrapolated into the coast</comment>
 </var>
 <var name="tide_ocean_fes12" field="1223">
 	<long_name>FES2012 ocean tide</long_name>
