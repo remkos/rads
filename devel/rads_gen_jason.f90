@@ -327,15 +327,17 @@ do
 	call cpy_var ('solid_earth_tide', 'tide_solid')
 	if (gdre) then
 		call cpy_var ('ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got410')
-		call cpy_var ('ocean_tide_sol2 load_tide_sol2 SUB', 'tide_ocean_fes14')
+		call cpy_var ('ocean_tide_sol2 load_tide_sol2 SUB ocean_tide_non_equil ADD', 'tide_ocean_fes14')
 		call cpy_var ('load_tide_sol1', 'tide_load_got410')
 		call cpy_var ('load_tide_sol2', 'tide_load_fes14')
 	else
 		call cpy_var ('ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got48')
-		call cpy_var ('ocean_tide_sol2 load_tide_sol2 SUB', 'tide_ocean_fes04')
+		call cpy_var ('ocean_tide_sol2 load_tide_sol2 SUB ocean_tide_non_equil ADD', 'tide_ocean_fes04')
 		call cpy_var ('load_tide_sol1', 'tide_load_got48')
 		call cpy_var ('load_tide_sol2', 'tide_load_fes04')
 	endif
+	call cpy_var ('ocean_tide_equil', 'tide_equil')
+	call cpy_var ('ocean_tide_non_equil', 'tide_non_equil')
 	call cpy_var ('pole_tide', 'tide_pole')
 	call cpy_var ('sea_state_bias_ku', 'ssb_cls')
 	call cpy_var ('sea_state_bias_ku_mle3', 'ssb_cls_mle3', mle3)

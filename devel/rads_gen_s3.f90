@@ -309,7 +309,7 @@ do
 	endif
 	call cpy_var ('solid_earth_tide_01', 'tide_solid')
 	call cpy_var ('ocean_tide_sol1_01 load_tide_sol1_01 SUB', 'tide_ocean_got410')
-	call cpy_var ('ocean_tide_sol2_01 load_tide_sol2_01 SUB', 'tide_ocean_fes' // tide_fes_ver)
+	call cpy_var ('ocean_tide_sol2_01 load_tide_sol2_01 SUB ocean_tide_non_eq_01 ADD', 'tide_ocean_fes' // tide_fes_ver)
 	call cpy_var ('load_tide_sol1_01', 'tide_load_got410')
 	call cpy_var ('load_tide_sol2_01', 'tide_load_fes' // tide_fes_ver)
 	call cpy_var ('ocean_tide_eq_01', 'tide_equil')

@@ -1132,7 +1132,7 @@ Global RADS configuration file
 	<data>tide_ocean_got00</data>
 	<format>f7.4</format>
 	<compress>int4 1e-4</compress>
-	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
+	<comment>Ocean tide variation including long-period equilibrium tides</comment>
 </var>
 <var name="tide_ocean_fes04" field="1213">
 	<long_name>FES2004 ocean tide</long_name>
@@ -1143,7 +1143,7 @@ Global RADS configuration file
 	<data>tide_ocean_fes04</data>
 	<format>f7.4</format>
 	<compress>int4 1e-4</compress>
-	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
+	<comment>Ocean tide variation including long-period equilibrium and non-equilibrium tides</comment>
 </var>
 <var name="tide_ocean_webtide" field="1215">
 	<long_name>WebTide ocean tide</long_name>
@@ -1156,7 +1156,7 @@ Global RADS configuration file
 	<default>nan</default>
 	<format>f7.4</format>
 	<compress>int4 1e-4</compress>
-	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
+	<comment>Ocean tide variation including long-period equilibrium tides</comment>
 </var>
 <!--
 <var name="tide_ocean_got47" field="1217">
@@ -1168,7 +1168,7 @@ Global RADS configuration file
 	<data>tide_ocean_got47</data>
 	<format>f7.4</format>
 	<compress>int4 1e-4</compress>
-	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
+	<comment>Ocean tide variation including long-period equilibrium and non-equilibrium tides</comment>
 </var>
 -->
 <var name="tide_ocean_got48" field="1219">
@@ -1180,7 +1180,7 @@ Global RADS configuration file
 	<data>tide_ocean_got48</data>
 	<format>f7.4</format>
 	<compress>int4 1e-4</compress>
-	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
+	<comment>Ocean tide variation including long-period equilibrium tides</comment>
 </var>
 <!--
 <var name="tide_ocean_got49" field="1221">
@@ -1192,7 +1192,7 @@ Global RADS configuration file
 	<data>tide_ocean_got49</data>
 	<format>f7.4</format>
 	<compress>int4 1e-4</compress>
-	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
+	<comment>Ocean tide variation including long-period equilibrium and non-equilibrium tides</comment>
 </var>
 -->
 <var name="tide_ocean_got410" field="1222">
@@ -1204,7 +1204,7 @@ Global RADS configuration file
 	<data>tide_ocean_got410</data>
 	<format>f7.4</format>
 	<compress>int4 1e-4</compress>
-	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
+	<comment>Ocean tide variation including long-period equilibrium tides</comment>
 </var>
 <var name="tide_ocean_fes12" field="1223">
 	<long_name>FES2012 ocean tide</long_name>
@@ -1215,7 +1215,7 @@ Global RADS configuration file
 	<data>tide_ocean_fes12</data>
 	<format>f7.4</format>
 	<compress>int4 1e-4</compress>
-	<comment>Ocean tide variation including equilibrium and non-equilibrium tides</comment>
+	<comment>Ocean tide variation including long-period equilibrium and non-equilibrium tides</comment>
 </var>
 <var name="tide_ocean_fes14" field="1224">
 	<long_name>FES2014b ocean tide</long_name>
@@ -1226,7 +1226,7 @@ Global RADS configuration file
 	<data>tide_ocean_fes14</data>
 	<format>f7.4</format>
 	<compress>int4 1e-4</compress>
-	<comment>Ocean tide variation including equilibrium and non-equilibrium tides, extrapolated into the coast</comment>
+	<comment>Ocean tide variation including long-period equilibrium and non-equilibrium tides, extrapolated into the coast</comment>
 </var>
 <alias name="tide_ocean" field="12">tide_ocean_got410</alias>
 
@@ -3383,6 +3383,7 @@ Global RADS configuration file
 	<data>tide_equil</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
+	<comment>The long-period equilibrium ocean tide is included in the ocean tide values of the GOT and FES tide models</comment>
 </var>
 <var name="tide_non_equil" field="3902">
 	<long_name>long-period non-equilibrium ocean tide</long_name>
@@ -3391,6 +3392,7 @@ Global RADS configuration file
 	<data>tide_non_equil</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
+	<comment>The long-period non-equilibrium ocean tide results from the corresponding FES tide model and is included in the FES ocean tide value</comment>
 </var>
 <var name="tide_lunar_nodal">
 	<long_name>nodal lunar ocean tide</long_name>
