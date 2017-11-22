@@ -37,7 +37,7 @@ type(grid) :: info
 ! Command line arguments
 
 integer(fourbyteint) :: i,cyc,pass
-logical :: equator=.false.,range=.false.,doppler=.false.,range2=.false.,rate=.false.
+logical :: equator=.false.,range=.false.,doppler=.false.,range2=.false.,rate=.false.,newer=.false.
 character(len=rads_cmdl) :: name='',dir='',gridnm='',var_old='',arg
 real(eightbytereal) :: tbias=0d0,maxrms=1d30,loc=0d0,dt=1d0,chirp=0d0
 
@@ -49,7 +49,7 @@ integer(fourbyteint) :: ellipse=0,ios
 
 info%ntype = 0
 call synopsis ('--head')
-call rads_set_options (' model: name: dir: tbias:: rate loc-6 loc-7 equator range range2 doppler grid:: chirp: dt: all flag:')
+call rads_set_options (' model: name: dir: tbias:: rate loc-6 loc-7 equator range range2 doppler grid:: chirp: dt: all new flag:')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
@@ -90,6 +90,8 @@ do i = 1,rads_nopt
 		rate = .true.
 		tbias = 1d30
 		equator = .true.
+	case ('new')
+		newer = .true.
 	case ('name')
 		name = rads_opt(i)%arg
 	case ('dir')
@@ -205,7 +207,8 @@ write (*,1310)
 '  --grid NAME               Use named grid to add slope-induced Doppler'/ &
 '  --chirp F                 Specify chirp parameter other than default (ms)'/ &
 '  --dt DT                   Specify time interval for rate, etc (s), default: 1'/ &
-'  --all                     Same as: --tbias --rate --loc-6 --equator'// &
+'  --all                     Same as: --tbias --rate --loc-6 --equator'/ &
+'  --new                     Write out file only when altitude values have changed'// &
 'The orbit error flag can be set using the --flag option:'/ &
 '  --flag VAR,RMS            Specify variable of reference orbit and maximum rms with new orbit (cm)')
 stop
@@ -224,8 +227,6 @@ real(eightbytereal) :: utc(n), lat(n), lon(n), alt(n), alt_old(n), alt_rate(n), 
 	t, f, rms, xx, yy, zz, xx0, yy0, dhellips, equator_time, equator_lon
 logical :: asc, cryofix
 
-call log_pass (P)
-
 ! Determine if we need to fix Cryosat data
 ! Only if original data is LRM L2 and this is the first radsp_orbit run
 
@@ -240,6 +241,10 @@ if (rate .or. doppler .or. info%ntype > 0 .or. cryofix) kstep = 1
 
 call rads_get_var (S, P, 'time', utc, .true.)
 asc = (mod(pass,2) == 1)
+
+! If keeping only changes, load existing
+
+if (newer) call rads_get_var (S, P, S%sel(1), alt_old, .true.)
 
 ! If comparison with old orbit is requested, load it together with the flags.
 
@@ -379,8 +384,15 @@ if (equator) then
 endif
 if (rads_verbose >= 1) write (*,*) 'eq:', P%equator_time, P%equator_lon
 
+! Do we have significant changes?
+
+rms = sqrt(rms/n)
+if (rads_verbose >= 1) write (*,*) 'rms:', cyc, pass, rms
+if (newer .and. rms < 1d-4) return
+
 ! Update history and (re)define variables that may be new and will be written
 
+call log_pass (P)
 call rads_put_passinfo (S, P)
 call rads_put_history (S, P)
 if (loc /= 0d0) then
@@ -414,7 +426,6 @@ if (info%ntype > 0) call rads_put_var (S, P, 'drange_fm', drange_fm)
 ! If orbit difference RMS exceeds maximum, set all orbit error flags;
 ! otherwise: clear them.
 
-rms = sqrt(rms/n)
 if (var_old /= '') then
 	do i = 1,n
 		flag = nint(flags(i),twobyteint)
@@ -427,7 +438,6 @@ if (var_old /= '') then
 	enddo
 	call rads_put_var (S, P, 'flags', flags)
 endif
-if (rads_verbose >= 1) write (*,*) 'rms:', pass, rms
 
 call log_records (n)
 end subroutine process_pass
