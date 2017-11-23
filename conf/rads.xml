@@ -2532,10 +2532,10 @@ Global RADS configuration file
 	<compress>int1</compress>
 </var>
 
-<var name="surface_class" field="2518" sat="3a 3b">
+<var name="surface_class" field="2518">
 	<long_name>surface classification</long_name>
 	<flag_values>open_ocean land continental_water aquatic_vegetation continental_ice_snow floating_ice salted_basin</flag_values>
-	<parameters>surface_type/S3__SR_2_SURFAX_ver2b.nc</parameters>
+	<parameters>surface_type/SurfaceClassification_ver2c.nc</parameters>
 	<data>surface_class</data>
 	<plot_range>0 6</plot_range>
 	<format>z1</format>
