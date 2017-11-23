@@ -1511,6 +1511,7 @@ Global RADS configuration file
 	<compress>int4 1e-4</compress>
 </var>
 <alias name="geoid">geoid_egm2008</alias>
+<!--
 <var name="mss_egm2008" field="1611">
 	<long_name>EGM2008 mean sea surface height</long_name>
 	<source>EGM2008</source>
@@ -1520,7 +1521,6 @@ Global RADS configuration file
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
 </var>
-<!--
 <var name="mss_dnsc08" field="1612">
 	<long_name>DNSC08 mean sea surface height</long_name>
 	<source>DNSC08</source>
