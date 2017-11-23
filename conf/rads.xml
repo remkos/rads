@@ -1207,6 +1207,7 @@ Global RADS configuration file
 	<compress>int4 1e-4</compress>
 	<comment>Ocean tide variation including long-period equilibrium tides, extrapolated into the coast</comment>
 </var>
+<!--
 <var name="tide_ocean_fes12" field="1223">
 	<long_name>FES2012 ocean tide</long_name>
 	<source>FES2012</source>
@@ -1218,6 +1219,7 @@ Global RADS configuration file
 	<compress>int4 1e-4</compress>
 	<comment>Ocean tide variation including long-period equilibrium and non-equilibrium tides</comment>
 </var>
+-->
 <var name="tide_ocean_fes14" field="1224">
 	<long_name>FES2014b ocean tide</long_name>
 	<source>FES2014b (extrapolated)</source>
