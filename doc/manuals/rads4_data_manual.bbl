@@ -1,4 +1,4 @@
-\begin{thebibliography}{85}
+\begin{thebibliography}{86}
 \providecommand{\natexlab}[1]{#1}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
@@ -63,6 +63,12 @@ Carr{\`e}re, L., and F.~Lyard (2003), Modeling the barotropic response of the
   global ocean to atmospheric wind and pressure forcing - comparisons with
   observations, \textit{Geophys.\ Res.\ Lett.}, \textit{30}(6),
   \doi{10.1029/2002GL016473}.
+
+\bibitem[{\textit{Carr{\`e}re et~al.}(2016)\textit{Carr{\`e}re, Faug{\`e}re,
+  and Ablain}}]{carrere2016}
+Carr{\`e}re, L., Y.~Faug{\`e}re, and M.~Ablain (2016), Major improvement of
+  altimetry sea level estimations using pressure derived corrections based on
+  {ERA-interim} atmospheric reanalysis, \textit{Ocean Sci.\ Discuss.}
 
 \bibitem[{\textit{Cartwright and Edden}(1973)}]{cartwright1973}
 Cartwright, D.~E., and A.~C. Edden (1973), Corrected tables of tidal harmonics,

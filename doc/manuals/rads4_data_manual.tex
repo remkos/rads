@@ -207,7 +207,7 @@ The \file{rads.xml} configuration file spells out, in reverse polish notation (R
 \begin{verbatim}
 <data>
     alt range SUB dry_tropo SUB wet_tropo SUB iono SUB
-    inv_bar SUB tide_solid SUB tide_ocean SUB tide_load SUB
+    dac SUB tide_solid SUB tide_ocean SUB tide_load SUB
     tide_pole SUB ssb SUB mss SUB ref_frame_offset SUB
 </data>
 \end{verbatim}
@@ -418,6 +418,7 @@ $$ \mathrm{IB} = C (p - p_0) $$
 where $C$ is -9.948 mm/mbar, $p$ is the sea level pressure and $p_0$ is a reference pressure. Since the global ocean as a whole is incompressible, $p_0$ here stands for the global mean sea level pressure over oceans.
 
 However, there are also dynamics involved in this. For example, an ocean basin cannot instantly be suppressed as a whole because of rapidly increasing regional pressure. Also wind can play a role as well. Hence, the static correction is too simplistic. A more accurate model includes wind and ocean dynamics and is hence called a dynamic atmospheric correction (DAC). RADS, AVISO, and other altimeter datasets include the dynamic atmospheric correction produced by CLS Space Oceanography Division using the MOG2D model from Legos \citep{carrere2003,roblou2008a} and distributed by AVISO, with support from CNES.
+A more recent update of the MOG2D correction files is based on forcing by the ERA Interim atmospheric models. Those have been made available for the period 1991 through 2015 \citep{carrere2016}.
 
 Over inland waters, this correction should not be applied \citep{cretaux2006}.
 
@@ -425,10 +426,12 @@ Over inland waters, this correction should not be applied \citep{cretaux2006}.
 \var{inv_bar_static} & 1001 & static inverse baro corr & m & all & -1 1 & \ref{item:inv_bar_static} \\
 \var{inv_bar_global} & 1002 & global mean inv baro corr & m & all & -1 1 & \ref{item:inv_bar_global} \\
 \var{inv_bar_mog2d}  & 1003 & MOG2D dynamic atmospheric corr & m & all & -1 1 & \ref{item:inv_bar_mog2d} \\
+\var{inv_bar_mog2d_era}  & 1003 & MOG2D DAC from ERA-Int. & m & all & -1 1 & \ref{item:inv_bar_mog2d_era} \\
 \var{inv_bar_mok2d}  & 1004 & MOK2D dynamic atmospheric corr & m & all & -1 1 & \ref{item:inv_bar_mok2d} \\
 \var{inv_bar_mog2d_mean} & 1005 & local mean of MOG2D & m & all & -1 1 & \ref{item:inv_bar_mog2d_mean} \\
 \hline
-\var{inv_bar} & 10 & \alias{inv_bar_mog2d} \var{inv_bar_mok2d} & & all & & \ref{item:inv_bar} \\
+\var{inv_bar} & 10 & \alias{inv_bar_mog2d_era} \var{inv_bar_mog2d} & & all & & \ref{item:inv_bar} \\
+\var{dac} && ~~~~~ \var{inv_bar_mok2d} & & & & \ref{item:dac} \\
 \end{vartable}
 
 
@@ -436,9 +439,10 @@ Over inland waters, this correction should not be applied \citep{cretaux2006}.
 \item This correction is the simplification explained above.\label{item:inv_bar_static}
 \item For reference the global mean pressure, converted to an IB correction, $C p_0$, is provided.\label{item:inv_bar_global}
 \item The dynamic atmospheric correction model MOG2D includes the ocean dynamic response to wind and pressure forcing. It also accounts for the aliasing of the air tides as discussed in Section~\ref{var:dry_tropo}. MOG2D also comes with two latencies: (a) a few days, and thus features on the IGDR-derived products, and (b) a few weeks, and thus features on the GDR-derived products. For fast-delivery products there is generally no MOG2D correction (so MOK2D will be used), but the MOG2D field will be filled in as soon as the MOG2D maps have been distributed.\label{item:inv_bar_mog2d}
+\item The DAC based on forcing by the ECMWF ERA Interim atmospheric reanalysis model is available as \var{inv_bar_mog2d_era}. When chosing the detail DAC (either \var{dac} or \var{inv_bar}) this model is used for the years 1991 through 2015. After that \var{inv_bar_mog2d} or \var{inv_bar_mok2d}.\label{item:inv_bar_mog2d_era}
 \item Since the MOG2D only start in 1992, we have created a ``mock-up'' version of MOG2D (a simple linear variant of \var{inv_bar_static}) to match the mean of MOG2D as to not disturb continuity of the DAC prior to 1992.\label{item:inv_bar_mok2d}.
 \item For reference, the local long-term mean of the MOG2D correction is provided. This is the interpolation of a static grid computed as the average of all MOG2D maps over the period 1993-2009.\label{item:inv_bar_mog2d_mean}
-\item When using the \var{inv_bar} alias, \var{inv_bar_mog2d} is used while automatically defaulting to \var{inv_bar_mok2d}.\label{item:inv_bar}
+\item When using the \var{inv_bar} or \var{dac} alias, \var{inv_bar_mog2d_era} is used when available (1991-2015), otherwise \var{inv_bar_mog2d} is used, or automatically defaulting to \var{inv_bar_mok2d}.\label{item:inv_bar}\label{item:dac}
 \end{notes}
 
 \section{Solid earth and pole tide}
@@ -788,13 +792,16 @@ Variable & field & name & values & sat & note \\
 \var{flag_ocean}         & 2505 & bit 5: ocean/non-ocean flag & 0 = ocean, 1 = non-ocean & all & \\
 \hline
 \var{surface_type}       &      & surface type & 0 = open ocean, 2 = enclosed sea or lake, 3 = land, & all & \ref{item:surface_type} \\
-                         &      &              & ~~~~~4 = continental ice & all & \ref{item:surface_type} \\
+                         &      &              & ~~~~~4 = continental ice && \\
+\var{surface_class}      &      & surface class & 0 = open ocean, 1 = land, 2 = continental water, & all &  \ref{item:surface_class} \\
+                         &      &               & ~~~~~3 = aquatic vegetation, 4 = continental ice or snow, && \\
+                         &      &               & ~~~~~5 = floating ice, 6 = salted basin && \\
 \hline
 \end{tabular}
 \end{sideways}
 \end{table}
 
-\begin{notes}[Note:]
+\begin{notes}
 \item \label{item:surface_type} A new variable \var{surface_type} has been introduced to combine the original flag bits 2, 4, and 5 into a single variable. Generally, the flag mask determined by \var{flags_low} as discussed above will be set to only allow data over open ocean. Effort is made to get rid of this quirky method of screening the data and use the individual flags instead.
 
 The values of \var{surface_type} are based on the GSHHG coastline dataset \citep{wessel1996} that is distributed with the Generic Mapping Tools (GMT) plotting package \citep{wessel2013}. Version 2.3.4 of this data set was used to create land mask of ocean/land/lake indicators at 1 arcminute resolution. This grid was than queried to determine whether the satellite nadir point was over ocean, land, or lakes or enclosed seas. The additional information about continental ice came for the original GDR data. If this indicator was set in the GDR, \var{surface_type} was set to the value 4, and bits 4 and 5 of \var{flags} were both set to 1, irrespective of the aforementioned land mask.
@@ -802,9 +809,9 @@ The values of \var{surface_type} are based on the GSHHG coastline dataset \citep
 Experience has shown that for Antarctica only the grounded ice is marked as "continental ice" (4). The ice sheets are marked "land" (2) as the GSHHG coastline datasets marks the (minimum) extent of the ice sheets.
 
 The value of 1 of \var{surface_type} has been reserved for later use.
+
+\item \label{item:surface_class} A more elaborate version of \var{surface_type} is available as \var{surface_class}. It fas 7 different states and is based on a high-resolution mask built from MERIS and GlobCover data.
 \end{notes}
-
-
 
 \section{Bathymetry and topography}
 \label{var:topo}
