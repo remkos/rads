@@ -2527,9 +2527,9 @@ Global RADS configuration file
 	<long_name>surface type</long_name>
 	<flag_values>open_ocean unused enclosed_sea_or_lake land continental_ice</flag_values>
 	<data source="flags">surface_type</data>
-	<source>GSHHG 2.3.6 coastlines</source>
+	<source>GSHHG 2.3.7 coastlines</source>
 	<plot_range>0 4</plot_range>
-	<parameters>surface_type/landmask_GSHHG_2.3.6.nc</parameters>
+	<parameters>surface_type/landmask_GSHHG_2.3.7.nc</parameters>
 	<format>z1</format>
 	<compress>int1</compress>
 </var>
