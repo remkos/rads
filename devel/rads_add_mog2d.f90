@@ -48,36 +48,46 @@ use netcdf
 type(rads_sat) :: S
 type(rads_pass) :: P
 integer(fourbyteint) :: cyc, pass, j
-logical :: update = .false.
+logical :: update = .false., era = .false.
 
 ! Data variables
 
 character(rads_cmdl) :: path
+character(rads_varl) :: varnm
 integer(fourbyteint) :: hexold=-99999, first=1
 integer(fourbyteint), parameter :: nx=1441, ny=721
 real(eightbytereal), parameter :: x0=0d0, y0=-90d0, dx=0.25d0, dy=0.25d0
 real(eightbytereal) :: z0, dz
 integer(twobyteint) :: grids(nx,ny,2)
-type(rads_var), pointer :: var
 
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('u update all')
+call rads_set_options ('ue update era all')
 call rads_init (S)
-var => rads_varptr (S, 'inv_bar_mog2d')
 
 ! Check all options
 do j = 1,rads_nopt
 	select case (rads_opt(j)%opt)
 	case ('u', 'update')
 		update = .true.
+	case ('e', 'era')
+		era = .true.
 	end select
 enddo
 
-! Get template for path name
+! Get template for path name and set variable name
 
-call parseenv ('${ALTIM}/data/dac/%Y/dac_dif_%Y%m%d_%H.nc', path)
+if (era) then
+	call parseenv ('${RADSROOT}/ext/slcci/Products/DAC_ERA_Interim_20161115/%Y/dac_era_interim_', path)
+	varnm = 'inv_bar_mog2d_era'
+else
+	call parseenv ('${ALTIM}/data/dac/%Y/dac_dif_%Y%m%d_%H.nc', path)
+	varnm = 'inv_bar_mog2d'
+endif
+
+! Link variable
+
 
 ! Process all data files
 
@@ -103,6 +113,7 @@ write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
 '  --all                     (Has no effect)'/ &
+'  -e, --era                 Use the DAC forced by ERA Interim (1991-2015 only)'/ &
 '  -u, --update              Update files only when there are changes')
 stop
 end subroutine synopsis
@@ -181,7 +192,7 @@ enddo
 
 if (update) then
 	i = rads_verbose; rads_verbose = -1 ! Temporarily suspend warning
-	call rads_get_var (S, P, 'inv_bar_mog2d', tmp, .true.)
+	call rads_get_var (S, P, varnm, tmp, .true.)
 	rads_verbose = i
 	do i = 1,n
 		if (isnan_(tmp(i)) .and. isnan_(cor(i))) cycle
@@ -197,8 +208,8 @@ endif
 ! Store all data fields
 
 call rads_put_history (S, P)
-call rads_def_var (S, P, var)
-call rads_put_var (S, P, var, cor)
+call rads_def_var (S, P, varnm)
+call rads_put_var (S, P, varnm, cor)
 
 call log_records (n)
 end subroutine process_pass
@@ -216,6 +227,7 @@ integer(fourbyteint) ::	ncid,v_id,j,l,strf1985
 real(eightbytereal) :: time
 
 600 format ('(',a,')')
+610 format (i5.5,'_',i2.2,'.nc')
 1300 format (a,': ',a)
 
 get_mog2d = .true.
@@ -223,10 +235,13 @@ get_mog2d = .true.
 ! Determine file name
 
 l = strf1985(filenm, path, hex*21600)
+if (era) write (filenm(l+1:),610) hex/4+12784,modulo(hex,4)*6
 
 ! Open input file
 
-write (*,600,advance='no') filenm(l-21:l)
+l = len_trim(filenm)
+j = index(filenm, '/', .true.)
+write (*,600,advance='no') filenm(j+1:l)
 if (nft(nf90_open(filenm,nf90_nowrite,ncid))) then
 	write (*,1300) 'Error opening file',filenm(:l)
 	return

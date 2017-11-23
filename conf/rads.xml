@@ -55,7 +55,7 @@ Global RADS configuration file
 	<plot_range>-0.4 0.4</plot_range>
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
-	<data>alt range SUB dry_tropo SUB wet_tropo SUB iono SUB inv_bar SUB tide_solid SUB tide_ocean SUB tide_load SUB
+	<data>alt range SUB dry_tropo SUB wet_tropo SUB iono SUB dac SUB tide_solid SUB tide_ocean SUB tide_load SUB
 		tide_pole SUB ssb SUB mss SUB ref_frame_offset SUB</data>
 	<quality_flag>swh sig0 range_rms range_numval flags</quality_flag>
 	<quality_flag sat="3a 3b e1 e2 g1 j1 j2 j3 n1 tx" action="append">swh_rms</quality_flag>
@@ -72,7 +72,7 @@ Global RADS configuration file
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
 	<dimensions>2</dimensions>
-	<data>alt_20hz range_20hz SUB dry_tropo SUB wet_tropo SUB iono SUB inv_bar SUB tide_solid SUB tide_ocean SUB tide_load SUB
+	<data>alt_20hz range_20hz SUB dry_tropo SUB wet_tropo SUB iono SUB dac SUB tide_solid SUB tide_ocean SUB tide_load SUB
 		tide_pole SUB ssb SUB mss SUB ref_frame_offset SUB</data>
 	<quality_flag>swh sig0 range_rms range_numval flags peakiness</quality_flag>
 	<comment>Sea level determined from satellite 20-Hz altitude - 20-Hz range - all altimetric corrections</comment>
@@ -85,7 +85,7 @@ Global RADS configuration file
 	<plot_range>-0.4 0.4</plot_range>
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
-	<data>alt range_ku_mle3 SUB dry_tropo SUB wet_tropo SUB iono_alt_smooth_mle3 SUB inv_bar SUB tide_solid SUB tide_ocean SUB tide_load SUB
+	<data>alt range_ku_mle3 SUB dry_tropo SUB wet_tropo SUB iono_alt_smooth_mle3 SUB dac SUB tide_solid SUB tide_ocean SUB tide_load SUB
 		tide_pole SUB ssb_cls_mle3 SUB mss SUB ref_frame_offset_mle3 SUB</data>
 	<quality_flag>swh_ku_mle3 sig0_ku_mle3 range_rms_ku_mle3 range_numval_ku_mle3 flags_mle3 swh_rms_ku_mle3 sig0_rms_ku_mle3</quality_flag>
 	<comment>Sea level determined from satellite altitude - MLE3 range - all (MLE3) altimetric corrections</comment>
@@ -99,7 +99,7 @@ Global RADS configuration file
 	<plot_range sat="3a">-0.3 0.5</plot_range>
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
-	<data>alt range_ku_plrm SUB dry_tropo SUB wet_tropo SUB iono_alt_plrm SUB inv_bar SUB tide_solid SUB tide_ocean SUB tide_load SUB
+	<data>alt range_ku_plrm SUB dry_tropo SUB wet_tropo SUB iono_alt_plrm SUB dac SUB tide_solid SUB tide_ocean SUB tide_load SUB
 		tide_pole SUB ssb_cls_plrm SUB mss SUB ref_frame_offset_plrm SUB</data>
 	<quality_flag>swh_ku_plrm sig0_ku_plrm range_rms_ku_plrm range_numval_ku_plrm flags swh_rms_ku_plrm sig0_rms_ku_plrm attitude</quality_flag>
 	<comment>Sea level determined from satellite altitude - PLRM range - all (PLRM) altimetric corrections</comment>
@@ -1075,13 +1075,13 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Combined low and high frequency effect of atmospheric pressure and wind on sea surface height</comment>
 </var>
-<var name="inv_bar_mog2d_era" field="1004">
-	<long_name>MOG2D dynamic atmospheric correction</long_name>
-	<source>CNES/CNRS-LEGOS/CLS MOG2D-G HR barotropic model with ERA-Interim forcing</source>
+<var name="inv_bar_mog2d_era" field="1006">
+	<long_name>MOG2D dynamic atmospheric correction (ERA Interim forcing)</long_name>
+	<source>CNES/CNRS-LEGOS/CLS MOG2D-G HR barotropic model with ERA-Interim forcing, ESA SLCCI project</source>
 	<units>m</units>
 	<limits>-1 1</limits>
 	<plot_range>-0.4 0.6</plot_range>
-	<data>inv_bar_mog2d</data>
+	<data>inv_bar_mog2d_era</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>Combined low and high frequency effect of atmospheric pressure and wind on sea surface height</comment>
@@ -1109,7 +1109,8 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Long-term temporal mean of the MOG2D dynamic atmospheric correction at measurement location</comment>
 </var>
-<alias name="inv_bar" field="10">inv_bar_mog2d inv_bar_mok2d</alias>
+<alias name="inv_bar">inv_bar_mog2d_era inv_bar_mog2d inv_bar_mok2d</alias>
+<alias name="dac" field="10">inv_bar_mog2d_era inv_bar_mog2d inv_bar_mok2d</alias>
 
 <var name="tide_solid" field="1101 11">
 	<long_name>solid earth tide</long_name>
