@@ -1231,7 +1231,7 @@ Global RADS configuration file
 	<compress>int4 1e-4</compress>
 	<comment>Ocean tide variation including long-period equilibrium and non-equilibrium tides, extrapolated into the coast</comment>
 </var>
-<alias name="tide_ocean" field="12">tide_ocean_got410</alias>
+<alias name="tide_ocean" field="12">tide_ocean_fes14</alias>
 
 <var name="tide_load_got00" field="1307" sat="2a c2">
 	<long_name>GOT00.2 load tide</long_name>
@@ -1308,7 +1308,7 @@ Global RADS configuration file
 	<comment>Load tide variation to be added to ocean tide</comment>
 </var>
 
-<alias name="tide_load" field="13">tide_load_got410</alias>
+<alias name="tide_load" field="13">tide_load_fes14</alias>
 
 <var name="tide_pole" field="1401 14">
 	<long_name>pole tide</long_name>
@@ -1596,7 +1596,7 @@ Global RADS configuration file
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
 </var>
-<alias name="mss" field="16">mss_dtu13</alias>
+<alias name="mss" field="16">mss_dtu15</alias>
 
 <if sat="sa">
 	<var name="swh_ka" field="1701">
