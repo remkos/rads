@@ -3349,18 +3349,18 @@ Global RADS configuration file
 	<default>0</default>
 	<compress>int2 1e-4</compress>
 	<parameters>0</parameters>
-	<parameters sat="3a">  18   0  0  0 0</parameters>
+	<parameters sat="3a">  27   0  0  0 0</parameters>
 	<parameters sat="c2"> -34   0  0  0 0</parameters>
-	<parameters sat="e1">  22  -5  0  0 0</parameters>
-	<parameters sat="e2">  61  -5  0  0 0</parameters>
+	<parameters sat="e1">  21   0  0  0 0</parameters>
+	<parameters sat="e2">  62   0  0  0 0</parameters>
 	<parameters sat="gs">   0 -65  0  0 5</parameters>
-	<parameters sat="g1">  70   0  0  0 0</parameters>
-	<parameters sat="j1">  83   0  0  0 0</parameters>
-	<parameters sat="j2"> -18   0  0  0 0</parameters>
-	<parameters sat="j3"> -46   0  0  0 0</parameters>
-	<parameters sat="n1"> 449   0  0  0 0</parameters>
+	<parameters sat="g1">  73   0  0  0 0</parameters>
+	<parameters sat="j1">  85   0  0  0 0</parameters>
+	<parameters sat="j2"> -15   0  0  0 0</parameters>
+	<parameters sat="j3"> -44   0  0  0 0</parameters>
+	<parameters sat="n1"> 451   0  0  0 0</parameters>
 	<parameters sat="pn"> -15   0  0  0 0</parameters>
-	<parameters sat="sa"> -61   0  0  0 0</parameters>
+	<parameters sat="sa"> -58   0  0  0 0</parameters>
 </var>
 <var name="ref_frame_offset_mle3" field="3811" sat="j2 j3">
 	<long_name>reference frame offset (MLE3)</long_name>
