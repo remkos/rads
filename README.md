@@ -28,6 +28,13 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 ## Version History
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 
+### v4.2.9 (30 Nov 2017)
+* Replaced freeunit() by getlun()
+* Added standard_name and axis attributes when writing lat/lon grids
+* Added valid_min, valid_max, grid_step attributes to output grids. Removed actual_range.
+* Many changes to the developer code to produce the [Nov 2017 updates](https://github.com/remkos/rads/milestone/6?closed=1); see there for more information.
+* Changes to configuration file (rads.xml) in accordance with the Nov 2017 updates](https://github.com/remkos/rads/milestone/6?closed=1).
+
 ### v4.2.8 (12 Sep 2017)
 * Fixed information on Jason-2 Phase C in rads.xml
 
