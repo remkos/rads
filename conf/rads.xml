@@ -3700,7 +3700,7 @@ Global RADS configuration file
 	<xover_params>0.04 0.05</xover_params>
 	<phase name="a">
 		<mission>Multi-disciplinary Phase</mission>
-		<cycles>4 99</cycles>
+		<cycles>4 199</cycles>
 		<!--This is "real" cycle and pass, i.e. subcycle 14, pass 1-->
 		<ref_pass>2011-04-12T11:40:14 0.731073 2 1</ref_pass>
 		<repeat>368.239641 10688</repeat>
