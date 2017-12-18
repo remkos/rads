@@ -504,7 +504,7 @@ Global RADS configuration file
 	<data>alt_slcci</data>
 	<format>f12.4</format>
 	<compress>int4 1e-4 700e3</compress>
-	<compress sat="pn tx">int4 1e-4 1300e3</compress>
+	<compress sat="j1 j2 pn tx">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <alias name="alt" field="4" sat="2a tx.r50">alt_gdrd</alias>
