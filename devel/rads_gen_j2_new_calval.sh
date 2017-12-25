@@ -54,15 +54,18 @@ date											>  $log 2>&1
 omrk=${type}/.bookmark
 TZ=UTC touch -t ${d0}0000 $omrk
 find ${type}/c??? -name "JA2_*.nc" -a -newer $omrk | sort > $lst
-rads_gen_jason --ymd=$d0 $options < $lst			>> $log 2>&1
-
+if [ -s $lst ]; then
+	rads_gen_jason --ymd=$d0 $options < $lst			>> $log 2>&1
+fi
 rads_close_sandbox
 
 # Now process do the same again, and do the post-processing
 
 rads_open_sandbox j2.${type}
 find ${type}/c??? -name "JA2_*.nc" -a -newer $omrk | sort > $lst
-rads_gen_jason --ymd=$d0 $options < $lst			>> $log 2>&1
+if [ -s $lst ]; then
+	rads_gen_jason --ymd=$d0 $options < $lst			>> $log 2>&1
+fi
 
 # Do the patches to all data
 
