@@ -115,8 +115,8 @@ Cr{\'e}taux, J.-F., and C.~M. Birkett (2006), Lake studies from satellite radar
 \bibitem[{\textit{Desai et~al.}(2015)\textit{Desai, Wahr, and
   Beckley}}]{desai2015}
 Desai, S.~D., J.~M. Wahr, and B.~D. Beckley (2015), Revisiting the pole tide
-  for and from satellite altimetry, \textit{J.\ Geod.},
-  \doi{10.1007/s00190-015-0848-7}.
+  for and from satellite altimetry, \textit{J.\ Geod.}, \textit{89}(12),
+  1233--1243, \doi{10.1007/s00190-015-0848-7}.
 
 \bibitem[{\textit{Dumont et~al.}(2001)\textit{Dumont, Sicard, Stum, and
   Zanif{\'e}}}]{dumont2001}
@@ -317,7 +317,7 @@ Queffeulou, P. (2004), Long-term validation of wave height measurements from
 
 \bibitem[{\textit{Ray}(2013)}]{ray2013}
 Ray, R.~D. (2013), Precise comparisons of bottom-pressure and altimetric ocean
-  tides, \textit{J.\ Geophys.\ Res.}, \textit{118}(4570-4584),
+  tides, \textit{J.\ Geophys.\ Res.}, \textit{118}, 4570--4584,
   \doi{10.1002/jgrc.20336}.
 
 \bibitem[{\textit{Ray et~al.}(2011)\textit{Ray, Egbert, and
@@ -476,7 +476,7 @@ Wahr, J.~M. (1985), Deformation of the {Earth} induced by polar motion,
 Wahr, J.~M., R.~S. Nerem, and S.~V. Bettadpur (2015), The pole tide and its
   effect on {GRACE} time-variable gravity measurements: implications for the
   estimates of surface mass variations, \textit{J.\ Geophys.\ Res.},
-  \textit{120}, \doi{10.1002/2015JB011986}.
+  \textit{120}, 4597--4615, \doi{10.1002/2015JB011986}.
 
 \bibitem[{\textit{Wessel and Smith}(1996)}]{wessel1996}
 Wessel, P., and W.~H.~F. Smith (1996), A global, self-consistent, hierarchical,
