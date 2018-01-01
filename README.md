@@ -28,6 +28,10 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 ## Version History
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 
+### v4.2.10 (1 Jan 2018)
+* Copyright updated to 2018
+* Increased number of cycles for CryoSat-2
+
 ### v4.2.9 (30 Nov 2017)
 * Replaced freeunit() by getlun()
 * Added standard_name and axis attributes when writing lat/lon grids
