@@ -3349,7 +3349,7 @@ Global RADS configuration file
 	<default>0</default>
 	<compress>int2 1e-4</compress>
 	<parameters>0</parameters>
-	<parameters sat="3a">  27   0  0  0 0</parameters>
+	<parameters sat="3a">   4   0  0  0 0</parameters>
 	<parameters sat="c2"> -34   0  0  0 0</parameters>
 	<parameters sat="e1">  21   0  0  0 0</parameters>
 	<parameters sat="e2">  62   0  0  0 0</parameters>
