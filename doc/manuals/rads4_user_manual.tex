@@ -243,7 +243,7 @@ At the beginning \prog{rsync} will ask you to enter the password for \verb|radsu
 
 \input{rads4_sats}
 
-Apart from the satellite specific directories, there is a directory that contains configuration files, that help RADS to read the data files. These files are also installed in the same place, when installing the software, but you can download them from the rsync server as well. Be sure to keep these feels up to date.
+Apart from the satellite specific directories, there is a directory that contains configuration files, that help RADS to read the data files. These files are also installed in the same place, when installing the software, but you can download them from the rsync server as well. Be sure to keep these files up to date.
 \begin{verbatim}
 $ cd /rads/data
 $ rsync -avz --del radsuser@rads.tudelft.nl::rads/data/conf .
@@ -718,7 +718,7 @@ The program \prog{rads2grd4} is a quick-and-dirty gridding program for RADS data
 
 The boundaries of the grid are specified by the limits set in the RADS4 configuration files, or by the appropriate common command line arguments \lopt{limits}, lopt{lat}, or \lopt{lon}. The cell size is determined by the option \lopt{res}. Alternatively, the options \lopt{x} and \lopt{y} can be used to set both the range and interval along both coordinate axis of the grid. The use of grid-node oriented or cell oriented boundaries is controlled by the \sopt{-c} option. The required minimum number of measurements per cell can be specified with the \lopt{min} option. Cells with a number of points less than the required number will not be part of the output.
 
-The grid program not only grid sea level anomaly in longitude-latitude space, but any data field in any other space specified by the \sopt{V} (or \lopt{var}) option. For example, a non-parametric sea state bias model can be created by gridding the sea level anomalies in wind-wave space, in which case \sopt{wind_speed,swh,sla} is used.
+The grid program not only grids sea level anomaly in longitude-latitude space, but any data field in any other space specified by the \sopt{V} (or \lopt{var}) option. For example, a non-parametric sea state bias model can be created by gridding the sea level anomalies in wind-wave space, in which case \sopt{wind_speed,swh,sla} is used.
 
 Multiple variables can be gridded simultaneously on the same space. When gridding several variables at once, only records (measurements) for which every variable is valid (not NaN) will be included in the gridding process.
 
