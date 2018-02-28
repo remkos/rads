@@ -37,6 +37,11 @@ for type in ${types}; do
 	find $type/c??? -name "*.nc" -a -newer $mrk | sort > $lst
 	date											>  $log 2>&1
 	rads_gen_s3 $options --min-rec=6 --ymd=$d0 < $lst >> $log 2>&1
+
+# Add MOE orbit (for NRT and STC only)
+	case $type in
+		nr*|st*) rads_add_orbit  $options -Valt_cnes --dir=moe_doris	>> $log 2>&1
+	esac
 done
 
 # Make the remaining fixes
@@ -48,9 +53,6 @@ rads_add_ssb    $options --ssb=ssb_cls_plrm			>> $log 2>&1
 # Recompute dual freq iono and smooth it
 rads_add_dual   $options --recompute				>> $log 2>&1
 rads_add_dual   $options --recompute --ext=plrm		>> $log 2>&1
-# Add MOE (and POE) orbit
-rads_add_orbit  $options -Valt_cnes --dir=moe_doris >> $log 2>&1
-rads_add_orbit  $options -Valt_cnes --dir=poe		>> $log 2>&1
 # General geophysical corrections
 rads_add_common $options							>> $log 2>&1
 rads_add_mog2d  $options							>> $log 2>&1
