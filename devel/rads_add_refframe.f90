@@ -161,7 +161,7 @@ if (S%sat == 'j1' .and. S%phase%name == 'c') cor = cor + 5d-3
 
 if (S%sat == '3a') then
 	i = index(P%original, 'IPF-SM-2')
-	if (i > 0 .and. P%original(i+9:i+13) < '06.10') cor = cor + 23d-3
+	if (i > 0 .and. P%original(i+9:i+13) < '06.10') cor = cor + 25d-3
 endif
 
 ! Store all data fields.
