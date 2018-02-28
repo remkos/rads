@@ -28,18 +28,8 @@ lst=$SANDBOX/rads_gen_3a.lst
 
 date												>  $log 2>&1
 
-for tar in $*; do
-	case $tar in
-		*.txz) tar -xJf $tar; dir=`basename $tar .txz` ;;
-		*.tgz) tar -xzf $tar; dir=`basename $tar .tgz` ;;
-		*) dir=$tar ;;
-	esac
-	find $dir -name "*.nc" | sort > $lst
-	rads_gen_s3 $options --min-rec=6 < $lst			>> $log 2>&1
-	case $tar in
-		*.t?z) chmod -R u+w $dir; rm -rf $dir ;;
-	esac
-done
+find $dir -name "*.nc" | sort > $lst
+rads_gen_s3		$options --min-rec=6 < $lst			>> $log 2>&1
 
 # Make the remaining fixes
 rads_fix_s3     $options --all						>> $log 2>&1
@@ -50,9 +40,6 @@ rads_add_ssb    $options --ssb=ssb_cls_plrm			>> $log 2>&1
 # Recompute dual freq iono and smooth it
 rads_add_dual   $options --recompute				>> $log 2>&1
 rads_add_dual   $options --recompute --ext=plrm		>> $log 2>&1
-# Add MOE (and POE) orbit
-rads_add_orbit  $options -Valt_cnes --dir=moe_doris	>> $log 2>&1
-rads_add_orbit  $options -Valt_cnes --dir=poe		>> $log 2>&1
 # General geophysical corrections
 rads_add_common $options							>> $log 2>&1
 rads_add_mog2d  $options							>> $log 2>&1

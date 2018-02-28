@@ -33,16 +33,20 @@ type=$(basename $type)
 # Process "unadultered" files
 dir=3a.${type}0
 rads_open_sandbox $dir
-find $* -name "*.nc" | sort		> $lst
+
 date												>  $log 2>&1
+
+find $* -name "*.nc" | sort		> $lst
 rads_gen_s3 	$options --min-rec=6 < $lst			>> $log 2>&1
 rads_close_sandbox
 
 # Now process do the same again, and do the post-processing
 dir=3a.${type}1
 rads_open_sandbox $dir
-find $* -name "*.nc" | sort		> $lst
+
 date												>  $log 2>&1
+
+find $* -name "*.nc" | sort		> $lst
 rads_gen_s3 	$options --min-rec=6 < $lst			>> $log 2>&1
 
 # Make the remaining fixes
@@ -54,9 +58,6 @@ rads_add_ssb    $options --ssb=ssb_cls_plrm			>> $log 2>&1
 # Recompute dual freq iono and smooth it
 rads_add_dual   $options --recompute				>> $log 2>&1
 rads_add_dual   $options --recompute --ext=plrm		>> $log 2>&1
-# Add MOE (and POE) orbit
-rads_add_orbit  $options -Valt_cnes --dir=moe_doris	>> $log 2>&1
-rads_add_orbit  $options -Valt_cnes --dir=poe		>> $log 2>&1
 # General geophysical corrections
 rads_add_common $options							>> $log 2>&1
 rads_add_mog2d  $options							>> $log 2>&1
