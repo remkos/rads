@@ -219,7 +219,7 @@ Global RADS configuration file
 	<data>time_20hz</data>
 	<comment>UTC time of 20-Hz measurement. Attribute leap_second gives time of leap second if any occurs
 	during the data set</comment>
-	<format>f16.6</format>
+	<format>f17.6</format>
 	<dimensions>2</dimensions>
 </var>
 
@@ -3603,21 +3603,21 @@ Global RADS configuration file
 	<long_name>time of first measurement in pass</long_name>
 	<units>seconds since 1985-01-01</units>
 	<data>:first_meas_time</data>
-	<format>f16.6</format>
+	<format>f17.6</format>
 </var>
 
 <var name="last_meas_time" field="9902">
 	<long_name>time of last measurement in pass</long_name>
 	<units>seconds since 1985-01-01</units>
 	<data>:last_meas_time</data>
-	<format>f16.6</format>
+	<format>f17.6</format>
 </var>
 
 <var name="eqtime" field="9903">
 	<long_name>time of equator crossing</long_name>
 	<units>seconds since 1985-01-01</units>
 	<data>:equator_time</data>
-	<format>f16.6</format>
+	<format>f17.6</format>
 </var>
 
 <var name="eqlon" field="9904">
