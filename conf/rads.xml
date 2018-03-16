@@ -3700,7 +3700,7 @@ Global RADS configuration file
 		<mission>Exact Repeat Mission</mission>
 		<cycles>15 99</cycles><!--Need to update this value-->
 		<repeat>27 770</repeat>
-		<ref_pass>2019-06-13T21:57:00 0.627 15 1</ref_pass><!--Need to update this value-->
+		<ref_pass>2019-06-13T21:57:00 0.159 15 1</ref_pass><!--Need to update this value-->
 		<start_time>2019-06-13T21:57:00</start_time><!--Need to update this value-->
 	</phase>
 </if>
