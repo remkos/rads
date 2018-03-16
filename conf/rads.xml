@@ -3683,11 +3683,25 @@ Global RADS configuration file
 	<frequency>13.575 5.41</frequency>
 	<xover_params>0.05 0.05</xover_params><!--Need to verify-->
 	<phase name="a">
-		<mission>Exact Repeat Mission</mission>
-		<cycles>0 99</cycles>
+		<mission>Tandem Phase</mission>
+		<cycles>0 13</cycles><!--Need to update this value-->
 		<repeat>27 770</repeat>
-		<ref_pass>2017-10-01T00:00:00 0.624790 1 1</ref_pass><!--Need to update this value-->
-		<start_time>2017-10-01</start_time><!--Need to update this value-->
+		<ref_pass>2018-05-04T21:57:00 0.627 1 1</ref_pass><!--Need to update this value-->
+		<start_time>2018-04-25</start_time><!--Need to update this value-->
+	</phase>
+	<phase name="b">
+		<mission>Drift Phase</mission>
+		<cycles>14 14</cycles><!--Need to update this value-->
+		<repeat>27 770</repeat>
+		<ref_pass>2019-05-17T21:57:00 0.627 14 1</ref_pass><!--Need to update this value-->
+		<start_time>2019-05-17T21:57:00</start_time><!--Need to update this value-->
+	</phase>
+	<phase name="c">
+		<mission>Exact Repeat Mission</mission>
+		<cycles>15 99</cycles><!--Need to update this value-->
+		<repeat>27 770</repeat>
+		<ref_pass>2019-06-13T21:57:00 0.627 15 1</ref_pass><!--Need to update this value-->
+		<start_time>2019-06-13T21:57:00</start_time><!--Need to update this value-->
 	</phase>
 </if>
 
