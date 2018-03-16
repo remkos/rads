@@ -28,6 +28,13 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 ## Version History
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 
+### v4.2.11 (16 Mar 2018)
+* Updated information on Sentinel-3B orbit and mission phases.
+* Provide better "histogram limits" from radsvar.
+* Changed format for all time fields in 1985 seconds, so they do not overrun the maximum number of characters.
+* Changed the reference frame offset for Sentinel-3A from 27 mm to 2 mm.
+* Polishing of manuals
+
 ### v4.2.10 (1 Jan 2018)
 * Copyright updated to 2018
 * Increased number of cycles for CryoSat-2
