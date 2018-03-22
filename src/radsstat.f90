@@ -428,7 +428,7 @@ do j = 1,S%nsel
 	if (lstat == 2) then
 		write (*,621,advance='no') 2*j+j0+1,2*j+j0+2
 	else
-		write (*,622,advance='no') 4*j+j0+1,4*j+j0+2
+		write (*,622,advance='no') 4*j+j0-1,4*j+j0+2
 	endif
 	call rads_long_name_and_units(S%sel(j))
 	! Assemble format for statistics lines
