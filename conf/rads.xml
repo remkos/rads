@@ -2182,6 +2182,15 @@ Global RADS configuration file
 	<format>f7.0</format>
 	<compress>int2</compress>
 </var>
+<var name="topo_srtm15plus" field="2209">
+	<long_name>SRTM15_PLUS topography</long_name>
+	<source>SRTM15_PLUS V1</source>
+	<parameters>SRTM15/topo15_compressed.nc</parameters>
+	<units>m</units>
+	<data>topo_srtm15plus</data>
+	<format>f7.0</format>
+	<compress>int2</compress>
+</var>
 
 <alias name="topo" field="22">topo_srtm30plus</alias>
 
