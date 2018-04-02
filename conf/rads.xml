@@ -1597,6 +1597,16 @@ Global RADS configuration file
 	<compress>int4 1e-4</compress>
 </var>
 <alias name="mss" field="16">mss_dtu15</alias>
+<var name="geoid_xgm2016" field="1620">
+	<long_name>XGM2016 geoid height</long_name>
+	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
+	<source>XGM2016</source>
+	<parameters>XGM2016/XGM2016_Nmax720_MeanTide_global.nc</parameters>
+	<units>m</units>
+	<data>geoid_eigen6</data>
+	<format>f10.4</format>
+	<compress>int4 1e-4</compress>
+</var>
 
 <if sat="sa">
 	<var name="swh_ka" field="1701">
