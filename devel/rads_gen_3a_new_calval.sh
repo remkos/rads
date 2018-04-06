@@ -14,18 +14,25 @@
 # GNU Lesser General Public License for more details.
 #-----------------------------------------------------------------------
 #
-# Convert latest Sentinel-3A NRT files to RADS
+# Convert latest Sentinel-3A NRT and STC files to RADS
 #
-# The most recently updated data in the NRT directory
+# The most recently updated data in the NRT and STC directories
 # will be processed.
 #
 # syntax: rads_gen_3a_calval_new.sh
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
 
-# For the time being: only process NRT data
-types="${types:-nrt}"
-days=${days:-3}
+# Process NRT and STC data
+days=3
+types="nrt stc"
+while getopts "nsd:" arg; do
+	case $arg in
+		d) days=$OPTARG ;;
+		n) types=nrt ;;
+		s) types=stc ;;
+	esac
+done
 d0=`date -u -v -${days}d +%Y%m%d 2>&1` || d0=`date -u --date="${days} days ago" +%Y%m%d`
 
 for type in ${types}; do
