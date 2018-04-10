@@ -1603,7 +1603,7 @@ Global RADS configuration file
 	<source>XGM2016</source>
 	<parameters>XGM2016/XGM2016_Nmax720_MeanTide_global.nc</parameters>
 	<units>m</units>
-	<data>geoid_eigen6</data>
+	<data>geoid_xgm2016</data>
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
 </var>
