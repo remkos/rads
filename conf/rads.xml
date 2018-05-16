@@ -3702,18 +3702,18 @@ Global RADS configuration file
 	<frequency>13.575 5.41</frequency>
 	<xover_params>0.05 0.05</xover_params><!--Need to verify-->
 	<phase name="0">
-		<mission>Tandem Phase</mission>
-		<cycles>2 13</cycles><!--Need to update this value-->
-		<repeat>27 770</repeat>
+		<mission>Initial Drift Phase</mission>
+		<cycles>3 4</cycles><!--Need to update this value-->
+		<repeat>30.9996 882</repeat>
 		<ref_pass>2018-05-08T12:22:29 144.35 3 75 182</ref_pass><!--Need to update this value-->
-		<start_time>2018-05-02</start_time><!--Need to update this value-->
+		<start_time>2018-05-08</start_time><!--Need to update this value-->
 	</phase>
 	<phase name="a">
 		<mission>Tandem Phase</mission>
-		<cycles>5 13</cycles><!--Need to update this value-->
+		<cycles>9 13</cycles><!--Need to update this value-->
 		<repeat>27 770</repeat>
-		<ref_pass>2018-05-04T21:57:00 0.627 1 1</ref_pass><!--Need to update this value-->
-		<start_time>2018-05-25</start_time><!--Need to update this value-->
+		<ref_pass>2018-06-06T02:30:07 292.37 9 149 589</ref_pass><!--Need to update this value-->
+		<start_time>2018-05-24</start_time><!--Need to update this value-->
 	</phase>
 	<phase name="b">
 		<mission>Drift Phase</mission>
