@@ -118,9 +118,9 @@ real(eightbytereal) :: dhellips
 ! Initialise
 
 call synopsis
-call rads_gen_getopt ('3a', ' min-rec:')
+call rads_gen_getopt ('', ' min-rec:')
 call synopsis ('--head')
-call rads_init (S, sat)
+if (sat /= '') call rads_init (S, sat)
 
 !----------------------------------------------------------------------
 ! Read all file names from standard input
@@ -146,6 +146,25 @@ do
 		cycle
 	endif
 
+! Get the mission name and initialise RADS (if not done before)
+
+	call nfs(nf90_get_att(ncid,nf90_global,'mission_name',arg))
+	select case (arg)
+	case ('Sentinel 3A')
+		arg = '3a'
+	case ('Sentinel 3B')
+		arg = '3b'
+	case default
+		call log_string ('Error: wrong misson_name found in header', .true.)
+		cycle
+	end select
+	if (sat == '') then
+		call rads_init (S, arg)
+	else if (S%sat /= arg(:2)) then
+		call log_string ('Error: wrong misson_name found in header', .true.)
+		cycle
+	endif
+
 ! Read global attributes
 
 	call nfs(nf90_inq_dimid(ncid,'time_01',varid))
@@ -158,11 +177,6 @@ do
 		cycle
 	else if (nrec > mrec) then
 		call log_string ('Error: file skipped: too many measurements', .true.)
-		cycle
-	endif
-	call nfs(nf90_get_att(ncid,nf90_global,'mission_name',arg))
-	if (arg /= 'Sentinel 3A') then
-		call log_string ('Error: file skipped: wrong misson-name found in header', .true.)
 		cycle
 	endif
 
@@ -300,7 +314,7 @@ do
 	call cpy_var ('comp_wet_tropo_cor_01_ku', 'wet_tropo_comp')
 	call cpy_var ('iono_cor_alt_01_ku', 'iono_alt')
 	call cpy_var ('iono_cor_alt_01_plrm_ku', 'iono_alt_plrm')
-	call cpy_var ('iono_cor_gim_01_ku', 'iono_gim', .not.nrt)
+	call cpy_var ('iono_cor_gim_01_ku', 'iono_gim')
 	call cpy_var ('inv_bar_cor_01', 'inv_bar_static')
 	if (nrt) then
 		call cpy_var ('inv_bar_cor_01', 'inv_bar_mog2d')
