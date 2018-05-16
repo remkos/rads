@@ -125,7 +125,9 @@ do
 enddo
 
 ! Extend the list by approx. 2 weeks (200 orbits)
+! For computing steps into future, start with an equator crossing; it is more accurate
 
+if (abs(orf(norf)%lat) > min_lat) norf = norf - 1
 if (norf >= 5) then
 	diff%time = orf(norf)%time - orf(norf-4)%time
 	diff%lon = orf(norf)%lon - orf(norf-4)%lon
