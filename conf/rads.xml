@@ -3703,30 +3703,37 @@ Global RADS configuration file
 	<xover_params>0.05 0.05</xover_params><!--Need to verify-->
 	<phase name="0">
 		<mission>Initial Drift Phase</mission>
-		<cycles>3 4</cycles><!--Need to update this value-->
+		<cycles>3 3</cycles><!--Need to update this value-->
 		<repeat>30.9996 882</repeat>
 		<ref_pass>2018-05-08T12:22:29 144.35 3 75 182</ref_pass><!--Need to update this value-->
 		<start_time>2018-05-08</start_time><!--Need to update this value-->
 	</phase>
+	<phase name="1">
+		<mission>Initial Drift Phase</mission>
+		<cycles>7 8</cycles><!--Need to update this value-->
+		<repeat>31 884</repeat>
+		<ref_pass>2018-05-30T13:57:33 120.51 7 847 496</ref_pass><!--Need to update this value-->
+		<start_time>2018-05-29T04:16:32</start_time><!--Need to update this value-->
+	</phase>
 	<phase name="a">
 		<mission>Tandem Phase</mission>
-		<cycles>9 13</cycles><!--Need to update this value-->
+		<cycles>9 18</cycles><!--Need to update this value-->
 		<repeat>27 770</repeat>
 		<ref_pass>2018-06-06T02:30:07 292.37 9 149 589</ref_pass><!--Need to update this value-->
-		<start_time>2018-05-24</start_time><!--Need to update this value-->
+		<start_time>2018-06-06T02:30:07</start_time><!--Need to update this value-->
 	</phase>
 	<phase name="b">
 		<mission>Drift Phase</mission>
-		<cycles>14 14</cycles><!--Need to update this value-->
+		<cycles>19 19</cycles><!--Need to update this value-->
 		<repeat>27 770</repeat>
-		<ref_pass>2019-05-17T21:57:00 0.627 14 1</ref_pass><!--Need to update this value-->
+		<ref_pass>2019-05-17T21:57:00 0.627 19 1</ref_pass><!--Need to update this value-->
 		<start_time>2019-05-17T21:57:00</start_time><!--Need to update this value-->
 	</phase>
 	<phase name="c">
 		<mission>Exact Repeat Mission</mission>
-		<cycles>15 99</cycles><!--Need to update this value-->
+		<cycles>20 99</cycles><!--Need to update this value-->
 		<repeat>27 770</repeat>
-		<ref_pass>2019-06-13T21:57:00 0.159 15 1</ref_pass><!--Need to update this value-->
+		<ref_pass>2019-06-13T21:57:00 0.159 20 1</ref_pass><!--Need to update this value-->
 		<start_time>2019-06-13T21:57:00</start_time><!--Need to update this value-->
 	</phase>
 </if>
