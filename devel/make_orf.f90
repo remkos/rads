@@ -124,14 +124,14 @@ do
 	endif
 enddo
 
-! Extend the list by approx. 2 weeks (200 orbits)
+! Extend the list by approx. 2 weeks (250 orbits)
 ! For computing steps into future, start with an equator crossing; it is more accurate
 
 if (abs(orf(norf)%lat) > min_lat) norf = norf - 1
 if (norf >= 5) then
 	diff%time = orf(norf)%time - orf(norf-4)%time
 	diff%lon = orf(norf)%lon - orf(norf-4)%lon
-	do i = 1,800
+	do i = 1,1000
 		if (orf(norf-3)%time + diff%time > S%time%info%limits(2)) exit
 		norf = norf + 1
 		orf(norf)%time = orf(norf-4)%time + diff%time
@@ -152,7 +152,9 @@ write (*,600)
 ! Print out all the equator crossings and polar crossovers
 
 do i = 1,norf
-	call rads_time_to_cycle_pass (S, orf(i)%time + 100d0, cycle, pass)
+	! To allow for some sloppiness in the orbit scenario specified in the rads.xml file, add 1/8
+	! of an orbital revolution time to the time when retreiving the cycle and pass number
+	call rads_time_to_cycle_pass (S, orf(i)%time + 0.25d0 * S%phase%pass_seconds, cycle, pass)
 	date = strf1985f (orf(i)%time)
 	date(5:5) = '/'
 	date(8:8) = '/'
