@@ -24,8 +24,16 @@
 . rads_sandbox.sh
 
 # Process NRT/STC/NTC data
-types="${types:-nrt}"
 days=${days:-3}
+types="${types:-nrt}"
+while getopts "nsd:" arg; do
+	case $arg in
+		d) days=$OPTARG ;;
+		n) types=nrt ;;
+		s) types=stc ;;
+	esac
+done
+
 d0=`date -u -v -${days}d +%Y%m%d 2>&1` || d0=`date -u --date="${days} days ago" +%Y%m%d`
 
 for type in ${types}; do
