@@ -23,7 +23,7 @@ Global RADS configuration file
 	institution EUMETSAT / NOAA / TU Delft
 	source radar altimeter
 	references RADS Data Manual, Version 4.2 or later
-	featureType point
+	featureType trajectory
 	ellipsoid TOPEX
 </global_attributes>
 
