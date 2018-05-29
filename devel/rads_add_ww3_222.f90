@@ -289,20 +289,20 @@ do
 	call grib_get(gribid,'forecastTime',new(3))
 	if (all(new == old)) then
 		write (*,1300) 'Warning: skipping duplicate message in',fn(:l)
-	else
-		old = new
-		call grib_get(gribid,'values',tmp,status)
-		call grib_release(gribid)
-		if (status /= grib_success) exit
-		nt = nt + 1
-		k = 0
-		do iy = ny,1,-1
-			do ix = 1,nx
-				k = k + 1
-				grids(ix,iy,nt) = nint2(tmp(k)/dz)
-			enddo
-		enddo
+		nt = nt -1
 	endif
+	old = new
+	call grib_get(gribid,'values',tmp,status)
+	call grib_release(gribid)
+	if (status /= grib_success) exit
+	nt = nt + 1
+	k = 0
+	do iy = ny,1,-1
+		do ix = 1,nx
+			k = k + 1
+			grids(ix,iy,nt) = nint2(tmp(k)/dz)
+		enddo
+	enddo
 	call grib_new_from_file(fileid,gribid,status)
 	if (status /= grib_success) exit
 enddo
