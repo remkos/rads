@@ -204,6 +204,10 @@ do
 		cycle
 	endif
 
+! Set mission phase based on equator_time
+
+	call rads_set_phase (S, equator_time)
+
 ! Store relevant info
 
 	call rads_init_pass_struct (S, P)
