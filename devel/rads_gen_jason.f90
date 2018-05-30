@@ -95,7 +95,6 @@ use netcdf
 
 integer(fourbyteint) :: ios, i, j, q, r
 character(len=rads_cmdl) :: infile, arg
-character(len=1) :: phasenm = ''
 
 ! Header variables
 
@@ -195,10 +194,13 @@ do
 		cycle
 	endif
 
-! Update phase name if required
+! Update mission phase if required
 
-	if (S%sat == 'j1' .and. cyclenr > 374) then
-		phasenm = 'c'
+	call rads_set_phase (S, equator_time)
+
+! Use special conversion of cycle numbers for geodetic mission
+
+	if (S%sat == 'j1' .and. S%phase%name(1:1) == 'c') then
 		! Redetermine subcycle numbering
 		r = (cyclenr - 500) * 280 + (passnr - 1)
 		q = (r/10438) * 43
@@ -211,10 +213,7 @@ do
 		r = modulo(r,280)
 		cyclenr = q + 382
 		passnr = r + 1
-	else if (S%sat == 'j1' .and. cyclenr > 261) then
-		phasenm = 'b'
-	else if (S%sat == 'j2' .and. cyclenr > 327) then
-		phasenm = 'c'
+	else if (S%sat == 'j2' .and. S%phase%name(1:1) == 'c') then
 		! Redetermine subcycle numbering
 		r = (cyclenr - 500) * 254 + (passnr - 1)
 		q = (r/9472) * 23
@@ -227,12 +226,7 @@ do
 		r = modulo(r,434)
 		cyclenr = q + 332
 		passnr = r + 1
-	else if (S%sat == 'j2' .and. cyclenr > 304) then
-		phasenm = 'b'
-	else
-		phasenm = 'a'
 	endif
-	if (S%phase%name /= phasenm) S%phase => rads_get_phase (S, phasenm)
 
 ! Store relevant info
 
