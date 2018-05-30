@@ -3811,6 +3811,7 @@ Global RADS configuration file
 		<repeat>35.0 1002</repeat>
 		<ref_pass>1995-04-09T22:29:40 0.13 145 1</ref_pass>
 		<start_time>1995-03-24</start_time>
+		<end_time>1996-06-03</end_time>
 	</phase>
 </if>
 
@@ -3823,10 +3824,11 @@ Global RADS configuration file
 	<xover_params>0.05 0.05</xover_params>
 	<phase name="a">
 		<mission>Multi-disciplinary Phase</mission>
-		<cycles>0 200</cycles>
+		<cycles>0 169</cycles>
 		<repeat>35.0 1002</repeat>
 		<ref_pass>1995-05-15T22:29:30 0.13 1 1</ref_pass>
 		<start_time>1995-04-29</start_time>
+		<end_time>2011-07-05<end_time>
 	</phase>
 </if>
 
@@ -3843,6 +3845,7 @@ Global RADS configuration file
 		<repeat>17.05057808 488</repeat>
 		<ref_pass>2000-01-07T17:53:30 1.00 37 1</ref_pass>
 		<start_time>2000-01-07</start_time>
+		<end_time>2008-09-18<end_time>
 	</phase>
 </if>
 
@@ -3876,6 +3879,7 @@ Global RADS configuration file
 		<repeat>17.05057808 488</repeat>
 		<ref_pass>1986-11-17T00:42:22 1.00 27 1</ref_pass>
 		<start_time>1986-11-08</start_time>
+		<end_time>1989-12-31<end_time>
 	</phase>
 </if>
 
@@ -3907,6 +3911,7 @@ Global RADS configuration file
 		<repeat>406.528444 10438</repeat>
 		<ref_pass>2012-05-07T14:57:08 308.15 1 1</ref_pass>
 		<start_time>2012-05-07</start_time>
+		<end_time>2013-06-22<end_time>
 		<subcycles start="382">
 			280 280 280 280 102 280 280 280 280 102 280 280 280 280 102 280 280 280 102
 			280 280 280 280 102 280 280 280 280 102 280 280 280 280 102 280 280 280 102
@@ -3988,6 +3993,7 @@ Global RADS configuration file
 		<repeat>30.0 862</repeat>
 		<ref_pass>2010-10-27T21:57:36 0.55 96 1</ref_pass>
 		<start_time>2010-10-24T07:05:26</start_time>
+		<end_time>2012-04-09<end_time>
 	</phase>
 </if>
 
@@ -4004,6 +4010,7 @@ Global RADS configuration file
 		<repeat>9.91564280 254</repeat>
 		<ref_pass>1992-10-03T02:04:51 99.92 2 1</ref_pass>
 		<start_time>1992-10-01</start_time>
+		<end_time>2002-07-13<end_time>
 	</phase>
 </if>
 
@@ -4034,6 +4041,7 @@ Global RADS configuration file
 		<repeat>9.915642 254</repeat>
 		<ref_pass>2002-09-20T03:08:57 98.50 369 1</ref_pass>
 		<start_time>2002-09-20T02:40:50</start_time>
+		<end_time>2005-10-09<end_time>
 	</phase>
 </if>
 
