@@ -3720,7 +3720,7 @@ Global RADS configuration file
 		<cycles>9 18</cycles><!--Need to update this value-->
 		<repeat>27 770</repeat>
 		<ref_pass>2018-06-06T02:30:07 292.37 9 149 589</ref_pass><!--Need to update this value-->
-		<start_time>2018-06-06T02:30:07</start_time><!--Need to update this value-->
+		<start_time>2018-06-06T02:14:50</start_time><!--Need to update this value-->
 	</phase>
 	<phase name="b">
 		<mission>Drift Phase</mission>
