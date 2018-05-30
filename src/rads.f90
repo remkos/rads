@@ -487,6 +487,41 @@ interface rads_parse_varlist
 	module procedure rads_parse_varlist_1d
 end interface rads_parse_varlist
 
+!****if* rads/rads_set_phase
+! SUMMARY
+! Set the pointer to satellite phase info within the S struct
+!
+! SYNTAX
+! subroutine rads_set_phase (S, name <or> cycle <or> time)
+! type(rads_sat), intent(inout) :: S
+! character(len=*), intent(in) :: name <or>
+! integer(fourbyteint), intent(in) :: cycle <or>
+! real(eightbytereal), intent(in) :: time
+!
+! PURPOSE
+! Set the pointer S%phase to the proper phase definitions for the mission
+! phase. The selection of the phase can be done by phase name <name>,
+! cycle number <cycle> or time <time>.
+!
+! In matching the phase name with the database, only the first letter is
+! used. However the path to the directory with netCDF files will use the
+! entire phase name.
+!
+! For efficiency, the routine first checks if the current phase is correct.
+!
+! ARGUMENTS
+! S        : Satellite/mission dependent structure
+! name     : Name of phase
+! cycle    : Cycle number
+! time     : UTC time in seconds since 1985
+!****-------------------------------------------------------------------
+private :: rads_set_phase_by_name, rads_set_phase_by_cycle, rads_set_phase_by_time
+interface rads_set_phase
+	module procedure rads_set_phase_by_name
+	module procedure rads_set_phase_by_cycle
+	module procedure rads_set_phase_by_time
+end interface rads_set_phase
+
 contains
 
 !****if* rads/rads_init_sat_0d
@@ -516,7 +551,7 @@ character(len=*), intent(in), optional :: xml(:)
 ! ERROR CODE
 ! S%error  : rads_noerr, rads_err_xml_file, rads_err_xml_parse, rads_err_var
 !****-------------------------------------------------------------------
-integer(fourbyteint) :: i
+integer(fourbyteint) :: i, n
 
 call rads_init_sat_struct (S)
 
@@ -565,6 +600,13 @@ endif
 ! If no phases are defined, then the satellite is not known
 if (.not.associated(S%phases)) call rads_exit ('Satellite "'//S%sat//'" unknown')
 
+! Set end times for phases where they are NaN
+n = size(S%phases)
+do i = 1,n-1
+	if (isnan_(S%phases(i)%end_time)) S%phases(i)%end_time = S%phases(i+1)%start_time
+enddo
+if (isnan_(S%phases(n)%end_time)) S%phases(n)%end_time = 2051222400d0 ! 2050-01-01
+
 ! When a phase/mission is specifically given, load the appropriate settings
 if (S%spec == '') then
 	! By default, use the largest possible cycle and pass range and set the first (default) phase
@@ -574,7 +616,7 @@ if (S%spec == '') then
 	S%passes(2) = maxval(S%phases%passes)
 else
 	S%phase => rads_get_phase(S, S%spec)
-	if (.not.associated(S%phase)) call rads_exit ('No such mission phase "'//trim(S%spec)//'" of satellite "'//S%sat//'"')
+	if (.not.associated(S%phase)) call rads_exit ('No such mission phase "'//trim(S%spec)//'" for satellite "'//S%sat//'"')
 	S%cycles(1:2) = S%phase%cycles
 	S%passes(2) = S%phase%passes
 endif
@@ -1288,7 +1330,7 @@ if (associated(S%excl_cycles)) then
 endif
 
 ! If the cycle is out of range for the current phase, look for a new phase
-if (cycle < S%phase%cycles(1) .or. cycle > S%phase%cycles(2)) call rads_set_phase
+call rads_set_phase (S, cycle)
 
 ! Do checking on pass limits (which may include new phase limits)
 if (pass < S%passes(1) .or. pass > S%passes(2) .or. pass > S%phase%passes) then
@@ -1472,19 +1514,6 @@ endif
 ! Successful ending; update number of measurements in region
 S%error = rads_noerr
 S%total_inside = S%total_inside + P%ndata
-
-contains
-
-subroutine rads_set_phase
-integer :: i
-do i = 1,size(S%phases)
-	if (cycle >= S%phases(i)%cycles(1) .and. cycle <= S%phases(i)%cycles(2)) then
-		S%phase => S%phases(i)
-		return
-	endif
-enddo
-S%phase => S%phases(1)
-end subroutine rads_set_phase
 
 end subroutine rads_open_pass
 
@@ -3648,6 +3677,57 @@ endif
 S%phases(n) = rads_phase (name(1:1), '', (/999,0/), 0, nan, nan, nan, nan, 0, 0, 0, nan, nan, nan, 0, 0, null())
 phase => S%phases(n)
 end function rads_get_phase
+
+subroutine rads_set_phase_by_name (S, name)
+type(rads_sat), intent(inout) :: S
+character(len=*), intent(in) :: name
+integer :: i
+! Check if we are already in the right mission phase
+if (name(1:1) == S%phase%name(1:1)) return
+! Check all mission phases
+do i = 1,size(S%phases)
+	if (name(1:1) == S%phase%name(1:1)) then
+		S%phase => S%phases(i)
+		return
+	endif
+enddo
+call rads_exit ('No such mission phase "'//name//'" for satellite "'//S%sat//'"')
+end subroutine rads_set_phase_by_name
+
+subroutine rads_set_phase_by_cycle (S, cycle)
+type(rads_sat), intent(inout) :: S
+integer(fourbyteint), intent(in) :: cycle
+integer :: i
+character(len=3) :: name
+! Check if we are already in the right mission phase
+if (cycle >= S%phase%cycles(1) .and. cycle <= S%phase%cycles(2)) return
+! Check all mission phases
+do i = 1,size(S%phases)
+	if (cycle >= S%phases(i)%cycles(1) .and. cycle <= S%phases(i)%cycles(2)) then
+		S%phase => S%phases(i)
+		return
+	endif
+enddo
+write (name, '(i3.3)') cycle
+call rads_exit ('No cycle '//name//' for any mission phase of satellite "'//S%sat//'"')
+end subroutine rads_set_phase_by_cycle
+
+subroutine rads_set_phase_by_time (S, time)
+use rads_time
+type(rads_sat), intent(inout) :: S
+real(eightbytereal), intent(in) :: time
+integer :: i
+! Check if we are already in the right mission phase
+if (time >= S%phase%start_time .and. time <= S%phase%end_time) return
+! Check all mission phases
+do i = 1,size(S%phases)
+	if (time >= S%phases(i)%start_time .and. time <= S%phases(i)%end_time) then
+		S%phase => S%phases(i)
+		return
+	endif
+enddo
+call rads_exit ('Time '//strf1985f(time)//' is outside any mission phase of satellite "'//S%sat//'"')
+end subroutine rads_set_phase_by_time
 
 !****f* rads/rads_predict_equator
 ! SUMMARY
