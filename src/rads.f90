@@ -492,11 +492,12 @@ end interface rads_parse_varlist
 ! Set the pointer to satellite phase info within the S struct
 !
 ! SYNTAX
-! subroutine rads_set_phase (S, name <or> cycle <or> time)
+! subroutine rads_set_phase (S, name <or> cycle <or> time, error)
 ! type(rads_sat), intent(inout) :: S
 ! character(len=*), intent(in) :: name <or>
 ! integer(fourbyteint), intent(in) :: cycle <or>
 ! real(eightbytereal), intent(in) :: time
+! logical, optional, intent(out) :: error
 !
 ! PURPOSE
 ! Set the pointer S%phase to the proper phase definitions for the mission
@@ -508,6 +509,12 @@ end interface rads_parse_varlist
 ! entire phase name.
 !
 ! For efficiency, the routine first checks if the current phase is correct.
+!
+! If no matching phase can be found the outcome depends on the use of the
+! optional argument <error>:
+! - If <error> is present, then <error> will refurn .true. (otherwise .false.)
+! - If <error> is not present, the routine prints an error message and the
+!   calling program stops.
 !
 ! ARGUMENTS
 ! S        : Satellite/mission dependent structure
@@ -1305,6 +1312,7 @@ character(len=5) :: hz
 character(len=rads_strl) :: string
 integer(fourbyteint) :: i, j1, j2, k, ascdes, ncid
 real(eightbytereal), pointer :: temp(:,:)
+logical :: error
 
 ! Initialise
 S%error = rads_warn_nc_file
@@ -1315,8 +1323,11 @@ ascdes = modulo(pass,2)	! 1 if ascending, 0 if descending
 
 if (rads_verbose >= 2) write (*,'(a,a3,2i5)') 'Checking sat/cycle/pass : ', S%sat, cycle, pass
 
+! If the cycle is out of range for the current phase, look for a new phase
+call rads_set_phase (S, cycle, error)
+
 ! Do checking on cycle limits
-if (cycle < S%cycles(1) .or. cycle > S%cycles(2)) then
+if (error) then
 	S%pass_stat(1) = S%pass_stat(1) + 1
 	return
 endif
@@ -1328,9 +1339,6 @@ if (associated(S%excl_cycles)) then
 		return
 	endif
 endif
-
-! If the cycle is out of range for the current phase, look for a new phase
-call rads_set_phase (S, cycle)
 
 ! Do checking on pass limits (which may include new phase limits)
 if (pass < S%passes(1) .or. pass > S%passes(2) .or. pass > S%phase%passes) then
@@ -3678,10 +3686,12 @@ S%phases(n) = rads_phase (name(1:1), '', (/999,0/), 0, nan, nan, nan, nan, 0, 0,
 phase => S%phases(n)
 end function rads_get_phase
 
-subroutine rads_set_phase_by_name (S, name)
+subroutine rads_set_phase_by_name (S, name, error)
 type(rads_sat), intent(inout) :: S
 character(len=*), intent(in) :: name
+logical, optional, intent(out) :: error
 integer :: i
+if (present(error)) error = .false.
 ! Check if we are already in the right mission phase
 if (name(1:1) == S%phase%name(1:1)) return
 ! Check all mission phases
@@ -3691,14 +3701,20 @@ do i = 1,size(S%phases)
 		return
 	endif
 enddo
-call rads_exit ('No such mission phase "'//name//'" for satellite "'//S%sat//'"')
+if (present(error)) then
+	error = .true.
+else
+	call rads_exit ('No such mission phase "'//name//'" for satellite "'//S%sat//'"')
+endif
 end subroutine rads_set_phase_by_name
 
-subroutine rads_set_phase_by_cycle (S, cycle)
+subroutine rads_set_phase_by_cycle (S, cycle, error)
 type(rads_sat), intent(inout) :: S
 integer(fourbyteint), intent(in) :: cycle
+logical, optional, intent(out) :: error
 integer :: i
 character(len=3) :: name
+if (present(error)) error = .false.
 ! Check if we are already in the right mission phase
 if (cycle >= S%phase%cycles(1) .and. cycle <= S%phase%cycles(2)) return
 ! Check all mission phases
@@ -3708,15 +3724,21 @@ do i = 1,size(S%phases)
 		return
 	endif
 enddo
-write (name, '(i3.3)') cycle
-call rads_exit ('No cycle '//name//' for any mission phase of satellite "'//S%sat//'"')
+if (present(error)) then
+	error = .true.
+else
+	write (name, '(i3.3)') cycle
+	call rads_exit ('No cycle '//name//' for any mission phase of satellite "'//S%sat//'"')
+endif
 end subroutine rads_set_phase_by_cycle
 
-subroutine rads_set_phase_by_time (S, time)
+subroutine rads_set_phase_by_time (S, time, error)
 use rads_time
 type(rads_sat), intent(inout) :: S
 real(eightbytereal), intent(in) :: time
+logical, optional, intent(out) :: error
 integer :: i
+if (present(error)) error = .false.
 ! Check if we are already in the right mission phase
 if (time >= S%phase%start_time .and. time <= S%phase%end_time) return
 ! Check all mission phases
@@ -3726,7 +3748,11 @@ do i = 1,size(S%phases)
 		return
 	endif
 enddo
-call rads_exit ('Time '//strf1985f(time)//' is outside any mission phase of satellite "'//S%sat//'"')
+if (present(error)) then
+	error = .true.
+else
+	call rads_exit ('Time '//strf1985f(time)//' is outside any mission phase of satellite "'//S%sat//'"')
+endif
 end subroutine rads_set_phase_by_time
 
 !****f* rads/rads_predict_equator
