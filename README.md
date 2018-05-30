@@ -28,6 +28,15 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 ## Version History
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 
+### v4.3.0 (30 May 2018)
+* Added support for processing of Sentinel-3B data.
+* Added routine rads_set_phase.
+* Added \<end_time\> specifications on last mission phase of terminated missions.
+* Added license file.
+* Added geoid_xgm2016 specification in support of issue #119.
+* Added topo_strm15plus specification in support of issue #120.
+* Fixed issue #121.
+
 ### v4.2.11 (16 Mar 2018)
 * Updated information on Sentinel-3B orbit and mission phases.
 * Provide better "histogram limits" from radsvar.
