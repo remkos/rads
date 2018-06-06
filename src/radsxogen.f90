@@ -65,7 +65,8 @@ type :: trk_
 endtype
 type(trk_) :: trk(mtrk)
 
-integer(fourbyteint), allocatable :: key(:), idx(:), inv(:), trkid(:,:)
+type(quicksort_pair), allocatable :: pair(:)
+integer(fourbyteint), allocatable :: inv(:), trkid(:,:)
 
 ! Initialize RADS or issue help
 call synopsis
@@ -235,28 +236,26 @@ if (nr%trk == 0) then
 endif
 
 ! Sort the track information in order satid/cycle/pass
-allocate (key(nr%trk), idx(nr%trk), inv(nr%trk), trkid(2,nr%xout))
+allocate (pair(nr%trk), inv(nr%trk), trkid(2,nr%xout))
 forall (i = 1:nr%trk)
-	idx(i) = i
-	key(i) = trk(i)%satid * 10000000 + trk(i)%cycle * 10000 + trk(i)%pass
+	pair(i) = quicksort_pair (i, trk(i)%satid * 1d3 + trk(i)%cycle + trk(i)%pass * 1d-4)
 end forall
-call iqsort (idx, key)
-if (idx(1) == 0) call rads_exit ('stack size for iqsort is too small')
+call quicksort (pair)
 
 ! Different batches will create new track numbers, so there can be duplicates.
-! Here we remove the duplicates and "condense" the numbers, stored in idx.
-! inv is the inverse of idx.
+! Here we remove the duplicates and "condense" the numbers, stored in pair%order.
+! inv is the inverse of pair%order.
 j = 0
 do i = 1, nr%trk
 	if (j == 0) then
 		j = 1
-	else if (key(idx(i)) == key(idx(j))) then
-		trk(idx(j))%nr_xover = trk(idx(j))%nr_xover + trk(idx(i))%nr_xover
+	else if (pair(i)%value == pair(j)%value) then
+		trk(pair(j)%order)%nr_xover = trk(pair(j)%order)%nr_xover + trk(pair(i)%order)%nr_xover
 	else
 		j = j + 1
-		idx(j) = idx(i)
+		pair(j) = pair(i)
 	endif
-	inv(idx(i)) = j
+	inv(pair(i)%order) = j
 enddo
 nr%trk = j
 
@@ -280,22 +279,22 @@ call def_var (ncid, 'nr_xover', 'number of crossovers along track', '', nf90_int
 call def_var (ncid, 'nr_alt', 'number of measurements along track', '', nf90_int2, dimid(3:3), varid(13))
 call nfs (nf90_enddef (ncid))
 
-call nfs (nf90_put_var (ncid, varid( 5), trk(idx(:j))%satid))
-call nfs (nf90_put_var (ncid, varid( 6), trk(idx(:j))%cycle))
-call nfs (nf90_put_var (ncid, varid( 7), trk(idx(:j))%pass))
-call nfs (nf90_put_var (ncid, varid( 8), trk(idx(:j))%equator_lon))
-call nfs (nf90_put_var (ncid, varid( 9), trk(idx(:j))%equator_time))
-call nfs (nf90_put_var (ncid, varid(10), trk(idx(:j))%start_time))
-call nfs (nf90_put_var (ncid, varid(11), trk(idx(:j))%end_time))
-call nfs (nf90_put_var (ncid, varid(12), trk(idx(:j))%nr_xover))
-call nfs (nf90_put_var (ncid, varid(13), trk(idx(:j))%nr_alt))
+call nfs (nf90_put_var (ncid, varid( 5), trk(pair(:nr%trk)%order)%satid))
+call nfs (nf90_put_var (ncid, varid( 6), trk(pair(:nr%trk)%order)%cycle))
+call nfs (nf90_put_var (ncid, varid( 7), trk(pair(:nr%trk)%order)%pass))
+call nfs (nf90_put_var (ncid, varid( 8), trk(pair(:nr%trk)%order)%equator_lon))
+call nfs (nf90_put_var (ncid, varid( 9), trk(pair(:nr%trk)%order)%equator_time))
+call nfs (nf90_put_var (ncid, varid(10), trk(pair(:nr%trk)%order)%start_time))
+call nfs (nf90_put_var (ncid, varid(11), trk(pair(:nr%trk)%order)%end_time))
+call nfs (nf90_put_var (ncid, varid(12), trk(pair(:nr%trk)%order)%nr_xover))
+call nfs (nf90_put_var (ncid, varid(13), trk(pair(:nr%trk)%order)%nr_alt))
 
 ! Renumber the track number for the xover data
 call nfs (nf90_get_var (ncid, varid(4), trkid))
 trkid(1,:) = inv(trkid(1,:))
 trkid(2,:) = inv(trkid(2,:))
 call nfs (nf90_put_var (ncid, varid(4), trkid))
-deallocate (key, idx, inv, trkid)
+deallocate (pair, inv, trkid)
 
 call nfs (nf90_close (ncid))
 
