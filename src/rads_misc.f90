@@ -25,6 +25,12 @@ logical, private, save :: getopt_new = .true., getopt_end = .false., getopt_opt 
 real(eightbytereal), parameter :: nan = transfer ((/not(0_fourbyteint),not(0_fourbyteint)/),0d0)
 logical, parameter :: little_endian = btest(1,0), big_endian = .not.little_endian
 
+! This pair is used in quicksort
+type :: quicksort_pair
+	integer(fourbyteint) :: order
+	real(eightbytereal) :: value
+endtype
+
 !****f* rads_misc/d_int
 ! SUMMARY
 ! Convert integer to double while accounting for NaNs
@@ -735,156 +741,63 @@ c(2) = a(3) * b(1) - a(1) * b(3)
 c(3) = a(1) * b(2) - a(2) * b(1)
 end function cross_product
 
-!****f* rads_misc/iqsort
+!****f* rads_misc/quicksort
 ! SUMMARY
-! Make a quick sort of an INTEGER*4 array
+! Make a quick sort of a double real array and an associated index
 !
 ! SYNOPSIS
-pure subroutine iqsort (indx, arr)
-use typesizes
-integer(fourbyteint), intent(inout) :: indx(:)
-integer(fourbyteint), intent(in) :: arr(:)
+recursive subroutine quicksort(a)
+type(quicksort_pair), intent(inout) :: a(:)
 !
 ! PURPOSE
-! This routine quick-sorts an integer array <indx> according to the
-! corresponding value in array <arr> of type integer.
-! The array <indx> contains pointers to the values in array <arr>,
-! which does not have to be equally large.
+! This routine makes a quick sort of a pair of <order> number and
+! <value>, where <order> is an arbitrary integer and <value> is a
+! double real number to be sorted in increasing order.
 !
-! ARGUMENTS
-!  indx (input) : One-dimensional array of index numbers
-!      (output) : Row of index numbers sorted on corresponding value
-!                 On failure: indx(1) = 0.
-!  arr  (input) : One-dimensional array of values
+! On return <value> will be sorted in ascending order and the
+! order number will be sorted accordingly. This order number can
+! be useful as a pointer to the rest of an array or structure
+! of information that is to be sorted on the basis of <value>.
 !
-! Example 1:
-! Assume you have 6 values 100, 10, 11, 21, 17, and 90, stored in array
-! <val>. These values have to be sorted in ascending order. Your input
+! Example:
+! Assume you have 6 values 1d2, 1d1, 11d0, 21d0, 17d0, and 9d1, stored
+! in array <a%value>, and the corresponding index in <a%order>.
+! These values have to be sorted in ascending order. Your input
 ! will be like this:
 !
-!  indx    1    2    3    4    5    6
-!   arr  100   10   11   21   17   90
-!    nr    6
+! a%order    1    2    3    4    5    6
+! a%value  1d2  1d1 11d0 21d0 17d0  9d1
 !
-! After running iqsort, the output will look like this:
+! After running quicksort, the output pair will look like this:
 !
-!  indx    2    3    5    4    6    1
-!   arr  100   10   11   21   17   90
-!    nr    6
-!
-! Note that the array <arr> has not been changed, but that <indx> is sorted by
-! the order in which <arr> should be sorted. You may print the values in
-! the ascending order as follows:
-!
-!     do i=1,size(indx)
-!        write (*,*) arr(indx(i))
-!     enddo
-!
-! Example 2:
-! It is also possible that the indices are not in logical order. As long as
-! they point to the respective locations of the values in array <arr>, the
-! sorting will be done accordingly. Assume you have the following input:
-! (values ** are irrelevant)
-!
-!  indx    1    2    4    5    6    8
-!   arr  100   10   **   21   17   90   **   1
-!    nr    6
-!
-! Then after running iqsort, the result will be:
-!
-!  indx    8    2    5    4    6    1
-!   arr  100   10   **   21   17   90   **   1
-!    nr    6
-!
-! Printing the values in ascending order after this goes the same as in
-! Example 1.
-!
-! This routine is based on the routine indexx() discussed in
-! Numerical Recipes in Fortran 90, The Art of Parallel Scientific Computing.
+! a%order    2    3    5    4    6    1
+! a%value  1d1 11d0 17d0 21d0  9d1  1d2
 !****-------------------------------------------------------------------
-integer(fourbyteint), parameter :: m = 15, nstack = 256
-integer(fourbyteint) :: i, j, k, l, r, indxt, jstack, istack(nstack)
-integer(fourbyteint) :: a
-jstack = 0
-l = 1
-r = size(indx)
+real(eightbytereal) :: x
+type(quicksort_pair) :: t
+integer(fourbyteint) :: i, j
+
+j = size(a)
+if (j < 2) return
+x = a((j+1)/2)%value
+i = 1
+
 do
-	if (r-l < m) then
-		do j = l+1,r
-			indxt = indx(j)
-			a = arr(indxt)
-			do i = j-1,l,-1
-				if (arr(indx(i)) <= a) exit
-				indx(i+1) = indx(i)
-			enddo
-			indx(i+1) = indxt
-		enddo
-		if (jstack == 0) return
-		r = istack(jstack)
-		l = istack(jstack-1)
-		jstack = jstack-2
-	else
-		k = (l+r) / 2
-		i = l+1
-		j = r
-		call swap (indx(k), indx(i))
-		call swap_if (indx(l), indx(r))
-		call swap_if (indx(i), indx(r))
-		call swap_if (indx(l), indx(i))
-		indxt = indx(i)
-		a = arr(indxt)
-		do
-			do
-				i = i+1
-				if (arr(indx(i)) >= a) exit
-			enddo
-			do
-				j = j-1
-				if (arr(indx(j)) <= a) exit
-			enddo
-			if (j < i) exit
-			call swap (indx(i), indx(j))
-		enddo
-		indx(l+1) = indx(j)
-		indx(j) = indxt
-		jstack = jstack+2
-		if (jstack > nstack) then
-			indx(1) = 0
-			return
-		endif
-		if (r-i+1 >= j-1) then
-			istack(jstack) = r
-			istack(jstack-1) = i
-			r = j-1
-		else
-			istack(jstack) = j-1
-			istack(jstack-1) = l
-			l = i
-		endif
-	endif
+	do while (a(i)%value < x)
+		i=i+1
+	end do
+	do while (a(j)%value > x)
+		j=j-1
+	end do
+	if (i >= j) exit
+	t = a(i);  a(i) = a(j);  a(j) = t
+	i=i+1
+	j=j-1
 enddo
 
-contains
-
-pure subroutine swap (i, j)
-integer(fourbyteint), intent(inout) :: i, j
-integer(fourbyteint) :: tmp
-tmp = i
-i = j
-j = tmp
-end subroutine swap
-
-pure subroutine swap_if (i, j)
-integer(fourbyteint), intent(inout) :: i, j
-integer(fourbyteint) :: tmp
-if (arr(i) > arr(j)) then
-	tmp = i
-	i = j
-	j = tmp
-endif
-end subroutine swap_if
-
-end subroutine iqsort
+call quicksort(a(:i-1))
+call quicksort(a(j+1:))
+end subroutine quicksort
 
 !****f* rads_misc/regression
 ! SUMMARY

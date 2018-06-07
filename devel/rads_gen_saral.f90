@@ -80,7 +80,6 @@ use netcdf
 
 integer(fourbyteint) :: ios, i, j
 character(len=rads_cmdl) :: infile, arg
-character(len=1) :: phasenm = ''
 
 ! Header variables
 
@@ -151,15 +150,13 @@ do
 		cycle
 	endif
 
-! Update phase name if required
+! Update mission phase if required
 
-	if (cyclenr < 100) then
-		phasenm = 'a'
-	else ! Phase B GDRs start with cycle 100, but have been renumbered to start with cycle 36
-		cyclenr = cyclenr - 64
-		phasenm = 'b'
-	endif
-	if (S%phase%name /= phasenm) S%phase => rads_get_phase (S, phasenm)
+	call rads_set_phase (S, equator_time)
+
+! Phase B GDRs start with cycle 100, but have been renumbered to start with cycle 36
+
+	if (S%phase%name(1:1) == 'b') cyclenr = cyclenr - 64
 
 ! Store relevant info
 

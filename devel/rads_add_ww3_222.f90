@@ -237,9 +237,10 @@ end subroutine process_pass
 function get_ww3 (mjd)
 logical :: get_ww3
 integer(fourbyteint), intent(in) :: mjd
-integer(fourbyteint) ::	fileid, gribid, ix, iy, it, k, l, status, strf1985
+integer(fourbyteint) ::	fileid, gribid, ix, iy, k, l, status, strf1985
 real(eightbytereal), allocatable :: tmp(:)
 character(len=rads_naml) :: fn
+integer :: new(3), old(3)
 
 600 format ('(',a,')')
 1300 format (a,': ',a)
@@ -280,20 +281,28 @@ allocate (grids(nx,ny,mt),tmp(nx*ny))
 
 ! Get all grids
 
-it = 0
+nt = 0
+old = 0
 do
-	it = it + 1
+	call grib_get(gribid,'dataDate',new(1))
+	call grib_get(gribid,'dataTime',new(2))
+	call grib_get(gribid,'forecastTime',new(3))
+	if (all(new == old)) then
+		write (*,1300) 'Warning: skipping duplicate message in',fn(:l)
+		nt = nt -1
+	endif
+	old = new
 	call grib_get(gribid,'values',tmp,status)
 	call grib_release(gribid)
 	if (status /= grib_success) exit
+	nt = nt + 1
 	k = 0
 	do iy = ny,1,-1
 		do ix = 1,nx
 			k = k + 1
-			grids(ix,iy,it) = nint2(tmp(k)/dz)
+			grids(ix,iy,nt) = nint2(tmp(k)/dz)
 		enddo
 	enddo
-	nt = it
 	call grib_new_from_file(fileid,gribid,status)
 	if (status /= grib_success) exit
 enddo
