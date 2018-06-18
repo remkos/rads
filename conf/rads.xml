@@ -2918,15 +2918,6 @@ Global RADS configuration file
 	</var>
 	<alias name="attitude" field="30">off_nadir_angle2_wf_ku</alias>
 </else>
-<var name="off_nadir_angle2_wf_ku_plrm" sat="3a 3b">
-	<long_name>off-nadir pointing angle squared from waveform (PLRM)</long_name>
-	<units>degrees^2</units>
-	<plot_range>-0.04 0.08</plot_range>
-	<data>off_nadir_angle2_wf_ku_plrm</data>
-	<format>f7.4</format>
-	<default>0</default>
-	<compress>int2 1e-4</compress>
-</var>
 <var name="off_nadir_angle2_wf_ku_retrk" sat="tx.r50">
 	<long_name>off-nadir pointing angle squared from retracked Ku-band waveform</long_name>
 	<units>degrees^2</units>
