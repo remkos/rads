@@ -17,5 +17,8 @@ Do not correct sea level anomaly for inverse barometer
 -->
 
 <var name="sla">
-	<data action="delete">inv_bar SUB</data>
+	<data action="delete">dac SUB</data>
+</var>
+<var name="sla_plrm">
+        <data action="delete">dac SUB</data>
 </var>
