@@ -230,7 +230,10 @@ write (*,1300)
 'Program specific [program_options] are:'/ &
 '  --dt DT                   Set minimum bin size in seconds (default is determined by satellite)'/ &
 '  --step N                  Write out only one out of N bins along track'/ &
-'  -r, --reject-on-nan VAR   Base rejection criteria (below) on VAR; default is ''sla'' or 1st on -V'/ &
+'  -r, --reject-on-nan VAR   Base rejection criteria (below) on VAR'/ &
+'  -r all                    Base rejection criteria (below) on all selected variables'/ &
+'                      Note: By default rejection of data is based on ''sla'' (if selected) or 1st on -V'/ &
+'                      Note: The two options above can be combined with any of the three below'/ &
 '  -r NR                     Reject stacked data when fewer than NR tracks with valid values'/ &
 '  -r 0, -r none, -r         Keep all stacked data points, even NaN'/ &
 '  -r n, -r any              Reject stacked data when data on any track is NaN (default)'/ &

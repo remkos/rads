@@ -96,7 +96,7 @@ The Radar Altimeter Database System is composed of three elements:
 
 So apart from the actual altimeter data, RADS provides a suite of applications and subroutines that simplify the reading, editing, handling and analysing of data from numerous radar altimeters. Although the actual content and layout of the underlying data products do not have to be identical for all altimeters, the user interface is. Also, the data base is easily expandable with additional data and/or additional corrections without impact to the user interface, or to the software in general. In fact, only in very few cases the core software will need to be adjusted and recompiled, in even fewer cases adjustments to the actual tools will be required. Most changes can be covered by changes in the configuration file.
 
-The data base consists of netCDF files, one for each satellite pass (half a revolution starting and ending close to the poles). Ascending passes have odd numbers, descending passes even numbers. The pass numbering increases consecutively within a repeat cycle. 
+The data base consists of netCDF files, one for each satellite pass (half a revolution starting and ending close to the poles). Ascending passes have odd numbers, descending passes even numbers. The pass numbering increases consecutively within a repeat cycle.
 
 In case of exact repeat missions the satellite returns to the same ground track every repeat cycle. For Jason-2, for example, this is after 254 passes, when the pass number starts over at 1. Which pass is number 1 is based on the longitude of the equator crossing (ascending node). Thus all passes with the same pass number are collinear.
 
@@ -232,7 +232,7 @@ RADS now exceeds 400~GBytes of data. It virtually impossible to copy all of it i
 
 You need to have at least the executable \prog{rsync} installed on your system to use \prog{rsync}. In case of Linux machines, simply install the \prog{rsync} package available on most distributions. The program \prog{rsync} comes standard with Mac OS X, or can be obtained from \url{http://rsync.samba.org}.
 
-The \prog{rsync} command will download the data from the rsync server at the Delft University of Technology in The Netherlands. This server is setup such that it will allow you to access only the RADS data and software. It will not allow you to log in to the server as a common user. Thus, setting up \prog{ssh} key pairs is not possible.  
+The \prog{rsync} command will download the data from the rsync server at the Delft University of Technology in The Netherlands. This server is setup such that it will allow you to access only the RADS data and software. It will not allow you to log in to the server as a common user. Thus, setting up \prog{ssh} key pairs is not possible.
 
 Let us start, for example, to synchronise the Jason-2 data. The subdirectory for the Jason-2 data is \verb|j2| (See Table~\ref{tab:rads4_sats} for all 2-character abbreviations of the altimeter missions). To get all the Jason-2 data, you will type the following commands (still assuming you have your data in \dir{/rads/data}):
 \begin{verbatim}
@@ -255,7 +255,7 @@ $ cd /rads
 $ rsync -avz --del radsuser@rads.tudelft.nl::rads/data .
 \end{verbatim}
 
-If, for whatever reason, the mirroring is interrupted, you can simply start it again, and it will continue where it left off. If you have a recent version of the \prog{rsync} program, we recommend that you use the option \verb|--del| instead of \verb|--delete|, as it speeds up the process significantly. 
+If, for whatever reason, the mirroring is interrupted, you can simply start it again, and it will continue where it left off. If you have a recent version of the \prog{rsync} program, we recommend that you use the option \verb|--del| instead of \verb|--delete|, as it speeds up the process significantly.
 
 There is one more directory that may be of interest, but is not essential. The \verb|/rads/tables| directory contains a number of lists: lists of the time intervals of passes and cycles, and lists of the data
 available for each satellite.
@@ -297,7 +297,7 @@ It is also practical to include \dir{/usr/local/bin} (or where ever you installe
 \section{Common functionalities}
 A subroutine library is created to facilitate the data reading, conversion to SI units, editing and the construction of sea level anomalies. Based on these routines, several programs (utilities) are created to list or manipulate the contents of the data base. Since these programs share the same routines, much of their functionalities are the same, as well as their user interface. In addition, a number of developer tools are available to create the data base. These programs will be of less concern to the users, and are not yet explained in this manual. Their code is only provided for reference, and are not intended to be compiled on your system.
 
-Common to all RADS utilities is the internal data selection, editing, and the ability to construct the sea level anomaly (or any other fields) \emph{on the fly}. The construction of the sea level anomaly includes a number of arithmetic expressions (adding and subtracting), plus applying a number of selection criteria that can flag the sea level anomaly as invalid. Both the ability to do arithmetic (even beyond mere adding and subtracting) and editing are built into the software library, so that they can be shared by the various RADS utilities. 
+Common to all RADS utilities is the internal data selection, editing, and the ability to construct the sea level anomaly (or any other fields) \emph{on the fly}. The construction of the sea level anomaly includes a number of arithmetic expressions (adding and subtracting), plus applying a number of selection criteria that can flag the sea level anomaly as invalid. Both the ability to do arithmetic (even beyond mere adding and subtracting) and editing are built into the software library, so that they can be shared by the various RADS utilities.
 
 Even when writing their own program, the user does not have to generate code to construct a sea level anomaly or to do editing. At the same time that the sea level anomaly is constructed, the data is edited based on system-wide, user, or local preferences. These preferences can be specified at several levels, either in XML configuration files, or by command line options. The order in which these preferences are processed is the following:
 \begin{itemize}
@@ -409,7 +409,7 @@ Operator & Description \\
 \item[grid:] RADS can interpolate in 2-D netCDF grids \emph{on the fly}. This is practical if you have a static model to be interpolated at a certain location (longitude and latitude, or any other two variables). Depending on the argument of the \verb|source=| option, one can select to do bilinear interpolation (\verb|"grid"| or \verb|"grid_l"|), cubic spline interpolation (\verb|"grid_c"| or \verb|"grid_s"|), or nearest neighbour selection (\verb|"grid_q"| or \verb|"grid_n"|). Without any of these options, a file name ending on ".nc" will automatically be recognised as needing linear interpolation. In addition one can specify the variables to be used as x- and y-coordinated in the interpolation. Default is \verb|x="lon" y="lat"|. Example for interpolating an SSB model:
 \begin{verbatim}
     <data source="grid" x="wind_speed_alt" y="swh">my_ssb_model.nc</data>
-\end{verbatim}  
+\end{verbatim}
 
 \item[constant:] To assign a single constant value use, for example,\\ \verb|<data source="constant">0</data>|.
 
@@ -432,9 +432,9 @@ A number of tags are employed to give general information about the various alti
 \item[\ctag{ref_pass}] Date (and time) of a reference equator crossing, longitude of this equator crossing, cycle number (not subcycle number), pass number in this mission phase phase, and absolute orbit number. If the absolute orbit number is not given, 1 is assumed. This line provides the reference for the cycle and pass numbering.
 \item[\ctag{start_time}] Start data (and time) of the mission phase.
 \end{description}
-In the above, date (and time) epochs can be written as \emph{yyyy}-\emph{mm}-\emph{dd}T\emph{hh}:\emph{mm}:\emph{ss}, where the part from 'T' onward can be omitted in whole or in part. 
+In the above, date (and time) epochs can be written as \emph{yyyy}-\emph{mm}-\emph{dd}T\emph{hh}:\emph{mm}:\emph{ss}, where the part from 'T' onward can be omitted in whole or in part.
 
- 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{RADS utilities}
 \label{ch:utilities}
@@ -484,7 +484,7 @@ The option flag and the value can be separated by whitespace (one or more spaces
     -vS j2
     -vSj2
 \end{verbatim}
-In this document, for clarity, we leave a single space between the option and the argument. 
+In this document, for clarity, we leave a single space between the option and the argument.
 
 \item[optional argument:] The option flag assigns some value, or switches something on with a default value. In the above example for \prog{radsstat4}, the option \sopt{o} can be used with or without an argument, as identified by the argument \url{[outname]} between square brackets. As the help explains, when \sopt{o} is omitted, the output is in ASCII format, when \sopt{o} is used without argument, then a netCDF file \file{radsstat.nc} is created, and when used with an argument (e.g. \soptb{o}{myfile.nc}) then a netCDF file with that name is created.
 
@@ -564,7 +564,7 @@ Select data within a circular region with a spherical radius \emph{RADIUS} degre
 \item[\optc{S}{sat}{SAT[/PHASE]}] ~\\
 Select data from a given satellite \emph{SAT}. Many variants of the satellite name can be used. Either the 2-character code, the 3-character code, or a substring of the satellite name listed in Table~\ref{tab:rads4_sats}.
 
-This is a required option and needs to be given for all RADS4 programs. Optionally, one can also indicate the mission phase \emph{PHASE}, separated from the satellite by a slash. (For backwards compatibility with RADS3 also a colon can be used, but this is discouraged). 
+This is a required option and needs to be given for all RADS4 programs. Optionally, one can also indicate the mission phase \emph{PHASE}, separated from the satellite by a slash. (For backwards compatibility with RADS3 also a colon can be used, but this is discouraged).
 
 \item[\loptc{sla}{SLA0,SLA1}] ~\\
 Specify the range of for sea level anomaly in meters (if requested). This is the same as \loptc{limits}{{\rm sla=}SLA0,SLA1}.
@@ -637,7 +637,7 @@ When processing the data of a single satellite the order of the command line opt
 
 Yet, there is a more complicated order in which the command line options are processed by the RADS library:
 \begin{enumerate}
-\item Process some input/output options: \lopt{args}, \lopt{debug}, \lopt{help}, \lopt{log}, \sopt{q}, \lopt{quiet}, \sopt{v}, \lopt{verbose}, \lopt{version}.  
+\item Process some input/output options: \lopt{args}, \lopt{debug}, \lopt{help}, \lopt{log}, \sopt{q}, \lopt{quiet}, \sopt{v}, \lopt{verbose}, \lopt{version}.
 \item Process the satellite mission selector \sopt{S} or \lopt{sat}.
 \item Process possible additional XML files indicated by the \sopt{X} or \lopt{xml} options.
 \item Process any alias definitions specified by the \sopt{A} or \lopt{alias} options.
@@ -690,7 +690,7 @@ When either of these is used, no records are eliminated and all NaN values are k
 Indicates that a line should not be printed when a value in any of the data columns is NaN.
 \item[\sopt{f}] This only counts when using \lopt{sel} instead of \lopt{var}, in order to be backward compatible with RADS3. When using\lopt{sel} normally time, latitude and longitude are automatically added as output columns. With \sopt{f} those columns are not automatically added, i.e., you will have to add them to the list of variables.
 \item[\soptb{s}{c|p}] ~\\
-Include statistics per cycle (c) or pass (p). Those will by included in the output with lines starting with '\verb|# min :|', '\verb|# max :|', '\verb|# mean:|', and '\verb|# std :|' followed by the cycle number, the number of valid passes in the cycle (c) or the pass number itself (p), the number of valid records in that cycle (c) or pass (p), and then the statistics (minimum, maximum, mean, and standard deviation) of each column.  
+Include statistics per cycle (c) or pass (p). Those will by included in the output with lines starting with '\verb|# min :|', '\verb|# max :|', '\verb|# mean:|', and '\verb|# std :|' followed by the cycle number, the number of valid passes in the cycle (c) or the pass number itself (p), the number of valid records in that cycle (c) or pass (p), and then the statistics (minimum, maximum, mean, and standard deviation) of each column.
 \item[\loptc{step}{N}] ~\\
 Print only one out of \emph{N} records.
 \item[\loptc{list}{FILENAME}] ~\\
@@ -827,7 +827,7 @@ The program \prog{radscolin4} creates collinear tracks (in a rather straightforw
 
 This program can also be used to compute differences between two different altimeter missions (with \lopt{diff}, \lopt{diff-no-coord}, or \lopt{diff1}), as long as they are collinear. Some variance to the strict collinearity is allowed when using the \sopt{f} or \lopt{force} option. See Section~\ref{sec:order_options} for more info on using the command line when multiple missions are involved.
 
-The program will output only those bins in which valid sea level anomalies can be found for all specified repeat cycles, unless the \sopt{r} option is used. This behaviour of \sopt{r} is significantly different from \prog{rads2asc4} and \prog{rads2nc}. See the syntax description below. 
+The program will output only those bins in which valid sea level anomalies can be found for all specified repeat cycles, unless the \sopt{r} option is used. This behaviour of \sopt{r} is significantly different from \prog{rads2asc4} and \prog{rads2nc}. See the syntax description below.
 
 The output is one record for each bin, containing the variables selected by the \sopt{V} or \lopt{var} option, for each of the specified cycles. The output can be either ASCII (the default) or netCDF (with the \sopt{o} or \lopt{output}) option. In the case of ASCII, normally only the passes with some valid data are output. Using the option \sopt{k} or \lopt{keep} keeps all passes, irrespectively.
 
@@ -846,6 +846,8 @@ The command line options that are specific to \prog{radscolin4} are listed here.
 \item[\loptc{step}{N}] Write out only one out of N bins along track.
 \item[\optc{r}{reject-on-nan}{VAR}] ~\\
 Base the count of ``valid passes'' on variable whether \emph{VAR} is not NaN. By default \prog{radscolin4} looks for the validity of the variable \var{sla}, if used in the list of variables on the \sopt{V} option. If \var{sla} is not used, the first variable is checked for validity.
+\item[\optc{r}{reject-on-nan}{all}] ~\\
+Base the count of ``valid passes'' on whether all variables on the \sopt{V} option are not NaN.
 \item[\soptc{r}{NR}] ~\\
 Reject stacked data when there are fewer than NR tracks with valid values. Which variable is used to determine ``valid'' is explained above.
 \item[\soptb{r}{0}~~~~\soptb{r}{none}~~~~\sopt{r}] ~\\
@@ -855,11 +857,11 @@ Reject stacked data when data on any track is NaN. This is the default behaviour
 \item[\opt{k}{keep}] ~\\
 Keep all the passes in the output, even those that do not have any valid data in the selected area. By default, passes without any valid values are removed from the output.
 \item[\opt{a}{mean}] ~\\
-Output the mean value in each stacked bin in addition to the values in each collinear pass. 
+Output the mean value in each stacked bin in addition to the values in each collinear pass.
 \item[\opt{s}{stddev}] ~\\
-Output the standard deviation in each stacked bin in addition to the values in each collinear pass. 
+Output the standard deviation in each stacked bin in addition to the values in each collinear pass.
 \item[\opt{l}{minmax}] ~\\
-Output the minimum and maximum in each stacked bin in addition to the values in each collinear pass. 
+Output the minimum and maximum in each stacked bin in addition to the values in each collinear pass.
 \item[\opt{d}{no-pass}] ~\\
 Do not output the values in each individual collinear pass.
 \item[\opt{t}{no-track}] ~\\
@@ -1369,7 +1371,7 @@ self-descriptive, so not much additional information is needed. This allows also
 has become irrelevant. Information about the field order
 is contained in the meta data.
 \item[Flexibility:] The idea of fixed record lengths is left. Reading is no longer performed by fixed record length Fortran read statements, but by netCDF read statements. Although this requires extra coding, it is much more system-independent, and allows easy augmentation of the data files.
-\item[Byte representation:] The netCDF library takes care of the issue of byte representation that makes it possible even to use single and double floats, not only integers. 
+\item[Byte representation:] The netCDF library takes care of the issue of byte representation that makes it possible even to use single and double floats, not only integers.
 \end{description}
 
 \section{Data structure}
@@ -1544,7 +1546,7 @@ under development, and supporting tools.
 What is new in the data base?
 \begin{itemize}
 \item The GOT00.1 and CLS01 mean sea surface models have been added to all data sets.
-\item The EGM96 geoid and GOT00.1 and CLS01 mean sea surface models are now 
+\item The EGM96 geoid and GOT00.1 and CLS01 mean sea surface models are now
 interpolated using bi-cubic
 splines. This provides much better results, particularly for EGM96.
 \item The OSU MSS95 mean sea surface model (using bi-linear interpolation)
