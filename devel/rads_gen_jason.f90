@@ -201,8 +201,8 @@ do
 ! Use special conversion of cycle numbers for geodetic mission
 
 	if (S%sat == 'j1' .and. S%phase%name(1:1) == 'c') then
-		! Redetermine subcycle numbering
-		r = (cyclenr - 500) * 280 + (passnr - 1)
+		! Redetermine subcycle numbering from the GDR cycle and pass numbers
+		r = (cyclenr - 500) * 280 + (passnr - 1) ! GDRs of Phase C start with Cycle 500 and have 280 passes per cycle
 		q = (r/10438) * 43
 		r = modulo(r,10438)
 		q = q + (r/4608) * 19
@@ -213,9 +213,10 @@ do
 		r = modulo(r,280)
 		cyclenr = q + 382
 		passnr = r + 1
-	else if (S%sat == 'j2' .and. S%phase%name(1:1) == 'c') then
-		! Redetermine subcycle numbering
-		r = (cyclenr - 500) * 254 + (passnr - 1)
+	else if (S%sat == 'j2' .and. S%phase%name(1:1) >= 'c') then
+		! Redetermine subcycle numbering from the GDR cycle and pass numbers
+		if (S%phase%name(1:1) == 'd') cyclenr = cyclenr - 100 ! GDRs of Phase D start with Cycle 600
+		r = (cyclenr - 500) * 254 + (passnr - 1) ! GDRs of Phase C start with Cycle 500 and have 254 passes per cycle
 		q = (r/9472) * 23
 		r = modulo(r,9472)
 		q = q + (r/3702) * 9
