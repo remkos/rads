@@ -213,9 +213,8 @@ do
 		r = modulo(r,280)
 		cyclenr = q + 382
 		passnr = r + 1
-	else if (S%sat == 'j2' .and. S%phase%name(1:1) >= 'c') then
+	else if (S%sat == 'j2' .and. S%phase%name(1:1) == 'c') then
 		! Redetermine subcycle numbering from the GDR cycle and pass numbers
-		if (S%phase%name(1:1) == 'd') cyclenr = cyclenr - 100 ! GDRs of Phase D start with Cycle 600
 		r = (cyclenr - 500) * 254 + (passnr - 1) ! GDRs of Phase C start with Cycle 500 and have 254 passes per cycle
 		q = (r/9472) * 23
 		r = modulo(r,9472)
@@ -226,6 +225,19 @@ do
 		q = q + (r/434)
 		r = modulo(r,434)
 		cyclenr = q + 332
+		passnr = r + 1
+	else if (S%sat == 'j2' .and. S%phase%name(1:1) == 'd') then
+		! Redetermine subcycle numbering from the GDR cycle and pass numbers
+		r = (cyclenr - 600) * 254 + (passnr - 1) ! GDRs of Phase C start with Cycle 500 and have 254 passes per cycle
+		q = (r/9472) * 23
+		r = modulo(r,9472)
+		q = q + (r/3702) * 9
+		r = modulo (r,3702)
+		q = q + (r/2068) * 5
+		r = modulo(r,2068)
+		q = q + (r/434)
+		r = modulo(r,434)
+		cyclenr = q + 356
 		passnr = r + 1
 	endif
 
