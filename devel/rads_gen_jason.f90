@@ -228,7 +228,8 @@ do
 		passnr = r + 1
 	else if (S%sat == 'j2' .and. S%phase%name(1:1) == 'd') then
 		! Redetermine subcycle numbering from the GDR cycle and pass numbers
-		r = (cyclenr - 600) * 254 + (passnr - 1) ! GDRs of Phase C start with Cycle 500 and have 254 passes per cycle
+		r = (cyclenr - 600) * 254 + (passnr - 1) ! GDRs of Phase D start with Cycle 600 and have 254 passes per cycle
+		r = r + 142 ! This is to shift the pass numbering in order to align with Phase C
 		q = (r/9472) * 23
 		r = modulo(r,9472)
 		q = q + (r/3702) * 9
