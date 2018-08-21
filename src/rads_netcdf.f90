@@ -101,13 +101,14 @@ end function nf90_inq_varid_warn
 ! Define dimension as a coordinate axis
 !
 ! SYNOPSIS
-subroutine nf90_def_axis (ncid, varnm, long_name, units, nx, x0, x1, dimid, varid, axis, standard_name)
+subroutine nf90_def_axis (ncid, varnm, long_name, units, nx, x0, x1, dimid, varid, axis, standard_name, deflate)
 use netcdf
 character(len=*), intent(in) :: varnm, long_name, units
 integer, intent(in) :: ncid, nx
 real(eightbytereal), intent(in) :: x0,x1
 integer, intent(out) :: dimid, varid
 character(len=*), intent(in), optional :: axis, standard_name
+integer, intent(in), optional :: deflate
 !
 ! This routine sets up a dimension and its associated variable in a netCDF
 ! file. Supply variable name, long name, units, number of elements, and range.
@@ -128,6 +129,8 @@ character(len=*), intent(in), optional :: axis, standard_name
 ! The optional strings <axis> and <standard_name> can be added to add these
 ! additional attributes to the coordinate variable.
 !
+! The optional value <deflate> can specify the deflate level, if required.
+!
 ! When creating an 'unlimited' dimension, specify <nx> as nf90_unlimited (or 0).
 !
 ! ARGUMENTS
@@ -141,6 +144,7 @@ character(len=*), intent(in), optional :: axis, standard_name
 ! varid    : NetCDF variable ID
 ! axis     : (Optional) string for axis attribute
 ! standard_name : (Optional) string for standard_name attribute
+! deflate  : (Optional) deflate level
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: i, j, node_offset
 real(eightbytereal) :: dx = 0d0
@@ -175,6 +179,10 @@ dx = (x1-x0) / (nx-1)
 call nfs(nf90_put_att(ncid,varid,'valid_min',x0))
 call nfs(nf90_put_att(ncid,varid,'valid_max',x1))
 call nfs(nf90_put_att(ncid,varid,'grid_step',dx))
+
+! Set deflate level
+if (present(deflate)) call nfs(nf90_def_var_deflate(ncid,varid,1,deflate,deflate))
+
 end subroutine nf90_def_axis
 
 !****f* rads_netcdf/nf90_put_axis
