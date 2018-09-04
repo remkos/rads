@@ -15,7 +15,7 @@ The only requirements to compile and run the code are:
 * A unix type environment (Linux, Mac OS X, etc.).
 * The make command.
 * A fortran compiler (preferrably gfortran, but others like f90, f95, xlf90, xlf95 and ifort are known to work as well)
-* The netCDF library (version 4 or later) with the Fortran 90 interface, as well as its dependencies.
+* The netCDF library (version 4.3 or later) and together with the Fortran 90 interface and module file.
 * Optionally, the git program.
 * For downloading and synchronising the data base: the rsync program.
 
