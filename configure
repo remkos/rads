@@ -4347,12 +4347,15 @@ $as_echo "$NETCDF_LIB" >&6; }
 # -----------------------------------------------------------------
 # Try to compile simple program with netCDF
 # -----------------------------------------------------------------
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if $FC can compile a netCDF program" >&5
-$as_echo_n "checking if $FC can compile a netCDF program... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if $FC can compile a simple netCDF program" >&5
+$as_echo_n "checking if $FC can compile a simple netCDF program... " >&6; }
 cat <<EOF > conftest.f90
 program foo
+use typesizes
 use netcdf
+integer :: i = 0, j
 write (*,"(a)") nf90_inq_libvers()
+if (i == 1) j = nf90_def_var_deflate (0, 0, 0, 0, 0)
 end program
 EOF
 doit="$FC $FCFLAGS conftest.f90 -o conftest.exe $NETCDF_INC $NETCDF_LIB"
@@ -4387,6 +4390,8 @@ $as_echo "$as_me: WARNING: no" >&2;}
 	echo "- Your compiler $FC does not properly compile Fortran 90 code."
 	echo "  Find another compiler and specify it on the command line"
 	echo "  using FC=<compilername>."
+	echo "- Your netCDF Fortran library is too old. Use version 4.3"
+	echo "  or later."
 	echo "========================================================"
 	exit 1
 fi

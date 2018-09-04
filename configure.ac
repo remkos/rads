@@ -210,11 +210,14 @@ AC_SUBST(NETCDF_LIB)
 # -----------------------------------------------------------------
 # Try to compile simple program with netCDF
 # -----------------------------------------------------------------
-AC_MSG_CHECKING([if $FC can compile a netCDF program])
+AC_MSG_CHECKING([if $FC can compile a simple netCDF program])
 cat <<EOF > conftest.f90
 program foo
+use typesizes
 use netcdf
+integer :: i = 0, j
 write (*,"(a)") nf90_inq_libvers()
+if (i == 1) j = nf90_def_var_deflate (0, 0, 0, 0, 0)
 end program
 EOF
 doit="$FC $FCFLAGS conftest.f90 -o conftest.exe $NETCDF_INC $NETCDF_LIB"
@@ -242,6 +245,8 @@ else
 	echo "- Your compiler $FC does not properly compile Fortran 90 code."
 	echo "  Find another compiler and specify it on the command line"
 	echo "  using FC=<compilername>."
+	echo "- Your netCDF Fortran library is too old. Use version 4.3"
+	echo "  or later."
 	echo "========================================================"
 	exit 1
 fi
