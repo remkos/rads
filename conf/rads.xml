@@ -3701,24 +3701,24 @@ Global RADS configuration file
 	</phase>
 	<phase name="1">
 		<mission>Initial Drift Phase</mission>
-		<cycles>6 8</cycles><!--Need to update this value-->
+		<cycles>6 8</cycles>
 		<repeat>31 884</repeat>
-		<ref_pass>2018-05-30T13:57:33 120.51 7 847 496</ref_pass><!--Need to update this value-->
-		<start_time>2018-05-29T04:02:29</start_time><!--Need to update this value-->
+		<ref_pass>2018-05-30T13:57:33 120.51 7 847 496</ref_pass>
+		<start_time>2018-05-29T04:02:29</start_time>
 	</phase>
 	<phase name="a">
 		<mission>Tandem Phase</mission>
-		<cycles>9 18</cycles><!--Need to update this value-->
+		<cycles>9 14</cycles>
 		<repeat>27 770</repeat>
 		<ref_pass>2018-05-31T21:57:35 0.627 9 1 515</ref_pass>
-		<start_time>2018-06-06T02:14:50</start_time><!--Need to update this value-->
+		<start_time>2018-06-06T02:14:50</start_time>
 	</phase>
 	<phase name="b">
 		<mission>Drift Phase</mission>
-		<cycles>19 19</cycles><!--Need to update this value-->
-		<repeat>27 770</repeat>
-		<ref_pass>2019-05-17T21:57:00 0.627 19 1</ref_pass><!--Need to update this value-->
-		<start_time>2019-05-17T21:57:00</start_time><!--Need to update this value-->
+		<cycles>15 19</cycles><!--Need to update this value-->
+		<repeat>80 2282 0.0315</repeat><!--Need to update this value-->
+		<ref_pass>2018-10-16T10:32:37 171.741 15 73</ref_pass><!--Need to update this value-->
+		<start_time>2018-10-16T10:32:37</start_time><!--Need to update this value-->
 	</phase>
 	<phase name="c">
 		<mission>Exact Repeat Mission</mission>
