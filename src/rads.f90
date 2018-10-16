@@ -3782,7 +3782,7 @@ integer(fourbyteint), intent(in) :: cycle, pass
 ! pass     : Pass number
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: cc, pp
-real(eightbytereal) :: d
+real(eightbytereal) :: d, e
 
 ! For constructions with subcycles, convert first to "real" cycle/pass number
 if (associated(S%phase%subcycles)) then
@@ -3798,7 +3798,8 @@ P%equator_time = S%phase%ref_time + ((cc - S%phase%ref_cycle) * S%phase%repeat_p
 P%start_time = P%equator_time - 0.5d0 * d
 P%end_time = P%equator_time + 0.5d0 * d
 d = -S%phase%repeat_nodal * 360d0 / S%phase%repeat_passes ! Longitude advance per pass due to precession of node and earth rotation
-P%equator_lon = modulo(S%phase%ref_lon + (pp - S%phase%ref_pass) * d + modulo(pp - S%phase%ref_pass,2) * 180d0, 360d0)
+e = S%phase%repeat_shift * (P%equator_time - S%phase%ref_time) / S%phase%pass_seconds / S%phase%repeat_passes ! Longitude shift per cycle
+P%equator_lon = modulo(S%phase%ref_lon + (pp - S%phase%ref_pass) * d + e + modulo(pp - S%phase%ref_pass,2) * 180d0, 360d0)
 if (rads_verbose >= 4) write (*,'(a,3f15.3,f12.6)') 'Estimated start/end/equator time/longitude = ', &
 	P%start_time, P%end_time, P%equator_time, P%equator_lon
 end subroutine rads_predict_equator
