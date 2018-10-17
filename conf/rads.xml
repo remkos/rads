@@ -3717,7 +3717,7 @@ Global RADS configuration file
 		<mission>Drift Phase</mission>
 		<cycles>15 19</cycles><!--Need to update this value-->
 		<repeat>80 2282 0.0315</repeat><!--Need to update this value-->
-		<ref_pass>2018-10-16T10:32:37 171.741 15 73</ref_pass><!--Need to update this value-->
+		<ref_pass>2018-10-16T10:32:37 171.741 15 73 2476</ref_pass><!--Need to update this value-->
 		<start_time>2018-10-16T10:10:30</start_time><!--Need to update this value-->
 	</phase>
 	<phase name="c">
