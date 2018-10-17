@@ -1596,7 +1596,6 @@ Global RADS configuration file
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
 </var>
-<alias name="mss" field="16">mss_dtu15</alias>
 <var name="geoid_xgm2016" field="1620">
 	<long_name>XGM2016 geoid height</long_name>
 	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
@@ -1607,6 +1606,16 @@ Global RADS configuration file
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
 </var>
+<var name="mss_dtu18" field="1621">
+	<long_name>DTU18 mean sea surface height</long_name>
+	<source>DTU18</source>
+	<parameters>DTU18/DTU18MSS_1min.nc</parameters>
+	<units>m</units>
+	<data>mss_dtu18</data>
+	<format>f10.4</format>
+	<compress>int4 1e-4</compress>
+</var>
+<alias name="mss" field="16">mss_dtu15</alias>
 
 <if sat="sa">
 	<var name="swh_ka" field="1701">
