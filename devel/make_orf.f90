@@ -159,7 +159,7 @@ do i = 1,norf
 	date(5:5) = '/'
 	date(8:8) = '/'
 	! Compute the absolute orbit number (add 2*ref_orbit first to avoid dividing negative numbers)
-	abs_orbit = (S%phase%ref_orbit * 2 + (cycle - S%phase%ref_cycle) * S%phase%passes + (pass - S%phase%ref_pass)) / 2
+	abs_orbit = (S%phase%ref_orbit * 2 + (cycle - S%phase%ref_cycle) * S%phase%repeat_passes + (pass - S%phase%ref_pass)) / 2
 	! Subtract 1 for the start of a pass (large negative latitude)
 	if (orf(i)%lat < -min_lat) abs_orbit = abs_orbit - 1
 	write (*,610) date(1:23),rads_tab,cycle,rads_tab,pass,rads_tab,abs_orbit,rads_tab, &

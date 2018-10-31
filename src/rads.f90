@@ -96,7 +96,7 @@ type :: rads_phase                                   ! Information about altimet
 	integer(fourbyteint) :: ref_orbit                ! Absolute orbit nr of "reference pass" (at eq.)
 	real(eightbytereal) :: pass_seconds              ! Length of pass in seconds
 	real(eightbytereal) :: repeat_days               ! Length of repeat period in days
-	real(eightbytereal) :: repeat_shift              ! Eastward shift of track pattern for near repeats
+	real(eightbytereal) :: repeat_shift              ! Eastward shift of track pattern per cycle for near repeats
 	integer(fourbyteint) :: repeat_nodal             ! Length of repeat period in nodal days
 	integer(fourbyteint) :: repeat_passes            ! Number of passes per repeat period
 	type(rads_cyclist), pointer :: subcycles         ! Subcycle definition (if requested)
@@ -608,9 +608,12 @@ endif
 if (.not.associated(S%phases)) call rads_exit ('Satellite "'//S%sat//'" unknown')
 
 ! Set end times for phases where they are NaN
+! Compute the maximum pass number for phases with one cycle
 n = size(S%phases)
 do i = 1,n-1
 	if (isnan_(S%phases(i)%end_time)) S%phases(i)%end_time = S%phases(i+1)%start_time
+	if (S%phases(i)%cycles(1) == S%phases(i)%cycles(2)) &
+		S%phases(i)%passes = S%phases(i)%ref_pass + 2 * (S%phases(i+1)%ref_orbit-S%phases(i)%ref_orbit) - 1
 enddo
 if (isnan_(S%phases(n)%end_time)) S%phases(n)%end_time = 2051222400d0 ! 2050-01-01
 
@@ -3841,7 +3844,7 @@ d = S%phases(i)%pass_seconds
 t0 = S%phases(i)%ref_time - (S%phases(i)%ref_pass - 0.5d0) * d ! Time of start of ref_cycle
 x = (time - t0) / (S%phases(i)%repeat_days * 86400d0) + S%phases(i)%ref_cycle
 cycle = floor(x)
-pass = int((x - cycle) * S%phases(i)%passes + 1)
+pass = int((x - cycle) * S%phases(i)%repeat_passes + 1)
 
 ! When there are subcycles, compute the subcycle number
 if (associated(S%phases(i)%subcycles)) then
