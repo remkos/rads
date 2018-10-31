@@ -3722,19 +3722,40 @@ Global RADS configuration file
 		<ref_pass>2018-05-31T21:57:35 0.627 9 1 515</ref_pass>
 		<start_time>2018-06-06T02:14:50</start_time>
 	</phase>
-	<phase name="b">
+	<phase name="2">
 		<mission>Drift Phase</mission>
-		<cycles>15 19</cycles><!--Need to update this value-->
-		<repeat>80 2282 0.0315</repeat><!--Need to update this value-->
-		<ref_pass>2018-10-16T10:32:37 171.741 15 73 2476</ref_pass><!--Need to update this value-->
-		<start_time>2018-10-16T10:10:30</start_time><!--Need to update this value-->
+		<cycles>15 15</cycles><!--Need to update this value-->
+		<repeat>80 2282 0.0933</repeat><!--Need to update this value-->
+		<ref_pass>2018-10-16T10:32:35 171.742 15 73 2476</ref_pass><!--Need to update this value-->
+		<start_time>2018-10-16T10:07:20</start_time><!--Need to update this value-->
 	</phase>
-	<phase name="c">
+	<phase name="3">
+		<mission>Drift Phase</mission>
+		<cycles>16 16</cycles><!--Need to update this value-->
+		<repeat>400 11418 1.0833</repeat><!--Need to update this value-->
+		<ref_pass>2018-10-24T10:22:27 174.266 16 301 2590</ref_pass><!--Need to update this value-->
+		<start_time>2018-10-24T09:57:30</start_time><!--Need to update this value-->
+	</phase>
+	<phase name="4">
+		<mission>Drift Phase</mission>
+		<cycles>17 17</cycles><!--Need to update this value-->
+		<repeat>400 11418 1.0833</repeat><!--Need to update this value-->
+		<ref_pass>2018-11-09T21:32:40 6.783 17 1 2825</ref_pass><!--Need to update this value-->
+		<start_time>2018-11-09T21:07:40</start_time><!--Need to update this value-->
+	</phase>
+	<phase name="5">
+		<mission>Drift Phase</mission>
+		<cycles>18 18</cycles><!--Need to update this value-->
+		<repeat>242 6902 0.2017</repeat><!--Need to update this value-->
+		<ref_pass>2018-11-20T14:49:28 107.613 18 21 2978</ref_pass><!--Need to update this value-->
+		<start_time>2018-11-20T14:24:40</start_time><!--Need to update this value-->
+	</phase>
+	<phase name="b">
 		<mission>Exact Repeat Mission</mission>
-		<cycles>20 99</cycles><!--Need to update this value-->
+		<cycles>19 99</cycles><!--Need to update this value-->
 		<repeat>27 770</repeat>
-		<ref_pass>2019-06-13T21:57:00 0.159 20 1</ref_pass><!--Need to update this value-->
-		<start_time>2019-06-13T21:57:00</start_time><!--Need to update this value-->
+		<ref_pass>2018-11-23T10:08:38 177.820 18 101 3018</ref_pass><!--Need to update this value-->
+		<start_time>2018-11-23T09:46:00</start_time><!--Need to update this value-->
 	</phase>
 </if>
 
