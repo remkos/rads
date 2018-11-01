@@ -28,13 +28,19 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 ## Version History
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 
+### v4.4.0 (1 Nov 2018)
+* New mission definitions for Sentinel-3B.
+* Store output varid in var struct instead of varinfo struct (fixed issue #126).
+* Update data manual on Sentinel-3A and -3B (fixed issue #131).
+* Specify separate flag_meanings for each mission (fixed issue #132).
+
 ### v4.3.1 (4 Sep 2018)
-* New mission phase definition for Jason-2 Phase D
-* New mission definitions for Sentinel-3B
+* New mission phase definition for Jason-2 Phase D.
+* New mission definitions for Sentinel-3B.
 * Added optional argument "deflate" to nf90_def_axis.
-* Replaced iqsort by more stable version of quicksort (fixed issue #127)
-* No more duplicate tracks in radsxogen when generating single- and dual-satellite xovers (fixed issue #129)
-* Documented the --reject-on-nan=all option in radscolin4
+* Replaced iqsort by more stable version of quicksort (fixed issue #127).
+* No more duplicate tracks in radsxogen when generating single- and dual-satellite xovers (fixed issue #129).
+* Documented the --reject-on-nan=all option in radscolin4.
 
 ### v4.3.0 (30 May 2018)
 * Added support for processing of Sentinel-3B data.
