@@ -467,8 +467,8 @@ Pout%rw = .true.
 ! Define "time" variables
 call nfs (nf90_def_var (ncid, 'nr', nf90_int4, dimid(1:1), varid(1)))
 call nfs (nf90_put_att (ncid, varid(1), 'long_name', 'number of measurements'))
-if (period /= period_day) call rads_def_var (S, Pout, rads_varptr(S, 'cycle'))
-if (period == period_pass) call rads_def_var (S, Pout, rads_varptr(S, 'pass'))
+if (period /= period_day) call rads_def_var (S, Pout, 'cycle')
+if (period == period_pass) call rads_def_var (S, Pout, 'pass')
 call rads_def_var (S, Pout, S%time)
 
 ! Define "stat" variable
