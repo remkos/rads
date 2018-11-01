@@ -2590,11 +2590,77 @@ Global RADS configuration file
 	-->
 	<format>b16.16</format>
 	<compress>int2</compress>
-	<flag_masks>
+	<flag_masks> <!--This is for j2 and j3-->
+		alt_side_B attitude_bad continental_ice alt_iono_bad
+		alt_land alt_non_ocean rad_land alt_rain_or_ice
+		rad_rain_or_ice tb1_tb2_bad tb2_bad range_suspect
+		swh_suspect backscatter_suspect not_used orbit_degraded
+	</flag_masks>
+	<flag_masks sat="j1">
+		alt_side_B attitude_bad continental_ice alt_iono_bad
+		alt_land alt_non_ocean rad_land alt_rain_or_ice
+		rad_rain_or_ice tb1_tb2_bad tb2_bad range_suspect
+		swh_suspect backscatter_suspect c_band_coarse orbit_degraded
+	</flag_masks>
+	<flag_masks sat="tx">
 		hardware_bad attitude_bad flag_rad_oper_mode alt_iono_bad
 		alt_land alt_non_ocean rad_land alt_rain_or_ice
-		rad_rain_or_ice tb1_bad tb2_bad range_suspect
+		rad_rain_or_ice tb1_tb2_bad tb3_bad range_suspect
+		swh_suspect backscatter_suspect tracking_acquisition orbit_degraded
+	</flag_masks>
+	<flag_masks sat="pn">
+		hardware_bad attitude_bad flag_rad_oper_mode not_used
+		alt_land alt_non_ocean rad_land alt_rain_or_ice
+		rad_rain_or_ice tb1_tb2_bad tb3_bad range_suspect
+		swh_suspect backscatter_suspect tracking_acquisition orbit_degraded
+	</flag_masks>
+	<flag_masks sat="e1">
+		sptr_availability not_used not_used not_used
+		alt_land alt_non_ocean rad_land not_used
+		rad_rain_or_ice tb2_bad tb3_bad range_suspect
 		swh_suspect backscatter_suspect tracking_preset orbit_degraded
+	</flag_masks>
+	<flag_masks sat="e2">
+		not_used attitude_bad not_used not_used
+		alt_land alt_non_ocean rad_land not_used
+		rad_rain_or_ice tb2_bad tb3_bad range_suspect
+		swh_suspect backscatter_suspect tracking_preset orbit_degraded
+	</flag_masks>
+	<flag_masks sat="n1">
+		alt_side_B attitude_bad continental_ice alt_iono_bad
+		alt_land alt_non_ocean rad_land alt_rain_or_ice
+		rad_rain_or_ice tb2_bad tb3_bad range_suspect
+		swh_suspect backscatter_suspect tracking_preset orbit_degraded
+	</flag_masks>
+	<flag_masks sat="g1">
+		not_used attitude_bad not_used not_used
+		alt_land alt_non_ocean rad_land alt_rain_or_ice
+		not_used tb2_bad tb3_bad range_suspect
+		swh_suspect backscatter_suspect not_used orbit_degraded
+	</flag_masks>
+	<flag_masks sat="sa">
+		not_used not_used continental_ice not_used
+		alt_land alt_non_ocean rad_land alt_rain_or_ice
+		not_used tb2_bad tb3_bad range_suspect
+		swh_suspect backscatter_suspect not_used orbit_degraded
+	</flag_masks>
+	<flag_masks sat="c2">
+		sar_mode not_used continental_ice not_used
+		alt_land alt_non_ocean not_used not_used
+		not_used not_used not_used range_suspect
+		swh_suspect backscatter_suspect not_used orbit_degraded
+	</flag_masks>
+	<flag_masks sat="gs">
+		not_used attitude_bad range_suspect not_used
+		alt_land alt_non_ocean not_used not_used
+		not_used not_used not_used range_suspect
+		ssb_suspect wind_speed_suspect tracking_acquisition orbit_degraded
+	</flag_masks>
+	<flag_masks sat="3a 3b">
+		sar_mode attitude_bad continental_ice alt_iono_bad
+		alt_land alt_non_ocean rad_land alt_rain_or_ice
+		rad_rain_or_ice tb2_bad tb3_bad range_suspect
+		swh_suspect backscatter_suspect not_used orbit_degraded
 	</flag_masks>
 </var>
 <var name="flags_orig" field="2602" sat="j1">
