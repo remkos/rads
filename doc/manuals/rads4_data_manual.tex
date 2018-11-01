@@ -730,8 +730,10 @@ where \var{flags_low} and \var{flags_high} are the lower and higher limit of \va
 In a future version of the data base the flag word \var{flags} will be phased out and only the more elementary flag variables that are now defined as aliases will be available.
 
 \begin{vartable}
-\var{flags} & 2601 & flag word & & c2 & 32 0 &  \\
-            &      &           & & 3a e1 e2 j1 j2 j3 & 65512 0 &  \\
+\var{flags} & 2601 & flag word & & 3a 3b & 65448 0 & \ref{item:no_rad_land} \\
+            &      &           & & c2 & 32 0 & \\
+            &      &           & & e1 e2 j1 j2 & 65512 0 & \\
+            &      &           & & j3 & 65384 0 & \ref{item:no_rad_land} \\
             &      &           & & g1 & 65384 0 & \\
             &      &           & & gs & 51176 0 & \\
             &      &           & & n1 & 36712 0 & \\
@@ -740,6 +742,10 @@ In a future version of the data base the flag word \var{flags} will be phased ou
 \hline
             & 26   & \alias{flags} & & & & \\
 \end{vartable}
+
+\begin{notes}
+\item This is a temporary value, where the radiometer land flag is not considered as an edit criterion. \label{item:no_rad_land} \\
+\end{notes}
 
 The individual bits of the flag word \var{flags} are described in the following table. Note that the limits on these alias are not actually set at this time, but they are a transposition of the editing ranges for each individual altimeter as indicated in the table above. In general, 0 means no or OK, 1 means yes or bad.
 
@@ -751,21 +757,22 @@ The individual bits of the flag word \var{flags} are described in the following 
 Variable & field & name & values & sat & note \\
 \hline
 \var{flag_alt_oper_mode} & 2516 & bit 0: hardware/software status & 0 = nominal, 1 = bad & pn tx & \\
-                         & 2516 & bit 0: altimeter status & 0 = Side A, 1 = Side B & j1 j2 j3 n1 & \\
-                         & 2516 & bit 0: altimeter status &  0 = LRM, 1 = PLRM & c2 & \\
+                         & 2516 & bit 0: altimeter operating mode & 0 = Side A, 1 = Side B & j1 j2 j3 n1 & \\
+                         & 2516 & bit 0: altimeter operating mode & 0 = LRM, 1 = SAR & 3a 3b c2 & \\
 \var{qual_sptr}          & 2516 & bit 0: SPTR availability & & e1 & \\
-\var{qual_attitude}      & 2501 & bit 1: quality of attitude & 0 = ok, 1 = bad & e2 j1 j2 j3 n1 tx sa & \\
+\var{qual_attitude}      & 2501 & bit 1: quality of attitude & 0 = ok, 1 = bad & 3a 3b e2 j1 j2 j3 n1 tx sa & \\
                          &      & bit 1: quality of attitude & 0 = ok, 1 = suspect & g1 gs pn & \\
 \var{qual_dh}            & 2502 & bit 2: dH status & 1 = suspect & gs & \\
 \var{flag_rad_oper_mode} & 2502 & bit 2: TMP 21 GHz Channel status & 0 = A, 1 = B & pn tx & \\
-\var{qual_iono_alt}      & 2503 & bit 3: quality of dual-frequency iono corr & 0 = ok, 1 = bad & j1 j2 j3 n1 tx \\
+\var{flag_continental_ice} & 2502 & bit 2: continental ice flag & 0 = no, 1 = yes & 3a 3b c2 j1 j2 j3 n1 sa & \\
+\var{qual_iono_alt}      & 2503 & bit 3: quality of dual-frequency iono corr & 0 = ok, 1 = bad & 3a 3b j1 j2 j3 n1 tx \\
 \var{flag_water}         & 2504 & bit 4: water/dry flag & 0 = open ocean or enclosed sea or lake, 1 = land & all & \\
 \var{flag_ocean}         & 2505 & bit 5: ocean/land flag & 0 = open ocean, 1 = land or enclosed sea or lake & all & \\
 \var{surface_type_rad}   & 2506 & bit 6: radiometer land flag & 0 = water, 1 = land & all but c2 gs & \\
-\var{qual_alt_rain_ice}  & 2507 & bit 7: altimeter rain/ice flag & 0 = no rain/ice, 1 = rain/ice & all but c2 gs & \\
-\var{qual_rad_rain_ice}  & 2508 & bit 8: radiometer rain/ice flag & 0 = no rain/ice, 1 = rain/ice & e1 e2 j1 j2 j3 n1 pn tx & \\
+\var{qual_alt_rain_ice}  & 2507 & bit 7: altimeter rain/ice flag & 0 = no rain/ice, 1 = rain/ice & 3a 3b g1 j1 j2 j3 n1 pn sa tx & \\
+\var{qual_rad_rain_ice}  & 2508 & bit 8: radiometer rain/ice flag & 0 = no rain/ice, 1 = rain/ice & 3a 3b e1 e2 j1 j2 j3 n1 pn tx & \\
 \var{qual_rad_tb}        & 2509 & bit 9/10: radiometer quality flag & 0 = ok, 1 = interp.\ near land, 2 = extrap., 3 = interp.\ failed & pn tx & \\
-                         &      & & 0 = ok, 1 = bad tb238, 2 = bad tb365, 3 = both bad & e1 e2 n1 & \\
+                         &      & & 0 = ok, 1 = bad tb238, 2 = bad tb365, 3 = both bad & 3a 3b e1 e2 n1 & \\
                          &      & & 0 = ok, 1 = bad tb220, 2 = bad tb370, 3 = both bad & g1 & \\
                          &      & & 0 = ok, 1 = bad tb187/tb238, 2 = bad tb340, 3 = both bad & j1 j2 j3 & \\
                          &      & & 0 = ok, 1 = bad tb238, 2 = bad tb370, 3 = both bad & sa & \\
@@ -773,6 +780,8 @@ Variable & field & name & values & sat & note \\
                          &      & & 0 = ok, 1 = suspect & other & \\
 \var{qual_swh}           & 2512 & bit 12: quality of SSB & 0 = ok, 1 = suspect & gs & \\
                          &      & bit 12: quality of SWH & 0 = ok, 1 = suspect & other & \\
+\var{qual_sig0}          & 2513 & bit 13: quality of wind speed & 0 = ok, 1 = suspect & gs & \\
+                         &      & bit 13: quality of sigma0 & 0 = ok, 1 = suspect & other & \\
 \var{flag_alt_track_mode}& 2514 & bit 14: altimeter tracking mode & 0 = nominal, 1 = preset & e1 e2 & \\
                          &      & & 0 = nominal, 1 = coarse or acquisition & gs tx & \\
                          &      & & 0 = nominal, 1 = C-band coarse & j1 & \\
