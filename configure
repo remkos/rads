@@ -1351,8 +1351,8 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-nf-config=dir       Full path to nf-config (or nc-config) [auto]
-  --with-netcdf-inc=dir      Specify location of the netCDF include file [auto]
-  --with-netcdf-lib=dir:dir  Specify location of the netCDF library.  Use colon-separator if Fortran library is in separate directory [auto]
+  --with-netcdf-inc=dir      Specify location of the NetCDF include file [auto]
+  --with-netcdf-lib=dir:dir  Specify location of the NetCDF library.  Use colon-separator if Fortran library is in separate directory [auto]
 
 Some influential environment variables:
   FC          Fortran compiler command
@@ -2302,7 +2302,7 @@ test -n "$nf_config" || nf_config="$with_nf_config"
 # Find Fortran 90 compilers.
 # -----------------------------------------------------------------
 # If F90 is set, and FC isn't, then set FC to whatever F90 was set to.
-# Otherwise set it to what netCDF was compiled with
+# Otherwise set it to what NetCDF was compiled with
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Fortran 90 compiler" >&5
 $as_echo_n "checking for Fortran 90 compiler... " >&6; }
 if test "${F90+set}" = "set"; then
@@ -4314,8 +4314,8 @@ fi
 # -----------------------------------------------------------------
 # Allow user to set --with-netcdf-inc and/or --with-netcdf-lib
 # -----------------------------------------------------------------
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for netCDF includes" >&5
-$as_echo_n "checking for netCDF includes... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for NetCDF includes" >&5
+$as_echo_n "checking for NetCDF includes... " >&6; }
 if ! test "x$with_netcdf_inc" = "x" ; then
 	NETCDF_INC=$MOD_FLAG$with_netcdf_inc
 elif test -x "$nf_config" ; then
@@ -4327,8 +4327,8 @@ fi
 $as_echo "$NETCDF_INC" >&6; }
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for netCDF libraries" >&5
-$as_echo_n "checking for netCDF libraries... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for NetCDF libraries" >&5
+$as_echo_n "checking for NetCDF libraries... " >&6; }
 if ! test "x$with_netcdf_lib" = "x" ; then
 	NETCDF_LIB="-L"`echo $with_netcdf_lib | sed "s=:= -L="`" -lnetcdf"
 	doit="find "`echo $with_netcdf_lib | sed "s=:= ="`" -name libnetcdff*"
@@ -4345,10 +4345,10 @@ $as_echo "$NETCDF_LIB" >&6; }
 
 
 # -----------------------------------------------------------------
-# Try to compile simple program with netCDF
+# Try to compile simple program with NetCDF
 # -----------------------------------------------------------------
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if $FC can compile a simple netCDF program" >&5
-$as_echo_n "checking if $FC can compile a simple netCDF program... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if $FC can compile a simple NetCDF program" >&5
+$as_echo_n "checking if $FC can compile a simple NetCDF program... " >&6; }
 cat <<EOF > conftest.f90
 program foo
 use typesizes
@@ -4375,7 +4375,7 @@ else
 $as_echo "$as_me: WARNING: no" >&2;}
 	echo $doit
 	echo "========================================================"
-	echo "Could not compile simple Fortran 90 program with netCDF."
+	echo "Could not compile simple Fortran 90 program with NetCDF."
 	echo "One or more of the next problems occurred:"
 	echo "- The directory/directories containing libnetcdf/libnetcdff"
 	echo "  library/libraries were not/wrongly identified. Use the"
@@ -4384,13 +4384,13 @@ $as_echo "$as_me: WARNING: no" >&2;}
 	echo "- The directory containing netcdf.mod was not/wrongly"
 	echo "  identified. Use the --with-netcdf-inc=DIR option to"
 	echo "  specify the proper directory."
-	echo "- The netCDF library pointed to was not compiled with"
-	echo "  Fortran 90 support. Recompile the netCDF library with the"
+	echo "- The NetCDF library pointed to was not compiled with"
+	echo "  Fortran 90 support. Recompile the NetCDF library with the"
 	echo "  configuration flag --enable-f90"
 	echo "- Your compiler $FC does not properly compile Fortran 90 code."
 	echo "  Find another compiler and specify it on the command line"
 	echo "  using FC=<compilername>."
-	echo "- Your netCDF Fortran library is too old. Use version 4.3"
+	echo "- Your NetCDF Fortran library is too old. Use version 4.3"
 	echo "  or later."
 	echo "========================================================"
 	exit 1

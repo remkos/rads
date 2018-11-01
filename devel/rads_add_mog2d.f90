@@ -247,7 +247,7 @@ if (nft(nf90_open(filenm,nf90_nowrite,ncid))) then
 	return
 endif
 
-! Check if netCDF file contains variable name Grid_0001 or dac
+! Check if NetCDF file contains variable name Grid_0001 or dac
 
 if (nft(nf90_inq_varid(ncid,'dac',v_id))) then
 	if (nft(nf90_inq_varid(ncid,'Grid_0001',v_id))) call fin('Error finding variable')

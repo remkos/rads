@@ -17,7 +17,7 @@
 !+
 program radsxolist
 
-! This program lists the contents of RADS netCDF crossover files and
+! This program lists the contents of RADS NetCDF crossover files and
 ! computes statistics.
 !-----------------------------------------------------------------------
 use netcdf
@@ -194,7 +194,7 @@ real(eightbytereal), parameter :: day = 86400d0
 type(rads_var), pointer :: ptr
 logical :: old
 
-! Open netCDF file
+! Open NetCDF file
 600 format (/'# File name     = ',a)
 if (nft (nf90_open (filename, nf90_write, ncid))) then
 	call rads_message ('error opening file '//trim(filename))
@@ -308,7 +308,7 @@ if (tbias /= 0d0) then
 	enddo
 endif
 
-! Close netCDF file
+! Close NetCDF file
 call nfs (nf90_close (ncid))
 
 ! Mask out singles or duals
@@ -544,7 +544,7 @@ endif
 1300 format (/ &
 'usage: radsxo',a,' [options] [--] FILENAME ...' // &
 'Required argument:' / &
-'  FILENAME                  Name of input netCDF xover file'// &
+'  FILENAME                  Name of input NetCDF xover file'// &
 'Optional arguments [options] are:'/ &
 '  -S, --sat SAT1[,SAT2,..]  Comma-separated list of satellites (default: all)'/ &
 '  -X, --xml XMLFILE         Load XMLFILE in addition to RADS defaults'/ &

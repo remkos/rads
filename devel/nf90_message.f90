@@ -8,7 +8,7 @@ integer(fourbyteint), optional :: ncid
 !
 ! This routine prints a message <string> to standard error, while
 ! prepending the program name.
-! Optionally, it adds the file name (based on the netCDF ID) to which
+! Optionally, it adds the file name (based on the NetCDF ID) to which
 ! the error pertains.
 !
 ! Examples:
@@ -19,7 +19,7 @@ integer(fourbyteint), optional :: ncid
 !
 ! Arguments:
 !  string   : Error message string
-!  ncid     : Optional: netCDF ID providing the filename
+!  ncid     : Optional: NetCDF ID providing the filename
 !-----------------------------------------------------------------------
 character(len=160) :: progname, filename
 integer :: i, l

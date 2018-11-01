@@ -23,7 +23,7 @@
 ! The OSI SAF sea ice concentration grids are produced daily. In the
 ! PO.DAAC/NCEI version of GHRSST, the original OSI SAF grids have been
 ! interpolated from a polar stereographic projection to equally spaced,
-! fixed grids. The netCDF files are stored in ${ALTIM}/data/OSAIF/[doy]
+! fixed grids. The NetCDF files are stored in ${ALTIM}/data/OSAIF/[doy]
 !
 ! The sea ice grids have 0.01x0.01 degree resolution. Both land and
 ! ice-free ocean locations contain NaNs; interpolation is linear with a
@@ -269,7 +269,7 @@ if (nft(nf90_open(filenm,nf90_nowrite,ncid))) then
 	return
 endif
 
-! Check if netCDF file contains variable name time
+! Check if NetCDF file contains variable name time
 
 if (nft(nf90_inq_varid(ncid,'time',t_id))) call fin('Error finding variable')
 
@@ -278,7 +278,7 @@ if (nft(nf90_inq_varid(ncid,'time',t_id))) call fin('Error finding variable')
 if (nft(nf90_get_var(ncid,t_id,time))) call fin('Error reading time')
 if (nint((time-126230400)/86400) /= day1985) call fin('Day does not match grid')
 
-! Check if netCDF file contains variable name sea_ice_fraction
+! Check if NetCDF file contains variable name sea_ice_fraction
 
 if (nft(nf90_inq_varid(ncid,'sea_ice_fraction',v_id))) call fin('Error finding variable')
 

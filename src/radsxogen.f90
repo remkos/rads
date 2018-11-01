@@ -22,7 +22,7 @@ program radsxogen
 ! data (single satellite crossovers) or between different
 ! batches of altimeter data (dual satellite crossovers).
 !
-! The output is a netCDF file containing the crossover times
+! The output is a NetCDF file containing the crossover times
 ! and locations of the crossovers, with the information of
 ! the respective passes. With a consecutive run of radsxosel
 ! more information can be added to the crossover file.
@@ -174,12 +174,12 @@ enddo
 ! Do further initialisations
 nr = nr_ (0, 0, 0, 0, 0, 0, 0, 0)
 
-! Open output netCDF file
+! Open output NetCDF file
 call nfs (nf90_create (filename, nf90_write, ncid))
 call nfs (nf90_def_dim (ncid, 'xover', nf90_unlimited, dimid(1)))
 call nfs (nf90_def_dim (ncid, 'leg', 2, dimid(2)))
 
-! To use general netCDF creation machinary, we trick the library a bit here
+! To use general NetCDF creation machinary, we trick the library a bit here
 P%fileinfo(1) = rads_file (ncid, filename)
 P%rw = .true.
 S(1)%time%info%ndims = 2
@@ -262,7 +262,7 @@ nr%trk = j
 ! Print statistics
 write (*, 500) nr
 
-! Add the track info to the netCDF file
+! Add the track info to the NetCDF file
 call nfs (nf90_redef (ncid))
 call nfs (nf90_def_dim (ncid, 'track', nr%trk, dimid(3)))
 call def_var (ncid, 'satid', 'satellite ID', '', nf90_int1, dimid(3:3), varid(5))

@@ -27,7 +27,7 @@ program rads_gen_reaper
 !
 ! syntax: rads_gen_reaper [options] < list_of_REAPER_file_names
 !
-! This program handles only the REAPER ERS_ALT_2 files in netCDF format.
+! This program handles only the REAPER ERS_ALT_2 files in NetCDF format.
 !-----------------------------------------------------------------------
 !
 ! Variables array fields to be filled are:

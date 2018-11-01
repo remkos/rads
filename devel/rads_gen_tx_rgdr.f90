@@ -24,7 +24,7 @@ program rads_gen_tx_rgdr
 !
 ! syntax: rads_gen_tx_rgdr [options] < list_of_RGDR_file_names
 !
-! This program handles TOPEX Retracked GDR files in netCDF format,
+! This program handles TOPEX Retracked GDR files in NetCDF format,
 ! version 5 (released Jan 2015)
 ! The format is described in:
 !

@@ -251,7 +251,7 @@ write (*,1300)
 '      --diff1               Same as --diff-no-coord, writing one cycle at a time, chronologically'/ &
 '                            (cannot be combined with -o, -a, -s, or -l)' / &
 '  -f, --force               Force comparison, even when missions are not considered collinear'/ &
-'  -o, --output [FILENAME]   Create netCDF output by pass (default is ascii output to stdout).'/ &
+'  -o, --output [FILENAME]   Create NetCDF output by pass (default is ascii output to stdout).'/ &
 '                            Optionally specify FILENAME including "#", to be replaced by the pass'/ &
 '                            number. Default is "radscolin_p#.nc"')
 stop
@@ -444,7 +444,7 @@ endif
 end subroutine process_pass
 
 !***********************************************************************
-! Write the pass in netCDF
+! Write the pass in NetCDF
 
 subroutine write_pass_netcdf
 use netcdf
@@ -460,7 +460,7 @@ n = count (nr_in_bin(-nbins:nbins:step) > 0)
 ! Construct filename
 write (filename,'(a,i4.4,a)') trim(prefix),pass,trim(suffix)
 
-! Open output netCDF file
+! Open output NetCDF file
 call nfs (nf90_create (filename, nf90_write, ncid))
 call nfs (nf90_def_dim (ncid, 'bin', n, dimid(1)))
 call nfs (nf90_def_dim (ncid, 'track', ncols, dimid(2)))
@@ -491,7 +491,7 @@ call nfs (nf90_put_att (ncid, nf90_global, 'references', 'RADS Data Manual, Vers
 call nfs (nf90_put_att (ncid, nf90_global, 'pass_number', pass))
 call nfs (nf90_put_att (ncid, nf90_global, 'history', timestamp()//' UTC: '//trim(S(1)%command)))
 
-! To use general netCDF creation machinary, we trick the library a bit here
+! To use general NetCDF creation machinary, we trick the library a bit here
 P%fileinfo(1) = rads_file (ncid, filename)
 P%rw = .true.
 S(1)%time%info%ndims = 2

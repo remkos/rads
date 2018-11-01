@@ -15,7 +15,7 @@
 
 ! This file is included in rads_netcdf.f90 and shared between get_var_1d
 ! and get_var_2d.
-! Both routines are used to read a single variable from a netCDF file
+! Both routines are used to read a single variable from a NetCDF file
 ! (either 1- or 2-dimensional), or load a combination of variables
 ! and/or constants using RPN notation. Note that only the RPN commands
 ! ADD, SUB, MUL, DIV and NEG are available and only 2 buffers can be used,

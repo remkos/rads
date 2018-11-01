@@ -3,7 +3,7 @@
 The Radar Altimeter Database System (RADS) was developed by the Delft Institute for Earth-Oriented Space Research, the NOAA Laboratory for Satellite Altimetry, and EUMETSAT. Apart from actual altimeter data, RADS provides here a suite of applications and subroutines that simplify the reading, editing and handling of data from various radar altimeters. Although the actual content and layout of the underlying data products do not have to be identical for all altimeters, the user interface is. Also, the data base is easily expandable with additional data and/or additional corrections without impact to the user interface, or to the software in general. In fact, only in very few cases the software will need to be adjusted and recompiled, in even fewer cases adjustments to the actual tools will be required.
 
 ## Development
-The RADS database and code has gone through various generations. NetCDF datasets were introduced in version 3, while the software more or less stayed the same as in version 2. This new version is a complete rewrite of the code, making it much easier to configure, handle, and expand, and for the first time taking all the advantages of the underlying netCDF data and the linear algebra provided by Fortran 90.
+The RADS database and code has gone through various generations. NetCDF datasets were introduced in version 3, while the software more or less stayed the same as in version 2. This new version is a complete rewrite of the code, making it much easier to configure, handle, and expand, and for the first time taking all the advantages of the underlying NetCDF data and the linear algebra provided by Fortran 90.
 
 ## Documentation
 There are two manuals that cover the use of the RADS software and the contents of the RADS data base:
@@ -15,7 +15,7 @@ The only requirements to compile and run the code are:
 * A unix type environment (Linux, Mac OS X, etc.).
 * The make command.
 * A fortran compiler (preferrably gfortran, but others like f90, f95, xlf90, xlf95 and ifort are known to work as well)
-* The netCDF library (version 4.3 or later) and together with the Fortran 90 interface and module file.
+* The NetCDF library (version 4.3 or later) and together with the Fortran 90 interface and module file.
 * Optionally, the git program.
 * For downloading and synchronising the data base: the rsync program.
 
@@ -97,8 +97,8 @@ Following is a history of releases on [GitHub](https://github.com/remkos/rads/re
 * Major additions to the user manual.
 * Changes and additions to configuration files for Jason-3 and Sentinel-3A.
 * All help output to be sent to standard output (not standard error).
-* rads2grd: --fmt replaced by --line-format, variable name in netCDF now always ${var}_mean and ${var}_stddev, even when only one variable is used.
-* Updated global attributes to be written in new netCDF files.
+* rads2grd: --fmt replaced by --line-format, variable name in NetCDF now always ${var}_mean and ${var}_stddev, even when only one variable is used.
+* Updated global attributes to be written in new NetCDF files.
 * --quality_flag replaced by --quality-flag (with backward compatibility).
 * Made adaptations for Jason-1 GDR-E (to be released later).
 * Change format of time field to f17.6 in advance of 2016-09-09 when extra digit will be added.

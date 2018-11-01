@@ -27,7 +27,7 @@ program rads_gen_s3
 ! where [options] include:
 !  --min-rec <min_rec> : Specify minimum number of records per pass to process.
 !
-! This program handles Sentinel-3 standard_measurement files in netCDF format.
+! This program handles Sentinel-3 standard_measurement files in NetCDF format.
 ! The format is described in:
 !
 ! [1] SENTINEL-3 Products and Algorithms Definition (S3PAD)

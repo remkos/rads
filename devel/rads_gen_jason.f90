@@ -25,7 +25,7 @@ program rads_gen_jason
 !
 ! syntax: rads_gen_jason [options] < list_of_JASON3_file_names
 !
-! This program handles Jason-1, -2 and -3 OGDR, IGDR and GDR files in netCDF format.
+! This program handles Jason-1, -2 and -3 OGDR, IGDR and GDR files in NetCDF format.
 ! The format is described in:
 !
 ! [1] IGDR and GDR Jason Products, AVISO and PODAAC User Handbook,

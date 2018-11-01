@@ -323,7 +323,7 @@ if (exist) then
 	call nfs(nf90_close(ncid2))
 	if (nrec <= nout) then
 		do i = 1, nfile
-			! Release netCDF file when reaching end
+			! Release NetCDF file when reaching end
 			if (fin(i)%rec1 == fin(i)%nrec) call nfs(nf90_close(fin(i)%ncid))
 		enddo
 		write (*,620) 'Keeping ', 1, nout, nout, date(1:2), '>', trim(outnm)
@@ -352,7 +352,7 @@ do varid1 = 0, nvars
 	if (varid1 > 0) then
 		call nfs(nf90_inquire_variable(ncid1,varid1,varnm,xtype,ndims,dimids,natts))
 		! Skip all listed excluded variables, all 20-Hz variables
-		! Skip also all uint variables because the netCDF library doesn't work with them
+		! Skip also all uint variables because the NetCDF library doesn't work with them
 		! (they occur only in enhanced_measurements.nc)
 		if (excluded(varnm) .or. ndims > 1 .or. dimids(1) > 1 .or. xtype == nf90_uint) cycle
 		call nfs(nf90_def_var(ncid2,varnm,xtype,dimids(1:ndims),varid2))
@@ -423,7 +423,7 @@ do i = 1,nfile
 	if (varid3 > 0) call nfs(nf90_put_var(ncid2,varid3,iarr1,idxut(2:2)))
 	nout = nout + nrec
 	deallocate (darr1,iarr1)
-	! Release netCDF file when reaching end
+	! Release NetCDF file when reaching end
 	if (fin(i)%rec1 == fin(i)%nrec) call nfs(nf90_close(fin(i)%ncid))
 enddo
 

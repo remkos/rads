@@ -29,7 +29,7 @@
 !
 ! The variables are stored in 1x1 degree grids at 6-hour intervals.
 ! All nine variables and all 4 daily temporal intervals can be found
-! in a single netCDF file. These files can be found in ${ALTIM}/data/ww3_314.
+! in a single NetCDF file. These files can be found in ${ALTIM}/data/ww3_314.
 !
 ! The grids contain invalid values, whose mask changes with time, because
 ! of ice cover. The grids are linearly interpolated in space and time
@@ -282,7 +282,7 @@ if (nft(nf90_open(filenm,nf90_nowrite,ncid))) then
 	return
 endif
 
-! Check netCDF file for all variables, long_name, scale_factor, units, and grids
+! Check NetCDF file for all variables, long_name, scale_factor, units, and grids
 
 do var = 1,nvar
 	if (.not.lvar(var)) cycle

@@ -162,7 +162,7 @@ elsewhere
 	box%sum2 = sqrt(box%sum2/(box%nr - 1))
 endwhere
 
-! Write out xyz or netCDF grid
+! Write out xyz or NetCDF grid
 if (grid_name == '') then
 	call write_xyz_grid
 else
@@ -181,7 +181,7 @@ contains
 !***********************************************************************
 
 subroutine synopsis
-if (rads_version ('Quickly grid RADS data to xyz or netCDF grid')) return
+if (rads_version ('Quickly grid RADS data to xyz or NetCDF grid')) return
 call rads_synopsis
 write (*,1300)
 1300 format (/ &
@@ -192,7 +192,7 @@ write (*,1300)
 '  --res DX[,DY]             Set resolution in x and y (default: 1)'/ &
 '  --min MINNR               Minimum number of points per grid cell (default: 2)'/ &
 '  -o, --output, --grd GRIDNAME'/ &
-'                            Create netCDF grid (suppresses ASCII)'/ &
+'                            Create NetCDF grid (suppresses ASCII)'/ &
 '  --line-format FORMAT      Format to be used for ASCII output (default is determined by variables)'/ &
 '  -c                        Boundaries are cell oriented'/ &
 '  -c[x|y]                   Only [x|y]-boundaries are cell oriented')
@@ -260,7 +260,7 @@ enddo
 end subroutine write_xyz_grid
 
 !***********************************************************************
-! Write out netCDF grid
+! Write out NetCDF grid
 
 subroutine write_nc_grid (nvar)
 use netcdf

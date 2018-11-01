@@ -17,7 +17,7 @@
 !+
 program rads2adr
 !
-! This program converts the RADS netCDF altimeter data to the old
+! This program converts the RADS NetCDF altimeter data to the old
 ! DEOS formats aADR, xADR and XGF, depending on whether the program
 ! is called as rads2adr, rads2xadr or rads2xgf.
 ! At the same time it applies the standard selection criteria

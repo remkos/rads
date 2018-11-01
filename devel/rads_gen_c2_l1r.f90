@@ -23,7 +23,7 @@
 !
 ! syntax: rads_gen_c2_l1r [options] < list_of_L1R_file_names
 !
-! This program handles only the CryoSat-2 L1Rs in netCDF format.
+! This program handles only the CryoSat-2 L1Rs in NetCDF format.
 !-----------------------------------------------------------------------
 !
 ! Variables to be written to RADS are:

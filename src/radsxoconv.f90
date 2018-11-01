@@ -17,7 +17,7 @@
 !+
 program radsxoconv
 
-! This program converts RADS netCDF crossover files into the historical
+! This program converts RADS NetCDF crossover files into the historical
 ! DEOS XAF, XTF and XXF/XXO format.
 !-----------------------------------------------------------------------
 use rads
@@ -102,7 +102,7 @@ else
 	shortname = filename
 endif
 
-! Open netCDF file
+! Open NetCDF file
 call nfs (nf90_open (filename, nf90_write, ncid))
 
 ! Check out which data variables are provided
@@ -197,7 +197,7 @@ write (*,1300)
 1300 format (/ &
 'usage: radsxoconv [options] FILENAME ...' // &
 'Required argument:' / &
-'  FILENAME                  Name of input netCDF xover file'// &
+'  FILENAME                  Name of input NetCDF xover file'// &
 'Optional arguments [options] are:'/ &
 '  -xaf                      Create XAF file (extension .xaf)'/ &
 '  -xtf                      Create XTF file (extension .xtf)'/ &

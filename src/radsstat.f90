@@ -18,7 +18,7 @@ program radsstat
 ! This program reads the RADS data base and computes statistics
 ! by pass, cycle or day of a number of RADS data variables.
 !
-! Output can be either as an ASCII table or as a netCDF file.
+! Output can be either as an ASCII table or as a NetCDF file.
 ! The output will always include both the mean and standard deviation of
 ! each of the selected variables per the selected period (N cycles, N
 ! passes or N days). Optionally also minimum and maximum values can be
@@ -180,7 +180,7 @@ if (rads_verbose >= 1) call rads_stat (S)
 call rads_end (S)
 deallocate (box,tot,lat_w)
 
-! Close netCDF file
+! Close NetCDF file
 if (.not.ascii) call nfs (nf90_close (ncid))
 
 contains
@@ -209,7 +209,7 @@ write (*,1300)
 '  --full-year               Write date as YYYYMMDD instead of the default YYMMDD'/ &
 '  --min MINNR               Minimum number of measurements per statistics record (default: 2)'/ &
 '  --res DX,DY               Size of averaging boxes in degrees (default: 3,1)'/ &
-'  -o, --output [OUTNAME]    Create netCDF output instead of ASCII (default output'/ &
+'  -o, --output [OUTNAME]    Create NetCDF output instead of ASCII (default output'/ &
 '                            filename is "radsstat.nc")')
 stop
 end subroutine synopsis
@@ -347,7 +347,7 @@ if (ascii) then
 		write (*,format_string) nr, tot(0)%mean, (tot(j)%mean,tot(j)%sum2,tot(j)%xmin,tot(j)%xmax,j=1,S%nsel)
 	endif
 
-! Write output to netCDF if requested
+! Write output to NetCDF if requested
 else
 	call nfs (nf90_put_var (ncid, varid(1), nr, start(2:2)))
 	if (period /= period_day) then
@@ -449,18 +449,18 @@ format_string(l+1:) = ')'
 end subroutine ascii_header
 
 !***********************************************************************
-! Write out the netCDF header
+! Write out the NetCDF header
 
 subroutine netcdf_header
 integer :: j, dimid(2)
 integer(onebyteint) :: istat(4) = (/ 1_onebyteint, 2_onebyteint, 3_onebyteint, 4_onebyteint /)
 
-! Open output netCDF file
+! Open output NetCDF file
 call nfs (nf90_create (filename, nf90_write, ncid))
 call nfs (nf90_def_dim (ncid, 'time', nf90_unlimited, dimid(1)))
 call nfs (nf90_def_dim (ncid, 'stat', lstat, dimid(2)))
 
-! To use general netCDF creation machinary, we trick the library a bit here
+! To use general NetCDF creation machinary, we trick the library a bit here
 Pout%fileinfo(1) = rads_file (ncid, filename)
 Pout%rw = .true.
 

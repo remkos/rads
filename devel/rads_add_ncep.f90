@@ -499,7 +499,7 @@ write (*,600,advance='no') fn(i+1:l),hex
 
 call grid_free(info)
 
-! Open netCDF file
+! Open NetCDF file
 
 1300 format (a,': ',a)
 if (nft(nf90_open(fn,nf90_nowrite,ncid))) then

@@ -13,12 +13,12 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*rads2nc -- Select RADS data and output to netCDF
+!*rads2nc -- Select RADS data and output to NetCDF
 !+
 program rads2nc
 !
-! This program converts the RADS netCDF altimeter data and output them
-! to new netCDF data files.
+! This program converts the RADS NetCDF altimeter data and output them
+! to new NetCDF data files.
 ! At the same time it applies the standard selection criteria
 ! and allows some further modifications and selections.
 !
@@ -112,7 +112,7 @@ contains
 !***********************************************************************
 
 subroutine synopsis
-if (rads_version ('Select RADS altimeter data and output to netCDF')) return
+if (rads_version ('Select RADS altimeter data and output to NetCDF')) return
 call rads_synopsis
 write (*,1300)
 1300 format (/ &

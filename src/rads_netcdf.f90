@@ -15,12 +15,12 @@
 
 !****f* module/rads_netcdf
 ! SUMMARY
-! Module with useful interfaces to netCDF
+! Module with useful interfaces to NetCDF
 !
 ! PURPOSE
 ! This module provides a selections of routines that make it easier
-! to work with netCDF files. It accomplishes commonly used tasks during
-! the creating or reading of netCDF grids and other netCDF files
+! to work with NetCDF files. It accomplishes commonly used tasks during
+! the creating or reading of NetCDF grids and other NetCDF files
 !
 ! To access the interface, add 'use rads_netcdf' to your Fortran 90 program
 !****-------------------------------------------------------------------
@@ -31,7 +31,7 @@ real(eightbytereal), parameter, private :: nan = transfer ((/not(0_fourbyteint),
 
 !****f* rads_netcdf/get_var
 ! SUMMARY
-! Load variable from netCDF file into memory
+! Load variable from NetCDF file into memory
 !
 ! SYNTAX
 ! subroutine get_var (ncid, varnm, array)
@@ -71,7 +71,7 @@ include "nf90_message.f90"
 
 !****f* rads_netcdf/nf90_inq_varid_warn
 ! SUMMARY
-! Get the netCDF ID for a variable, with warning
+! Get the NetCDF ID for a variable, with warning
 !
 ! SYNOPSIS
 function nf90_inq_varid_warn (ncid, varnm, varid)
@@ -82,7 +82,7 @@ integer, intent(out) :: varid
 integer :: nf90_inq_varid_warn
 !
 ! PURPOSE
-! This function is an extension of the standard netCDF-Fortran routine
+! This function is an extension of the standard NetCDF-Fortran routine
 ! nf90_inq_varid. It works the same, except that when nf90_inq_varid
 ! fails, nf90_inq_varid_warn will return a warning message, to stdout
 ! with the variable name and the file name.
@@ -110,9 +110,9 @@ integer, intent(out) :: dimid, varid
 character(len=*), intent(in), optional :: axis, standard_name
 integer, intent(in), optional :: deflate
 !
-! This routine sets up a dimension and its associated variable in a netCDF
+! This routine sets up a dimension and its associated variable in a NetCDF
 ! file. Supply variable name, long name, units, number of elements, and range.
-! The call needs to happen during the define stage of creating a netCDF file.
+! The call needs to happen during the define stage of creating a NetCDF file.
 !
 ! To fill the coordinate array, use nf90_put_axis after closing the define
 ! stage.
@@ -234,7 +234,7 @@ end subroutine nf90_put_axis
 
 !****f* rads_netcdf/nff
 ! SUMMARY
-! Return .false. upon netCDF error
+! Return .false. upon NetCDF error
 !
 ! SYNOPSIS
 logical function nff(ios)
@@ -242,11 +242,11 @@ use netcdf
 integer, intent(in) :: ios
 !
 ! PURPOSE
-! This is a wrapper for netCDF functions. It catches the status return code of the
-! netCDF routine and checks if an error occurred. The function returns:
+! This is a wrapper for NetCDF functions. It catches the status return code of the
+! NetCDF routine and checks if an error occurred. The function returns:
 !
 ! ARGUMENT
-! ios  : netCDF I/O code
+! ios  : NetCDF I/O code
 !
 ! RETURN VALUE
 ! nff  : Error (.false.) or no error (.true.)
@@ -259,7 +259,7 @@ end function nff
 
 !****f* rads_netcdf/nft
 ! SUMMARY
-! Return .true. upon netCDF error
+! Return .true. upon NetCDF error
 !
 ! SYNOPSIS
 logical function nft(ios)
@@ -267,11 +267,11 @@ use netcdf
 integer, intent(in) :: ios
 !
 ! PURPOSE
-! This is a wrapper for netCDF functions. It catches the status return code of the
-! netCDF routine and checks if an error occurred. The function returns:
+! This is a wrapper for NetCDF functions. It catches the status return code of the
+! NetCDF routine and checks if an error occurred. The function returns:
 !
 ! ARGUMENT
-! ios  : netCDF I/O code
+! ios  : NetCDF I/O code
 !
 ! RETURN VALUE
 ! nft  : Error (.true.) or no error (.false.)
@@ -284,7 +284,7 @@ end function nft
 
 !****f* rads_netcdf/nfs
 ! SUMMARY
-! Stop execution upon netCDF error
+! Stop execution upon NetCDF error
 !
 ! SYNOPSIS
 subroutine nfs(ios)
@@ -292,12 +292,12 @@ use netcdf
 integer, intent(in) :: ios
 !
 ! PURPOSE
-! This is a wrapper for netCDF functions. It catches the status return code of the
-! netCDF routine and checks if an error occurred. Upon error, an error message
+! This is a wrapper for NetCDF functions. It catches the status return code of the
+! NetCDF routine and checks if an error occurred. Upon error, an error message
 ! is printed to standard error and execution stops.
 !
 ! ARGUMENT
-! ios  : netCDF I/O code
+! ios  : NetCDF I/O code
 !
 ! EXAMPLE
 ! call nfs (nf90_open ('file.nc', nf90_write, ncid))

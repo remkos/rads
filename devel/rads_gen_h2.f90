@@ -24,7 +24,7 @@ program rads_gen_h2
 !
 ! syntax: rads_gen_h2 [options] < list_of_Sentinel3_file_names
 !
-! This program handles HY-2A IGDR files in netCDF format.
+! This program handles HY-2A IGDR files in NetCDF format.
 ! The format is described in:
 !
 !

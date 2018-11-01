@@ -51,7 +51,7 @@ type :: rads_varinfo                                 ! Information on variable u
 	character(len=rads_naml) :: standard_name        ! Optional CF 'standard' name ('' if none)
 	character(len=rads_naml) :: source               ! Optional data source ('' if none)
 	character(len=rads_naml) :: parameters           ! Optional link to model parameters ('' if none)
-	character(len=rads_strl) :: dataname             ! Name associated with data (e.g. netCDF var name)
+	character(len=rads_strl) :: dataname             ! Name associated with data (e.g. NetCDF var name)
 	character(len=rads_cmdl) :: flag_meanings        ! Optional meaning of flag values ('' if none)
 	character(len=rads_cmdl) :: quality_flag         ! Quality flag(s) associated with var ('' if none)
 	character(len=rads_cmdl) :: comment              ! Optional comment ('' if none)
@@ -62,12 +62,12 @@ type :: rads_varinfo                                 ! Information on variable u
 	real(eightbytereal) :: default                   ! Optional default value (Inf if not set)
 	real(eightbytereal) :: limits(2)                 ! Lower and upper limit for editing
 	real(eightbytereal) :: plot_range(2)             ! Suggested range for plotting
-	real(eightbytereal) :: add_offset, scale_factor  ! Offset and scale factor in case of netCDF
+	real(eightbytereal) :: add_offset, scale_factor  ! Offset and scale factor in case of NetCDF
 	real(eightbytereal) :: xmin, xmax, mean, sum2    ! Minimum, maximum, mean, sum squared deviation
 	logical :: boz_format                            ! Format starts with B, O or Z.
 	integer(fourbyteint) :: ndims                    ! Number of dimensions of variable
 	integer(fourbyteint) :: brid                     ! Branch ID (default 1)
-	integer(fourbyteint) :: nctype, varid            ! netCDF data type (nf90_int, etc.) and var ID (input only)
+	integer(fourbyteint) :: nctype, varid            ! NetCDF data type (nf90_int, etc.) and var ID (input only)
 	integer(fourbyteint) :: datatype                 ! Type of data (one of rads_type_*)
 	integer(fourbyteint) :: datasrc                  ! Retrieval source (one of rads_src_*)
 	integer(fourbyteint) :: cycle, pass              ! Last processed cycle and pass
@@ -80,7 +80,7 @@ type :: rads_var                                     ! Information on variable o
 	type(rads_varinfo), pointer :: info, inf1, inf2  ! Links to structs of type(rads_varinfo)
 	logical(twobyteint) :: noedit                    ! .true. if editing is suspended
 	integer(twobyteint) :: field(2)                  ! RADS3 field numbers (rads_nofield = none)
-	integer(fourbyteint) :: varid                    ! netCDF variable ID (output only)
+	integer(fourbyteint) :: varid                    ! NetCDF variable ID (output only)
 endtype
 
 type :: rads_cyclist                                 ! List of cycles
@@ -135,7 +135,7 @@ endtype
 
 type :: rads_file                                    ! Information on RADS data file
 	integer(fourbyteint) :: ncid                     ! NetCDF ID of pass file
-	character(len=rads_cmdl) :: name                 ! Name of the netCDF pass file
+	character(len=rads_cmdl) :: name                 ! Name of the NetCDF pass file
 endtype
 
 type :: rads_pass                                    ! Pass structure
@@ -357,7 +357,7 @@ end interface rads_get_var
 ! This routine defines the variables to be written to a RADS data file by
 ! the reference to the variable struct of type(rads_var), or a
 ! number of variables referenced by an array of structures.
-! This will create the netCDF variable and its attributes in the file
+! This will create the NetCDF variable and its attributes in the file
 ! previously opened with rads_create_pass or rads_open_pass.
 !
 ! The optional arguments <nctype>, <scale_factor>, <add_offset>, <ndims>  can
@@ -367,7 +367,7 @@ end interface rads_get_var
 ! S        : Satellite/mission dependent structure
 ! P        : Pass structure
 ! var      : Structure(s) of variable(s) of type(rads_var) or name of variable
-! nctype   : (optional) Data type in netCDF file
+! nctype   : (optional) Data type in NetCDF file
 ! scale_factor : (optional) Value of the scale_factor attribute
 ! add_offset : (optional) Value of the add_offset attribute
 ! ndims    : (optional) Number of dimensions of the variable
@@ -399,7 +399,7 @@ end interface rads_def_var
 !
 ! PURPOSE
 ! This routine writes the data array <data> for the variable <var>
-! (referenced by the structure of type(rads_var)) to the netCDF file
+! (referenced by the structure of type(rads_var)) to the NetCDF file
 ! previously opened with rads_create_pass or rads_open_pass.
 !
 ! The data in <data> are in the original SI units (like [m] or [s])
@@ -506,7 +506,7 @@ end interface rads_parse_varlist
 ! cycle number <cycle> or time <time>.
 !
 ! In matching the phase name with the database, only the first letter is
-! used. However the path to the directory with netCDF files will use the
+! used. However the path to the directory with NetCDF files will use the
 ! entire phase name.
 !
 ! For efficiency, the routine first checks if the current phase is correct.
@@ -636,7 +636,7 @@ endif
 do i = 1,S%nvar
 	if (S%var(i)%info%dataname(:1) == ' ') then
 		call rads_message ('Variable "'//trim(S%var(i)%name)// &
-			'" has no data source specified; assuming netCDF variable "'//trim(S%var(i)%name)//'"')
+			'" has no data source specified; assuming NetCDF variable "'//trim(S%var(i)%name)//'"')
 		S%var(i)%info%dataname = S%var(i)%name
 		S%var(i)%info%datasrc = rads_src_nc_var
 	endif
@@ -1278,7 +1278,7 @@ integer(fourbyteint), intent(in) :: cycle, pass
 logical, intent(in), optional :: rw
 !
 ! PURPOSE
-! This routine opens a netCDF file for access to the RADS machinery.
+! This routine opens a NetCDF file for access to the RADS machinery.
 ! However, prior to opening the file, three tests are performed to speed
 ! up data selection:
 ! (1) All passes outside the preset cycle and pass limits are rejected.
@@ -1292,7 +1292,7 @@ logical, intent(in), optional :: rw
 !     the current pass. If this is outside the limits set in S%eqlonlim
 !     then the pass is rejected.
 !
-! If the pass is rejected based on the above critetia or when no netCDF
+! If the pass is rejected based on the above critetia or when no NetCDF
 ! file exists, S%error returns the warning value rads_warn_nc_file.
 ! If the file cannot be read properly, rads_err_nc_parse is returned.
 ! Also, in both cases, P%ndata will be set to zero.
@@ -1542,7 +1542,7 @@ type(rads_pass), intent(inout) :: P
 logical, intent(in), optional :: keep
 !
 ! PURPOSE
-! This routine closes a netCDF file previously opened by rads_open_pass.
+! This routine closes a NetCDF file previously opened by rads_open_pass.
 ! The routine will reset the ncid element of the <P> structure to
 ! indicate that the passfile is closed.
 ! If <keep> is set to .true., then the history, flags, time, lat, and lon
@@ -1822,7 +1822,7 @@ contains
 
 include "rads_tpj.f90"
 
-recursive subroutine rads_get_var_nc ! Get data variable from RADS netCDF file
+recursive subroutine rads_get_var_nc ! Get data variable from RADS NetCDF file
 use netcdf
 use rads_netcdf
 integer(fourbyteint) :: start(2), count(2), e, i, nf_get_vara_double, ncid
@@ -1830,7 +1830,7 @@ real(eightbytereal) :: x
 
 ! If time, lat, lon are already read, return those arrays upon request
 if (P%time_dims /= info%ndims) then
-	! Read from netCDF file
+	! Read from NetCDF file
 else if (info%datatype == rads_type_time) then
 	data = P%tll(:,1)
 	return
@@ -1842,7 +1842,7 @@ else if (info%datatype == rads_type_lon) then
 	return
 endif
 
-! Look for the variable name in the netCDF file (or take the stored one)
+! Look for the variable name in the NetCDF file (or take the stored one)
 ncid = P%fileinfo(info%brid)%ncid
 if (P%cycle == info%cycle .and. P%pass == info%pass) then
 	! Keep old varid, but produce error when already tried and failed
@@ -1870,7 +1870,7 @@ start(1) = max(1,abs(P%first_meas))
 if (info%ndims == 0) then
 	! Constant to be converted to 1-dimensional array
 	if (nft(nf90_get_var(ncid, info%varid, data(1)))) then
-		call rads_error (S, rads_err_nc_get, 'Error reading netCDF constant "'//trim(info%dataname)//'" in file', P)
+		call rads_error (S, rads_err_nc_get, 'Error reading NetCDF constant "'//trim(info%dataname)//'" in file', P)
 		return
 	endif
 	data = data(1)
@@ -1878,14 +1878,14 @@ if (info%ndims == 0) then
 else if (info%ndims == 1 .and. S%n_hz_output .and. P%n_hz > 0 .and. P%first_meas > 0) then
 	! 1-dimensional array with duplicated 1-Hz values
 	if (nft(nf90_get_var(ncid, info%varid, data(1:P%ndata:P%n_hz), start))) then
-		call rads_error (S, rads_err_nc_get, 'Error reading netCDF array "'//trim(info%dataname)//'" in file', P)
+		call rads_error (S, rads_err_nc_get, 'Error reading NetCDF array "'//trim(info%dataname)//'" in file', P)
 		return
 	endif
 	forall (i = 1:P%ndata:P%n_hz) data(i+1:i+P%n_hz-1) = data(i)
 else if (info%ndims == 1) then
 	! 1-dimensional array of 1-Hz values
 	if (nft(nf90_get_var(ncid, info%varid, data, start))) then
-		call rads_error (S, rads_err_nc_get, 'Error reading netCDF array "'//trim(info%dataname)//'" in file', P)
+		call rads_error (S, rads_err_nc_get, 'Error reading NetCDF array "'//trim(info%dataname)//'" in file', P)
 		return
 	endif
 else if (info%ndims == 2) then
@@ -1896,7 +1896,7 @@ else if (info%ndims == 2) then
 	count(2) = P%ndata / P%n_hz
 	! We use the Fortran 77 routine here so that we can easily read a 2D field into a 1D array
 	if (nft(nf_get_vara_double(ncid, info%varid, start, count, data))) then
-		call rads_error (S, rads_err_nc_get, 'Error reading netCDF array "'//trim(info%dataname)//'" in file', P)
+		call rads_error (S, rads_err_nc_get, 'Error reading NetCDF array "'//trim(info%dataname)//'" in file', P)
 		return
 	endif
 else
@@ -1922,7 +1922,7 @@ endif
 if (P%rw) info%add_offset = x
 end subroutine rads_get_var_nc
 
-subroutine rads_get_var_nc_att ! Get data attribute from RADS netCDF file
+subroutine rads_get_var_nc_att ! Get data attribute from RADS NetCDF file
 use netcdf
 use rads_netcdf
 use rads_time
@@ -1948,14 +1948,14 @@ if (nft(nf90_inquire_attribute (ncid, varid, info%dataname(i+1:), xtype=info%nct
 if (info%nctype == nf90_char) then
 	! This is likely a date string
 	if (nft(nf90_get_att(ncid, varid, info%dataname(i+1:), date))) then
-		call rads_error (S, rads_err_nc_get, 'Error reading netCDF attribute "'//trim(info%dataname)//'" in file', P)
+		call rads_error (S, rads_err_nc_get, 'Error reading NetCDF attribute "'//trim(info%dataname)//'" in file', P)
 		return
 	endif
 	data = strp1985f (date)
 else
 	! Load an integer or float value
 	if (nft(nf90_get_att(ncid, varid, info%dataname(i+1:), data(1)))) then
-		call rads_error (S, rads_err_nc_get, 'Error reading netCDF attribute "'//trim(info%dataname)//'" in file', P)
+		call rads_error (S, rads_err_nc_get, 'Error reading NetCDF attribute "'//trim(info%dataname)//'" in file', P)
 		return
 	endif
 	data = data(1)
@@ -1980,7 +1980,7 @@ if (info%dataname /= 'flags') then
 		start = max(1,P%first_meas)
 		allocate (P%flags(P%ndata))
 		if (nft(nf90_get_var(ncid, info%varid, P%flags, start))) then
-			call rads_error (S, rads_err_nc_get, 'Error reading netCDF array "flags" in file', P)
+			call rads_error (S, rads_err_nc_get, 'Error reading NetCDF array "flags" in file', P)
 			return
 		endif
 	endif
@@ -3610,7 +3610,7 @@ write (iunit, 1300) trim(progname)
 '  -V, --var VAR1,...        Select variables to be read'/ &
 '  -X, --xml XMLFILE         Load configuration file XMLFILE in addition to the defaults'/ &
 '  -Z, --cmp, --compress VAR=TYPE[,SCALE[,OFFSET]]'/ &
-'                            Specify binary output format for variable VAR (netCDF only); TYPE'/ &
+'                            Specify binary output format for variable VAR (NetCDF only); TYPE'/ &
 '                            is one of: int1, int2, int4, real, dble; SCALE and OFFSET are'/ &
 '                            optional (def: 1,0)'// &
 'Still working for backward compatibility with RADS3 are options:'/ &
@@ -3647,7 +3647,7 @@ type(rads_phase), pointer :: phase
 ! set to .true.
 !
 ! In matching the phase name with the database, only the first letter is
-! used. However the path to the directory with netCDF files will use the
+! used. However the path to the directory with NetCDF files will use the
 ! entire phase name.
 !
 ! ARGUMENTS
@@ -4132,7 +4132,7 @@ integer(fourbyteint), intent(in), optional :: ndata, n_hz, n_wvf
 character(len=*), intent(in), optional :: name
 !
 ! PURPOSE
-! This routine creates a new RADS netCDF data file. If one of the same
+! This routine creates a new RADS NetCDF data file. If one of the same
 ! file name already exists, it is removed.
 ! The file is initialized with the appropriate global attributes, and
 ! the dimensions ('time' and optionally 'meas_ind' and 'wvf_ind') will be set up.
