@@ -105,7 +105,6 @@ Global RADS configuration file
 	<comment>Sea level determined from satellite altitude - PLRM range - all (PLRM) altimetric corrections</comment>
 </var>
 
-
 <var name="ssha">
 	<long_name>sea surface height anomaly</long_name>
 	<standard_name>sea_surface_height_above_sea_level</standard_name>
@@ -153,6 +152,15 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Sea level from satellite altitude - range - all altimetric corrections.
 		These values were computed when the data set was created, in contrast to the sla_plrm variable.</comment>
+</var>
+
+<var name="adt">
+	<long_name>absolute dynamic topography</long_name>
+	<standard_name>absolute_dynamic_topography</standard_name>
+	<units>m</units>
+	<format>f10.4</format>
+	<compress>int4 1e-4</compress>
+	<data>sla mss ADD geoid SUB</data>
 </var>
 
 <var name="time" field="101 1">
