@@ -4663,13 +4663,11 @@ if (.not.P%rw) then
 	call rads_error (S, rads_err_nc_put, &
 	'File not opened for writing variable "'//trim(var%name)//'":', P)
 	rads_put_var_helper = .true.
-else if (P%cycle == var%info%cycle .and. P%pass == var%info%pass) then
-	rads_put_var_helper = .false. ! Keep old varid
 else if (nft(nf90_inq_varid (ncid, var%name, var%varid))) then
 	call rads_error (S, rads_err_nc_var, 'No variable "'//trim(var%name)//'" in file', P)
 	rads_put_var_helper = .true.
 else
-	rads_put_var_helper = .false. ! Set new varid
+	rads_put_var_helper = .false. ! Use varid determined above
 endif
 end function rads_put_var_helper
 
