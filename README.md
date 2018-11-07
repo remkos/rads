@@ -28,11 +28,11 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 ## Version History
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 
-### v4.4.0 (1 Nov 2018)
+### v4.3.2 (7 Nov 2018)
 * New mission definitions for Sentinel-3B.
-* Store output varid in var struct instead of varinfo struct (fixed issue #126).
+* Do not store output varid in `rads_varinfo` struct, but determine as needed (fixed issue #126 and #138).
 * Update data manual on Sentinel-3A and -3B (fixed issue #131).
-* Specify separate flag_meanings for each mission (fixed issue #132).
+* Specify separate `flag_meanings` for each mission (fixed issue #132).
 
 ### v4.3.1 (4 Sep 2018)
 * New mission phase definition for Jason-2 Phase D.
