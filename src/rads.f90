@@ -344,13 +344,14 @@ end interface rads_get_var
 ! Define variable(s) to be written to RADS data file
 !
 ! SYNTAX
-! subroutine rads_def_var (S, P, var, nctype, scale_factor, add_offset, ndims)
+! subroutine rads_def_var (S, P, var, nctype, scale_factor, add_offset, ndims, varid)
 ! type(rads_sat), intent(inout) :: S
 ! type(rads_pass), intent(inout) :: P
 ! type(rads_var), intent(in) :: var <or> var(:)
 ! <or> character(len=*), intent(in) :: var
 ! integer(fourbyteint), intent(in), optional :: nctype, ndims
 ! real(eightbytereal), intent(in), optional :: scale_factor, add_offset
+! integer(fourbyteint), intent(out), optional :: varid
 !
 ! PURPOSE
 ! This routine defines the variables to be written to a RADS data file by
@@ -370,6 +371,7 @@ end interface rads_get_var
 ! scale_factor : (optional) Value of the scale_factor attribute
 ! add_offset : (optional) Value of the add_offset attribute
 ! ndims    : (optional) Number of dimensions of the variable
+! varid    : variable ID of created NetCDF variable
 !
 ! ERROR CODE
 ! S%error  : rads_noerr, rads_err_nc_var
@@ -4346,7 +4348,7 @@ enddo
 e = nf90_put_att (ncid, nf90_global, 'original', P%original)
 end subroutine rads_put_history
 
-subroutine rads_def_var_by_var_0d (S, P, var, nctype, scale_factor, add_offset, ndims)
+subroutine rads_def_var_by_var_0d (S, P, var, nctype, scale_factor, add_offset, ndims, varid)
 use netcdf
 use rads_netcdf
 type(rads_sat), intent(inout) :: S
@@ -4354,8 +4356,9 @@ type(rads_pass), intent(inout) :: P
 type(rads_var), intent(in) :: var
 integer(fourbyteint), intent(in), optional :: nctype, ndims
 real(eightbytereal), intent(in), optional :: scale_factor, add_offset
+integer(fourbyteint), intent(out), optional :: varid
 type(rads_varinfo), pointer :: info
-integer(fourbyteint) :: e, n, xtype, ncid, varid
+integer(fourbyteint) :: e, n, xtype, ncid, varid_
 integer :: j=0, j0, j1
 character(len=5) :: hz
 S%error = rads_noerr
@@ -4377,7 +4380,7 @@ if (info%datatype == rads_type_dim) j0 = j1 ! Single dimension that is not prima
 if (nf90_redef (ncid) == nf90_eperm) call rads_error (S, rads_err_nc_put, 'File not opened for writing:', P)
 
 ! First check if the variable already exists
-if (nff(nf90_inq_varid(ncid, var%name, varid))) then
+if (nff(nf90_inq_varid(ncid, var%name, varid_))) then
 	e = nf90_inquire_variable (ncid, varid, xtype=xtype, ndims=n)
 	if (xtype /= info%nctype .or. n /= info%ndims) then
 		call rads_error (S, rads_err_nc_var, &
@@ -4389,12 +4392,12 @@ else if (info%ndims == 0) then
 	info%scale_factor = 1d0
 	info%add_offset = 0d0
 	info%nctype = nf90_double
-	if (nft(nf90_def_var(ncid, var%name, info%nctype, varid))) then
+	if (nft(nf90_def_var(ncid, var%name, info%nctype, varid_))) then
 		call rads_error (S, rads_err_nc_var, 'Error creating variable "'//trim(var%name)//'" in file', P)
 		return
 	endif
 ! Define a 1- or 2-dimensional variable
-else if (nft(nf90_def_var(ncid, var%name, info%nctype, (/(j,j=j1,j0,-1)/), varid))) then
+else if (nft(nf90_def_var(ncid, var%name, info%nctype, (/(j,j=j1,j0,-1)/), varid_))) then
 	call rads_error (S, rads_err_nc_var, 'Error creating variable "'//trim(var%name)//'" in file', P)
 	return
 endif
@@ -4404,52 +4407,53 @@ e = 0
 if (info%datatype == rads_type_dim) then
 	! Do not write _FillValue for dimension coordinates, like meas_ind
 else if (info%nctype == nf90_int1) then
-	e = e + nf90_put_att (ncid, varid, '_FillValue', huge(0_onebyteint))
+	e = e + nf90_put_att (ncid, varid_, '_FillValue', huge(0_onebyteint))
 else if (info%nctype == nf90_int2) then
-	e = e + nf90_put_att (ncid, varid, '_FillValue', huge(0_twobyteint))
+	e = e + nf90_put_att (ncid, varid_, '_FillValue', huge(0_twobyteint))
 else if (info%nctype == nf90_int4) then
-	e = e + nf90_put_att (ncid, varid, '_FillValue', huge(0_fourbyteint))
+	e = e + nf90_put_att (ncid, varid_, '_FillValue', huge(0_fourbyteint))
 endif
-e = e + nf90_put_att (ncid, varid, 'long_name', trim(info%long_name))
-if (info%standard_name /= '') e = e + nf90_put_att (ncid, varid, 'standard_name', trim(info%standard_name))
-if (info%source /= '') e = e + nf90_put_att (ncid, varid, 'source', trim(info%source))
-if (info%units /= '') e = e + nf90_put_att (ncid, varid, 'units', trim(info%units))
+e = e + nf90_put_att (ncid, varid_, 'long_name', trim(info%long_name))
+if (info%standard_name /= '') e = e + nf90_put_att (ncid, varid_, 'standard_name', trim(info%standard_name))
+if (info%source /= '') e = e + nf90_put_att (ncid, varid_, 'source', trim(info%source))
+if (info%units /= '') e = e + nf90_put_att (ncid, varid_, 'units', trim(info%units))
 if (info%datatype == rads_type_flagmasks) then
 	n = count_spaces (info%flag_meanings)
 	if (info%nctype == nf90_int1) then
-		e = e + nf90_put_att (ncid, varid, 'flag_masks', int(flag_masks(0:n),onebyteint))
+		e = e + nf90_put_att (ncid, varid_, 'flag_masks', int(flag_masks(0:n),onebyteint))
 	else
-		e = e + nf90_put_att (ncid, varid, 'flag_masks', flag_masks(0:n))
+		e = e + nf90_put_att (ncid, varid_, 'flag_masks', flag_masks(0:n))
 	endif
-	e = e + nf90_put_att (ncid, varid, 'flag_meanings', info%flag_meanings)
+	e = e + nf90_put_att (ncid, varid_, 'flag_meanings', info%flag_meanings)
 else if (info%datatype == rads_type_flagvalues) then
 	n = count_spaces (info%flag_meanings)
 	if (info%nctype == nf90_int1) then
-		e = e + nf90_put_att (ncid, varid, 'flag_values', flag_values(0:n))
+		e = e + nf90_put_att (ncid, varid_, 'flag_values', flag_values(0:n))
 	else
-		e = e + nf90_put_att (ncid, varid, 'flag_values', int(flag_values(0:n),twobyteint))
+		e = e + nf90_put_att (ncid, varid_, 'flag_values', int(flag_values(0:n),twobyteint))
 	endif
-	e = e + nf90_put_att (ncid, varid, 'flag_meanings', info%flag_meanings)
+	e = e + nf90_put_att (ncid, varid_, 'flag_meanings', info%flag_meanings)
 endif
-if (info%quality_flag /= '') e = e + nf90_put_att (ncid, varid, 'quality_flag', info%quality_flag)
-if (info%scale_factor /= 1d0) e = e + nf90_put_att (ncid, varid, 'scale_factor', info%scale_factor)
-if (info%add_offset /= 0d0)  e = e + nf90_put_att (ncid, varid, 'add_offset', info%add_offset)
+if (info%quality_flag /= '') e = e + nf90_put_att (ncid, varid_, 'quality_flag', info%quality_flag)
+if (info%scale_factor /= 1d0) e = e + nf90_put_att (ncid, varid_, 'scale_factor', info%scale_factor)
+if (info%add_offset /= 0d0)  e = e + nf90_put_att (ncid, varid_, 'add_offset', info%add_offset)
 if (info%datatype >= rads_type_time .or. info%dataname(:1) == ':' .or. info%ndims < 1) then
 	! Do not add coordinate attribute for some data types
 else if (info%ndims > 1 .and. S%n_hz_output .and. P%n_hz > 1) then
 	! For multi-Hz data: use 'lon_#hz lat_#hz'
 	write (hz, '("_",i2.2,"hz")') P%n_hz
-	e = e + nf90_put_att (ncid, varid, 'coordinates', 'lon'//hz//' lat'//hz)
+	e = e + nf90_put_att (ncid, varid_, 'coordinates', 'lon'//hz//' lat'//hz)
 else
 	! All other types: use 'lon lat'
-	e = e + nf90_put_att (ncid, varid, 'coordinates', 'lon lat')
+	e = e + nf90_put_att (ncid, varid_, 'coordinates', 'lon lat')
 endif
-if (var%field(1) /= rads_nofield) e = e + nf90_put_att (ncid, varid, 'field', var%field(1))
-if (info%comment /= '') e = e + nf90_put_att (ncid, varid, 'comment', info%comment)
+if (var%field(1) /= rads_nofield) e = e + nf90_put_att (ncid, varid_, 'field', var%field(1))
+if (info%comment /= '') e = e + nf90_put_att (ncid, varid_, 'comment', info%comment)
 if (e /= 0) call rads_error (S, rads_err_nc_var, &
 	'Error writing attributes for variable "'//trim(var%name)//'" in file', P)
 info%cycle = P%cycle
 info%pass = P%pass
+if (present(varid)) varid = varid_
 
 contains
 
@@ -4464,29 +4468,31 @@ end function count_spaces
 
 end subroutine rads_def_var_by_var_0d
 
-subroutine rads_def_var_by_var_1d (S, P, var, nctype, scale_factor, add_offset, ndims)
+subroutine rads_def_var_by_var_1d (S, P, var, nctype, scale_factor, add_offset, ndims, varid)
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 type(rads_var), intent(in) :: var(:)
 integer(fourbyteint), intent(in), optional :: nctype, ndims
 real(eightbytereal), intent(in), optional :: scale_factor, add_offset
+integer(fourbyteint), intent(out), optional :: varid
 integer :: i
 do i = 1,size(var)
-	call rads_def_var_by_var_0d (S, P, var(i), nctype, scale_factor, add_offset, ndims)
+	call rads_def_var_by_var_0d (S, P, var(i), nctype, scale_factor, add_offset, ndims, varid)
 	if (S%error /= rads_noerr) return
 enddo
 end subroutine rads_def_var_by_var_1d
 
-subroutine rads_def_var_by_name (S, P, varname, nctype, scale_factor, add_offset, ndims)
+subroutine rads_def_var_by_name (S, P, varname, nctype, scale_factor, add_offset, ndims, varid)
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 character(len=*), intent(in) :: varname
 integer(fourbyteint), intent(in), optional :: nctype, ndims
 real(eightbytereal), intent(in), optional :: scale_factor, add_offset
+integer(fourbyteint), intent(out), optional :: varid
 type(rads_var), pointer :: var
 var => rads_varptr (S, varname)
 if (S%error /= rads_noerr) return
-call rads_def_var_by_var_0d (S, P, var, nctype, scale_factor, add_offset, ndims)
+call rads_def_var_by_var_0d (S, P, var, nctype, scale_factor, add_offset, ndims, varid)
 if (S%error /= rads_noerr) return
 end subroutine rads_def_var_by_name
 

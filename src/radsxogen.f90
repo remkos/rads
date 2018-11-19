@@ -185,12 +185,9 @@ P%rw = .true.
 S(1)%time%info%ndims = 2
 
 ! Define lat and lon (1D) and time (2D)
-call rads_def_var (S(1), P, S(1)%lat)
-call rads_def_var (S(1), P, S(1)%lon)
-call rads_def_var (S(1), P, S(1)%time)
-varid(1) = S(1)%lat%info%varid
-varid(2) = S(1)%lon%info%varid
-varid(3) = S(1)%time%info%varid
+call rads_def_var (S(1), P, S(1)%lat, varid=varid(1))
+call rads_def_var (S(1), P, S(1)%lon, varid=varid(2))
+call rads_def_var (S(1), P, S(1)%time, varid=varid(3))
 
 ! Define selected variables
 do i = 1,nsel
