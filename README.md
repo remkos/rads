@@ -28,7 +28,7 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 ## Version History
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 
-### v4.3.3 (18 Nov 2018)
+### v4.3.3 (19 Nov 2018)
 * Added new optional argument `varid` to `rads_def_var` routine (fixed bug issue #139).
 
 ### v4.3.2 (7 Nov 2018)
