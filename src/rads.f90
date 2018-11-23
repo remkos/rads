@@ -4381,7 +4381,7 @@ if (nf90_redef (ncid) == nf90_eperm) call rads_error (S, rads_err_nc_put, 'File 
 
 ! First check if the variable already exists
 if (nff(nf90_inq_varid(ncid, var%name, varid_))) then
-	e = nf90_inquire_variable (ncid, varid, xtype=xtype, ndims=n)
+	e = nf90_inquire_variable (ncid, varid_, xtype=xtype, ndims=n)
 	if (xtype /= info%nctype .or. n /= info%ndims) then
 		call rads_error (S, rads_err_nc_var, &
 			'Cannot redefine variable "'//trim(var%name)//'" with different type or dimension in file', P)
