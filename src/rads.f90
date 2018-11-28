@@ -504,13 +504,14 @@ end interface rads_parse_varlist
 ! logical, optional, intent(out) :: error
 !
 ! PURPOSE
-! Set the pointer S%phase to the proper phase definitions for the mission
+! Set the pointer <S%phase> to the proper phase definitions for the mission
 ! phase. The selection of the phase can be done by phase name <name>,
 ! cycle number <cycle> or time <time>.
 !
 ! In matching the phase name with the database, only the first letter is
 ! used. However the path to the directory with NetCDF files will use the
-! entire phase name.
+! entire phase name. In case multiple phases have the same name, the first
+! one will be pointed to.
 !
 ! For efficiency, the routine first checks if the current phase is correct.
 !
@@ -563,6 +564,7 @@ character(len=*), intent(in), optional :: xml(:)
 ! S%error  : rads_noerr, rads_err_xml_file, rads_err_xml_parse, rads_err_var
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: i, n
+logical, allocatable :: mask(:)
 
 call rads_init_sat_struct (S)
 
@@ -623,18 +625,17 @@ if (isnan_(S%phases(n)%end_time)) S%phases(n)%end_time = 2051222400d0 ! 2050-01-
 
 ! Default phase is the first mission phase
 S%phase => S%phases(1)
-if (S%spec == '') then
-	! When no phase/mission is specified:
-	! use the largest possible cycle and pass range and set the first (default) phase
-	S%cycles(1) = minval(S%phases%cycles(1))
-	S%cycles(2) = maxval(S%phases%cycles(2))
-	S%passes(2) = maxval(S%phases%passes)
-else
-	! When a phase/mission is specified: load the appropriate settings
-	call rads_set_phase (S, S%spec)
-	S%cycles(1:2) = S%phase%cycles
-	S%passes(2) = S%phase%passes
-endif
+
+! When no phase/mission is specified: use the largest possible cycle and pass range
+! When a phase/mission is specified: load the appropriate settings
+! This can handle multiple "phase" specifications with the same name
+allocate (mask(size(S%phases)))
+mask = (S%spec == '' .or. S%phases%name(1:1) == S%spec(1:1))
+if (S%spec /= '') call rads_set_phase (S, S%spec)
+S%cycles(1) = minval(S%phases%cycles(1), mask)
+S%cycles(2) = maxval(S%phases%cycles(2), mask)
+S%passes(2) = maxval(S%phases%passes, mask)
+deallocate (mask)
 
 ! Check if variables include the required <data> identifier
 do i = 1,S%nvar
