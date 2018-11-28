@@ -621,14 +621,16 @@ do i = 1,n-1
 enddo
 if (isnan_(S%phases(n)%end_time)) S%phases(n)%end_time = 2051222400d0 ! 2050-01-01
 
-! When a phase/mission is specifically given, load the appropriate settings
+! Default phase is the first mission phase
+S%phase => S%phases(1)
 if (S%spec == '') then
-	! By default, use the largest possible cycle and pass range and set the first (default) phase
-	S%phase => S%phases(1)
+	! When no phase/mission is specified:
+	! use the largest possible cycle and pass range and set the first (default) phase
 	S%cycles(1) = minval(S%phases%cycles(1))
 	S%cycles(2) = maxval(S%phases%cycles(2))
 	S%passes(2) = maxval(S%phases%passes)
 else
+	! When a phase/mission is specified: load the appropriate settings
 	call rads_set_phase (S, S%spec)
 	S%cycles(1:2) = S%phase%cycles
 	S%passes(2) = S%phase%passes
