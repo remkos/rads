@@ -3704,7 +3704,7 @@ if (present(error)) error = .false.
 if (name(1:1) == S%phase%name(1:1)) return
 ! Check all mission phases
 do i = 1,size(S%phases)
-	if (name(1:1) == S%phase%name(1:1)) then
+	if (name(1:1) == S%phases(i)%name(1:1)) then
 		S%phase => S%phases(i)
 		return
 	endif
@@ -3712,7 +3712,7 @@ enddo
 if (present(error)) then
 	error = .true.
 else
-	call rads_exit ('No such mission phase "'//name//'" for satellite "'//S%sat//'"')
+	call rads_exit ('No mission phase "'//trim(name)//'" for satellite "'//S%sat//'"')
 endif
 end subroutine rads_set_phase_by_name
 
