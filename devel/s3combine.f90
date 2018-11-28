@@ -54,7 +54,7 @@ character(len=15) :: newer_than = '00000000T000000'
 integer(fourbyteint), parameter :: mpass = 254 * 500
 real(eightbytereal), parameter :: sec2000 = 473299200d0
 integer(fourbyteint) :: i0, i, ncid1, nrec, ios, varid, in_max = huge(fourbyteint), &
-	nfile = 0, orbit_type, ipass = 1, ipass0 = 0
+	nfile = 0, orbit_type, ipass = 1, ipass0 = 0, verbose_level = 3
 real(eightbytereal), allocatable :: time(:), lat(:), lon(:)
 real(eightbytereal) :: last_time = 0
 logical :: first = .true.
@@ -72,6 +72,8 @@ endif
 'where [options] are:' / &
 '  -mMAXREC          : Maximum number of records allowed at input' / &
 '  -pDATE            : Skip data before given processing date (yymmddThhmmss)' / &
+'  -vLEVEL           : Specify verbosity level: 0 = quiet, 1 = only list created files,'/ &
+'                      2 = also list input files, 3 = also list skipped input files (default)'/ &
 '  -xVAR1[,VAR2,...] : Exclude variable(s) from copying')
 
 ! First determine filetype
@@ -93,6 +95,8 @@ do i = 1,iargc()
 		read (arg(3:), *, iostat=ios) in_max
 	else if (arg(:2) == '-p') then
 		newer_than = arg(3:)
+	else if (arg(:2) == '-v') then
+		read (arg(3:), *, iostat=ios) verbose_level
 	else if (arg(:2) == '-x') then
 		exclude_list = trim(exclude_list) // arg(3:len_trim(arg)) // ','
 	else
@@ -143,7 +147,7 @@ do
 
 	if (product_name(49:63) < newer_than) then
 		call nfs(nf90_close(ncid1))
-		call write_line ('.... old', 1, nrec, nrec, time(1), time(nrec), '<', filenm)
+		call write_line (3, '.... old', 1, nrec, nrec, time(1), time(nrec), '<', filenm)
 		cycle
 	endif
 
@@ -161,7 +165,7 @@ do
 	do i0 = 1, nrec
 		if (time(i0) > last_time) exit
 	enddo
-	if (i0 > 1) call write_line ('... skip', 1, i0-1, nrec, time(1), time(i0-1), '<', filenm)
+	if (i0 > 1) call write_line (3, '... skip', 1, i0-1, nrec, time(1), time(i0-1), '<', filenm)
 
 ! If none of the records are after last_time, skip the whole input file
 
@@ -183,7 +187,7 @@ do
 		call which_pass (time(i))
 		if (time(i) == time(i-1)) then
 			call fill_fin (i0, i-2)
-			call write_line ('... skip', i-1, i-1, nrec, time(i-1), time(i-1), '<', filenm)
+			call write_line (3, '... skip', i-1, i-1, nrec, time(i-1), time(i-1), '<', filenm)
 			i0 = i
 		else if (ipass /= ipass0) then
 			call fill_fin (i0, i-1)
@@ -224,7 +228,7 @@ fin(nfile)%lat0 = lat(i0)
 fin(nfile)%lat1 = lat(i1)
 fin(nfile)%lon0 = lon(i0)
 fin(nfile)%lon1 = lon(i1)
-call write_line ('.. input', i0, i1, nrec, time(i0), time(i1), '<', filenm)
+call write_line (2, '.. input', i0, i1, nrec, time(i0), time(i1), '<', filenm)
 end subroutine fill_fin
 
 !***********************************************************************
@@ -378,7 +382,7 @@ endif
 
 ! Overwrite some attributes and product name
 
-call write_line ('Creating', 1, nrec, nrec, fin(1)%time0, fin(nfile)%time1,'>', outnm)
+call write_line (1, 'Creating', 1, nrec, nrec, fin(1)%time0, fin(nfile)%time1,'>', outnm)
 call strf1985f(date(3),equator_time)
 
 call nfs(nf90_put_att(ncid2,nf90_global,'product_name',prdnm))
@@ -434,10 +438,11 @@ nfile = 0
 
 end subroutine write_output
 
-subroutine write_line (word, rec0, rec1, nrec, time0, time1, dir, filenm)
+subroutine write_line (verbose, word, rec0, rec1, nrec, time0, time1, dir, filenm)
 character(len=*), intent(in) :: word, dir, filenm
-integer, intent(in) :: rec0, rec1, nrec
+integer, intent(in) :: verbose, rec0, rec1, nrec
 real(eightbytereal), intent(in) :: time0, time1
+if (verbose < verbose_level) return
 call strf1985f(date(1),time0+sec2000)
 call strf1985f(date(2),time1+sec2000)
 write (*,620) word, rec0, rec1, nrec, date(1:2), dir, trim(filenm)
