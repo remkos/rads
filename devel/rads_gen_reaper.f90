@@ -488,7 +488,7 @@ if (tnode(1) < times(1) .or. tnode(1) > times(2)) return	! Skip equator times th
 
 ! Update phase name if required
 phasenm(1) = strtolower(phasenm(1))
-if (S%phase%name /= phasenm(1)) S%phase => rads_get_phase (S, phasenm(1))
+call rads_set_phase (S, phasenm(1))
 
 ! Store relevant info
 call rads_init_pass_struct (S, P)

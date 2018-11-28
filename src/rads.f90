@@ -611,8 +611,8 @@ endif
 ! If no phases are defined, then the satellite is not known
 if (.not.associated(S%phases)) call rads_exit ('Satellite "'//S%sat//'" unknown')
 
-! Set end times for phases where they are NaN
-! Compute the maximum pass number for phases with one cycle
+! When NaN, set end time of a phase to the start time of the next phase
+! When a phase contains only one cycle, compute the maximum pass number
 n = size(S%phases)
 do i = 1,n-1
 	if (isnan_(S%phases(i)%end_time)) S%phases(i)%end_time = S%phases(i+1)%start_time
@@ -629,8 +629,7 @@ if (S%spec == '') then
 	S%cycles(2) = maxval(S%phases%cycles(2))
 	S%passes(2) = maxval(S%phases%passes)
 else
-	S%phase => rads_get_phase(S, S%spec)
-	if (.not.associated(S%phase)) call rads_exit ('No such mission phase "'//trim(S%spec)//'" for satellite "'//S%sat//'"')
+	call rads_set_phase (S, S%spec)
 	S%cycles(1:2) = S%phase%cycles
 	S%passes(2) = S%phase%passes
 endif
