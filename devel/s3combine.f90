@@ -73,7 +73,8 @@ endif
 '  -mMAXREC          : Maximum number of records allowed at input' / &
 '  -pDATE            : Skip data before given processing date (yymmddThhmmss)' / &
 '  -vLEVEL           : Specify verbosity level: 0 = quiet, 1 = only list created files,'/ &
-'                      2 = also list input files, 3 = also list skipped input files (default)'/ &
+'                      2 = also list unchanged files, 3 = also list input files,'/ &
+'                      4 = also list skipped input files (default)'/ &
 '  -xVAR1[,VAR2,...] : Exclude variable(s) from copying')
 
 ! First determine filetype
@@ -147,7 +148,7 @@ do
 
 	if (product_name(49:63) < newer_than) then
 		call nfs(nf90_close(ncid1))
-		call write_line (3, '.... old', 1, nrec, nrec, time(1), time(nrec), '<', filenm)
+		call write_line (4, '.... old', 1, nrec, nrec, time(1), time(nrec), '<', filenm)
 		cycle
 	endif
 
@@ -165,7 +166,7 @@ do
 	do i0 = 1, nrec
 		if (time(i0) > last_time) exit
 	enddo
-	if (i0 > 1) call write_line (3, '... skip', 1, i0-1, nrec, time(1), time(i0-1), '<', filenm)
+	if (i0 > 1) call write_line (4, '... skip', 1, i0-1, nrec, time(1), time(i0-1), '<', filenm)
 
 ! If none of the records are after last_time, skip the whole input file
 
@@ -187,7 +188,7 @@ do
 		call which_pass (time(i))
 		if (time(i) == time(i-1)) then
 			call fill_fin (i0, i-2)
-			call write_line (3, '... skip', i-1, i-1, nrec, time(i-1), time(i-1), '<', filenm)
+			call write_line (4, '... skip', i-1, i-1, nrec, time(i-1), time(i-1), '<', filenm)
 			i0 = i
 		else if (ipass /= ipass0) then
 			call fill_fin (i0, i-1)
@@ -228,7 +229,7 @@ fin(nfile)%lat0 = lat(i0)
 fin(nfile)%lat1 = lat(i1)
 fin(nfile)%lon0 = lon(i0)
 fin(nfile)%lon1 = lon(i1)
-call write_line (2, '.. input', i0, i1, nrec, time(i0), time(i1), '<', filenm)
+call write_line (3, '.. input', i0, i1, nrec, time(i0), time(i1), '<', filenm)
 end subroutine fill_fin
 
 !***********************************************************************
@@ -330,7 +331,7 @@ if (exist) then
 			! Release NetCDF file when reaching end
 			if (fin(i)%rec1 == fin(i)%nrec) call nfs(nf90_close(fin(i)%ncid))
 		enddo
-		write (*,620) 'Keeping ', 1, nout, nout, date(1:2), '>', trim(outnm)
+		if (verbose_level >= 2) write (*,620) 'Keeping ', 1, nout, nout, date(1:2), '>', trim(outnm)
 		nfile = 0
 		return
 	endif
@@ -442,7 +443,7 @@ subroutine write_line (verbose, word, rec0, rec1, nrec, time0, time1, dir, filen
 character(len=*), intent(in) :: word, dir, filenm
 integer, intent(in) :: verbose, rec0, rec1, nrec
 real(eightbytereal), intent(in) :: time0, time1
-if (verbose < verbose_level) return
+if (verbose_level < verbose) return
 call strf1985f(date(1),time0+sec2000)
 call strf1985f(date(2),time1+sec2000)
 write (*,620) word, rec0, rec1, nrec, date(1:2), dir, trim(filenm)
