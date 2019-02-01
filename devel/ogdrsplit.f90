@@ -28,6 +28,7 @@ program ogdrsplit
 
 use rads
 use rads_misc
+use rads_time
 use rads_netcdf
 use rads_devel_misc
 use netcdf
@@ -191,8 +192,8 @@ if (exist) then
 	nrec = rec1 - rec0 + 1
 	if (nrec <= n_ignore) then
 		if (nrec > 0) then
-			call strf1985f(date(1),time(rec0)+sec2000)
-			call strf1985f(date(2),time(rec1)+sec2000)
+			date(1) = strf1985f(time(rec0)+sec2000)
+			date(2) = strf1985f(time(rec1)+sec2000)
 			write (*,620) rec0,rec1,nrec,trim(outnm),date(1:2),' (skipped)'
 		endif
 		call nfs(nf90_close(ncid2))
@@ -235,12 +236,12 @@ nrec = rec1 - rec0 + 1
 idxin(2) = rec0
 idxut(2) = dimlen + 1
 time2(2) = time(rec1)
-call strf1985f(date(1),time(rec0)+sec2000)
-call strf1985f(date(2),time(rec1)+sec2000)
+date(1) = strf1985f(time(rec0)+sec2000)
+date(2) = strf1985f(time(rec1)+sec2000)
 write (*,620) rec0,rec1,nrec,trim(outnm),date(1:2)
-call strf1985f(date(1),time2(1)+sec2000)
-call strf1985f(date(2),time2(2)+sec2000)
-call strf1985f(date(3),orf(ipass)%eqtime+sec2000)
+date(1) = strf1985f(time2(1)+sec2000)
+date(2) = strf1985f(time2(2)+sec2000)
+date(3) = strf1985f(orf(ipass)%eqtime+sec2000)
 
 allocate (darr1(nrec),darr2(nhz,nrec),iarr1(nrec),iarr2(nhz,nrec),iarr3(nhz))
 
