@@ -28,6 +28,7 @@ program s3combine
 
 use rads
 use rads_misc
+use rads_time
 use rads_netcdf
 use rads_devel_misc
 use netcdf
@@ -280,7 +281,7 @@ subroutine write_output
 integer(fourbyteint) :: nrec, ncid1, ncid2, varid1, varid2, varid3, xtype, ndims, &
 	dimids(2), dimid2, natts, i, nvars, idxin(2)=1, idxut(2)=1, nout, &
 	cycle_number, pass_number, absolute_pass_number, absolute_rev_number
-real(eightbytereal) :: equator_time, equator_longitude
+real(eightbytereal) :: equator_time, equator_longitude, x
 character(len=rads_naml) :: dirnm, prdnm, outnm, attnm, varnm
 real(eightbytereal), allocatable :: darr1(:)
 integer(fourbyteint), allocatable :: iarr1(:)
@@ -321,10 +322,17 @@ inquire (file=outnm,exist=exist)
 ! If it is larger, delete the existing file
 
 if (exist) then
-	call nfs(nf90_open(outnm,nf90_nowrite,ncid2))
+	call nfs(nf90_open(outnm,nf90_write,ncid2))
 	call nfs(nf90_inquire_dimension(ncid2,1,len=nout))
 	call nfs(nf90_get_att(ncid2,nf90_global,'first_meas_time',date(1)))
 	call nfs(nf90_get_att(ncid2,nf90_global,'last_meas_time',date(2)))
+	call nfs(nf90_get_att(ncid2,nf90_global,'equator_time',date(3)))
+	x = strp1985f (date(3))
+	if (abs(x - equator_time) > 0.5d-3) then
+		date(3) = strf1985f(equator_time)
+		call nfs(nf90_put_att(ncid2,nf90_global,'equator_time',date(3)))
+		if (verbose_level >= 1) write (*,620) 'Updating', 1, nout, nout, date(1:2), '>', trim(outnm)
+	endif
 	call nfs(nf90_close(ncid2))
 	if (nrec <= nout) then
 		do i = 1, nfile
@@ -384,7 +392,7 @@ endif
 ! Overwrite some attributes and product name
 
 call write_line (1, 'Creating', 1, nrec, nrec, fin(1)%time0, fin(nfile)%time1,'>', outnm)
-call strf1985f(date(3),equator_time)
+date(3) = strf1985f(equator_time)
 
 call nfs(nf90_put_att(ncid2,nf90_global,'product_name',prdnm))
 call nfs(nf90_put_att(ncid2,nf90_global,'cycle_number',cycle_number))
@@ -444,8 +452,8 @@ character(len=*), intent(in) :: word, dir, filenm
 integer, intent(in) :: verbose, rec0, rec1, nrec
 real(eightbytereal), intent(in) :: time0, time1
 if (verbose_level < verbose) return
-call strf1985f(date(1),time0+sec2000)
-call strf1985f(date(2),time1+sec2000)
+date(1) = strf1985f(time0+sec2000)
+date(2) = strf1985f(time1+sec2000)
 write (*,620) word, rec0, rec1, nrec, date(1:2), dir, trim(filenm)
 620 format (a,' : ',3i6,' : ',a,' - ',a,1x,a1,1x,a)
 end subroutine write_line
