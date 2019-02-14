@@ -86,6 +86,7 @@ use rads_gen
 use rads_misc
 use rads_netcdf
 use rads_time
+use rads_geo
 use netcdf
 
 ! Command line arguments
@@ -127,7 +128,7 @@ integer(fourbyteint), parameter :: maxint4=2147483647
 real(eightbytereal), parameter :: fai = 7.3d-3
 real(eightbytereal), parameter :: sec2000=473299200d0, rev_time = 5953.45d0, rev_long = -24.858d0
 real(eightbytereal), parameter :: pitch_bias = 0.096d0, roll_bias = 0.086d0, yaw_bias = 0d0	! Attitude biases to be added
-real(eightbytereal) :: uso_corr, dhellips, tbias, range_bias
+real(eightbytereal) :: uso_corr, tbias, range_bias
 integer(fourbyteint) :: i, j, m, oldcyc=0, oldpass=0, mle=3
 
 ! Initialise

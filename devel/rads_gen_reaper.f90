@@ -86,6 +86,7 @@ use rads_gen
 use rads_netcdf
 use rads_misc
 use rads_time
+use rads_geo
 use netcdf
 
 ! Command line arguments
@@ -273,7 +274,7 @@ real(eightbytereal) :: a(nrec), b(nrec), c(nrec), d(20,nrec), dh(nrec)
 integer(twobyteint) :: flags(nrec)
 logical :: valid(20,nrec)
 integer(fourbyteint) :: k, kerr(4)
-real(eightbytereal) :: dhellips, t(3)
+real(eightbytereal) :: t(3)
 character(len=34) :: strerr(4) = (/ &
 'measurements out of time range   ', &
 'measurements out of time sequence', &

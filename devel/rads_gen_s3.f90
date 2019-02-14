@@ -91,6 +91,7 @@ use rads_gen
 use rads_misc
 use rads_netcdf
 use rads_time
+use rads_geo
 use netcdf
 
 ! Command line arguments
@@ -113,7 +114,6 @@ character(len=2) :: mss_cnescls_ver, mss_dtu_ver, tide_fes_ver
 
 real(eightbytereal), parameter :: sec2000=473299200d0	! UTC seconds from 1 Jan 1985 to 1 Jan 2000
 real(eightbytereal), allocatable :: dh(:)
-real(eightbytereal) :: dhellips
 
 ! Initialise
 

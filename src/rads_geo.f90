@@ -16,6 +16,10 @@
 module rads_geo
 use typesizes
 
+real(eightbytereal), parameter :: ae_topex=6378136.3d0, f_topex=1d0/298.257d0
+real(eightbytereal), parameter :: ae_wgs84=6378137.0d0, f_wgs84=1d0/298.257223563d0
+real(eightbytereal), parameter :: ae_geosat=ae_wgs84  , f_geosat=f_topex
+
 contains
 
 !****f* rads_geo/checklon
@@ -38,8 +42,8 @@ logical :: checklon
 ! If either of the limits is NaN, no wrapping and no check is performed.
 !
 ! ARGUMENTS
-! lon_bounds : longitude limits (degrees)
-! lon        : longitude (degrees)
+! lon_bounds : Longitude limits (degrees)
+! lon        : Longitude (degrees)
 ! checklon   : .true. if lon is outside limits, .false. otherwise.
 !****-------------------------------------------------------------------
 if (any(lon_bounds /= lon_bounds)) then
@@ -82,5 +86,59 @@ real(eightbytereal) :: s
 s = sin((lat0-lat1)/2d0)**2 + cos(lat0)*cos(lat1)*sin((lon0-lon1)/2d0)**2
 sfdist = 2d0*asin(sqrt(s))
 end function sfdist
+
+!****f* rads_geo/dh_ellipsoid
+! SUMMARY
+! Compute height difference between ellipsoids
+!
+! SYNOPSIS
+function dhellips (conv, lat)
+integer(fourbyteint), intent(in) :: conv
+real(eightbytereal), intent(in) :: lat
+real(eightbytereal) :: dhellips
+!
+! PURPOSE
+! Compute height difference between WGS84, GEOSAT and TOPEX ellipsoids.
+! The input is <lat> in degrees, the returned function value is <dhellips>
+! in metres (the result is always non-negative). <conv> specifies the
+! conversion (see below).
+!
+! The ellipsoids are defined by their equatorial radius and inverse
+! flattening as shown in the table below. Also indicated are which
+! products use which ellipsoids.
+!
+! Ellipsoid  Eq. radius (m)  Inv. flattening (-)  Products
+! WGS84      6378137.0       298.257223563        ESA, Sentinel-3, Jason-CS
+! GEOSAT     6378137.0       298.257              GEOSAT T2 GDRs,
+!                                                 DEOS ERS orbits
+! TOPEX      6378136.3       298.257              T/P and Jason GDRs,
+!                                                 GEOSAT J3 GDRs, RADS
+!
+! The conversion is linearised in sin(lat)**2, changes in latitude
+! are ignored.
+!
+! ARGUMENTS:
+! conv     : Conversion indicator
+!                1 : Height of WGS84 over TOPEX ellipsoid
+!                2 : Height of WGS84 over GEOSAT ellipsoid
+!                3 : Height of GEOSAT over TOPEX ellipsoid
+!            Other : Zero height difference is returned
+! lat      : Latitude (degrees)
+! dhellips : Height difference between ellipsoids (m)
+!****-------------------------------------------------------------------
+real(eightbytereal), parameter :: pi = 3.1415926535897932d0, rad = pi/180d0
+
+select case (conv)
+case (1) ! WGS84 - TOPEX
+	dhellips = (ae_wgs84 - ae_topex) + &
+			(ae_topex*f_topex - ae_wgs84*f_wgs84) * sin(lat*rad)**2
+case (2) ! WGS84 - GEOSAT
+	dhellips = ae_geosat * (f_geosat - f_wgs84) * sin(lat*rad)**2
+case (3) ! GEOSAT - TOPEX
+	dhellips = (ae_geosat - ae_topex) * (1d0 - f_geosat * sin(lat*rad)**2)
+case default ! Other
+	dhellips = 0d0
+end select
+end function dhellips
 
 end module rads_geo

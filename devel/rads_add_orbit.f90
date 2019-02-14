@@ -27,6 +27,7 @@ use rads
 use rads_misc
 use rads_grid
 use rads_devel
+use rads_geo
 
 ! Data variables
 
@@ -224,7 +225,7 @@ integer(fourbyteint) :: getorb,kstep=0, k, i, i0, i1
 integer(twobyteint) :: flag
 real(eightbytereal) :: utc(n), lat(n), lon(n), alt(n), alt_old(n), alt_rate(n), flags(n), &
 	alt_cnes(n), range_ku(n), range_c(n), drange_fm(n), dalt(-1:1), dlat(-1:1), dlon(-1:1),&
-	t, f, rms, xx, yy, zz, xx0, yy0, dhellips, equator_time, equator_lon
+	t, f, rms, xx, yy, zz, xx0, yy0, equator_time, equator_lon
 logical :: asc, cryofix
 
 ! Determine if we need to fix Cryosat data
