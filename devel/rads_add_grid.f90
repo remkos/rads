@@ -26,6 +26,8 @@ use rads
 use rads_misc
 use rads_grid
 use rads_devel
+use rads_netcdf
+use netcdf
 
 ! Data variables
 
@@ -44,6 +46,7 @@ type(model), allocatable :: grd(:)
 character(rads_cmdl) :: path, filename
 character(rads_naml), pointer :: src
 integer(fourbyteint) :: i, j, k, ios, cyc, pass
+logical :: new=.false.
 
 ! Parameters
 
@@ -52,7 +55,17 @@ real(eightbytereal), parameter :: t_2000 = 473299200d0, t_year = 365.25d0 * 8640
 ! Initialise
 
 call synopsis ('--head')
+call rads_set_options ('n new')
 call rads_init (S)
+
+! Check options
+
+do j = 1,rads_nopt
+	select case (rads_opt(j)%opt)
+	case ('n', 'new')
+		new = .true.
+	end select
+enddo
 
 allocate (grd(S%nsel))
 
@@ -123,7 +136,8 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
-'  -V, --var NAME[,...]      Select variable name(s) for interpolation (required)'// &
+'  -V, --var NAME[,...]      Select variable name(s) for interpolation (required)'/ &
+'  -n, --new                 Only add variables when not yet existing' // &
 'All information about the grids and interpolation options are given by'/ &
 'the <parameters> tags in the RADS configuration file.')
 stop
@@ -137,6 +151,7 @@ subroutine process_pass (n, nmod)
 integer(fourbyteint), intent(in) :: n, nmod
 integer(fourbyteint) :: i, k
 real(eightbytereal) :: x(n), y(n), z(n, nmod), years
+logical :: skip(nmod)
 
 call log_pass (P)
 
@@ -147,6 +162,10 @@ years = (P%equator_time - t_2000) / t_year
 ! Spline or linear interpolation of grid
 
 do k = 1,nmod
+	! When "new", skip files that already have the variable
+	skip(k) = new .and. nff(nf90_inq_varid(P%fileinfo(1)%ncid,S%sel(k)%info%name,i))
+	if (skip(k)) cycle
+
 	call rads_get_var (S, P, grd(k)%xvar, x, .true.)
 	call rads_get_var (S, P, grd(k)%yvar, y, .true.)
 	select case (grd(k)%mode)
@@ -166,14 +185,19 @@ do k = 1,nmod
 	if (grd(k)%rate /= 0d0) z(:,k) = z(:,k) * grd(k)%rate * years
 enddo
 
-! Store all data fields.
+! Store all data fields that are not to be skipped
+
+if (all(skip)) then
+	call log_records(0)
+	return
+endif
 
 call rads_put_history (S, P)
 do k = 1,nmod
-	call rads_def_var (S, P, S%sel(k))
+	if (.not.skip(k)) call rads_def_var (S, P, S%sel(k))
 enddo
 do k = 1,nmod
-	call rads_put_var (S, P, S%sel(k), z(:,k))
+	if (.not.skip(k)) call rads_put_var (S, P, S%sel(k), z(:,k))
 enddo
 
 call log_records (n)
