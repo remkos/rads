@@ -2219,7 +2219,7 @@ Global RADS configuration file
 	<compress>int2</compress>
 </var>
 
-<alias name="topo" field="22">topo_srtm30plus</alias>
+<alias name="topo" field="22">topo_srtm30plus topo_srtm15plus</alias>
 
 <if sat="pn tx">
 	<var name="tb_180" field="2301">
