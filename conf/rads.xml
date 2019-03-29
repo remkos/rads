@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-Copyright (c) 2011-2018  Remko Scharroo
+Copyright (c) 2011-2019  Remko Scharroo
 See LICENSE.TXT file for copying and redistribution conditions.
 
 This program is free software: you can redistribute it and/or modify
@@ -1231,6 +1231,7 @@ Global RADS configuration file
 <var name="tide_ocean_fes14" field="1224">
 	<long_name>FES2014b ocean tide</long_name>
 	<source>FES2014b (extrapolated)</source>
+	<parameters>FES2014/extrapolated</parameters>
 	<units>m</units>
 	<limits>-5 5</limits>
 	<plot_range>-2 2</plot_range>
@@ -1328,6 +1329,18 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>Variation of absolute sea level due to polar motion</comment>
+</var>
+
+<var name="tide_internal">
+	<long_name>HRET v8.1 internal tide</long_name>
+	<source>HRET v8.1</source>
+	<parameters>HRET_v8.1/HRET_v8.1_compressed.nc</parameters>
+	<units>m</units>
+	<limits>-0.2 0.2</limits>
+	<data>tide_internal</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Only includes the so-called static harmonic components. It is not included as a correction to the sea surface height, but users can use it to remove the internal tide from the sea surface height anomaly</comment>
 </var>
 
 <var name="ssb_bm3" field="1501" sat="c2 e1 e2 g1 gs pn sa tx">
@@ -3661,6 +3674,7 @@ Global RADS configuration file
 <var name="mss_annual" field="5001 50">
 	<long_name>annual variation of mean sea level</long_name>
 	<source>DTU10</source>
+	<parameters>DTU10/DTU10ANN_cos.nc DTU10/DTU10ANN_sin.nc</parameters>
 	<units>m</units>
 	<data>mss_annual</data>
 	<format>f7.4</format>

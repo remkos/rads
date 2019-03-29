@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2018  Remko Scharroo
+! Copyright (c) 2011-2019  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -36,19 +36,22 @@ use tides
 
 type(rads_sat) :: S
 type(rads_pass) :: P
-integer(fourbyteint), parameter :: mfes = 3, mgot = 3
+integer(fourbyteint), parameter :: mfes = 2, mgot = 3
 type(festideinfo) :: fesinfo0
 type(gottideinfo) :: gotinfo(mgot)
-character(len=6), parameter :: nfes(mfes) = (/'fes04 ','fes12 ', 'fes14 '/)
+character(len=6), parameter :: nfes(mfes) = (/'fes04 ', 'fes14 '/)
 character(len=6), parameter :: ngot(mgot) = (/'got48 ','got49 ', 'got410'/)
 type(grid) :: sininfo, cosinfo
 type(fes) :: fesinfo1(mfes), fesinfo2(mfes)
+type(hrettideinfo) :: hretinfo
+type(rads_var), pointer :: var
 
 ! Command line arguments
 
 integer(fourbyteint) :: cyc, pass
 character(len=rads_cmdl) :: models = '', path
-logical :: do_ptide=.false., do_stide=.false., do_lptide=.false., do_annual=.false., do_fes(mfes)=.false., do_got(mgot)=.false.
+logical :: do_ptide=.false., do_stide=.false., do_lptide=.false., do_hret=.false., do_annual=.false., &
+	do_fes(mfes)=.false., do_got(mgot)=.false.
 
 ! Other variables
 
@@ -82,21 +85,27 @@ do
 		do_stide = .true.
 	case ('lptide')
 		do_lptide = .true.
+	case ('hret')
+		do_hret = .true.
+		var => rads_varptr (S, 'tide_internal')
+		call parseenv ('${ALTIM}/data/' // var%info%parameters, path)
+		call hrettideinit(path, hretinfo)
 	case ('annual')
 		do_annual = .true.
-		call parseenv ('${ALTIM}/data/DTU10/DTU10ANN_', path)
-		if (grid_load (trim(path)//'cos.nc',cosinfo) /= 0 .or. &
-			grid_load (trim(path)//'sin.nc',sininfo) /= 0) call rads_exit ('Error loading grid')
+		var => rads_varptr (S, 'mss_annual')
+		jdum = index(var%info%parameters, ' ')
+		call parseenv ('${ALTIM}/data/' // var%info%parameters(:jdum-1), path)
+		if (grid_load (path,cosinfo) /= 0) call rads_exit ('Error loading grid')
+		call parseenv ('${ALTIM}/data/' // var%info%parameters(jdum+1:), path)
+		if (grid_load (path,sininfo) /= 0) call rads_exit ('Error loading grid')
 	case ('fes04', 'fes2004')
 		do_fes(1) = .true.
 		call festideinit('FES2004',.true.,fesinfo0)
-	case ('fes12', 'fes2012')
-		do_fes(2) = .true.
-		jdum = fes_init(fesinfo1(2),fes_tide,fes_mem,'FES2012/all')
 	case ('fes14', 'fes2014')
-		do_fes(3) = .true.
-		jdum = fes_init(fesinfo1(3),fes_tide,fes_mem,'FES2014/extrapolated')
-		jdum = fes_init(fesinfo2(3),fes_radial,fes_mem,'FES2014/extrapolated')
+		do_fes(2) = .true.
+		var => rads_varptr (S, 'tide_ocean_fes14')
+		jdum = fes_init(fesinfo1(2),fes_tide,fes_mem,var%info%parameters)
+		jdum = fes_init(fesinfo2(2),fes_radial,fes_mem,var%info%parameters)
 	case ('got48')
 		do_got(1) = .true.
 		call gottideinit('GOT4.8',.true.,gotinfo(1))
@@ -131,6 +140,7 @@ enddo
 do j = 1,mgot
 	if (do_got(j)) call gottidefree(gotinfo(j))
 enddo
+if (do_hret) call hrettidefree(hretinfo)
 if (do_annual) then
 	call grid_free(cosinfo)
 	call grid_free(sininfo)
@@ -152,7 +162,6 @@ write (*,1310)
 '  -m, --models MODEL[,...]  Select tide models' // &
 'Currently available MODELs are:'/ &
 '  fes04  : FES2004 ocean and load tide'/ &
-'  fes12  : FES2012 ocean tide'/ &
 '  fes14  : FES2014 ocean and load tide'/ &
 '  got48  : GOT4.8 ocean and load tide'/ &
 '  got49  : GOT4.9 ocean and load tide'/ &
@@ -161,6 +170,7 @@ write (*,1310)
 '  ptide  : Pole tide'/ &
 '  stide  : Solid earth tide'/ &
 '  lptide : Long-period tides'/ &
+'  hret   : HRET internal tide'/ &
 '  annual : Annual sea level variation')
 stop
 end subroutine synopsis
@@ -175,7 +185,7 @@ real(eightbytereal) :: phase, co, si
 real(eightbytereal), parameter :: pi = 4d0 * atan(1d0), t_2000 = 473299200d0, t_year = 365.25d0 * 86400d0
 real(eightbytereal), parameter :: k2 = 0.302, h2 = 0.609, h2k2 = h2 / (1 + k2)
 real(eightbytereal) :: time(n), lon(n), lat(n), surface_type(n), &
-	otide_sp(n), otide_lp(n), ltide_sp(n), ltide_lp(n), lptide_eq(n), lptide_mf(n)
+	otide_sp(n), otide_lp(n), ltide_sp(n), ltide_lp(n), lptide_eq(n), lptide_mf(n), itide(n), itide_comp(6)
 integer(fourbyteint) :: i, j
 
 call log_pass (P)
@@ -187,14 +197,16 @@ call rads_get_var (S, P, 'lon', lon, .true.)
 call rads_get_var (S, P, 'lat', lat, .true.)
 call rads_get_var (S, P, 'surface_type', surface_type, .true.)
 
-! Reset time reference at the start of each pass
+! Reset time reference at the start of each pass.
+! This makes sure that the nodal arguments are always recomputed per pass, so it does not
+! matter if the job run for one pass only or several.
 
 fesinfo0%t_nodal = 1d30
 gotinfo(:)%t_nodal = 1d30
+hretinfo%t_nodal = 1d30
 do j = 2,mfes
 	if (.not.do_fes(j)) cycle
 	call fes_set_nodal_time (fesinfo1(j), 1d30)
-	if (j /= 2) call fes_set_nodal_time (fesinfo2(j), 1d30) ! No load tide for FES2012
 enddo
 
 ! Define output variables
@@ -207,7 +219,6 @@ if (do_stide) call rads_def_var (S, P, 'tide_solid')
 do j = 1,mfes
 	if (.not.do_fes(j)) cycle
 	call rads_def_var (S, P, 'tide_ocean_' // nfes(j))
-	if (j /= 2) call rads_def_var (S, P, 'tide_load_' // nfes(j)) ! No load tide for FES2012
 enddo
 
 do j = 1,mgot
@@ -220,6 +231,8 @@ if (do_lptide) then
 	call rads_def_var (S, P, 'tide_equil')
 	if (any(do_fes)) call rads_def_var (S, P, 'tide_non_equil')
 endif
+
+if (do_hret) call rads_def_var (S, P, 'tide_internal')
 
 if (do_annual) call rads_def_var (S, P, 'mss_annual')
 
@@ -256,10 +269,10 @@ endif
 ! FES2004 model
 if (do_fes(1)) then
 ! In order to allow parallelisation we do one measurement first (which initialises), then do the next n-1 in parallel
-	call festide(fesinfo0,time(1),lat(1),lon(1),otide_sp(1),otide_lp(1),ltide_sp(1),ltide_lp(1))
+	call festide(fesinfo0, time(1), lat(1), lon(1), otide_sp(1), otide_lp(1), ltide_sp(1), ltide_lp(1))
 !$omp parallel do shared(fesinfo0,time,lat,lon,otide_sp,otide_lp,ltide_sp,ltide_lp,n) private(i)
 	do i = 2,n
-		call festide(fesinfo0,time(i),lat(i),lon(i),otide_sp(i),otide_lp(i),ltide_sp(i),ltide_lp(i))
+		call festide(fesinfo0, time(i), lat(i), lon(i), otide_sp(i), otide_lp(i), ltide_sp(i), ltide_lp(i))
 	enddo
 !$omp end parallel do
 	! First remove equilibrium part of Mm,Mf,Mtm,MSqm from long-period tides, then add equilibrium part
@@ -268,20 +281,18 @@ if (do_fes(1)) then
 	call rads_put_var (S, P, 'tide_load_fes04', ltide_sp + ltide_lp)
 endif
 
-! FES2012 and FES2014 models
+! FES2014 and later models
 do j = 2,mfes
 	if (.not.do_fes(j)) cycle
 	! otide_lp already includes both non-equilibrium and equilibrium long-period tides
 !$omp parallel do shared(fesinfo1,time,lat,lon,otide_sp,otide_lp,n) private(i)
 	do i = 1,n
-		jdum = fes_eval(fesinfo1(j),time(i),lat(i),lon(i),otide_sp(i),otide_lp(i))
+		jdum = fes_eval(fesinfo1(j), time(i), lat(i), lon(i), otide_sp(i), otide_lp(i))
 	enddo
 	call rads_put_var (S, P, 'tide_ocean_'//nfes(j), otide_sp + otide_lp)
-!$omp end parallel do
-	if (j == 2) cycle ! No load tide for FES2012
 !$omp parallel do shared(fesinfo2,time,lat,lon,ltide_sp,ltide_lp,n) private(i)
 	do i = 1,n
-		jdum = fes_eval(fesinfo2(j),time(i),lat(i),lon(i),ltide_sp(i),ltide_lp(i))
+		jdum = fes_eval(fesinfo2(j), time(i), lat(i), lon(i), ltide_sp(i), ltide_lp(i))
 	enddo
 !$omp end parallel do
 	call rads_put_var (S, P, 'tide_load_'//nfes(j), ltide_sp + ltide_lp)
@@ -297,16 +308,26 @@ endif
 do j = 1,mgot
 	if (.not.do_got(j)) cycle
 ! In order to allow parallelisation we do one measurement first (which initialises), then do the next n-1 in parallel
-	call gottide(gotinfo(j),time(1),lat(1),lon(1),otide_sp(1),ltide_sp(1))
+	call gottide(gotinfo(j), time(1), lat(1), lon(1), otide_sp(1), ltide_sp(1))
 !$omp parallel do shared(gotinfo,time,lat,lon,otide_sp,ltide_sp,n) private(i)
 	do i = 2,n
-		call gottide(gotinfo(j),time(i),lat(i),lon(i),otide_sp(i),ltide_sp(i))
+		call gottide(gotinfo(j), time(i), lat(i), lon(i), otide_sp(i), ltide_sp(i))
 	enddo
 !$omp end parallel do
 	! Add equilibrium long-period tide to ocean tide
 	call rads_put_var (S, P, 'tide_ocean_'//ngot(j), otide_sp + lptide_eq)
 	call rads_put_var (S, P, 'tide_load_'//ngot(j), ltide_sp)
 enddo
+
+! Internal tide
+if (do_hret) then
+	do i = 1,n
+		call hrettide (hretinfo, time(i), lat(i), lon(i), itide(i), itide_comp)
+		itide(i) = sum(itide_comp(1:4))
+!		write (*,'(f16.2,2f16.6,7f10.5)') time(i), lat(i), lon(i), itide(i), itide_comp
+	enddo
+	call rads_put_var (S, P, 'tide_internal', itide)
+endif
 
 ! Annual mean sea surface variations
 if (do_annual) then
