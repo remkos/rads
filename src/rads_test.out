@@ -291,62 +291,300 @@ Checking sat/cycle/pass :  e1   19   60
 Bail out on estimated time:  212284800.000  212371200.000  212281086.279  212284100.233
 Checking sat/cycle/pass :  e1   19   61
 Opening for read only: /rads/data/e1/a/c019/e1p0061c019.nc
+Start/end/equator time/longitude =   212285607.468  212284395.961  212287111.315  -25.854613
+cycle, pass, ndata =     19    61  1336
+Start rads_get_var
+time                                    data(1), data(ndata) =   212284800.477201  212286112.252400
+lat                                     data(1), data(ndata) =  -47.622206  29.948693
+lon                                     data(1), data(ndata) =   -13.093074  -32.882569
+sla                                     data(1), data(ndata) =   -0.0078      NaN
+tide_ocean                              data(1), data(ndata) =   0.2646  0.3257
+tide_ocean                              data(1), data(ndata) =   0.2646  0.3257
+flags                                   data(1), data(ndata) =  0000000000000001 0010100000000001
+pass                                    data(1), data(ndata) =    61.   61.
+drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   62
 Opening for read only: /rads/data/e1/a/c019/e1p0062c019.nc
+Start/end/equator time/longitude =   212288616.937  212287116.377  212289759.802  141.604694
 Checking sat/cycle/pass :  e1   19   63
 Opening for read only: /rads/data/e1/a/c019/e1p0063c019.nc
+Start/end/equator time/longitude =   212291635.319  212290371.508  212293123.542  -50.971441
+cycle, pass, ndata =     19    63   883
+Start rads_get_var
+time                                    data(1), data(ndata) =   212290788.191404  212292140.086470
+lat                                     data(1), data(ndata) =  -49.951446  29.946936
+lon                                     data(1), data(ndata) =   -37.232113  -57.998546
+sla                                     data(1), data(ndata) =   -0.0987  -0.1288
+tide_ocean                              data(1), data(ndata) =  -0.1955  0.1232
+tide_ocean                              data(1), data(ndata) =  -0.1955  0.1232
+flags                                   data(1), data(ndata) =  0000000000000001 0000000000000001
+pass                                    data(1), data(ndata) =    63.   63.
+drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   64
 Opening for read only: /rads/data/e1/a/c019/e1p0064c019.nc
+Start/end/equator time/longitude =   212294644.893  212293199.022  212295782.618  116.488290
+cycle, pass, ndata =     19    64   939
+Start rads_get_var
+time                                    data(1), data(ndata) =   212294388.838828  212295492.666303
+lat                                     data(1), data(ndata) =   15.214791 -49.997988
+lon                                     data(1), data(ndata) =   119.877023  102.731559
+sla                                     data(1), data(ndata) =       NaN  -0.1363
+tide_ocean                              data(1), data(ndata) =   0.2527 -0.1211
+tide_ocean                              data(1), data(ndata) =   0.2527 -0.1211
+flags                                   data(1), data(ndata) =  0010000001000001 0000000000000001
+pass                                    data(1), data(ndata) =    64.   64.
+drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   65
 Opening for read only: /rads/data/e1/a/c019/e1p0065c019.nc
+Start/end/equator time/longitude =   212297663.207  212296318.113  212299161.771  -76.087319
+cycle, pass, ndata =     19    65   556
+Start rads_get_var
+time                                    data(1), data(ndata) =   212296816.031833  212298154.134665
+lat                                     data(1), data(ndata) =  -49.955764  29.129536
+lon                                     data(1), data(ndata) =   -62.348502  -82.894196
+sla                                     data(1), data(ndata) =   -0.1111      NaN
+tide_ocean                              data(1), data(ndata) =   0.4106  0.1322
+tide_ocean                              data(1), data(ndata) =   0.4106  0.1322
+flags                                   data(1), data(ndata) =  0000000000000001 0000000001000001
+pass                                    data(1), data(ndata) =    65.   65.
+drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   66
 Opening for read only: /rads/data/e1/a/c019/e1p0066c019.nc
+Start/end/equator time/longitude =   212300672.808  212299179.862  212301833.036   91.373141
+cycle, pass, ndata =     19    66  1133
+Start rads_get_var
+time                                    data(1), data(ndata) =   212300409.170225  212301520.141010
+lat                                     data(1), data(ndata) =   15.664330 -49.969879
+lon                                     data(1), data(ndata) =    94.865311   77.629721
+sla                                     data(1), data(ndata) =       NaN   0.2380
+tide_ocean                              data(1), data(ndata) =   1.0698  0.0053
+tide_ocean                              data(1), data(ndata) =   1.0698  0.0053
+flags                                   data(1), data(ndata) =  0010000001000001 0000000000000001
+pass                                    data(1), data(ndata) =    66.   66.
+drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   67
 Opening for read only: /rads/data/e1/a/c019/e1p0067c019.nc
+Start/end/equator time/longitude =   212303691.198  212302255.808  212305180.447  258.797404
+cycle, pass, ndata =     19    67   114
+Start rads_get_var
+time                                    data(1), data(ndata) =   212302843.467233  212302954.252373
+lat                                     data(1), data(ndata) =  -49.989100 -43.542752
+lon                                     data(1), data(ndata) =   -87.450517  -89.994708
+sla                                     data(1), data(ndata) =    0.0506   0.1334
+tide_ocean                              data(1), data(ndata) =   0.2398  0.2084
+tide_ocean                              data(1), data(ndata) =   0.2398  0.2084
+flags                                   data(1), data(ndata) =  0000000000000001 0000000000000001
+pass                                    data(1), data(ndata) =    67.   67.
+drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   68
 Opening for read only: /rads/data/e1/a/c019/e1p0068c019.nc
+Start/end/equator time/longitude =   212306700.770  212305199.861  212307896.159   66.257263
+cycle, pass, ndata =     19    68  1216
+Start rads_get_var
+time                                    data(1), data(ndata) =   212306355.924728  212307548.317620
+lat                                     data(1), data(ndata) =   20.482001 -49.980561
+lon                                     data(1), data(ndata) =    70.883192   52.508599
+sla                                     data(1), data(ndata) =       NaN   0.1018
+tide_ocean                              data(1), data(ndata) =   0.7944  0.0719
+tide_ocean                              data(1), data(ndata) =   0.7944  0.0719
+flags                                   data(1), data(ndata) =  0011000001000001 0000000000000001
+pass                                    data(1), data(ndata) =    68.   68.
+drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   69
 Opening for read only: /rads/data/e1/a/c019/e1p0069c019.nc
+Start/end/equator time/longitude =   212309719.181  212308231.284  212311196.569  233.681063
 Checking sat/cycle/pass :  e1   19   70
 Opening for read only: /rads/data/e1/a/c019/e1p0070c019.nc
+Start/end/equator time/longitude =   212312728.729  212311331.734  212314238.136   41.140714
+cycle, pass, ndata =     19    70   703
+Start rads_get_var
+time                                    data(1), data(ndata) =   212312233.505169  212313575.948333
+lat                                     data(1), data(ndata) =   29.385776 -49.961015
+lon                                     data(1), data(ndata) =    48.016033   27.398872
+sla                                     data(1), data(ndata) =       NaN   0.2430
+tide_ocean                              data(1), data(ndata) =   0.6414 -0.4661
+tide_ocean                              data(1), data(ndata) =   0.6414 -0.4661
+flags                                   data(1), data(ndata) =  0000000001000001 0000000000000001
+pass                                    data(1), data(ndata) =    70.   70.
+drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   71
 Opening for read only: /rads/data/e1/a/c019/e1p0071c019.nc
+Start/end/equator time/longitude =   212315747.105  212314239.116  212317164.029  208.564297
 Checking sat/cycle/pass :  e1   19   72
 Opening for read only: /rads/data/e1/a/c019/e1p0072c019.nc
+Start/end/equator time/longitude =   212318756.630  212317271.944  212320249.104   16.024047
+cycle, pass, ndata =     19    72   586
+Start rads_get_var
+time                                    data(1), data(ndata) =   212318936.392131  212319604.424992
+lat                                     data(1), data(ndata) =  -10.677991 -49.994765
+lon                                     data(1), data(ndata) =    13.665313    2.266221
+sla                                     data(1), data(ndata) =       NaN  -0.0414
+tide_ocean                              data(1), data(ndata) =  -0.5318 -0.0884
+tide_ocean                              data(1), data(ndata) =  -0.5318 -0.0884
+flags                                   data(1), data(ndata) =  0010000001000001 0000000000000001
+pass                                    data(1), data(ndata) =    72.   72.
+drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   73
 Opening for read only: /rads/data/e1/a/c019/e1p0073c019.nc
+Start/end/equator time/longitude =   212321774.979  212320480.329  212323181.011  183.447495
 Checking sat/cycle/pass :  e1   19   74
 Opening for read only: /rads/data/e1/a/c019/e1p0074c019.nc
+Start/end/equator time/longitude =   212324784.516  212323336.425  212326214.890   -9.092655
+cycle, pass, ndata =     19    74   941
+Start rads_get_var
+time                                    data(1), data(ndata) =   212324709.838310  212325631.423136
+lat                                     data(1), data(ndata) =    4.438303 -49.944270
+lon                                     data(1), data(ndata) =    -8.118870  -22.829080
+sla                                     data(1), data(ndata) =       NaN   0.0024
+tide_ocean                              data(1), data(ndata) =  -0.4639  0.1948
+tide_ocean                              data(1), data(ndata) =  -0.4639  0.1948
+flags                                   data(1), data(ndata) =  0010000001000001 0000000000000001
+pass                                    data(1), data(ndata) =    74.   74.
+drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   75
 Opening for read only: /rads/data/e1/a/c019/e1p0075c019.nc
+Start/end/equator time/longitude =   212327802.819  212326434.132  212329227.610  158.330936
 Checking sat/cycle/pass :  e1   19   76
 Opening for read only: /rads/data/e1/a/c019/e1p0076c019.nc
+Start/end/equator time/longitude =   212330812.347  212329319.192  212332171.670  -34.208747
+cycle, pass, ndata =     19    76  1290
+Start rads_get_var
+time                                    data(1), data(ndata) =   212330307.225188  212331659.974014
+lat                                     data(1), data(ndata) =   29.971884 -49.987247
+lon                                     data(1), data(ndata) =   -27.174876  -47.963643
+sla                                     data(1), data(ndata) =    0.0543  -0.1226
+tide_ocean                              data(1), data(ndata) =   0.5361 -0.1395
+tide_ocean                              data(1), data(ndata) =   0.5361 -0.1395
+flags                                   data(1), data(ndata) =  0000000000000001 0000000000000001
+pass                                    data(1), data(ndata) =    76.   76.
+drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   77
 Opening for read only: /rads/data/e1/a/c019/e1p0077c019.nc
+Start/end/equator time/longitude =   212333830.666  212332363.767  212335330.640  133.214832
 Checking sat/cycle/pass :  e1   19   78
 Opening for read only: /rads/data/e1/a/c019/e1p0078c019.nc
+Start/end/equator time/longitude =   212336840.203  212335362.468  212338347.539  -59.324664
+cycle, pass, ndata =     19    78   409
+Start rads_get_var
+time                                    data(1), data(ndata) =   212336335.578068  212337682.784903
+lat                                     data(1), data(ndata) =   29.943130 -49.695255
+lon                                     data(1), data(ndata) =   -52.299778  -72.950366
+sla                                     data(1), data(ndata) =   -0.0984      NaN
+tide_ocean                              data(1), data(ndata) =   0.1613  0.0018
+tide_ocean                              data(1), data(ndata) =   0.1613  0.0018
+flags                                   data(1), data(ndata) =  0000000000000001 0010000001110001
+pass                                    data(1), data(ndata) =    78.   78.
+drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   79
 Opening for read only: /rads/data/e1/a/c019/e1p0079c019.nc
+Start/end/equator time/longitude =   212339858.568  212338350.698  212341349.135  108.098290
+cycle, pass, ndata =     19    79   697
+Start rads_get_var
+time                                    data(1), data(ndata) =   212339089.606963  212340276.905618
+lat                                     data(1), data(ndata) =  -45.409499  24.834953
+lon                                     data(1), data(ndata) =   119.993337  102.402497
+sla                                     data(1), data(ndata) =   -0.0724      NaN
+tide_ocean                              data(1), data(ndata) =   0.2097     NaN
+tide_ocean                              data(1), data(ndata) =   0.2097     NaN
+flags                                   data(1), data(ndata) =  0000000000000001 0000000001110001
+pass                                    data(1), data(ndata) =    79.   79.
+drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   80
 Opening for read only: /rads/data/e1/a/c019/e1p0080c019.nc
+Start/end/equator time/longitude =   212342868.184  212341382.106  212344377.040  -84.441312
+cycle, pass, ndata =     19    80   889
+Start rads_get_var
+time                                    data(1), data(ndata) =   212342363.009562  212343277.525786
+lat                                     data(1), data(ndata) =   29.975249 -24.281877
+lon                                     data(1), data(ndata) =   -77.408514  -89.999502
+sla                                     data(1), data(ndata) =    0.0908  -0.0448
+tide_ocean                              data(1), data(ndata) =  -0.1255 -0.0340
+tide_ocean                              data(1), data(ndata) =  -0.1255 -0.0340
+flags                                   data(1), data(ndata) =  0000000000000001 0000000000000001
+pass                                    data(1), data(ndata) =    80.   80.
+drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   81
 Opening for read only: /rads/data/e1/a/c019/e1p0081c019.nc
+Start/end/equator time/longitude =   212345886.549  212344378.021  212347343.577   82.980945
+cycle, pass, ndata =     19    81  1037
+Start rads_get_var
+time                                    data(1), data(ndata) =   212345039.447648  212346097.423568
+lat                                     data(1), data(ndata) =  -49.951764  12.529642
+lon                                     data(1), data(ndata) =    96.716875   80.205538
+sla                                     data(1), data(ndata) =   -0.0118      NaN
+tide_ocean                              data(1), data(ndata) =   0.0991  0.2511
+tide_ocean                              data(1), data(ndata) =   0.0991  0.2511
+flags                                   data(1), data(ndata) =  0000000000000001 0000000001000001
+pass                                    data(1), data(ndata) =    81.   81.
+drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   82
 Opening for read only: /rads/data/e1/a/c019/e1p0082c019.nc
+Start/end/equator time/longitude =   212348896.228  212347411.668  212350388.186  250.441325
 Checking sat/cycle/pass :  e1   19   83
 Opening for read only: /rads/data/e1/a/c019/e1p0083c019.nc
+Start/end/equator time/longitude =   212351914.534  212350764.239  212353384.337   57.864073
+cycle, pass, ndata =     19    83  1217
+Start rads_get_var
+time                                    data(1), data(ndata) =   212351067.401602  212352410.095742
+lat                                     data(1), data(ndata) =  -49.954571  29.403729
+lon                                     data(1), data(ndata) =    71.601206   50.984213
+sla                                     data(1), data(ndata) =       NaN      NaN
+tide_ocean                              data(1), data(ndata) =   0.4686  0.3781
+tide_ocean                              data(1), data(ndata) =   0.4686  0.3781
+flags                                   data(1), data(ndata) =  0000000000000001 0000011001110001
+pass                                    data(1), data(ndata) =    83.   83.
+drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   84
 Opening for read only: /rads/data/e1/a/c019/e1p0084c019.nc
+Start/end/equator time/longitude =   212354924.165  212353456.224  212356341.377  225.324553
 Checking sat/cycle/pass :  e1   19   85
 Opening for read only: /rads/data/e1/a/c019/e1p0085c019.nc
+Start/end/equator time/longitude =   212357942.483  212356799.916  212359428.594   32.747942
+cycle, pass, ndata =     19    85   588
+Start rads_get_var
+time                                    data(1), data(ndata) =   212357094.678311  212357967.415488
+lat                                     data(1), data(ndata) =  -49.993388   1.481695
+lon                                     data(1), data(ndata) =    46.504197   32.423278
+sla                                     data(1), data(ndata) =   -0.0606      NaN
+tide_ocean                              data(1), data(ndata) =  -0.1479     NaN
+tide_ocean                              data(1), data(ndata) =  -0.1479     NaN
+flags                                   data(1), data(ndata) =  0000000000000001 0010000001110001
+pass                                    data(1), data(ndata) =    85.   85.
+drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   86
 Opening for read only: /rads/data/e1/a/c019/e1p0086c019.nc
+Start/end/equator time/longitude =   212360952.030  212359460.512  212362245.533  200.208293
 Checking sat/cycle/pass :  e1   20    1
 Opening for read only: /rads/data/e1/a/c020/e1p0001c020.nc
+Start/end/equator time/longitude =   212363970.351  212362774.311  212365454.233    7.632405
+cycle, pass, ndata =     20     1   940
+Start rads_get_var
+time                                    data(1), data(ndata) =   212363122.727236  212364043.322804
+lat                                     data(1), data(ndata) =  -49.982179   4.336632
+lon                                     data(1), data(ndata) =    21.385518    6.680979
+sla                                     data(1), data(ndata) =    0.1262      NaN
+tide_ocean                              data(1), data(ndata) =  -0.3325 -0.8255
+tide_ocean                              data(1), data(ndata) =  -0.3325 -0.8255
+flags                                   data(1), data(ndata) =  0000000000000001 0000000001100001
+pass                                    data(1), data(ndata) =     1.    1.
+drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   20    2
 Opening for read only: /rads/data/e1/a/c020/e1p0002c020.nc
+Start/end/equator time/longitude =   212366979.840  212365480.372  212368152.099  175.092824
 Checking sat/cycle/pass :  e1   20    3
 Opening for read only: /rads/data/e1/a/c020/e1p0003c020.nc
+Start/end/equator time/longitude =   212369998.184  212368789.000  212371502.756  -17.483073
+cycle, pass, ndata =     20     3  1378
+Start rads_get_var
+time                                    data(1), data(ndata) =   212369151.116737  212370503.088219
+lat                                     data(1), data(ndata) =  -49.949125  29.955961
+lon                                     data(1), data(ndata) =    -3.743877  -24.512824
+sla                                     data(1), data(ndata) =   -0.0742   0.0213
+tide_ocean                              data(1), data(ndata) =   0.2297  0.3453
+tide_ocean                              data(1), data(ndata) =   0.2297  0.3453
+flags                                   data(1), data(ndata) =  0000000000000001 0000000000000001
+pass                                    data(1), data(ndata) =     3.    3.
+drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   20    4
 Bail out on estimated time:  212284800.000  212371200.000  212371504.884  212374518.837
 Checking sat/cycle/pass :  e1   20    5
@@ -526,15 +764,37 @@ Start rads_end
 # Equator longitude limits (asc)                   0        15    -105.851     129.093
 # Equator longitude limits (des)                   0        14     -99.093     135.851
 #
-# PASSES AND MEASUREMENTS READ                    29         0
+# PASSES AND MEASUREMENTS READ                    29     51710
 #
 #                                           REJECTED  SELECTED       LOWER       UPPER         MIN         MAX        MEAN      STDDEV
-# time [seconds since 1985-01-01 00:00:00          0         0 910924/0000 910925/0000         NaN         NaN 850101/0000         -0.
-# latitude [degrees_north]                         0         0     -50.000      30.000         NaN         NaN       0.000      -0.000
-# longitude [degrees_east]                         0         0     -90.000     120.000         NaN         NaN       0.000      -0.000
+# time [seconds since 1985-01-01 00:00:00        234     51476 910924/0000 910925/0000 910924/0000 910924/2358 910924/1217      25298.
+# latitude [degrees_north]                     20271     31439     -50.000      30.000     -50.000      29.988     -12.977      22.920
+# longitude [degrees_east]                     24101     27609     -90.000     120.000     -90.000     119.993       6.975      57.943
 #
-# MEASUREMENTS IN REQUESTED PERIOD AND REGION                0
+# MEASUREMENTS IN REQUESTED PERIOD AND REGION            16852
 #
 #                                           REJECTED  SELECTED       LOWER       UPPER         MIN         MAX        MEAN      STDDEV
+# sea level anomaly [m]                         1117     15735      -3.000       3.000      -0.992       0.718      -0.053       0.115
+# REAPER/COMBI orbital altitude [m]                0     16852         NaN         NaN  779576.859  798111.473  786329.774    5788.884
+# Ku-band range corrected for instr. effec         1     16851  750000.000  850000.000  775342.315  798110.816  786331.345    5782.575
+# ECMWF dry tropospheric correction [m]            0     16852      -2.400      -2.100      -2.352      -2.226      -2.315       0.016
+# radiometer wet tropospheric correction [        80     16772      -0.600       0.000      -0.598      -0.005      -0.172       0.095
+# NIC09 ionospheric correction [m]                 0     16852      -0.400       0.040      -0.177      -0.016      -0.097       0.044
+# MOG2D dynamic atmospheric correction (ER         0     16852      -1.000       1.000      -0.391       0.313      -0.020       0.068
+# solid earth tide [m]                             0     16852      -1.000       1.000       0.014       0.198       0.133       0.043
+# FES2014b ocean tide [m]                         16     16836      -5.000       5.000      -1.865       1.077      -0.167       0.447
+# FES2014a load tide [m]                           0     16852      -0.500       0.500      -0.030       0.067       0.013       0.021
+# pole tide [m]                                    0     16852      -0.100       0.100      -0.016       0.017       0.001       0.009
+# BM3 sea state bias [m]                          30     16822      -1.000       1.000      -0.924       0.227      -0.130       0.093
+# DTU15 mean sea surface height [m]                0     16852         NaN         NaN    -101.740      57.344      -4.003      31.564
+# Ku-band significant wave height [m]             77     16775       0.000       8.000       0.000       8.000       2.067       1.398
+# Ku-band backscatter coefficient [dB]            50     16802       6.000      27.000       6.020      25.280      11.325       1.785
+# std dev of Ku-band range [m]                   339     16513       0.000       0.400       0.027       0.398       0.160       0.053
+# number of valid Ku-band measurements [1]       172     16680      16.500      20.500      17.000      20.000      19.895       0.542
+# flag word [count]                              909     15943   65512.000       0.000       1.000       1.000       1.000       0.000
+# Ku-band range bias [m]                           0     16852         NaN         NaN       0.409       0.409       0.409       0.000
+# std dev of Ku-band significant wave heig       350     16502       0.000       2.100       0.010       2.100       0.980       0.264
+# reference frame offset [m]                       0     16852         NaN         NaN       0.021       0.021       0.021       0.000
+# pass number []                                   0     16852         NaN         NaN       1.000      85.000      62.645      25.165
 ######################################################################################################################################
 End of program
