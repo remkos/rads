@@ -2356,7 +2356,7 @@ do
 
 	case ('phase')
 		if (has_name()) then
-			phase => rads_get_phase (S, name, .true.)
+			phase => rads_init_phase (S, name)
 			phase%name = attr(2,1)(:rads_varl)
 		endif
 
@@ -3637,46 +3637,28 @@ end subroutine rads_synopsis
 
 !****if* rads/rads_get_phase
 ! SUMMARY
-! Get pointer to satellite phase info
+! Add new mission phase and get pointer to satellite phase info
 !
 ! SYNOPSIS
-function rads_get_phase (S, name, allow_new) result (phase)
+function rads_init_phase (S, name) result (phase)
 type(rads_sat), intent(inout) :: S
 character(len=*), intent(in) :: name
-logical, intent(in), optional :: allow_new
 type(rads_phase), pointer :: phase
 !
 ! PURPOSE
-! Create pointer to the proper phase definitions for phase <name>.
-! This routine can also create new phase definitions when <allow_new> is
-! set to .true.
-!
-! In matching the phase name with the database, only the first letter is
-! used. However the path to the directory with NetCDF files will use the
-! entire phase name.
+! Create a new phase, adding it to the <S%phases> array and create
+! the array if needed. Then create pointer to the phase definitions
+! for this phase.
 !
 ! ARGUMENTS
 ! S        : Satellite/mission dependent structure
 ! name     : Name of phase
-! allow_new: Allow the creation of a new phase
 !****-------------------------------------------------------------------
-integer(fourbyteint) :: i, n
+integer(fourbyteint) :: n
 type(rads_phase), pointer :: temp(:)
 nullify (phase)
 n = 0
 if (associated(S%phases)) n = size(S%phases)
-
-! Search for the correct phase name
-do i = 1,n
-	if (S%phases(i)%name(1:1) == name(1:1)) then
-		phase => S%phases(i)
-		return
-	endif
-enddo
-
-! No matching name found. Only continue when allow_new = .true.
-if (.not.present(allow_new)) return
-if (.not.allow_new) return
 
 ! Allocate S%phases for the first time, or reallocate more space
 if (n == 0) then
@@ -3693,7 +3675,7 @@ endif
 ! Initialize the new phase information and direct the pointer
 S%phases(n) = rads_phase (name(1:1), '', (/999,0/), 0, nan, nan, nan, nan, 0, 0, 0, nan, nan, nan, 0, 0, null())
 phase => S%phases(n)
-end function rads_get_phase
+end function rads_init_phase
 
 subroutine rads_set_phase_by_name (S, name, error)
 type(rads_sat), intent(inout) :: S
