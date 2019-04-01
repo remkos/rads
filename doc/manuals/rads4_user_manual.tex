@@ -1,5 +1,5 @@
 %-----------------------------------------------------------------------
-% Copyright (c) 2011-2018  Remko Scharroo
+% Copyright (c) 2011-2019  Remko Scharroo
 % See LICENSE.TXT file for copying and redistribution conditions.
 %
 % This program is free software: you can redistribute it and/or modify
@@ -429,7 +429,7 @@ A number of tags are employed to give general information about the various alti
 \item[\ctag{phase}] A block of tags that apply to a given mission phase.
 \item[\ctag{mission}] Name of the mission phase.
 \item[\ctag{cycles}] First and last cycle number in this mission phase.
-\item[\ctag{repeat}] Length of the repeat cycle (not subcycle) in days and passes (half revolutions) in this mission phase.
+\item[\ctag{repeat}] Length of the repeat cycle (not subcycle) in days, number of passes (half revolutions) per cycle, and (optionally of drifting orbits) the eastward drift of the ground track pattern in degrees per cycle.
 \item[\ctag{ref_pass}] Date (and time) of a reference equator crossing, longitude of this equator crossing, cycle number (not subcycle number), pass number in this mission phase phase, and absolute orbit number. If the absolute orbit number is not given, 1 is assumed. This line provides the reference for the cycle and pass numbering.
 \item[\ctag{start_time}] Start data (and time) of the mission phase.
 \end{description}

@@ -68,7 +68,8 @@ Carr{\`e}re, L., and F.~Lyard (2003), Modeling the barotropic response of the
   and Ablain}}]{carrere2016}
 Carr{\`e}re, L., Y.~Faug{\`e}re, and M.~Ablain (2016), Major improvement of
   altimetry sea level estimations using pressure derived corrections based on
-  {ERA-interim} atmospheric reanalysis, \textit{Ocean Sci.\ Discuss.}
+  {ERA-interim} atmospheric reanalysis, \textit{Ocean Sci.\ Discuss.},
+  \textit{12}, 825--842, \doi{10.5194/os-12-825-2016}.
 
 \bibitem[{\textit{Cartwright and Edden}(1973)}]{cartwright1973}
 Cartwright, D.~E., and A.~C. Edden (1973), Corrected tables of tidal harmonics,
@@ -188,7 +189,7 @@ Gourrion, J., D.~Vandemark, S.~Bailey, B.~Chapron, C.~P. Gommenginger, P.~G.
   Purdy}}]{hayne1994}
 Hayne, G.~S., D.~W. Hancock, III, and C.~L. Purdy (1994), {TOPEX} altimeter
   range stability estimates from calibration mode data, \textit{{TOPEX Research
-  News}}, \textit{3}, 18--22.
+  News}}, \textit{3}, 18--22, \doi{10.1029/94JC01777}.
 
 \bibitem[{\textit{Imel}(1994)}]{imel1994}
 Imel, D.~A. (1994), Evaluation of the {TOPEX} dual-frequency ionosphere
