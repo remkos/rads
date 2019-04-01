@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2018  Remko Scharroo
+# Copyright (c) 2011-2019  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -18,6 +18,6 @@
 # E.g.: copyright_update.sh 2016
 #
 lst=$TMPDIR/copyright_update.lst
-grep -l "Copyright (c) 2011-2018ind .. -type f | grep -v .git` > $lst
-perl -pi -e "s/Copyright (c) 2011-2018/Copyright (c) 2011-$1/" `cat $lst`
+grep -l "Copyright (c) 2011-\d\d\d\d  " `find .. -type f | grep -v .git` > $lst
+perl -pi -e "s/Copyright \(c\) 2011-\d\d\d\d  /Copyright (c) 2011-$1  /" `cat $lst`
 rm -f $lst
