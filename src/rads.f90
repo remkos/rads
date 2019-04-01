@@ -1327,6 +1327,7 @@ call rads_init_pass_struct (S, P)
 P%cycle = cycle
 P%pass = pass
 ascdes = modulo(pass,2)	! 1 if ascending, 0 if descending
+P%ndata = 0
 
 if (rads_verbose >= 2) write (*,'(a,a3,2i5)') 'Checking sat/cycle/pass : ', S%sat, cycle, pass
 
@@ -1397,8 +1398,9 @@ P%fileinfo(1)%ncid = ncid
 
 ! Read global attributes
 S%error = rads_err_nc_parse
-if (nft(nf90_inquire_dimension(ncid,1,len=P%ndata))) return
-if (nft(nf90_inquire_dimension(ncid,2,len=P%n_hz))) P%n_hz = 0
+if (nft(nf90_inq_dimid(ncid,S%time%info%dataname,i))) return
+if (nft(nf90_inquire_dimension(ncid,i,len=P%ndata))) return
+if (nf90_inq_dimid(ncid,'meas_ind',i) + nf90_inquire_dimension(ncid,i,len=P%n_hz) /= nf90_noerr) P%n_hz = 0
 if (nft(nf90_get_att(ncid,nf90_global,'equator_longitude',P%equator_lon))) return
 P%equator_lon = S%lon%info%limits(1) + modulo (P%equator_lon - S%lon%info%limits(1), 360d0)
 if (nft(nf90_get_att(ncid,nf90_global,'equator_time',date))) return
@@ -4144,7 +4146,7 @@ character(len=*), intent(in), optional :: name
 ! When the <ndata> argument is omitted, the value <P%ndata> is used.
 !
 ! The optional argument <n_hz> gives the size of the secondary dimension for
-! multi-Hertz data. When <h_hz> is omitted, the value <P%n_hz> is used.
+! multi-Hertz data. When <n_hz> is omitted, the value <P%n_hz> is used.
 ! When n_hz == 0, no secondary dimension is created.
 !
 ! The optional argument <name> can have one of three forms:
