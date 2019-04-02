@@ -504,13 +504,14 @@ end interface rads_parse_varlist
 ! logical, optional, intent(out) :: error
 !
 ! PURPOSE
-! Set the pointer S%phase to the proper phase definitions for the mission
+! Set the pointer <S%phase> to the proper phase definitions for the mission
 ! phase. The selection of the phase can be done by phase name <name>,
 ! cycle number <cycle> or time <time>.
 !
 ! In matching the phase name with the database, only the first letter is
 ! used. However the path to the directory with NetCDF files will use the
-! entire phase name.
+! entire phase name. In case multiple phases have the same name, the first
+! one will be pointed to.
 !
 ! For efficiency, the routine first checks if the current phase is correct.
 !
@@ -563,6 +564,7 @@ character(len=*), intent(in), optional :: xml(:)
 ! S%error  : rads_noerr, rads_err_xml_file, rads_err_xml_parse, rads_err_var
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: i, n
+logical, allocatable :: mask(:)
 
 call rads_init_sat_struct (S)
 
@@ -611,8 +613,8 @@ endif
 ! If no phases are defined, then the satellite is not known
 if (.not.associated(S%phases)) call rads_exit ('Satellite "'//S%sat//'" unknown')
 
-! Set end times for phases where they are NaN
-! Compute the maximum pass number for phases with one cycle
+! When NaN, set end time of a phase to the start time of the next phase
+! When a phase contains only one cycle, compute the maximum pass number
 n = size(S%phases)
 do i = 1,n-1
 	if (isnan_(S%phases(i)%end_time)) S%phases(i)%end_time = S%phases(i+1)%start_time
@@ -621,19 +623,19 @@ do i = 1,n-1
 enddo
 if (isnan_(S%phases(n)%end_time)) S%phases(n)%end_time = 2051222400d0 ! 2050-01-01
 
-! When a phase/mission is specifically given, load the appropriate settings
-if (S%spec == '') then
-	! By default, use the largest possible cycle and pass range and set the first (default) phase
-	S%phase => S%phases(1)
-	S%cycles(1) = minval(S%phases%cycles(1))
-	S%cycles(2) = maxval(S%phases%cycles(2))
-	S%passes(2) = maxval(S%phases%passes)
-else
-	S%phase => rads_get_phase(S, S%spec)
-	if (.not.associated(S%phase)) call rads_exit ('No such mission phase "'//trim(S%spec)//'" for satellite "'//S%sat//'"')
-	S%cycles(1:2) = S%phase%cycles
-	S%passes(2) = S%phase%passes
-endif
+! Default phase is the first mission phase
+S%phase => S%phases(1)
+
+! When no phase/mission is specified: use the largest possible cycle and pass range
+! When a phase/mission is specified: load the appropriate settings
+! This can handle multiple "phase" specifications with the same name
+allocate (mask(size(S%phases)))
+mask = (S%spec == '' .or. S%phases%name(1:1) == S%spec(1:1))
+if (S%spec /= '') call rads_set_phase (S, S%spec)
+S%cycles(1) = minval(S%phases%cycles(1), mask)
+S%cycles(2) = maxval(S%phases%cycles(2), mask)
+S%passes(2) = maxval(S%phases%passes, mask)
+deallocate (mask)
 
 ! Check if variables include the required <data> identifier
 do i = 1,S%nvar
@@ -2354,7 +2356,7 @@ do
 
 	case ('phase')
 		if (has_name()) then
-			phase => rads_get_phase (S, name, .true.)
+			phase => rads_init_phase (S, name)
 			phase%name = attr(2,1)(:rads_varl)
 		endif
 
@@ -3635,46 +3637,28 @@ end subroutine rads_synopsis
 
 !****if* rads/rads_get_phase
 ! SUMMARY
-! Get pointer to satellite phase info
+! Add new mission phase and get pointer to satellite phase info
 !
 ! SYNOPSIS
-function rads_get_phase (S, name, allow_new) result (phase)
+function rads_init_phase (S, name) result (phase)
 type(rads_sat), intent(inout) :: S
 character(len=*), intent(in) :: name
-logical, intent(in), optional :: allow_new
 type(rads_phase), pointer :: phase
 !
 ! PURPOSE
-! Create pointer to the proper phase definitions for phase <name>.
-! This routine can also create new phase definitions when <allow_new> is
-! set to .true.
-!
-! In matching the phase name with the database, only the first letter is
-! used. However the path to the directory with NetCDF files will use the
-! entire phase name.
+! Create a new phase, adding it to the <S%phases> array and create
+! the array if needed. Then create pointer to the phase definitions
+! for this phase.
 !
 ! ARGUMENTS
 ! S        : Satellite/mission dependent structure
 ! name     : Name of phase
-! allow_new: Allow the creation of a new phase
 !****-------------------------------------------------------------------
-integer(fourbyteint) :: i, n
+integer(fourbyteint) :: n
 type(rads_phase), pointer :: temp(:)
 nullify (phase)
 n = 0
 if (associated(S%phases)) n = size(S%phases)
-
-! Search for the correct phase name
-do i = 1,n
-	if (S%phases(i)%name(1:1) == name(1:1)) then
-		phase => S%phases(i)
-		return
-	endif
-enddo
-
-! No matching name found. Only continue when allow_new = .true.
-if (.not.present(allow_new)) return
-if (.not.allow_new) return
 
 ! Allocate S%phases for the first time, or reallocate more space
 if (n == 0) then
@@ -3691,7 +3675,7 @@ endif
 ! Initialize the new phase information and direct the pointer
 S%phases(n) = rads_phase (name(1:1), '', (/999,0/), 0, nan, nan, nan, nan, 0, 0, 0, nan, nan, nan, 0, 0, null())
 phase => S%phases(n)
-end function rads_get_phase
+end function rads_init_phase
 
 subroutine rads_set_phase_by_name (S, name, error)
 type(rads_sat), intent(inout) :: S
@@ -3703,7 +3687,7 @@ if (present(error)) error = .false.
 if (name(1:1) == S%phase%name(1:1)) return
 ! Check all mission phases
 do i = 1,size(S%phases)
-	if (name(1:1) == S%phase%name(1:1)) then
+	if (name(1:1) == S%phases(i)%name(1:1)) then
 		S%phase => S%phases(i)
 		return
 	endif
@@ -3711,7 +3695,7 @@ enddo
 if (present(error)) then
 	error = .true.
 else
-	call rads_exit ('No such mission phase "'//name//'" for satellite "'//S%sat//'"')
+	call rads_exit ('No mission phase "'//trim(name)//'" for satellite "'//S%sat//'"')
 endif
 end subroutine rads_set_phase_by_name
 
