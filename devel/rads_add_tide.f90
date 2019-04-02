@@ -219,6 +219,7 @@ if (do_stide) call rads_def_var (S, P, 'tide_solid')
 do j = 1,mfes
 	if (.not.do_fes(j)) cycle
 	call rads_def_var (S, P, 'tide_ocean_' // nfes(j))
+	call rads_def_var (S, P, 'tide_load_' // nfes(j))
 enddo
 
 do j = 1,mgot
