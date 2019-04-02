@@ -3789,7 +3789,7 @@ Global RADS configuration file
 	<inclination>98.65</inclination>
 	<frequency>13.575 5.41</frequency>
 	<xover_params>0.05 0.05</xover_params><!--Need to verify-->
-	<phase name="0">
+	<phase name="1">
 		<mission>Initial Drift Phase</mission>
 		<cycles>3 5</cycles>
 		<repeat>30.9996 882</repeat>
@@ -3817,21 +3817,21 @@ Global RADS configuration file
 		<ref_pass>2018-10-16T10:32:35 171.742 15 73 2476</ref_pass><!--Need to update this value-->
 		<start_time>2018-10-16T10:07:20</start_time><!--Need to update this value-->
 	</phase>
-	<phase name="3">
+	<phase name="2">
 		<mission>Drift Phase</mission>
 		<cycles>16 16</cycles><!--Need to update this value-->
 		<repeat>400 11418 1.0833</repeat><!--Need to update this value-->
 		<ref_pass>2018-10-24T10:22:27 174.266 16 301 2590</ref_pass><!--Need to update this value-->
 		<start_time>2018-10-24T09:57:30</start_time><!--Need to update this value-->
 	</phase>
-	<phase name="4">
+	<phase name="2">
 		<mission>Drift Phase</mission>
 		<cycles>17 17</cycles><!--Need to update this value-->
 		<repeat>400 11418 1.0833</repeat><!--Need to update this value-->
 		<ref_pass>2018-11-09T21:32:40 6.783 17 1 2825</ref_pass><!--Need to update this value-->
 		<start_time>2018-11-09T21:07:40</start_time><!--Need to update this value-->
 	</phase>
-	<phase name="5">
+	<phase name="2">
 		<mission>Drift Phase</mission>
 		<cycles>18 18</cycles><!--Need to update this value-->
 		<repeat>242 6902 0.2017</repeat><!--Need to update this value-->
