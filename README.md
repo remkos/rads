@@ -28,6 +28,17 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 ## Version History
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 
+### v4.3.4 (2 Apr 2019)
+* Bug fix in `rads_def_var`.
+* Small documentation update.
+* Allow multiple mission phases with the same name (needed for Sentinel-3B and Jason-2 after geodetic phase rewind).
+* Updated Sentinel-3B mission phases.
+* Implemented internal tides.
+* Removed support for FES2012 tide model.
+* Bug fix in `rads_add_tide`.
+* Removed DTU MSS13 from standard models provided.
+* Added `topo_srtm15plus` to alias for `topo` ahread of removing `topo_srtm30plus`.
+
 ### v4.3.3 (19 Nov 2018)
 * Added new optional argument `varid` to `rads_def_var` routine (fixed bug issue #139).
 
