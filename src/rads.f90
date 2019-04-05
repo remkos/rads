@@ -1398,11 +1398,16 @@ else
 endif
 P%fileinfo(1)%ncid = ncid
 
-! Read global attributes
+! Get the time dimension
 S%error = rads_err_nc_parse
-if (nft(nf90_inq_dimid(ncid,S%time%info%dataname,i))) return
+k = index(S%time%info%dataname, ' ') - 1
+if (nft(nf90_inq_dimid(ncid,S%time%info%dataname(:k),i))) return
 if (nft(nf90_inquire_dimension(ncid,i,len=P%ndata))) return
+
+! Get the optional second (n-Hz) dimension
 if (nf90_inq_dimid(ncid,'meas_ind',i) + nf90_inquire_dimension(ncid,i,len=P%n_hz) /= nf90_noerr) P%n_hz = 0
+
+! Read global attributes
 if (nft(nf90_get_att(ncid,nf90_global,'equator_longitude',P%equator_lon))) return
 P%equator_lon = S%lon%info%limits(1) + modulo (P%equator_lon - S%lon%info%limits(1), 360d0)
 if (nft(nf90_get_att(ncid,nf90_global,'equator_time',date))) return
