@@ -17,9 +17,23 @@
 ! and get_var_2d.
 ! Both routines are used to read a single variable from a NetCDF file
 ! (either 1- or 2-dimensional), or load a combination of variables
-! and/or constants using RPN notation. Note that only the RPN commands
-! ADD, SUB, MUL, DIV and NEG are available and only 2 buffers can be used,
-! so the computation has to remain relatively simple.
+! and/or constants using RPN notation. Note that only the following RPN
+! commands are available:
+! --------------------------------------------
+! Command | Example   | Result
+! --------------------------------------------
+! ADD     |  a b ADD  | a + b
+! SUB     |  a b SUB  | a - b
+! NEG     |  a NEG    | -a
+! MUL     |  a b MUL  | a * b
+! DIV     |  a b DIV  | a / b
+! AND     |  a b AND  | if (isnan(a)) b else a
+! HYPOT   |  a b HYPOT| sqrt(a*a+b*b)
+! R2      |  a b R2   | a*a + b*b
+! ISNAN   |  a ISNAN  | if (isnan(a)) 1 else 0
+! --------------------------------------------
+! Only 2 buffers can be used, so the computation has to remain relatively
+! simple.
 
 real(eightbytereal) :: scale_factor, add_offset, fillvalue
 integer(fourbyteint) :: i0, i1, ia, ib, ios, l, varid
@@ -46,8 +60,16 @@ do
 		array = array / temp
 	case ('AND')
 		where (array /= array) array = temp
+	case ('HYPOT')
+		array = sqrt(array*array + temp*temp)
 	case ('R2')
 		array = array*array + temp*temp
+	case ('ISNAN')
+		where (array == array)
+			array = 0d0
+		elsewhere	! NaN
+			array = 1d0
+		endwhere
 	case default
 		if (index('.+-0123456789', varnm(ia:ia)) > 0) then
 			scale_factor = 0d0

@@ -37,7 +37,7 @@ real(eightbytereal), parameter, private :: nan = transfer ((/not(0_fourbyteint),
 ! subroutine get_var (ncid, varnm, array)
 ! integer(fourbyteint), intent(in) :: ncid
 ! character(len=*), intent(in) :: varnm
-! real(eightbytereal), intent(out) :: array(:) <or> array(:,:)
+! real(eightbytereal), intent(out) :: array(:) <or> array(:,:) <or> array(:,:,:)
 !
 ! PURPOSE
 ! This routine looks for a variable named <varnm> in the file associated with
@@ -48,9 +48,22 @@ real(eightbytereal), parameter, private :: nan = transfer ((/not(0_fourbyteint),
 ! One can also use RPN notation to combine a number of variables and/or
 ! numerical constants directly.
 ! For example: varnm='alt range SUB'.
-! Note that only the RPN commands ADD, SUB, MUL, DIV and NEG are available
-! and that only 2 buffers can be used, so the computation has to remain
-! relatively simple.
+! Note that only the following RPN commands are available:
+! --------------------------------------------
+! Command | Example   | Result
+! --------------------------------------------
+! ADD     |  a b ADD  | a + b
+! SUB     |  a b SUB  | a - b
+! NEG     |  a NEG    | -a
+! MUL     |  a b MUL  | a * b
+! DIV     |  a b DIV  | a / b
+! AND     |  a b AND  | if (isnan(a)) b else a
+! HYPOT   |  a b HYPOT| sqrt(a*a+b*b)
+! R2      |  a b R2   | a*a + b*b
+! ISNAN   |  a ISNAN  | if (isnan(a)) 1 else 0
+! --------------------------------------------
+! Only 2 buffers can be used, so the computation has to remain relatively
+! simple.
 ! This can be done for 1D or 2D variables, but not for 3D variables.
 !
 ! ARGUMENTS
