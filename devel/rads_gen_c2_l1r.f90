@@ -113,6 +113,7 @@ real(eightbytereal), allocatable :: a(:),b(:),c(:),d(:,:),w(:,:,:),t_1hz(:),t_20
 logical, allocatable :: t_valid(:,:),valid(:,:)
 integer(fourbyteint), allocatable :: nvalid(:)
 integer(twobyteint), allocatable :: flags(:)
+real(eightbytereal), allocatable :: latency(:)
 type(rads_sat) :: S
 type(rads_pass) :: P
 type :: var_
@@ -226,7 +227,7 @@ do
 
 	allocate (a(nrec),b(nrec),c(nrec),d(20,nrec),w(256,20,nrec), &
 		t_1hz(nrec),t_20hz(20,nrec),alt(nrec),alt_20hz(20,nrec),dh(nrec), &
-		t_valid(20,nrec),valid(20,nrec),nvalid(nrec),flags(nrec))
+		t_valid(20,nrec),valid(20,nrec),nvalid(nrec),flags(nrec),latency(nrec))
 
 
 ! Apply timing bias here, because they are different between between FDM, LRM, SAR
@@ -315,6 +316,8 @@ do
 	call flag_set (nvalid <= 10, 13)
 
 	call new_var ('flags', dble(flags))
+	latency(:) = 1
+	call new_var ('latency',latency)
 
 ! Determine range bias, prior to Baseline C only
 ! 1) According to Marco Fornari:
@@ -485,7 +488,7 @@ do
 	oldcyc = cycnr(2)
 	oldpass = passnr(2)
 
-	deallocate (a,b,c,d,w,t_1hz,t_20hz,alt,alt_20hz,dh,t_valid,valid,nvalid,flags)
+	deallocate (a,b,c,d,w,t_1hz,t_20hz,alt,alt_20hz,dh,t_valid,valid,nvalid,flags,latency)
 
 	call nfs(nf90_close(ncid))
 

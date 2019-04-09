@@ -103,12 +103,13 @@ character(len=rads_cmdl) :: infile, arg
 
 integer(fourbyteint) :: cyclenr, passnr, varid, orbit_type_offset
 real(eightbytereal) :: equator_time
-logical :: nrt
+logical :: nrt, stc, ntc
 
 ! Data variables
 
 integer(twobyteint), allocatable :: flags_plrm(:), flags_save(:)
 character(len=2) :: mss_cnescls_ver, mss_dtu_ver, tide_fes_ver
+real(eightbytereal), allocatable :: latency(:)
 
 ! Other local variables
 
@@ -182,6 +183,8 @@ do
 
 	call nfs(nf90_get_att(ncid,nf90_global,'product_name',arg))
 	nrt = index(arg,'_NR_') > 0
+	stc = index(arg,'_ST_') > 0
+	ntc = index(arg,'_NT_') > 0
 	call nfs(nf90_get_att(ncid,nf90_global,'cycle_number',cyclenr))
 	call nfs(nf90_get_att(ncid,nf90_global,'pass_number',passnr))
 	call nfs(nf90_get_att(ncid,nf90_global,'equator_time',arg))
@@ -256,7 +259,7 @@ do
 
 ! Allocate variables
 
-	allocate (a(nrec),dh(nrec),flags(nrec),flags_plrm(nrec),flags_save(nrec))
+	allocate (a(nrec),dh(nrec),flags(nrec),flags_plrm(nrec),flags_save(nrec),latency(nrec))
 	nvar = 0
 
 ! Compile flag bits
@@ -392,12 +395,16 @@ do
 		call new_var ('orbit_type', a)
 	endif
 	call cpy_var ('surf_class_01', 'surface_class')
+	if (nrt) latency(:) = 0
+	if (stc) latency(:) = 1
+	if (ntc) latency(:) = 2
+	call new_var ('latency',latency)
 
 ! Dump the data
 
 	call nfs(nf90_close(ncid))
 	call put_rads
-	deallocate (a, dh, flags, flags_plrm, flags_save)
+	deallocate (a, dh, flags, flags_plrm, flags_save, latency)
 
 enddo
 

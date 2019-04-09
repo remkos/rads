@@ -100,11 +100,12 @@ character(len=rads_cmdl) :: infile, arg
 
 integer(fourbyteint) :: cyclenr, passnr, varid
 real(eightbytereal) :: equator_time
-logical :: ogdr = .false., gdre = .false., mle3 = .true.
+logical :: ogdr = .false., igdr = .false., gdr = .false., gdre = .false., mle3 = .true.
 
 ! Data variables
 
 integer(twobyteint), allocatable :: flags_mle3(:), flags_save(:)
+real(eightbytereal), allocatable :: latency(:)
 
 ! Other local variables
 
@@ -167,13 +168,13 @@ do
 	case ('Jason-3')
 		arg = 'j3'
 	case default
-		call log_string ('Error: wrong misson_name found in header', .true.)
+		call log_string ('Error: wrong mission_name found in header', .true.)
 		cycle
 	end select
 	if (sat == '') then
 		call rads_init (S, arg)
 	else if (S%sat /= arg(:2)) then
-		call log_string ('Error: wrong misson_name found in header', .true.)
+		call log_string ('Error: wrong mission_name found in header', .true.)
 		cycle
 	endif
 
@@ -181,6 +182,8 @@ do
 
 	call nfs(nf90_get_att(ncid,nf90_global,'title',arg))
 	ogdr = (arg(:4) == 'OGDR')
+	igdr = (arg(:4) == 'IGDR')
+	gdr = (arg(:3) == 'GDR')
 	call nfs(nf90_get_att(ncid,nf90_global,'cycle_number',cyclenr))
 	call nfs(nf90_get_att(ncid,nf90_global,'pass_number',passnr))
 	call nfs(nf90_get_att(ncid,nf90_global,'equator_time',arg))
@@ -265,7 +268,7 @@ do
 
 ! Allocate variables
 
-	allocate (a(nrec),flags(nrec),flags_mle3(nrec),flags_save(nrec))
+	allocate (a(nrec),flags(nrec),flags_mle3(nrec),flags_save(nrec),latency(nrec))
 	nvar = 0
 
 ! Compile flag bits
@@ -400,12 +403,16 @@ do
 	call cpy_var ('rad_water_vapor', 'water_vapor_rad')
 	call cpy_var ('ssha')
 	call cpy_var ('ssha_mle3')
+	if (ogdr) latency(:) = 0
+	if (igdr) latency(:) = 1
+	if (gdr) latency(:) = 2
+	call new_var ('latency',latency)
 
 ! Dump the data
 
 	call nfs(nf90_close(ncid))
 	call put_rads
-	deallocate (a, flags, flags_mle3, flags_save)
+	deallocate (a, flags, flags_mle3, flags_save, latency)
 
 enddo
 

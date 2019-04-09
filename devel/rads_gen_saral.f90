@@ -91,6 +91,7 @@ logical :: ogdr
 
 real(eightbytereal), allocatable :: b(:), d(:,:)
 logical, allocatable :: valid(:,:)
+real(eightbytereal), allocatable :: latency(:)
 
 ! Other local variables
 
@@ -188,7 +189,7 @@ do
 
 ! Allocate variables
 
-	allocate (a(nrec),b(nrec),d(40,nrec),valid(40,nrec),flags(nrec))
+	allocate (a(nrec),b(nrec),d(40,nrec),valid(40,nrec),flags(nrec),latency(nrec))
 	nvar = 0
 
 ! Compile flag bits
@@ -279,12 +280,16 @@ do
 	call new_var ('peakiness_ka', a)
 	a = flags
 	call new_var ('flags', a)
+	if (ogdr) latency(:) = 0
+	if (igdr) latency(:) = 1
+	if (gdr) latency(:) = 2
+	call new_var ('latency',latency)
 
 ! Dump the data
 
 	call nfs(nf90_close(ncid))
 	call put_rads
-	deallocate (a, b, d, valid, flags)
+	deallocate (a, b, d, valid, flags, latency)
 
 enddo
 
