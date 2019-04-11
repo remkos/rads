@@ -85,13 +85,12 @@ character(len=rads_cmdl) :: infile, arg
 
 integer(fourbyteint) :: cyclenr, passnr, varid, patch
 real(eightbytereal) :: equator_time
-logical :: ogdr
+integer :: file_latency = rads_nrt
 
 ! Data variables
 
 real(eightbytereal), allocatable :: b(:), d(:,:)
 logical, allocatable :: valid(:,:)
-real(eightbytereal), allocatable :: latency(:)
 
 ! Other local variables
 
@@ -137,7 +136,11 @@ do
 	endif
 
 	call nfs(nf90_get_att(ncid,nf90_global,'title',arg))
-	ogdr = (arg(:4) == 'OGDR')
+	if (arg(:4) == 'IGDR') then
+		file_latency = rads_stc
+	else if (arg(:3) == 'GDR') then
+		file_latency = rads_ntc
+	endif
 	call nfs(nf90_get_att(ncid,nf90_global,'cycle_number',cyclenr))
 	call nfs(nf90_get_att(ncid,nf90_global,'pass_number',passnr))
 	call nfs(nf90_get_att(ncid,nf90_global,'equator_time',arg))
@@ -189,7 +192,7 @@ do
 
 ! Allocate variables
 
-	allocate (a(nrec),b(nrec),d(40,nrec),valid(40,nrec),flags(nrec),latency(nrec))
+	allocate (a(nrec),b(nrec),d(40,nrec),valid(40,nrec),flags(nrec))
 	nvar = 0
 
 ! Compile flag bits
@@ -206,7 +209,7 @@ do
 	call nc2f ('qual_alt_1hz_range',11)				! bit 11: Quality of range
 	call nc2f ('qual_alt_1hz_swh',12)				! bit 12: Quality of SWH
 	call nc2f ('qual_alt_1hz_sig0',13)				! bit 13: Quality of sigma0
-	if (ogdr) then
+	if (file_latency == rads_nrt) then
 		call nc2f ('orb_state_flag_diode',15,ge=2)	! bit 15: Quality of DIODE orbit
 	else
 		call nc2f ('orb_state_flag_rest',15,neq=3)	! bit 15: Quality of restituted orbit
@@ -253,7 +256,7 @@ do
 	call cpy_var ('geoid', 'geoid_egm96')
 	call cpy_var ('bathymetry', 'topo_dtm2000')
 	call cpy_var ('inv_bar_corr', 'inv_bar_static')
-	if (ogdr) then
+	if (file_latency == rads_nrt) then
 		call cpy_var ('inv_bar_corr', 'inv_bar_mog2d')
 	else
 		call cpy_var ('inv_bar_corr hf_fluctuations_corr ADD', 'inv_bar_mog2d')
@@ -280,16 +283,14 @@ do
 	call new_var ('peakiness_ka', a)
 	a = flags
 	call new_var ('flags', a)
-	if (ogdr) latency(:) = 0
-	if (igdr) latency(:) = 1
-	if (gdr) latency(:) = 2
-	call new_var ('latency',latency)
+	a = file_latency
+	call new_var ('latency', a)
 
 ! Dump the data
 
 	call nfs(nf90_close(ncid))
 	call put_rads
-	deallocate (a, b, d, valid, flags, latency)
+	deallocate (a, b, d, valid, flags)
 
 enddo
 

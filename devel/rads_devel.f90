@@ -15,6 +15,8 @@
 
 module rads_devel
 
+integer, parameter :: rads_nrt = 0, rads_stc = 1, rads_ntc = 2
+
 contains
 
 !*erspass - Determine orbit nr, phase, cycle nr and pass nr for ERS-1/2

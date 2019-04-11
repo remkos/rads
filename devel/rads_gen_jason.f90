@@ -100,12 +100,12 @@ character(len=rads_cmdl) :: infile, arg
 
 integer(fourbyteint) :: cyclenr, passnr, varid
 real(eightbytereal) :: equator_time
-logical :: ogdr = .false., igdr = .false., gdr = .false., gdre = .false., mle3 = .true.
+logical :: gdre = .false., mle3 = .true.
+integer :: file_latency = rads_nrt
 
 ! Data variables
 
 integer(twobyteint), allocatable :: flags_mle3(:), flags_save(:)
-real(eightbytereal), allocatable :: latency(:)
 
 ! Other local variables
 
@@ -181,9 +181,11 @@ do
 ! Read rest of global attributes
 
 	call nfs(nf90_get_att(ncid,nf90_global,'title',arg))
-	ogdr = (arg(:4) == 'OGDR')
-	igdr = (arg(:4) == 'IGDR')
-	gdr = (arg(:3) == 'GDR')
+	if (arg(:4) == 'IGDR') then
+		file_latency = rads_stc
+	else if (arg(:3) == 'GDR') then
+		file_latency = rads_ntc
+	endif
 	call nfs(nf90_get_att(ncid,nf90_global,'cycle_number',cyclenr))
 	call nfs(nf90_get_att(ncid,nf90_global,'pass_number',passnr))
 	call nfs(nf90_get_att(ncid,nf90_global,'equator_time',arg))
@@ -268,7 +270,7 @@ do
 
 ! Allocate variables
 
-	allocate (a(nrec),flags(nrec),flags_mle3(nrec),flags_save(nrec),latency(nrec))
+	allocate (a(nrec),flags(nrec),flags_mle3(nrec),flags_save(nrec))
 	nvar = 0
 
 ! Compile flag bits
@@ -328,9 +330,9 @@ do
 	call cpy_var ('model_wet_tropo_corr', 'wet_tropo_ecmwf')
 	call cpy_var ('iono_corr_alt_ku', 'iono_alt')
 	call cpy_var ('iono_corr_alt_ku_mle3', 'iono_alt_mle3', mle3)
-	call cpy_var ('iono_corr_gim_ku', 'iono_gim', .not.ogdr)
+	call cpy_var ('iono_corr_gim_ku', 'iono_gim', file_latency /= rads_nrt)
 	call cpy_var ('inv_bar_corr', 'inv_bar_static')
-	if (ogdr) then
+	if (file_latency == rads_nrt) then
 		call cpy_var ('inv_bar_corr', 'inv_bar_mog2d')
 	else
 		call cpy_var ('inv_bar_corr hf_fluctuations_corr ADD', 'inv_bar_mog2d')
@@ -403,16 +405,14 @@ do
 	call cpy_var ('rad_water_vapor', 'water_vapor_rad')
 	call cpy_var ('ssha')
 	call cpy_var ('ssha_mle3')
-	if (ogdr) latency(:) = 0
-	if (igdr) latency(:) = 1
-	if (gdr) latency(:) = 2
-	call new_var ('latency',latency)
+	a = file_latency
+	call new_var ('latency', a)
 
 ! Dump the data
 
 	call nfs(nf90_close(ncid))
 	call put_rads
-	deallocate (a, flags, flags_mle3, flags_save, latency)
+	deallocate (a, flags, flags_mle3, flags_save)
 
 enddo
 
