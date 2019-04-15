@@ -1657,6 +1657,7 @@ Global RADS configuration file
 	<data>latency</data>
 	<format>z1</format>
 	<compress>int1</compress>
+	<dimensions>0</dimensions>
 </var>
 
 <if sat="sa">
