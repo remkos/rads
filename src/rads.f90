@@ -4378,11 +4378,8 @@ if (nff(nf90_inq_varid(ncid, var%name, varid_))) then
 			'Cannot redefine variable "'//trim(var%name)//'" with different type or dimension in file', P)
 		return
 	endif
-! Define a constant (always as double)
+! Define a constant
 else if (info%ndims == 0) then
-	info%scale_factor = 1d0
-	info%add_offset = 0d0
-	info%nctype = nf90_double
 	if (nft(nf90_def_var(ncid, var%name, info%nctype, varid_))) then
 		call rads_error (S, rads_err_nc_var, 'Error creating variable "'//trim(var%name)//'" in file', P)
 		return
