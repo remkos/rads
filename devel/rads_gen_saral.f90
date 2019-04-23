@@ -85,7 +85,7 @@ character(len=rads_cmdl) :: infile, arg
 
 integer(fourbyteint) :: cyclenr, passnr, varid, patch
 real(eightbytereal) :: equator_time
-integer :: file_latency = rads_nrt
+integer :: latency = rads_nrt
 
 ! Data variables
 
@@ -136,10 +136,15 @@ do
 	endif
 
 	call nfs(nf90_get_att(ncid,nf90_global,'title',arg))
-	if (arg(:4) == 'IGDR') then
-		file_latency = rads_stc
+	if (arg(:4) == 'OGDR') then
+		latency = rads_nrt
+	else if (arg(:4) == 'IGDR') then
+		latency = rads_stc
 	else if (arg(:3) == 'GDR') then
-		file_latency = rads_ntc
+		latency = rads_ntc
+	else
+		call log_string ('Error: file skipped: unknown latency', .true.)
+		cycle
 	endif
 	call nfs(nf90_get_att(ncid,nf90_global,'cycle_number',cyclenr))
 	call nfs(nf90_get_att(ncid,nf90_global,'pass_number',passnr))
@@ -209,7 +214,7 @@ do
 	call nc2f ('qual_alt_1hz_range',11)				! bit 11: Quality of range
 	call nc2f ('qual_alt_1hz_swh',12)				! bit 12: Quality of SWH
 	call nc2f ('qual_alt_1hz_sig0',13)				! bit 13: Quality of sigma0
-	if (file_latency == rads_nrt) then
+	if (latency == rads_nrt) then
 		call nc2f ('orb_state_flag_diode',15,ge=2)	! bit 15: Quality of DIODE orbit
 	else
 		call nc2f ('orb_state_flag_rest',15,neq=3)	! bit 15: Quality of restituted orbit
@@ -256,7 +261,7 @@ do
 	call cpy_var ('geoid', 'geoid_egm96')
 	call cpy_var ('bathymetry', 'topo_dtm2000')
 	call cpy_var ('inv_bar_corr', 'inv_bar_static')
-	if (file_latency == rads_nrt) then
+	if (latency == rads_nrt) then
 		call cpy_var ('inv_bar_corr', 'inv_bar_mog2d')
 	else
 		call cpy_var ('inv_bar_corr hf_fluctuations_corr ADD', 'inv_bar_mog2d')
@@ -283,7 +288,7 @@ do
 	call new_var ('peakiness_ka', a)
 	a = flags
 	call new_var ('flags', a)
-	a = file_latency
+	a = latency
 	call new_var ('latency', a)
 
 ! Dump the data

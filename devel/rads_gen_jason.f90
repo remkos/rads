@@ -101,7 +101,7 @@ character(len=rads_cmdl) :: infile, arg
 integer(fourbyteint) :: cyclenr, passnr, varid
 real(eightbytereal) :: equator_time
 logical :: gdre = .false., mle3 = .true.
-integer :: file_latency = rads_nrt
+integer :: latency = rads_nrt
 
 ! Data variables
 
@@ -181,10 +181,15 @@ do
 ! Read rest of global attributes
 
 	call nfs(nf90_get_att(ncid,nf90_global,'title',arg))
-	if (arg(:4) == 'IGDR') then
-		file_latency = rads_stc
+	if (arg(:4) == 'OGDR') then
+		latency = rads_nrt
+	else if (arg(:4) == 'IGDR') then
+		latency = rads_stc
 	else if (arg(:3) == 'GDR') then
-		file_latency = rads_ntc
+		latency = rads_ntc
+	else
+		call log_string ('Error: file skipped: unknown latency', .true.)
+		cycle
 	endif
 	call nfs(nf90_get_att(ncid,nf90_global,'cycle_number',cyclenr))
 	call nfs(nf90_get_att(ncid,nf90_global,'pass_number',passnr))
@@ -330,9 +335,9 @@ do
 	call cpy_var ('model_wet_tropo_corr', 'wet_tropo_ecmwf')
 	call cpy_var ('iono_corr_alt_ku', 'iono_alt')
 	call cpy_var ('iono_corr_alt_ku_mle3', 'iono_alt_mle3', mle3)
-	call cpy_var ('iono_corr_gim_ku', 'iono_gim', file_latency /= rads_nrt)
+	call cpy_var ('iono_corr_gim_ku', 'iono_gim', latency /= rads_nrt)
 	call cpy_var ('inv_bar_corr', 'inv_bar_static')
-	if (file_latency == rads_nrt) then
+	if (latency == rads_nrt) then
 		call cpy_var ('inv_bar_corr', 'inv_bar_mog2d')
 	else
 		call cpy_var ('inv_bar_corr hf_fluctuations_corr ADD', 'inv_bar_mog2d')
@@ -405,7 +410,7 @@ do
 	call cpy_var ('rad_water_vapor', 'water_vapor_rad')
 	call cpy_var ('ssha')
 	call cpy_var ('ssha_mle3')
-	a = file_latency
+	a = latency
 	call new_var ('latency', a)
 
 ! Dump the data
