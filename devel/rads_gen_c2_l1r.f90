@@ -315,8 +315,7 @@ do
 	call flag_set (nvalid <= 10, 13)
 
 	call new_var ('flags', dble(flags))
-	a = rads_stc
-	call new_var ('latency', a)
+	call new_var_0d ('latency', dble(rads_stc))
 
 ! Determine range bias, prior to Baseline C only
 ! 1) According to Marco Fornari:
@@ -573,6 +572,18 @@ var(nvar)%v => rads_varptr (S, varnm)
 var(nvar)%d1(ndata+1:ndata+nrec) = data(1:nrec)
 end subroutine new_var
 
+subroutine new_var_0d (varnm, data)
+! Store 1-Hz variables to be written later by put_var
+character(len=*), intent(in) :: varnm
+real(eightbytereal), intent(in) :: data
+if (varnm == '') return
+nvar = nvar + 1
+if (nvar > mvar) stop 'Too many variables'
+if (.not.allocated(var(nvar)%d1)) allocate(var(nvar)%d1(mrec))
+var(nvar)%v => rads_varptr (S, varnm)
+var(nvar)%d1(ndata+1:ndata+nrec) = data
+end subroutine new_var_0d
+
 subroutine new_var_2d (varnm, data)
 ! Store 20-Hz variables to be written later by put_var
 character(len=*), intent(in) :: varnm
@@ -644,6 +655,8 @@ enddo
 do i = 1,nvar
 	if (var(i)%skip) cycle
 	select case (var(i)%v%info%ndims)
+	case (0)
+		call rads_put_var (S, P, var(i)%v, var(i)%d1(1))
 	case (1)
 		call rads_put_var (S, P, var(i)%v, var(i)%d1(1:ndata))
 	case (2)
