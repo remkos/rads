@@ -103,7 +103,6 @@ character(len=rads_cmdl) :: infile, arg
 
 integer(fourbyteint) :: cyclenr, passnr, varid, orbit_type_offset
 real(eightbytereal) :: equator_time
-logical :: nrt, stc, ntc
 
 ! Data variables
 
@@ -181,10 +180,31 @@ do
 		cycle
 	endif
 
+! Determine latency
+
 	call nfs(nf90_get_att(ncid,nf90_global,'product_name',arg))
-	nrt = index(arg,'_NR_') > 0
-	stc = index(arg,'_ST_') > 0
-	ntc = index(arg,'_NT_') > 0
+	if (index(arg, '_NR_') > 0) then
+		latency = rads_nrt
+	else if (index(arg, '_ST_') > 0) then
+		latency = rads_stc
+	else if (index(arg, '_NT_') > 0) then
+		latency = rads_ntc
+	else
+		call log_string ('Error: file skipped: unknown latency', .true.)
+		cycle
+	endif
+
+! Detect REP_006 (S3A) or REP_007 (S3B)
+
+	if (index(arg, '_R_NT_003') == 0) then
+	else if (S%sat == '3a') then
+		latency = latency + 6 ! REP_006
+	else
+		latency = latency + 7 ! REP_007
+	endif
+
+! Read cycle, pass, equator time
+
 	call nfs(nf90_get_att(ncid,nf90_global,'cycle_number',cyclenr))
 	call nfs(nf90_get_att(ncid,nf90_global,'pass_number',passnr))
 	call nfs(nf90_get_att(ncid,nf90_global,'equator_time',arg))
@@ -323,7 +343,7 @@ do
 	call cpy_var ('iono_cor_alt_01_plrm_ku', 'iono_alt_plrm')
 	call cpy_var ('iono_cor_gim_01_ku', 'iono_gim')
 	call cpy_var ('inv_bar_cor_01', 'inv_bar_static')
-	if (nrt) then
+	if (latency(i) == rads_nrt) then
 		call cpy_var ('inv_bar_cor_01', 'inv_bar_mog2d')
 	else
 		call cpy_var ('inv_bar_cor_01 hf_fluct_cor_01 ADD', 'inv_bar_mog2d')
@@ -395,10 +415,7 @@ do
 		call new_var ('orbit_type', a)
 	endif
 	call cpy_var ('surf_class_01', 'surface_class')
-	if (nrt) latency(:) = 0
-	if (stc) latency(:) = 1
-	if (ntc) latency(:) = 2
-	call new_var ('latency',latency)
+	call new_var ('latency', latency)
 
 ! Dump the data
 
