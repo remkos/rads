@@ -329,7 +329,9 @@ do
 	enddo
 	call cpy_var ('lon_01','lon')
 	call get_var (ncid, 'alt_01', a)
-	call new_var ('alt_gdre', a + dh)
+	call new_var ('alt_gdrf', a + dh)
+	! Note that GDR-E orbit standards were used for the earlier part of the mission until reprocessing.
+	! However this field is updated by rads_add_orbit hereafter.
 	call cpy_var ('orb_alt_rate_01', 'alt_rate')
 	call cpy_var ('range_ocean_01_ku','range_ku')
 	call cpy_var ('range_ocean_01_plrm_ku','range_ku_plrm')

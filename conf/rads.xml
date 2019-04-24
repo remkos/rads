@@ -528,7 +528,8 @@ Global RADS configuration file
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <alias name="alt" field="4" sat="2a tx.r50">alt_gdrd</alias>
-<alias name="alt" field="4" sat="3a 3b j3 sa">alt_gdre</alias>
+<alias name="alt" field="4" sat="3a 3b">alt_gdrf alt_gdre</alias>
+<alias name="alt" field="4" sat="j3 sa">alt_gdre</alias>
 <alias name="alt" field="4" sat="c2">alt_gdre alt_cnes</alias>
 <alias name="alt" field="4" sat="e1 e2">alt_reaper alt_gfz</alias>
 <alias name="alt" field="4" sat="g1">alt_pgs7777</alias>
