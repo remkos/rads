@@ -319,8 +319,15 @@ if (out_diff > 0) then
 	ntrx = ntrx / 2
 	do i = 1,ntrx
 		do j = 1,nsel
-			if (out_diff < 2 .or. &
-				S(nsat)%sel(j)%info%datatype < rads_type_time) data(i,j,:) = data(i,j,:) - data(i+ntrx,j,:)
+			if (out_diff < 2 .or. S(nsat)%sel(j)%info%datatype < rads_type_time) then
+				! Coordinates skipped if requested
+				data(i,j,:) = data(i,j,:) - data(i+ntrx,j,:)
+				if (S(nsat)%sel(j)%info%datatype == rads_type_lon) then
+					! For longitudes, bring differences to within ±180º
+					where (data(i,j,:) < -180d0) data(i,j,:) = data(i,j,:) + 360d0
+					where (data(i,j,:) >  180d0) data(i,j,:) = data(i,j,:) - 360d0
+				endif
+			endif
 		enddo
 		mask(i,:) = mask(i,:) .or. mask(i+ntrx,:)
 	enddo
@@ -380,8 +387,15 @@ enddo
 ! Compute per-bin statistics (horizonally)
 do k = -nbins,nbins
 	do j = 1,nsel
-		call mean_variance (pack(data(1:ntrx,j,k),mask(1:ntrx,k)), data(ntrx1,j,k), data(ntrx2,j,k), &
-			data(ntrx3,j,k), data(ntrx4,j,k))
+		if (S(nsat)%sel(j)%info%datatype == rads_type_lon) then
+			! For longitudes, use different routine to create proper mean
+			call mean_variance (pack(data(1:ntrx,j,k),mask(1:ntrx,k)), data(ntrx1,j,k), data(ntrx2,j,k), &
+				data(ntrx3,j,k), data(ntrx4,j,k), S(nsat)%sel(j)%info%limits)
+		else
+			! For all other variables
+			call mean_variance (pack(data(1:ntrx,j,k),mask(1:ntrx,k)), data(ntrx1,j,k), data(ntrx2,j,k), &
+				data(ntrx3,j,k), data(ntrx4,j,k))
+		endif
 	enddo
 enddo
 data(ntrx2,:,:) = sqrt(data(ntrx2,:,:)) ! Variance to std dev

@@ -130,6 +130,7 @@ interface mean_variance
 	module procedure mean_variance_only
 	module procedure mean_variance_nr
 	module procedure mean_variance_minmax
+	module procedure mean_variance_minmax_longitude
 end interface mean_variance
 
 contains
@@ -1162,22 +1163,20 @@ real(eightbytereal), intent(out) :: mean, variance
 real(eightbytereal) :: q, r, sum2
 integer(fourbyteint) :: i, n
 n = size(x)
-mean = 0d0
+if (n == 0) then
+	mean = nan
+	variance = nan
+	return
+endif
+mean = x(1)
 sum2 = 0d0
-do i = 1,n
+do i = 2,n
 	q = x(i) - mean
 	r = q / i
 	mean = mean + r
 	sum2 = sum2 + r * q * (i-1)
 enddo
-if (n == 0) then
-	mean = nan
-	variance = nan
-else if (n == 1) then
-	variance = nan
-else
-	variance = sum2/(n-1)
-endif
+variance = sum2 / (n-1)
 end subroutine mean_variance_only
 
 pure subroutine mean_variance_nr (x, mean, variance, nr)
@@ -1203,7 +1202,7 @@ if (nr == 0) then
 else if (nr == 1) then
 	variance = nan
 else
-	variance = sum2/(nr-1)
+	variance = sum2 / (nr-1)
 endif
 end subroutine mean_variance_nr
 
@@ -1213,11 +1212,18 @@ real(eightbytereal), intent(out) :: mean, variance, minimum, maximum
 real(eightbytereal) :: q, r, sum2
 integer(fourbyteint) :: i, n
 n = size(x)
-mean = 0d0
+if (n == 0) then
+	mean = nan
+	variance = nan
+	minimum = nan
+	maximum = nan
+	return
+endif
+mean = x(1)
 sum2 = 0d0
-minimum = huge(0d0)
-maximum = -huge(0d0)
-do i = 1,n
+minimum = x(1)
+maximum = x(1)
+do i = 2,n
 	q = x(i) - mean
 	r = q / i
 	mean = mean + r
@@ -1225,16 +1231,46 @@ do i = 1,n
 	if (x(i) < minimum) minimum = x(i)
 	if (x(i) > maximum) maximum = x(i)
 enddo
+variance = sum2 / (n-1)
+end subroutine mean_variance_minmax
+
+pure subroutine mean_variance_minmax_longitude (x, mean, variance, minimum, maximum, lon_bounds)
+real(eightbytereal), intent(in) :: x(:)
+real(eightbytereal), intent(out) :: mean, variance, minimum, maximum
+real(eightbytereal), intent(in) :: lon_bounds(2)
+real(eightbytereal) :: q, r, sum2
+integer(fourbyteint) :: i, n
+n = size(x)
 if (n == 0) then
 	mean = nan
 	variance = nan
 	minimum = nan
 	maximum = nan
-else if (n == 1) then
-	variance = nan
-else
-	variance = sum2/(n-1)
+	return
 endif
-end subroutine mean_variance_minmax
+mean = x(1)
+sum2 = 0d0
+minimum = x(1)
+maximum = x(1)
+do i = 2,n
+	q = x(i) - mean
+	if (q < -180d0) then
+		q = q + 360d0
+	else if (q > 180d0) then
+		q = q - 360d0
+	endif
+	r = q / i
+	mean = mean + r
+	sum2 = sum2 + r * q * (i-1)
+	if (x(i) < minimum) minimum = x(i)
+	if (x(i) > maximum) maximum = x(i)
+enddo
+if (mean < lon_bounds(1)) then
+	mean = mean + 360d0
+else if (mean > lon_bounds(2)) then
+	mean = mean - 360d0
+endif
+variance = sum2 / (n-1)
+end subroutine mean_variance_minmax_longitude
 
 end module rads_misc
