@@ -339,7 +339,7 @@ do
 ! Add zero or meas altitude tropo measurements?
 	call cpy_var ('mod_dry_tropo_cor_meas_altitude_01', 'dry_tropo_ecmwf')
 	call cpy_var ('rad_wet_tropo_cor_01_ku', 'wet_tropo_rad')
-	call cpy_var ('rad_wet_tropo_cor_plrm_01_ku', 'wet_tropo_rad_plrm')
+	call cpy_var ('rad_wet_tropo_cor_01_plrm_ku', 'wet_tropo_rad_plrm')
 	call cpy_var ('rad_wet_tropo_cor_sst_gam_01_ku', 'wet_tropo_rad_sst_gam')
 	call cpy_var ('mod_wet_tropo_cor_meas_altitude_01', 'wet_tropo_ecmwf')
 	call cpy_var ('comp_wet_tropo_cor_01_ku', 'wet_tropo_comp')
