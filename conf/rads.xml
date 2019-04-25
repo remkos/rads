@@ -99,7 +99,7 @@ Global RADS configuration file
 	<plot_range sat="3a">-0.3 0.5</plot_range>
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
-	<data>alt range_ku_plrm SUB dry_tropo SUB wet_tropo SUB iono_alt_plrm SUB dac SUB tide_solid SUB tide_ocean SUB tide_load SUB
+	<data>alt range_ku_plrm SUB dry_tropo SUB wet_tropo_plrm SUB iono_alt_plrm SUB dac SUB tide_solid SUB tide_ocean SUB tide_load SUB
 		tide_pole SUB ssb_cls_plrm SUB mss SUB ref_frame_offset_plrm SUB</data>
 	<quality_flag>swh_ku_plrm sig0_ku_plrm range_rms_ku_plrm range_numval_ku_plrm flags swh_rms_ku_plrm sig0_rms_ku_plrm attitude</quality_flag>
 	<comment>Sea level determined from satellite altitude - PLRM range - all (PLRM) altimetric corrections</comment>
@@ -915,6 +915,7 @@ Global RADS configuration file
 <alias name="wet_tropo" field="8" sat="c2">wet_tropo_ecmwf</alias>
 <alias name="wet_tropo" field="8" sat="g1">wet_tropo_rad wet_tropo_era</alias>
 <alias name="wet_tropo" field="8" sat="gs">wet_tropo_era</alias>
+<alias name="wet_tropo_plrm" sat="3a 3b">wet_tropo_rad_plrm wet_tropo_rad</alias>
 
 <var name="iono_alt" field="901" sat="2a 3a 3b j1 j2 j3 n1 tx">
 	<long_name>dual-frequency ionospheric correction</long_name>
