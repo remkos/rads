@@ -108,7 +108,7 @@ real(eightbytereal) :: equator_time
 
 integer(twobyteint), allocatable :: flags_plrm(:), flags_save(:)
 character(len=2) :: mss_cnescls_ver, mss_dtu_ver, tide_fes_ver
-real(eightbytereal), allocatable :: latency(:)
+integer :: latency = rads_nrt
 
 ! Other local variables
 
@@ -279,7 +279,7 @@ do
 
 ! Allocate variables
 
-	allocate (a(nrec),dh(nrec),flags(nrec),flags_plrm(nrec),flags_save(nrec),latency(nrec))
+	allocate (a(nrec),dh(nrec),flags(nrec),flags_plrm(nrec),flags_save(nrec))
 	nvar = 0
 
 ! Compile flag bits
@@ -347,7 +347,7 @@ do
 	call cpy_var ('iono_cor_alt_01_plrm_ku', 'iono_alt_plrm')
 	call cpy_var ('iono_cor_gim_01_ku', 'iono_gim')
 	call cpy_var ('inv_bar_cor_01', 'inv_bar_static')
-	if (latency(i) == rads_nrt) then
+	if (latency == rads_nrt) then
 		call cpy_var ('inv_bar_cor_01', 'inv_bar_mog2d')
 	else
 		call cpy_var ('inv_bar_cor_01 hf_fluct_cor_01 ADD', 'inv_bar_mog2d')
@@ -419,13 +419,14 @@ do
 		call new_var ('orbit_type', a)
 	endif
 	call cpy_var ('surf_class_01', 'surface_class')
-	call new_var ('latency', latency)
+	a = latency
+	call new_var ('latency', a)
 
 ! Dump the data
 
 	call nfs(nf90_close(ncid))
 	call put_rads
-	deallocate (a, dh, flags, flags_plrm, flags_save, latency)
+	deallocate (a, dh, flags, flags_plrm, flags_save)
 
 enddo
 
