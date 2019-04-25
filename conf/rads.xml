@@ -114,7 +114,7 @@ Global RADS configuration file
 	<data>ssha</data>
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
-	<comment>Sea level from satellite altitude - range - all altimetric corrections.
+	<comment>Sea level determined from satellite altitude - range - all altimetric corrections.
 		These values were computed when the data set was created, in contrast to the sla variable.</comment>
 </var>
 <var name="ssha_20hz" sat="c2">
@@ -126,7 +126,7 @@ Global RADS configuration file
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
 	<dimensions>2</dimensions>
-	<comment>Sea level from satellite 20-Hz altitude - range - all altimetric corrections.
+	<comment>Sea level determined from satellite 20-Hz altitude - 20-Hz range - all altimetric corrections.
 		These values were computed when the data set was created, in contrast to the sla_20hz variable.</comment>
 </var>
 <var name="ssha_mle3" sat="j2 j3">
@@ -138,7 +138,7 @@ Global RADS configuration file
 	<data>ssha_mle3</data>
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
-	<comment>Sea level from satellite altitude - range - all altimetric corrections.
+	<comment>Sea level determined from satellite altitude - MLE3 range - all (MLE3) altimetric corrections.
 		These values were computed when the data set was created, in contrast to the sla_mle3 variable.</comment>
 </var>
 <var name="ssha_plrm" sat="3a 3b">
@@ -150,7 +150,7 @@ Global RADS configuration file
 	<data>ssha_plrm</data>
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
-	<comment>Sea level from satellite altitude - range - all altimetric corrections.
+	<comment>Sea level determined from satellite altitude - PLRM range - all (PLRM) altimetric corrections.
 		These values were computed when the data set was created, in contrast to the sla_plrm variable.</comment>
 </var>
 
@@ -3502,6 +3502,7 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<default>0</default>
 	<compress>int2 1e-4</compress>
+	<dimensions>0</dimensions>
 	<parameters>0</parameters>
 	<parameters sat="3a">   2   0  0  0 0</parameters>
 	<parameters sat="3b">  -6   0  0  0 0</parameters>
@@ -3524,6 +3525,9 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<default>0</default>
 	<compress>int2 1e-4</compress>
+	<dimensions>0</dimensions>
+	<parameters sat="j2">13.5   0  0  0 0</parameters>
+	<parameters sat="j3"> -17   0  0  0 0</parameters>
 </var>
 <var name="ref_frame_offset_plrm" field="3812" sat="3a 3b">
 	<long_name>reference frame offset (PLRM)</long_name>
@@ -3532,6 +3536,9 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<default>0</default>
 	<compress>int2 1e-4</compress>
+	<dimensions>0</dimensions>
+	<parameters sat="3a">  13   0  0  0 0</parameters>
+	<parameters sat="3b">  15   0  0  0 0</parameters>
 </var>
 
 <var name="tide_equil" field="3901 39">
