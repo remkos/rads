@@ -329,7 +329,9 @@ do
 	enddo
 	call cpy_var ('lon_01','lon')
 	call get_var (ncid, 'alt_01', a)
-	call new_var ('alt_gdre', a + dh)
+	call new_var ('alt_gdrf', a + dh)
+	! Note that GDR-E orbit standards were used for the earlier part of the mission until reprocessing.
+	! However this field is updated by rads_add_orbit hereafter.
 	call cpy_var ('orb_alt_rate_01', 'alt_rate')
 	call cpy_var ('range_ocean_01_ku','range_ku')
 	call cpy_var ('range_ocean_01_plrm_ku','range_ku_plrm')
@@ -337,6 +339,8 @@ do
 ! Add zero or meas altitude tropo measurements?
 	call cpy_var ('mod_dry_tropo_cor_meas_altitude_01', 'dry_tropo_ecmwf')
 	call cpy_var ('rad_wet_tropo_cor_01_ku', 'wet_tropo_rad')
+	call cpy_var ('rad_wet_tropo_cor_01_plrm_ku', 'wet_tropo_rad_plrm')
+	call cpy_var ('rad_wet_tropo_cor_sst_gam_01_ku', 'wet_tropo_rad_sst_gam')
 	call cpy_var ('mod_wet_tropo_cor_meas_altitude_01', 'wet_tropo_ecmwf')
 	call cpy_var ('comp_wet_tropo_cor_01_ku', 'wet_tropo_comp')
 	call cpy_var ('iono_cor_alt_01_ku', 'iono_alt')

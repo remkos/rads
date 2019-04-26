@@ -53,10 +53,8 @@ do i = 1,rads_nopt
 		S%n_hz_output = .true.
 	case ('mle')	! For backward compatibility only
 		if (rads_opt(i)%arg == '3') ext = '_mle3'
-		call rads_read_xml (S, trim(S%dataroot)//'/conf/mle3.xml')
 	case ('x', 'ext')
 		ext = '_' // rads_opt(i)%arg(:4)
-		call rads_read_xml (S, trim(S%dataroot)//'/conf/'//trim(rads_opt(i)%arg)//'.xml')
 	end select
 enddo
 

@@ -49,15 +49,11 @@ date												>  $log 2>&1
 find $* -name "*.nc" | sort		> $lst
 rads_gen_s3 	$options --min-rec=6 < $lst			>> $log 2>&1
 
-# Make the remaining fixes
-rads_fix_s3     $options --all						>> $log 2>&1
-# Recompute SSB
-rads_add_ssb    $options --ssb=ssb_cls				>> $log 2>&1
-rads_add_ssb    $options --ssb=ssb_cls_c			>> $log 2>&1
-rads_add_ssb    $options --ssb=ssb_cls_plrm			>> $log 2>&1
-# Recompute dual freq iono and smooth it
-rads_add_dual   $options --recompute				>> $log 2>&1
-rads_add_dual   $options --recompute --ext=plrm		>> $log 2>&1
+# Add GDR-F orbit for earlier part of the mission
+rads_add_orbit  $options -Valt_gdrf --ymd=,20181110	>> $log 2>&1
+# Smooth the dual frequency iono
+rads_add_dual   $options							>> $log 2>&1
+rads_add_dual   $options--ext=plrm					>> $log 2>&1
 # General geophysical corrections
 rads_add_common $options							>> $log 2>&1
 rads_add_mog2d  $options							>> $log 2>&1

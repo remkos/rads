@@ -99,7 +99,7 @@ Global RADS configuration file
 	<plot_range sat="3a">-0.3 0.5</plot_range>
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
-	<data>alt range_ku_plrm SUB dry_tropo SUB wet_tropo SUB iono_alt_plrm SUB dac SUB tide_solid SUB tide_ocean SUB tide_load SUB
+	<data>alt range_ku_plrm SUB dry_tropo SUB wet_tropo_plrm SUB iono_alt_plrm SUB dac SUB tide_solid SUB tide_ocean SUB tide_load SUB
 		tide_pole SUB ssb_cls_plrm SUB mss SUB ref_frame_offset_plrm SUB</data>
 	<quality_flag>swh_ku_plrm sig0_ku_plrm range_rms_ku_plrm range_numval_ku_plrm flags swh_rms_ku_plrm sig0_rms_ku_plrm attitude</quality_flag>
 	<comment>Sea level determined from satellite altitude - PLRM range - all (PLRM) altimetric corrections</comment>
@@ -114,7 +114,7 @@ Global RADS configuration file
 	<data>ssha</data>
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
-	<comment>Sea level from satellite altitude - range - all altimetric corrections.
+	<comment>Sea level determined from satellite altitude - range - all altimetric corrections.
 		These values were computed when the data set was created, in contrast to the sla variable.</comment>
 </var>
 <var name="ssha_20hz" sat="c2">
@@ -126,7 +126,7 @@ Global RADS configuration file
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
 	<dimensions>2</dimensions>
-	<comment>Sea level from satellite 20-Hz altitude - range - all altimetric corrections.
+	<comment>Sea level determined from satellite 20-Hz altitude - 20-Hz range - all altimetric corrections.
 		These values were computed when the data set was created, in contrast to the sla_20hz variable.</comment>
 </var>
 <var name="ssha_mle3" sat="j2 j3">
@@ -138,7 +138,7 @@ Global RADS configuration file
 	<data>ssha_mle3</data>
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
-	<comment>Sea level from satellite altitude - range - all altimetric corrections.
+	<comment>Sea level determined from satellite altitude - MLE3 range - all (MLE3) altimetric corrections.
 		These values were computed when the data set was created, in contrast to the sla_mle3 variable.</comment>
 </var>
 <var name="ssha_plrm" sat="3a 3b">
@@ -150,7 +150,7 @@ Global RADS configuration file
 	<data>ssha_plrm</data>
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
-	<comment>Sea level from satellite altitude - range - all altimetric corrections.
+	<comment>Sea level determined from satellite altitude - PLRM range - all (PLRM) altimetric corrections.
 		These values were computed when the data set was created, in contrast to the sla_plrm variable.</comment>
 </var>
 
@@ -515,7 +515,7 @@ Global RADS configuration file
 	<compress sat="j1 j2 pn tx">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_gdrf" sat="3a 3b">
+<var name="alt_gdrf" field="427" sat="3a 3b">
 	<long_name>CNES GDR-F orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>CNES, GDR-F standards</source>
@@ -528,7 +528,8 @@ Global RADS configuration file
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <alias name="alt" field="4" sat="2a tx.r50">alt_gdrd</alias>
-<alias name="alt" field="4" sat="3a 3b j3 sa">alt_gdre</alias>
+<alias name="alt" field="4" sat="3a 3b">alt_gdrf alt_gdre</alias>
+<alias name="alt" field="4" sat="j3 sa">alt_gdre</alias>
 <alias name="alt" field="4" sat="c2">alt_gdre alt_cnes</alias>
 <alias name="alt" field="4" sat="e1 e2">alt_reaper alt_gfz</alias>
 <alias name="alt" field="4" sat="g1">alt_pgs7777</alias>
@@ -766,6 +767,30 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
 </var>
+<var name="wet_tropo_rad_plrm" sat="3a 3b">
+	<long_name>radiometer wet tropospheric correction (PLRM)</long_name>
+	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
+	<source>radiometer</source>
+	<units>m</units>
+	<limits>-0.6 0.0</limits>
+	<plot_range>-0.4 0.0</plot_range>
+	<data>wet_tropo_rad_plrm</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
+</var>
+<var name="wet_tropo_rad_sst_gam" sat="3a 3b">
+	<long_name>radiometer wet tropospheric correction (using 5-parameter algorithm)</long_name>
+	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
+	<source>radiometer</source>
+	<units>m</units>
+	<limits>-0.6 0.0</limits>
+	<plot_range>-0.4 0.0</plot_range>
+	<data>wet_tropo_rad_plrm</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
+</var>
 <var name="wet_tropo_ecmwf" field="802" sat="!g1 gs">
 	<long_name>ECMWF wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
@@ -890,6 +915,7 @@ Global RADS configuration file
 <alias name="wet_tropo" field="8" sat="c2">wet_tropo_ecmwf</alias>
 <alias name="wet_tropo" field="8" sat="g1">wet_tropo_rad wet_tropo_era</alias>
 <alias name="wet_tropo" field="8" sat="gs">wet_tropo_era</alias>
+<alias name="wet_tropo_plrm" sat="3a 3b">wet_tropo_rad_plrm wet_tropo_rad</alias>
 
 <var name="iono_alt" field="901" sat="2a 3a 3b j1 j2 j3 n1 tx">
 	<long_name>dual-frequency ionospheric correction</long_name>
@@ -3476,9 +3502,10 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<default>0</default>
 	<compress>int2 1e-4</compress>
+	<dimensions>0</dimensions>
 	<parameters>0</parameters>
-	<parameters sat="3a">   2   0  0  0 0</parameters>
-	<parameters sat="3b">  -6   0  0  0 0</parameters>
+	<parameters sat="3a">   3   0  0  0 0</parameters>
+	<parameters sat="3b">  -3   0  0  0 0</parameters>
 	<parameters sat="c2"> -34   0  0  0 0</parameters>
 	<parameters sat="e1">  21   0  0  0 0</parameters>
 	<parameters sat="e2">  62   0  0  0 0</parameters>
@@ -3498,6 +3525,9 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<default>0</default>
 	<compress>int2 1e-4</compress>
+	<dimensions>0</dimensions>
+	<parameters sat="j2">13.5   0  0  0 0</parameters>
+	<parameters sat="j3"> -17   0  0  0 0</parameters>
 </var>
 <var name="ref_frame_offset_plrm" field="3812" sat="3a 3b">
 	<long_name>reference frame offset (PLRM)</long_name>
@@ -3506,6 +3536,9 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<default>0</default>
 	<compress>int2 1e-4</compress>
+	<dimensions>0</dimensions>
+	<parameters sat="3a">  12   0  0  0 0</parameters>
+	<parameters sat="3b">  15   0  0  0 0</parameters>
 </var>
 
 <var name="tide_equil" field="3901 39">

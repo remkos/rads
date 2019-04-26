@@ -25,7 +25,7 @@
 !  --mwr                     Update radiometer wet parameters
 !  --range                   Subtract 59.3 mm from Ku- and C-band ranges
 !  --all                      < PB 2.19: --atten --sig0 --wind
-!                            >= PB 2.19: --sig0
+!                            >= PB 2.19: --sig0 --wind
 !
 ! usage: rads_fix_s3 [data-selectors] [options]
 !-----------------------------------------------------------------------
