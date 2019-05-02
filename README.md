@@ -28,6 +28,16 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 ## Version History
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 
+### v4.3.5 (2 May 2019)
+* `rads.xml`: Added `ref_frame_offset_plrm`.
+* `rads.xml`: Properly use `wet_tropo_rad_plrm` instead of `wet_tropo_rad` for PLRM data.
+* `rads.xml`: Use `alt_gdrf` for S3A and S3B.
+* `rads.xml`: Added `latency` variable.
+* Properly deal with longitude rollovers in computing means or differences in `radscolin`.
+* Remove insistence that 0-dimension variable (constant) is a double.
+* Bug fix: invalid values in RPN data notation may not have always worked correctly.
+* Restrict the name of the time dimension to the first word in `S%time%info%dataname`.
+
 ### v4.3.4 (2 Apr 2019)
 * Bug fix in `rads_def_var`.
 * Small documentation update.
@@ -51,18 +61,18 @@ Following is a history of releases on [GitHub](https://github.com/remkos/rads/re
 ### v4.3.1 (4 Sep 2018)
 * New mission phase definition for Jason-2 Phase D.
 * New mission definitions for Sentinel-3B.
-* Added optional argument "deflate" to nf90_def_axis.
+* Added optional argument "deflate" to `nf90_def_axis`.
 * Replaced iqsort by more stable version of quicksort (fixed issue #127).
 * No more duplicate tracks in radsxogen when generating single- and dual-satellite xovers (fixed issue #129).
 * Documented the --reject-on-nan=all option in radscolin4.
 
 ### v4.3.0 (30 May 2018)
 * Added support for processing of Sentinel-3B data.
-* Added routine rads_set_phase.
+* Added routine `rads_set_phase`.
 * Added \<end_time\> specifications on last mission phase of terminated missions.
 * Added license file.
-* Added geoid_xgm2016 specification in support of issue #119.
-* Added topo_strm15plus specification in support of issue #120.
+* Added `geoid_xgm2016` specification in support of issue #119.
+* Added `topo_strm15plus` specification in support of issue #120.
 * Fixed issue #121.
 
 ### v4.2.11 (16 Mar 2018)
