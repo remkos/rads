@@ -21,9 +21,12 @@
 # file .bookmark in that case is 'touched' such that all reprocessed data
 # are newer than .bookmark
 #
+# Forthwith it will remove any empty directories.
+#
 # rads_purge_older.sh -- Remove older files from RADS directory tree
 # Usage: rads_purge_older.sh <directory>
 #
 for dir in $* ; do
-	find $dir -not -newer $dir/.bookmark -not -name .bookmark -type f | xargs rm -f
+	find $dir -not -newer $dir/.bookmark -not -name .bookmark -type f -delete
+	find $dir -mindepth 1 -type d -empty -delete
 done
