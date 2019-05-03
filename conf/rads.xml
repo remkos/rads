@@ -1684,6 +1684,7 @@ Global RADS configuration file
 	<format>z1</format>
 	<compress>int1</compress>
 	<dimensions>0</dimensions>
+	<default>2</default>
 </var>
 
 <if sat="sa">
