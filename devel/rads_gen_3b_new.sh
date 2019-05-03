@@ -44,7 +44,7 @@ for type in ${types}; do
 	lst=$SANDBOX/rads_gen_3b_new.lst
 	find $type/c??? -name "*.nc" -a -newer $mrk | sort > $lst
 	date											>  $log 2>&1
-	rads_gen_s3 $options --min-rec=6 --ymd=$d0 < $lst >> $log 2>&1
+	rads_gen_s3 $options --min-rec=6 --ymd=$d0 < $lst	>> $log 2>&1
 
 # Add MOE orbit (for NRT and STC only)
 	case $type in
@@ -53,18 +53,19 @@ for type in ${types}; do
 done
 
 # Smooth the dual frequency iono
-rads_add_dual   $options							>> $log 2>&1
-rads_add_dual   $options--ext=plrm					>> $log 2>&1
+rads_add_dual     $options								>> $log 2>&1
+rads_add_dual     $options --ext=plrm					>> $log 2>&1
 # General geophysical corrections
-rads_add_common $options							>> $log 2>&1
-rads_add_mog2d  $options							>> $log 2>&1
-rads_add_ncep   $options -gdwi						>> $log 2>&1
-rads_add_ecmwf  $options -dwui						>> $log 2>&1
-rads_add_iono   $options --all						>> $log 2>&1
+rads_add_common   $options								>> $log 2>&1
+rads_add_refframe $options --ext=plrm					>> $log 2>&1
+rads_add_mog2d    $options								>> $log 2>&1
+rads_add_ncep     $options -gdwi						>> $log 2>&1
+rads_add_ecmwf    $options -dwui						>> $log 2>&1
+rads_add_iono     $options --all						>> $log 2>&1
 # Redetermine SSHA
-rads_add_sla    $options							>> $log 2>&1
-rads_add_sla    $options --ext=plrm					>> $log 2>&1
+rads_add_sla      $options								>> $log 2>&1
+rads_add_sla      $options --ext=plrm					>> $log 2>&1
 
-date												>> $log 2>&1
+date													>> $log 2>&1
 
 rads_close_sandbox
