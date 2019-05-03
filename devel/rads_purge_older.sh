@@ -24,5 +24,6 @@
 # rads_purge_older.sh -- Remove older files from RADS directory tree
 # Usage: rads_purge_older.sh <directory>
 #
-dir=$1
-find $dir -not -newer $dir/.bookmark -not -name .bookmark -type f | xargs rm -f
+for dir in $* ; do
+	find $dir -not -newer $dir/.bookmark -not -name .bookmark -type f | xargs rm -f
+done
