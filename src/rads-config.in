@@ -62,22 +62,24 @@ EOF
 
 all()
 {
-	echo
-	echo "This $version has been built with the following features: "
-	echo
-	echo "  --fc        -> $fc"
-	echo "  --fflags    -> $fflags"
-    echo "  --libs      -> $libs"
-	echo
-	echo "  --configure -> $configure"
-	echo "  --prefix    -> $prefix"
-	echo "  --includedir-> $includedir"
-	echo "  --libdir    -> $libdir"
-	echo "  --bindir    -> $bindir"
-	echo "  --datadir   -> $datadir"
-	echo "  --version   -> $version"
-	echo "  --vernum    -> $vernum"
-	echo
+	cat <<EOF
+
+This $version has been built with the following features:
+
+  --fc          -> $fc
+  --fflags      -> $fflags
+  --libs        -> $libs
+
+  --configure   -> $configure
+  --prefix      -> $prefix
+  --includedir  -> $includedir
+  --libdir      -> $libdir
+  --bindir      -> $bindir
+  --datadir     -> $datadir
+  --version     -> $version
+  --vernum      -> $vernum
+
+EOF
 }
 
 if test $# -eq 0; then
@@ -87,20 +89,20 @@ fi
 while test $# -gt 0; do
 	case "$1" in
 
-	--help)		usage 0 ;;
-	--all)		all ;;
-	--configure) echo $configure ;;
-	--fc)		echo $fc ;;
-	--fflags)	echo $fflags ;;
-	--libs)		echo $libs ;;
-	--prefix)	echo "$prefix" ;;
-	--includedir) echo "$includedir" ;;
-	--libdir)	echo "$libdir" ;;
-	--bindir)	echo "$bindir" ;;
-	--datadir)	echo "$datadir" ;;
-	--version)	echo $version ;;
-	--vernum)	echo $vernum ;;
-	*)			echo "$0: unknown option: $1"; usage 1 ;;
+	--help)			usage 0 ;;
+	--all)			all ;;
+	--configure)	echo $configure ;;
+	--fc)			echo $fc ;;
+	--fflags)		echo $fflags ;;
+	--libs)			echo $libs ;;
+	--prefix)		echo "$prefix" ;;
+	--includedir)	echo "$includedir" ;;
+	--libdir)		echo "$libdir" ;;
+	--bindir)		echo "$bindir" ;;
+	--datadir)		echo "$datadir" ;;
+	--version)		echo $version ;;
+	--vernum)		echo $vernum ;;
+	*)				echo "$0: unknown option: $1"; usage 1 ;;
 	esac
 	shift
 done
