@@ -46,12 +46,12 @@ integer(twobyteint) :: mask = 2072 ! Bits 3, 4, 11
 character(len=5) :: ext = ''
 real(eightbytereal) :: twin = 35d0, iwin = 8d0, f
 real(eightbytereal) :: time(nmax), lat(nmax), flags(nmax), iono1(nmax), iono2(nmax)
-logical :: recompute = .false.
+logical :: recompute = .false., new = .false.
 
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options ('b:i:m:t:x:r mle: ext: mask: iwin: twin: recompute')
+call rads_set_options ('nb:i:t:m:x:r new mask: iwin: twin: mle: ext: recompute')
 call rads_init (S)
 
 ! Determine conversion factor from TEC units to ionospheric delay in metres
@@ -63,6 +63,8 @@ f = 1d0/(1d0-(S%frequency(1)/S%frequency(2))**2)
 
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
+	case ('n', 'new')
+		new = .true.
 	case ('m', 'mle')	! For backward compatibility only
 		if (rads_opt(i)%arg == '3') ext = '_mle3'
 	case ('x', 'ext')
@@ -115,6 +117,7 @@ call synopsis_devel (' [processing_options]')
 write (*,1310) mask, iwin, twin
 1310 format (/ &
 'Additional [processing_options] are:' / &
+'  -n, --new                 Only add smoothed iono when not yet existing' / &
 '  -b, --mask MASK           Exclude data based on bitmap MASK (default:',i5,')' / &
 '  -i, --iwin IWIN           Set editing range for iono data [cm] (default:',f4.0,')' / &
 '  -t, --twin TWIN           Set box car filter length [sec] (default:' f4.0,')' / &
@@ -228,7 +231,11 @@ end subroutine process_cycle
 !-----------------------------------------------------------------------
 
 subroutine write_pass (n)
+use netcdf
+use rads_netcdf
 integer(fourbyteint), intent(in) :: n
+logical :: skip
+integer :: ncid
 
 call log_pass (P)
 
@@ -237,14 +244,23 @@ call log_pass (P)
 call rads_put_passinfo (S, P)
 call rads_put_history (S, P)
 
+! If "new" option is used, skip writing iono_alt_smooth when it already exists
+
+ncid = P%fileinfo(1)%ncid
+skip = new .and. nff(nf90_inq_varid(ncid,'iono_alt_smooth' // ext,i))
+
 ! Define to output variable and write out the data
 
 if (recompute) call rads_def_var (S, P, 'iono_alt' // ext)
-call rads_def_var (S, P, 'iono_alt_smooth' // ext)
+if (.not.skip) call rads_def_var (S, P, 'iono_alt_smooth' // ext)
 if (recompute) call rads_put_var (S, P, 'iono_alt' // ext, iono1(ntot+1:ntot+n))
-call rads_put_var (S, P, 'iono_alt_smooth' // ext, iono2(ntot+1:ntot+n))
-ntot = ntot+n
-call log_records (n)
+if (.not.skip) call rads_put_var (S, P, 'iono_alt_smooth' // ext, iono2(ntot+1:ntot+n))
+if (skip.and..not.recompute) then
+	call log_records(0)
+else
+	ntot = ntot+n
+	call log_records (n)
+endif
 end subroutine write_pass
 
 end program rads_add_dual
