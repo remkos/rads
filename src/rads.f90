@@ -3014,24 +3014,34 @@ integer(fourbyteint), intent(out), optional :: iostat
 type(rads_var), pointer :: var
 var => rads_varptr (S, varname)
 if (.not.associated(var)) return
-if (present(lo)) var%info%limits(1) = lo
-if (present(hi)) var%info%limits(2) = hi
+call rads_set_limits_info (var%info)
+call rads_set_limits_info (var%inf1)
+call rads_set_limits_info (var%inf2)
+
+contains
+
+subroutine rads_set_limits_info (info)
+type(rads_varinfo), pointer :: info
+if (.not.associated(info)) return
+if (present(lo)) info%limits(1) = lo
+if (present(hi)) info%limits(2) = hi
 if (.not.present(string)) then
 else if (string == '') then	! Reset limits to none
-	var%info%limits = nan
+	info%limits = nan
 else ! Read limits (only change the ones given)
-	call read_val (string, var%info%limits, '/', iostat=iostat)
+	call read_val (string, info%limits, '/', iostat=iostat)
 endif
-if (var%info%datatype == rads_type_lat .or. var%info%datatype == rads_type_lon) then
+if (info%datatype == rads_type_lat .or. info%datatype == rads_type_lon) then
 	! If latitude or longitude limits are changed, recompute equator longitude limits
 	call rads_traxxing (S)
-else if (var%info%datatype == rads_type_time) then
+else if (info%datatype == rads_type_time) then
 	! If time limits are changed, also limit the cycles
-	if (isan_(var%info%limits(1))) S%cycles(1) = max(S%cycles(1), rads_time_to_cycle (S, var%info%limits(1)))
-	if (isan_(var%info%limits(2))) S%cycles(2) = min(S%cycles(2), rads_time_to_cycle (S, var%info%limits(2)))
+	if (isan_(info%limits(1))) S%cycles(1) = max(S%cycles(1), rads_time_to_cycle (S, info%limits(1)))
+	if (isan_(info%limits(2))) S%cycles(2) = min(S%cycles(2), rads_time_to_cycle (S, info%limits(2)))
 else if (var%name == 'flags') then
-	call rads_set_limits_by_flagmask (S, var%info%limits)
+	call rads_set_limits_by_flagmask (S, info%limits)
 endif
+end subroutine rads_set_limits_info
 end subroutine rads_set_limits
 
 !****if* rads/rads_set_limits_by_flagmask
