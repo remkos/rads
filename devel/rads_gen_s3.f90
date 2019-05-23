@@ -109,6 +109,7 @@ real(eightbytereal) :: equator_time
 integer(twobyteint), allocatable :: flags_plrm(:), flags_save(:)
 character(len=2) :: mss_cnescls_ver, mss_dtu_ver, tide_fes_ver
 integer :: latency = rads_nrt
+logical :: iono_alt_smooth = .false.
 
 ! Other local variables
 
@@ -210,15 +211,6 @@ do
 	call nfs(nf90_get_att(ncid,nf90_global,'equator_time',arg))
 	equator_time = strp1985f (arg)
 
-! Update the versions for MSS CNES-CLS and FES tides for PB 2.19 (IPF-SM-2 06.08) and later
-
-	call nfs(nf90_get_att(ncid,nf90_global,'source',arg))
-	if (arg(10:17) >= '06.08   ') then
-		mss_cnescls_ver = '15'
-		mss_dtu_ver = '15'
-		tide_fes_ver = '14'
-	endif
-
 ! Skip passes of which the cycle number or equator crossing time is outside the specified interval
 
 	if (equator_time < times(1) .or. equator_time > times(2) .or. cyclenr < cycles(1) .or. cyclenr > cycles(2)) then
@@ -270,6 +262,13 @@ do
 		mss_cnescls_ver = '15'
 		mss_dtu_ver = '15'
 		tide_fes_ver = '14'
+	endif
+
+! Update the version of MSS DTU and switch on smoothed iono for PB 2.49 (IPF-SM-2 06.16) and later
+
+	if (arg(10:17) >= '06.16   ') then
+		mss_dtu_ver = '18'
+		iono_alt_smooth = .true.
 	endif
 
 ! Store input file name
@@ -345,6 +344,10 @@ do
 	call cpy_var ('comp_wet_tropo_cor_01_ku', 'wet_tropo_comp')
 	call cpy_var ('iono_cor_alt_01_ku', 'iono_alt')
 	call cpy_var ('iono_cor_alt_01_plrm_ku', 'iono_alt_plrm')
+	if (iono_alt_smooth) then
+		call cpy_var ('iono_cor_alt_filtered_01_ku', 'iono_alt_smooth')
+		call cpy_var ('iono_cor_alt_filtered_01_plrm_ku', 'iono_alt_smooth_plrm')
+	endif
 	call cpy_var ('iono_cor_gim_01_ku', 'iono_gim')
 	call cpy_var ('inv_bar_cor_01', 'inv_bar_static')
 	if (latency == rads_nrt) then
