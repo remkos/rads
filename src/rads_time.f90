@@ -340,7 +340,13 @@ if (lp <= 0) lp = ll
 do ls = 1,ll
 	if ((string(ls:ls) < '0' .or. string(ls:ls) > '9') .and. string(ls:ls) /= '-') exit
 enddo
-if (present(sep) .and. ll > ls .and. string(ls+1:ls+1) /= sep) return	! Required seperator not there
+! ataylor
+! split this test into nest rather than multiple conditions in one line
+! ...otherwise intel compiler out-of-the-box resulted in segfaults 
+! ...ensure that ls+1 is only tried if ll>ls  
+if (present(sep) .and. ll > ls) then
+    if (string(ls+1:ls+1) /= sep) return	! Required seperator not there
+endif
 ls = ls - 1
 
 if (ls == 10 .and. string(8:8) == '-') then	! YYYY-MM-DDxHH:MM:SS

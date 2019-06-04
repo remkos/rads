@@ -1271,7 +1271,7 @@ end subroutine rads_end_1d
 ! Open RADS pass file
 !
 ! SYNOPSIS
-subroutine rads_open_pass (S, P, cycle, pass, rw)
+subroutine rads_open_pass (S, P, cycle, pass, rw, echofilepaths)
 use netcdf
 use rads_netcdf
 use rads_time
@@ -1281,6 +1281,7 @@ type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 integer(fourbyteint), intent(in) :: cycle, pass
 logical, intent(in), optional :: rw
+logical, intent(in), optional :: echofilepaths
 !
 ! PURPOSE
 ! This routine opens a NetCDF file for access to the RADS machinery.
@@ -1312,6 +1313,8 @@ logical, intent(in), optional :: rw
 ! cycle    : Cycle number
 ! pass     : Pass number
 ! rw       : (optional) Set read/write permission (def: read only)
+! echofilepaths : (optional) Print to standard output the file path before
+!            it is being checked for existence.
 !
 ! ERROR CODE
 ! S%error  : rads_noerr, rads_warn_nc_file, rads_err_nc_parse
@@ -1384,6 +1387,16 @@ S%pass_stat(6+ascdes) = S%pass_stat(6+ascdes) + 1
 ! Open pass file
 600 format (a,'/',a,'/',a,'/c',i3.3,'/',a2,'p',i4.4,'c',i3.3,'.nc')
 write (P%fileinfo(1)%name, 600) trim(S%dataroot), trim(S%branch(1)), trim(S%phase%name), cycle, S%sat, pass, cycle
+
+! optional echo of the file in which we are looking for data
+! ...intentionally do this prior to testing if file exists
+601 format ('# checkfile: ',a)
+if (present(echofilepaths)) then
+    if (echofilepaths) then
+        write (*,601) trim(P%fileinfo(1)%name)
+    endif
+endif
+
 if (present(rw)) then
 	P%rw = rw
 else

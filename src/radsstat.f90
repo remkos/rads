@@ -60,10 +60,11 @@ type(stat), allocatable :: box(:,:,:), tot(:)
 type(rads_sat) :: S
 type(rads_pass) :: Pin, Pout
 logical :: ascii = .true., fullyear = .false., boz_format = .false.
+logical :: echofilepaths = .false. 
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('c::d::p::b::maslo::r:: full-year min: minmax res: output::')
+call rads_set_options ('c::d::p::b::maslo::r:: full-year echo-file-paths min: minmax res: output::')
 call rads_init (S)
 if (S%error /= rads_noerr) call rads_exit ('Fatal error')
 
@@ -100,6 +101,8 @@ do i = 1,rads_nopt
 		lstat = 4
 	case ('full-year')
 		fullyear = .true.
+	case ('echo-file-paths')
+		echofilepaths = .true.
 	case ('min')
 		read (rads_opt(i)%arg, *, iostat=ios) minnr
 		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
@@ -159,7 +162,7 @@ endif
 do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
 	! Process passes one-by-one
 	do pass = S%passes(1), S%passes(2), S%passes(3)
-		call rads_open_pass (S, Pin, cycle, pass)
+		call rads_open_pass (S, Pin, cycle, pass, echofilepaths=echofilepaths)
 		! Process the pass data
 		if (Pin%ndata > 0) call process_pass (Pin%ndata, S%nsel)
 		! Print the statistics at the end of the data pass (if requested)
@@ -209,6 +212,7 @@ write (*,1300)
 '  --full-year               Write date as YYYYMMDD instead of the default YYMMDD'/ &
 '  --min MINNR               Minimum number of measurements per statistics record (default: 2)'/ &
 '  --res DX,DY               Size of averaging boxes in degrees (default: 3,1)'/ &
+'  --echo-file-paths         Write to STDOUT the paths of the files before being read'/ &
 '  -o, --output [OUTNAME]    Create NetCDF output instead of ASCII (default output'/ &
 '                            filename is "radsstat.nc")')
 stop
