@@ -101,7 +101,7 @@ do i = 1,rads_nopt
 		lstat = 4
 	case ('full-year')
 		fullyear = .true.
-	case ('echofilepaths')
+	case ('echo-file-paths')
 		echofilepaths = .true.
 	case ('min')
 		read (rads_opt(i)%arg, *, iostat=ios) minnr
