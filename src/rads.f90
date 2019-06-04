@@ -1313,6 +1313,8 @@ logical, intent(in), optional :: echofilepaths
 ! cycle    : Cycle number
 ! pass     : Pass number
 ! rw       : (optional) Set read/write permission (def: read only)
+! echofilepaths : (optional) Print to standard output the file path before
+!            it is being checked for existence.
 !
 ! ERROR CODE
 ! S%error  : rads_noerr, rads_warn_nc_file, rads_err_nc_parse
@@ -1388,10 +1390,10 @@ write (P%fileinfo(1)%name, 600) trim(S%dataroot), trim(S%branch(1)), trim(S%phas
 
 ! optional echo of the file in which we are looking for data
 ! ...intentionally do this prior to testing if file exists
-601 format ('# checkfile:',a)
+601 format ('# checkfile: ',a)
 if (present(echofilepaths)) then
     if (echofilepaths) then
-        write(*,601) trim(P%fileinfo(1)%name)
+        write (*,601) trim(P%fileinfo(1)%name)
     endif
 endif
 
