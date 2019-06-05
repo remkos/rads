@@ -4386,8 +4386,11 @@ if (present(add_offset)) info%add_offset = add_offset
 if (present(ndims)) info%ndims = ndims
 
 ! Set the range of dimensions to be referenced
-j0 = 1
 j1 = info%ndims
+j1 = S%time%info%dataname
+k = index(S%time%info%dataname, ' ') - 1
+if (nft(nf90_inq_dimid(ncid,S%time%info%dataname(:k),i))) return
+j0 = j1 – info%ndims + 1
 if (info%datatype == rads_type_dim) j0 = j1 ! Single dimension that is not primary
 
 ! Make sure we are in define mode and that we can write
