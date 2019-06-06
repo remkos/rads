@@ -4389,8 +4389,7 @@ if (present(ndims)) info%ndims = ndims
 j1 = 1
 k = index(S%time%info%dataname, ' ') - 1
 if (nft(nf90_inq_dimid(ncid,S%time%info%dataname(:k),j1))) return
-j0 = j1 -info%ndims + 1
-print*,j1,j0
+j0 = j1 - info%ndims + 1
 if (info%datatype == rads_type_dim) j0 = j1 ! Single dimension that is not primary
 
 ! Make sure we are in define mode and that we can write
