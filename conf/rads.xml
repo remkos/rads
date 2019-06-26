@@ -515,7 +515,7 @@ Global RADS configuration file
 	<compress sat="j1 j2 pn tx">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_gdrf" field="427" sat="3a 3b">
+<var name="alt_gdrf" field="427" sat="3a 3b c2 j3">
 	<long_name>CNES GDR-F orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>CNES, GDR-F standards</source>
@@ -528,7 +528,7 @@ Global RADS configuration file
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <alias name="alt" field="4" sat="2a tx.r50">alt_gdrd</alias>
-<alias name="alt" field="4" sat="3a 3b">alt_gdrf alt_gdre</alias>
+<alias name="alt" field="4" sat="3a 3b c2">alt_gdrf alt_gdre</alias>
 <alias name="alt" field="4" sat="j3 sa">alt_gdre</alias>
 <alias name="alt" field="4" sat="c2">alt_gdre alt_cnes</alias>
 <alias name="alt" field="4" sat="e1 e2">alt_reaper alt_gfz</alias>
