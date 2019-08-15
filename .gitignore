@@ -26,6 +26,7 @@ devel/rads_add_mog2d
 devel/rads_add_ncep
 devel/rads_add_orbit
 devel/rads_add_refframe
+devel/rads_add_seaice
 devel/rads_add_sla
 devel/rads_add_ssb
 devel/rads_add_sst
@@ -41,6 +42,7 @@ devel/rads_fix_jason
 devel/rads_fix_reaper
 devel/rads_fix_s3
 devel/rads_fix_sa
+devel/rads_fix_tx
 devel/rads_gen_c2_l1r
 devel/rads_gen_h2
 devel/rads_gen_jason
@@ -66,6 +68,8 @@ src/rads_sample
 src/rads_test
 src/radscolin
 src/radscolin4
+src/radspassesindex
+src/radspassesindex4
 src/radsreconfig
 src/radsstat
 src/radsstat4
@@ -74,5 +78,3 @@ src/radsxoconv
 src/radsxogen
 src/radsxolist
 src/radsxostat
-rads_add_seaice
-rads_fix_tx

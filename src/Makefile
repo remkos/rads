@@ -35,12 +35,13 @@ LDLIBS  = $(NETCDF_LIB)
 
 # Programs created by objects
 PROGS   = rads2asc rads2adr rads2nc rads2grd radsstat radscolin radsxogen radsxoconv \
-	radsxolist rads_test radsreconfig rads_sample rads3test radsvar
+	radsxolist rads_test radsreconfig rads_sample rads3test radsvar \
+	radspassesindex
 
 # Programs created by linking to other programs
 PROGS_L1= rads2xadr rads2xgf
 PROGS_L2= radsxostat
-PROGS_L4= rads2asc4 radscolin4 radsstat4 rads2grd4
+PROGS_L4= rads2asc4 radscolin4 radsstat4 rads2grd4 radspassesindex4
 
 # Shell scripts
 SCRIPTS = rads-config
