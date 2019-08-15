@@ -2420,6 +2420,7 @@ do
 		phase%end_time = strp1985f(val(1))
 
 	case ('repeat')
+		phase%repeat_shift = 0d0
 		read (val(:nval), *, iostat=ios) phase%repeat_days, phase%repeat_passes, phase%repeat_shift
 		! Compute length of repeat in nodal days from inclination and repeat in solar days
 		! This assumes 1000 km altitude to get an approximate node rate (in rad/s)
@@ -3780,7 +3781,7 @@ end subroutine rads_set_phase_by_time
 !
 ! SYNOPSIS
 subroutine rads_predict_equator (S, P, cycle, pass)
-type(rads_sat), intent(in) :: S
+type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 integer(fourbyteint), intent(in) :: cycle, pass
 !
@@ -3803,6 +3804,9 @@ integer(fourbyteint), intent(in) :: cycle, pass
 integer(fourbyteint) :: cc, pp
 real(eightbytereal) :: d, e
 
+! If the cycle is out of range for the current phase, look for a new phase
+call rads_set_phase (S, cycle)
+
 ! For constructions with subcycles, convert first to "real" cycle/pass number
 if (associated(S%phase%subcycles)) then
 	cc = cycle - S%phase%subcycles%i
@@ -3812,6 +3816,8 @@ else
 	cc = cycle
 	pp = pass
 endif
+
+! Now do the estimation process
 d = S%phase%pass_seconds
 P%equator_time = S%phase%ref_time + ((cc - S%phase%ref_cycle) * S%phase%repeat_passes + (pp - S%phase%ref_pass)) * d
 P%start_time = P%equator_time - 0.5d0 * d
