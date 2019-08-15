@@ -19,8 +19,6 @@ program radsvar
 !
 ! This program lists all the variables in RADS for a given satellite
 ! and mission. To make sure that only the available
-!
-! usage: radsvar [RADS_options] [options]
 !-----------------------------------------------------------------------
 use typesizes
 use rads

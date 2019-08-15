@@ -20,8 +20,6 @@ program rads2asc
 ! This program converts the RADS NetCDF altimeter data to ASCII.
 ! At the same time it applies the standard selection criteria
 ! and allows some further modifications and selections.
-!
-! usage: rads2asc sat=<sat> [RADS_options] [options]
 !-----------------------------------------------------------------------
 use rads
 use rads_netcdf

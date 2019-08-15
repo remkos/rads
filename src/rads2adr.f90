@@ -22,8 +22,6 @@ program rads2adr
 ! is called as rads2adr, rads2xadr or rads2xgf.
 ! At the same time it applies the standard selection criteria
 ! and allows some further modifications and selections.
-!
-! usage: rads2adr|rads2xadr|rads2xgf sat=<sat> [RADS_options] [options]
 !-----------------------------------------------------------------------
 use rads
 use rads_netcdf

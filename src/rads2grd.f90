@@ -19,8 +19,6 @@ program rads2grd
 
 ! A Quick'n'dirty gridding program to grid a single
 ! RADS data variable against two others.
-!
-! usage: rads2grd sat=<sat> sel=x,y,z [RADS_options] [options]
 !-----------------------------------------------------------------------
 use rads
 use rads_misc

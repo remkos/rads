@@ -21,8 +21,6 @@ program rads2nc
 ! to new NetCDF data files.
 ! At the same time it applies the standard selection criteria
 ! and allows some further modifications and selections.
-!
-! usage: rads2nc sat=<sat> [RADS_options] [options]
 !-----------------------------------------------------------------------
 use rads
 use rads_netcdf
