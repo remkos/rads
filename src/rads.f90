@@ -28,7 +28,7 @@ integer(fourbyteint), parameter :: rads_noerr = 0, &
 	rads_err_nc_file = 1, rads_err_nc_parse = 2, rads_err_nc_close = 3, rads_err_memory = 4, &
 	rads_err_var = 5, rads_err_source = 6, rads_err_nc_var = 7, rads_err_nc_get = 8, &
 	rads_err_xml_parse = 9, rads_err_xml_file = 10, rads_err_alias = 11, rads_err_math = 12, &
-	rads_err_cycle = 13, rads_err_nc_create = 14, rads_err_nc_put = 15
+	rads_err_cycle = 13, rads_err_nc_create = 14, rads_err_nc_put = 15, rads_err_nophase = 16
 ! Additional RADS4 helpers
 character(len=1), parameter :: rads_linefeed = char(10), rads_tab = char(9), rads_noedit = '_'
 ! RADS3 errors or incompatibilities
@@ -3682,6 +3682,9 @@ type(rads_phase), pointer :: phase
 ! ARGUMENTS
 ! S        : Satellite/mission dependent structure
 ! name     : Name of phase
+!
+! ERROR CODE:
+! S%error  : rads_noerr, rads_err_nophase
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: n
 type(rads_phase), pointer :: temp(:)
@@ -3712,6 +3715,7 @@ character(len=*), intent(in) :: name
 logical, optional, intent(out) :: error
 integer :: i
 if (present(error)) error = .false.
+S%error = rads_noerr
 ! Check if we are already in the right mission phase
 if (name(1:1) == S%phase%name(1:1)) return
 ! Check all mission phases
@@ -3723,6 +3727,7 @@ do i = 1,size(S%phases)
 enddo
 if (present(error)) then
 	error = .true.
+	S%error = rads_err_nophase
 else
 	call rads_exit ('No mission phase "'//trim(name)//'" for satellite "'//S%sat//'"')
 endif
@@ -3735,6 +3740,7 @@ logical, optional, intent(out) :: error
 integer :: i
 character(len=3) :: name
 if (present(error)) error = .false.
+S%error = rads_noerr
 ! Check if we are already in the right mission phase
 if (cycle >= S%phase%cycles(1) .and. cycle <= S%phase%cycles(2)) return
 ! Check all mission phases
@@ -3746,6 +3752,7 @@ do i = 1,size(S%phases)
 enddo
 if (present(error)) then
 	error = .true.
+	S%error = rads_err_nophase
 else
 	write (name, '(i3.3)') cycle
 	call rads_exit ('No cycle '//name//' for any mission phase of satellite "'//S%sat//'"')
@@ -3759,6 +3766,7 @@ real(eightbytereal), intent(in) :: time
 logical, optional, intent(out) :: error
 integer :: i
 if (present(error)) error = .false.
+S%error = rads_noerr
 ! Check if we are already in the right mission phase
 if (time >= S%phase%start_time .and. time <= S%phase%end_time) return
 ! Check all mission phases
@@ -3770,6 +3778,7 @@ do i = 1,size(S%phases)
 enddo
 if (present(error)) then
 	error = .true.
+	S%error = rads_err_nophase
 else
 	call rads_exit ('Time '//strf1985f(time)//' is outside any mission phase of satellite "'//S%sat//'"')
 endif
@@ -3800,12 +3809,17 @@ integer(fourbyteint), intent(in) :: cycle, pass
 ! P        : Pass structure
 ! cycle    : Cycle number
 ! pass     : Pass number
+!
+! ERROR CODE
+! S%error  : rads_noerr, rads_err_nophase
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: cc, pp
 real(eightbytereal) :: d, e
+logical :: error
 
 ! If the cycle is out of range for the current phase, look for a new phase
-call rads_set_phase (S, cycle)
+call rads_set_phase (S, cycle, error)
+if (error) return
 
 ! For constructions with subcycles, convert first to "real" cycle/pass number
 if (associated(S%phase%subcycles)) then
@@ -3827,6 +3841,7 @@ e = S%phase%repeat_shift * (P%equator_time - S%phase%ref_time) / S%phase%pass_se
 P%equator_lon = modulo(S%phase%ref_lon + (pp - S%phase%ref_pass) * d + e + modulo(pp - S%phase%ref_pass,2) * 180d0, 360d0)
 if (rads_verbose >= 4) write (*,'(a,3f15.3,f12.6)') 'Estimated start/end/equator time/longitude = ', &
 	P%start_time, P%end_time, P%equator_time, P%equator_lon
+S%error = rads_noerr
 end subroutine rads_predict_equator
 
 !****if* rads/rads_time_to_cycle_pass
