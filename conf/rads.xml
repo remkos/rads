@@ -4254,10 +4254,31 @@ Global RADS configuration file
 	</phase>
 	<phase name="b">
 		<mission>Drifting Phase</mission>
-		<cycles>36 99</cycles>
-		<repeat>35.0 1002 -2.30</repeat>
-		<ref_pass>2016-07-04T13:18:09 251.07 36 1 17536</ref_pass>
+		<cycles>36 40</cycles>
+		<repeat>35.00654 1002 -2.40</repeat>
+		<ref_pass>2016-07-04T13:18:19 251.07 36 1 17536</ref_pass>
 		<start_time>2016-07-04T12:00:00</start_time>
+	</phase>
+	<phase name="b">
+		<mission>Drifting Phase</mission>
+		<cycles>41 47</cycles>
+		<repeat>35.00610 1002 -2.24</repeat>
+		<ref_pass>2016-12-26T14:05:24 239.08 41 1 20041</ref_pass>
+		<start_time>2016-12-26T13:40:15</start_time>
+	</phase>
+	<phase name="b">
+		<mission>Drifting Phase</mission>
+		<cycles>48 57</cycles>
+		<repeat>35.00578 1002 -2.13</repeat>
+		<ref_pass>2017-08-28T15:06:53 223.42 48 1 23548</ref_pass>
+		<start_time>2017-08-28T14:41:44</start_time>
+	</phase>
+	<phase name="b">
+		<mission>Drifting Phase</mission>
+		<cycles>58 99</cycles>
+		<repeat>35.0054 1002 -1.99</repeat>
+		<ref_pass>2018-08-13T16:30:07 202.15 58 1 28558</ref_pass>
+		<start_time>2018-08-13T16:04:58</start_time>
 	</phase>
 </if>
 
