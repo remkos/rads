@@ -895,6 +895,48 @@ $ radscolin -S e2 -C 0,2 -P 915,1000,2 -R -8,42,28,48 -V lat,sla,swh -r
 \end{alltt}
 \script{sub/radscolin4-r.out}
 
+\section{radspassesindex}
+\label{sec:radspassesindex}
+The RADS4 program \prog{radspassessindex} works the same as the program by the same name in RADS3. It provides a quick index of the information of pass files. It can be used either in predictive mode (not reading any files) or actually reading the meta data in RADS files. Output is in ASCII format.
+The information printed is:
+\begin{itemize}
+\item Phase name
+\item Cycle number
+\item Pass number
+\item Start time
+\item End time
+\item Equator crossing time
+\item Equator crossing longitude
+\item Number of points
+\end{itemize}
+
+For more details, see the description of the command line options in the next Sections.
+
+\subsection{Syntax}
+\script{sub/radspassesindex4.hlp}
+
+\subsection{Common options}
+For a full explanation of the command line options that are common to most RADS4 programs, see Section~\ref{sec:common_options}.
+
+\subsection{Program specific options}
+The command line options that are specific to \prog{radspassesindex} are listed here.
+\begin{description}
+\item[\sopt{h}]
+Add header at the top of the output
+\item[\sopt{p}]
+Predict the start and stop times and equator time and longitude. The number of points is estimated based on full coverage.
+\item[\sopt{y}]
+Print times in the format YYYY-MM-DDTHH-MM-SS.SSSSSS instead of seconds since 1985.
+\end{description}
+
+\subsection{Example}
+Assuming a default configuration, we issue the following command:
+\begin{verbatim}
+$ radspassesindex -S e2 -C 0 -P 901,910 -h -y -p
+\end{verbatim}
+The result will look like the following:
+\script{sub/radspassesindex4.out}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{RADS library}
 \label{app:library}
