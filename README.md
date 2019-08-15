@@ -27,6 +27,21 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 
 ## Version History
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
+This does not include explanations of changes to the code that generates the data base.
+
+### v4.3.6 (15 Aug 2019)
+* `rads.xml`: Updated `ref_frame_offset` for JA3 (raise by 1 mm)
+* `rads.xml`: Added `ref_frame_offset` for S3A/S3B PLRM
+* `rads.xml`: Updated JA2 parameters since coming back on-line on 22-May-2019
+* `rads.xml`: Provide and use GDR-F orbits for CryoSat-2 (alt_gdrf)
+* `rads.xml`: Specified various subphases for sa/b in order to get correct prediction of equator times and longitudes. This solved issue #152.
+* Added `conf/ntc_only.xml` and set latency to 2 (NTC) by default.
+* Bug fix: Simple modification of syntax for option parsing check to avoid segfault when compiled with default intel-fc/12.1.9.293.
+* New option introduced in `radsstat` that echoes to stdout fullpath to each pass file checked for data.
+* Using `-L|--limits` on an alias now sets limits of all aliased variables, instead of only the first one.
+* Documentation updates.
+* Bug fix: Update equator prediction for longitude (not NaN) and using different phases.
+* Added command `radspassesindex` as in RADS3.
 
 ### v4.3.5 (2 May 2019)
 * `rads.xml`: Added `ref_frame_offset_plrm`.
@@ -94,7 +109,7 @@ Following is a history of releases on [GitHub](https://github.com/remkos/rads/re
 * Changes to configuration file (rads.xml) in accordance with the [Nov 2017 updates](https://github.com/remkos/rads/milestone/6?closed=1).
 
 ### v4.2.8 (12 Sep 2017)
-* Fixed information on Jason-2 Phase C in rads.xml
+* Fixed information on Jason-2 Phase C in `rads.xml`
 
 ### v4.2.7 (7 Sep 2017)
 * Updates for Jason-2 Phase C ("tango")
