@@ -4394,7 +4394,7 @@ real(eightbytereal), intent(in), optional :: scale_factor, add_offset
 integer(fourbyteint), intent(out), optional :: varid
 type(rads_varinfo), pointer :: info
 integer(fourbyteint) :: e, n, xtype, ncid, varid_
-integer :: j=0, j0, j1, k
+integer :: j=0, j0, j1! k
 character(len=5) :: hz
 S%error = rads_noerr
 ncid = P%fileinfo(1)%ncid
