@@ -31,5 +31,6 @@ rads_add_tide     $* --models=hret
 rads_add_webtide  $*
 rads_add_refframe $*
 rads_add_sst      $* --all
+rads_add_seaice   $*
 rads_add_ncep     $* --dry --wet --air
 rads_add_era      $* --dry --wet
