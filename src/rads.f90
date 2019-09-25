@@ -3849,14 +3849,18 @@ end subroutine rads_predict_equator
 ! Determine cycle and pass number for given epoch
 !
 ! SYNOPSIS
-subroutine rads_time_to_cycle_pass (S, time, cycle, pass)
+subroutine rads_time_to_cycle_pass (S, time, cycle, pass, abs_orbit)
 type(rads_sat), intent(inout) :: S
 real(eightbytereal), intent(in) :: time
 integer(fourbyteint), intent(out) :: cycle, pass
+integer(fourbyteint), intent(out), optional :: abs_orbit
 !
 ! PURPOSE
 ! Given an epoch <time> in seconds since 1985, determine the <cycle>
 ! number and <pass> number in which that epoch falls.
+! Optionally, the absolute orbit number at the equator (<abs_orbit>)
+! can be computed.
+!
 ! This routine also updates the <S%phase> pointer to point to the
 ! appropriate structure containing the phase information.
 !
@@ -3865,6 +3869,7 @@ integer(fourbyteint), intent(out) :: cycle, pass
 ! time     : Time in seconds since 1985
 ! cycle    : Cycle number in which <time> falls
 ! pass     : Pass number in which <time> falls
+! abs_orbit: Absolute orbit number (optional)
 !****-------------------------------------------------------------------
 integer :: i, j, n
 real(eightbytereal) :: d, t0, x
@@ -3876,27 +3881,32 @@ do i = 1,size(S%phases)-1
 	if (time < S%phases(i+1)%start_time) exit
 enddo
 
-! Estimate the cycle from the time
-d = S%phases(i)%pass_seconds
-t0 = S%phases(i)%ref_time - (S%phases(i)%ref_pass - 0.5d0) * d ! Time of start of ref_cycle
-x = (time - t0) / (S%phases(i)%repeat_days * 86400d0) + S%phases(i)%ref_cycle
-cycle = floor(x)
-pass = int((x - cycle) * S%phases(i)%repeat_passes + 1)
+! Link the selected phase
+S%phase => S%phases(i)
 
-! When there are subcycles, compute the subcycle number
-if (associated(S%phases(i)%subcycles)) then
-	x = (time - t0) - (cycle - S%phases(i)%ref_cycle) * (S%phases(i)%repeat_days * 86400d0)
-	cycle = (cycle - 1) * S%phases(i)%subcycles%n + S%phases(i)%subcycles%i
-	n = floor(x / d)
-	do j = 2,S%phases(i)%subcycles%n
-		if (S%phases(i)%subcycles%list(j) > n) exit
-		cycle = cycle + 1
-	enddo
-	pass = n - S%phases(i)%subcycles%list(j-1) + 1
+! Estimate the cycle from the time
+d = S%phase%pass_seconds
+t0 = S%phase%ref_time - (S%phase%ref_pass - 0.5d0) * d ! Time of start of ref_cycle
+x = (time - t0) / (S%phase%repeat_days * 86400d0) + S%phase%ref_cycle
+cycle = floor(x)
+pass = int((x - cycle) * S%phase%repeat_passes + 1)
+
+if (present(abs_orbit)) then
+	! Compute the absolute orbit number (add 2*ref_orbit first to avoid dividing negative numbers)
+	abs_orbit = (S%phase%ref_orbit * 2 + (cycle - S%phase%ref_cycle) * S%phase%repeat_passes + (pass - S%phase%ref_pass)) / 2
 endif
 
-! Link the phase
-S%phase => S%phases(i)
+! When there are subcycles, compute the subcycle number
+if (associated(S%phase%subcycles)) then
+	x = (time - t0) - (cycle - S%phase%ref_cycle) * (S%phase%repeat_days * 86400d0)
+	cycle = (cycle - 1) * S%phase%subcycles%n + S%phase%subcycles%i
+	n = floor(x / d)
+	do j = 2,S%phase%subcycles%n
+		if (S%phase%subcycles%list(j) > n) exit
+		cycle = cycle + 1
+	enddo
+	pass = n - S%phase%subcycles%list(j-1) + 1
+endif
 end subroutine rads_time_to_cycle_pass
 
 !****if* rads/rads_time_to_cycle

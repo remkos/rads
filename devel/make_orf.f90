@@ -154,13 +154,11 @@ write (*,600)
 do i = 1,norf
 	! To allow for some sloppiness in the orbit scenario specified in the rads.xml file, add 1/8
 	! of an orbital revolution time to the time when retreiving the cycle and pass number
-	call rads_time_to_cycle_pass (S, orf(i)%time + 0.25d0 * S%phase%pass_seconds, cycle, pass)
+	call rads_time_to_cycle_pass (S, orf(i)%time + 0.25d0 * S%phase%pass_seconds, cycle, pass, abs_orbit)
 	date = strf1985f (orf(i)%time)
 	date(5:5) = '/'
 	date(8:8) = '/'
-	! Compute the absolute orbit number (add 2*ref_orbit first to avoid dividing negative numbers)
-	abs_orbit = (S%phase%ref_orbit * 2 + (cycle - S%phase%ref_cycle) * S%phase%repeat_passes + (pass - S%phase%ref_pass)) / 2
-	! Subtract 1 for the start of a pass (large negative latitude)
+	! Subtract 1 from absolute orbit number for the start of a pass (large negative latitude)
 	if (orf(i)%lat < -min_lat) abs_orbit = abs_orbit - 1
 	write (*,610) date(1:23),rads_tab,cycle,rads_tab,pass,rads_tab,abs_orbit,rads_tab, &
 		modulo(orf(i)%lon,360d0),rads_tab,orf(i)%lat
