@@ -4137,7 +4137,7 @@ Global RADS configuration file
 		<!--This may need to be modified-->
 		<!--After "rewind" by 97 days, we increase the subcycle by 6-->
 		<mission>Geodetic Mission 2</mission>
-		<cycles>375 499</cycles>
+		<cycles>375 383</cycles>
 		<!--This is "real" cycle and pass, i.e. subcycle 361, pass 33-->
 		<repeat>367.8446 9472</repeat>
 		<ref_pass>2018-10-02T14:46:08 336.39 1 33</ref_pass>
