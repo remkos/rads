@@ -171,7 +171,7 @@ use netcdf
 character(len=*), intent(in) :: varnm
 integer(fourbyteint), intent(in) :: bit
 integer(fourbyteint), optional, intent(in) :: eq, neq, ge, le, mask
-integer(twobyteint) :: flag(mrec), flag2d(1:1,1:nrec)
+integer(twobyteint) :: flag(mrec), flag2d(1:1,1:nrec), mask2
 integer(fourbyteint) :: i, ival, ndims, varid
 
 if (nf90_inq_varid_warn(ncid,varnm,varid) /= nf90_noerr) return
@@ -195,8 +195,9 @@ else if (present(neq)) then	! Set flag when value /= neq
 		if (flag(i) /= neq) flags(i) = ibset(flags(i),bit)
 	enddo
 else if (present(mask)) then	! Set flag when value and mask have common set bits
+	mask2 = mask
 	do i = 1,nrec
-		if (iand(flag(i),mask) /= 0) flags(i) = ibset(flags(i),bit)
+		if (iand(flag(i), mask2) /= 0) flags(i) = ibset(flags(i),bit)
 	enddo
 else	! Set flag when value == 1, or when value == eq (when given)
 	ival = 1
