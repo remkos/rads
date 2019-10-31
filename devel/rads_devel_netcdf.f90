@@ -195,7 +195,7 @@ else if (present(neq)) then	! Set flag when value /= neq
 		if (flag(i) /= neq) flags(i) = ibset(flags(i),bit)
 	enddo
 else if (present(mask)) then	! Set flag when value and mask have common set bits
-	mask2 = mask
+	mask2 = int(mask, twobyteint)
 	do i = 1,nrec
 		if (iand(flag(i), mask2) /= 0) flags(i) = ibset(flags(i),bit)
 	enddo
