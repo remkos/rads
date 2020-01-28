@@ -195,13 +195,16 @@ do
 		cycle
 	endif
 
-! Detect REP_006 (S3A) or REP_007 (S3B)
+! Detect REP_006 (S3A) or REP_007 (S3B) or REP_008
 
 	if (index(arg, '_R_NT_003') == 0) then
-	else if (S%sat == '3a') then
-		latency = latency + 6 ! REP_006
-	else
-		latency = latency + 7 ! REP_007
+		if (S%sat == '3a') then
+			latency = latency + 6 ! REP_006
+		else
+			latency = latency + 7 ! REP_007
+		endif
+	else if (index(arg, '_R_NT_004') == 0) then
+		latency = latency + 8 ! REP_008
 	endif
 
 ! Read cycle, pass, equator time
