@@ -31,11 +31,6 @@ date													>  $log 2>&1
 find $* -name "*.nc" | sort > $lst
 rads_gen_s3 	  $options --min-rec=6 < $lst			>> $log 2>&1
 
-# Add GDR-F orbit for earlier part of the mission
-rads_add_orbit    $options -Valt_gdrf --ymd=,20181128	>> $log 2>&1
-# Smooth the dual frequency iono
-rads_add_dual     $options								>> $log 2>&1
-rads_add_dual     $options --ext=plrm					>> $log 2>&1
 # General geophysical corrections
 rads_add_common   $options								>> $log 2>&1
 rads_add_refframe $options --ext=plrm					>> $log 2>&1

@@ -52,9 +52,6 @@ for type in ${types}; do
 	esac
 done
 
-# Smooth the dual frequency iono
-rads_add_dual     $options								>> $log 2>&1
-rads_add_dual     $options --ext=plrm					>> $log 2>&1
 # General geophysical corrections
 rads_add_common   $options								>> $log 2>&1
 rads_add_refframe $options --ext=plrm					>> $log 2>&1
