@@ -55,9 +55,6 @@ done
 # General geophysical corrections
 rads_add_common   $options								>> $log 2>&1
 rads_add_refframe $options --ext=plrm					>> $log 2>&1
-rads_add_mog2d    $options								>> $log 2>&1
-rads_add_ncep     $options -gdwi						>> $log 2>&1
-rads_add_ecmwf    $options -dwui						>> $log 2>&1
 rads_add_iono     $options --all						>> $log 2>&1
 # Redetermine SSHA
 rads_add_sla      $options								>> $log 2>&1
