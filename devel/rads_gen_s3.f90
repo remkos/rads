@@ -181,7 +181,7 @@ do
 		cycle
 	endif
 
-! Determine latency
+! Determine latency (NRT, STC, NTC)
 
 	call nfs(nf90_get_att(ncid,nf90_global,'product_name',arg))
 	if (index(arg, '_NR_') > 0) then
@@ -197,14 +197,14 @@ do
 
 ! Detect REP_006 (S3A) or REP_007 (S3B) or REP_008
 
-	if (index(arg, '_R_NT_003') == 0) then
+	if (index(arg, '_R_NT_003') > 0) then
 		if (S%sat == '3a') then
-			latency = latency + 6 ! REP_006
+			latency = rads_ntc + 6 ! REP_006
 		else
-			latency = latency + 7 ! REP_007
+			latency = rads_ntc + 7 ! REP_007
 		endif
-	else if (index(arg, '_R_NT_004') == 0) then
-		latency = latency + 8 ! REP_008
+	else if (index(arg, '_R_NT_004') > 0) then
+		latency = rads_ntc + 8 ! REP_008
 	endif
 
 ! Read cycle, pass, equator time
