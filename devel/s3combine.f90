@@ -40,7 +40,7 @@ type(orfinfo) :: orf(200000)
 ! Scruct to store input file information
 
 type :: fileinfo
-	integer(fourbyteint) :: ncid, rec0, rec1, nrec, type
+	integer(fourbyteint) :: ncid, rec0, rec1, nrec, type, cycle, pass
 	real(eightbytereal) :: time0, time1, lat0, lat1, lon0, lon1
 	character(len=rads_cmdl) :: filenm
 end type
@@ -55,10 +55,10 @@ character(len=15) :: newer_than = '00000000T000000'
 integer(fourbyteint), parameter :: mpass = 254 * 500
 real(eightbytereal), parameter :: sec2000 = 473299200d0
 integer(fourbyteint) :: i0, i, ncid1, nrec, ios, varid, in_max = huge(fourbyteint), &
-	nfile = 0, orbit_type, ipass = 1, ipass0 = 0, verbose_level = 3
+	nfile = 0, orbit_type, ipass = 1, ipass0 = 0, verbose_level = 3, cycle_number, pass_number
 real(eightbytereal), allocatable :: time(:), lat(:), lon(:)
 real(eightbytereal) :: last_time = 0
-logical :: first = .true.
+logical :: first = .true., check_pass = .false.
 
 ! Print description, if requested
 
@@ -71,6 +71,7 @@ endif
 '  destdir           : Destination directory (appends c???/*.nc)'/ &
 '  list              : List of input files names'// &
 'where [options] are:' / &
+'  -c                : Check cycle and pass number'/ &
 '  -mMAXREC          : Maximum number of records allowed at input' / &
 '  -pDATE            : Skip data before given processing date (yymmddThhmmss)' / &
 '  -vLEVEL           : Specify verbosity level: 0 = quiet, 1 = only list created files,'/ &
@@ -93,7 +94,9 @@ call read_orf (filenm(i-94:i-92), orf)
 
 do i = 1,iargc()
 	call getarg (i,arg)
-	if (arg(:2) == '-m') then
+	if (arg(:2) == '-c') then
+		check_pass = .true.
+	else if (arg(:2) == '-m') then
 		read (arg(3:), *, iostat=ios) in_max
 	else if (arg(:2) == '-p') then
 		newer_than = arg(3:)
@@ -128,6 +131,8 @@ do
 ! Read global attributes
 
 	call nfs(nf90_get_att(ncid1,nf90_global,'product_name',product_name))
+	call nfs(nf90_get_att(ncid1,nf90_global,'cycle_number',cycle_number))
+	call nfs(nf90_get_att(ncid1,nf90_global,'pass_number',pass_number))
 	call nfs(nf90_get_att(ncid1,nf90_global,'xref_orbit_data',xref_orbit_data))
 	orbit_type = which_orbit_type (xref_orbit_data)
 
@@ -182,21 +187,23 @@ do
 	if (ipass /= ipass0) call write_output
 	last_time = time(nrec)
 
-! Also duplicated measurements within a single file
-! Split pass when entering into a new pass
+! Two reasons to split a file into two pieces:
 
 	do i = max(2,i0),nrec
 		call which_pass (time(i))
 		if (time(i) == time(i-1)) then
+! - Duplicated measurements within a single file
 			call fill_fin (i0, i-2)
 			call write_line (4, '... skip', i-1, i-1, nrec, time(i-1), time(i-1), '<', filenm)
 			i0 = i
 		else if (ipass /= ipass0) then
+! - Split pass when entering into a new pass
 			call fill_fin (i0, i-1)
 			call write_output
 			i0 = i
 		endif
 	enddo
+! - Register the remaining bit
 	call fill_fin (i0, nrec)
 
 ! Deallocate time and location arrays
@@ -222,6 +229,8 @@ fin(nfile)%ncid = ncid1
 fin(nfile)%nrec = nrec
 fin(nfile)%filenm = filenm
 fin(nfile)%type = orbit_type
+fin(nfile)%cycle = cycle_number
+fin(nfile)%pass = pass_number
 fin(nfile)%rec0 = i0
 fin(nfile)%rec1 = i1
 fin(nfile)%time0 = time(i0)
@@ -408,6 +417,15 @@ call nfs(nf90_put_att(ncid2,nf90_global,'last_meas_lat',fin(nfile)%lat1))
 call nfs(nf90_put_att(ncid2,nf90_global,'first_meas_lon',fin(1)%lon0))
 call nfs(nf90_put_att(ncid2,nf90_global,'last_meas_lon',fin(nfile)%lon1))
 call nfs(nf90_enddef(ncid2))
+
+! If requested, check if cycles and pass numbers agree
+if (check_pass) then
+	do i = 1, nfile
+		if (fin(i)%cycle /= cycle_number) write (*,630) 'cycle', cycle_number, fin(i)%cycle, trim(fin(i)%filenm)
+		if (fin(i)%pass /= pass_number) write (*,630) ' pass', pass_number, fin(i)%pass, trim(fin(i)%filenm)
+	enddo
+endif
+630 format ('Warning: ',a,' number; output:',i4,'; input:',i4,' from ',a)
 
 ! Copy all data elements
 
