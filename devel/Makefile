@@ -41,7 +41,7 @@ SCRIPTS = rads_add_common \
 		rads_gen_3a.sh rads_gen_3a_new.sh rads_gen_3a_new_calval.sh rads_gen_3a_calval.sh \
 		rads_gen_3b.sh rads_gen_3b_new.sh rads_gen_3b_new_calval.sh rads_gen_3b_calval.sh \
 		rads_gen_c2_l1r.sh rads_gen_c2_l1r_new.sh rads_gen_h2.sh \
-		rads_gen_j1.sh rads_gen_j2.sh rads_gen_j2_new.sh rads_gen_j2_new_calval.sh \
+		rads_gen_j1.sh rads_gen_j2.sh \
 		rads_gen_j3.sh rads_gen_j3_new.sh rads_gen_j3_new_calval.sh \
 		rads_gen_tx_rgdr.sh rads_gen_saral.sh rads_gen_saral_new.sh \
 		rads_purge_older.sh rads_sandbox.sh
