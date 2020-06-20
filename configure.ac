@@ -37,7 +37,7 @@ AC_CANONICAL_SYSTEM
 # -----------------------------------------------------------------
 # Specify user options
 # -----------------------------------------------------------------
-AC_ARG_WITH([nf-config],  [  --with-nf-config=dir       Full path to nf-config (or nc-config) [[auto]]])
+AC_ARG_WITH([nf-config],  [  --with-nf-config=fullpath  Full path to nf-config (or nc-config) [[auto]]], nf_config=$withval)
 AC_ARG_WITH([netcdf-inc], [  --with-netcdf-inc=dir      Specify location of the NetCDF include file [[auto]]])
 AC_ARG_WITH([netcdf-lib], [  --with-netcdf-lib=dir:dir  Specify location of the NetCDF library.  Use colon-separator if Fortran library is in separate directory [[auto]]])
 AC_ARG_ENABLE([debug],    [  --enable-debug             Compile with debugging options [[off]]])

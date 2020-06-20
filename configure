@@ -1350,7 +1350,7 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-nf-config=dir       Full path to nf-config (or nc-config) [auto]
+  --with-nf-config=fullpath  Full path to nf-config (or nc-config) [auto]
   --with-netcdf-inc=dir      Specify location of the NetCDF include file [auto]
   --with-netcdf-lib=dir:dir  Specify location of the NetCDF library.  Use colon-separator if Fortran library is in separate directory [auto]
 
@@ -2189,7 +2189,7 @@ test -n "$target_alias" &&
 
 # Check whether --with-nf-config was given.
 if test "${with_nf_config+set}" = set; then :
-  withval=$with_nf_config;
+  withval=$with_nf_config; nf_config=$withval
 fi
 
 
