@@ -869,8 +869,27 @@ This field allows users to separate the selected data by region, or select data 
 \label{fig:basin_codes}
 \end{figure}
 
+\section{Latency flag}
+RADS incorporates the latest available level-2 products from each mission. To distinguish the timeliness of the baseline product processed for each pass, the var{latency} flag is available. By default, data from all latencies is provided.
+
+\begin{table}
+\small
+\begin{tabular}{lr}
+\hline
+var{latency} & values & sat \\
+\hline
+Near-Real Time (NRT) or Operational GDR (OGDR) & 0 & 3a 3b j3 sa && \\
+Slow-Time Critical (STC) or Interim GDR (IGDR) & 1 & 3a 3b j3 c2 sa && \\
+Non-Time Critical (NTC) or ``Final'' GDR (GDR) & 2 & all except c2 && \\
+Reprocessing Baseline Collection 001 & 3 & 3a 3b && \\
+Reprocessing Baseline Collection 002 & 4 & 3a 3b && \\
+Reprocessing Baseline Collection 003 & 5 & 3a 3b && \\
+Reprocessing Baseline Collection 004 & 6 & 3a 3b && \\
+\hline
+\end{tabular}
+\end{table}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \bibliography{altim}
 \printindex
 \end{document}
-
