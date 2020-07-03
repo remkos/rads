@@ -139,7 +139,7 @@ You can put the source code anywhere you like. We will later configure where thi
 
 It is recommended to regularly check for updates of the RADS source code and recompile if necessary.
 
-\subsection{Download the bundle from GitHub}
+\subsection{Source code download via GitHub}
 \label{sec:download_github}
 To download the latest bundle of the source code, simply go to \url{https://github.com/remkos/rads/releases/latest}.
 There you will find the latest release notes, and links for the downloading of the bundle, either as a zip file, or as a compressed tarball.
@@ -154,7 +154,7 @@ $ unzip rads-v\vernum.zip
 \end{alltt}
 This will create a directory called \texttt{\small rads-v\vernum}.
 
-\subsection{Software synchronisation with \protect\prog{git}}
+\subsection{Source code synchronisation with \protect\prog{git}}
 \label{sec:sync_git}
 The version control system \prog{git} helps to administrate software development projects on distributed systems (or at least by distributed users), avoiding problems of accidentally wiping out each other's changes. Also, it is a very practical tool for distributing trees of software to others, who then can make their own changes without running the risk of accidentally overwriting them when a new update is provided. The \prog{git} command can merge those changes, and alerts you of that happening.
 
@@ -202,6 +202,13 @@ $ configure FC=/sw/bin/gfortran \
   --prefix=/usr/local --datadir=/rads/data
 \end{verbatim}
 The first argument to \prog{configure} specifies the location of the fortran compiler, while the second identifies the directory where we can find \file{netcdf.mod}. The third argument specifies the two directories that contain the netCDF C library (\file{libnetcdf}) and netCDF Fortran library (\file{libnetcdff}), separated by a colon. If these two are merged, or in one directory, you can just use one directory name.
+
+Alternatively, the \prog{nf-config} utility installed with the NetCDF package can provide the correct paths to the netCDF library and include directories. In this option, you can specific the full path to \prog{nf-config}. For example,
+\begin{verbatim}
+$ configure FC=/sw/bin/gfortran \
+  --with-nf-config=/sw/bin/nf-config
+	--prefix=/usr/local --datadir=/rads/data
+\end{verbatim}
 
 The \prog{configure} program also tests if your Fortran compiler is ready for Fortran 90 and can compile with the netCDF library. If you have problems, you may need to review the options you gave to \prog{configure}, and make sure that \prog{configure} picked the same compiler that was used to compile the netCDF library. Finding the \prog{nf-config} command on your system may be pivotal.
 
@@ -1683,5 +1690,3 @@ What is new in the data base?
 \end{itemize}
 
 \end{document}
-
-
