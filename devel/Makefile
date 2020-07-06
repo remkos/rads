@@ -18,6 +18,7 @@ include ../config.mk
 # External objects
 GRIB_LIB := $(shell pkg-config --libs eccodes_f90 2>/dev/null || pkg-config --libs grib_api_f90 2>/dev/null)
 GRIB_INC := $(shell pkg-config --cflags eccodes_f90 2>/dev/null || pkg-config --cflags grib_api_f90 2>/dev/null)
+NETCDF_C_LIB	:= $(shell nc-config --libs)
 PLM = $(ALTIM)/src/geograph/p_lm.o
 
 # Programs to create
@@ -34,7 +35,7 @@ INCLUDES = $(MOD_FLAG). $(MOD_FLAG)../src $(MOD_FLAG)$(ALTIM)/include $(NETCDF_I
 
 # RADS library and linked libraries
 LIB     = ../src/librads.a $(ALTIM)/lib/rssubs.a
-LDLIBS  = $(NETCDF_LIB) $(GRIB_LIB)
+LDLIBS  = $(NETCDF_LIB) $(NETCDF_C_LIB) $(GRIB_LIB)
 
 # Shell scripts
 SCRIPTS = rads_add_common \
