@@ -97,7 +97,7 @@ real(eightbytereal), intent(in) :: data(:)
 nvar = nvar + 1
 if (nvar > mvar) stop 'Too many variables allocated by new_var'
 var(nvar)%v => rads_varptr (S, varnm)
-var(nvar)%d = data
+var(nvar)%d(1:size(data)) = data
 end subroutine new_var
 
 !-----------------------------------------------------------------------
