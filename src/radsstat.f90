@@ -47,8 +47,8 @@ character(len=*), parameter :: wtype(0:3)=(/ &
 	'area weighted               ', 'inclination-dependent weight'/)
 character(len=rads_strl) :: format_string
 character(len=rads_cmdl) :: filename = ''
-integer(fourbyteint), parameter :: period_day=0, period_pass=1, period_cycle=2
-integer(fourbyteint) :: nr, minnr=2, cycle, pass, i, &
+integer(fourbyteint), parameter :: period_day=1, period_pass=2, period_cycle=3
+integer(fourbyteint) :: nr, minnr=2, cycle, pass, i, output_format=0, &
 	period=period_day, wmode=0, nx, ny, kx, ky, ios, sizes(2), ncid, varid(2)
 real(eightbytereal), allocatable :: lat_w(:)
 real(eightbytereal) :: sini, step=1d0, x0, y0, res(2)=(/3d0,1d0/), start_time
@@ -64,7 +64,8 @@ logical :: echofilepaths = .false.
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('c::d::p::b::maslo::r:: full-year echo-file-paths min: minmax res: output::')
+call rads_set_options ('c::d::p::b::maslo::r:: ' // &
+	'format-cycle format-day format-pass full-year echo-file-paths min: minmax res: output::')
 call rads_init (S)
 if (S%error /= rads_noerr) call rads_exit ('Fatal error')
 
@@ -99,6 +100,12 @@ do i = 1,rads_nopt
 		wmode = 3
 	case ('l', 'minmax')
 		lstat = 4
+	case ('format-cycle')
+		output_format = period_cycle
+	case ('format-day')
+		output_format = period_day
+	case ('format-pass')
+		output_format = period_pass
 	case ('full-year')
 		fullyear = .true.
 	case ('echo-file-paths')
@@ -125,6 +132,9 @@ do i = 1,rads_nopt
 enddo
 ascii = (filename == '')
 if (period == period_day) step = step * 86400d0 ! Convert from days to seconds
+
+! Determine output format if undefined
+if (output_format == 0) output_format = period
 
 ! If SLA is among the selected variables, remember index
 ! Also check if we have boz-formats
@@ -213,6 +223,9 @@ write (*,1300)
 '  --min MINNR               Minimum number of measurements per statistics record (default: 2)'/ &
 '  --res DX,DY               Size of averaging boxes in degrees (default: 3,1)'/ &
 '  --echo-file-paths         Write to STDOUT the paths of the files before being read'/ &
+'  --format-cycle            Output format starts with CYCLE, [YY]YYMMDD (default with -c)'/ &
+'  --format-day              Output format starts with [YY]YYMMDD (default with -d)'/ &
+'  --format-pass             Output format starts with CYCLE, PASS (default with -p)'/ &
 '  -o, --output [OUTNAME]    Create NetCDF output instead of ASCII (default output'/ &
 '                            filename is "radsstat.nc")')
 stop
@@ -328,7 +341,7 @@ end where
 if (ascii) then
 	call mjd2ymd(floor(start_time/86400d0)+46066,yy,mm,dd)
 	if (.not.fullyear) yy = modulo(yy,100)
-	select case (period)
+	select case (output_format)
 	case (period_day)
 		write (*,600,advance='no') yy,mm,dd
 	case (period_pass)
@@ -354,11 +367,11 @@ if (ascii) then
 ! Write output to NetCDF if requested
 else
 	call nfs (nf90_put_var (ncid, varid(1), nr, start(2:2)))
-	if (period /= period_day) then
+	if (output_format /= period_day) then
 		var => rads_varptr (S, 'cycle')
 		call rads_put_var (S, Pout, var, (/ dble(cycle) /), start(2:2))
 	endif
-	if (period == period_pass) then
+	if (output_format == period_pass) then
 		var => rads_varptr (S, 'pass')
 		call rads_put_var (S, Pout, var, (/ dble(pass) /), start(2:2))
 	endif
@@ -413,7 +426,7 @@ integer :: j0, j, l
 
 write (*,600) trim(wtype(wmode)), timestamp(), trim(S%command), &
 	trim(S%sat), trim(S%phase%name), S%cycles(1:2), S%passes(1:2)
-select case (period)
+select case (output_format)
 case (period_day)
 	write (*,610)
 	j0 = 1
@@ -471,8 +484,8 @@ Pout%rw = .true.
 ! Define "time" variables
 call nfs (nf90_def_var (ncid, 'nr', nf90_int4, dimid(1:1), varid(1)))
 call nfs (nf90_put_att (ncid, varid(1), 'long_name', 'number of measurements'))
-if (period /= period_day) call rads_def_var (S, Pout, 'cycle')
-if (period == period_pass) call rads_def_var (S, Pout, 'pass')
+if (output_format /= period_day) call rads_def_var (S, Pout, 'cycle')
+if (output_format == period_pass) call rads_def_var (S, Pout, 'pass')
 call rads_def_var (S, Pout, S%time)
 
 ! Define "stat" variable
