@@ -18,7 +18,7 @@ use typesizes
 use rads, only: rads_sat, rads_pass, rads_var
 
 integer(fourbyteint), parameter :: mrec=3600, mvar=80
-integer(fourbyteint) :: nvar, nrec=0, ncid
+integer(fourbyteint) :: nvar, nrec=0
 real(eightbytereal), allocatable :: a(:)
 integer(twobyteint), allocatable :: flags(:)
 type :: var_
@@ -35,11 +35,13 @@ type(rads_pass) :: P
 ! Copy variable to RADS
 !-----------------------------------------------------------------------
 !
-! subroutine cpy_var (varin, varout, do)
+! subroutine cpy_var (ncid, varin, varout, do)
 ! use rads_devel
 ! use rads_netcdf
+! integer(fourbyteint), intent(in) :: ncid
 ! character(len=*), intent(in) :: varin
 ! character(len=*), intent(in), optional :: varout
+! logical, optional :: do
 ! Copy variable 'varin' from input (GDR) file to 'varout' in RADS output file.
 ! When 'varout' is omitted, varout=varin.
 ! When 'do' is present and false, the action is skipped.
@@ -53,15 +55,17 @@ end interface cpy_var
 
 contains
 
-subroutine cpy_var_1 (varin)
+subroutine cpy_var_1 (ncid, varin)
 use rads_netcdf
+integer(fourbyteint), intent(in) :: ncid
 character(len=*), intent(in) :: varin
 call get_var (ncid, varin, a)
 call new_var (varin, a)
 end subroutine cpy_var_1
 
-subroutine cpy_var_1_do (varin, do)
+subroutine cpy_var_1_do (ncid, varin, do)
 use rads_netcdf
+integer(fourbyteint), intent(in) :: ncid
 character(len=*), intent(in) :: varin
 logical, intent(in) :: do
 if (.not.do) return
@@ -69,15 +73,17 @@ call get_var (ncid, varin, a)
 call new_var (varin, a)
 end subroutine cpy_var_1_do
 
-subroutine cpy_var_2 (varin, varout)
+subroutine cpy_var_2 (ncid, varin, varout)
 use rads_netcdf
+integer(fourbyteint), intent(in) :: ncid
 character(len=*), intent(in) :: varin, varout
 call get_var (ncid, varin, a)
 call new_var (varout, a)
 end subroutine cpy_var_2
 
-subroutine cpy_var_2_do (varin, varout, do)
+subroutine cpy_var_2_do (ncid, varin, varout, do)
 use rads_netcdf
+integer(fourbyteint), intent(in) :: ncid
 character(len=*), intent(in) :: varin, varout
 logical, intent(in) :: do
 if (.not.do) return
@@ -157,6 +163,7 @@ end subroutine put_rads
 
 !-----------------------------------------------------------------------
 ! nc2f: Load flag field, then set corresponding bit in RADS
+! ncid  : source NetCDF ID
 ! varnm : source variable name
 ! bit   : RADS bit to be set when value == 1
 ! eq    : set bit when value == val (optional, default = 1)
@@ -165,9 +172,10 @@ end subroutine put_rads
 ! le    : set bit when value <= val (optional)
 ! mask  : set bit when iand(value,mask) /= 0 (optional)
 
-subroutine nc2f (varnm, bit, eq, neq, ge, le, mask)
+subroutine nc2f (ncid, varnm, bit, eq, neq, ge, le, mask)
 use rads_netcdf
 use netcdf
+integer(fourbyteint), intent(in) :: ncid
 character(len=*), intent(in) :: varnm
 integer(fourbyteint), intent(in) :: bit
 integer(fourbyteint), optional, intent(in) :: eq, neq, ge, le, mask

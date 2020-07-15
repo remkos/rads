@@ -98,7 +98,7 @@ character(len=rads_cmdl) :: infile, arg
 
 ! Header variables
 
-integer(fourbyteint) :: cyclenr, passnr, varid
+integer(fourbyteint) :: ncid, cyclenr, passnr, varid
 real(eightbytereal) :: equator_time
 logical :: gdre = .false., mle3 = .true.
 integer :: latency = rads_nrt
@@ -281,135 +281,135 @@ do
 ! Compile flag bits
 
 	flags = 0
-	call nc2f ('alt_state_flag_oper',0)				! bit  0: Altimeter Side A/B
-	call nc2f ('qual_alt_1hz_off_nadir_angle_wf_ku',1)	! bit  1: Quality off-nadir pointing
-	call nc2f ('surface_type',2,eq=2)				! bit  2: Continental ice
-	call nc2f ('qual_alt_1hz_range_c',3)			! bit  3: Quality dual-frequency iono
-	call nc2f ('surface_type',4,ge=2)				! bit  4: Water/land
-	call nc2f ('surface_type',5,ge=1)				! bit  5: Ocean/other
-	call nc2f ('rad_surf_type',6,ge=2)				! bit  6: Radiometer land flag
-	call nc2f ('rain_flag',7)
-	call nc2f ('ice_flag',7)						! bit  7: Altimeter rain or ice flag
-	call nc2f ('rad_rain_flag',8)
-	call nc2f ('rad_sea_ice_flag',8)				! bit  8: Radiometer rain or ice flag
-	call nc2f ('qual_rad_1hz_tb187',9)
-	call nc2f ('qual_rad_1hz_tb238',9)				! bit  9: Quality 18.7 and 23.8 GHz channel
-	call nc2f ('qual_rad_1hz_tb340',10)				! bit 10: Quality 34.0 GHz channel
+	call nc2f (ncid, 'alt_state_flag_oper',0)				! bit  0: Altimeter Side A/B
+	call nc2f (ncid, 'qual_alt_1hz_off_nadir_angle_wf_ku',1)	! bit  1: Quality off-nadir pointing
+	call nc2f (ncid, 'surface_type',2,eq=2)				! bit  2: Continental ice
+	call nc2f (ncid, 'qual_alt_1hz_range_c',3)			! bit  3: Quality dual-frequency iono
+	call nc2f (ncid, 'surface_type',4,ge=2)				! bit  4: Water/land
+	call nc2f (ncid, 'surface_type',5,ge=1)				! bit  5: Ocean/other
+	call nc2f (ncid, 'rad_surf_type',6,ge=2)				! bit  6: Radiometer land flag
+	call nc2f (ncid, 'rain_flag',7)
+	call nc2f (ncid, 'ice_flag',7)						! bit  7: Altimeter rain or ice flag
+	call nc2f (ncid, 'rad_rain_flag',8)
+	call nc2f (ncid, 'rad_sea_ice_flag',8)				! bit  8: Radiometer rain or ice flag
+	call nc2f (ncid, 'qual_rad_1hz_tb187',9)
+	call nc2f (ncid, 'qual_rad_1hz_tb238',9)				! bit  9: Quality 18.7 and 23.8 GHz channel
+	call nc2f (ncid, 'qual_rad_1hz_tb340',10)				! bit 10: Quality 34.0 GHz channel
 
 ! Now do specifics for MLE3 (not used for the time being)
 
 	if (mle3) then
 		flags_save = flags	! Keep flags for later
-		call nc2f ('qual_alt_1hz_range_ku_mle3',3)		! bit  3: Quality dual-frequency iono
-		call nc2f ('qual_alt_1hz_range_ku_mle3',11)		! bit 11: Quality range
-		call nc2f ('qual_alt_1hz_swh_ku_mle3',12)		! bit 12: Quality SWH
-		call nc2f ('qual_alt_1hz_sig0_ku_mle3',13)		! bit 13: Quality Sigma0
+		call nc2f (ncid, 'qual_alt_1hz_range_ku_mle3',3)		! bit  3: Quality dual-frequency iono
+		call nc2f (ncid, 'qual_alt_1hz_range_ku_mle3',11)		! bit 11: Quality range
+		call nc2f (ncid, 'qual_alt_1hz_swh_ku_mle3',12)		! bit 12: Quality SWH
+		call nc2f (ncid, 'qual_alt_1hz_sig0_ku_mle3',13)		! bit 13: Quality Sigma0
 		flags_mle3 = flags	! Copy result for MLE3
 		flags = flags_save	! Continue with MLE4 flags
 	endif
 
 ! Redo the last ones for MLE4
 
-	call nc2f ('qual_alt_1hz_range_ku',3)			! bit  3: Quality dual-frequency iono
-	call nc2f ('qual_alt_1hz_range_ku',11)			! bit 11: Quality range
-	call nc2f ('qual_alt_1hz_swh_ku',12)			! bit 12: Quality SWH
-	call nc2f ('qual_alt_1hz_sig0_ku',13)			! bit 13: Quality Sigma0
+	call nc2f (ncid, 'qual_alt_1hz_range_ku',3)			! bit  3: Quality dual-frequency iono
+	call nc2f (ncid, 'qual_alt_1hz_range_ku',11)			! bit 11: Quality range
+	call nc2f (ncid, 'qual_alt_1hz_swh_ku',12)			! bit 12: Quality SWH
+	call nc2f (ncid, 'qual_alt_1hz_sig0_ku',13)			! bit 13: Quality Sigma0
 
 ! Convert all the necessary fields to RADS
 
 	call get_var (ncid, 'time', a)
 	call new_var ('time', a + sec2000)
-	call cpy_var ('lat')
-	call cpy_var ('lon')
+	call cpy_var (ncid, 'lat')
+	call cpy_var (ncid, 'lon')
 	if (S%sat == 'j2' .and. cyclenr < 254) then ! Jason-2 before Cycle 254 was GDR-D orbit
-		call cpy_var ('alt', 'alt_gdrd')
+		call cpy_var (ncid, 'alt', 'alt_gdrd')
 	else ! All Jason-1 and Jason-3 data, as well as more recent Jason-2 data
-		call cpy_var ('alt', 'alt_gdre')
+		call cpy_var (ncid, 'alt', 'alt_gdre')
 	endif
-	call cpy_var ('orb_alt_rate', 'alt_rate')
-	call cpy_var ('range_ku')
-	call cpy_var ('range_ku_mle3', mle3)
-	call cpy_var ('range_c')
-	call cpy_var ('model_dry_tropo_corr', 'dry_tropo_ecmwf')
-	call cpy_var ('rad_wet_tropo_corr', 'wet_tropo_rad')
-	call cpy_var ('model_wet_tropo_corr', 'wet_tropo_ecmwf')
-	call cpy_var ('iono_corr_alt_ku', 'iono_alt')
-	call cpy_var ('iono_corr_alt_ku_mle3', 'iono_alt_mle3', mle3)
-	call cpy_var ('iono_corr_gim_ku', 'iono_gim', latency /= rads_nrt)
-	call cpy_var ('inv_bar_corr', 'inv_bar_static')
+	call cpy_var (ncid, 'orb_alt_rate', 'alt_rate')
+	call cpy_var (ncid, 'range_ku')
+	call cpy_var (ncid, 'range_ku_mle3', mle3)
+	call cpy_var (ncid, 'range_c')
+	call cpy_var (ncid, 'model_dry_tropo_corr', 'dry_tropo_ecmwf')
+	call cpy_var (ncid, 'rad_wet_tropo_corr', 'wet_tropo_rad')
+	call cpy_var (ncid, 'model_wet_tropo_corr', 'wet_tropo_ecmwf')
+	call cpy_var (ncid, 'iono_corr_alt_ku', 'iono_alt')
+	call cpy_var (ncid, 'iono_corr_alt_ku_mle3', 'iono_alt_mle3', mle3)
+	call cpy_var (ncid, 'iono_corr_gim_ku', 'iono_gim', latency /= rads_nrt)
+	call cpy_var (ncid, 'inv_bar_corr', 'inv_bar_static')
 	if (latency == rads_nrt) then
-		call cpy_var ('inv_bar_corr', 'inv_bar_mog2d')
+		call cpy_var (ncid, 'inv_bar_corr', 'inv_bar_mog2d')
 	else
-		call cpy_var ('inv_bar_corr hf_fluctuations_corr ADD', 'inv_bar_mog2d')
+		call cpy_var (ncid, 'inv_bar_corr hf_fluctuations_corr ADD', 'inv_bar_mog2d')
 	endif
-	call cpy_var ('solid_earth_tide', 'tide_solid')
+	call cpy_var (ncid, 'solid_earth_tide', 'tide_solid')
 	if (gdre) then
-		call cpy_var ('ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got410')
-		call cpy_var ('ocean_tide_sol2 load_tide_sol2 SUB ocean_tide_non_equil ADD', 'tide_ocean_fes14')
-		call cpy_var ('load_tide_sol1', 'tide_load_got410')
-		call cpy_var ('load_tide_sol2', 'tide_load_fes14')
+		call cpy_var (ncid, 'ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got410')
+		call cpy_var (ncid, 'ocean_tide_sol2 load_tide_sol2 SUB ocean_tide_non_equil ADD', 'tide_ocean_fes14')
+		call cpy_var (ncid, 'load_tide_sol1', 'tide_load_got410')
+		call cpy_var (ncid, 'load_tide_sol2', 'tide_load_fes14')
 	else
-		call cpy_var ('ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got48')
-		call cpy_var ('ocean_tide_sol2 load_tide_sol2 SUB ocean_tide_non_equil ADD', 'tide_ocean_fes04')
-		call cpy_var ('load_tide_sol1', 'tide_load_got48')
-		call cpy_var ('load_tide_sol2', 'tide_load_fes04')
+		call cpy_var (ncid, 'ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got48')
+		call cpy_var (ncid, 'ocean_tide_sol2 load_tide_sol2 SUB ocean_tide_non_equil ADD', 'tide_ocean_fes04')
+		call cpy_var (ncid, 'load_tide_sol1', 'tide_load_got48')
+		call cpy_var (ncid, 'load_tide_sol2', 'tide_load_fes04')
 	endif
-	call cpy_var ('ocean_tide_equil', 'tide_equil')
-	call cpy_var ('ocean_tide_non_equil', 'tide_non_equil')
-	call cpy_var ('pole_tide', 'tide_pole')
-	call cpy_var ('sea_state_bias_ku', 'ssb_cls')
-	call cpy_var ('sea_state_bias_ku_mle3', 'ssb_cls_mle3', mle3)
-	call cpy_var ('sea_state_bias_c', 'ssb_cls_c')
+	call cpy_var (ncid, 'ocean_tide_equil', 'tide_equil')
+	call cpy_var (ncid, 'ocean_tide_non_equil', 'tide_non_equil')
+	call cpy_var (ncid, 'pole_tide', 'tide_pole')
+	call cpy_var (ncid, 'sea_state_bias_ku', 'ssb_cls')
+	call cpy_var (ncid, 'sea_state_bias_ku_mle3', 'ssb_cls_mle3', mle3)
+	call cpy_var (ncid, 'sea_state_bias_c', 'ssb_cls_c')
 	if (gdre) then
-		call cpy_var ('geoid', 'geoid_egm2008')
+		call cpy_var (ncid, 'geoid', 'geoid_egm2008')
 	else
-		call cpy_var ('geoid', 'geoid_egm96')
+		call cpy_var (ncid, 'geoid', 'geoid_egm96')
 	endif
 	if (S%sat == 'j2' .and. S%phase%name == 'c') then
-		call cpy_var ('mean_sea_surface', 'mss_cnescls15')
+		call cpy_var (ncid, 'mean_sea_surface', 'mss_cnescls15')
 	else
-		call cpy_var ('mean_sea_surface', 'mss_cnescls11')
+		call cpy_var (ncid, 'mean_sea_surface', 'mss_cnescls11')
 	endif
-	call cpy_var ('swh_ku')
-	call cpy_var ('swh_ku_mle3', mle3)
-	call cpy_var ('swh_c')
-	call cpy_var ('sig0_ku')
-	call cpy_var ('sig0_ku_mle3', mle3)
-	call cpy_var ('sig0_c')
-	call cpy_var ('wind_speed_alt')
-	call cpy_var ('wind_speed_alt_mle3', mle3)
-	call cpy_var ('wind_speed_rad')
-	call cpy_var ('wind_speed_model_u', 'wind_speed_ecmwf_u')
-	call cpy_var ('wind_speed_model_v', 'wind_speed_ecmwf_v')
-	call cpy_var ('range_rms_ku')
-	call cpy_var ('range_rms_ku_mle3', mle3)
-	call cpy_var ('range_rms_c')
-	call cpy_var ('range_numval_ku')
-	call cpy_var ('range_numval_ku_mle3', mle3)
-	call cpy_var ('range_numval_c')
-	call cpy_var ('bathymetry', 'topo_dtm2000')
-	call cpy_var ('tb_187')
-	call cpy_var ('tb_238')
-	call cpy_var ('tb_340')
+	call cpy_var (ncid, 'swh_ku')
+	call cpy_var (ncid, 'swh_ku_mle3', mle3)
+	call cpy_var (ncid, 'swh_c')
+	call cpy_var (ncid, 'sig0_ku')
+	call cpy_var (ncid, 'sig0_ku_mle3', mle3)
+	call cpy_var (ncid, 'sig0_c')
+	call cpy_var (ncid, 'wind_speed_alt')
+	call cpy_var (ncid, 'wind_speed_alt_mle3', mle3)
+	call cpy_var (ncid, 'wind_speed_rad')
+	call cpy_var (ncid, 'wind_speed_model_u', 'wind_speed_ecmwf_u')
+	call cpy_var (ncid, 'wind_speed_model_v', 'wind_speed_ecmwf_v')
+	call cpy_var (ncid, 'range_rms_ku')
+	call cpy_var (ncid, 'range_rms_ku_mle3', mle3)
+	call cpy_var (ncid, 'range_rms_c')
+	call cpy_var (ncid, 'range_numval_ku')
+	call cpy_var (ncid, 'range_numval_ku_mle3', mle3)
+	call cpy_var (ncid, 'range_numval_c')
+	call cpy_var (ncid, 'bathymetry', 'topo_dtm2000')
+	call cpy_var (ncid, 'tb_187')
+	call cpy_var (ncid, 'tb_238')
+	call cpy_var (ncid, 'tb_340')
 	a = flags
 	call new_var ('flags', a)
 	if (mle3) then
 		a = flags_mle3
 		call new_var ('flags_mle3', a)
 	endif
-	call cpy_var ('swh_rms_ku')
-	call cpy_var ('swh_rms_ku_mle3', mle3)
-	call cpy_var ('swh_rms_c')
-	call cpy_var ('sig0_rms_ku')
-	call cpy_var ('sig0_rms_ku_mle3', mle3)
-	call cpy_var ('sig0_rms_c')
-	call cpy_var ('off_nadir_angle_wf_ku', 'off_nadir_angle2_wf_ku')
-	call cpy_var ('atmos_corr_sig0_ku', 'dsig0_atmos_ku')
-	call cpy_var ('atmos_corr_sig0_c', 'dsig0_atmos_c')
-	call cpy_var ('rad_liquid_water', 'liquid_water_rad')
-	call cpy_var ('rad_water_vapor', 'water_vapor_rad')
-	call cpy_var ('ssha')
-	call cpy_var ('ssha_mle3')
+	call cpy_var (ncid, 'swh_rms_ku')
+	call cpy_var (ncid, 'swh_rms_ku_mle3', mle3)
+	call cpy_var (ncid, 'swh_rms_c')
+	call cpy_var (ncid, 'sig0_rms_ku')
+	call cpy_var (ncid, 'sig0_rms_ku_mle3', mle3)
+	call cpy_var (ncid, 'sig0_rms_c')
+	call cpy_var (ncid, 'off_nadir_angle_wf_ku', 'off_nadir_angle2_wf_ku')
+	call cpy_var (ncid, 'atmos_corr_sig0_ku', 'dsig0_atmos_ku')
+	call cpy_var (ncid, 'atmos_corr_sig0_c', 'dsig0_atmos_c')
+	call cpy_var (ncid, 'rad_liquid_water', 'liquid_water_rad')
+	call cpy_var (ncid, 'rad_water_vapor', 'water_vapor_rad')
+	call cpy_var (ncid, 'ssha')
+	call cpy_var (ncid, 'ssha_mle3')
 	a = latency
 	call new_var ('latency', a)
 
