@@ -48,6 +48,7 @@ devel/rads_gen_h2
 devel/rads_gen_jason
 devel/rads_gen_reaper
 devel/rads_gen_s3
+devel/rads_gen_s6
 devel/rads_gen_saral
 devel/rads_gen_tx_rgdr
 devel/s3combine
