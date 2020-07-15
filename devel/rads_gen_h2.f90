@@ -84,7 +84,7 @@ character(len=rads_cmdl) :: infile, arg
 
 ! Header variables
 
-integer(fourbyteint) :: cyclenr, passnr, varid
+integer(fourbyteint) :: ncid, cyclenr, passnr, varid
 real(eightbytereal) :: equator_time, x0, x1
 
 ! Other local variables
@@ -185,100 +185,100 @@ do
 ! Compile flag bits
 
 	flags = 0
-	call nc2f ('alt_state_flag',0)			! bit  0: Altimeter mode
-!	call nc2f ('val_alt_off_nadir_angle_wf_ocean_01_plrm_ku',1)	! bit  1: Quality off-nadir pointing
-!	call nc2f ('surf_type_01',2,eq=2)				! bit  2: Continental ice
-!	call nc2f ('range_ocean_qual_01_c',3)			! bit  3: Quality dual-frequency iono
-	call nc2f ('surface_type',4,ge=2)				! bit  4: Water/land
-	call nc2f ('surface_type',5,ge=1)				! bit  5: Ocean/other
-	call nc2f ('rad_surf_type',6,ge=2)				! bit  6: Radiometer land flag
-	call nc2f ('rain_flag',7)
-	call nc2f ('ice_flag',7)						! bit  7: Altimeter rain or ice flag
-	call nc2f ('rain_flag',8)						! bit  8: Altimeter rain flag
-!	call nc2f ('tb_238_quality_flag_01',9)			! bit  9: Quality 23.8 GHz channel
-!	call nc2f ('tb_365_quality_flag_01',10)			! bit 10: Quality 36.5 GHz channel
-	call nc2f ('alt_echo_type',11)					! bit 11: Quality range
-!	call nc2f ('swh_ocean_qual_01_plrm_ku',12)		! bit 12: Quality SWH
-!	call nc2f ('sig0_ocean_qual_01_plrm_ku',13)		! bit 13: Quality Sigma0
-!	call nc2f ('orb_state_flag',15,ge=1)			! bit 15: Quality orbit
+	call nc2f (ncid, 'alt_state_flag',0)			! bit  0: Altimeter mode
+!	call nc2f (ncid, 'val_alt_off_nadir_angle_wf_ocean_01_plrm_ku',1)	! bit  1: Quality off-nadir pointing
+!	call nc2f (ncid, 'surf_type_01',2,eq=2)				! bit  2: Continental ice
+!	call nc2f (ncid, 'range_ocean_qual_01_c',3)			! bit  3: Quality dual-frequency iono
+	call nc2f (ncid, 'surface_type',4,ge=2)				! bit  4: Water/land
+	call nc2f (ncid, 'surface_type',5,ge=1)				! bit  5: Ocean/other
+	call nc2f (ncid, 'rad_surf_type',6,ge=2)				! bit  6: Radiometer land flag
+	call nc2f (ncid, 'rain_flag',7)
+	call nc2f (ncid, 'ice_flag',7)						! bit  7: Altimeter rain or ice flag
+	call nc2f (ncid, 'rain_flag',8)						! bit  8: Altimeter rain flag
+!	call nc2f (ncid, 'tb_238_quality_flag_01',9)			! bit  9: Quality 23.8 GHz channel
+!	call nc2f (ncid, 'tb_365_quality_flag_01',10)			! bit 10: Quality 36.5 GHz channel
+	call nc2f (ncid, 'alt_echo_type',11)					! bit 11: Quality range
+!	call nc2f (ncid, 'swh_ocean_qual_01_plrm_ku',12)		! bit 12: Quality SWH
+!	call nc2f (ncid, 'sig0_ocean_qual_01_plrm_ku',13)		! bit 13: Quality Sigma0
+!	call nc2f (ncid, 'orb_state_flag',15,ge=1)			! bit 15: Quality orbit
 	a = flags
 	call new_var ('flags', a)
 
 ! Convert all the necessary fields to RADS
 	call get_var (ncid, 'time', a)
 	call new_var ('time', a + sec2000)
-	call cpy_var ('latitude', 'lat')
-	call cpy_var ('longitude','lon')
-	call cpy_var ('altitude', 'alt_gdrd')
+	call cpy_var (ncid, 'latitude', 'lat')
+	call cpy_var (ncid, 'longitude','lon')
+	call cpy_var (ncid, 'altitude', 'alt_gdrd')
 	call get_var (ncid, 'orb_alt_rate', a)
 	call new_var ('alt_rate', a * 1d-2)	! Convert cm/s to m/s
-	call cpy_var ('range_ku')
-	call cpy_var ('range_c')
-	call cpy_var ('range_rms_ku')
-	call cpy_var ('range_rms_c')
-	call cpy_var ('range_numval_ku')
-	call cpy_var ('range_numval_c')
-	call cpy_var ('net_instr_corr_ku', 'drange_ku')
-	call cpy_var ('net_instr_corr_c', 'drange_c')
+	call cpy_var (ncid, 'range_ku')
+	call cpy_var (ncid, 'range_c')
+	call cpy_var (ncid, 'range_rms_ku')
+	call cpy_var (ncid, 'range_rms_c')
+	call cpy_var (ncid, 'range_numval_ku')
+	call cpy_var (ncid, 'range_numval_c')
+	call cpy_var (ncid, 'net_instr_corr_ku', 'drange_ku')
+	call cpy_var (ncid, 'net_instr_corr_c', 'drange_c')
 
-	call cpy_var ('model_dry_tropo_corr', 'dry_tropo_ecmwf')
-	call cpy_var ('model_wet_tropo_corr', 'wet_tropo_ecmwf')
-	call cpy_var ('rad_wet_tropo_corr', 'wet_tropo_rad')
-	call cpy_var ('iono_corr_alt_ku', 'iono_alt')
-	call cpy_var ('sea_state_bias_ku', 'ssb_cls')
-	call cpy_var ('sea_state_bias_c', 'ssb_cls_c')
+	call cpy_var (ncid, 'model_dry_tropo_corr', 'dry_tropo_ecmwf')
+	call cpy_var (ncid, 'model_wet_tropo_corr', 'wet_tropo_ecmwf')
+	call cpy_var (ncid, 'rad_wet_tropo_corr', 'wet_tropo_rad')
+	call cpy_var (ncid, 'iono_corr_alt_ku', 'iono_alt')
+	call cpy_var (ncid, 'sea_state_bias_ku', 'ssb_cls')
+	call cpy_var (ncid, 'sea_state_bias_c', 'ssb_cls_c')
 
-	call cpy_var ('swh_ku')
-	call cpy_var ('swh_c')
-	call cpy_var ('swh_rms_ku')
-	call cpy_var ('swh_rms_c')
-!	call cpy_var ('swh_numval_ku')
-!	call cpy_var ('swh_numval_c')
-	call cpy_var ('net_instr_corr_swh_ku', 'dswh_ku')
-	call cpy_var ('net_instr_corr_swh_c', 'dswh_c')
+	call cpy_var (ncid, 'swh_ku')
+	call cpy_var (ncid, 'swh_c')
+	call cpy_var (ncid, 'swh_rms_ku')
+	call cpy_var (ncid, 'swh_rms_c')
+!	call cpy_var (ncid, 'swh_numval_ku')
+!	call cpy_var (ncid, 'swh_numval_c')
+	call cpy_var (ncid, 'net_instr_corr_swh_ku', 'dswh_ku')
+	call cpy_var (ncid, 'net_instr_corr_swh_c', 'dswh_c')
 
-	call cpy_var ('sig0_ku')
-	call cpy_var ('sig0_c')
-	call cpy_var ('sig0_rms_ku')
-	call cpy_var ('sig0_rms_c')
-!	call cpy_var ('sig0_numval_ku')
-!	call cpy_var ('sig0_numval_c')
-	call cpy_var ('net_instr_sig0_corr_ku', 'dsig0_ku')
-	call cpy_var ('net_instr_sig0_corr_c', 'dsig0_c')
-	call cpy_var ('atmos_sig0_corr_ku', 'dsig0_atmos_ku')
-	call cpy_var ('atmos_sig0_corr_c', 'dsig0_atmos_c')
+	call cpy_var (ncid, 'sig0_ku')
+	call cpy_var (ncid, 'sig0_c')
+	call cpy_var (ncid, 'sig0_rms_ku')
+	call cpy_var (ncid, 'sig0_rms_c')
+!	call cpy_var (ncid, 'sig0_numval_ku')
+!	call cpy_var (ncid, 'sig0_numval_c')
+	call cpy_var (ncid, 'net_instr_sig0_corr_ku', 'dsig0_ku')
+	call cpy_var (ncid, 'net_instr_sig0_corr_c', 'dsig0_c')
+	call cpy_var (ncid, 'atmos_sig0_corr_ku', 'dsig0_atmos_ku')
+	call cpy_var (ncid, 'atmos_sig0_corr_c', 'dsig0_atmos_c')
 
-	call cpy_var ('off_nadir_angle_ku_wvf', 'off_nadir_angle2_wf_ku')
-	call cpy_var ('off_nadir_angle_ptf', 'off_nadir_angle2_pf')
+	call cpy_var (ncid, 'off_nadir_angle_ku_wvf', 'off_nadir_angle2_wf_ku')
+	call cpy_var (ncid, 'off_nadir_angle_ptf', 'off_nadir_angle2_pf')
 
-	call cpy_var ('tb_187')
-	call cpy_var ('tb_238')
-	call cpy_var ('tb_370')
+	call cpy_var (ncid, 'tb_187')
+	call cpy_var (ncid, 'tb_238')
+	call cpy_var (ncid, 'tb_370')
 
-	call cpy_var ('mean_sea_surface', 'mss_cnescls11')
-	call cpy_var ('geoid', 'geoid_egm2008')
-	call cpy_var ('bathymetry', 'topo_etopo1')
+	call cpy_var (ncid, 'mean_sea_surface', 'mss_cnescls11')
+	call cpy_var (ncid, 'geoid', 'geoid_egm2008')
+	call cpy_var (ncid, 'bathymetry', 'topo_etopo1')
 
-	call cpy_var ('inv_bar_corr', 'inv_bar_static')
-	call cpy_var ('inv_bar_corr hf_fluctuations_corr ADD', 'inv_bar_mog2d')
+	call cpy_var (ncid, 'inv_bar_corr', 'inv_bar_static')
+	call cpy_var (ncid, 'inv_bar_corr hf_fluctuations_corr ADD', 'inv_bar_mog2d')
 
-	call cpy_var ('ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got00')
-	call cpy_var ('ocean_tide_sol2 load_tide_sol2 SUB', 'tide_ocean_fes04')
-	call cpy_var ('ocean_tide_eq_lp', 'tide_equil')
-	call cpy_var ('ocean_tide_neq_lp', 'tide_non_equil')
-	call cpy_var ('load_tide_sol1', 'tide_load_got00')
-	call cpy_var ('load_tide_sol2', 'tide_load_fes04')
-	call cpy_var ('solid_earth_tide', 'tide_solid')
-	call cpy_var ('pole_tide', 'tide_pole')
+	call cpy_var (ncid, 'ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got00')
+	call cpy_var (ncid, 'ocean_tide_sol2 load_tide_sol2 SUB', 'tide_ocean_fes04')
+	call cpy_var (ncid, 'ocean_tide_eq_lp', 'tide_equil')
+	call cpy_var (ncid, 'ocean_tide_neq_lp', 'tide_non_equil')
+	call cpy_var (ncid, 'load_tide_sol1', 'tide_load_got00')
+	call cpy_var (ncid, 'load_tide_sol2', 'tide_load_fes04')
+	call cpy_var (ncid, 'solid_earth_tide', 'tide_solid')
+	call cpy_var (ncid, 'pole_tide', 'tide_pole')
 
-	call cpy_var ('wind_speed_model_u', 'wind_speed_ecmwf_u')
-	call cpy_var ('wind_speed_model_v', 'wind_speed_ecmwf_v')
-	call cpy_var ('wind_speed_alt')
-	call cpy_var ('wind_speed_rad')
-	call cpy_var ('rad_water_vapor', 'water_vapor_rad')
-	call cpy_var ('rad_liquid_water', 'liquid_water_rad')
+	call cpy_var (ncid, 'wind_speed_model_u', 'wind_speed_ecmwf_u')
+	call cpy_var (ncid, 'wind_speed_model_v', 'wind_speed_ecmwf_v')
+	call cpy_var (ncid, 'wind_speed_alt')
+	call cpy_var (ncid, 'wind_speed_rad')
+	call cpy_var (ncid, 'rad_water_vapor', 'water_vapor_rad')
+	call cpy_var (ncid, 'rad_liquid_water', 'liquid_water_rad')
 
-	call cpy_var ('ssha')
+	call cpy_var (ncid, 'ssha')
 
 ! Dump the data
 

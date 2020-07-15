@@ -310,27 +310,27 @@ allocate (tmp(nrec))
 ! Time and orbit: Low rate (cont'd)
 
 call new_var ('time', a)
-call cpy_var ('lat', 'lat')
+call cpy_var (ncid, 'lat', 'lat')
 ! Compute ellipsoid corrections
 do i = 1,nrec
 	dh(i) = dhellips(1,tmp(i))
 enddo
-call cpy_var ('lon', 'lon')
+call cpy_var (ncid, 'lon', 'lon')
 call get_var (ncid, 'alt', a)
 call new_var ('alt_reaper', a+dh)
-call cpy_var ('orb_alt_rate', 'alt_rate')
+call cpy_var (ncid, 'orb_alt_rate', 'alt_rate')
 
 ! Range data: Low rate
 
 call get_var (ncid, 'ocean_range_numval', c)
-call cpy_var ('ocean_range', 'range_ku')
-call cpy_var ('ocean_range_rms', 'range_rms_ku', c <= 1)
-call cpy_var ('ocean_range_numval', 'range_numval_ku')
+call cpy_var (ncid, 'ocean_range', 'range_ku')
+call cpy_var (ncid, 'ocean_range_rms', 'range_rms_ku', c <= 1)
+call cpy_var (ncid, 'ocean_range_numval', 'range_numval_ku')
 
 ! Retracking info: Low rate
 
-if (mle == 'MLE4') call cpy_var ('off_nadir_angle_wf', 'off_nadir_angle2_wf_ku')
-call cpy_var ('peakiness', 'peakiness_ku')
+if (mle == 'MLE4') call cpy_var (ncid, 'off_nadir_angle_wf', 'off_nadir_angle2_wf_ku')
+call cpy_var (ncid, 'peakiness', 'peakiness_ku')
 
 ! Retracking info: High rate
 
@@ -350,39 +350,39 @@ endif
 
 ! Sigma zero: Low rate
 
-call cpy_var ('ocean_sig0', 'sig0_ku')
+call cpy_var (ncid, 'ocean_sig0', 'sig0_ku')
 call get_var (ncid, 'ocean_sig0_numval', c)
-call cpy_var ('ocean_sig0_rms', 'sig0_rms_ku', c <= 1)
-call cpy_var ('wind_speed_alt', 'wind_speed_alt', c == 0)
+call cpy_var (ncid, 'ocean_sig0_rms', 'sig0_rms_ku', c <= 1)
+call cpy_var (ncid, 'wind_speed_alt', 'wind_speed_alt', c == 0)
 
 ! SWH: Low rate
 
-call cpy_var ('swh_signed', 'swh_ku')
+call cpy_var (ncid, 'swh_signed', 'swh_ku')
 call get_var (ncid, 'swh_numval', c)
-call cpy_var ('swh_rms', 'swh_rms_ku', c <= 1)
+call cpy_var (ncid, 'swh_rms', 'swh_rms_ku', c <= 1)
 
 ! MWR: Low rate
 
 call get_var (ncid, 'rad_state_flag_orb_prop', a)
 call get_var (ncid, 'rad_state_flag_orb_init', b)
 call get_var (ncid, 'rad_state_flag_l2_proc_error rad_state_validity ADD rad_state_bt_check ADD', c)
-call cpy_var ('tb_238', 'tb_238', a == 2d0 .or. b == 2d0 .or. c > 0d0)
-call cpy_var ('tb_365', 'tb_365', a == 2d0 .or. b == 2d0 .or. c > 0d0)
+call cpy_var (ncid, 'tb_238', 'tb_238', a == 2d0 .or. b == 2d0 .or. c > 0d0)
+call cpy_var (ncid, 'tb_365', 'tb_365', a == 2d0 .or. b == 2d0 .or. c > 0d0)
 
 ! Atmospheric and geophysical: Low rate
 
-call cpy_var ('model_dry_tropo_corr', 'dry_tropo_era')
-call cpy_var ('inv_bar_corr', 'inv_bar_static')
-call cpy_var ('hf_fluctuations_corr', 'inv_bar_mog2d')	! This is in contrast with standard_name, but supported by comment
-call cpy_var ('model_wet_tropo_corr', 'wet_tropo_era')
-call cpy_var ('rad_wet_tropo_corr', 'wet_tropo_rad')
-call cpy_var ('rad_water_vapor', 'water_vapor_rad')
-call cpy_var ('rad_liquid_water', 'liquid_water_rad')
-call cpy_var ('wind_speed_model_u', 'wind_speed_ecmwf_u')
-call cpy_var ('wind_speed_model_v', 'wind_speed_ecmwf_v')
-call cpy_var ('iono_corr_model', 'iono_nic09')
+call cpy_var (ncid, 'model_dry_tropo_corr', 'dry_tropo_era')
+call cpy_var (ncid, 'inv_bar_corr', 'inv_bar_static')
+call cpy_var (ncid, 'hf_fluctuations_corr', 'inv_bar_mog2d')	! This is in contrast with standard_name, but supported by comment
+call cpy_var (ncid, 'model_wet_tropo_corr', 'wet_tropo_era')
+call cpy_var (ncid, 'rad_wet_tropo_corr', 'wet_tropo_rad')
+call cpy_var (ncid, 'rad_water_vapor', 'water_vapor_rad')
+call cpy_var (ncid, 'rad_liquid_water', 'liquid_water_rad')
+call cpy_var (ncid, 'wind_speed_model_u', 'wind_speed_ecmwf_u')
+call cpy_var (ncid, 'wind_speed_model_v', 'wind_speed_ecmwf_v')
+call cpy_var (ncid, 'iono_corr_model', 'iono_nic09')
 if (start_time >= 430880400d0) then	! After 1998-08-28 01:00:00 get GIM iono
-	call cpy_var ('iono_corr_gps', 'iono_gim')
+	call cpy_var (ncid, 'iono_corr_gps', 'iono_gim')
 endif
 call get_var (ncid, 'mean_sea_surface_1', a)
 call new_var ('mss_cls01', a+dh)
@@ -391,17 +391,17 @@ call new_var ('mss_ucl04', a+dh)
 call get_var (ncid, 'geoid', a)
 call new_var ('geoid_egm2008', a+dh)
 ! Need to recombine to OT+LPT
-call cpy_var ('ocean_tide_sol1 ocean_tide_equil ADD tide_non_equil ADD', 'tide_ocean_got47')
-call cpy_var ('load_tide_sol1', 'tide_load_got47')
-call cpy_var ('ocean_tide_sol2 ocean_tide_equil ADD tide_non_equil ADD', 'tide_ocean_fes04')
-call cpy_var ('load_tide_sol2', 'tide_load_fes04')
-call cpy_var ('ocean_tide_equil', 'tide_equil')
-call cpy_var ('ocean_tide_non_equil', 'tide_non_equil')
-call cpy_var ('solid_earth_tide', 'tide_solid')
-call cpy_var ('pole_tide', 'tide_pole')
+call cpy_var (ncid, 'ocean_tide_sol1 ocean_tide_equil ADD tide_non_equil ADD', 'tide_ocean_got47')
+call cpy_var (ncid, 'load_tide_sol1', 'tide_load_got47')
+call cpy_var (ncid, 'ocean_tide_sol2 ocean_tide_equil ADD tide_non_equil ADD', 'tide_ocean_fes04')
+call cpy_var (ncid, 'load_tide_sol2', 'tide_load_fes04')
+call cpy_var (ncid, 'ocean_tide_equil', 'tide_equil')
+call cpy_var (ncid, 'ocean_tide_non_equil', 'tide_non_equil')
+call cpy_var (ncid, 'solid_earth_tide', 'tide_solid')
+call cpy_var (ncid, 'pole_tide', 'tide_pole')
 
-call cpy_var ('bathymetry', 'topo_macess')
-call cpy_var ('sea_state_bias', 'ssb_hyb')
+call cpy_var (ncid, 'bathymetry', 'topo_macess')
+call cpy_var (ncid, 'sea_state_bias', 'ssb_hyb')
 
 ! Atmospheric correction is a factor 100 too small (wrong scale_factor)
 call get_var (ncid, 'atmos_corr_sig0', a)
@@ -547,7 +547,8 @@ end subroutine put_rads
 ! Copy variable to RADS
 !-----------------------------------------------------------------------
 
-subroutine cpy_var (varin, varout, invalid)
+subroutine cpy_var (ncid, varin, varout, invalid)
+integer(fourbyteint), intent(in) :: ncid
 character(len=*), intent(in) :: varin, varout
 logical, optional :: invalid(:)
 call get_var (ncid, varin, tmp)

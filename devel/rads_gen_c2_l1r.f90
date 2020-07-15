@@ -261,15 +261,15 @@ do
 
 ! Location information
 
-	call cpy_var ('lat', 'lat')
+	call cpy_var (ncid, 'lat', 'lat')
 
 	! Compute ellipsoid corrections
 	do i = 1,nrec
 		dh(i) = dhellips(1,a(i))
 	enddo
-	call cpy_var ('lat_20hz', 'lat_20hz')
-	call cpy_var ('lon', 'lon')
-	call cpy_var ('lon_20hz', 'lon_20hz')
+	call cpy_var (ncid, 'lat_20hz', 'lat_20hz')
+	call cpy_var (ncid, 'lon', 'lon')
+	call cpy_var (ncid, 'lon_20hz', 'lon_20hz')
 	call get_var (ncid, 'alt', alt)
 	call get_var (ncid, 'alt_20hz', alt_20hz)
 
@@ -278,7 +278,7 @@ do
 	if (fdm .and. doris_nav == 0) dh = nan
 
 	! Update altitude, taking into account ellipsoid correction and timing bias
-	call cpy_var ('alt_rate_20hz', '', 'alt_rate')
+	call cpy_var (ncid, 'alt_rate_20hz', '', 'alt_rate')
 	call new_var ('alt_cnes', alt + dh + tbias * a)
 	if (nhz /= 0) then
 		forall (i = 1:20) d(i,:) = alt_20hz(i,:) + dh(:) + tbias * d(i,:)
@@ -287,8 +287,8 @@ do
 
 ! 20-Hz corrections
 
-	call cpy_var ('instr_range_corr_20hz', '', 'drange_cal')
-	call cpy_var ('doppler_corr_20hz', '', 'drange_fm')
+	call cpy_var (ncid, 'instr_range_corr_20hz', '', 'drange_cal')
+	call cpy_var (ncid, 'doppler_corr_20hz', '', 'drange_fm')
 
 ! Compile flag bits; needs to be done BEFORE any averaging of the measurements
 
@@ -353,12 +353,12 @@ do
 
 ! Waves and backscatter
 
-	call cpy_var ('swh_20hz', 'swh_20hz_ku', 'swh_ku', 'swh_rms_ku')
-	call cpy_var ('agc_20hz', '', 'agc_ku')
-	call cpy_var ('agc_amp_20hz dagc_eta_20hz ADD dagc_alt_20hz ADD dagc_xi_20hz ADD dagc_swh_20hz ADD', &
+	call cpy_var (ncid, 'swh_20hz', 'swh_20hz_ku', 'swh_ku', 'swh_rms_ku')
+	call cpy_var (ncid, 'agc_20hz', '', 'agc_ku')
+	call cpy_var (ncid, 'agc_amp_20hz dagc_eta_20hz ADD dagc_alt_20hz ADD dagc_xi_20hz ADD dagc_swh_20hz ADD', &
 		'sig0_20hz_ku', 'sig0_ku', 'sig0_rms_ku')
 
-	if (mle == 4) call cpy_var ('xi_sq_20hz', '', 'off_nadir_angle2_wf_ku', 'off_nadir_angle2_wf_rms_ku')
+	if (mle == 4) call cpy_var (ncid, 'xi_sq_20hz', '', 'off_nadir_angle2_wf_ku', 'off_nadir_angle2_wf_rms_ku')
 
 ! Convert pitch, roll, yaw from microradian to degrees and remove bias when MLE3
 
@@ -411,9 +411,9 @@ do
 
 ! Waveform-related info
 
-	call cpy_var ('peakiness_20hz', 'peakiness_20hz_ku', 'peakiness_ku')
-	call cpy_var ('mqe_20hz', 'mqe_20hz_ku', 'mqe')
-	call cpy_var ('noise_20hz', 'noise_floor_20hz_ku', 'noise_floor_ku', 'noise_floor_rms_ku')
+	call cpy_var (ncid, 'peakiness_20hz', 'peakiness_20hz_ku', 'peakiness_ku')
+	call cpy_var (ncid, 'mqe_20hz', 'mqe_20hz_ku', 'mqe')
+	call cpy_var (ncid, 'noise_20hz', 'noise_floor_20hz_ku', 'noise_floor_ku', 'noise_floor_rms_ku')
 
 ! We go back to using very limited editing now to dump waveforms
 
@@ -421,25 +421,25 @@ do
 	if (nwvf > 0) then
 		call get_var (ncid, 'range_20hz', d)
 		call new_var_2d ('range_tracker_20hz_ku', d + uso_corr + range_bias)
-		call cpy_var ('agc_20hz', 'agc_20hz_ku')
-		call cpy_var ('echo_scale_20hz', 'waveform_scale_20hz')
-		call cpy_var ('waveform_20hz', 'waveform_20hz')
+		call cpy_var (ncid, 'agc_20hz', 'agc_20hz_ku')
+		call cpy_var (ncid, 'echo_scale_20hz', 'waveform_scale_20hz')
+		call cpy_var (ncid, 'waveform_20hz', 'waveform_20hz')
 	endif
 
 ! Geophysical corrections
 
-	call cpy_var ('dry_tropo', 'dry_tropo_ecmwf')
-	call cpy_var ('wet_tropo', 'wet_tropo_ecmwf')
-	call cpy_var ('iono_model', 'iono_bent')
-	call cpy_var ('iono_gim', 'iono_gim')
-	call cpy_var ('inv_baro', 'inv_bar_static')
+	call cpy_var (ncid, 'dry_tropo', 'dry_tropo_ecmwf')
+	call cpy_var (ncid, 'wet_tropo', 'wet_tropo_ecmwf')
+	call cpy_var (ncid, 'iono_model', 'iono_bent')
+	call cpy_var (ncid, 'iono_gim', 'iono_gim')
+	call cpy_var (ncid, 'inv_baro', 'inv_bar_static')
 
-	if (.not.fdm) call cpy_var ('inv_baro dac ADD','inv_bar_mog2d')
-	call cpy_var ('tide_solid', 'tide_solid')
-	call cpy_var ('tide_ocean', 'tide_ocean_got00')
-	call cpy_var ('tide_load', 'tide_load_got00')
-	call cpy_var ('tide_pole', 'tide_pole')
-	call cpy_var ('tide_lp', 'tide_equil')
+	if (.not.fdm) call cpy_var (ncid, 'inv_baro dac ADD','inv_bar_mog2d')
+	call cpy_var (ncid, 'tide_solid', 'tide_solid')
+	call cpy_var (ncid, 'tide_ocean', 'tide_ocean_got00')
+	call cpy_var (ncid, 'tide_load', 'tide_load_got00')
+	call cpy_var (ncid, 'tide_pole', 'tide_pole')
+	call cpy_var (ncid, 'tide_lp', 'tide_equil')
 
 	! Add current filename to list of input files
 
@@ -522,7 +522,7 @@ end subroutine synopsis
 ! Copy variable to RADS
 !-----------------------------------------------------------------------
 
-subroutine cpy_var (varin, varout, varmean, varrms)
+subroutine cpy_var (ncid, varin, varout, varmean, varrms)
 ! Copy 1-Hz data to memory buffer, or
 ! copy 20-Hz data or waveforms to memory buffer, optionally
 ! making mean and standard deviation.
@@ -531,6 +531,7 @@ subroutine cpy_var (varin, varout, varmean, varrms)
 ! b = 1-Hz stddev
 ! d = 20-Hz
 ! w = waveform
+integer(fourbyteint), intent(in) :: ncid
 character(len=*), intent(in) :: varin, varout
 character(len=*), intent(in), optional :: varmean, varrms
 if (index(varin,'_20hz') == 0) then
