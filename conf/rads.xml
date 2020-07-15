@@ -58,10 +58,10 @@ Global RADS configuration file
 	<data>alt range SUB dry_tropo SUB wet_tropo SUB iono SUB dac SUB tide_solid SUB tide_ocean SUB tide_load SUB
 		tide_pole SUB ssb SUB mss SUB ref_frame_offset SUB</data>
 	<quality_flag>swh sig0 range_rms range_numval flags</quality_flag>
-	<quality_flag sat="3a 3b e1 e2 g1 j1 j2 j3 n1 tx" action="append">swh_rms</quality_flag>
-	<quality_flag sat="3a 3b j1 j2 j3" action="append">sig0_rms</quality_flag>
-	<quality_flag sat="e2 j1 j2 j3" action="append">attitude</quality_flag><!--attitude not included for Sentinel-3 because there is no altimeter value in SAR mode (only PLRM)-->
-	<quality_flag sat="c2 n1 sa" action="append">peakiness</quality_flag>
+	<quality_flag sat="3a 3b 6a 6b e1 e2 g1 j1 j2 j3 n1 tx" action="append">swh_rms</quality_flag>
+	<quality_flag sat="3a 3b 6a 6b j1 j2 j3" action="append">sig0_rms</quality_flag>
+	<quality_flag sat="e2 j1 j2 j3" action="append">attitude</quality_flag><!--attitude not included for Sentinel-3/6 because there is no altimeter value in SAR mode (only PLRM)-->
+	<quality_flag sat="c2 6a 6b n1 sa" action="append">peakiness</quality_flag>
 	<comment>Sea level determined from satellite altitude - range - all altimetric corrections</comment>
 </var>
 <var name="sla_20hz" sat="c2">
@@ -77,7 +77,7 @@ Global RADS configuration file
 	<quality_flag>swh sig0 range_rms range_numval flags peakiness</quality_flag>
 	<comment>Sea level determined from satellite 20-Hz altitude - 20-Hz range - all altimetric corrections</comment>
 </var>
-<var name="sla_mle3" sat="j2 j3">
+<var name="sla_mle3" sat="6a 6b j2 j3">
 	<long_name>sea level anomaly (MLE3)</long_name>
 	<standard_name>sea_surface_height_above_sea_level</standard_name>
 	<units>m</units>
@@ -129,7 +129,7 @@ Global RADS configuration file
 	<comment>Sea level determined from satellite 20-Hz altitude - 20-Hz range - all altimetric corrections.
 		These values were computed when the data set was created, in contrast to the sla_20hz variable.</comment>
 </var>
-<var name="ssha_mle3" sat="j2 j3">
+<var name="ssha_mle3" sat="6a 6b j2 j3">
 	<long_name>sea surface height anomaly (MLE3)</long_name>
 	<standard_name>sea_surface_height_above_sea_level</standard_name>
 	<units>m</units>
@@ -338,7 +338,7 @@ Global RADS configuration file
 	<compress>int4 1e-3</compress>
 	<compress sat="2a">int4 1e-4 900e3</compress>
 	<compress sat="c2">int4 1e-4 700e3</compress>
-	<compress sat="j3">int4 1e-4 1300e3</compress>
+	<compress sat="6a 6b j3">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_pgs7777" field="410" sat="g1">
@@ -515,7 +515,7 @@ Global RADS configuration file
 	<compress sat="j1 j2 pn tx">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_gdrf" field="427" sat="3a 3b c2 j3">
+<var name="alt_gdrf" field="427" sat="3a 3b 6a 6b c2 j3">
 	<long_name>CNES GDR-F orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>CNES, GDR-F standards</source>
@@ -524,12 +524,13 @@ Global RADS configuration file
 	<data>alt_gdrf</data>
 	<format>f12.4</format>
 	<compress>int4 1e-4 700e3</compress>
-	<compress sat="j1 j2 j3 tx">int4 1e-4 1300e3</compress>
+	<compress sat="6a 6b j1 j2 j3 tx">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <alias name="alt" field="4" sat="2a tx.r50">alt_gdrd</alias>
 <alias name="alt" field="4" sat="3a 3b c2">alt_gdrf alt_gdre</alias>
 <alias name="alt" field="4" sat="j3 sa">alt_gdre</alias>
+<alias name="alt" field="4" sat="6a 6b">alt_gdrf</alias>
 <alias name="alt" field="4" sat="c2">alt_gdre alt_cnes</alias>
 <alias name="alt" field="4" sat="e1 e2">alt_reaper alt_gfz</alias>
 <alias name="alt" field="4" sat="g1">alt_pgs7777</alias>
@@ -593,12 +594,12 @@ Global RADS configuration file
 		<limits>750e3 850e3</limits>
 		<limits sat="c2">700e3 800e3</limits>
 		<limits sat="2a">950e3 1050e3</limits>
-		<limits sat="j1 j2 j3 pn tx">1300e3 1400e3</limits>
+		<limits sat="6a 6b j1 j2 j3 pn tx">1300e3 1400e3</limits>
 		<data>range_ku</data>
 		<format>f12.4</format>
 		<compress>int4 1e-4 700e3</compress>
 		<compress sat="2a">int4 1e-4 900e3</compress>
-		<if sat="j1 j2 j3 pn tx">
+		<if sat="6a 6b j1 j2 j3 pn tx">
 			<format>f12.4</format>
 			<compress>int4 1e-4 1300e3</compress>
 		</if>
@@ -614,12 +615,12 @@ Global RADS configuration file
 	<format>f12.4</format>
 	<compress>int4 1e-4 1300e3</compress>
 </var>
-<var name="range_c" field="602" sat="2a 3a 3b j1 j2 j3 tx">
+<var name="range_c" field="602" sat="2a 3a 3b 6a 6b j1 j2 j3 tx">
 	<long_name>C-band range corrected for instr. effects</long_name>
 	<standard_name>altimeter_range</standard_name>
 	<units>m</units>
 	<limits>1300e3 1400e3</limits>
-	<limits sat="3a 3b">750e3 850e3</limits>
+	<limits sat="2a 3a 3b">750e3 850e3</limits>
 	<data>range_c</data>
 	<format>f12.4</format>
 	<compress>int4 1e-4 1300e3</compress>
@@ -651,7 +652,7 @@ Global RADS configuration file
 	<format>f11.3</format>
 	<compress>int3 1e-3</compress>
 </var>
-<var name="range_ku_mle3" field="611" sat="j2 j3">
+<var name="range_ku_mle3" field="611" sat="6a 6b j2 j3">
 	<long_name>Ku-band range corrected for instr. effects (MLE3)</long_name>
 	<standard_name>altimeter_range</standard_name>
 	<units>m</units>
@@ -917,7 +918,7 @@ Global RADS configuration file
 <alias name="wet_tropo" field="8" sat="gs">wet_tropo_era</alias>
 <alias name="wet_tropo_plrm" sat="3a 3b">wet_tropo_rad_plrm wet_tropo_rad</alias>
 
-<var name="iono_alt" field="901" sat="2a 3a 3b j1 j2 j3 n1 tx">
+<var name="iono_alt" field="901" sat="2a 3a 3b 6a 6b j1 j2 j3 n1 tx">
 	<long_name>dual-frequency ionospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>dual-frequency altimeter</source>
@@ -953,7 +954,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<var name="iono_alt_smooth" field="903" sat="2a 3a 3b j1 j2 j3 n1 tx">
+<var name="iono_alt_smooth" field="903" sat="2a 3a 3b 6a 6b j1 j2 j3 n1 tx">
 	<long_name>smoothed dual-frequency ionospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>dual-frequency altimeter after smoothing</source>
@@ -985,7 +986,7 @@ Global RADS configuration file
 	<parameters sat="2a">0.880</parameters>
 	<parameters sat="3a 3b">0.859</parameters>
 	<parameters sat="c2">0.844</parameters>
-	<parameters sat="j1 j2 j3 pn tx">0.925</parameters>
+	<parameters sat="6a 6b j1 j2 j3 pn tx">0.925</parameters>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
 	<plot_range>-0.15 0.02</plot_range>
@@ -994,7 +995,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<var name="iono_gim_c" sat="j1 j2 j3">
+<var name="iono_gim_c" sat="6a 6b j1 j2 j3">
 	<long_name>JPL GIM ionospheric correction (C-band)</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>JPL GIM 2-hourly maps</source>
@@ -1027,7 +1028,7 @@ Global RADS configuration file
 	<parameters sat="2a">0.880</parameters>
 	<parameters sat="3a 3b">0.859</parameters>
 	<parameters sat="c2">0.844</parameters>
-	<parameters sat="tx pn j1 j2 j3">0.925</parameters>
+	<parameters sat="6a 6b j1 j2 j3 pn tx">0.925</parameters>
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
 	<plot_range>-0.15 0.02</plot_range>
@@ -1036,7 +1037,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<var name="iono_alt_mle3" field="911" sat="j2 j3">
+<var name="iono_alt_mle3" field="911" sat="6a 6b j2 j3">
 	<long_name>dual-frequency ionospheric correction (MLE3)</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>dual-frequency altimeter</source>
@@ -1060,7 +1061,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<var name="iono_alt_smooth_mle3" field="913" sat="j2 j3">
+<var name="iono_alt_smooth_mle3" field="913" sat="6a 6b j2 j3">
 	<long_name>smoothed dual-frequency ionospheric correction (MLE3)</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>dual-frequency altimeter after smoothing</source>
@@ -1086,7 +1087,7 @@ Global RADS configuration file
 </var>
 <alias name="iono" field="9" sat="e1 gs pn">iono_nic09</alias>
 <alias name="iono" field="9" sat="c2 e2 g1 sa">iono_gim iono_nic09</alias>
-<alias name="iono" field="9" sat="2a 3a 3b j1 j2 j3 n1 tx">iono_alt_smooth iono_gim iono_nic09</alias>
+<alias name="iono" field="9" sat="2a 3a 3b 6a 6b j1 j2 j3 n1 tx">iono_alt_smooth iono_gim iono_nic09</alias>
 
 <var name="inv_bar_static" field="1002">
 	<long_name>static inverse barometer correction</long_name>
@@ -1394,7 +1395,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
-<var name="ssb_cls" field="1502" sat="2a 3a 3b j1 j2 j3 n1 tx">
+<var name="ssb_cls" field="1502" sat="2a 3a 3b 6a 6b j1 j2 j3 n1 tx">
 	<long_name>CLS non-parametric sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<source>CLS</source>
@@ -1441,7 +1442,7 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 </var>
-<var name="ssb_cls_c" field="1505" sat="2a 3a 3b j1 j2 j3">
+<var name="ssb_cls_c" field="1505" sat="2a 3a 3b 6a 6b j1 j2 j3">
 	<long_name>CLS non-parametric sea state bias (C-band)</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<source>CLS</source>
@@ -1459,7 +1460,7 @@ Global RADS configuration file
 		<comment edit="append">This model is actually based on Jason-2 data and not Sentinel-3, and will be replaced later.</comment>
 	</if>
 </var>
-<var name="ssb_cls_mle3" field="1512" sat="j2 j3">
+<var name="ssb_cls_mle3" field="1512" sat="6a 6b j2 j3">
 	<long_name>CLS non-parametric sea state bias (MLE3)</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<source>CLS</source>
@@ -1484,7 +1485,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays. This model is actually based on Jason-2 data and not Sentinel-3, and will be replaced later.</comment>
 </var>
-<var name="ssb_tran2012" field="1513" sat="j1 j2 j3">
+<var name="ssb_tran2012" field="1513" sat="6a 6b j1 j2 j3">
 	<long_name>Tran et al. 2012 non-parametric sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<if sat="j1">
@@ -1527,7 +1528,7 @@ Global RADS configuration file
 </var>
 <alias name="ssb" field="15" sat="e1 e2 pn">ssb_bm3</alias>
 <alias name="ssb" field="15" sat="c2 g1 gs sa">ssb_hyb</alias>
-<alias name="ssb" field="15" sat="2a 3a 3b j1 j2 j3 n1 tx">ssb_cls</alias>
+<alias name="ssb" field="15" sat="2a 3a 3b 6a 6b j1 j2 j3 n1 tx">ssb_cls</alias>
 
 <var name="geoid_egm96" field="1601" sat="3a 3b j2 j3 sa tx.r50">
 	<long_name>EGM96 geoid height</long_name>
@@ -1721,7 +1722,7 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<compress>int2 1e-3</compress>
 </var>
-<var name="swh_c" field="1702" sat="2a 3a 3b j1 j2 j3 tx">
+<var name="swh_c" field="1702" sat="2a 3a 3b 6a 6b j1 j2 j3 tx">
 	<long_name>C-band significant wave height</long_name>
 	<standard_name>sea_surface_wave_significant_height</standard_name>
 	<units>m</units>
@@ -1748,7 +1749,7 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<compress>int2 1e-3</compress>
 </var>
-<var name="swh_ku_mle3" field="1711" sat="j2 j3">
+<var name="swh_ku_mle3" field="1711" sat="6a 6b j2 j3">
 	<long_name>Ku-band significant wave height (MLE3)</long_name>
 	<standard_name>sea_surface_wave_significant_height</standard_name>
 	<units>m</units>
@@ -1766,7 +1767,7 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<compress>int2 1e-3</compress>
 </var>
-<var name="swh_ww3" field="1712" sat="2a 3a 3b c2 j2 j3 sa">
+<var name="swh_ww3" field="1712" sat="2a 3a 3b 6a 6b c2 j2 j3 sa">
 	<long_name>WaveWatch3 significant wave height</long_name>
 	<standard_name>sea_surface_wave_significant_height</standard_name>
 	<units>m</units>
@@ -1811,7 +1812,7 @@ Global RADS configuration file
 	</var>
 	<alias name="sig0" field="18">sig0_ku</alias>
 </else>
-<var name="sig0_c" field="1802" sat="2a 3a 3b j1 j2 j3 tx">
+<var name="sig0_c" field="1802" sat="2a 3a 3b 6a 6b j1 j2 j3 tx">
 	<long_name>C-band backscatter coefficient</long_name>
 	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 	<units>dB</units>
@@ -1860,7 +1861,7 @@ Global RADS configuration file
 	<comment>AGC setting corrected for individual biases, but not for drift</comment>
 	<dimensions>2</dimensions>
 </var>
-<var name="sig0_ku_mle3" field="1811" sat="j2 j3">
+<var name="sig0_ku_mle3" field="1811" sat="6a 6b j2 j3">
 	<long_name>Ku-band backscatter coefficient (MLE3)</long_name>
 	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 	<units>dB</units>
@@ -1913,7 +1914,7 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<compress>int2 1e-2</compress>
 </var>
-<var name="wind_speed_rad" field="1902" sat="2a j1 j2 j3 pn tx">
+<var name="wind_speed_rad" field="1902" sat="2a 6a 6b j1 j2 j3 pn tx">
 	<long_name>radiometer wind speed</long_name>
 	<standard_name>wind_speed</standard_name>
 	<source>radiometer</source>
@@ -2001,7 +2002,7 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<compress>int2 1e-2</compress>
 </var>
-<var name="wind_speed_alt_mle3" field="1911" sat="j2 j3">
+<var name="wind_speed_alt_mle3" field="1911" sat="6a 6b j2 j3">
 	<long_name>altimeter wind speed (MLE3)</long_name>
 	<standard_name>wind_speed</standard_name>
 	<source>altimeter</source>
@@ -2076,7 +2077,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Based on valid retracked high-rate measurements</comment>
 </var>
-<var name="range_rms_c" field="2004" sat="2a 3a 3b j1 j2 j3">
+<var name="range_rms_c" field="2004" sat="2a 3a 3b 6a 6b j1 j2 j3">
 	<long_name>std dev of C-band range</long_name>
 	<units>m</units>
 	<limits>0.0 0.4</limits>
@@ -2103,7 +2104,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<var name="range_rms_ku_mle3" field="2012" sat="j2 j3">
+<var name="range_rms_ku_mle3" field="2012" sat="6a 6b j2 j3">
 	<long_name>std dev of Ku-band range (MLE3)</long_name>
 	<units>m</units>
 	<limits>0.00 0.17</limits> <!--May need adjustment-->
@@ -2158,7 +2159,7 @@ Global RADS configuration file
 	</var>
 	<alias name="range_numval" field="21">range_numval_ku</alias>
 </else>
-<var name="range_numval_ku_mle3" field="2101" sat="j2 j3">
+<var name="range_numval_ku_mle3" field="2101" sat="6a 6b j2 j3">
 	<long_name>number of valid Ku-band measurements (MLE3)</long_name>
 	<standard_name>altimeter_range number_of_observations</standard_name>
 	<units>1</units>
@@ -2190,7 +2191,7 @@ Global RADS configuration file
 	<compress>int1</compress>
 </var>
 
-<var name="range_numval_c" field="2102" sat="2a 3a 3b j1 j2 j3">
+<var name="range_numval_c" field="2102" sat="2a 3a 3b 6a 6b j1 j2 j3">
 	<long_name>number of valid C-band measurements</long_name>
 	<standard_name>altimeter_range number_of_observations</standard_name>
 	<units>1</units>
@@ -2296,7 +2297,7 @@ Global RADS configuration file
 	</var>
 	<alias name="tb1">tb_180</alias>
 </if>
-<if sat="2a j1 j2 j3">
+<if sat="2a 6a 6b j1 j2 j3">
 	<var name="tb_187" field="2301">
 		<long_name>radiometer brightness temperature (18.7 GHz)</long_name>
 		<standard_name>surface_brightness_temperature</standard_name>
@@ -2336,7 +2337,7 @@ Global RADS configuration file
 	</var>
 	<alias name="tb2" field="23">tb_222</alias>
 </if>
-<if sat="2a 3a 3b e1 e2 j1 j2 j3 n1 sa">
+<if sat="2a 3a 3b 6a 6b e1 e2 j1 j2 j3 n1 sa">
 	<var name="tb_238" field="2302">
 		<long_name>radiometer brightness temperature (23.8 GHz)</long_name>
 		<standard_name>surface_brightness_temperature</standard_name>
@@ -2351,7 +2352,7 @@ Global RADS configuration file
 	<alias name="tb2" field="23">tb_238</alias>
 </if>
 
-<if sat="j1 j2 j3">
+<if sat="6a 6b j1 j2 j3">
 	<var name="tb_340" field="2303">
 		<long_name>radiometer brightness temperature (34.0 GHz)</long_name>
 		<standard_name>surface_brightness_temperature</standard_name>
@@ -2433,7 +2434,7 @@ Global RADS configuration file
 	<dimensions>2</dimensions>
 </var>
 
-<var name="flag_alt_oper_mode" field="2516" sat="3a 3b c2 e1 j1 j2 j3 n1 pn tx">
+<var name="flag_alt_oper_mode" field="2516" sat="3a 3b 6a 6b c2 e1 j1 j2 j3 n1 pn tx">
 	<long_name>altimeter operating mode</long_name>
 	<flag_values>nominal bad</flag_values>
 	<flag_values sat="3a 3b c2">LRM SAR</flag_values>
@@ -2443,6 +2444,11 @@ Global RADS configuration file
 	<data source="flags">0</data>
 	<format>z1</format>
 	<compress>int1</compress>
+	<if sat="6a 6b">
+		<flag_values sat="6a 6b">LRM RAW RMC</flag_values>
+		<data>flag_alt_oper_mode</data>
+		<plot_range>0 2</plot_range>
+	</if>
 </var>
 <var name="qual_sptr" field="2516" sat="e1 e2">
 	<long_name>SPTR availability</long_name>
@@ -2453,12 +2459,13 @@ Global RADS configuration file
 	<compress>int1</compress>
 </var>
 
-<var name="qual_attitude" field="2501" sat="3a 3b g1 gs j1 j2 j3 n1 pn sa tx">
+<var name="qual_attitude" field="2501" sat="3a 3b 6a 6b g1 gs j1 j2 j3 n1 pn sa tx">
 	<long_name>quality of attitude</long_name>
 	<flag_values>ok bad</flag_values>
 	<flag_values sat="g1 gs pn">ok suspect</flag_values>
 	<plot_range>0 1</plot_range>
 	<data source="flags">1</data>
+	<data sat="6a 6b">qual_attitude</data>
 	<format>z1</format>
 	<compress>int1</compress>
 </var>
@@ -2494,11 +2501,12 @@ Global RADS configuration file
 	</var>
 </if>
 
-<var name="qual_iono_alt" field="2503" sat="3a 3b j1 j2 j3 n1 tx">
+<var name="qual_iono_alt" field="2503" sat="3a 3b 6a 6b j1 j2 j3 n1 tx">
 	<long_name>quality of dual-frequency ionospheric correction</long_name>
 	<flag_values>ok bad</flag_values>
 	<plot_range>0 1</plot_range>
 	<data source="flags">3</data>
+	<data sat="6a 6b">qual_iono_alt</data>
 	<format>z1</format>
 	<compress>int1</compress>
 </var>
@@ -2528,9 +2536,15 @@ Global RADS configuration file
 	<data source="flags">6</data>
 	<format>z1</format>
 	<compress>int1</compress>
+	<if sat="6a 6b">
+		<long_name>radiometer surface type</long_name>
+		<flag_values>open_ocean coastal_ocean land</flag_values>
+		<data>rad_surface_type</data>
+		<plot_range>0 2</plot_range>
+	</if>
 </var>
 
-<var name="qual_alt_rain_ice" field="2507" sat="3a 3b g1 j1 j2 j3 n1 pn sa tx">
+<var name="qual_alt_rain_ice" field="2507" sat="3a 3b 6a 6b g1 j1 j2 j3 n1 pn sa tx">
 	<long_name>corruption of altimeter measurement (ice)</long_name>
 	<flag_values>no_ice ice</flag_values>
 	<plot_range>0 1</plot_range>
@@ -2541,13 +2555,20 @@ Global RADS configuration file
 		<long_name>corruption of altimeter measurement (rain/ice)</long_name>
 		<flag_values>no_rain_ice rain_ice</flag_values>
 	</if>
+	<if sat="6a 6b">
+		<long_name>altimeter rain flag</long_name>
+		<flag_values>no_rain rain high_rain_probability_from_altimeter high_probability_of_no_rain_from_altimeter ambiguous_situation_possibility_of_ice evaluation_not_possible</flag_values>
+		<plot_range>0 5</plot_range>
+		<data>qual_alt_rain_ice</data>
+	</if>
 </var>
 
-<var name="qual_rad_rain_ice" field="2508" sat="3a 3b e1 e2 j1 j2 j3 n1 pn tx">
+<var name="qual_rad_rain_ice" field="2508" sat="3a 3b 6a 6b e1 e2 j1 j2 j3 n1 pn tx">
 	<long_name>corruption of radiometer measurement (rain or ice)</long_name>
 	<flag_values>ok rain_or_ice</flag_values>
 	<plot_range>0 1</plot_range>
 	<data source="flags">8</data>
+	<data sat="6a 6b">qual_rad_rain_ice</data>
 	<format>z1</format>
 	<compress>int1</compress>
 </var>
@@ -2563,6 +2584,11 @@ Global RADS configuration file
 	<data source="flags">9 2</data>
 	<format>z1</format>
 	<compress>int1</compress>
+	<if sat="6a 6b">
+		<flag_masks>bad_tb_187 bad_tb_238 bad_tb_340</flag_masks>
+		<data>qual_rad_tb</data>
+		<plot_range>0 7</plot_range>
+	</if>
 </var>
 
 <var name="qual_range" field="2511">
@@ -2572,6 +2598,7 @@ Global RADS configuration file
 	<flag_values sat="gs">ok some_10Hz_measurements_invalid</flag_values>
 	<plot_range>0 1</plot_range>
 	<data source="flags">11</data>
+	<data sat="6a 6b">qual_range</data>
 	<format>z1</format>
 	<compress>int1</compress>
 </var>
@@ -2583,6 +2610,7 @@ Global RADS configuration file
 	<flag_values>ok suspect</flag_values>
 	<plot_range>0 1</plot_range>
 	<data source="flags">12</data>
+	<data sat="6a 6b">qual_swh</data>
 	<format>z1</format>
 	<compress>int1</compress>
 </var>
@@ -2594,6 +2622,7 @@ Global RADS configuration file
 	<flag_values>ok suspect</flag_values>
 	<plot_range>0 1</plot_range>
 	<data source="flags">13</data>
+	<data sat="6a 6b">qual_sig0</data>
 	<format>z1</format>
 	<compress>int1</compress>
 </var>
@@ -2611,7 +2640,7 @@ Global RADS configuration file
 	<compress>int1</compress>
 </var>
 
-<var name="qual_orbit" field="2515 25" sat="3a 3b c2 e1 e2 j1 pn sa">
+<var name="qual_orbit" field="2515 25" sat="3a 3b 6a 6b c2 e1 e2 j1 pn sa">
 	<long_name>quality of the orbit determination</long_name>
 	<standard_name>height_above_reference_ellipsoid status_flag</standard_name>
 	<flag_values>ok degraded</flag_values>
@@ -2619,6 +2648,11 @@ Global RADS configuration file
 	<data source="flags">15</data>
 	<format>z1</format>
 	<compress>int1</compress>
+	<if sat="6a 6b">
+		<flag_values>navatt fos_pre fos_res doris_nav roe_gnss moe_doris moe_gnss undefined poe</flag_values>
+		<plot_range>0 8</plot_range>
+		<data>qual_orbit</data>
+	</if>
 </var>
 
 <var name="surface_type" field="2517">
@@ -2641,6 +2675,15 @@ Global RADS configuration file
 	<format>z1</format>
 	<compress>int1</compress>
 	<comment>Computed from a mask built with MODIS and GlobCover data</comment>
+</var>
+
+<var name="rad_surface_type" field="2519", sat="6a 6b">
+	<long_name>radiometer surface type</long_name>
+	<flag_values>open_ocean coastal_ocean land</flag_values>
+	<data>rad_surface_type</data>
+	<plot_range>0 2</plot_range>
+	<format>z1</format>
+	<compress>int1</compress>
 </var>
 
 <var name="flags" field="2601 26">
@@ -2740,7 +2783,7 @@ Global RADS configuration file
 	<format>b16.16</format>
 	<compress>int2</compress>
 </var>
-<var name="flags_mle3" field="2611" sat="j2 j3">
+<var name="flags_mle3" field="2611" sat="6a 6b j2 j3">
 	<long_name>flag word (MLE3)</long_name>
 	<limits>65512 0</limits>
 	<data>flags_mle3</data>
@@ -2910,7 +2953,7 @@ Global RADS configuration file
 	</var>
 	<alias name="swh_rms" field="28">swh_rms_ku</alias>
 </else>
-<var name="swh_rms_c" field="2804" sat="2a 3a 3b j1 j2 j3 tx">
+<var name="swh_rms_c" field="2804" sat="2a 3a 3b 6a 6b j1 j2 j3 tx">
 	<long_name>std dev of C-band significant wave height</long_name>
 	<units>m</units>
 	<limits>0.0 2.1</limits>
@@ -2930,7 +2973,7 @@ Global RADS configuration file
 	<compress>int2 1e-3</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<var name="swh_rms_ku_mle3" field="2812" sat="j2 j3">
+<var name="swh_rms_ku_mle3" field="2812" sat="6a 6b j2 j3">
 	<long_name>std dev of Ku-band significant wave height (MLE3)</long_name>
 	<units>m</units>
 	<limits>0.0 1.5</limits> <!--Might need to be changed-->
@@ -2988,7 +3031,7 @@ Global RADS configuration file
 	</var>
 	<alias name="sig0_rms" field="29">sig0_rms_ku</alias>
 </else>
-<var name="sig0_rms_c" field="2904" sat="2a 3a 3b j1 j2 j3 tx">
+<var name="sig0_rms_c" field="2904" sat="2a 3a 3b 6a 6b j1 j2 j3 tx">
 	<long_name>std dev of C-band backscatter coefficient</long_name>
 	<units>dB</units>
 	<data>sig0_rms_c</data>
@@ -3004,7 +3047,7 @@ Global RADS configuration file
 	<compress>int2 1e-3</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<var name="sig0_rms_ku_mle3" field="2912" sat="j2 j3">
+<var name="sig0_rms_ku_mle3" field="2912" sat="6a 6b j2 j3">
 	<long_name>std dev of Ku-band backscatter coefficient (MLE3)</long_name>
 	<units>dB</units>
 	<limits>0.0 1.0</limits>
@@ -3080,7 +3123,7 @@ Global RADS configuration file
 	<default>0</default>
 	<compress>int2 1e-4</compress>
 </var>
-<var name="off_nadir_angle_pf" field="3003" sat="2a 3a 3b c2 j2 j3 pn">
+<var name="off_nadir_angle_pf" field="3003" sat="2a 3a 3b 6a 6b c2 j2 j3 pn">
 	<long_name>off-nadir pointing angle from platform</long_name>
 	<units>degrees</units>
 	<data>off_nadir_angle2_pf SQRT</data>
@@ -3090,7 +3133,7 @@ Global RADS configuration file
 	<format>f5.3</format>
 	<compress>int2 1e-3</compress>
 </var>
-<var name="off_nadir_angle2_pf" field="3004" sat="2a 3a 3b c2 j1 j2 j3 pn">
+<var name="off_nadir_angle2_pf" field="3004" sat="2a 3a 3b 6a 6b c2 j1 j2 j3 pn">
 	<long_name>off-nadir pointing angle squared from platform</long_name>
 	<units>degrees^2</units>
 	<data>off_nadir_angle2_pf</data>
@@ -3220,7 +3263,7 @@ Global RADS configuration file
 	<compress>int2 1e-3</compress>
 	<comment>Correction already added to backscatter coefficient</comment>
 </var>
-<var name="dsig0_atmos_ku" field="3203" sat="2a 3a 3b c2 e1 e2 j1 j2 j3 n1 pn tx">
+<var name="dsig0_atmos_ku" field="3203" sat="2a 3a 3b 6a 6b c2 e1 e2 j1 j2 j3 n1 pn tx">
 	<long_name>Ku-band backscatter coefficient correction due to atmosphere/attitude</long_name>
 	<units>dB</units>
 	<plot_range>0 0.5</plot_range>
@@ -3231,7 +3274,7 @@ Global RADS configuration file
 	<compress sat="c2 j2 j3">int2 1e-2</compress>
 	<comment>Correction already added to backscatter coefficient</comment>
 </var>
-<var name="dsig0_atmos_c" field="3204" sat="2a 3a 3b j1 j2 j3 tx">
+<var name="dsig0_atmos_c" field="3204" sat="2a 3a 3b 6a 6b j1 j2 j3 tx">
 	<long_name>C-band backscatter coefficient correction due to atmosphere/attitude</long_name>
 	<units>dB</units>
 	<plot_range>0 1</plot_range>
@@ -3292,9 +3335,9 @@ Global RADS configuration file
 </var>
 <alias name="dsig0" field="32" sat="e1 e2 tx">dsig0_ku</alias>
 <alias name="dsig0_atmos" sat="sa">dsig0_atmos_ka</alias>
-<alias name="dsig0_atmos" sat="3a 3b c2 e1 e2 j1 j2 j3 n1 pn tx">dsig0_atmos_ku</alias>
+<alias name="dsig0_atmos" sat="3a 3b 6a 6b c2 e1 e2 j1 j2 j3 n1 pn tx">dsig0_atmos_ku</alias>
 
-<var name="liquid_water_rad" field="3301 33" sat="2a 3a 3b e1 e2 j1 j2 j3 n1 pn sa tx">
+<var name="liquid_water_rad" field="3301 33" sat="2a 3a 3b 6a 6b e1 e2 j1 j2 j3 n1 pn sa tx">
 	<long_name>radiometer liquid water content</long_name>
 	<standard_name>atmosphere_mass_content_of_cloud_liquid_water</standard_name>
 	<units>kg/m^2</units>
@@ -3314,7 +3357,7 @@ Global RADS configuration file
 	<compress>int2 1e-2</compress>
 </var>
 
-<var name="water_vapor_rad" field="3302" sat="2a 3a 3b e1 e2 j1 j2 j3 sa tx.r50">
+<var name="water_vapor_rad" field="3302" sat="2a 3a 3b 6a 6b e1 e2 j1 j2 j3 sa tx.r50">
 	<long_name>radiometer water vapor content</long_name>
 	<standard_name>atmosphere_mass_content_of_water_vapor</standard_name>
 	<units>kg/m^2</units>
@@ -3519,7 +3562,7 @@ Global RADS configuration file
 	<parameters sat="pn"> -15   0  0  0 0</parameters>
 	<parameters sat="sa"> -58   0  0  0 0</parameters>
 </var>
-<var name="ref_frame_offset_mle3" field="3811" sat="j2 j3">
+<var name="ref_frame_offset_mle3" field="3811" sat="6a 6b j2 j3">
 	<long_name>reference frame offset (MLE3)</long_name>
 	<units>m</units>
 	<data>ref_frame_offset_mle3</data>
@@ -3901,6 +3944,38 @@ Global RADS configuration file
 		<repeat>27 770</repeat>
 		<ref_pass>2018-11-23T10:08:38 177.820 19 101 3018</ref_pass><!--Need to update this value-->
 		<start_time>2018-11-23T09:46:00</start_time><!--Need to update this value-->
+	</phase>
+</if>
+
+<if sat="6a">
+	<satellite>SNTNL-6A</satellite>
+	<satid>18</satid>
+	<dt1hz>1.000000</dt1hz>
+	<inclination>66.04</inclination>
+	<frequency>13.575 5.3</frequency>
+	<xover_params>0.04 0.035</xover_params>
+	<phase name="a">
+		<mission>Exact Repeat Mission</mission>
+		<cycles>0 999</cycles><!--Need to update this value-->
+		<repeat>9.91564280 254</repeat><!--Need to update this value-->
+		<ref_pass>2016-02-17T10:56:52 99.92 1 1 385</ref_pass><!--Need to update this value-->
+		<start_time>2016-02-12</start_time><!--Need to update this value-->
+	</phase>
+</if>
+
+<if sat="6b">
+	<satellite>SNTNL-6B</satellite>
+	<satid>19</satid>
+	<dt1hz>1.000000</dt1hz>
+	<inclination>66.04</inclination>
+	<frequency>13.575 5.3</frequency>
+	<xover_params>0.04 0.035</xover_params>
+	<phase name="a">
+		<mission>Exact Repeat Mission</mission>
+		<cycles>0 999</cycles><!--Need to update this value-->
+		<repeat>9.91564280 254</repeat><!--Need to update this value-->
+		<ref_pass>2016-02-17T10:56:52 99.92 1 1 385</ref_pass><!--Need to update this value-->
+		<start_time>2016-02-12</start_time><!--Need to update this value-->
 	</phase>
 </if>
 
