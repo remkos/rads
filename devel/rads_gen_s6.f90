@@ -107,7 +107,7 @@ character(len=rads_cmdl) :: infile, arg
 
 ! Header variables
 
-integer(fourbyteint) :: ncid, ncid1, ncidk, ncidc, ncid20k, cyclenr, passnr, varid
+integer(fourbyteint) :: ncid, ncid1, ncidk, ncidc, ncid20, ncid20k, cyclenr, passnr, varid, nrec20
 real(eightbytereal) :: equator_time
 
 ! Data variables
