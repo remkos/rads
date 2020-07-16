@@ -3704,6 +3704,19 @@ Global RADS configuration file
 	<data>dist_coast</data>
 	<format>f6.0</format>
 	<compress>int2</compress>
+	<if sat="s6">
+		<format>f7.1</format>
+		<compress>int2 0.1</compress>
+	</if>
+	<comment>Negative numbers are inland, positive numbers are offshore</comment>
+</var>
+
+<var name="rad_dist_coast" sat="6a">
+	<long_name>radiometer main beam radial distance to land</long_name>
+	<units>km</units>
+	<data>rad_dist_coast</data>
+	<format>f7.1</format>
+	<compress>int2 1e-1</compress>
 	<comment>Negative numbers are inland, positive numbers are offshore</comment>
 </var>
 
@@ -3715,6 +3728,15 @@ Global RADS configuration file
 	<format>f4.2</format>
 	<compress>int1 1e-2</compress>
 	<comment>Dimensionless measure of the effect of land over altimetric waveforms, where -1 means unaffected by land (open-ocean) and 1 means totally affected by land (inland); can be used for screening purposes in place of distance from coast</comment>
+</var>
+
+<var name="angle_coast" sat="6a">
+	<long_name>angle of approach to the coast</long_name>
+	<source>EUMETSAT</source>
+	<data>angle_coast</data>
+	<format>f7.2</format>
+	<compress>int2 1e-2</compress>
+	<comment>Angle of approach to the closest coast. 0 is parallel to the coast with the land on the right. Positive values indicate the satellite is approaching the land. Negative values indicate the satellite is leaving the land. Values close to +/-180 degrees have the land on the left.</comment>
 </var>
 
 <var name="seaice_class" field="4601 46" sat="e1 e2 n1">
