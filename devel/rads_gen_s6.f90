@@ -276,7 +276,8 @@ do
 	call nc2f (ncid1, 'rain_flag', 7, eq=1)
 	call nc2f (ncid1, 'rain_flag', 7, eq=2)
 	call nc2f (ncid1, 'rain_flag', 7, eq=4)						! bit  7: Altimeter rain or ice flag
-	call nc2f (ncid1, 'rad_rain_flag', 8)						! bit  8: Radiometer rain flag
+	call nc2f (ncid1, 'rad_rain_flag', 8)
+	call nc2f (ncid1, 'rad_sea_ice_flag', 8)					! bit  8: Radiometer rain or ice flag
 	call nc2f (ncid1, 'tmb_187_qual',  9)
 	call nc2f (ncid1, 'tmb_238_qual',  9)						! bit  9: Quality 18.7 or 23.8 GHz channel
 	call nc2f (ncid1, 'tmb_340_qual', 10)						! bit 10: Quality 34.0 GHz channel
@@ -299,25 +300,7 @@ do
 	call nc2f (ncid, 'swh_ocean_qual', 12)						! bit 12: Quality SWH
 	call nc2f (ncid, 'sig0_ocean_qual', 13)						! bit 13: Quality Sigma0
 
-
-! Fill individual flags
-
-	call get_var (ncidk, 'index_first_20hz_measurement', a)
-	call get_var (ncid20k, 'telemetry_type_flag', telemetry_type_flag)
-	call new_var ('flag_alt_oper_mode', telemetry_type_flag(nint(a(:))) - 1)
-	if (lr) call cpy_var (ncidk, 'off_nadir_angle_wf_ocean_qual', 'qual_attitude')
-	call cpy_var (ncid1, 'surface_classification_flag', 'surface_class')
-	call cpy_var (ncidc, 'range_ocean_qual', 'qual_iono_alt')
-	call cpy_var (ncid1, 'rad_surface_type_flag', 'surface_type_rad')
-	call cpy_var (ncid1, 'rain_flag', 'qual_alt_rain_ice')
-	call cpy_var (ncid1, 'rad_rain_flag', 'qual_rad_rain_ice')
-	call cpy_var (ncid1, 'tmb_340_qual 2 MUL tmb_238_qual ADD 2 MUL tmb_187_qual ADD', 'qual_rad_tb')
-	call cpy_var (ncid1, 'orbit_type_flag', 'qual_orbit')
-	call cpy_var (ncid1, 'range_ocean_qual', 'qual_range')
-	call cpy_var (ncid1, 'range_swh_qual', 'qual_swh')
-	call cpy_var (ncid1, 'range_sig0_qual', 'qual_sig0')
-
-! Convert all the necessary fields to RADS
+! Time and location
 
 	call get_var (ncid1, 'time_01', a)
 	call new_var ('time', a + sec2000)
@@ -325,12 +308,81 @@ do
 	call cpy_var (ncid1, 'longitude','lon')
 	call cpy_var (ncid1, 'altitude delta_ellipsoid_tp_wgs84 SUB', 'alt_gdrf')
 	call cpy_var (ncid1, 'altitude_rate_mean_sea_surface', 'alt_rate')
+	call cpy_var (ncid1, 'orbit_type_flag', 'qual_orbit')
+
+! Telemetry type (copied from 20-Hz to 1-Hz)
+
+	call get_var (ncidk, 'index_first_20hz_measurement', a)
+	call get_var (ncid20k, 'telemetry_type_flag', telemetry_type_flag)
+	call new_var ('flag_alt_oper_mode', telemetry_type_flag(nint(a(:))) - 1)
+
+! Range
+
 	call cpy_var (ncidk, 'range_ocean', 'range_ku')
+	call cpy_var (ncid1, 'range_ocean_rms', 'range_rms_ku')
+	call cpy_var (ncidk, 'range_ocean_numval', 'range_numval')
+	call cpy_var (ncid1, 'range_ocean_qual', 'qual_range')
 	if (lr) then
 		call cpy_var (ncidk, 'range_ocean_mle3', 'range_ku_mle3')
+		call cpy_var (ncidk, 'range_ocean_mle3_rms', 'range_rms_ku_mle3')
+		call cpy_var (ncidk, 'range_ocean_mle3_numval', 'range_numval_ku_mle3')
 		call cpy_var (ncidc, 'range_ocean', 'range_c')
+		call cpy_var (ncidc, 'range_ocean_rms', 'range_rms_c')
+		call cpy_var (ncidc, 'range_ocean_numval', 'range_numval_c')
 	endif
-! Add zero or meas altitude tropo measurements?
+
+! SWH
+
+	call cpy_var (ncidk, 'swh_ocean', 'swh_ku')
+	call cpy_var (ncidk, 'swh_ocean_rms', 'swh_rms_ku')
+	call cpy_var (ncid1, 'range_swh_qual', 'qual_swh')
+	if (lr) then
+		call cpy_var (ncidk, 'swh_ocean_mle3', 'swh_ku_plrm')
+		call cpy_var (ncidk, 'swh_ocean_mle3_rms', 'swh_rms_ku_mle3')
+		call cpy_var (ncidc, 'swh_ocean', 'swh_c')
+		call cpy_var (ncidc, 'swh_ocean_rms', 'swh_rms_c')
+	endif
+
+! Backscatter
+
+	call cpy_var (ncidk, 'sig0_ocean', 'sig0_ku')
+	call cpy_var (ncidk, 'sig0_ocean_rms', 'sig0_rms_ku')
+	call cpy_var (ncid1, 'sig0_qual', 'qual_sig0')
+	call cpy_var (ncidk, 'atm_cor_sig0', 'dsig0_atmos_ku')
+	if (lr) then
+		call cpy_var (ncidk, 'sig0_ocean_mle3', 'sig0_ku_plrm')
+		call cpy_var (ncidk, 'sig0_ocean_mle3_rms', 'sig0_rms_ku_mle3')
+		call cpy_var (ncidc, 'sig0_ocean', 'sig0_c')
+		call cpy_var (ncidc, 'sig0_ocean_rms', 'sig0_rms_c')
+		call cpy_var (ncidc, 'atm_cor_sig0', 'dsig0_atmos_c')
+	endif
+
+! Wind speed
+
+	call cpy_var (ncid1, 'wind_speed_alt', 'wind_speed_alt')
+	if (lr) call cpy_var (ncid1, 'wind_speed_alt_mle3', 'wind_speed_alt_mle3')
+	call cpy_var (ncid1, 'rad_wind_speed', 'wind_speed_rad')
+	call cpy_var (ncid1, 'wind_speed_mod_u', 'wind_speed_ecmwf_u')
+	call cpy_var (ncid1, 'wind_speed_mod_v', 'wind_speed_ecmwf_v')
+
+! Rain or ice
+
+	call cpy_var (ncid1, 'rain_flag', 'qual_alt_rain_ice')
+	call cpy_var (ncid1, 'rad_rain_flag rad_sea_ice_flag IOR', 'qual_rad_rain_ice')
+
+! Off-nadir angle
+
+	if (lr) then
+		call cpy_var (ncidk, 'off_nadir_angle_wf_ocean', 'off_nadir_angle2_wf_ku')
+		call cpy_var (ncidk, 'off_nadir_angle_wf_ocean_rms', 'off_nadir_angle2_wf_rms_ku')
+		call cpy_var (ncidk, 'off_nadir_angle_wf_ocean_qual', 'qual_attitude')
+	endif
+	call cpy_var (ncid1, 'off_nadir_pitch_angle_pf', 'attitude_pitch')
+	call cpy_var (ncid1, 'off_nadir_roll_angle_pf', 'attitude_roll')
+	call cpy_var (ncid1, 'off_nadir_yaw_angle_pf', 'attitude_yaw')
+
+! Path delay
+
 	call cpy_var (ncid1, 'model_dry_tropo_cor_measurement_altitude', 'dry_tropo_ecmwf')
 	call cpy_var (ncid1, 'model_wet_tropo_cor_measurement_altitude', 'wet_tropo_ecmwf')
 	call cpy_var (ncid1, 'rad_wet_tropo_cor', 'wet_tropo_rad')
@@ -339,84 +391,75 @@ do
 	if (lr) then
 		call cpy_var (ncid1, 'iono_cor_alt_mle3', 'iono_alt_mle3')
 		call cpy_var (ncid1, 'iono_cor_alt_filtered_01_plrm_ku', 'iono_alt_smooth_mle3')
+		call cpy_var (ncidc, 'range_ocean_qual', 'qual_iono_alt')
 	endif
 	call cpy_var (ncid1, 'iono_cor', 'iono_gim')
+
+! SSB
+
+	call cpy_var (ncid1, 'sea_state_bias', 'ssb_cls')
+	if (lr) then
+		call cpy_var (ncid1, 'sea_state_bias_mle3', 'ssb_cls_mle3')
+		call cpy_var (ncid1, 'sea_state_bias_c', 'ssb_cls_c')
+	endif
+
+! IB
+
 	call cpy_var (ncid1, 'inv_bar_cor', 'inv_bar_static')
 	if (latency == rads_nrt) then
 		call cpy_var (ncid1, 'inv_bar_cor', 'inv_bar_mog2d')
 	else
 		call cpy_var (ncid1, 'dac', 'inv_bar_mog2d')
 	endif
-	call cpy_var (ncid1, 'solid_earth_tide', 'tide_solid')
+
+! Tides
+
 	call cpy_var (ncid1, 'ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got' // tide_got_ver)
 	call cpy_var (ncid1, 'ocean_tide_sol2 load_tide_sol2 SUB ocean_tide_non_eq_01 ADD', 'tide_ocean_fes' // tide_fes_ver)
 	call cpy_var (ncid1, 'load_tide_sol1', 'tide_load_got' // tide_got_ver)
 	call cpy_var (ncid1, 'load_tide_sol2', 'tide_load_fes' // tide_fes_ver)
 	call cpy_var (ncid1, 'ocean_tide_eq', 'tide_equil')
 	call cpy_var (ncid1, 'ocean_tide_non_eq', 'tide_non_equil')
+	call cpy_var (ncid1, 'internal_tide', 'tide_internal')
+	call cpy_var (ncid1, 'solid_earth_tide', 'tide_solid')
 	call cpy_var (ncid1, 'pole_tide', 'tide_pole')
-	call cpy_var (ncid1, 'sea_state_bias', 'ssb_cls')
-	if (lr) then
-		call cpy_var (ncid1, 'sea_state_bias_mle3', 'ssb_cls_mle3')
-		call cpy_var (ncid1, 'sea_state_bias_c', 'ssb_cls_c')
-	endif
+
+! Geoid and MSS
+
 	call cpy_var (ncid1, 'geoid delta_ellipsoid_tp_wgs84 SUB', 'geoid_egm2008')
 	call cpy_var (ncid1, 'mean_sea_surface_sol1 delta_ellipsoid_tp_wgs84 SUB', 'mss_cnescls' // mss_cnescls_ver)
 	call cpy_var (ncid1, 'mean_sea_surface_sol2 delta_ellipsoid_tp_wgs84 SUB', 'mss_dtu' // mss_dtu_ver)
-	call cpy_var (ncidk, 'swh_ocean', 'swh_ku')
-	if (lr) then
-		call cpy_var (ncidk, 'swh_ocean_mle3', 'swh_ku_plrm')
-		call cpy_var (ncidc, 'swh_ocean', 'swh_c')
-	endif
-	call cpy_var (ncidk, 'sig0_ocean', 'sig0_ku')
-	if (lr) then
-		call cpy_var (ncidk, 'sig0_ocean_mle3', 'sig0_ku_plrm')
-		call cpy_var (ncidc, 'sig0_ocean', 'sig0_c')
-	endif
-	call cpy_var (ncid1, 'wind_speed_alt', 'wind_speed_alt')
-	if (lr) call cpy_var (ncid1, 'wind_speed_alt_mle3', 'wind_speed_alt_mle3')
-	call cpy_var (ncid1, 'rad_wind_speed', 'wind_speed_rad')
-	call cpy_var (ncid1, 'wind_speed_mod_u', 'wind_speed_ecmwf_u')
-	call cpy_var (ncid1, 'wind_speed_mod_v', 'wind_speed_ecmwf_v')
-	call cpy_var (ncid1, 'range_ocean_rms', 'range_rms_ku')
-	if (lr) then
-		call cpy_var (ncid1, 'range_ocean_rms_mle3', 'range_rms_ku_mle3')
-		call cpy_var (ncid1, 'range_ocean_rms', 'range_rms_c')
-	endif
-	call cpy_var (ncidk, 'range_ocean_numval', 'range_numval')
-	if (lr) then
-		call cpy_var (ncidk, 'range_ocean_mle3_numval', 'range_numval_ku_mle3')
-		call cpy_var (ncidc, 'range_ocean_numval', 'range_numval_c')
-	endif
+
+! Surface type and coastal proximity
+
 	call cpy_var (ncid1, 'depth_or_elevation', 'topo_ace2')
+	call cpy_var (ncid1, 'surface_classification_flag', 'surface_class')
+	call cpy_var (ncid1, 'rad_surface_type_flag', 'surface_type_rad')
+	call cpy_var (ncid1, 'distance_to_coast 1e-3 MUL', 'dist_coast') ! Convert m to km
+	call cpy_var (ncid1, 'angle_of_approach_to_coast', 'angle_coast')
+	call cpy_var (ncid1, 'rad_distance_to_land 1e-3 MUL', 'rad_dist_coast') ! Convert m to km
+
+! Bit flags
+
+	call new_var ('flags', dble(flags))
+	call new_var ('flags_mle3', dble(flags_mle3))
+
+! Other radiometer measurements
+
 	call cpy_var (ncid1, 'tmb_187', 'tb_187')
 	call cpy_var (ncid1, 'tmb_238', 'tb_238')
 	call cpy_var (ncid1, 'tmb_340', 'tb_340')
-	call new_var ('flags', dble(flags))
-	call new_var ('flags_mle3', dble(flags_mle3))
-	call cpy_var (ncidk, 'swh_ocean_rms', 'swh_rms_ku')
-	if (lr) then
-		call cpy_var (ncidk, 'swh_ocean_mle3_rms', 'swh_rms_ku_mle3')
-		call cpy_var (ncidc, 'swh_ocean_rms', 'swh_rms_c')
-	endif
-	call cpy_var (ncidk, 'sig0_ocean_rms_01_ku', 'sig0_rms_ku')
-	if (lr) then
-		call cpy_var (ncidk, 'sig0_ocean_rms_mle3', 'sig0_rms_ku_mle3')
-		call cpy_var (ncidc, 'sig0_ocean_rms', 'sig0_rms_c')
-	endif
-	if (lr) then
-		call cpy_var (ncidk, 'off_nadir_angle_wf_ocean', 'off_nadir_angle2_wf_ku')
-		call cpy_var (ncidk, 'off_nadir_angle_wf_ocean_rms', 'off_nadir_angle2_wf_rms_ku')
-	endif
-	call cpy_var (ncid1, 'off_nadir_pitch_angle_pf', 'attitude_pitch')
-	call cpy_var (ncid1, 'off_nadir_roll_angle_pf', 'attitude_roll')
-	call cpy_var (ncid1, 'off_nadir_yaw_angle_pf', 'attitude_yaw')
-	call cpy_var (ncidk, 'atm_cor_sig0', 'dsig0_atmos_ku')
-	if (lr) call cpy_var (ncidc, 'atm_cor_sig0', 'dsig0_atmos_c')
+	call cpy_var (ncid1, 'tmb_340_qual 2 MUL tmb_238_qual ADD 2 MUL tmb_187_qual ADD', 'qual_rad_tb')
 	call cpy_var (ncid1, 'rad_cloud_liquid_water', 'liquid_water_rad')
 	call cpy_var (ncid1, 'rad_water_vapor', 'water_vapor_rad')
+
+! SSHA
+
 	call cpy_var (ncid1, 'ssha', 'ssha')
 	call cpy_var (ncid1, 'ssha_mle3', 'ssha_mle3')
+
+! Misc
+
 	a = latency
 	call new_var ('latency', a)
 
