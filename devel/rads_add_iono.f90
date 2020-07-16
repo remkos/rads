@@ -68,11 +68,12 @@ do j = 1,rads_nopt
 	case ('g', 'gim')
 		model(1) = .true.
 	case ('i', 'iri2007')
-		model(2) = .true.
+		call rads_message ('IRI2007 no longer supported')
 	case ('n', 'nic09')
 		model(3) = .true.
 	case ('all')
-		model = .true.
+		model(1) = .true.
+		model(3) = .true.
 	end select
 enddo
 
@@ -103,9 +104,9 @@ write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
 '  -g, --gim                 Add JPL GIM model data' / &
-'  -i  --iri2007             Add IRI2007 ionosphere model' / &
 '  -n, --nic09               Add NIC09 ionosphere model' / &
-'  --all                     All of the above')
+'  --all                     All of the above' / &
+'  -i  --iri2007             IRI2007 ionosphere model NO LONGER SUPPORTED')
 stop
 end subroutine synopsis
 
@@ -116,7 +117,7 @@ end subroutine synopsis
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
 integer(fourbyteint) :: i, j, ii, iold
-real(eightbytereal) :: time(n), lat(n), lon(n), alt(n), tec1(n), z(n,nmod), tec2, dtime, d
+real(eightbytereal) :: time(n), lat(n), lon(n), alt(n), tec1(n), z(n,nmod), dtime, d
 logical :: ok(nmod)
 
 call log_pass (P)
@@ -136,13 +137,13 @@ if (model(1)) then ! JPL GIM
 	enddo
 endif
 
-if (model(2)) then ! IRI2007
+if (model(2)) then ! IRI2007 (no longer supported)
 	! Compute IRI every 10 seconds, then interpolate linearly in time
 	iold = 1
 	do i = 1,n
 		dtime = time(i) - time(iold)
 		if (dtime < 10d0 .and. i > 1 .and. i < n) cycle
-		call iri2007tec(0,time(i),lat(i),lon(i),alt(i),alt(i),tec1(i),tec2)
+!		call iri2007tec(0,time(i),lat(i),lon(i),alt(i),alt(i),tec1(i),tec2)
 		do ii = iold+1,i-1
 			d = (time(ii)-time(iold)) / dtime
 			tec1(ii) = (1d0-d) * tec1(iold) + d * tec1(i)
