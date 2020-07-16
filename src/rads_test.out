@@ -4,7 +4,7 @@ Start rads_init
      2 optopt = ymd; optarg = 19910924,19910925; optid =     14
      3 optopt = R; optarg = -90/120/-50/30; optid =     14
      4 optopt = V; optarg = time,lat,lon,sla,12_,tide_ocean_,flags_,pass,drange; optid =     15
-Parsing XML file /rads/data/conf/rads.xml
+Parsing XML file /conf/rads.xml
 Increased S%var:  100  200
 Eqlonlim =  -278.279070 -278.279070  278.279070  278.279070
   1 sla                                     sla                                         0   -1       -3.0000        3.0000
@@ -83,90 +83,92 @@ Eqlonlim =  -278.279070 -278.279070  278.279070  278.279070
  74 geoid_xgm2016                           geoid_xgm2016                            1620   -1           NaN           NaN
  75 mss_dtu18                               mss_dtu18                                1621   -1           NaN           NaN
  76 mss                                     mss_dtu15                                  16   -1           NaN           NaN
- 77 swh_ku                                  swh_ku                                   1701   -1        0.0000        8.0000
- 78 swh                                     swh_ku                                     17   -1        0.0000        8.0000
- 79 sig0_ku                                 sig0_ku                                  1801   -1        6.0000       27.0000
- 80 sig0                                    sig0_ku                                    18   -1        6.0000       27.0000
- 81 wind_speed_alt                          wind_speed_alt                           1901   -1       -1.0000       30.0000
- 82 wind_speed_ecmwf_u                      wind_speed_ecmwf_u                       1903   -1      -30.0000       30.0000
- 83 wind_speed_ecmwf_v                      wind_speed_ecmwf_v                       1904   -1      -30.0000       30.0000
- 84 wind_speed_ecmwf                        wind_speed_ecmwf                           -1   -1        0.0000       30.0000
- 85 wind_speed                              wind_speed_alt                             19   -1       -1.0000       30.0000
- 86 range_rms_norm                          range_rms_norm                           2001   -1        0.0000        0.4000
- 87 range_rms_ku                            range_rms_ku                             2002   -1        0.0000        0.4000
- 88 range_rms                               range_rms_ku                               20   -1        0.0000        0.4000
- 89 range_numval_ku                         range_numval_ku                          2101   -1       16.5000       20.5000
- 90 range_numval                            range_numval_ku                            21   -1       16.5000       20.5000
- 91 topo_srtm30plus                         topo_srtm30plus                          2204   -1           NaN           NaN
- 92 topo_dtu10                              topo_dtu10                               2205   -1           NaN           NaN
- 93 topo_macess                             topo_macess                              2206   -1           NaN           NaN
- 94 topo_ace2                               topo_ace2                                2207   -1           NaN           NaN
- 95 topo_etopo1                             topo_etopo1                              2208   -1           NaN           NaN
- 96 topo_srtm15plus                         topo_srtm15plus                          2209   -1           NaN           NaN
- 97 topo                                    topo_srtm30plus                            22   -1           NaN           NaN
- 98 tb_238                                  tb_238                                   2302   -1           NaN           NaN
- 99 tb2                                     tb_238                                     23   -1           NaN           NaN
-100 tb_365                                  tb_365                                   2303   -1           NaN           NaN
-101 tb3                                     tb_365                                     -1   -1           NaN           NaN
-102 peakiness_ku                            peakiness_ku                             2401   -1           NaN           NaN
-103 peakiness                               peakiness_ku                               24   -1           NaN           NaN
-104 flag_alt_oper_mode                      flag_alt_oper_mode                       2516   -1           NaN           NaN
-105 qual_sptr                               qual_sptr                                2516   -1           NaN           NaN
-106 flag_water                              flag_water                               2504   -1           NaN           NaN
-107 flag_ocean                              flag_ocean                               2505   -1        0.0000        0.0000
-108 surface_type_rad                        surface_type_rad                         2506   -1        0.0000        0.0000
-109 qual_rad_rain_ice                       qual_rad_rain_ice                        2508   -1        0.0000        0.0000
-110 qual_rad_tb                             qual_rad_tb                              2509   -1        3.0000        0.0000
-111 qual_range                              qual_range                               2511   -1        0.0000        0.0000
-112 qual_swh                                qual_swh                                 2512   -1        0.0000        0.0000
-113 qual_sig0                               qual_sig0                                2513   -1        0.0000        0.0000
-114 flag_alt_track_mode                     flag_alt_track_mode                      2514   -1        0.0000        0.0000
-115 qual_orbit                              qual_orbit                               2515   25        0.0000        0.0000
-116 surface_type                            surface_type                             2517   -1           NaN           NaN
-117 surface_class                           surface_class                            2518   -1           NaN           NaN
-118 flags                                   flags                                    2601   26    65512.0000        0.0000
-119 drange_ku                               drange_ku                                2701   -1           NaN           NaN
-120 drange_cal                              drange_cal                               2702   -1           NaN           NaN
-121 drange_uso                              drange_uso                               2703   -1           NaN           NaN
-122 drange_fm                               drange_fm                                2704   -1           NaN           NaN
-123 drange_sptr                             drange_sptr                              2709   -1           NaN           NaN
-124 drange                                  drange_ku                                  27   -1           NaN           NaN
-125 swh_rms_norm                            swh_rms_norm                             2801   -1        0.0000        2.1000
-126 swh_rms_ku                              swh_rms_ku                               2802   -1        0.0000        2.1000
-127 swh_rms                                 swh_rms_ku                                 28   -1        0.0000        2.1000
-128 sig0_rms_norm                           sig0_rms_norm                            2901   -1           NaN           NaN
-129 sig0_rms_ku                             sig0_rms_ku                              2902   -1        0.0000        1.0000
-130 sig0_rms                                sig0_rms_ku                                29   -1        0.0000        1.0000
-131 off_nadir_angle_wf_ku                   off_nadir_angle_wf_ku                    3001   -1           NaN           NaN
-132 off_nadir_angle2_wf_ku                  off_nadir_angle2_wf_ku                   3002   -1           NaN           NaN
-133 attitude                                off_nadir_angle2_wf_ku                     30   -1           NaN           NaN
-134 dsig0_ku                                dsig0_ku                                 3201   -1           NaN           NaN
-135 dsig0_atmos_ku                          dsig0_atmos_ku                           3203   -1           NaN           NaN
-136 dsig0                                   dsig0_ku                                   32   -1           NaN           NaN
-137 dsig0_atmos                             dsig0_atmos_ku                             -1   -1           NaN           NaN
-138 liquid_water_rad                        liquid_water_rad                         3301   33           NaN           NaN
-139 water_vapor_rad                         water_vapor_rad                          3302   -1           NaN           NaN
-140 mqe                                     mqe                                      3409   -1           NaN           NaN
-141 basin                                   basin                                    3601   36           NaN           NaN
-142 ref_frame_offset                        ref_frame_offset                         3801   38           NaN           NaN
-143 tide_equil                              tide_equil                               3901   39           NaN           NaN
-144 tide_non_equil                          tide_non_equil                           3902   -1           NaN           NaN
-145 tide_lunar_nodal                        tide_lunar_nodal                           -1   -1           NaN           NaN
-146 dist_coast                              dist_coast                               4501   45           NaN           NaN
-147 seaice_class                            seaice_class                             4601   46           NaN           NaN
-148 seaice_conc                             seaice_conc                              4701   47           NaN           NaN
-149 seaice_conc_osiaf                       seaice_conc_osiaf                        4702   -1           NaN           NaN
-150 sst                                     sst                                      4801   48           NaN           NaN
-151 sst_mean                                sst_mean                                 4802   -1           NaN           NaN
-152 dry_tropo_airtide                       dry_tropo_airtide                        4901   49           NaN           NaN
-153 mss_annual                              mss_annual                               5001   50           NaN           NaN
-154 gia                                     gia                                      5101   51           NaN           NaN
-155 first_meas_time                         first_meas_time                          9901   99           NaN           NaN
-156 last_meas_time                          last_meas_time                           9902   -1           NaN           NaN
-157 eqtime                                  eqtime                                   9903   -1           NaN           NaN
-158 eqlon                                   eqlon                                    9904   -1           NaN           NaN
-159 cycle                                   cycle                                    9905   -1           NaN           NaN
-160 pass                                    pass                                     9906   -1           NaN           NaN
+ 77 latency                                 latency                                    -1   -1           NaN           NaN
+ 78 swh_ku                                  swh_ku                                   1701   -1        0.0000        8.0000
+ 79 swh                                     swh_ku                                     17   -1        0.0000        8.0000
+ 80 sig0_ku                                 sig0_ku                                  1801   -1        6.0000       27.0000
+ 81 sig0                                    sig0_ku                                    18   -1        6.0000       27.0000
+ 82 wind_speed_alt                          wind_speed_alt                           1901   -1       -1.0000       30.0000
+ 83 wind_speed_ecmwf_u                      wind_speed_ecmwf_u                       1903   -1      -30.0000       30.0000
+ 84 wind_speed_ecmwf_v                      wind_speed_ecmwf_v                       1904   -1      -30.0000       30.0000
+ 85 wind_speed_ecmwf                        wind_speed_ecmwf                           -1   -1        0.0000       30.0000
+ 86 wind_speed                              wind_speed_alt                             19   -1       -1.0000       30.0000
+ 87 range_rms_norm                          range_rms_norm                           2001   -1        0.0000        0.4000
+ 88 range_rms_ku                            range_rms_ku                             2002   -1        0.0000        0.4000
+ 89 range_rms                               range_rms_ku                               20   -1        0.0000        0.4000
+ 90 range_numval_ku                         range_numval_ku                          2101   -1       16.5000       20.5000
+ 91 range_numval                            range_numval_ku                            21   -1       16.5000       20.5000
+ 92 topo_srtm30plus                         topo_srtm30plus                          2204   -1           NaN           NaN
+ 93 topo_dtu10                              topo_dtu10                               2205   -1           NaN           NaN
+ 94 topo_macess                             topo_macess                              2206   -1           NaN           NaN
+ 95 topo_ace2                               topo_ace2                                2207   -1           NaN           NaN
+ 96 topo_etopo1                             topo_etopo1                              2208   -1           NaN           NaN
+ 97 topo_srtm15plus                         topo_srtm15plus                          2209   -1           NaN           NaN
+ 98 topo                                    topo_srtm30plus                            22   -1           NaN           NaN
+ 99 tb_238                                  tb_238                                   2302   -1           NaN           NaN
+100 tb2                                     tb_238                                     23   -1           NaN           NaN
+101 tb_365                                  tb_365                                   2303   -1           NaN           NaN
+102 tb3                                     tb_365                                     -1   -1           NaN           NaN
+103 peakiness_ku                            peakiness_ku                             2401   -1           NaN           NaN
+104 peakiness                               peakiness_ku                               24   -1           NaN           NaN
+105 flag_alt_oper_mode                      flag_alt_oper_mode                       2516   -1           NaN           NaN
+106 qual_sptr                               qual_sptr                                2516   -1           NaN           NaN
+107 flag_water                              flag_water                               2504   -1           NaN           NaN
+108 flag_ocean                              flag_ocean                               2505   -1        0.0000        0.0000
+109 surface_type_rad                        surface_type_rad                         2506   -1        0.0000        0.0000
+110 qual_rad_rain_ice                       qual_rad_rain_ice                        2508   -1        0.0000        0.0000
+111 qual_rad_tb                             qual_rad_tb                              2509   -1        3.0000        0.0000
+112 qual_range                              qual_range                               2511   -1        0.0000        0.0000
+113 qual_swh                                qual_swh                                 2512   -1        0.0000        0.0000
+114 qual_sig0                               qual_sig0                                2513   -1        0.0000        0.0000
+115 flag_alt_track_mode                     flag_alt_track_mode                      2514   -1        0.0000        0.0000
+116 qual_orbit                              qual_orbit                               2515   25        0.0000        0.0000
+117 surface_type                            surface_type                             2517   -1           NaN           NaN
+118 surface_class                           surface_class                            2518   -1           NaN           NaN
+119 rad_surface_type                        rad_surface_type                         2519   -1           NaN           NaN
+120 flags                                   flags                                    2601   26    65512.0000        0.0000
+121 drange_ku                               drange_ku                                2701   -1           NaN           NaN
+122 drange_cal                              drange_cal                               2702   -1           NaN           NaN
+123 drange_uso                              drange_uso                               2703   -1           NaN           NaN
+124 drange_fm                               drange_fm                                2704   -1           NaN           NaN
+125 drange_sptr                             drange_sptr                              2709   -1           NaN           NaN
+126 drange                                  drange_ku                                  27   -1           NaN           NaN
+127 swh_rms_norm                            swh_rms_norm                             2801   -1        0.0000        2.1000
+128 swh_rms_ku                              swh_rms_ku                               2802   -1        0.0000        2.1000
+129 swh_rms                                 swh_rms_ku                                 28   -1        0.0000        2.1000
+130 sig0_rms_norm                           sig0_rms_norm                            2901   -1           NaN           NaN
+131 sig0_rms_ku                             sig0_rms_ku                              2902   -1        0.0000        1.0000
+132 sig0_rms                                sig0_rms_ku                                29   -1        0.0000        1.0000
+133 off_nadir_angle_wf_ku                   off_nadir_angle_wf_ku                    3001   -1           NaN           NaN
+134 off_nadir_angle2_wf_ku                  off_nadir_angle2_wf_ku                   3002   -1           NaN           NaN
+135 attitude                                off_nadir_angle2_wf_ku                     30   -1           NaN           NaN
+136 dsig0_ku                                dsig0_ku                                 3201   -1           NaN           NaN
+137 dsig0_atmos_ku                          dsig0_atmos_ku                           3203   -1           NaN           NaN
+138 dsig0                                   dsig0_ku                                   32   -1           NaN           NaN
+139 dsig0_atmos                             dsig0_atmos_ku                             -1   -1           NaN           NaN
+140 liquid_water_rad                        liquid_water_rad                         3301   33           NaN           NaN
+141 water_vapor_rad                         water_vapor_rad                          3302   -1           NaN           NaN
+142 mqe                                     mqe                                      3409   -1           NaN           NaN
+143 basin                                   basin                                    3601   36           NaN           NaN
+144 ref_frame_offset                        ref_frame_offset                         3801   38           NaN           NaN
+145 tide_equil                              tide_equil                               3901   39           NaN           NaN
+146 tide_non_equil                          tide_non_equil                           3902   -1           NaN           NaN
+147 tide_lunar_nodal                        tide_lunar_nodal                           -1   -1           NaN           NaN
+148 dist_coast                              dist_coast                               4501   45           NaN           NaN
+149 seaice_class                            seaice_class                             4601   46           NaN           NaN
+150 seaice_conc                             seaice_conc                              4701   47           NaN           NaN
+151 seaice_conc_osiaf                       seaice_conc_osiaf                        4702   -1           NaN           NaN
+152 sst                                     sst                                      4801   48           NaN           NaN
+153 sst_mean                                sst_mean                                 4802   -1           NaN           NaN
+154 dry_tropo_airtide                       dry_tropo_airtide                        4901   49           NaN           NaN
+155 mss_annual                              mss_annual                               5001   50           NaN           NaN
+156 gia                                     gia                                      5101   51           NaN           NaN
+157 first_meas_time                         first_meas_time                          9901   99           NaN           NaN
+158 last_meas_time                          last_meas_time                           9902   -1           NaN           NaN
+159 eqtime                                  eqtime                                   9903   -1           NaN           NaN
+160 eqlon                                   eqlon                                    9904   -1           NaN           NaN
+161 cycle                                   cycle                                    9905   -1           NaN           NaN
+162 pass                                    pass                                     9906   -1           NaN           NaN
 Eqlonlim =   -99.092603 -105.851374  135.851374  129.092603
 debug =     3
 Checking sat/cycle/pass :  e1   19    1
@@ -290,7 +292,7 @@ Bail out on estimated time:  212284800.000  212371200.000  212278072.326  212281
 Checking sat/cycle/pass :  e1   19   60
 Bail out on estimated time:  212284800.000  212371200.000  212281086.279  212284100.233
 Checking sat/cycle/pass :  e1   19   61
-Opening for read only: /rads/data/e1/a/c019/e1p0061c019.nc
+Opening for read only: /e1/a/c019/e1p0061c019.nc
 Start/end/equator time/longitude =   212285607.468  212284395.961  212287111.315  -25.854613
 cycle, pass, ndata =     19    61  1336
 Start rads_get_var
@@ -304,10 +306,9 @@ flags                                   data(1), data(ndata) =  0000000000000001
 pass                                    data(1), data(ndata) =    61.   61.
 drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   62
-Opening for read only: /rads/data/e1/a/c019/e1p0062c019.nc
-Start/end/equator time/longitude =   212288616.937  212287116.377  212289759.802  141.604694
+Bail out on estimated equator longitude:  -99.092603  135.851374  141.573488
 Checking sat/cycle/pass :  e1   19   63
-Opening for read only: /rads/data/e1/a/c019/e1p0063c019.nc
+Opening for read only: /e1/a/c019/e1p0063c019.nc
 Start/end/equator time/longitude =   212291635.319  212290371.508  212293123.542  -50.971441
 cycle, pass, ndata =     19    63   883
 Start rads_get_var
@@ -321,7 +322,7 @@ flags                                   data(1), data(ndata) =  0000000000000001
 pass                                    data(1), data(ndata) =    63.   63.
 drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   64
-Opening for read only: /rads/data/e1/a/c019/e1p0064c019.nc
+Opening for read only: /e1/a/c019/e1p0064c019.nc
 Start/end/equator time/longitude =   212294644.893  212293199.022  212295782.618  116.488290
 cycle, pass, ndata =     19    64   939
 Start rads_get_var
@@ -335,7 +336,7 @@ flags                                   data(1), data(ndata) =  0010000001000001
 pass                                    data(1), data(ndata) =    64.   64.
 drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   65
-Opening for read only: /rads/data/e1/a/c019/e1p0065c019.nc
+Opening for read only: /e1/a/c019/e1p0065c019.nc
 Start/end/equator time/longitude =   212297663.207  212296318.113  212299161.771  -76.087319
 cycle, pass, ndata =     19    65   556
 Start rads_get_var
@@ -349,7 +350,7 @@ flags                                   data(1), data(ndata) =  0000000000000001
 pass                                    data(1), data(ndata) =    65.   65.
 drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   66
-Opening for read only: /rads/data/e1/a/c019/e1p0066c019.nc
+Opening for read only: /e1/a/c019/e1p0066c019.nc
 Start/end/equator time/longitude =   212300672.808  212299179.862  212301833.036   91.373141
 cycle, pass, ndata =     19    66  1133
 Start rads_get_var
@@ -363,7 +364,7 @@ flags                                   data(1), data(ndata) =  0010000001000001
 pass                                    data(1), data(ndata) =    66.   66.
 drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   67
-Opening for read only: /rads/data/e1/a/c019/e1p0067c019.nc
+Opening for read only: /e1/a/c019/e1p0067c019.nc
 Start/end/equator time/longitude =   212303691.198  212302255.808  212305180.447  258.797404
 cycle, pass, ndata =     19    67   114
 Start rads_get_var
@@ -377,7 +378,7 @@ flags                                   data(1), data(ndata) =  0000000000000001
 pass                                    data(1), data(ndata) =    67.   67.
 drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   68
-Opening for read only: /rads/data/e1/a/c019/e1p0068c019.nc
+Opening for read only: /e1/a/c019/e1p0068c019.nc
 Start/end/equator time/longitude =   212306700.770  212305199.861  212307896.159   66.257263
 cycle, pass, ndata =     19    68  1216
 Start rads_get_var
@@ -391,10 +392,9 @@ flags                                   data(1), data(ndata) =  0011000001000001
 pass                                    data(1), data(ndata) =    68.   68.
 drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   69
-Opening for read only: /rads/data/e1/a/c019/e1p0069c019.nc
-Start/end/equator time/longitude =   212309719.181  212308231.284  212311196.569  233.681063
+Bail out on estimated equator longitude: -105.851374  129.092603  233.666512
 Checking sat/cycle/pass :  e1   19   70
-Opening for read only: /rads/data/e1/a/c019/e1p0070c019.nc
+Opening for read only: /e1/a/c019/e1p0070c019.nc
 Start/end/equator time/longitude =   212312728.729  212311331.734  212314238.136   41.140714
 cycle, pass, ndata =     19    70   703
 Start rads_get_var
@@ -408,10 +408,9 @@ flags                                   data(1), data(ndata) =  0000000001000001
 pass                                    data(1), data(ndata) =    70.   70.
 drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   71
-Opening for read only: /rads/data/e1/a/c019/e1p0071c019.nc
-Start/end/equator time/longitude =   212315747.105  212314239.116  212317164.029  208.564297
+Bail out on estimated equator longitude: -105.851374  129.092603  208.550233
 Checking sat/cycle/pass :  e1   19   72
-Opening for read only: /rads/data/e1/a/c019/e1p0072c019.nc
+Opening for read only: /e1/a/c019/e1p0072c019.nc
 Start/end/equator time/longitude =   212318756.630  212317271.944  212320249.104   16.024047
 cycle, pass, ndata =     19    72   586
 Start rads_get_var
@@ -425,10 +424,9 @@ flags                                   data(1), data(ndata) =  0010000001000001
 pass                                    data(1), data(ndata) =    72.   72.
 drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   73
-Opening for read only: /rads/data/e1/a/c019/e1p0073c019.nc
-Start/end/equator time/longitude =   212321774.979  212320480.329  212323181.011  183.447495
+Bail out on estimated equator longitude: -105.851374  129.092603  183.433953
 Checking sat/cycle/pass :  e1   19   74
-Opening for read only: /rads/data/e1/a/c019/e1p0074c019.nc
+Opening for read only: /e1/a/c019/e1p0074c019.nc
 Start/end/equator time/longitude =   212324784.516  212323336.425  212326214.890   -9.092655
 cycle, pass, ndata =     19    74   941
 Start rads_get_var
@@ -442,10 +440,9 @@ flags                                   data(1), data(ndata) =  0010000001000001
 pass                                    data(1), data(ndata) =    74.   74.
 drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   75
-Opening for read only: /rads/data/e1/a/c019/e1p0075c019.nc
-Start/end/equator time/longitude =   212327802.819  212326434.132  212329227.610  158.330936
+Bail out on estimated equator longitude: -105.851374  129.092603  158.317674
 Checking sat/cycle/pass :  e1   19   76
-Opening for read only: /rads/data/e1/a/c019/e1p0076c019.nc
+Opening for read only: /e1/a/c019/e1p0076c019.nc
 Start/end/equator time/longitude =   212330812.347  212329319.192  212332171.670  -34.208747
 cycle, pass, ndata =     19    76  1290
 Start rads_get_var
@@ -459,10 +456,9 @@ flags                                   data(1), data(ndata) =  0000000000000001
 pass                                    data(1), data(ndata) =    76.   76.
 drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   77
-Opening for read only: /rads/data/e1/a/c019/e1p0077c019.nc
-Start/end/equator time/longitude =   212333830.666  212332363.767  212335330.640  133.214832
+Bail out on estimated equator longitude: -105.851374  129.092603  133.201395
 Checking sat/cycle/pass :  e1   19   78
-Opening for read only: /rads/data/e1/a/c019/e1p0078c019.nc
+Opening for read only: /e1/a/c019/e1p0078c019.nc
 Start/end/equator time/longitude =   212336840.203  212335362.468  212338347.539  -59.324664
 cycle, pass, ndata =     19    78   409
 Start rads_get_var
@@ -476,7 +472,7 @@ flags                                   data(1), data(ndata) =  0000000000000001
 pass                                    data(1), data(ndata) =    78.   78.
 drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   79
-Opening for read only: /rads/data/e1/a/c019/e1p0079c019.nc
+Opening for read only: /e1/a/c019/e1p0079c019.nc
 Start/end/equator time/longitude =   212339858.568  212338350.698  212341349.135  108.098290
 cycle, pass, ndata =     19    79   697
 Start rads_get_var
@@ -490,7 +486,7 @@ flags                                   data(1), data(ndata) =  0000000000000001
 pass                                    data(1), data(ndata) =    79.   79.
 drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   80
-Opening for read only: /rads/data/e1/a/c019/e1p0080c019.nc
+Opening for read only: /e1/a/c019/e1p0080c019.nc
 Start/end/equator time/longitude =   212342868.184  212341382.106  212344377.040  -84.441312
 cycle, pass, ndata =     19    80   889
 Start rads_get_var
@@ -504,7 +500,7 @@ flags                                   data(1), data(ndata) =  0000000000000001
 pass                                    data(1), data(ndata) =    80.   80.
 drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   81
-Opening for read only: /rads/data/e1/a/c019/e1p0081c019.nc
+Opening for read only: /e1/a/c019/e1p0081c019.nc
 Start/end/equator time/longitude =   212345886.549  212344378.021  212347343.577   82.980945
 cycle, pass, ndata =     19    81  1037
 Start rads_get_var
@@ -518,10 +514,9 @@ flags                                   data(1), data(ndata) =  0000000000000001
 pass                                    data(1), data(ndata) =    81.   81.
 drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   82
-Opening for read only: /rads/data/e1/a/c019/e1p0082c019.nc
-Start/end/equator time/longitude =   212348896.228  212347411.668  212350388.186  250.441325
+Bail out on estimated equator longitude:  -99.092603  135.851374  250.410698
 Checking sat/cycle/pass :  e1   19   83
-Opening for read only: /rads/data/e1/a/c019/e1p0083c019.nc
+Opening for read only: /e1/a/c019/e1p0083c019.nc
 Start/end/equator time/longitude =   212351914.534  212350764.239  212353384.337   57.864073
 cycle, pass, ndata =     19    83  1217
 Start rads_get_var
@@ -535,10 +530,9 @@ flags                                   data(1), data(ndata) =  0000000000000001
 pass                                    data(1), data(ndata) =    83.   83.
 drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   84
-Opening for read only: /rads/data/e1/a/c019/e1p0084c019.nc
-Start/end/equator time/longitude =   212354924.165  212353456.224  212356341.377  225.324553
+Bail out on estimated equator longitude:  -99.092603  135.851374  225.294419
 Checking sat/cycle/pass :  e1   19   85
-Opening for read only: /rads/data/e1/a/c019/e1p0085c019.nc
+Opening for read only: /e1/a/c019/e1p0085c019.nc
 Start/end/equator time/longitude =   212357942.483  212356799.916  212359428.594   32.747942
 cycle, pass, ndata =     19    85   588
 Start rads_get_var
@@ -552,10 +546,9 @@ flags                                   data(1), data(ndata) =  0000000000000001
 pass                                    data(1), data(ndata) =    85.   85.
 drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   19   86
-Opening for read only: /rads/data/e1/a/c019/e1p0086c019.nc
-Start/end/equator time/longitude =   212360952.030  212359460.512  212362245.533  200.208293
+Bail out on estimated equator longitude:  -99.092603  135.851374  200.178140
 Checking sat/cycle/pass :  e1   20    1
-Opening for read only: /rads/data/e1/a/c020/e1p0001c020.nc
+Opening for read only: /e1/a/c020/e1p0001c020.nc
 Start/end/equator time/longitude =   212363970.351  212362774.311  212365454.233    7.632405
 cycle, pass, ndata =     20     1   940
 Start rads_get_var
@@ -569,10 +562,9 @@ flags                                   data(1), data(ndata) =  0000000000000001
 pass                                    data(1), data(ndata) =     1.    1.
 drange                                  data(1), data(ndata) =   0.409  0.409
 Checking sat/cycle/pass :  e1   20    2
-Opening for read only: /rads/data/e1/a/c020/e1p0002c020.nc
-Start/end/equator time/longitude =   212366979.840  212365480.372  212368152.099  175.092824
+Bail out on estimated equator longitude:  -99.092603  135.851374  175.061860
 Checking sat/cycle/pass :  e1   20    3
-Opening for read only: /rads/data/e1/a/c020/e1p0003c020.nc
+Opening for read only: /e1/a/c020/e1p0003c020.nc
 Start/end/equator time/longitude =   212369998.184  212368789.000  212371502.756  -17.483073
 cycle, pass, ndata =     20     3  1378
 Start rads_get_var
@@ -761,15 +753,15 @@ Start rads_end
 # Cycle number limits                              0       172          19          20           1
 # Pass number limits                               0       172           1          86           1
 # Time limits                                    143        29 910924/0000 910925/0000
-# Equator longitude limits (asc)                   0        15    -105.851     129.093
-# Equator longitude limits (des)                   0        14     -99.093     135.851
+# Equator longitude limits (asc)                   5        10    -105.851     129.093
+# Equator longitude limits (des)                   5         9     -99.093     135.851
 #
-# PASSES AND MEASUREMENTS READ                    29     51710
+# PASSES AND MEASUREMENTS READ                    19     30592
 #
 #                                           REJECTED  SELECTED       LOWER       UPPER         MIN         MAX        MEAN      STDDEV
-# time [seconds since 1985-01-01 00:00:00        234     51476 910924/0000 910925/0000 910924/0000 910924/2358 910924/1217      25298.
-# latitude [degrees_north]                     20271     31439     -50.000      30.000     -50.000      29.988     -12.977      22.920
-# longitude [degrees_east]                     24101     27609     -90.000     120.000     -90.000     119.993       6.975      57.943
+# time [seconds since 1985-01-01 00:00:00        234     30358 910924/0000 910925/0000 910924/0000 910924/2358 910924/1129      26032.
+# latitude [degrees_north]                     11815     18777     -50.000      30.000     -49.998      29.975     -15.112      22.386
+# longitude [degrees_east]                      3368     27224     -90.000     120.000     -90.000     119.993       7.364      57.454
 #
 # MEASUREMENTS IN REQUESTED PERIOD AND REGION            16852
 #
