@@ -2540,7 +2540,7 @@ Global RADS configuration file
 	<if sat="6a">
 		<long_name>radiometer surface type</long_name>
 		<flag_values>open_ocean coastal_ocean land</flag_values>
-		<data>rad_surface_type</data>
+		<data>surface_type_rad</data>
 		<plot_range>0 2</plot_range>
 	</if>
 </var>
@@ -2676,15 +2676,6 @@ Global RADS configuration file
 	<format>z1</format>
 	<compress>int1</compress>
 	<comment>Computed from a mask built with MODIS and GlobCover data</comment>
-</var>
-
-<var name="rad_surface_type" field="2519", sat="6a">
-	<long_name>radiometer surface type</long_name>
-	<flag_values>open_ocean coastal_ocean land</flag_values>
-	<data>rad_surface_type</data>
-	<plot_range>0 2</plot_range>
-	<format>z1</format>
-	<compress>int1</compress>
 </var>
 
 <var name="flags" field="2601 26">
