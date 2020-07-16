@@ -83,7 +83,7 @@ character(len=rads_cmdl) :: infile, arg
 
 ! Header variables
 
-integer(fourbyteint) :: cyclenr, passnr, varid, patch
+integer(fourbyteint) :: ncid, cyclenr, passnr, varid, patch
 real(eightbytereal) :: equator_time
 integer :: latency = rads_nrt
 

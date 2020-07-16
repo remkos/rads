@@ -90,7 +90,7 @@ character(len=rads_cmdl) :: infile, arg
 
 ! Header variables
 
-integer(fourbyteint) :: cyclenr, passnr, varid
+integer(fourbyteint) :: ncid, cyclenr, passnr, varid
 real(eightbytereal) :: equator_time
 
 ! Data variables
