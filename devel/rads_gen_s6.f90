@@ -173,6 +173,21 @@ do
 		cycle
 	endif
 
+! Determine latency (NRT, STC, NTC) and resolution (LR, HR)
+
+	call nfs(nf90_get_att(ncid,nf90_global,'title',arg))
+	if (index(arg, 'Near Real Time') > 0) then
+		latency = rads_nrt
+	else if (index(arg, 'Short Time Critical') > 0) then
+		latency = rads_stc
+	else if (index(arg, 'Non Time Critical') > 0) then
+		latency = rads_ntc
+	else
+		call log_string ('Error: file skipped: unknown latency', .true.)
+		cycle
+	endif
+	lr = (index(arg, 'LR') > 0)
+
 ! Get NetCDF ID for 1-Hz data
 
 	call nfs(nf90_inq_ncid(ncid, 'data_01', ncid1))
@@ -200,21 +215,6 @@ do
 		call log_string ('Error: file skipped: too many measurements', .true.)
 		cycle
 	endif
-
-! Determine latency (NRT, STC, NTC) and resolution (LR, HR)
-
-	call nfs(nf90_get_att(ncid,nf90_global,'title',arg))
-	if (index(arg, 'Near Real Time') > 0) then
-		latency = rads_nrt
-	else if (index(arg, 'Short Time Critical') > 0) then
-		latency = rads_stc
-	else if (index(arg, 'Non Time Critical') > 0) then
-		latency = rads_ntc
-	else
-		call log_string ('Error: file skipped: unknown latency', .true.)
-		cycle
-	endif
-	lr = (index(arg, 'LR') > 0)
 
 ! Read cycle, pass, equator time
 
