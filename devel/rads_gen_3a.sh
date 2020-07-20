@@ -28,7 +28,7 @@ lst=$SANDBOX/rads_gen_3a.lst
 
 date													>  $log 2>&1
 
-find $* -name "*.nc" | sort > $lst
+find "$@" -name "*.nc" | sort > $lst
 rads_gen_s3 	  $options --min-rec=6 < $lst			>> $log 2>&1
 
 # General geophysical corrections

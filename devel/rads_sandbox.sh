@@ -22,30 +22,30 @@
 # Usage: rads_close_sandbox [additional-rsync-options]
 
 export RADSDATAROOT=`rads-config --datadir`
-export RADSROOT=${RADSDATAROOT%/data*}
+export RADSROOT="${RADSDATAROOT%/data*}"
 
 rads_job=`basename $0 .sh`
 
 rads_open_sandbox () {
 rads_sat=$1
 SANDBOX=`mktemp -d ${TMPDIR:-/tmp}/rads.XXXXXX`
-ln -s $RADSDATAROOT/nml $RADSDATAROOT/conf $SANDBOX
-export RADSDATAROOT=$SANDBOX
+ln -s "$RADSDATAROOT/nml" "$RADSDATAROOT/conf" "$SANDBOX"
+export RADSDATAROOT="$SANDBOX"
 options="-S$rads_sat $opt"
 log=$RADSDATAROOT/${rads_job}-`date -u +%Y%m%d-%H%M%S`.log
 lst=$RADSDATAROOT/${rads_job}-`date -u +%Y%m%d-%H%M%S`.lst
 }
 
 rads_close_sandbox () {
-egrep -Hi "fault|error" $log
-gzip -f $log
-export RADSDATAROOT=$RADSROOT/data
-rsync -aW --remove-source-files $* $SANDBOX/$rads_sat/ $RADSDATAROOT/$rads_sat/
-mkdir -p $RADSDATAROOT/$rads_sat/log
-mv -f $log.gz $RADSDATAROOT/$rads_sat/log
-rm -rf $SANDBOX
+egrep -Hi "fault|error" "$log"
+gzip -f "$log"
+export RADSDATAROOT="$RADSROOT/data"
+rsync -aW --remove-source-files "$@" "$SANDBOX/$rads_sat/" "$RADSDATAROOT/$rads_sat/"
+mkdir -p "$RADSDATAROOT/$rads_sat/log"
+mv -f "$log.gz" "$RADSDATAROOT/$rads_sat/log"
+rm -rf "$SANDBOX"
 case $rads_sat in
 	*.*) ;; # Do nothing when using special directories
-	*) (cd $RADSROOT/tables ; make $rads_sat web) ;;
+	*) (cd "$RADSROOT/tables" ; make $rads_sat web) ;;
 esac
 }
