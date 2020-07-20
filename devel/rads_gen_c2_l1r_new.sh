@@ -33,25 +33,25 @@ d0=`date -u -v -92H +%Y%m%d 2>&1` || d0=`date -u --date="92 hours ago" +%Y%m%d`
 d2=20`tail -n 1 $RADSROOT/tables/c2a.cyc | cut -c34-39`
 [[ $d2 -lt $d0 ]] && d0=$d2
 
-date											>  $log 2>&1
+date											>  "$log" 2>&1
 
 TZ=UTC touch -t ${d0}0000 $mrk
-find SIR_FDM_L1/LATEST -name "CS_*_[B-Z]???.nc" -a -newer $mrk | sort -r | sort -u -t_ -k8,8 > $lst
+find SIR_FDM_L1/LATEST -name "CS_*_[B-Z]???.nc" -a -newer $mrk | sort -r | sort -u -t_ -k8,8 > "$lst"
 
-rads_gen_c2_l1r  $options --ymd=$d0 $* < $lst 	>> $log 2>&1
-rads_add_ncep    $options -gs               	>> $log 2>&1
-rads_fix_c2      $options --all					>> $log 2>&1
-rads_add_ssb     $options --all					>> $log 2>&1
-rads_add_orbit   $options -Valt_gdre --dir=gdr-e-moe --equator --loc-7 --rate	>> $log 2>&1
-rads_add_orbit   $options -Valt_eig6c			>> $log 2>&1
-rads_add_common  $options 						>> $log 2>&1
-rads_add_ecmwf   $options --all					>> $log 2>&1
-rads_add_iono    $options --all					>> $log 2>&1
-rads_add_mog2d   $options						>> $log 2>&1
-rads_add_ww3_222 $options --all					>> $log 2>&1
-rads_add_sla     $options                   	>> $log 2>&1
+rads_gen_c2_l1r  $options --ymd=$d0 "$@" < "$lst" 	>> "$log" 2>&1
+rads_add_ncep    $options -gs               	>> "$log" 2>&1
+rads_fix_c2      $options --all					>> "$log" 2>&1
+rads_add_ssb     $options --all					>> "$log" 2>&1
+rads_add_orbit   $options -Valt_gdre --dir=gdr-e-moe --equator --loc-7 --rate	>> "$log" 2>&1
+rads_add_orbit   $options -Valt_eig6c			>> "$log" 2>&1
+rads_add_common  $options 						>> "$log" 2>&1
+rads_add_ecmwf   $options --all					>> "$log" 2>&1
+rads_add_iono    $options --all					>> "$log" 2>&1
+rads_add_mog2d   $options						>> "$log" 2>&1
+rads_add_ww3_222 $options --all					>> "$log" 2>&1
+rads_add_sla     $options                   	>> "$log" 2>&1
 
-date											>> $log 2>&1
+date											>> "$log" 2>&1
 
 # Set Navy data aside
 pushd $SANDBOX/c2/a
