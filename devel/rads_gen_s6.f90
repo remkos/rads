@@ -141,18 +141,29 @@ do
 ! Open input file
 
 	call log_string (infile)
-	if (nf90_open(infile,nf90_nowrite,ncid) /= nf90_noerr) then
+	if (nft(nf90_open(infile,nf90_nowrite,ncid))) then
 		call log_string ('Error: failed to open input file', .true.)
 		cycle
 	endif
 
 ! Check if input is a Sentinel-6 Level 2 data set
+! Determine latency (NRT, STC, NTC) and resolution (LR, HR)
 
-	if (nf90_get_att(ncid,nf90_global,'title',arg) /= nf90_noerr .or. &
-		arg /= 'Altimeter L2') then
+	if (nft(nf90_get_att(ncid,nf90_global,'title',arg)) .or. &
+		arg(:2) /= 'L2') then
 		call log_string ('Error: this is not a Sentinel-6 Level 2 data set', .true.)
 		cycle
+	else if (index(arg, 'Near Real Time') > 0) then
+		latency = rads_nrt
+	else if (index(arg, 'Short Time Critical') > 0) then
+		latency = rads_stc
+	else if (index(arg, 'Non Time Critical') > 0) then
+		latency = rads_ntc
+	else
+		call log_string ('Error: file skipped: unknown latency', .true.)
+		cycle
 	endif
+	lr = (index(arg, 'LR') > 0)
 
 ! Get the mission name and initialise RADS (if not done before)
 
@@ -173,38 +184,16 @@ do
 		cycle
 	endif
 
-! Determine latency (NRT, STC, NTC) and resolution (LR, HR)
-
-	call nfs(nf90_get_att(ncid,nf90_global,'title',arg))
-	if (index(arg, 'Near Real Time') > 0) then
-		latency = rads_nrt
-	else if (index(arg, 'Short Time Critical') > 0) then
-		latency = rads_stc
-	else if (index(arg, 'Non Time Critical') > 0) then
-		latency = rads_ntc
-	else
-		call log_string ('Error: file skipped: unknown latency', .true.)
-		cycle
-	endif
-	lr = (index(arg, 'LR') > 0)
-
 ! Get NetCDF ID for 1-Hz data
 
 	call nfs(nf90_inq_ncid(ncid, 'data_01', ncid1))
 	call nfs(nf90_inq_ncid(ncid1, 'ku', ncidk))
 	if (lr) call nfs(nf90_inq_ncid(ncid1, 'c', ncidc))
 
-! Get NetCDF ID for 20-Hz data
-
-	call nfs(nf90_inq_ncid(ncid, 'data_20', ncid20))
-	call nfs(nf90_inq_ncid(ncid20, 'ku', ncid20k))
-
 ! Read global attributes
 
 	call nfs(nf90_inq_dimid(ncid1, 'time', varid))
 	call nfs(nf90_inquire_dimension(ncid, varid, len=nrec))
-	call nfs(nf90_inq_dimid(ncid20k, 'time', varid))
-	call nfs(nf90_inquire_dimension(ncid20k, varid, len=nrec20))
 	if (nrec == 0) then
 		call log_string ('Error: file skipped: no measurements', .true.)
 		cycle
@@ -222,6 +211,14 @@ do
 	call nfs(nf90_get_att(ncid,nf90_global,'pass_number',passnr))
 	call nfs(nf90_get_att(ncid,nf90_global,'equator_time',arg))
 	equator_time = strp1985f (arg)
+	write (*,*) "equator_time =",arg,equator_time
+
+! If pass_number is 0, get cycle and pass number from the file name
+
+	if (passnr == 0) then
+		i = index(infile, 'P4_2', .true.)
+		read (infile(i+17:i+23),'(i3,1x,i3)') cyclenr, passnr
+	endif
 
 ! Skip passes of which the cycle number or equator crossing time is outside the specified interval
 
@@ -230,10 +227,11 @@ do
 		call log_string ('Skipped', .true.)
 		cycle
 	endif
+	write (*,*) "times =", times, equator_time
 
 ! Set mission phase based on equator_time
 
-	call rads_set_phase (S, equator_time)
+!	call rads_set_phase (S, equator_time)
 
 ! Store relevant info
 
@@ -259,8 +257,21 @@ do
 ! Allocate variables
 
 	allocate (a(nrec),flags(nrec),flags_mle3(nrec),flags_save(nrec))
-	allocate (telemetry_type_flag(nrec20))
 	nvar = 0
+	write (*,*) "nrec =", nrec
+
+! Get NetCDF ID for 20-Hz data (if available)
+
+	if (nft(nf90_inq_ncid(ncid, 'data_20', ncid20))) then
+		ncid20 = 0
+		ncid20k = 0
+		nrec20 = 0
+	else
+		call nfs(nf90_inq_ncid(ncid20, 'ku', ncid20k))
+		call nfs(nf90_inq_dimid(ncid20k, 'time', varid))
+		call nfs(nf90_inquire_dimension(ncid20k, varid, len=nrec20))
+		allocate (telemetry_type_flag(nrec20))
+	endif
 
 ! Compile flag bits
 
@@ -278,31 +289,31 @@ do
 	call nc2f (ncid1, 'rain_flag', 7, eq=4)						! bit  7: Altimeter rain or ice flag
 	call nc2f (ncid1, 'rad_rain_flag', 8)
 	call nc2f (ncid1, 'rad_sea_ice_flag', 8)					! bit  8: Radiometer rain or ice flag
-	call nc2f (ncid1, 'tmb_187_qual',  9)
-	call nc2f (ncid1, 'tmb_238_qual',  9)						! bit  9: Quality 18.7 or 23.8 GHz channel
-	call nc2f (ncid1, 'tmb_340_qual', 10)						! bit 10: Quality 34.0 GHz channel
+	call nc2f (ncid1, 'rad_tmb_187_qual',  9)
+	call nc2f (ncid1, 'rad_tmb_238_qual',  9)					! bit  9: Quality 18.7 or 23.8 GHz channel
+	call nc2f (ncid1, 'rad_tmb_340_qual', 10)					! bit 10: Quality 34.0 GHz channel
 	call nc2f (ncid1, 'orbit_type_flag', 15, le=2)				! bit 15: Quality of orbit
 
 ! Now do specifics for MLE3
 
 	if (lr) then
 		flags_save = flags	! Keep flags for later
-		call nc2f (ncid1, 'range_ocean_mle3_qual', 11)			! bit 11: Quality range
-		call nc2f (ncid1, 'swh_ocean_mle3_qual', 12)			! bit 12: Quality SWH
-		call nc2f (ncid1, 'sig0_ocean_mle3_qual', 13)			! bit 13: Quality Sigma0
+		call nc2f (ncidk, 'range_ocean_mle3_qual', 11)			! bit 11: Quality range
+		call nc2f (ncidk, 'swh_ocean_mle3_qual', 12)			! bit 12: Quality SWH
+		call nc2f (ncidk, 'sig0_ocean_mle3_qual', 13)			! bit 13: Quality Sigma0
 		flags_mle3 = flags	! Copy result for MLE3
 		flags = flags_save	! Continue with nominal ocean retracking flags
 	endif
 
 ! Redo the last ones for standard retracker
 
-	call nc2f (ncid, 'range_ocean_qual', 11)					! bit 11: Quality range
-	call nc2f (ncid, 'swh_ocean_qual', 12)						! bit 12: Quality SWH
-	call nc2f (ncid, 'sig0_ocean_qual', 13)						! bit 13: Quality Sigma0
+	call nc2f (ncidk, 'range_ocean_qual', 11)					! bit 11: Quality range
+	call nc2f (ncidk, 'swh_ocean_qual', 12)						! bit 12: Quality SWH
+	call nc2f (ncidk, 'sig0_ocean_qual', 13)					! bit 13: Quality Sigma0
 
 ! Time and location
 
-	call get_var (ncid1, 'time_01', a)
+	call get_var (ncid1, 'time', a)
 	call new_var ('time', a + sec2000)
 	call cpy_var (ncid1, 'latitude', 'lat')
 	call cpy_var (ncid1, 'longitude','lon')
@@ -313,15 +324,15 @@ do
 ! Telemetry type (copied from 20-Hz to 1-Hz)
 
 	call get_var (ncidk, 'index_first_20hz_measurement', a)
-	call get_var (ncid20k, 'telemetry_type_flag', telemetry_type_flag)
+	if (ncid20k /= 0) call get_var (ncid20k, 'telemetry_type_flag', telemetry_type_flag)
 	call new_var ('flag_alt_oper_mode', telemetry_type_flag(nint(a(:))) - 1)
 
 ! Range
 
 	call cpy_var (ncidk, 'range_ocean', 'range_ku')
-	call cpy_var (ncid1, 'range_ocean_rms', 'range_rms_ku')
+	call cpy_var (ncidk, 'range_ocean_rms', 'range_rms_ku')
 	call cpy_var (ncidk, 'range_ocean_numval', 'range_numval')
-	call cpy_var (ncid1, 'range_ocean_qual', 'qual_range')
+	call cpy_var (ncidk, 'range_ocean_qual', 'qual_range')
 	if (lr) then
 		call cpy_var (ncidk, 'range_ocean_mle3', 'range_ku_mle3')
 		call cpy_var (ncidk, 'range_ocean_mle3_rms', 'range_rms_ku_mle3')
@@ -335,7 +346,7 @@ do
 
 	call cpy_var (ncidk, 'swh_ocean', 'swh_ku')
 	call cpy_var (ncidk, 'swh_ocean_rms', 'swh_rms_ku')
-	call cpy_var (ncid1, 'range_swh_qual', 'qual_swh')
+	call cpy_var (ncidk, 'swh_ocean_qual', 'qual_swh')
 	if (lr) then
 		call cpy_var (ncidk, 'swh_ocean_mle3', 'swh_ku_plrm')
 		call cpy_var (ncidk, 'swh_ocean_mle3_rms', 'swh_rms_ku_mle3')
@@ -347,7 +358,7 @@ do
 
 	call cpy_var (ncidk, 'sig0_ocean', 'sig0_ku')
 	call cpy_var (ncidk, 'sig0_ocean_rms', 'sig0_rms_ku')
-	call cpy_var (ncid1, 'sig0_qual', 'qual_sig0')
+	call cpy_var (ncidk, 'sig0_ocean_qual', 'qual_sig0')
 	call cpy_var (ncidk, 'atm_cor_sig0', 'dsig0_atmos_ku')
 	if (lr) then
 		call cpy_var (ncidk, 'sig0_ocean_mle3', 'sig0_ku_plrm')
@@ -393,14 +404,14 @@ do
 		call cpy_var (ncid1, 'iono_cor_alt_filtered_01_plrm_ku', 'iono_alt_smooth_mle3')
 		call cpy_var (ncidc, 'range_ocean_qual', 'qual_iono_alt')
 	endif
-	call cpy_var (ncid1, 'iono_cor', 'iono_gim')
+	call cpy_var (ncidk, 'iono_cor_gim', 'iono_gim')
 
 ! SSB
 
-	call cpy_var (ncid1, 'sea_state_bias', 'ssb_cls')
+	call cpy_var (ncidk, 'sea_state_bias', 'ssb_cls')
 	if (lr) then
-		call cpy_var (ncid1, 'sea_state_bias_mle3', 'ssb_cls_mle3')
-		call cpy_var (ncid1, 'sea_state_bias_c', 'ssb_cls_c')
+		call cpy_var (ncidk, 'sea_state_bias_mle3', 'ssb_cls_mle3')
+		call cpy_var (ncidc, 'sea_state_bias', 'ssb_cls_c')
 	endif
 
 ! IB
@@ -415,7 +426,7 @@ do
 ! Tides
 
 	call cpy_var (ncid1, 'ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got' // tide_got_ver)
-	call cpy_var (ncid1, 'ocean_tide_sol2 load_tide_sol2 SUB ocean_tide_non_eq_01 ADD', 'tide_ocean_fes' // tide_fes_ver)
+	call cpy_var (ncid1, 'ocean_tide_sol2 load_tide_sol2 SUB ocean_tide_non_eq ADD', 'tide_ocean_fes' // tide_fes_ver)
 	call cpy_var (ncid1, 'load_tide_sol1', 'tide_load_got' // tide_got_ver)
 	call cpy_var (ncid1, 'load_tide_sol2', 'tide_load_fes' // tide_fes_ver)
 	call cpy_var (ncid1, 'ocean_tide_eq', 'tide_equil')
@@ -442,21 +453,21 @@ do
 ! Bit flags
 
 	call new_var ('flags', dble(flags))
-	call new_var ('flags_mle3', dble(flags_mle3))
+	if (lr) call new_var ('flags_mle3', dble(flags_mle3))
 
 ! Other radiometer measurements
 
-	call cpy_var (ncid1, 'tmb_187', 'tb_187')
-	call cpy_var (ncid1, 'tmb_238', 'tb_238')
-	call cpy_var (ncid1, 'tmb_340', 'tb_340')
-	call cpy_var (ncid1, 'tmb_340_qual 2 MUL tmb_238_qual ADD 2 MUL tmb_187_qual ADD', 'qual_rad_tb')
+	call cpy_var (ncid1, 'rad_tmb_187', 'tb_187')
+	call cpy_var (ncid1, 'rad_tmb_238', 'tb_238')
+	call cpy_var (ncid1, 'rad_tmb_340', 'tb_340')
+	call cpy_var (ncid1, 'rad_tmb_340_qual 2 MUL rad_tmb_238_qual ADD 2 MUL rad_tmb_187_qual ADD', 'qual_rad_tb')
 	call cpy_var (ncid1, 'rad_cloud_liquid_water', 'liquid_water_rad')
 	call cpy_var (ncid1, 'rad_water_vapor', 'water_vapor_rad')
 
 ! SSHA
 
-	call cpy_var (ncid1, 'ssha', 'ssha')
-	call cpy_var (ncid1, 'ssha_mle3', 'ssha_mle3')
+	call cpy_var (ncidk, 'ssha', 'ssha')
+	if (lr) call cpy_var (ncidk, 'ssha_mle3', 'ssha_mle3')
 
 ! Misc
 
@@ -468,7 +479,7 @@ do
 	call nfs(nf90_close(ncid))
 	call put_rads
 	deallocate (a, flags, flags_mle3, flags_save)
-	deallocate (telemetry_type_flag)
+	if (nrec20 /= 0) deallocate (telemetry_type_flag)
 
 enddo
 
