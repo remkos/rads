@@ -3135,7 +3135,7 @@ Global RADS configuration file
 	<default>0</default>
 	<compress>int2 1e-4</compress>
 </var>
-<var name="off_nadir_angle2_wf_rms_ku" field="3005" sat="3a 3b c2">
+<var name="off_nadir_angle2_wf_rms_ku" field="3005" sat="3a 3b 6a c2">
 	<long_name>std dev of off-nadir pointing angle squared from waveform</long_name>
 	<units>degrees^2</units>
 	<plot_range>0.0 0.04</plot_range>
@@ -3143,7 +3143,7 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 </var>
-<var name="attitude_pitch" field="3006" sat="3a 3b c2">
+<var name="attitude_pitch" field="3006" sat="3a 3b 6a c2">
 	<long_name>platform pitch angle</long_name>
 	<units>degrees</units>
 	<data>attitude_pitch</data>
@@ -3159,7 +3159,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<dimensions>2</dimensions>
 </var>
-<var name="attitude_roll" field="3007" sat="3a 3b c2">
+<var name="attitude_roll" field="3007" sat="3a 3b 6a c2">
 	<long_name>platform roll angle</long_name>
 	<units>degrees</units>
 	<data>attitude_roll</data>
@@ -3175,7 +3175,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<dimensions>2</dimensions>
 </var>
-<var name="attitude_yaw" field="3008" sat="3a 3b c2">
+<var name="attitude_yaw" field="3008" sat="3a 3b 6a c2">
 	<long_name>platform yaw angle</long_name>
 	<units>degrees</units>
 	<data>attitude_yaw</data>
