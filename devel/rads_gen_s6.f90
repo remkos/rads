@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2019  Remko Scharroo and Eric Leuliette
+! Copyright (c) 2011-2020  Remko Scharroo and Eric Leuliette
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -55,39 +55,39 @@ program rads_gen_s6
 ! dry_tropo_ecmwf - ECMWF dry tropospheric correction
 ! wet_tropo_ecmwf - ECMWF wet tropo correction
 ! wet_tropo_rad - Radiometer wet tropo correction
-! iono_alt_* - Dual-frequency ionospheric correction (not _c)
+! iono_alt - Dual-frequency ionospheric correction
+! iono_alt_smooth - Filtered dual-frequency ionospheric correction
 ! iono_gim - GIM ionosphetic correction
 ! inv_bar_static - Inverse barometer
 ! inv_bar_mog2d - MOG2D
 ! ssb_cls_* - SSB
 ! swh_* - Significant wave height
 ! swh_rms_* - Std dev of SWH
-! sig0_* - Sigma0 (not corrected for attenuation ... will be done in rads_fix_s3)
+! sig0_* - Sigma0
 ! sig0_rms_* - Std dev of sigma0
-! dsig0_atmos_* - Atmospheric attenuation of sigma0 (not _plrm)
-! wind_speed_alt_* - Altimeter wind speed (not _c)
+! dsig0_atmos_* - Atmospheric attenuation of sigma0
+! wind_speed_alt - Altimeter wind speed
 ! wind_speed_rad - Radiometer wind speed
 ! wind_speed_ecmwf_u - ECMWF wind speed (U)
 ! wind_speed_ecmwf_v - ECMWF wind speed (V)
 ! tide_ocean/load_got410 - GOT4.10c ocean and load tide
-! tide_ocean/load_fes04/fes14 - FES2004 or FES2014 ocean and load tide
+! tide_ocean/load_fes14 - FES2014 ocean and load tide
 ! tide_pole - Pole tide
 ! tide_solid - Solid earth tide
 ! topo_ace2 - ACE2 topography
 ! geoid_egm2008 - EGM2008 geoid
-! cnescls15 - CNES/CLS11 or CNES/CLS15 mean sea surface
-! mss_dtu13 - DTU13 mean sea surface
+! cnescls15 - CNES/CLS15 mean sea surface
+! mss_dtu18 - DTU18 mean sea surface
 ! tb_238 - Brightness temperature (23.8 GHz)
 ! tb_365 - Brightness temperature (36.5 GHz)
-! flags, flags_plrm - Engineering flags
-! off_nadir_angle2_wf_* - Mispointing from waveform squared (not _c)
+! flags - Engineering flags
+! off_nadir_angle2_wf_ku - Mispointing from waveform squared
 ! rad_liquid_water - Liquid water content
 ! rad_water_vapor - Water vapor content
-! ssha_* - Sea surface height anomaly (not _c)
+! ssha - Sea surface height anomaly
 !
 ! Extensions _* are:
-! _ku:      Ku-band retracked from SAR
-! _ku_plrm: Ku-band retracked with PLRM
+! _ku:      Ku-band
 ! _c:       C-band
 !-----------------------------------------------------------------------
 use rads
@@ -147,40 +147,42 @@ do
 	endif
 
 ! Check if input is a Sentinel-6 Level 2 data set
-! Determine latency (NRT, STC, NTC) and resolution (LR, HR)
 
-	if (nft(nf90_get_att(ncid,nf90_global,'title',arg)) .or. &
-		arg(:2) /= 'L2') then
+	if (nft(nf90_get_att(ncid,nf90_global,'product_name',arg)) .or. &
+		arg(5:10) /= 'P4_2__') then
 		call log_string ('Error: this is not a Sentinel-6 Level 2 data set', .true.)
 		cycle
-	else if (index(arg, 'Near Real Time') > 0) then
+	endif
+
+! Determine latency (NRT, STC, NTC) and resolution (LR, HR)
+
+	if (index(arg, '_NR_') > 0) then
 		latency = rads_nrt
-	else if (index(arg, 'Short Time Critical') > 0) then
+	else if (index(arg, '_ST_') > 0) then
 		latency = rads_stc
-	else if (index(arg, 'Non Time Critical') > 0) then
+	else if (index(arg, '_NT_') > 0) then
 		latency = rads_ntc
 	else
 		call log_string ('Error: file skipped: unknown latency', .true.)
 		cycle
 	endif
-	lr = (index(arg, 'LR') > 0)
+	lr = (index(arg, '_LR_') > 0)
 
 ! Get the mission name and initialise RADS (if not done before)
 
-	call nfs(nf90_get_att(ncid,nf90_global,'mission_name',arg))
-	select case (arg)
-	case ('Sentinel-6A')
+	select case (arg(:3))
+	case ('S6A')
 		arg = '6a'
-	case ('Sentinel-6B')
+	case ('S6B')
 		arg = '6b'
 	case default
-		call log_string ('Error: wrong misson_name found in header', .true.)
+		call log_string ('Error: wrong misson: must be S6A or S6B', .true.)
 		cycle
 	end select
 	if (sat == '') then
 		call rads_init (S, arg)
 	else if (S%sat /= arg(:2)) then
-		call log_string ('Error: wrong misson_name found in header', .true.)
+		call log_string ('Error: wrong misson: must be S'//S%sat, .true.)
 		cycle
 	endif
 
@@ -500,7 +502,7 @@ write (*,1310)
 'Additional [processing_options] are:' / &
 '  --min-rec=MIN_REC         Specify minimum number of records per pass to process' // &
 'This program converts Sentinel-6 NRT/STC/NTC Level 2 products to RADS data' / &
-'files with the name $RADSDATAROOT/data/SS/F/pPPPP/s3pPPPPcCCC.nc.' / &
+'files with the name $RADSDATAROOT/data/SS/F/pPPPP/s6pPPPPcCCC.nc.' / &
 'The directory is created automatically and old files are overwritten.')
 stop
 end subroutine synopsis
