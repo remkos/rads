@@ -48,22 +48,23 @@ program rads_gen_jason_gdrf
 ! dry_tropo_ecmwf - ECMWF dry tropospheric correction
 ! wet_tropo_ecmwf - ECMWF wet tropo correction
 ! wet_tropo_rad - Radiometer wet tropo correction
-! iono_alt_* - Dual-frequency ionospheric correction (not _c)
+! iono_alt - Dual-frequency ionospheric correction
+! iono_alt_smooth - Filtered dual-frequency ionospheric correction
 ! iono_gim - GIM ionosphetic correction
 ! inv_bar_static - Inverse barometer
 ! inv_bar_mog2d - MOG2D
 ! ssb_cls_* - SSB
 ! swh_* - Significant wave height
 ! swh_rms_* - Std dev of SWH
-! sig0_* - Sigma0 (not corrected for attenuation ... will be done in rads_fix_s3)
+! sig0_* - Sigma0
 ! sig0_rms_* - Std dev of sigma0
 ! dsig0_atmos_* - Atmospheric attenuation of sigma0
-! wind_speed_alt_* - Altimeter wind speed (not _c)
+! wind_speed_alt - Altimeter wind speed
 ! wind_speed_rad - Radiometer wind speed
 ! wind_speed_ecmwf_u - ECMWF wind speed (U)
 ! wind_speed_ecmwf_v - ECMWF wind speed (V)
 ! tide_ocean/load_got410 - GOT4.10c ocean and load tide
-! tide_ocean/fes14 -  FES2014 ocean and load tide
+! tide_ocean/load_fes14 - FES2014 ocean and load tide
 ! tide_pole - Pole tide
 ! tide_solid - Solid earth tide
 ! topo_ace2 - ACE2 topography
@@ -73,10 +74,10 @@ program rads_gen_jason_gdrf
 ! tb_238 - Brightness temperature (23.8 GHz)
 ! tb_365 - Brightness temperature (36.5 GHz)
 ! flags - Engineering flags
-! off_nadir_angle2_wf_* - Mispointing from waveform squared (not _c)
+! off_nadir_angle2_wf_ku - Mispointing from waveform squared
 ! rad_liquid_water - Liquid water content
 ! rad_water_vapor - Water vapor content
-! ssha_* - Sea surface height anomaly (not _c)
+! ssha - Sea surface height anomaly
 !
 ! Extensions _* are:
 ! _ku:      Ku-band
