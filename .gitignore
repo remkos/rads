@@ -46,6 +46,7 @@ devel/rads_fix_tx
 devel/rads_gen_c2_l1r
 devel/rads_gen_h2
 devel/rads_gen_jason
+devel/rads_gen_jason_gdrf
 devel/rads_gen_reaper
 devel/rads_gen_s3
 devel/rads_gen_s6
