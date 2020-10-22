@@ -95,7 +95,7 @@ use netcdf
 
 ! Command line arguments
 
-integer(fourbyteint) :: ios, i
+integer(fourbyteint) :: ios, i = 0
 character(len=rads_cmdl) :: infile, arg
 
 ! Header variables
