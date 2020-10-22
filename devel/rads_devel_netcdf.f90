@@ -17,7 +17,7 @@ module rads_devel_netcdf
 use typesizes
 use rads, only: rads_sat, rads_pass, rads_var
 
-integer(fourbyteint), parameter :: mrec=3600, mvar=80
+integer(fourbyteint), parameter :: mrec=3600, mvar=100
 integer(fourbyteint) :: nvar, nrec=0
 real(eightbytereal), allocatable :: a(:)
 integer(twobyteint), allocatable :: flags(:)

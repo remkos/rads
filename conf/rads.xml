@@ -3135,7 +3135,7 @@ Global RADS configuration file
 	<default>0</default>
 	<compress>int2 1e-4</compress>
 </var>
-<var name="off_nadir_angle2_wf_rms_ku" field="3005" sat="3a 3b 6a c2">
+<var name="off_nadir_angle2_wf_rms_ku" field="3005" sat="3a 3b 6a c2 j3">
 	<long_name>std dev of off-nadir pointing angle squared from waveform</long_name>
 	<units>degrees^2</units>
 	<plot_range>0.0 0.04</plot_range>
@@ -3702,7 +3702,7 @@ Global RADS configuration file
 	<comment>Negative numbers are inland, positive numbers are offshore</comment>
 </var>
 
-<var name="rad_dist_coast" sat="6a">
+<var name="rad_dist_coast" sat="6a j3">
 	<long_name>radiometer main beam radial distance to land</long_name>
 	<units>km</units>
 	<data>rad_dist_coast</data>
@@ -3721,7 +3721,7 @@ Global RADS configuration file
 	<comment>Dimensionless measure of the effect of land over altimetric waveforms, where -1 means unaffected by land (open-ocean) and 1 means totally affected by land (inland); can be used for screening purposes in place of distance from coast</comment>
 </var>
 
-<var name="angle_coast" sat="6a">
+<var name="angle_coast" sat="6a j3">
 	<long_name>angle of approach to the coast</long_name>
 	<source>EUMETSAT</source>
 	<data>angle_coast</data>
