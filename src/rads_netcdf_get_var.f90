@@ -31,6 +31,7 @@
 ! HYPOT   |  a b HYPOT| sqrt(a*a+b*b)
 ! R2      |  a b R2   | a*a + b*b
 ! ISNAN   |  a ISNAN  | if (isnan(a)) 1 else 0
+! IOR     |  a b IOR  | bitwise OR of a and b
 ! --------------------------------------------
 ! Only 2 buffers can be used, so the computation has to remain relatively
 ! simple.
@@ -69,6 +70,12 @@ do
 			array = 0d0
 		elsewhere	! NaN
 			array = 1d0
+		endwhere
+	case ('IOR')
+		where (temp /= temp)
+			array = nan
+		elsewhere
+			array = ior(nint(array),nint(temp))
 		endwhere
 	case default
 		if (index('.+-0123456789', varnm(ia:ia)) > 0) then
