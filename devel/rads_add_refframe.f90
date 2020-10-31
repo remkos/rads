@@ -32,6 +32,8 @@
 ! J2: The reference frame offset for the SLA from MLE4 measurements is
 !     given in the configuration. For MLE3 measurements 28.5 mm is added
 !     to the C00 term.
+! J3: The reference frame offset for the SLA from GDR-D MLE4 is given
+!     in the configuration. For GDR-F 23.2 mm is added to the C00 term.
 ! 3A: The reference frame offset is for the latest product baseline.
 !     For data before PB2.19 (SM-2 6.10) increase the reference frame offset
 !     by 23 mm. See notes of 2018-01-26.
@@ -169,6 +171,12 @@ endif
 ! If Jason-1 phase C, add 5 mm
 
 if (S%sat == 'j1' .and. S%phase%name == 'c') cor = cor + 5d-3
+
+! If Jason-3 GDR-F, add 23.2 mm
+if (S%sat == 'j3') then
+	i = index(P%original, 'Baseline F')
+	if (i > 0) cor = cor + 23.2d-3
+endif
 
 ! If Sentinel-3 prior to SM-2 version 6.10, add 25 mm
 
