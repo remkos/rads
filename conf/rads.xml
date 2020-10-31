@@ -530,7 +530,7 @@ Global RADS configuration file
 </var>
 <alias name="alt" field="4" sat="2a tx.r50">alt_gdrd</alias>
 <alias name="alt" field="4" sat="3a 3b c2">alt_gdrf alt_gdre</alias>
-<alias name="alt" field="4" sat="j3 sa">alt_gdre</alias>
+<alias name="alt" field="4" sat="sa">alt_gdre</alias>
 <alias name="alt" field="4" sat="6a">alt_gdrf</alias>
 <alias name="alt" field="4" sat="c2">alt_gdre alt_cnes</alias>
 <alias name="alt" field="4" sat="e1 e2">alt_reaper alt_gfz</alias>

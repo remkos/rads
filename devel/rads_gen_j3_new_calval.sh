@@ -63,7 +63,7 @@ case $type in
 		;;
 	*)
 		find ${type}/c??? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
-		rads_gen_jason --ymd=$d0 $options < "$lst"	>> "$log" 2>&1
+		rads_gen_jason_gdrf --ymd=$d0 $options < "$lst"	>> "$log" 2>&1
 		;;
 esac
 
