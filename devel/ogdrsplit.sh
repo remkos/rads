@@ -108,7 +108,7 @@ do
   fi
   ((iline+=1))
 done < $tmp2
-rm $tmp $tmp2
+rm $tmp2
 
 for ogdr in ${ogdrs[@]}; do
 
@@ -195,3 +195,5 @@ for ogdr in ${ogdrs[@]}; do
         \mv -f $tmpnm $outnm
     done
 done
+#Clean up
+\rm -rf $tmp1 $tmpdir
