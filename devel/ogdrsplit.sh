@@ -115,6 +115,7 @@ for ogdr in ${ogdrs[@]}; do
 #Find times of first and last data in OGDR
 #mapfile only in bash4
 #mapfile -t ogdr_times < <( ncks -A -x --cdl $ogdr | egrep 'first|last' )
+    ogdr_times=()
     while IFS= read -r line; do
         ogdr_times+=("$line")
     done < <(ncks -A -x --cdl $ogdr | egrep 'first|last')
