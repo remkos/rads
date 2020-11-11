@@ -855,12 +855,12 @@ The coastal proximity parameter is a dimensionless measure of the effect of land
 \end{vartable}
 
 \section{Basin codes}
-Eric Leuliette (NOAA) divided the world's larger water bodies into 39 different ocean basins, enclosed seas and lakes, giving each of them a separate numerical code. This has been represented in a grid with a 5'$\times$5' resolution as shown in Figure~\ref{fig:basin_codes}. This grid is queried to the nearest grid point when creating the RADS data and stored as the variable \var{basin_code}. For land areas a default value of NaN is stored.
+Eric Leuliette (NOAA) divided the world's larger water bodies into 39 different ocean basins, enclosed seas and lakes, giving each of them a separate numerical code. This has been represented in a grid with a 5'$\times$5' resolution as shown in Figure~\ref{fig:basin_codes}. This grid is queried to the nearest grid point when creating the RADS data and stored as the variable \var{basin}. For land areas a default value of NaN is stored.
 
 This field allows users to separate the selected data by region, or select data from just a single region. Normally data from all regions is selected.
 
 \begin{vartable}
-\var{basin_code} & 36, 3601 & basin code & - & all && \\
+\var{basin} & 36, 3601 & basin code & - & all && \\
 \end{vartable}
 
 \begin{figure}
