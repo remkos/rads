@@ -43,7 +43,6 @@ sec1970to2000=946684800
 tmp1=$(mktemp -t ogdrftime1)
 tmp2=$(mktemp -t ogdrftime2)
 tmpdir=$(mktemp -d -t ogdrf)
-#echo $tmpdir
 
 #Hard coded for Jason-3 for now
 filetype='JA3_OPN_2Pf'
@@ -111,7 +110,6 @@ done < $tmp2
 rm $tmp2
 
 for ogdr in ${ogdrs[@]}; do
-
 #Find times of first and last data in OGDR
 #mapfile only in bash4
 #mapfile -t ogdr_times < <( ncks -A -x --cdl $ogdr | egrep 'first|last' )
@@ -130,8 +128,8 @@ for ogdr in ${ogdrs[@]}; do
 #Search identify passes in the OGDR from turning point times
 #Should be equator crosses?
     for i in ${!starttime[@]}; do
-        [[ $ogdr_first_meas_time_sec > ${starttime[$i]} && $ogdr_first_meas_time_sec < ${starttime[(($i+1))]} ]] && firstpass=$i
-        [[ $ogdr_last_meas_time_sec > ${starttime[$i]} && $ogdr_last_meas_time_sec < ${starttime[(($i+1))]} ]] &&  lastpass=$i
+        [[ $ogdr_first_meas_time_sec -ge ${starttime[$i]} && $ogdr_first_meas_time_sec -le ${starttime[(($i+1))]} ]] && firstpass=$i
+        [[ $ogdr_last_meas_time_sec -ge ${starttime[$i]} && $ogdr_last_meas_time_sec -le ${starttime[(($i+1))]} ]] &&  lastpass=$i
     done
 
     for ((ipass=${firstpass};ipass<=${lastpass};ipass++)); do
@@ -159,8 +157,8 @@ for ogdr in ${ogdrs[@]}; do
             file_last_meas_time=${file_last_meas_time#*'"'}; file_last_meas_time=${file_last_meas_time%'"'*}
             file_secdec=${file_last_meas_time#*.}
             file_last_meas_time_sec="$(gdate +%s --date="$file_last_meas_time UTC")"
+
             if [[ $ogdr_last_meas_time_sec > $file_last_meas_time_sec && $orfdate2 > $file_last_meas_time_sec ]]; then
-# echo 'create file and merging required'
                 time1=$(($((file_last_meas_time_sec - sec1970to2000)) + 1))'.'$file_secdec
             else
                 continue
