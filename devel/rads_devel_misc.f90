@@ -64,6 +64,10 @@ case ('S3A')
 case ('S3B')
 	call parseenv ('${ALTIM}/data/ODR.SNTNL-3B/orf.txt', line)
 	nr_passes = 770
+case ('S6A')
+	call parseenv ('${RADSROOT}/ext/6a/S6A_ORF.txt', line)
+case ('S6B')
+	call parseenv ('${RADSROOT}/ext/6b/S6B_ORF.txt', line)
 case default
 	stop 'Wrong satellite code'
 end select

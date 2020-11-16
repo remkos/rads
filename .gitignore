@@ -53,6 +53,7 @@ devel/rads_gen_s6
 devel/rads_gen_saral
 devel/rads_gen_tx_rgdr
 devel/s3combine
+devel/s6combine
 doc/manuals/sub
 rads_config.tex
 src/config.f90

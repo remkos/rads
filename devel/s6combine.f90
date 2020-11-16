@@ -13,7 +13,7 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*s6combine -- Combine (and split) Sentinel-3 files into pass files
+!*s6combine -- Combine (and split) Sentinel-6 files into pass files
 !
 ! Read Sentinel-6 standard or reduced granules or orbits and
 ! combine them (and split them) into pass files.
@@ -40,11 +40,15 @@ type(orfinfo) :: orf(200000)
 ! Scruct to store input file information
 
 type :: fileinfo
-	integer(fourbyteint) :: ncid, rec0, rec1, nrec, type, cycle, pass
+	integer(fourbyteint) :: ncid(0:3), rec0, rec1, nrec, type, cycle, pass
 	real(eightbytereal) :: time0, time1, lat0, lat1, lon0, lon1
 	character(len=rads_cmdl) :: filenm
 end type
 type(fileinfo) :: fin(20)
+
+! Group names
+
+character(len=7) :: grpnm(3) = (/ 'data_01', 'ku     ', 'c      '/)
 
 ! General variables
 
@@ -54,7 +58,7 @@ character(len=26) :: date(3)
 character(len=15) :: newer_than = '00000000T000000'
 integer(fourbyteint), parameter :: mpass = 254 * 500
 real(eightbytereal), parameter :: sec2000 = 473299200d0
-integer(fourbyteint) :: i0, i, ncid1, nrec, ios, varid, in_max = huge(fourbyteint), &
+integer(fourbyteint) :: i0, i, ngrps, ncid1(0:3), nrec, ios, varid, in_max = huge(fourbyteint), &
 	nfile = 0, orbit_type, ipass = 1, ipass0 = 0, verbose_level = 3, cycle_number, pass_number
 real(eightbytereal), allocatable :: time(:), lat(:), lon(:)
 real(eightbytereal) :: last_time = 0
@@ -84,7 +88,10 @@ endif
 read (*,'(a)',iostat=ios) filenm
 if (ios /= 0) stop
 i = index(filenm,'P4_2__')
+write (*,*) i, filenm
 if (i == 0) call rads_exit ('Wrong filetype')
+ngrps = 3
+if (index(filenm,'_HR_') > 0) ngrps = 2
 
 ! Get ORF file
 
@@ -123,46 +130,46 @@ do
 
 ! Open the input file
 
-	if (nft(nf90_open(filenm,nf90_nowrite,ncid1))) then
+	if (nft(netcdf_open(filenm,nf90_nowrite,ncid1))) then
 		call rads_message ('Error while opening file: '//filenm)
 		cycle
 	endif
 
 ! Read global attributes
 
-	call nfs(nf90_get_att(ncid1,nf90_global,'product_name',product_name))
-	call nfs(nf90_get_att(ncid1,nf90_global,'cycle_number',cycle_number))
-	call nfs(nf90_get_att(ncid1,nf90_global,'pass_number',pass_number))
+	call nfs(nf90_get_att(ncid1(0),nf90_global,'product_name',product_name))
+	call nfs(nf90_get_att(ncid1(0),nf90_global,'cycle_number',cycle_number))
+	call nfs(nf90_get_att(ncid1(0),nf90_global,'pass_number',pass_number))
 
 ! Read the time dimension
 
-	call nfs(nf90_inquire_dimension(ncid1,1,dimnm,nrec))
-	if (dimnm /= 'time_01') call rads_exit ('Error reading time dimension')
+	call nfs(nf90_inquire_dimension(ncid1(1),1,dimnm,nrec))
+	if (dimnm /= 'time') call rads_exit ('Error reading time dimension')
 	if (nrec > in_max) then
 		call rads_message ('Too many measurements in input file, skipped: '//filenm)
-		call nfs(nf90_close(ncid1))
+		call nfs(nf90_close(ncid1(0)))
 		cycle
 	endif
 	if (allocated(time)) deallocate (time, lat, lon)
 	allocate (time(nrec),lat(nrec),lon(nrec))
-	call nfs(nf90_inq_varid(ncid1,'time_01',varid))
-	call nfs(nf90_get_var(ncid1,varid,time))
+	call nfs(nf90_inq_varid(ncid1(1),'time',varid))
+	call nfs(nf90_get_var(ncid1(1),varid,time))
 
 ! Check processing time
 
-	if (product_name(49:63) < newer_than) then
-		call nfs(nf90_close(ncid1))
+	if (product_name(51:65) < newer_than) then
+		call nfs(nf90_close(ncid1(0)))
 		call write_line (4, '.... old', 1, nrec, nrec, time(1), time(nrec), '<', filenm)
 		cycle
 	endif
 
 ! Read latitude and longitude
 
-	call nfs(nf90_inq_varid(ncid1,'lat_01',varid))
-	call nfs(nf90_get_var(ncid1,varid,lat))
+	call nfs(nf90_inq_varid(ncid1(1),'latitude',varid))
+	call nfs(nf90_get_var(ncid1(1),varid,lat))
 	lat = lat * 1d-6
-	call nfs(nf90_inq_varid(ncid1,'lon_01',varid))
-	call nfs(nf90_get_var(ncid1,varid,lon))
+	call nfs(nf90_inq_varid(ncid1(1),'longitude',varid))
+	call nfs(nf90_get_var(ncid1(1),varid,lon))
 	lon = lon * 1d-6
 
 ! First advance to beyond the last time tag
@@ -175,7 +182,7 @@ do
 ! If none of the records are after last_time, skip the whole input file
 
 	if (i0 > nrec) then
-		call nfs(nf90_close(ncid1))
+		call nfs(nf90_close(ncid1(0)))
 		cycle
 	endif
 
@@ -238,6 +245,7 @@ fin(nfile)%lat1 = lat(i1)
 fin(nfile)%lon0 = lon(i0)
 fin(nfile)%lon1 = lon(i1)
 call write_line (3, '.. input', i0, i1, nrec, time(i0), time(i1), '<', filenm)
+write (*,*) "ncid1, nrec =", ncid1, nrec
 end subroutine fill_fin
 
 !***********************************************************************
@@ -259,15 +267,11 @@ end subroutine which_pass
 ! Write whatever has been buffered so far to an output file
 
 subroutine write_output
-integer(fourbyteint) :: nrec, ncid1, ncid2, varid1, varid2, varid3, xtype, ndims, &
-	dimids(2), dimid2, natts, i, nvars, idxin(2)=1, idxut(2)=1, nout, &
+integer(fourbyteint) :: nrec, ncid1(0:3), ncid2(0:3), varid1, varid2, i, nout, &
 	cycle_number, pass_number, absolute_pass_number, absolute_rev_number
 real(eightbytereal) :: equator_time, equator_longitude, x
-character(len=rads_naml) :: dirnm, prdnm, outnm, attnm, varnm
-real(eightbytereal), allocatable :: darr1(:)
-integer(fourbyteint), allocatable :: iarr1(:)
+character(len=rads_naml) :: dirnm, prdnm, outnm, varnm
 logical :: exist
-integer(onebyteint), parameter :: flag_values(0:8) = int((/0,1,2,3,4,5,6,7,8/), onebyteint)
 
 ! Retrieve the pass variables
 
@@ -290,12 +294,12 @@ nrec = sum(fin(1:nfile)%rec1 - fin(1:nfile)%rec0 + 1)
 ! Open the output file. Make directory if needed.
 
 605 format (a,'/c',i3.3)
-610 format (a,i3.3,'_',i3.3,a,'.nc')
+610 format (a,'RED_',a,i3.3,'_',i3.3,a,'.nc')
 
 write (dirnm,605) trim(destdir),cycle_number
 inquire (file=dirnm,exist=exist)
 if (.not.exist) call system('mkdir -p '//dirnm)
-write (prdnm,610) product_name(:15),cycle_number,pass_number,product_name(77:94)
+write (prdnm,610) product_name(:13),product_name(92:95),cycle_number,pass_number,product_name(95:98)
 outnm = trim(dirnm) // '/' // trim(prdnm)
 inquire (file=outnm,exist=exist)
 
@@ -303,24 +307,27 @@ inquire (file=outnm,exist=exist)
 ! If it is larger, delete the existing file
 
 if (exist) then
-	call nfs(nf90_open(outnm,nf90_write,ncid2))
-	call nfs(nf90_inquire_dimension(ncid2,1,len=nout))
-	call nfs(nf90_get_att(ncid2,nf90_global,'first_meas_time',date(1)))
-	call nfs(nf90_get_att(ncid2,nf90_global,'last_meas_time',date(2)))
-	call nfs(nf90_get_att(ncid2,nf90_global,'equator_time',date(3)))
+	call nfs(netcdf_open(outnm,nf90_write,ncid2))
+	call nfs(nf90_inquire_dimension(ncid2(1),1,len=nout))
+	write (*,*) "nout =",nout
+	call nfs(nf90_get_att(ncid2(0),nf90_global,'first_measurement_time',date(1)))
+	call nfs(nf90_get_att(ncid2(0),nf90_global,'last_measurement_time',date(2)))
+	call nfs(nf90_get_att(ncid2(0),nf90_global,'equator_time',date(3)))
 	x = strp1985f (date(3))
 	if (abs(x - equator_time) > 0.5d-3) then
 		date(3) = strf1985f(equator_time)
-		call nfs(nf90_put_att(ncid2,nf90_global,'equator_time',date(3)))
+		call nfs(nf90_put_att(ncid2(0),nf90_global,'equator_time',date(3)))
 		if (verbose_level >= 1) write (*,620) 'Updating', 1, nout, nout, date(1:2), '>', trim(outnm)
+		write (*,*) "ncid2, nout =", ncid2, nout
 	endif
-	call nfs(nf90_close(ncid2))
+	call nfs(nf90_close(ncid2(0)))
 	if (nrec <= nout) then
 		do i = 1, nfile
 			! Release NetCDF file when reaching end
-			if (fin(i)%rec1 == fin(i)%nrec) call nfs(nf90_close(fin(i)%ncid))
+			if (fin(i)%rec1 == fin(i)%nrec) call nfs(nf90_close(fin(i)%ncid(0)))
 		enddo
 		if (verbose_level >= 2) write (*,620) 'Keeping ', 1, nout, nout, date(1:2), '>', trim(outnm)
+		write (*,*) "ncid2, nout =", ncid2, nout
 		nfile = 0
 		return
 	endif
@@ -330,17 +337,111 @@ endif
 
 ! Create a new file
 
-call nfs(nf90_create(outnm,nf90_write+nf90_nofill,ncid2))
-call nfs(nf90_set_fill(ncid2,nf90_nofill,i))
+call nfs(netcdf_create(outnm,nf90_write+nf90_netcdf4,ncid2))
+!call nfs(nf90_set_fill(ncid2,nf90_nofill,i))
 
 ! Create the time dimension
 
-call nfs(nf90_def_dim(ncid2,'time_01',nrec,dimid2))
+call nfs(nf90_def_dim(ncid2(1),'time',nrec,i))
 
 ! Copy all the variable definitions and attributes
 
-ncid1 = fin(1)%ncid
+do i = 0,ngrps
+	call netcdf_copy_defs(fin(1)%ncid(i),ncid2(i))
+enddo
+
+! Overwrite some attributes and product name
+
+call write_line (1, 'Creating', 1, nrec, nrec, fin(1)%time0, fin(nfile)%time1,'>', outnm)
+write (*,*) "ncid2, nrec =", ncid2, nrec
+date(3) = strf1985f(equator_time)
+
+call nfs(nf90_put_att(ncid2(0),nf90_global,'product_name',prdnm))
+call nfs(nf90_put_att(ncid2(0),nf90_global,'cycle_number',cycle_number))
+call nfs(nf90_put_att(ncid2(0),nf90_global,'pass_number',pass_number))
+call nfs(nf90_put_att(ncid2(0),nf90_global,'absolute_rev_number',absolute_rev_number))
+call nfs(nf90_put_att(ncid2(0),nf90_global,'equator_time',date(3)))
+call nfs(nf90_put_att(ncid2(0),nf90_global,'equator_longitude',equator_longitude))
+call nfs(nf90_put_att(ncid2(0),nf90_global,'first_measurement_time',date(1)))
+call nfs(nf90_put_att(ncid2(0),nf90_global,'last_measurement_time',date(2)))
+call nfs(nf90_put_att(ncid2(0),nf90_global,'first_measurement_latitude',fin(1)%lat0))
+call nfs(nf90_put_att(ncid2(0),nf90_global,'last_measurement_latitude',fin(nfile)%lat1))
+call nfs(nf90_put_att(ncid2(0),nf90_global,'first_measurement_longitude',fin(1)%lon0))
+call nfs(nf90_put_att(ncid2(0),nf90_global,'last_measurement_longitude',fin(nfile)%lon1))
+call nfs(nf90_enddef(ncid2(0)))
+
+! If requested, check if cycles and pass numbers agree
+if (check_pass) then
+	do i = 1, nfile
+		if (fin(i)%cycle /= cycle_number) write (*,630) 'cycle', cycle_number, fin(i)%cycle, trim(fin(i)%filenm)
+		if (fin(i)%pass /= pass_number) write (*,630) ' pass', pass_number, fin(i)%pass, trim(fin(i)%filenm)
+	enddo
+endif
+630 format ('Warning: ',a,' number; output:',i4,'; input:',i4,' from ',a)
+
+! Copy all data elements
+
+nout = 0
+do i = 1,nfile
+	do j = 0,ngrps
+		call netcdf_copy_vars (fin(i)%ncid(j), fin(i)%rec0, fin(i)%rec1, ncid2(j), nout+1)
+	enddo
+	nout = nout + fin(i)%rec1 - fin(i)%rec0 + 1
+	! Release NetCDF file when reaching end
+	if (fin(i)%rec1 == fin(i)%nrec) call nfs(nf90_close(fin(i)%ncid(0)))
+enddo
+
+! Close output
+
+call nfs(nf90_close(ncid2(0)))
+nfile = 0
+
+end subroutine write_output
+
+!***********************************************************************
+! Open NetCDF file
+
+integer function netcdf_open (filenm, flags, ncid)
+character(len=*), intent(in) :: filenm
+integer(fourbyteint), intent(in) :: flags
+integer(fourbyteint), intent(out) :: ncid(0:3)
+integer :: i
+
+ncid = 0
+netcdf_open = nf90_open(filenm,flags,ncid(0))
+if (nft(netcdf_open)) return
+do i = 1,ngrps
+	netcdf_open = nf90_inq_grp_ncid(ncid(i/2),grpnm(i),ncid(i))
+enddo
+end function netcdf_open
+
+!***********************************************************************
+! Create NetCDF file
+
+integer function netcdf_create (filenm, flags, ncid)
+character(len=*), intent(in) :: filenm
+integer(fourbyteint), intent(in) :: flags
+integer(fourbyteint), intent(out) :: ncid(0:3)
+integer :: i
+
+ncid = 0
+netcdf_create = nf90_create(filenm,flags,ncid(0))
+if (nft(netcdf_create)) return
+do i = 1,ngrps
+	netcdf_create = nf90_def_grp(ncid(i/2),grpnm(i),ncid(i))
+enddo
+end function netcdf_create
+
+!***********************************************************************
+! Copy all the variable definitions and attributes
+
+subroutine netcdf_copy_defs(ncid1, ncid2)
+integer(fourbyteint), intent(in) :: ncid1, ncid2
+integer(fourbyteint) :: i, nvars, natts, ndims, xtype, dimids(2), varid1, varid2
+character(len=rads_naml) :: attnm, varnm
+
 call nfs(nf90_inquire(ncid1,nvariables=nvars,nattributes=natts))
+write (*,*) "copy_defs:", ncid1, ncid2, nvars, natts
 varid2 = 0
 do varid1 = 0, nvars
 	if (varid1 > 0) then
@@ -356,73 +457,42 @@ do varid1 = 0, nvars
 		call nfs(nf90_copy_att(ncid1,varid1,attnm,ncid2,varid2))
 	enddo
 enddo
+end subroutine netcdf_copy_defs
 
-! Overwrite some attributes and product name
+!***********************************************************************
+! Copy all variables
 
-call write_line (1, 'Creating', 1, nrec, nrec, fin(1)%time0, fin(nfile)%time1,'>', outnm)
-date(3) = strf1985f(equator_time)
+subroutine netcdf_copy_vars(ncid1, rec0, rec1, ncid2, rec2)
+integer(fourbyteint), intent(in) :: ncid1, rec0, rec1, ncid2, rec2
+integer(fourbyteint) :: nrec, nvars, xtype, varid1, varid2, idxin(2)=1, idxut(2)=1
+real(eightbytereal), allocatable :: darr1(:)
+integer(fourbyteint), allocatable :: iarr1(:)
+character(len=rads_naml) :: varnm
 
-call nfs(nf90_put_att(ncid2,nf90_global,'product_name',prdnm))
-call nfs(nf90_put_att(ncid2,nf90_global,'cycle_number',cycle_number))
-call nfs(nf90_put_att(ncid2,nf90_global,'pass_number',pass_number))
-call nfs(nf90_put_att(ncid2,nf90_global,'absolute_pass_number',absolute_pass_number))
-call nfs(nf90_put_att(ncid2,nf90_global,'absolute_rev_number',absolute_rev_number))
-call nfs(nf90_put_att(ncid2,nf90_global,'equator_time',date(3)))
-call nfs(nf90_put_att(ncid2,nf90_global,'equator_longitude',equator_longitude))
-call nfs(nf90_put_att(ncid2,nf90_global,'first_meas_time',date(1)))
-call nfs(nf90_put_att(ncid2,nf90_global,'last_meas_time',date(2)))
-call nfs(nf90_put_att(ncid2,nf90_global,'first_meas_lat',fin(1)%lat0))
-call nfs(nf90_put_att(ncid2,nf90_global,'last_meas_lat',fin(nfile)%lat1))
-call nfs(nf90_put_att(ncid2,nf90_global,'first_meas_lon',fin(1)%lon0))
-call nfs(nf90_put_att(ncid2,nf90_global,'last_meas_lon',fin(nfile)%lon1))
-call nfs(nf90_enddef(ncid2))
+call nfs(nf90_inquire(ncid2,nvariables=nvars))
+nrec = rec1 - rec0 + 1
+write (*,*) "copy_vars:", ncid1, ncid2, nvars, nrec, rec2
+if (nvars == 0) return
 
-! If requested, check if cycles and pass numbers agree
-if (check_pass) then
-	do i = 1, nfile
-		if (fin(i)%cycle /= cycle_number) write (*,630) 'cycle', cycle_number, fin(i)%cycle, trim(fin(i)%filenm)
-		if (fin(i)%pass /= pass_number) write (*,630) ' pass', pass_number, fin(i)%pass, trim(fin(i)%filenm)
-	enddo
-endif
-630 format ('Warning: ',a,' number; output:',i4,'; input:',i4,' from ',a)
+if (nrec == 0) stop "nrec == 0"
+allocate (darr1(nrec),iarr1(nrec))
+idxin(2) = rec0
+idxut(2) = rec2
 
-! Copy all data elements
-
-nout = 0
-do i = 1,nfile
-	nrec = fin(i)%rec1 - fin(i)%rec0 + 1
-	if (nrec == 0) stop "nrec == 0"
-	allocate (darr1(nrec),iarr1(nrec))
-	ncid1 = fin(i)%ncid
-	idxin(2) = fin(i)%rec0
-	idxut(2) = nout + 1
-	varid2 = 0
-	do varid1 = 1,nvars
-		call nfs(nf90_inquire_variable(ncid1,varid1,varnm,xtype,ndims,dimids,natts))
-		if (excluded(varnm) .or. ndims > 1 .or. dimids(1) > 1 .or. xtype == nf90_uint) cycle
-		call nfs(nf90_inq_varid(ncid2,varnm,varid2))
-		if (xtype == nf90_double) then
-			call nfs(nf90_get_var(ncid1,varid1,darr1,idxin(2:2)))
-			call nfs(nf90_put_var(ncid2,varid2,darr1,idxut(2:2)))
-		else
-			call nfs(nf90_get_var(ncid1,varid1,iarr1,idxin(2:2)))
-			call nfs(nf90_put_var(ncid2,varid2,iarr1,idxut(2:2)))
-		endif
-	enddo
-	iarr1 = fin(i)%type
-	if (varid3 > 0) call nfs(nf90_put_var(ncid2,varid3,iarr1,idxut(2:2)))
-	nout = nout + nrec
-	deallocate (darr1,iarr1)
-	! Release NetCDF file when reaching end
-	if (fin(i)%rec1 == fin(i)%nrec) call nfs(nf90_close(fin(i)%ncid))
+do varid2 = 1,nvars
+	call nfs(nf90_inquire_variable(ncid2,varid2,varnm,xtype))
+	call nfs(nf90_inq_varid(ncid1,varnm,varid1))
+	if (xtype == nf90_double) then
+		call nfs(nf90_get_var(ncid1,varid1,darr1,idxin(2:2)))
+		call nfs(nf90_put_var(ncid2,varid2,darr1,idxut(2:2)))
+	else
+		call nfs(nf90_get_var(ncid1,varid1,iarr1,idxin(2:2)))
+		call nfs(nf90_put_var(ncid2,varid2,iarr1,idxut(2:2)))
+	endif
 enddo
+deallocate (darr1,iarr1)
+end subroutine netcdf_copy_vars
 
-! Close output
-
-call nfs(nf90_close(ncid2))
-nfile = 0
-
-end subroutine write_output
 
 subroutine write_line (verbose, word, rec0, rec1, nrec, time0, time1, dir, filenm)
 character(len=*), intent(in) :: word, dir, filenm
@@ -441,4 +511,4 @@ logical :: excluded
 excluded = (index(exclude_list,','//trim(varnm)//',') > 0)
 end function excluded
 
-end program s3combine
+end program s6combine
