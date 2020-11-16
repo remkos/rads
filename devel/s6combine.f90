@@ -81,6 +81,7 @@ endif
 '  -vLEVEL           : Specify verbosity level: 0 = quiet, 1 = only list created files,'/ &
 '                      2 = also list unchanged files, 3 = also list input files,'/ &
 '                      4 = also list skipped input files (default)'/ &
+'                      5 = debug information' / &
 '  -xVAR1[,VAR2,...] : Exclude variable(s) from copying')
 
 ! First determine filetype
@@ -88,7 +89,7 @@ endif
 read (*,'(a)',iostat=ios) filenm
 if (ios /= 0) stop
 i = index(filenm,'P4_2__')
-write (*,*) i, filenm
+if (verbose_level >= 5) write (*,*) i, filenm
 if (i == 0) call rads_exit ('Wrong filetype')
 ngrps = 3
 if (index(filenm,'_HR_') > 0) ngrps = 2
@@ -245,7 +246,7 @@ fin(nfile)%lat1 = lat(i1)
 fin(nfile)%lon0 = lon(i0)
 fin(nfile)%lon1 = lon(i1)
 call write_line (3, '.. input', i0, i1, nrec, time(i0), time(i1), '<', filenm)
-write (*,*) "ncid1, nrec =", ncid1, nrec
+if (verbose_level >= 5) write (*,*) "ncid1, nrec =", ncid1, nrec
 end subroutine fill_fin
 
 !***********************************************************************
@@ -309,7 +310,7 @@ inquire (file=outnm,exist=exist)
 if (exist) then
 	call nfs(netcdf_open(outnm,nf90_write,ncid2))
 	call nfs(nf90_inquire_dimension(ncid2(1),1,len=nout))
-	write (*,*) "nout =",nout
+	if (verbose_level >= 5) write (*,*) "nout =",nout
 	call nfs(nf90_get_att(ncid2(0),nf90_global,'first_measurement_time',date(1)))
 	call nfs(nf90_get_att(ncid2(0),nf90_global,'last_measurement_time',date(2)))
 	call nfs(nf90_get_att(ncid2(0),nf90_global,'equator_time',date(3)))
@@ -318,7 +319,7 @@ if (exist) then
 		date(3) = strf1985f(equator_time)
 		call nfs(nf90_put_att(ncid2(0),nf90_global,'equator_time',date(3)))
 		if (verbose_level >= 1) write (*,620) 'Updating', 1, nout, nout, date(1:2), '>', trim(outnm)
-		write (*,*) "ncid2, nout =", ncid2, nout
+		if (verbose_level >= 5) write (*,*) "ncid2, nout =", ncid2, nout
 	endif
 	call nfs(nf90_close(ncid2(0)))
 	if (nrec <= nout) then
@@ -327,7 +328,7 @@ if (exist) then
 			if (fin(i)%rec1 == fin(i)%nrec) call nfs(nf90_close(fin(i)%ncid(0)))
 		enddo
 		if (verbose_level >= 2) write (*,620) 'Keeping ', 1, nout, nout, date(1:2), '>', trim(outnm)
-		write (*,*) "ncid2, nout =", ncid2, nout
+		if (verbose_level >= 5) write (*,*) "ncid2, nout =", ncid2, nout
 		nfile = 0
 		return
 	endif
@@ -353,7 +354,7 @@ enddo
 ! Overwrite some attributes and product name
 
 call write_line (1, 'Creating', 1, nrec, nrec, fin(1)%time0, fin(nfile)%time1,'>', outnm)
-write (*,*) "ncid2, nrec =", ncid2, nrec
+if (verbose_level >= 5) write (*,*) "ncid2, nrec =", ncid2, nrec
 date(3) = strf1985f(equator_time)
 
 call nfs(nf90_put_att(ncid2(0),nf90_global,'product_name',prdnm))
@@ -441,7 +442,7 @@ integer(fourbyteint) :: i, nvars, natts, ndims, xtype, dimids(2), varid1, varid2
 character(len=rads_naml) :: attnm, varnm
 
 call nfs(nf90_inquire(ncid1,nvariables=nvars,nattributes=natts))
-write (*,*) "copy_defs:", ncid1, ncid2, nvars, natts
+if (verbose_level >= 5) write (*,*) "copy_defs:", ncid1, ncid2, nvars, natts
 varid2 = 0
 do varid1 = 0, nvars
 	if (varid1 > 0) then
@@ -471,7 +472,7 @@ character(len=rads_naml) :: varnm
 
 call nfs(nf90_inquire(ncid2,nvariables=nvars))
 nrec = rec1 - rec0 + 1
-write (*,*) "copy_vars:", ncid1, ncid2, nvars, nrec, rec2
+if (verbose_level >= 5) write (*,*) "copy_vars:", ncid1, ncid2, nvars, nrec, rec2
 if (nvars == 0) return
 
 if (nrec == 0) stop "nrec == 0"
