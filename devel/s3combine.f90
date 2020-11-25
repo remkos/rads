@@ -303,7 +303,7 @@ cycle_number = orf(ipass0)%cycle
 pass_number = orf(ipass0)%pass
 
 absolute_pass_number = orf(ipass0)%abs_pass
-absolute_rev_number = absolute_pass_number / 2
+absolute_rev_number = orf(ipass0)%abs_rev
 
 equator_time = orf(ipass0)%eqtime + sec2000
 equator_longitude = orf(ipass0)%eqlon
