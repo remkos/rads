@@ -13,16 +13,18 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*s6combine -- Combine (and split) Sentinel-6 files into pass files
+!*s6combine -- Combine (and split) Sentinel-6 or Jason GDR-F into pass files
 !
 ! Read Sentinel-6 standard or reduced granules or orbits and
 ! combine them (and split them) into pass files.
+! This works also for Jason-3 GDR-F OGDR files in GDR-F format.
 ! The input file names are read from
 ! standard input. The individual pass files will be named
-! <destdir>/cCCC/S6A_*_CCC_PPP_*.nc, where CCC is the cycle number and
-! PPP the pass number. The directory <destdir>/cCCC will be created if needed.
+! <destdir>/cCCC/SSS_*_CCC_PPP_*.nc, where SSS is the satellite abbreviation
+! (S6A, JA3), CCC is the cycle number and PPP the pass number.
+! The directory <destdir>/cCCC will be created if needed.
 !
-! This program relies on the availability of S6 ORF files.
+! This program relies on the availability of S6 or JA3 ORF files.
 !-----------------------------------------------------------------------
 program s6combine
 
@@ -68,11 +70,12 @@ logical :: first = .true., check_pass = .false.
 ! Print description, if requested
 
 if (iargc() < 1) then
-	write (*,1300)
+	call getarg(0,arg)
+	write (*,1300) trim(arg), trim(arg)
 	stop
 endif
-1300 format ('s6combine -- Combine/split Sentinel-6 files into pass files'// &
-'syntax: s6combine [options] destdir < list'//'where'/ &
+1300 format (a,' -- Combine/split Sentinel-6 or Jason GDR-F files into pass files'// &
+'syntax: ',a,' [options] destdir < list'//'where'/ &
 '  destdir           : Destination directory (appends c???/*.nc)'/ &
 '  list              : List of input files names'// &
 'where [options] are:' / &
@@ -92,7 +95,9 @@ if (ios /= 0) stop
 
 i = index(filenm,'/',.true.) + 1
 if (filenm(i:i+1) == 'JA' .and. filenm(i+10:i+10) == 'f') then
-else if (filenm(i:i+1) == 'S6' .and. filenm(i+4:i+8) == 'P4_2_') then ! Sentinel-6 Level-2
+	! Jason GDR-F
+else if (filenm(i:i+1) == 'S6' .and. filenm(i+4:i+8) == 'P4_2_') then
+	! Sentinel-6 Level-2
 	if (filenm(i+9:i+10) == 'HR') ngrps = 2
 else
 	call rads_exit ('Wrong filetype')
@@ -307,7 +312,6 @@ nrec = sum(fin(1:nfile)%rec1 - fin(1:nfile)%rec0 + 1)
 
 605 format (a,'/c',i3.3)
 610 format (a,'P',i3.3,'_',i3.3,'.nc') ! JA? format
-611 format (a,'P',i3.3,'_',i4.4,'.nc') ! SRL format
 612 format (a,'RED_',a,i3.3,'_',i3.3,a,'.nc') ! S6? format
 
 write (dirnm,605) trim(destdir),cycle_number
@@ -315,8 +319,6 @@ inquire (file=dirnm,exist=exist)
 if (.not.exist) call system('mkdir -p '//dirnm)
 if (sat(:2) == 'JA') then
 	write (prdnm,610) product_name(:11),cycle_number,pass_number
-else if (sat == 'SRL') then
-	write (prdnm,611) product_name(:11),cycle_number,pass_number
 else
 	write (prdnm,612) product_name(:13),product_name(92:95),cycle_number,pass_number,product_name(95:98)
 endif
