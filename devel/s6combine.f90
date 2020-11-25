@@ -56,9 +56,10 @@ character(len=rads_cmdl) :: arg, filenm, dimnm, destdir, product_name, xref_orbi
 character(len=rads_strl) :: exclude_list = ','
 character(len=26) :: date(3)
 character(len=15) :: newer_than = '00000000T000000'
+character(len=3) :: sat
 integer(fourbyteint), parameter :: mpass = 254 * 500
 real(eightbytereal), parameter :: sec2000 = 473299200d0
-integer(fourbyteint) :: i0, i, ngrps, ncid1(0:3), nrec, ios, varid, in_max = huge(fourbyteint), &
+integer(fourbyteint) :: i0, i, j, ngrps = 3, ncid1(0:3), nrec, ios, varid, in_max = huge(fourbyteint), &
 	nfile = 0, orbit_type, ipass = 1, ipass0 = 0, verbose_level = 3, cycle_number, pass_number
 real(eightbytereal), allocatable :: time(:), lat(:), lon(:)
 real(eightbytereal) :: last_time = 0
@@ -88,15 +89,19 @@ endif
 
 read (*,'(a)',iostat=ios) filenm
 if (ios /= 0) stop
-i = index(filenm,'P4_2__')
-if (verbose_level >= 5) write (*,*) i, filenm
-if (i == 0) call rads_exit ('Wrong filetype')
-ngrps = 3
-if (index(filenm,'_HR_') > 0) ngrps = 2
+
+i = index(filenm,'/',.true.) + 1
+if (filenm(i:i+1) == 'JA' .and. filenm(i+10:i+10) == 'f') then
+else if (filenm(i:i+1) == 'S6' .and. filenm(i+4:i+8) == 'P4_2_') then ! Sentinel-6 Level-2
+	if (filenm(i+9:i+10) == 'HR') ngrps = 2
+else
+	call rads_exit ('Wrong filetype')
+endif
+sat = filenm(i:i+2)
 
 ! Get ORF file
 
-call read_orf (filenm(i-4:i-2), orf)
+call read_orf (sat, orf)
 
 ! Read options and destination directory
 
@@ -104,12 +109,16 @@ do i = 1,iargc()
 	call getarg (i,arg)
 	if (arg(:2) == '-c') then
 		check_pass = .true.
+	else if (arg(:2) == '-i') then
+		! Ignore old argument from ogdrsplit
 	else if (arg(:2) == '-m') then
 		read (arg(3:), *, iostat=ios) in_max
 	else if (arg(:2) == '-p') then
 		newer_than = arg(3:)
 	else if (arg(:2) == '-v') then
 		read (arg(3:), *, iostat=ios) verbose_level
+	else if (arg == '-x2') then
+		! Ignore old argument from ogdrsplit
 	else if (arg(:2) == '-x') then
 		exclude_list = trim(exclude_list) // arg(3:len_trim(arg)) // ','
 	else
@@ -127,6 +136,8 @@ do
 		read (*,'(a)',iostat=ios) filenm
 		if (ios /= 0) exit
 	endif
+	i = index(filenm,'/',.true.) + 1
+	product_name = filenm(i:)
 	first = .false.
 
 ! Open the input file
@@ -138,7 +149,7 @@ do
 
 ! Read global attributes
 
-	call nfs(nf90_get_att(ncid1(0),nf90_global,'product_name',product_name))
+	if (sat(:2) == 'S6') call nfs(nf90_get_att(ncid1(0),nf90_global,'product_name',product_name))
 	call nfs(nf90_get_att(ncid1(0),nf90_global,'cycle_number',cycle_number))
 	call nfs(nf90_get_att(ncid1(0),nf90_global,'pass_number',pass_number))
 
@@ -280,7 +291,7 @@ cycle_number = orf(ipass0)%cycle
 pass_number = orf(ipass0)%pass
 
 absolute_pass_number = orf(ipass0)%abs_pass
-absolute_rev_number = absolute_pass_number / 2
+absolute_rev_number = orf(ipass0)%abs_rev
 
 equator_time = orf(ipass0)%eqtime + sec2000
 equator_longitude = orf(ipass0)%eqlon
@@ -295,12 +306,20 @@ nrec = sum(fin(1:nfile)%rec1 - fin(1:nfile)%rec0 + 1)
 ! Open the output file. Make directory if needed.
 
 605 format (a,'/c',i3.3)
-610 format (a,'RED_',a,i3.3,'_',i3.3,a,'.nc')
+610 format (a,'P',i3.3,'_',i3.3,'.nc') ! JA? format
+611 format (a,'P',i3.3,'_',i4.4,'.nc') ! SRL format
+612 format (a,'RED_',a,i3.3,'_',i3.3,a,'.nc') ! S6? format
 
 write (dirnm,605) trim(destdir),cycle_number
 inquire (file=dirnm,exist=exist)
 if (.not.exist) call system('mkdir -p '//dirnm)
-write (prdnm,610) product_name(:13),product_name(92:95),cycle_number,pass_number,product_name(95:98)
+if (sat(:2) == 'JA') then
+	write (prdnm,610) product_name(:11),cycle_number,pass_number
+else if (sat == 'SRL') then
+	write (prdnm,611) product_name(:11),cycle_number,pass_number
+else
+	write (prdnm,612) product_name(:13),product_name(92:95),cycle_number,pass_number,product_name(95:98)
+endif
 outnm = trim(dirnm) // '/' // trim(prdnm)
 inquire (file=outnm,exist=exist)
 
@@ -311,8 +330,13 @@ if (exist) then
 	call nfs(netcdf_open(outnm,nf90_write,ncid2))
 	call nfs(nf90_inquire_dimension(ncid2(1),1,len=nout))
 	if (verbose_level >= 5) write (*,*) "nout =",nout
-	call nfs(nf90_get_att(ncid2(0),nf90_global,'first_measurement_time',date(1)))
-	call nfs(nf90_get_att(ncid2(0),nf90_global,'last_measurement_time',date(2)))
+	if (sat(:2) == 'S6') then
+		call nfs(nf90_get_att(ncid2(0),nf90_global,'first_measurement_time',date(1)))
+		call nfs(nf90_get_att(ncid2(0),nf90_global,'last_measurement_time',date(2)))
+	else
+		call nfs(nf90_get_att(ncid2(0),nf90_global,'first_meas_time',date(1)))
+		call nfs(nf90_get_att(ncid2(0),nf90_global,'last_meas_time',date(2)))
+	endif
 	call nfs(nf90_get_att(ncid2(0),nf90_global,'equator_time',date(3)))
 	x = strp1985f (date(3))
 	if (abs(x - equator_time) > 0.5d-3) then
@@ -361,14 +385,20 @@ call nfs(nf90_put_att(ncid2(0),nf90_global,'product_name',prdnm))
 call nfs(nf90_put_att(ncid2(0),nf90_global,'cycle_number',cycle_number))
 call nfs(nf90_put_att(ncid2(0),nf90_global,'pass_number',pass_number))
 call nfs(nf90_put_att(ncid2(0),nf90_global,'absolute_rev_number',absolute_rev_number))
+if (sat(:2) == 'S6') then
+	call nfs(nf90_put_att(ncid2(0),nf90_global,'first_measurement_time',date(1)))
+	call nfs(nf90_put_att(ncid2(0),nf90_global,'last_measurement_time',date(2)))
+	call nfs(nf90_put_att(ncid2(0),nf90_global,'first_measurement_latitude',fin(1)%lat0))
+	call nfs(nf90_put_att(ncid2(0),nf90_global,'last_measurement_latitude',fin(nfile)%lat1))
+	call nfs(nf90_put_att(ncid2(0),nf90_global,'first_measurement_longitude',fin(1)%lon0))
+	call nfs(nf90_put_att(ncid2(0),nf90_global,'last_measurement_longitude',fin(nfile)%lon1))
+else
+	call nfs(nf90_put_att(ncid2(0),nf90_global,'absolute_pass_number',absolute_pass_number))
+	call nfs(nf90_put_att(ncid2(0),nf90_global,'first_meas_time',date(1)))
+	call nfs(nf90_put_att(ncid2(0),nf90_global,'last_meas_time',date(2)))
+endif
 call nfs(nf90_put_att(ncid2(0),nf90_global,'equator_time',date(3)))
 call nfs(nf90_put_att(ncid2(0),nf90_global,'equator_longitude',equator_longitude))
-call nfs(nf90_put_att(ncid2(0),nf90_global,'first_measurement_time',date(1)))
-call nfs(nf90_put_att(ncid2(0),nf90_global,'last_measurement_time',date(2)))
-call nfs(nf90_put_att(ncid2(0),nf90_global,'first_measurement_latitude',fin(1)%lat0))
-call nfs(nf90_put_att(ncid2(0),nf90_global,'last_measurement_latitude',fin(nfile)%lat1))
-call nfs(nf90_put_att(ncid2(0),nf90_global,'first_measurement_longitude',fin(1)%lon0))
-call nfs(nf90_put_att(ncid2(0),nf90_global,'last_measurement_longitude',fin(nfile)%lon1))
 call nfs(nf90_enddef(ncid2(0)))
 
 ! If requested, check if cycles and pass numbers agree
