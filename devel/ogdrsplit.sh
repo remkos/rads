@@ -45,17 +45,25 @@ tmp2=$(mktemp -t ogdrftime2)
 tmpdir=$(mktemp -d -t ogdrf)
 #echo $tmpdir
 
-base=$(basename ${ogdrs[0]})
-sat=${base:0:3}
-case $sat in
-    JA1|JA2|JA3) filetype=${base:0:12} ; ss="j${sat:2:1}" ;;
-    S6A|S6B) filetype=${base:0:21} ; ss=$(echo ${sat:1:2}| tr '[AB]' '[ab]') ;;
-    *) echo "Error" ; exit ;;
-esac
-
+#Hard coded for Jason-3 for now
+filetype='JA3_OPN_2Pf'
+sat='JA3'
 nr_passes=254
 abs_pass_offset=0
-orf=${RADSROOT}/ext/$ss/${sat}_ORF.txt
+case $sat in
+JA1)
+    orf=${RADSROOT}/ext/j1/JA1_ORF.txt
+;;
+JA2)
+    orf=${RADSROOT}/ext/j2/JA2_ORF.txt
+;;
+JA3)
+    orf=${RADSROOT}/ext/j3/JA3_ORF.txt
+;;
+*)
+  echo "Error"
+;;
+esac
 
 #Read ORF file
 hash=0
@@ -113,12 +121,10 @@ for ogdr in ${ogdrs[@]}; do
     done < <(ncks -A -x --cdl $ogdr | egrep 'first|last')
     ogdr_first_meas_time=${ogdr_times[0]}
     ogdr_first_meas_time=${ogdr_first_meas_time#*'"'}; ogdr_first_meas_time=${ogdr_first_meas_time%'"'*}
-    ogdr_first_meas_time=${ogdr_first_meas_time:0:26}
     ogdr_first_meas_time_sec="$(gdate +%s --date="$ogdr_first_meas_time UTC")"
 
     ogdr_last_meas_time=${ogdr_times[1]}
     ogdr_last_meas_time=${ogdr_last_meas_time#*'"'}; ogdr_last_meas_time=${ogdr_last_meas_time%'"'*}
-    ogdr_last_meas_time=${ogdr_first_meas_time:0:26}
     ogdr_last_meas_time_sec="$(gdate +%s --date="$ogdr_last_meas_time UTC")"
 
 #Search identify passes in the OGDR from turning point times
@@ -135,7 +141,7 @@ for ogdr in ${ogdrs[@]}; do
 
         printf -v outdir '%s/c%03d' "${destdir}" "${cycle[$ieq]}"
         mkdir -p $outdir
-        printf -v outfn '%s%03d_%03d.nc' "$filetype" "${cycle[$ieq]}" "${pass[$ieq]}"
+        printf -v outfn '%sP%03d_%03d.nc' "$filetype" "${cycle[$ieq]}" "${pass[$ieq]}"
         outnm=$outdir/$outfn
 
 #By default split with ORF turning point times
@@ -151,7 +157,6 @@ for ogdr in ${ogdrs[@]}; do
             exists=1
             file_last_meas_time=$(ncks -A -x --cdl $outnm | egrep 'last')
             file_last_meas_time=${file_last_meas_time#*'"'}; file_last_meas_time=${file_last_meas_time%'"'*}
-            file_last_meas_time=${file_last_meas_time:0:26}
             file_secdec=${file_last_meas_time#*.}
             file_last_meas_time_sec="$(gdate +%s --date="$file_last_meas_time UTC")"
             if [[ $ogdr_last_meas_time_sec > $file_last_meas_time_sec && $orfdate2 > $file_last_meas_time_sec ]]; then
