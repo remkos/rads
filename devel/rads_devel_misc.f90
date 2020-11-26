@@ -19,7 +19,7 @@ use typesizes
 ! Struct to store the records from ORF file
 
 type :: orfinfo
-	integer(fourbyteint) :: cycle, pass, abs_pass
+	integer(fourbyteint) :: cycle, pass, abs_pass, abs_rev
 	real(eightbytereal) :: starttime, eqtime, eqlon
 end type
 
@@ -32,7 +32,7 @@ use rads_misc
 character(len=3), intent(in) :: sat
 type(orfinfo), intent(inout) :: orf(:)
 character(len=320) :: line
-integer :: hash, mjd, yy, mm, dd, hh, mn, ios, npass, orbitnr, unit, nr_passes, abs_pass_offset
+integer :: hash, mjd, yy, mm, dd, hh, mn, ios, npass, unit, nr_passes, abs_pass_offset
 real(eightbytereal) :: ss, lon, lat
 !
 ! This routine reads an ORF file for the given 3-letter satellite
@@ -64,6 +64,10 @@ case ('S3A')
 case ('S3B')
 	call parseenv ('${ALTIM}/data/ODR.SNTNL-3B/orf.txt', line)
 	nr_passes = 770
+case ('S6A')
+	call parseenv ('${RADSROOT}/ext/6a/S6A_ORF.txt', line)
+case ('S6B')
+	call parseenv ('${RADSROOT}/ext/6b/S6B_ORF.txt', line)
 case default
 	stop 'Wrong satellite code'
 end select
@@ -72,7 +76,7 @@ open (unit, file=line, status='old')
 
 ! Initialise with dummy values
 
-orf = orfinfo (-1, -1, -1, nan, nan, nan)
+orf = orfinfo (-1, -1, -1, -1, nan, nan, nan)
 
 ! Skip until after the lines starting with #
 
@@ -91,7 +95,7 @@ do
 	if (ios /= 0) exit
 	read (line(:23),601,iostat=ios) yy,mm,dd,hh,mn,ss
 	if (ios /= 0) exit
-	read (line(24:),*,iostat=ios) orf(npass)%cycle,orf(npass)%pass,orbitnr,lon,lat
+	read (line(24:),*,iostat=ios) orf(npass)%cycle,orf(npass)%pass,orf(npass)%abs_rev,lon,lat
 	orf(npass)%abs_pass = (orf(npass)%cycle - 1) * nr_passes + orf(npass)%pass + abs_pass_offset
 	if (ios /= 0) exit
 	! Convert date and time to seconds since 1-1-2000
