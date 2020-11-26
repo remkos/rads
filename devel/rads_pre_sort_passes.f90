@@ -13,7 +13,7 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*s6combine -- Combine (and split) Sentinel-6 or Jason GDR-F into pass files
+!*rads_pre_sort_passes -- Sort (combine and split) Sentinel-6 or Jason GDR-F into pass files
 !
 ! Read Sentinel-6 standard or reduced granules or orbits and
 ! combine them (and split them) into pass files.
@@ -26,7 +26,7 @@
 !
 ! This program relies on the availability of S6 or JA3 ORF files.
 !-----------------------------------------------------------------------
-program s6combine
+program rads_pre_sort_passes
 
 use rads
 use rads_misc
@@ -74,7 +74,7 @@ if (iargc() < 1) then
 	write (*,1300) trim(arg), trim(arg)
 	stop
 endif
-1300 format (a,' -- Combine/split Sentinel-6 or Jason GDR-F files into pass files'// &
+1300 format (a,' -- Sort (combine/split) Sentinel-6 or Jason GDR-F files into pass files'// &
 'syntax: ',a,' [options] destdir < list'//'where'/ &
 '  destdir           : Destination directory (appends c???/*.nc)'/ &
 '  list              : List of input files names'// &
@@ -544,4 +544,4 @@ logical :: excluded
 excluded = (index(exclude_list,','//trim(varnm)//',') > 0)
 end function excluded
 
-end program s6combine
+end program rads_pre_sort_passes
