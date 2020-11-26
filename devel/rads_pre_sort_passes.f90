@@ -54,7 +54,7 @@ character(len=7) :: grpnm(3) = (/ 'data_01', 'ku     ', 'c      '/)
 
 ! General variables
 
-character(len=rads_cmdl) :: arg, filenm, dimnm, destdir, product_name, xref_orbit_data
+character(len=rads_cmdl) :: arg, filenm, dimnm, destdir, product_name
 character(len=rads_strl) :: exclude_list = ','
 character(len=26) :: date(3)
 character(len=15) :: newer_than = '00000000T000000'
@@ -284,10 +284,10 @@ end subroutine which_pass
 ! Write whatever has been buffered so far to an output file
 
 subroutine write_output
-integer(fourbyteint) :: nrec, ncid1(0:3), ncid2(0:3), varid1, varid2, i, nout, &
+integer(fourbyteint) :: nrec, ncid1(0:3), ncid2(0:3), i, nout, &
 	cycle_number, pass_number, absolute_pass_number, absolute_rev_number
 real(eightbytereal) :: equator_time, equator_longitude, x
-character(len=rads_naml) :: dirnm, prdnm, outnm, varnm
+character(len=rads_naml) :: dirnm, prdnm, outnm
 logical :: exist
 
 ! Retrieve the pass variables
@@ -365,7 +365,6 @@ endif
 ! Create a new file
 
 call nfs(netcdf_create(outnm,nf90_write+nf90_netcdf4,ncid2))
-!call nfs(nf90_set_fill(ncid2,nf90_nofill,i))
 
 ! Create the time dimension
 
@@ -416,12 +415,13 @@ endif
 
 nout = 0
 do i = 1,nfile
+	ncid1 = fin(i)%ncid
 	do j = 0,ngrps
-		call netcdf_copy_vars (fin(i)%ncid(j), fin(i)%rec0, fin(i)%rec1, ncid2(j), nout+1)
+		call netcdf_copy_vars (ncid1(j), fin(i)%rec0, fin(i)%rec1, ncid2(j), nout+1)
 	enddo
 	nout = nout + fin(i)%rec1 - fin(i)%rec0 + 1
 	! Release NetCDF file when reaching end
-	if (fin(i)%rec1 == fin(i)%nrec) call nfs(nf90_close(fin(i)%ncid(0)))
+	if (fin(i)%rec1 == fin(i)%nrec) call nfs(nf90_close(ncid1(0)))
 enddo
 
 ! Close output
