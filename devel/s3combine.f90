@@ -338,7 +338,7 @@ if (exist) then
 	call nfs(nf90_get_att(ncid2,nf90_global,'equator_time',date(3)))
 	x = strp1985f (date(3))
 	if (abs(x - equator_time) > 0.5d-3) then
-		date(3) = strf1985f(equator_time)
+		date(3) = strf1985f(equator_time, 'T')
 		call nfs(nf90_put_att(ncid2,nf90_global,'equator_time',date(3)))
 		if (verbose_level >= 1) write (*,620) 'Updating', 1, nout, nout, date(1:2), '>', trim(outnm)
 	endif
@@ -401,7 +401,7 @@ endif
 ! Overwrite some attributes and product name
 
 call write_line (1, 'Creating', 1, nrec, nrec, fin(1)%time0, fin(nfile)%time1,'>', outnm)
-date(3) = strf1985f(equator_time)
+date(3) = strf1985f(equator_time, 'T')
 
 call nfs(nf90_put_att(ncid2,nf90_global,'product_name',prdnm))
 call nfs(nf90_put_att(ncid2,nf90_global,'cycle_number',cycle_number))
@@ -470,8 +470,8 @@ character(len=*), intent(in) :: word, dir, filenm
 integer, intent(in) :: verbose, rec0, rec1, nrec
 real(eightbytereal), intent(in) :: time0, time1
 if (verbose_level < verbose) return
-date(1) = strf1985f(time0+sec2000)
-date(2) = strf1985f(time1+sec2000)
+date(1) = strf1985f(time0+sec2000, 'T')
+date(2) = strf1985f(time1+sec2000, 'T')
 write (*,620) word, rec0, rec1, nrec, date(1:2), dir, trim(filenm)
 620 format (a,' : ',3i6,' : ',a,' - ',a,1x,a1,1x,a)
 end subroutine write_line
