@@ -28,7 +28,7 @@ PROGS	= rads_add_dual rads_add_ecmwf rads_add_era rads_add_flags rads_add_grid \
 		rads_add_tide rads_add_webtide rads_add_ww3_222 rads_add_ww3_314 \
 		rads_fix_c2 rads_fix_eqtime rads_fix_j1 rads_fix_jason rads_fix_reaper rads_fix_s3 rads_fix_sa rads_fix_tx \
 		rads_gen_c2_l1r rads_gen_h2 rads_gen_jason rads_gen_jason_gdrf rads_gen_reaper rads_gen_s3 rads_gen_s6 \
-		rads_gen_saral rads_gen_tx_rgdr make_orf ogdrsplit s3combine rads_pre_sort_passes
+		rads_gen_saral rads_gen_tx_rgdr make_orf ogdrsplit rads_pre_sort_passes
 
 # Includes
 INCLUDES = $(MOD_FLAG). $(MOD_FLAG)../src $(MOD_FLAG)$(ALTIM)/include $(NETCDF_INC) $(GRIB_INC)
@@ -70,7 +70,7 @@ rads_gen_c2_l1r rads_gen_reaper:	rads_gen.o
 rads_add_iono:	$(ALTIM)/lib/iono.a
 rads_add_ecmwf rads_add_era rads_add_ncep rads_add_tide rads_add_webtide:	$(ALTIM)/lib/tides.a
 rads_add_refframe:	$(PLM)
-s3combine rads_pre_sort_passes ogdrsplit:	rads_devel_misc.o
+rads_pre_sort_passes ogdrsplit:	rads_devel_misc.o
 rads_devel.o:	../src/rads.mod ../src/rads_misc.mod
 rads_devel_misc.o:	../src/rads_misc.mod
 rads_devel_netcdf.o:	rads_devel.mod ../src/rads.mod ../src/rads_misc.mod ../src/rads_netcdf.mod
