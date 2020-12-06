@@ -33,12 +33,13 @@ case $dir in
 *HR/*) type=hr ;;
 esac
 case $dir in
-*OPE/*/NR) type=${type}nrt ;;
-*OPE/*/ST) type=${type}stc ;;
-*OPE/*/NT) type=${type}ntc ;;
-*VAL/*/NR) type=${type}nrf ;;
-*VAL/*/ST) type=${type}stf ;;
-*VAL/*/NT) type=${type}ntf ;;
+*/NR) type=${type}nr ;;
+*/ST) type=${type}st ;;
+*/NT) type=${type}nt ;;
+esac
+case $dir in
+*OPE/*) type=${type}o ;;
+*VAL/*) type=${type}v ;;
 esac
 
 # Process "unadultered" files
