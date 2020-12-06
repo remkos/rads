@@ -213,7 +213,6 @@ do
 	call nfs(nf90_get_att(ncid,nf90_global,'pass_number',passnr))
 	call nfs(nf90_get_att(ncid,nf90_global,'equator_time',arg))
 	equator_time = strp1985f (arg)
-	write (*,*) "equator_time =",arg,equator_time
 
 ! If pass_number is 0, get cycle and pass number from the file name
 
@@ -229,7 +228,6 @@ do
 		call log_string ('Skipped', .true.)
 		cycle
 	endif
-	write (*,*) "times =", times, equator_time
 
 ! Set mission phase based on equator_time
 
@@ -260,7 +258,6 @@ do
 
 	allocate (a(nrec),flags(nrec),flags_mle3(nrec),flags_save(nrec))
 	nvar = 0
-	write (*,*) "nrec =", nrec
 
 ! Get NetCDF ID for 20-Hz data (if available)
 
@@ -326,8 +323,10 @@ do
 ! Telemetry type (copied from 20-Hz to 1-Hz)
 
 	call get_var (ncidk, 'index_first_20hz_measurement', a)
-	if (ncid20k /= 0) call get_var (ncid20k, 'telemetry_type_flag', telemetry_type_flag)
-	call new_var ('flag_alt_oper_mode', telemetry_type_flag(nint(a(:))) - 1)
+	if (ncid20k /= 0) then
+		call get_var (ncid20k, 'telemetry_type_flag', telemetry_type_flag)
+		call new_var ('flag_alt_oper_mode', telemetry_type_flag(nint(a(:))) - 1)
+	endif
 
 ! Range
 
@@ -350,7 +349,7 @@ do
 	call cpy_var (ncidk, 'swh_ocean_rms', 'swh_rms_ku')
 	call cpy_var (ncidk, 'swh_ocean_qual', 'qual_swh')
 	if (lr) then
-		call cpy_var (ncidk, 'swh_ocean_mle3', 'swh_ku_plrm')
+		call cpy_var (ncidk, 'swh_ocean_mle3', 'swh_ku_mle3')
 		call cpy_var (ncidk, 'swh_ocean_mle3_rms', 'swh_rms_ku_mle3')
 		call cpy_var (ncidc, 'swh_ocean', 'swh_c')
 		call cpy_var (ncidc, 'swh_ocean_rms', 'swh_rms_c')
@@ -363,7 +362,7 @@ do
 	call cpy_var (ncidk, 'sig0_ocean_qual', 'qual_sig0')
 	call cpy_var (ncidk, 'atm_cor_sig0', 'dsig0_atmos_ku')
 	if (lr) then
-		call cpy_var (ncidk, 'sig0_ocean_mle3', 'sig0_ku_plrm')
+		call cpy_var (ncidk, 'sig0_ocean_mle3', 'sig0_ku_mle3')
 		call cpy_var (ncidk, 'sig0_ocean_mle3_rms', 'sig0_rms_ku_mle3')
 		call cpy_var (ncidc, 'sig0_ocean', 'sig0_c')
 		call cpy_var (ncidc, 'sig0_ocean_rms', 'sig0_rms_c')
@@ -403,7 +402,7 @@ do
 	call cpy_var (ncid1, 'iono_cor_alt_filtered', 'iono_alt_smooth')
 	if (lr) then
 		call cpy_var (ncid1, 'iono_cor_alt_mle3', 'iono_alt_mle3')
-		call cpy_var (ncid1, 'iono_cor_alt_filtered_01_plrm_ku', 'iono_alt_smooth_mle3')
+		call cpy_var (ncid1, 'iono_cor_alt_filtered_mle3', 'iono_alt_smooth_mle3')
 		call cpy_var (ncidc, 'range_ocean_qual', 'qual_iono_alt')
 	endif
 	call cpy_var (ncidk, 'iono_cor_gim', 'iono_gim')
