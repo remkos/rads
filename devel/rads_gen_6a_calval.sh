@@ -61,14 +61,15 @@ date													>  $log 2>&1
 find "$@" -name "*RED*.nc" | sort		> "$lst"
 rads_gen_s6 	  $options --min-rec=6 < "$lst"			>> $log 2>&1
 
-# Add MOE orbit (for NRT and STC only)
-	case $type in
-		*nr*|*st*) rads_add_orbit  $options -Valt_cnes --dir=moe_doris	>> "$log" 2>&1
-	esac
+# Add MOE orbit (for NRT only)
+case $type in
+	*nr*) rads_add_orbit  $options -Valt_gdrf --dir=moe_doris	>> "$log" 2>&1 ;;
+esac
 
 # General geophysical corrections
 rads_add_common   $options								>> $log 2>&1
 rads_add_iono     $options --all						>> $log 2>&1
+rads_add_mog2d    $options								>> $log 2>&1
 # Redetermine SSHA
 rads_add_sla      $options								>> $log 2>&1
 

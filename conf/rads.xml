@@ -3711,7 +3711,7 @@ Global RADS configuration file
 	<comment>Negative numbers are inland, positive numbers are offshore</comment>
 </var>
 
-<var name="prox_coast" field="4502" sat="2a 3a 3b c2 j1 j2 j3 n1 pn sa tx">
+<var name="prox_coast" field="4502" sat="2a 3a 3b 6a c2 j1 j2 j3 n1 pn sa tx">
 	<long_name>coastal proximity parameter</long_name>
 	<source>NOC Southampton</source>
 	<parameters>CoastalProximity_v2_1.nc</parameters>
