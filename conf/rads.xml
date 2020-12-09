@@ -31,7 +31,7 @@ Global RADS configuration file
 	2a h2a hy-2a hy2a
 	3a s3a sentinel-3a sentinel3a sntnl-3a
 	3b s3b sentinel-3b sentinel3b sntnl-3b
-	6a s6a sentinel-6a sentinel6a sntnl-6a
+	6a s6a sentinel-6a sentinel6a sntnl-6a sentinel-6mf s6mf
 	c2 cs2 cryosat-2 cryosat2
 	e1 er1 ers-1 ers1
 	e2 er2 ers-2 ers2
