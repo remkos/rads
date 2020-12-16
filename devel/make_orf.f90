@@ -56,7 +56,7 @@ character(len=26) :: date
 ! Scan command line for options
 
 call synopsis
-call rads_set_options (' dir: dt:')
+call rads_set_options (' dir: dt: ext:')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
