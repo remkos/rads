@@ -49,7 +49,7 @@ character(len=rads_cmdl) :: dir = ''
 
 ! Other variables
 
-integer(fourbyteint) :: ios, cycle, pass, abs_orbit
+integer(fourbyteint) :: ios, cycle, pass, abs_orbit, next = 250
 real(eightbytereal) :: min_lat, max_lat, time, time_step = 0d0
 character(len=26) :: date
 
@@ -65,6 +65,8 @@ do i = 1,rads_nopt
 		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	case ('dir')
 		dir = rads_opt(i)%arg
+	case ('ext')
+		read (rads_opt(i)%arg, *, iostat=ios) next
 	end select
 enddo
 
@@ -124,14 +126,14 @@ do
 	endif
 enddo
 
-! Extend the list by approx. 2 weeks (250 orbits)
+! Extend the list by <next> orbits
 ! For computing steps into future, start with an equator crossing; it is more accurate
 
 if (abs(orf(norf)%lat) > min_lat) norf = norf - 1
 if (norf >= 5) then
 	diff%time = orf(norf)%time - orf(norf-4)%time
 	diff%lon = orf(norf)%lon - orf(norf-4)%lon
-	do i = 1,1000
+	do i = 1,4*next
 		if (orf(norf-3)%time + diff%time > S%time%info%limits(2)) exit
 		norf = norf + 1
 		orf(norf)%time = orf(norf-4)%time + diff%time
@@ -179,7 +181,8 @@ write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:'/ &
 '  --dir STR                 Specify orbit directory path'/ &
-'  --dt DT                   Specify time stepping interval (s), default: 1')
+'  --dt DT                   Specify time stepping interval (s), default: 1'/ &
+'  --ext EXT                 Extend ORF by EXT orbits beyond the last orbit file, default: 250')
 stop
 end subroutine synopsis
 
