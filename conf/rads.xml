@@ -3971,23 +3971,23 @@ Global RADS configuration file
 	<phase name="1">
 		<mission>Drift Phase</mission>
 		<cycles>0 2</cycles>
-		<repeat>9.872055 254 15.61</repeat><!--Need to update this value-->
+		<repeat>9.872055 254 15.61</repeat>
 		<ref_pass>2020-12-03T21:29:03 338.10 2 59 157</ref_pass>
-		<start_time>2020-11-27</start_time><!--Need to update this value-->
+		<start_time>2020-11-27</start_time>
 	</phase>
 	<phase name="1">
 		<mission>Drift Phase</mission>
-		<cycles>2 3</cycles><!--Need to update this value-->
-		<repeat>9.899811 254 5.69</repeat><!--Need to update this value-->
-		<ref_pass>2020-12-10T04:35:47 211.99 2 221 238</ref_pass><!--Need to update this value-->
-		<start_time>2020-12-10T05:01</start_time><!--Need to update this value-->
+		<cycles>2 3</cycles>
+		<repeat>9.899811 254 5.69</repeat>
+		<ref_pass>2020-12-10T04:35:47 211.99 2 221 238</ref_pass>
+		<start_time>2020-12-10T05:01</start_time>
 	</phase>
 	<phase name="a">
 		<mission>Exact Repeat Mission</mission>
 		<cycles>4 999</cycles>
 		<repeat>9.91564280 254</repeat>
 		<ref_pass>2020-12-17T10:35:01 99.92 4 1 331</ref_pass><!--S6A 30 seconds behind JA3-->
-		<start_time>2020-12-18T01:06</start_time><!--Need to update this value-->
+		<start_time>2020-12-17T19:59</start_time><!--May need to update this value-->
 	</phase>
 </if>
 
