@@ -46,20 +46,33 @@ esac
 dir=6a.${type}0
 rads_open_sandbox "$dir"
 
-date													>  $log 2>&1
+date													>  "$log" 2>&1
 
 find "$@" -name "*RED*.nc" | sort		> "$lst"
-rads_gen_s6 	$options --min-rec=6 < "$lst"			>> $log 2>&1
+rads_gen_s6 	$options --min-rec=6 < "$lst"			>> "$log" 2>&1
 rads_close_sandbox
 
 # Now process do the same again, and do the post-processing
 dir=6a.${type}1
 rads_open_sandbox $dir
 
-date													>  $log 2>&1
+date													>  "$log" 2>&1
 
 find "$@" -name "*RED*.nc" | sort		> "$lst"
-rads_gen_s6 	  $options --min-rec=6 < "$lst"			>> $log 2>&1
+rads_gen_s6 	  $options --min-rec=6 < "$lst"			>> "$log" 2>&1
+
+# Make fixes
+# Range bias = -2 * 0.528 (flipped sign) - 0.045 (characterisation error, NRT only)
+case $type in
+	*nr*) range_bias=-1.101 ;;
+	   *) range_bias=-1.056 ;;
+esac
+# Sigma0 bias = -7.40 (correct HR for observed LR/HR difference)
+case $type in
+	*lr*) rads_fix_s6	$options --range=$range_bias 	>> "$log" 2>&1 ;;
+	   *) rads_fix_s6	$options --range=$range_bias --sig0=-7.40 --wind	>> "$log" 2>&1
+	      rads_add_ssb	$options -Vssb_ku				>> "$log" 2>&1 ;;
+esac
 
 # Add MOE orbit (for NRT only)
 case $type in
@@ -67,12 +80,12 @@ case $type in
 esac
 
 # General geophysical corrections
-rads_add_common   $options								>> $log 2>&1
-rads_add_iono     $options --all						>> $log 2>&1
-rads_add_mog2d    $options								>> $log 2>&1
+rads_add_common   $options								>> "$log" 2>&1
+rads_add_iono     $options --all						>> "$log" 2>&1
+rads_add_mog2d    $options								>> "$log" 2>&1
 # Redetermine SSHA
-rads_add_sla      $options								>> $log 2>&1
+rads_add_sla      $options								>> "$log" 2>&1
 
-date													>> $log 2>&1
+date													>> "$log" 2>&1
 
 rads_close_sandbox
