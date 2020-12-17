@@ -1409,9 +1409,15 @@ Global RADS configuration file
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 	<if sat="3a 3b">
 		<long_name>Tran et al. 2012 non-parametric sea state bias</long_name>
-		<parameters>MainAuxSSBTable_J2_2012.nc?ssb_ku -xwind_speed_alt</parameters>
+		<parameters>MainAuxSSBTable_J2_2012.nc?ssb_ku -xwind_speed_alt -yswh_ku</parameters>
 		<source>Tran et al., 2012</source>
 		<comment edit="append">This model is actually based on Jason-2 data and not Sentinel-3, and will be replaced later.</comment>
+	</if>
+	<if sat="6a">
+		<long_name>Tran et al. 2012 non-parametric sea state bias</long_name>
+		<parameters>MainAuxSSBTable_J2_2012.nc?ssb_ku -xwind_speed_alt -yswh_ku</parameters>
+		<source>Tran et al., 2012</source>
+		<comment edit="append">This model is actually based on Jason-2 data and not Sentinel-6, and will be replaced later.</comment>
 	</if>
 </var>
 <var name="ssb_csr" field="1503" sat="tx">
@@ -1456,9 +1462,15 @@ Global RADS configuration file
 	<comment>This sea state bias correction is added to C-band range when determining ionospheric correction.</comment>
 	<if sat="3a 3b">
 		<long_name>Tran et al. 2012 non-parametric sea state bias (C-band)</long_name>
-		<parameters>MainAuxSSBTable_J2_2012.nc?ssb_c -xwind_speed_alt</parameters>
+		<parameters>MainAuxSSBTable_J2_2012.nc?ssb_c -xwind_speed_alt -yswh_ku</parameters>
 		<source>Tran et al., 2012</source>
 		<comment edit="append">This model is actually based on Jason-2 data and not Sentinel-3, and will be replaced later.</comment>
+	</if>
+	<if sat="6a">
+		<long_name>Tran et al. 2012 non-parametric sea state bias (C-band)</long_name>
+		<parameters>MainAuxSSBTable_J2_2012.nc?ssb_c -xwind_speed_alt -yswh_ku</parameters>
+		<source>Tran et al., 2012</source>
+		<comment edit="append">This model is actually based on Jason-2 data and not Sentinel-6, and will be replaced later.</comment>
 	</if>
 </var>
 <var name="ssb_cls_mle3" field="1512" sat="6a j2 j3">
@@ -1472,6 +1484,12 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
+	<if sat="6a">
+		<long_name>Tran et al. 2012 non-parametric sea state bias (MLE3)</long_name>
+		<parameters>MainAuxSSBTable_J2_2012.nc?ssb_ku -xwind_speed_alt_mle3 -yswh_ku_mle3</parameters>
+		<source>Tran et al., 2012</source>
+		<comment edit="append">This model is actually based on Jason-2 data and not Sentinel-6, and will be replaced later.</comment>
+	</if>
 </var>
 <var name="ssb_cls_plrm" field="1514" sat="3a 3b">
 	<long_name>Tran et al. 2012 non-parametric sea state bias (PLRM)</long_name>
