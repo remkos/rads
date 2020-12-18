@@ -83,7 +83,7 @@ character(len=rads_cmdl) :: infile, arg
 
 ! Header variables
 
-integer(fourbyteint) :: ncid, cyclenr, passnr, varid, patch
+integer(fourbyteint) :: ncid, cyclenr, passnr, varid
 real(eightbytereal) :: equator_time
 integer :: latency = rads_nrt
 
@@ -187,13 +187,6 @@ do
 	P%original = trim(infile(i:)) // ' (' // arg(j+11:)
 	j = index(P%original, ',')
 	P%original(j:) = ')'
-	if (index(P%original, '(V4.2p1p6p9)') > 0) then
-		patch = 0
-	else if (index(P%original, '(V4.2') > 0) then
-		patch = 1
-	else
-		patch = 2
-	endif
 
 ! Allocate variables
 
@@ -204,15 +197,17 @@ do
 
 	flags = 0
 	call nc2f (ncid, 'qual_alt_1hz_off_nadir_angle_wf',1)	! bit  1: Quality off-nadir pointing
-	call nc2f (ncid, 'surface_type',2,eq=2)				! bit  2: Continental ice
-	call nc2f (ncid, 'surface_type',4,ge=2)				! bit  4: Water/land
-	call nc2f (ncid, 'surface_type',5,ge=1)				! bit  5: Ocean/other
-	call nc2f (ncid, 'rad_surf_type',6,ge=2)				! bit  6: Radiometer land flag
-	call nc2f (ncid, 'ice_flag',7)						! bit  7: Ice flag
-	call nc2f (ncid, 'qual_rad_1hz_tb_k',9)				! bit  9: Quality 23.8 GHz channel
+	! Use surface classification since GDR-F
+	call nc2f (ncid, 'surf_class', 2, eq=4)					! bit  2: Continental ice
+	call nc2f (ncid, 'surf_class', 4, eq=1)
+	call nc2f (ncid, 'surf_class', 4, ge=3)					! bit  4: Water/land
+	call nc2f (ncid, 'surf_class', 5, ge=1)					! bit  5: Ocean/other
+	call nc2f (ncid, 'rad_surf_type',6)						! bit  6: Radiometer land flag
+	call nc2f (ncid, 'ice_flag',7)							! bit  7: Ice flag
+	call nc2f (ncid, 'qual_rad_1hz_tb_k',9)					! bit  9: Quality 23.8 GHz channel
 	call nc2f (ncid, 'qual_rad_1hz_tb_ka',10)				! bit 10: Quality 37.0 GHz channel
 	call nc2f (ncid, 'qual_alt_1hz_range',11)				! bit 11: Quality of range
-	call nc2f (ncid, 'qual_alt_1hz_swh',12)				! bit 12: Quality of SWH
+	call nc2f (ncid, 'qual_alt_1hz_swh',12)					! bit 12: Quality of SWH
 	call nc2f (ncid, 'qual_alt_1hz_sig0',13)				! bit 13: Quality of sigma0
 	if (latency == rads_nrt) then
 		call nc2f (ncid, 'orb_state_flag_diode',15,ge=2)	! bit 15: Quality of DIODE orbit
@@ -226,11 +221,7 @@ do
 	call new_var ('time', a + sec2000)
 	call cpy_var (ncid, 'lat')
 	call cpy_var (ncid, 'lon')
-	if (cyclenr < 25) then
-		call cpy_var (ncid, 'alt', 'alt_gdrd')
-	else
-		call cpy_var (ncid, 'alt', 'alt_gdre')
-	endif
+	call cpy_var (ncid, 'alt', 'alt_gdrf')	! Since GDR-F
 	call cpy_var (ncid, 'orb_alt_rate', 'alt_rate')
 	call cpy_var (ncid, 'range', 'range_ka')
 	call cpy_var (ncid, 'range_numval', 'range_numval_ka')
@@ -238,26 +229,18 @@ do
 	call cpy_var (ncid, 'model_dry_tropo_corr', 'dry_tropo_ecmwf')
 	call cpy_var (ncid, 'model_wet_tropo_corr', 'wet_tropo_ecmwf')
 	call cpy_var (ncid, 'rad_wet_tropo_corr', 'wet_tropo_rad')
-	if (patch == 0) var(nvar)%d = var(nvar)%d + 19d-3
 	call cpy_var (ncid, 'iono_corr_gim', 'iono_gim')
-	if (patch < 2) then
-		call cpy_var (ncid, 'sea_state_bias', 'ssb_bm3')
-	else
-		call cpy_var (ncid, 'sea_state_bias', 'ssb_hyb')
-	endif
+	call cpy_var (ncid, 'sea_state_bias', 'ssb_tran2019')
+	call cpy_var (ncid, 'sea_state_bias_3d_mp2', 'ssb_tran2019_3d')	! Since GDR-F
 	call cpy_var (ncid, 'swh', 'swh_ka')
 	call cpy_var (ncid, 'swh_rms', 'swh_rms_ka')
 	call cpy_var (ncid, 'sig0', 'sig0_ka')
 	call cpy_var (ncid, 'atmos_corr_sig0', 'dsig0_atmos_ka')
-	call cpy_var (ncid, 'atmos_corr_sig0', 'dsig0_atmos_nn_ka', patch == 1)
 	call cpy_var (ncid, 'off_nadir_angle_wf', 'off_nadir_angle2_wf_ka')
 	call cpy_var (ncid, 'tb_k', 'tb_238')
 	call cpy_var (ncid, 'tb_ka', 'tb_370')
-	if (S%phase%name == 'b') then
-		call cpy_var (ncid, 'mean_sea_surface', 'mss_cnescls15')
-	else
-		call cpy_var (ncid, 'mean_sea_surface', 'mss_cnescls11')
-	endif
+	call cpy_var (ncid, 'mean_sea_surface_sol1', 'mss_cnescls15')	! Since GDR-F
+	call cpy_var (ncid, 'mean_sea_surface_sol2', 'mss_dtu15')		! Since GDR-F
 	call cpy_var (ncid, 'geoid', 'geoid_egm96')
 	call cpy_var (ncid, 'bathymetry', 'topo_dtm2000')
 	call cpy_var (ncid, 'inv_bar_corr', 'inv_bar_static')
@@ -266,12 +249,13 @@ do
 	else
 		call cpy_var (ncid, 'inv_bar_corr hf_fluctuations_corr ADD', 'inv_bar_mog2d')
 	endif
-	call cpy_var (ncid, 'ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got48')
-	call cpy_var (ncid, 'ocean_tide_sol2 load_tide_sol2 SUB ocean_tide_non_equil ADD', 'tide_ocean_fes04')
-	call cpy_var (ncid, 'load_tide_sol1', 'tide_load_got48')
-	call cpy_var (ncid, 'load_tide_sol2', 'tide_load_fes04')
+	call cpy_var (ncid, 'ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got410')	! Since GDR-F
+	call cpy_var (ncid, 'ocean_tide_sol2 load_tide_sol2 SUB ocean_tide_non_equil ADD', 'tide_ocean_fes14')	! Since GDR-F
+	call cpy_var (ncid, 'load_tide_sol1', 'tide_load_got410')	! Since GDR-F
+	call cpy_var (ncid, 'load_tide_sol2', 'tide_load_fes14')	! Since GDR-F
 	call cpy_var (ncid, 'ocean_tide_equil', 'tide_equil')
 	call cpy_var (ncid, 'ocean_tide_non_equil', 'tide_non_equil')
+	call cpy_var (ncid, 'internal_tide', 'tide_internal')
 	call cpy_var (ncid, 'solid_earth_tide', 'tide_solid')
 	call cpy_var (ncid, 'pole_tide', 'tide_pole')
 	call cpy_var (ncid, 'wind_speed_model_u', 'wind_speed_ecmwf_u')
@@ -279,7 +263,6 @@ do
 	call cpy_var (ncid, 'wind_speed_alt')
 	call cpy_var (ncid, 'rad_water_vapor', 'water_vapor_rad')
 	call cpy_var (ncid, 'rad_liquid_water', 'liquid_water_rad')
-	if (patch == 0) var(nvar)%d = var(nvar)%d * 1d-2 ! Fix wrong scale
 	call get_var (ncid, 'range_used_40hz', d)
 	valid = (d == 0d0)
 	call get_var (ncid, 'peakiness_40hz', d)
@@ -313,7 +296,7 @@ if (rads_version ('Write SARAL data to RADS', flag=flag)) return
 call synopsis_devel (' < list_of_SARAL_file_names')
 write (*,1310)
 1310 format (/ &
-'This program converts SARAL OGDR/IGDR/GDR files to RADS data' / &
+'This program converts SARAL OGDR/IGDR/GDR-F files to RADS data' / &
 'files with the name $RADSDATAROOT/data/sa/a/pPPPP/sapPPPPcCCC.nc.' / &
 'The directory is created automatically and old files are overwritten.')
 stop

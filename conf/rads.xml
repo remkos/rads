@@ -516,7 +516,7 @@ Global RADS configuration file
 	<compress sat="j1 j2 pn tx">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_gdrf" field="427" sat="3a 3b 6a c2 j3">
+<var name="alt_gdrf" field="427" sat="3a 3b 6a c2 j3 sa">
 	<long_name>CNES GDR-F orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>CNES, GDR-F standards</source>
@@ -529,8 +529,7 @@ Global RADS configuration file
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <alias name="alt" field="4" sat="2a tx.r50">alt_gdrd</alias>
-<alias name="alt" field="4" sat="j3 3a 3b c2">alt_gdrf alt_gdre</alias>
-<alias name="alt" field="4" sat="sa">alt_gdre</alias>
+<alias name="alt" field="4" sat="j3 3a 3b c2 sa">alt_gdrf alt_gdre</alias>
 <alias name="alt" field="4" sat="6a">alt_gdrf</alias>
 <alias name="alt" field="4" sat="c2">alt_gdre alt_cnes</alias>
 <alias name="alt" field="4" sat="e1 e2">alt_reaper alt_gfz</alias>
@@ -1523,6 +1522,28 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
+<var name="ssb_tran2019" sat="sa">
+	<long_name>Tran et al. 2019 non-parametric sea state bias</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
+	<data>ssb_tran2019</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
+</var>
+<var name="ssb_tran2019_3d" sat="sa">
+	<long_name>Tran et al. 2019 3D non-parametric sea state bias</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
+	<data>ssb_tran2019_3d</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
+</var>
 <var name="ssb_walsh" sat="tx.r50">
 	<long_name>Walsh sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
@@ -1546,7 +1567,8 @@ Global RADS configuration file
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
 <alias name="ssb" field="15" sat="e1 e2 pn">ssb_bm3</alias>
-<alias name="ssb" field="15" sat="c2 g1 gs sa">ssb_hyb</alias>
+<alias name="ssb" field="15" sat="c2 g1 gs">ssb_hyb</alias>
+<alias name="ssb" field="15" sat="sa">ssb_tran2019_3d ssb_hyb</alias>
 <alias name="ssb" field="15" sat="2a 3a 3b 6a j1 j2 j3 n1 tx">ssb_cls</alias>
 
 <var name="geoid_egm96" field="1601" sat="3a 3b j2 j3 sa tx.r50">
@@ -3326,14 +3348,6 @@ Global RADS configuration file
 	<compress>int1 1e-2</compress>
 	<comment>Correction already added to backscatter coefficient</comment>
 </var>
-<var name="dsig0_atmos_nn_ka" field="3208" sat="sa">
-	<long_name>Ka-band backscatter coefficient correction due to atmosphere/attitude (NN)</long_name>
-	<units>dB</units>
-	<data>dsig0_atmos_nn_ka</data>
-	<format>f6.3</format>
-	<compress>int2 1e-3</compress>
-	<comment>Alternative to dsig0_atmos_ka which is already applied</comment>
-</var>
 <var name="dsig0_atmos_gfs_ka" field="3208" sat="sa">
 	<long_name>Ka-band backscatter coefficient correction due to atmosphere/attitude (GFS)</long_name>
 	<units>dB</units>
@@ -3570,7 +3584,7 @@ Global RADS configuration file
 	<parameters sat="j3"> -43   0  0  0 0</parameters>
 	<parameters sat="n1"> 451   0  0  0 0</parameters>
 	<parameters sat="pn"> -15   0  0  0 0</parameters>
-	<parameters sat="sa"> -58   0  0  0 0</parameters>
+	<parameters sat="sa"> -68   0  0  0 0</parameters>
 </var>
 <var name="ref_frame_offset_mle3" field="3811" sat="6a j2 j3">
 	<long_name>reference frame offset (MLE3)</long_name>
