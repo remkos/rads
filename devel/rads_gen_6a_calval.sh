@@ -62,10 +62,10 @@ find "$@" -name "*RED*.nc" | sort		> "$lst"
 rads_gen_s6 	  $options --min-rec=6 < "$lst"			>> "$log" 2>&1
 
 # Make fixes
-# Range bias = -2 * 0.528 (flipped sign) - 0.045 (characterisation error, NRT only)
+# Range bias = 2 * 0.528 (flipped sign) - 0.045 (characterisation error, NRT only)
 case $type in
-	*nr*) range_bias=-1.101 ;;
-	   *) range_bias=-1.056 ;;
+	*nr*) range_bias=1.011 ;;
+	   *) range_bias=1.056 ;;
 esac
 # Sigma0 bias = -7.40 (correct HR for observed LR/HR difference)
 case $type in
