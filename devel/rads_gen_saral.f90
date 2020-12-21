@@ -231,7 +231,9 @@ do
 	call cpy_var (ncid, 'rad_wet_tropo_corr', 'wet_tropo_rad')
 	call cpy_var (ncid, 'iono_corr_gim', 'iono_gim')
 	call cpy_var (ncid, 'sea_state_bias', 'ssb_tran2019')
-	call cpy_var (ncid, 'sea_state_bias_3d_mp2', 'ssb_tran2019_3d')	! Since GDR-F
+	if (latency != rads_nrt) then
+		call cpy_var (ncid, 'sea_state_bias_3d_mp2', 'ssb_tran2019_3d')	! Since GDR-F
+	endif
 	call cpy_var (ncid, 'swh', 'swh_ka')
 	call cpy_var (ncid, 'swh_rms', 'swh_rms_ka')
 	call cpy_var (ncid, 'sig0', 'sig0_ka')

@@ -1568,7 +1568,7 @@ Global RADS configuration file
 </var>
 <alias name="ssb" field="15" sat="e1 e2 pn">ssb_bm3</alias>
 <alias name="ssb" field="15" sat="c2 g1 gs">ssb_hyb</alias>
-<alias name="ssb" field="15" sat="sa">ssb_tran2019_3d ssb_hyb</alias>
+<alias name="ssb" field="15" sat="sa">ssb_tran2019_3d ssb_tran2019 ssb_hyb</alias>
 <alias name="ssb" field="15" sat="2a 3a 3b 6a j1 j2 j3 n1 tx">ssb_cls</alias>
 
 <var name="geoid_egm96" field="1601" sat="3a 3b j2 j3 sa tx.r50">
