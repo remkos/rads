@@ -19,7 +19,7 @@ integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, &
 ! RADS4 data sources
 integer(fourbyteint), parameter :: rads_src_none = 0, rads_src_nc_var = 10, &
 	rads_src_nc_att = 11, rads_src_math = 20, rads_src_grid_lininter = 30, &
-	rads_src_grid_splinter = 31, rads_src_grid_query = 32, &
+	rads_src_grid_splinter = 31, rads_src_grid_query = 32, rads_src_grid_linphase = 33, &
 	rads_src_constant = 40, rads_src_flags = 50, rads_src_tpj = 60
 ! RADS4 warnings
 integer(fourbyteint), parameter :: rads_warn_nc_file = -3
@@ -1800,7 +1800,7 @@ do i = 1,3 ! This loop is here to allow processing of aliases
 		call rads_get_var_nc_att
 	case (rads_src_math)
 		call rads_get_var_math
-	case (rads_src_grid_lininter, rads_src_grid_splinter, rads_src_grid_query)
+	case (rads_src_grid_lininter, rads_src_grid_splinter, rads_src_grid_query, rads_src_grid_linphase)
 		call rads_get_var_grid
 	case (rads_src_constant)
 		call rads_get_var_constant
@@ -2125,6 +2125,8 @@ else if (info%datasrc == rads_src_grid_lininter) then
 	forall (i = 1:P%ndata) data(i) = grid_lininter (info%grid, x(i), y(i))
 else if (info%datasrc == rads_src_grid_splinter) then
 	forall (i = 1:P%ndata) data(i) = grid_splinter (info%grid, x(i), y(i))
+else if (info%datasrc == rads_src_grid_linphase) then
+	forall (i = 1:P%ndata) data(i) = grid_lininter (info%grid, x(i), y(i), .true.)
 else
 	forall (i = 1:P%ndata) data(i) = grid_query (info%grid, x(i), y(i))
 endif
@@ -2557,6 +2559,8 @@ do
 			info%datasrc = rads_src_grid_lininter
 		case ('grid_s', 'grid_c')
 			info%datasrc = rads_src_grid_splinter
+		case ('grid_p')
+			info%datasrc = rads_src_grid_linphase
 		case ('grid_n', 'grid_q')
 			info%datasrc = rads_src_grid_query
 		case ('math')
@@ -2625,7 +2629,8 @@ do
 			case ('y')
 				info%gridy = attr(2,i)(:rads_varl)
 			case ('inter')
-				if (attr(2,i)(:1) == 'c') info%datasrc = rads_src_grid_splinter
+				if (attr(2,i)(:1) == 'c' .or. attr(2,i)(:1) == 's') info%datasrc = rads_src_grid_splinter
+				if (attr(2,i)(:1) == 'p') info%datasrc = rads_src_grid_linphase
 				if (attr(2,i)(:1) == 'q') info%datasrc = rads_src_grid_query
 			end select
 		enddo

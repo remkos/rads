@@ -21,7 +21,7 @@
 module rads_grid
 use typesizes
 type grid
-	character(len=160) :: filenm, xname, yname, zname
+	character(len=160) :: filenm, xname, yname, zname, xunit, yunit, zunit
 	integer(fourbyteint) :: nx, ny, ntype, nxwrap
 	real(eightbytereal) :: xmin, xmax, dx, ymin, ymax, dy, zmin, zmax, dz, z0, znan
 	integer(onebyteint), allocatable :: grid_int1(:,:)
@@ -276,6 +276,11 @@ if (nf90_get_att(ncid,x_id,'long_name',info%xname) /= 0) info%xname = ''
 if (nf90_get_att(ncid,y_id,'long_name',info%yname) /= 0) info%yname = ''
 if (nf90_get_att(ncid,z_id,'long_name',info%zname) /= 0) info%zname = ''
 
+! Get unit names
+if (nf90_get_att(ncid,x_id,'units',info%xunit) /= 0) info%xunit = ''
+if (nf90_get_att(ncid,y_id,'units',info%yunit) /= 0) info%yunit = ''
+if (nf90_get_att(ncid,z_id,'units',info%zunit) /= 0) info%zunit = ''
+
 grid_load = 0
 end subroutine grid_load_nc
 
@@ -393,10 +398,11 @@ end function grid_query
 ! Bi-linear interpolation of buffered grid
 !
 ! SYNOPSIS
-pure function grid_lininter (info, x, y)
+pure function grid_lininter (info, x, y, phase)
 use netcdf
 type(grid), intent(in) :: info
 real(eightbytereal), intent(in) :: x, y
+logical, intent(in), optional :: phase
 real(eightbytereal) :: grid_lininter
 !
 ! PURPOSE
@@ -418,9 +424,13 @@ real(eightbytereal) :: grid_lininter
 ! (<x>, <y>) is close to an undetermined grid point, <grid_lininter>
 ! returns a NaN value.
 !
+! The optional argument <phase> indicates if the input values are a phase.
+! In that case, make sure that info%dz converts the values to radians.
+!
 ! ARGUMENTS
-! info : Grid info structure as returned by grid_load
-! x, y : x- and y-coordinate of the point to be interpolated
+! info  : Grid info structure as returned by grid_load
+! x, y  : x- and y-coordinate of the point to be interpolated
+! phase : (optional) if input values are phase, then TRUE.
 !
 ! RETURN VALUE
 ! grid_lininter : Interpolated value at the location (x, y)
@@ -483,15 +493,28 @@ weight(2,2) =    xj *   yj
 ! Add up weights
 wtot = 0d0
 vtot = 0d0
-do jy = 1,2
-	do jx = 1,2
-		zz = z(jx,jy)
-		if (zz == info%znan .or. zz /= zz) cycle
-		wtot = wtot+weight(jx,jy)
-		vtot = vtot+weight(jx,jy)*zz
+if (.not.present(phase) .or. .not.phase) then
+	do jy = 1,2
+		do jx = 1,2
+			zz = z(jx,jy)
+			if (zz == info%znan .or. zz /= zz) cycle
+			wtot = wtot + weight(jx,jy)
+			vtot = vtot + weight(jx,jy)*zz
+		enddo
 	enddo
-enddo
-grid_lininter = vtot / wtot * info%dz + info%z0
+	grid_lininter = vtot / wtot * info%dz + info%z0
+else
+	do jy = 1,2
+		do jx = 1,2
+			zz = z(jx,jy)
+			if (zz == info%znan .or. zz /= zz) cycle
+			zz = zz * info%dz + info%z0
+			wtot = wtot + weight(jx,jy) * cos(zz)
+			vtot = vtot + weight(jx,jy) * sin(zz)
+		enddo
+	enddo
+	grid_lininter = atan2(vtot,wtot)
+endif
 end function grid_lininter
 
 !****f* rads_grid/grid_splinter
