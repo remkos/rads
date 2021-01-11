@@ -26,6 +26,14 @@
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
 
+# Do only latest files when using -d<days>
+d0=20000101
+case $1 in
+	-d*) data=${1:2}; shift
+		d0=`date -u -v -${days}d +%Y%m%d 2>&1` || d0=`date -u --date="${days} days ago" +%Y%m%d`
+		;;
+esac
+
 # Determine type
 dir=$(dirname $1)
 case $dir in
@@ -48,7 +56,11 @@ rads_open_sandbox "$dir"
 
 date													>  "$log" 2>&1
 
-find "$@" -name "*RED*.nc" | sort		> "$lst"
+# Set bookmark according to $d0
+mrk=$RADSDATAROOT/.bookmark
+TZ=UTC touch -t ${d0}0000 "$mrk"
+
+find "$@" -name "*RED*.nc" -a -newer "$mrk" | sort		>  "$lst"
 rads_gen_s6 	$options --min-rec=6 < "$lst"			>> "$log" 2>&1
 rads_close_sandbox
 
@@ -58,7 +70,11 @@ rads_open_sandbox $dir
 
 date													>  "$log" 2>&1
 
-find "$@" -name "*RED*.nc" | sort		> "$lst"
+# Set bookmark according to $d0
+mrk=$RADSDATAROOT/.bookmark
+TZ=UTC touch -t ${d0}0000 "$mrk"
+
+find "$@" -name "*RED*.nc" -a -newer "$mrk" | sort		>  "$lst"
 rads_gen_s6 	  $options --min-rec=6 < "$lst"			>> "$log" 2>&1
 
 # Make fixes
