@@ -208,7 +208,6 @@ do
 	call nfs(nf90_get_att(ncid,nf90_global,'pass_number',passnr))
 	call nfs(nf90_get_att(ncid,nf90_global,'equator_time',arg))
 	equator_time = strp1985f (arg)
-	write (*,*) "equator_time =",arg,equator_time
 
 ! If pass_number is 0, get cycle and pass number from the file name
 
@@ -223,7 +222,6 @@ do
 		call log_string ('Skipped', .true.)
 		cycle
 	endif
-	write (*,*) "times =", times, equator_time
 
 ! Set mission phase based on equator_time
 
@@ -253,7 +251,6 @@ do
 
 	allocate (a(nrec),dh(nrec),flags(nrec),flags_mle3(nrec),flags_save(nrec))
 	nvar = 0
-	write (*,*) "nrec =", nrec
 
 ! Get NetCDF ID for 20-Hz data (if available)
 
