@@ -342,7 +342,7 @@ do
 	call cpy_var (ncidk, 'sig0_ocean_rms', 'sig0_rms_ku')
 	call cpy_var (ncidk, 'sig0_ocean_compression_qual', 'qual_sig0')
 	call cpy_var (ncidk, 'sig0_cor_atm', 'dsig0_atmos_ku')
-	call cpy_var (ncidk, 'sig0_ocean_mle3', 'sig0_ku')
+	call cpy_var (ncidk, 'sig0_ocean_mle3', 'sig0_ku_mle3')
 	call cpy_var (ncidk, 'sig0_ocean_mle3_rms', 'sig0_rms_ku_mle3')
 	call cpy_var (ncidc, 'sig0_ocean', 'sig0_c')
 	call cpy_var (ncidc, 'sig0_ocean_rms', 'sig0_rms_c')
