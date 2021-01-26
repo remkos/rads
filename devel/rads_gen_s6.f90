@@ -115,6 +115,7 @@ real(eightbytereal) :: equator_time
 integer(twobyteint), allocatable :: flags_mle3(:), flags_save(:)
 character(len=2) :: mss_cnescls_ver = '15', mss_dtu_ver = '18', tide_fes_ver = '14'
 character(len=3) :: tide_got_ver = '410'
+character(len=8) :: chd_ver, cha_ver, cnf_ver
 integer :: latency = rads_nrt
 logical :: lr
 
@@ -245,14 +246,21 @@ do
 	call nfs(nf90_get_att(ncid,nf90_global,'last_measurement_time',arg))
 	P%end_time = strp1985f(arg)
 
-! Determine L2 processing version (currently not used)
+! Determine L2 processing baseline, characterisation and configuration versions
+
+	call nfs(nf90_get_att(ncid,nf90_global,'xref_altimeter_characterization',arg))
+	chd_ver = arg(11:14) // ' ' // arg(96:98)
+	call nfs(nf90_get_att(ncid,nf90_global,'xref_altimeter_characterization_array',arg))
+	cha_ver = arg(11:14) // ' ' // arg(96:98)
+	call nfs(nf90_get_att(ncid,nf90_global,'xref_processor_configuration',arg))
+	cnf_ver = arg(11:14) // ' ' // arg(96:98)
 
 	call nfs(nf90_get_att(ncid,nf90_global,'source',arg))
 
 ! Store input file name
 
 	i = index(infile, '/', .true.) + 1
-	P%original = trim(infile(i:)) // ' (' // trim(arg) // ')'
+	P%original = trim(infile(i:)) // ' (' // trim(arg) // ', ' // chd_ver // ', ' // cha_ver // ', ' // cnf_ver // ')'
 
 ! Allocate variables
 
