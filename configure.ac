@@ -147,16 +147,15 @@ if test "x$enable_devel" = "xyes"; then
 		opt=" -Wall -Wimplicit"
 	fi
 	# Version 4.* uses -Wtabs, Version 5.* (and later?) uses -Wno-tabs
-	if test "x$FC" = "xgfortran" ; then
-		gfortran --version | grep -q " 4."
+	case "$FC" in
+	gfortran*) $FC --version | grep -q " 4."
 		if test $? == 1 ; then
 			opt=" -Wall -Wno-tabs -fimplicit-none"
 		else
 			opt=" -Wall -Wtabs -fimplicit-none"
-		fi
-	elif test "x$FC" = "xifort" ; then
-		opt=" -warn"
-	fi
+		fi ;;
+	ifort*) opt=" -warn" ;;
+	esac
 fi
 FCFLAGS=$FCFLAGS$opt
 AC_MSG_RESULT([$opt])
