@@ -75,20 +75,8 @@ mrk=$RADSDATAROOT/.bookmark
 TZ=UTC touch -t ${d0}0000 "$mrk"
 
 find "$@" -name "*RED*.nc" -a -newer "$mrk" | sort		>  "$lst"
-rads_gen_s6 	  $options --min-rec=6 < "$lst"			>> "$log" 2>&1
-
-# Make fixes
-# Range bias = 2 * 0.528 (flipped sign) - 0.045 (characterisation error, NRT only)
-case $type in
-	*nr*) range_bias=1.011 ;;
-	   *) range_bias=1.056 ;;
-esac
-# Sigma0 bias = -7.40 (correct HR for observed LR/HR difference)
-case $type in
-	*lr*) rads_fix_s6	$options --range=$range_bias 	>> "$log" 2>&1 ;;
-	   *) rads_fix_s6	$options --range=$range_bias --sig0=-7.40 --wind	>> "$log" 2>&1
-	      rads_add_ssb	$options -Vssb_ku				>> "$log" 2>&1 ;;
-esac
+rads_gen_s6		$options --min-rec=6 < "$lst"			>> "$log" 2>&1
+rads_fix_s6		$options --all							>> "$log" 2>&1
 
 # Add MOE orbit (for NRT only)
 case $type in
