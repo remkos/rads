@@ -376,6 +376,7 @@ do
 		call cpy_var (ncidc, 'sig0_ocean_rms', 'sig0_rms_c')
 		call cpy_var (ncidc, 'atm_cor_sig0', 'dsig0_atmos_c')
 	endif
+	call cpy_var (ncid1, 'climato_use_flag', 'qual_dsig0_atmos')
 
 ! Wind speed
 
@@ -389,6 +390,7 @@ do
 
 	call cpy_var (ncid1, 'rain_flag', 'qual_alt_rain_ice')
 	call cpy_var (ncid1, 'rad_rain_flag rad_sea_ice_flag IOR', 'qual_rad_rain_ice')
+	call cpy_var (ncid1, 'rain_attenuation', 'dsig0_atten')
 
 ! Off-nadir angle
 

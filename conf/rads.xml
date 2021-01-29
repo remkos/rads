@@ -3324,6 +3324,21 @@ Global RADS configuration file
 	<compress>int1 1e-2</compress>
 	<comment>Correction already added to backscatter coefficient</comment>
 </var>
+<var name="qual_dsig0_atmos" sat="6a">
+	<long_name>flag indicating the use of climatological values for the computation of sigma0 atmospheric attenuation</long_name>
+	<data>qual_dsig0_atmos</data>
+	<flag_values>not_used used</flag_values>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+<var name="dsig0_atten" sat="6a">
+	<long_name>Difference between the expected Ku-band backscatter coefficient (based on the C-band backscatter coefficient) and the measured Ku-band backscatter coefficient</long_name>
+	<units>dB</units>
+	<plot_range>0 1</plot_range>
+	<data>dsig0_atten</data>
+	<format>f4.2</format>
+	<compress>int2 1e-2</compress>
+</var>
 <var name="dsig0_swh_att" field="3205" sat="c2">
 	<long_name>backscatter coefficient correction due to SWH/attitude</long_name>
 	<units>dB</units>
