@@ -123,6 +123,7 @@ logical :: lr
 
 real(eightbytereal), parameter :: sec2000=473299200d0	! UTC seconds from 1 Jan 1985 to 1 Jan 2000
 real(eightbytereal), allocatable :: telemetry_type_flag(:)
+real(eightbytereal), allocatable :: a1(:),a2(:),b1(:),b2(:)
 
 ! Initialise
 
@@ -265,6 +266,7 @@ do
 ! Allocate variables
 
 	allocate (a(nrec),flags(nrec),flags_mle3(nrec),flags_save(nrec))
+	allocate (a1(nrec),a2(nrec),b1(nrec),b2(nrec))
 	nvar = 0
 
 ! Get NetCDF ID for 20-Hz data (if available)
@@ -484,6 +486,23 @@ do
 
 	a = latency
 	call new_var ('latency', a)
+
+! Temp
+
+	call get_var (ncid1, 'iono_cor_alt_filtered model_dry_tropo_cor_zero_altitude ADD rad_wet_tropo_cor ADD ' // &
+		'solid_earth_tide ADD ocean_tide_sol2 ADD internal_tide ADD pole_tide ADD', a)
+	call get_var (ncidk, 'sea_state_bias', a1)
+	if (latency == rads_nrt) then
+		call get_var (ncid1, 'inv_bar_cor', a2)
+	else
+		call get_var (ncid1, 'dac', a2)
+	endif
+	call get_var (ncidk, 'ocean_geo_corrections', b1)
+	call get_var (ncid1, 'ocean_tide_non_eq', b2)
+	a = a + a1 + a2 + b2
+	do i = 1,nrec
+		write (*,'(i6,4f9.4)') i,a(i),b1(i),a(i)-b1(i),b2(i)
+	enddo
 
 ! Dump the data
 
