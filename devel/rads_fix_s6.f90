@@ -132,7 +132,7 @@ cnf_ver = P%original(i+5:i+7)
 
 ! Determine offsets to solve known biases
 ! range: 2 * 0.528 m: sign error in COG offset, present in PDAP v3.0 and still present in STC/NTC in PDAP v3.1
-!        -0045 m: error in characterisation file
+!        -00435 m: error in characterisation file
 
 drange = 0d0
 if (lrange) then
@@ -165,7 +165,6 @@ do_ssb = (lssb .and. do_wind)
 drain = 0d0
 if (lrain .and. lr .and. cnf_ver < '003') drain = (/ 1.22d0, 3.00d0 /)
 do_rain = any(drain /= 0d0)
-
 
 ! If nothing to change, skip
 
@@ -203,20 +202,19 @@ endif
 ! Compute wind speed from 2D wind model after adding biases
 ! Load wind model if required
 
-
 if (do_wind) then
 	if (lr) then
 		if (need_file('AUX_WNDL_S6A_001.nc', aux_wind)) then
 			if (grid_load(aux_wind,info_wind) /= 0) call rads_exit ('Error loading '//trim(aux_wind))
 		endif
 		call rads_get_var (S, P, 'swh_ku_mle3', swh_ku_mle3, .true.)
-		if (dsig0(1) == 0d0) call rads_get_var (S, P, 'sig0_ku_mle3', sig0_ku_mle3, .true.)
+		if (.not.do_sig0) call rads_get_var (S, P, 'sig0_ku_mle3', sig0_ku_mle3, .true.)
 		call grid_inter (info_wind, n, sig0_ku_mle3 + dwind(2), swh_ku_mle3, wind_speed_alt_mle3)
 	else if (need_file('AUX_WNDH_S6A_001.nc', aux_wind)) then
 		if (grid_load(aux_wind,info_wind) /= 0) call rads_exit ('Error loading '//trim(aux_wind))
 	endif
 	call rads_get_var (S, P, 'swh_ku', swh_ku, .true.)
-	if (dsig0(1) == 0d0) call rads_get_var (S, P, 'sig0_ku', sig0_ku, .true.)
+	if (.not.do_sig0) call rads_get_var (S, P, 'sig0_ku', sig0_ku, .true.)
 	call grid_inter (info_wind, n, sig0_ku + dwind(1), swh_ku, wind_speed_alt)
 endif
 
