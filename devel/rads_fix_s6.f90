@@ -40,12 +40,12 @@ type(grid) :: info_wind, info_ssbk, info_ssbc
 logical :: lrange = .false., lsig0 = .false., lwind = .false., lssb = .false., lrain = .false.
 integer, parameter :: sig0_nx = 500
 real(eightbytereal) :: exp_ku_sigma0(sig0_nx), rms_exp_ku_sigma0(sig0_nx)
-real(eightbytereal), parameter :: sig0_dx = 0.1d0
+real(eightbytereal), parameter :: sig0_dx = 0.1d0, gate_width = 0.3795d0
 
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options (' range sig0 wind rain all')
+call rads_set_options (' range sig0 wind ssb rain all')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
@@ -70,7 +70,7 @@ enddo
 
 ! If nothing selected, stop here
 
-if (.not.(lrange .or. lsig0 .or. lwind)) stop
+if (.not.(lrange .or. lsig0 .or. lwind .or. lssb .or. lrain)) stop
 
 ! Run process for all files
 
@@ -96,6 +96,7 @@ write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
 '  --range                   Fix range biases known for PDAP v3.0 and v3.1' / &
+'                            Also fix result of temporary error in radar data base (RMC only, 34 gates)' / &
 '  --sig0                    Add -7.50 dB to HR sigma0' / &
 '  --wind                    Add biases to sigma0 before calling wind model (pre L2 CONF 003)' / &
 '  --ssb                     Update SSB when wind is changed' / &
@@ -133,6 +134,7 @@ cnf_ver = P%original(i+5:i+7)
 ! Determine offsets to solve known biases
 ! range: 2 * 0.528 m: sign error in COG offset, present in PDAP v3.0 and still present in STC/NTC in PDAP v3.1
 !        -00435 m: error in characterisation file
+!        24 gates: error in radar data base
 
 drange = 0d0
 if (lrange) then
@@ -141,6 +143,7 @@ if (lrange) then
 	else
 		drange = 2 * 0.528d0
 	endif
+	if (.not.lr .and. P%cycle == 8 .and. (P%pass >= 12 .and. P%pass <= 59)) drange = drange + 24 * gate_width
 endif
 do_range = any(drange /= 0d0)
 
