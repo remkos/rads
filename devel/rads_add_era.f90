@@ -23,9 +23,13 @@
 ! Input grids are found in the directory ${ALTIM}/data/era-int-full.
 !
 ! Interpolation is performed in 6-hourly reduced Gaussian grids (N128);
-! bi-linear in space, linear in time; contained in yearly files.
+! bi-linear in space, linear in time; contained in monthly files.
 !
 ! usage: rads_add_era [data-selectors] [options]
+!
+! Note: ECMWF stopped providing ERA interim model grids beyond August 2019,
+! favouring ERA5 instead. A new programme was set up to process those
+! model grids: rads_add_era5.
 !
 ! References:
 !
@@ -320,8 +324,8 @@ function get_gribs (hex, model)
 integer(fourbyteint), intent(in) :: hex
 type(model_), intent(inout) :: model
 logical :: get_gribs
-! Input are yearly files with all three required fields of the form:
-! ${ALTIM}/data/era-int-full/era-int.2012.grb
+! Input are monthly files with all three required fields of the form:
+! ${ALTIM}/data/era-int-full/era-int.201201.grb
 !
 ! <hex> specifies the number of 6-hourly blocks since 1 Jan 1985.
 ! Data is stored in a buffer <model>
