@@ -26,7 +26,7 @@
 ! bi-linear in space, linear in time; contained in daily files.
 !
 ! usage: rads_add_era5 [data-selectors] [options]
-!!
+!
 ! References:
 !
 ! Hopfield, H. S. (1969), Two-quartic tropospheric refractivity profile for
@@ -71,11 +71,10 @@ integer(fourbyteint) :: j, cyc, pass
 
 ! Data elements
 
-character(rads_cmdl) :: path
-integer(fourbyteint) :: hex, hexold=-99999
-type(airtideinfo) :: airinfo
+character(rads_cmdl) :: pathnm
+integer(fourbyteint) :: hour, old_hour=-99999
 real(eightbytereal), parameter :: rad2=2d0*atan(1d0)/45d0
-logical :: dry_on=.false., wet_on=.false., ib_on=.false., air_on=.false., new=.false., error
+logical :: dry_on=.false., wet_on=.false., ib_on=.false., new=.false., error
 
 ! Model data
 
@@ -95,12 +94,12 @@ real(eightbytereal), parameter :: k2p = 0.221d0, k3 = 3739d0	! Refractivity cons
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('dwain dry wet air ib all new')
+call rads_set_options ('dwin dry wet ib all new')
 call rads_init (S)
 
 ! Get template for path name
 
-call parseenv ('${ALTIM}/data/era5/%Y/%m/%d/', path)
+call parseenv ('${ALTIM}/data/era5/%Y/%m/%d/', pathnm)
 
 ! Which corrections are to be provided?
 
@@ -110,8 +109,6 @@ do j = 1,rads_nopt
 		dry_on = .true.
 	case ('w', 'wet')
 		wet_on = .true.
-	case ('a', 'air')
-		air_on = .true.
 	case ('i', 'ib')
 		ib_on = .true.
 	case ('n', 'new')
@@ -119,14 +116,9 @@ do j = 1,rads_nopt
 	case ('all')
 		dry_on = .true.
 		wet_on = .true.
-		air_on = .true.
 		ib_on = .true.
 	end select
 enddo
-
-! Init air tide
-
-if (dry_on .or. ib_on) call airtideinit ('airtide', airinfo)
 
 ! Process all data files
 
@@ -153,7 +145,6 @@ write (*,1310)
 'Additional [processing_options] are:'/ &
 '  -d, --dry                 Add ERA5 dry tropospheric correction' / &
 '  -w, --wet                 Add ERA5 wet tropospheric correction' / &
-'  -a, --air                 Add air tide' / &
 '  -i, --ib                  Add static inverse barometer correction' / &
 '  --all                     All of the above' / &
 '  -n, --new                 Only add variables when not yet existing')
@@ -167,7 +158,7 @@ end subroutine synopsis
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
 integer(fourbyteint) :: i, ncid
-real(eightbytereal) :: time(n), lat(n), lon(n), h(n), surface_type(n), dry(n), wet(n), ib(n), air(n), &
+real(eightbytereal) :: time(n), lat(n), lon(n), h(n), surface_type(n), dry(n), wet(n), ib(n), &
 	f1, f2, g1, g2, slp, dslp, slp0, wvc, tmp
 
 ! Formats
@@ -207,18 +198,18 @@ call globpres(4,P%equator_time,slp0)
 ! Process data records
 
 do i = 1,n
-	f2 = time(i)/21600d0
-	hex = floor(f2)	! Counter of 6-hourly periods
+	f2 = time(i)/3600d0
+	hour = floor(f2)	! Counter of 6-hourly periods
 
 ! Load new grids when entering new 6-hour period
 
-	if (hex /= hexold) then
-		if (hex == hexold + 1) then
+	if (hour /= old_hour) then
+		if (hour == old_hour + 1) then
 			m1 = m2
-			error = get_gribs (hex+1,m2)
+			error = get_gribs (hour+1,m2)
 		else
-			error = get_gribs (hex,m1)
-			if (.not.error) error = get_gribs (hex+1,m2)
+			error = get_gribs (hour,m1)
+			if (.not.error) error = get_gribs (hour+1,m2)
 		endif
 		if (error) then
 			write (*,'(a)') 'Model switched off.'
@@ -227,13 +218,13 @@ do i = 1,n
 			wet_on = .false.
 			exit
 		endif
-		hexold = hex
+		old_hour = hour
 	endif
 
 ! Linearly interpolation in time, bi-linear interpolation in space
 
 	if (lon(i) < 0d0) lon(i) = lon(i) + 360d0
-	f2 = f2 - hex
+	f2 = f2 - hour
 	f1 = 1d0 - f2
 
 ! Find nearest grid points
@@ -258,20 +249,13 @@ do i = 1,n
 		g2 = -9.948d-3
 	endif
 
-! Interpolate sea level pressure in space and time and add airtide correction
+! Interpolate sea level pressure in space and time
 
-	if (dry_on .or. ib_on .or. air_on) then
+	if (dry_on .or. ib_on) then
 		slp = f1 * dot_product (m1%w,m1%slp(m1%idx)) + f2 * dot_product (m2%w,m2%slp(m2%idx))
-
-		! Remove-and-restore the air tide
-		dslp = airtide (airinfo, time(i), lat(i), lon(i)) &
-			- f1 * airtide (airinfo, hex * 21600d0, lat(i), lon(i)) &
-			- f2 * airtide (airinfo, (hex+1) * 21600d0, lat(i), lon(i))
-		slp = slp * 1d-2 + dslp ! Convert Pa to hPa (mbar)
 
 		! Convert sea level pressure to dry tropo correction after Saastamoinen [1972]
 		dry(i) = slp * g1
-		air(i) = dslp * g1
 
 		! Convert sea level pressure to static inverse barometer
 		ib(i) = (slp - slp0) * g2
@@ -303,12 +287,10 @@ call rads_put_history (S, P)
 if (dry_on) call rads_def_var (S, P, 'dry_tropo_era')
 if (wet_on) call rads_def_var (S, P, 'wet_tropo_era')
 if (ib_on ) call rads_def_var (S, P, 'inv_bar_static')
-if (air_on) call rads_def_var (S, P, 'dry_tropo_airtide')
 
 if (dry_on) call rads_put_var (S, P, 'dry_tropo_era', dry)
 if (wet_on) call rads_put_var (S, P, 'wet_tropo_era', wet)
 if (ib_on ) call rads_put_var (S, P, 'inv_bar_static', ib)
-if (air_on) call rads_put_var (S, P, 'dry_tropo_airtide', air)
 
 call log_records (n)
 end subroutine process_pass
@@ -341,11 +323,12 @@ get_gribs = .true.
 
 if (hour/24 /= old_day) then
 	old_day = hour/24
-	l = strf1985(filenm, path, hour*3600)
+	l = strf1985(filenm, "%Y/%m/%d/an00to23_0.5x0.5_sfc_CI_SP_TCWV_MSL_10U_10V_2T_2D_SKT_%Y%m%d.grib", &
+		hour*3600)
 
-	if (gribid1 /= -1) call grib_release(gribid1)
-	if (fileid1 /= -1) call grib_close_file(fileid1)
-	write (*,600,advance='no') filenm(:l),modulo(hour,24)
+	where (gridid(:) /= -1) call grib_release(gribid(:))
+	if (fileid(1) /= -1) call grib_close_file(fileid(1))
+	write (*,600,advance='no') filenm(:l), modulo(hour,24)
 
 	call grib_open_file(fileid,trim(pathnm) // filenm,'r',status)
 	if (status /= grib_success) then
@@ -353,40 +336,21 @@ if (hour/24 /= old_day) then
 		return
 	endif
 
-	call grib_new_from_file(fileid1,gribid1,status)
+	call grib_new_from_file(fileid(1),gribid(1),status)
 	if (status /= grib_success) then
 		write (*,1300) 'Error loading first grib in',filenm(:l)
 		return
 	endif
-
-	! Check sizes and get longitudes and latitudes
-	call grib_get(gribid,'numberOfPoints',model%np)
-	if (model%np > np_max) then
-		write (*,1300) 'numberOfPoints is too large in',filenm(:l)
-		return
-	endif
-	call grib_get(gribid,'Nj',model%nj)
-	if (model%nj > nj_max) then
-		write (*,1300) 'Nj is too large in',filenm(:l)
-		return
-	endif
-	model%ip = 1
-	call grib_get(gribid,'pl',model%pl)
-	model%ql(1) = 1
-	do i = 2,model%nj
-		model%ql(i) = model%ql(i-1) + model%pl(i-1)
-	enddo
-	call grib_get_data(gribid,model%glat,model%glon,model%slp)
 endif
 
 ! Loop until we find the right dataDate and dataTime
 do
-	call grib_get(gribid,'dataDate',dataDate)
-	call grib_get(gribid,'dataTime',dataTime)
-	dataTime = nint(sec85(2,dble(dataDate))/21600d0) + dataTime/600
-	if (dataTime == hex) exit
-	call grib_release(gribid)
-	call grib_new_from_file(fileid,gribid,status)
+	call grib_get(gribid(1),'dataDate',dataDate)
+	call grib_get(gribid(1),'dataTime',dataTime)
+	dataTime = nint(sec85(2,dble(dataDate))/3600d0) + dataTime/600
+	if (dataTime == hour) exit
+	call grib_release(gribid(1))
+	call grib_new_from_file(fileid,gribid(1),status)
 	if (status /= grib_success) then
 		write (*,1300) 'Reached end of',filenm(:l)
 		return
