@@ -66,13 +66,13 @@ program rads_gen_s3
 ! wind_speed_ecmwf_u - ECMWF wind speed (U)
 ! wind_speed_ecmwf_v - ECMWF wind speed (V)
 ! tide_ocean/load_got410 - GOT4.10c ocean and load tide
-! tide_ocean/load_fes04/fes14 - FES2004 or FES2014 ocean and load tide
+! tide_ocean/load_fes14 - FES2014 ocean and load tide
 ! tide_pole - Pole tide
 ! tide_solid - Solid earth tide
 ! topo_ace2 - ACE2 topography
 ! geoid_egm2008 - EGM2008 geoid
-! mss_cnescls11/cnescls15 - CNES/CLS11 or CNES/CLS15 mean sea surface
-! mss_dtu13 - DTU13 mean sea surface
+! mss_cnescls15 - CNES/CLS15 mean sea surface
+! mss_dtu15/mss_dtu18 - DTU15 or DTU18 mean sea surface
 ! tb_238 - Brightness temperature (23.8 GHz)
 ! tb_365 - Brightness temperature (36.5 GHz)
 ! flags, flags_plrm - Engineering flags
@@ -257,21 +257,15 @@ do
 
 	call nfs(nf90_get_att(ncid,nf90_global,'source',arg))
 
-! Update the versions for MSS CNES-CLS and FES tides for PB 2.19 (IPF-SM-2 06.08) and later
+! Default versions for MSS CNES-CLS and FES tides for PB 2.19 (IPF-SM-2 06.08) and later
 
-	if (arg(10:14) < '06.08') then
-		mss_cnescls_ver = '11'
-		mss_dtu_ver = '13'
-		tide_fes_ver = '04'
-	else
-		mss_cnescls_ver = '15'
-		mss_dtu_ver = '15'
-		tide_fes_ver = '14'
-	endif
+	mss_cnescls_ver = '15'
+	mss_dtu_ver = '15'
+	tide_fes_ver = '14'
 
 ! Update the version of MSS DTU and switch on smoothed iono for PB 2.49 (IPF-SM-2 06.16) and later
 
-	if (arg(10:17) >= '06.16   ') then
+	if (arg(10:14) >= '06.16') then
 		mss_dtu_ver = '18'
 		iono_alt_smooth = .true.
 	endif
