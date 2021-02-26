@@ -270,7 +270,7 @@ endif
 ! Compile flag bits
 
 	flags = 0
-	call nc2f (ncid, 'flag_instr_op_mode_01',0,ge=1)			! bit  0: Altimeter mode
+!	call nc2f (ncid, 'flag_instr_op_mode_01',0,ge=1)			! bit  0: Altimeter mode
 !	call nc2f ('surf_class_01',2,eq=4)				! bit  2: Continental ice
 !	call nc2f ('surf_class_01',4,eq=1)
 !	call nc2f ('surf_class_01',4,ge=3)				! bit  4: Water/land
@@ -363,6 +363,8 @@ endif
 	call cpy_var (ncid, 'ssha_01_ku', 'ssha')
 	call cpy_var (ncid, 'ssha_01_plrm_ku', 'ssha_plrm')
 	call cpy_var (ncid, 'surf_type_01', 'surface_class')
+	call get_var (ncid, 'flag_alt_oper_mode', a)
+	call new_var ('flag_instr_op_mode_01', a - 1)
 	a = latency
 	call new_var ('latency', a)
 

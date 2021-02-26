@@ -2476,10 +2476,11 @@ Global RADS configuration file
 	<dimensions>2</dimensions>
 </var>
 
-<var name="flag_alt_oper_mode" field="2516" sat="3a 3b 6a c2 e1 j1 j2 j3 n1 pn tx">
+<var name="flag_alt_oper_mode" field="2516" sat="3a 3b 6a c2 c2.op e1 j1 j2 j3 n1 pn tx">
 	<long_name>altimeter operating mode</long_name>
 	<flag_values>nominal bad</flag_values>
 	<flag_values sat="3a 3b c2">LRM SAR</flag_values>
+	<flag_values sat="c2.op">LRM SAR SARIN</flag_values>
 	<flag_values sat="e1">sptr_available sptr_not_available</flag_values>
 	<flag_values sat="j1 j2 j3 n1">side_A side_B</flag_values>
 	<plot_range>0 1</plot_range>
