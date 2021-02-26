@@ -91,7 +91,7 @@ Global RADS configuration file
 	<quality_flag>swh_ku_mle3 sig0_ku_mle3 range_rms_ku_mle3 range_numval_ku_mle3 flags_mle3 swh_rms_ku_mle3 sig0_rms_ku_mle3</quality_flag>
 	<comment>Sea level determined from satellite altitude - MLE3 range - all (MLE3) altimetric corrections</comment>
 </var>
-<var name="sla_plrm" sat="3a 3b">
+<var name="sla_plrm" sat="3a 3b c2">
 	<long_name>sea level anomaly (PLRM)</long_name>
 	<standard_name>sea_surface_height_above_sea_level</standard_name>
 	<units>m</units>
@@ -142,7 +142,7 @@ Global RADS configuration file
 	<comment>Sea level determined from satellite altitude - MLE3 range - all (MLE3) altimetric corrections.
 		These values were computed when the data set was created, in contrast to the sla_mle3 variable.</comment>
 </var>
-<var name="ssha_plrm" sat="3a 3b">
+<var name="ssha_plrm" sat="3a 3b c2">
 	<long_name>sea surface height anomaly (PLRM)</long_name>
 	<standard_name>sea_surface_height_above_sea_level</standard_name>
 	<units>m</units>
@@ -660,7 +660,7 @@ Global RADS configuration file
 	<format>f12.4</format>
 	<compress>int4 1e-4 1300e3</compress>
 </var>
-<var name="range_ku_plrm" field="612" sat="3a 3b">
+<var name="range_ku_plrm" field="612" sat="3a 3b c2">
 	<long_name>Ku-band range corrected for instr. effects (PLRM)</long_name>
 	<standard_name>altimeter_range</standard_name>
 	<units>m</units>
@@ -889,7 +889,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
 </var>
-<var name="wet_tropo_comp" field="811" sat="3a 3b">
+<var name="wet_tropo_comp" field="811" sat="3a 3b c2">
 	<long_name>composite wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
 	<source>radiometer and external model and radiometer data</source>
@@ -1049,7 +1049,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<var name="iono_alt_plrm" field="912" sat="3a 3b">
+<var name="iono_alt_plrm" field="912" sat="3a 3b c2">
 	<long_name>dual-frequency ionospheric correction (PLRM)</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>dual-frequency altimeter</source>
@@ -1073,7 +1073,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<var name="iono_alt_smooth_plrm" field="913" sat="3a 3b">
+<var name="iono_alt_smooth_plrm" field="913" sat="3a 3b c2">
 	<long_name>smoothed dual-frequency ionospheric correction (PLRM)</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>dual-frequency altimeter after smoothing</source>
@@ -1395,7 +1395,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
-<var name="ssb_cls" field="1502" sat="2a 3a 3b 6a j1 j2 j3 n1 tx">
+<var name="ssb_cls" field="1502" sat="2a 3a 3b 6a c2 j1 j2 j3 n1 tx">
 	<long_name>CLS non-parametric sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<source>CLS</source>
@@ -1490,7 +1490,7 @@ Global RADS configuration file
 		<comment edit="append">This model is actually based on Jason-2 data and not Sentinel-6, and will be replaced later.</comment>
 	</if>
 </var>
-<var name="ssb_cls_plrm" field="1514" sat="3a 3b">
+<var name="ssb_cls_plrm" field="1514" sat="3a 3b c2">
 	<long_name>Tran et al. 2012 non-parametric sea state bias (PLRM)</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<source>Tran et al. 2012</source>
@@ -1569,7 +1569,7 @@ Global RADS configuration file
 <alias name="ssb" field="15" sat="e1 e2 pn">ssb_bm3</alias>
 <alias name="ssb" field="15" sat="c2 g1 gs">ssb_hyb</alias>
 <alias name="ssb" field="15" sat="sa">ssb_tran2019</alias>
-<alias name="ssb" field="15" sat="2a 3a 3b 6a j1 j2 j3 n1 tx">ssb_cls</alias>
+<alias name="ssb" field="15" sat="2a 3a 3b 6a c2.op j1 j2 j3 n1 tx">ssb_cls</alias>
 
 <var name="geoid_egm96" field="1601" sat="3a 3b j2 j3 sa tx.r50">
 	<long_name>EGM96 geoid height</long_name>
@@ -1799,7 +1799,7 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<compress>int2 1e-3</compress>
 </var>
-<var name="swh_ku_plrm" field="1713" sat="3a 3b">
+<var name="swh_ku_plrm" field="1713" sat="3a 3b c2">
 	<long_name>Ku-band significant wave height (PLRM)</long_name>
 	<standard_name>sea_surface_wave_significant_height</standard_name>
 	<units>m</units>
@@ -1912,7 +1912,7 @@ Global RADS configuration file
 	<format>f6.2</format>
 	<compress>int2 1e-2</compress>
 </var>
-<var name="sig0_ku_plrm" field="1812" sat="3a 3b">
+<var name="sig0_ku_plrm" field="1812" sat="3a 3b c2">
 	<long_name>Ku-band backscatter coefficient (PLRM)</long_name>
 	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 	<units>dB</units>
@@ -2054,7 +2054,7 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<compress>int2 1e-2</compress>
 </var>
-<var name="wind_speed_alt_plrm" field="1912" sat="3a 3b">
+<var name="wind_speed_alt_plrm" field="1912" sat="3a 3b c2">
 	<long_name>altimeter wind speed (PLRM)</long_name>
 	<standard_name>wind_speed</standard_name>
 	<source>altimeter</source>
@@ -2156,7 +2156,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<var name="range_rms_ku_plrm" field="2013" sat="3a 3b">
+<var name="range_rms_ku_plrm" field="2013" sat="3a 3b c2">
 	<long_name>std dev of Ku-band range (PLRM)</long_name>
 	<units>m</units>
 	<limits>0.00 0.17</limits> <!--May need adjustment-->
@@ -2210,7 +2210,7 @@ Global RADS configuration file
 	<format>f3.0</format>
 	<compress>int1</compress>
 </var>
-<var name="range_numval_ku_plrm" sat="3a 3b">
+<var name="range_numval_ku_plrm" sat="3a 3b c2">
 	<long_name>number of valid Ku-band measurements (PLRM)</long_name>
 	<standard_name>altimeter_range number_of_observations</standard_name>
 	<units>1</units>
@@ -2440,6 +2440,7 @@ Global RADS configuration file
 		<units>1</units>
 		<limits sat="n1">1.4 1.9</limits>
 		<limits sat="c2">1.1 1.6</limits>
+		<limits sat="c2.op">0.0 1.6</limits>
 		<data>peakiness_ku</data>
 		<format>f6.2</format>
 		<compress>int2 1e-2</compress>
@@ -2828,7 +2829,7 @@ Global RADS configuration file
 		swh_suspect backscatter_suspect tracking_preset orbit_degraded
 	</flag_masks>
 </var>
-<var name="flags_plrm" field="2612" sat="3a 3b">
+<var name="flags_plrm" field="2612" sat="3a 3b c2">
 	<long_name>flag word (PLRM)</long_name>
 	<limits>65512 0</limits>
 	<data>flags_plrm</data>
@@ -3016,7 +3017,7 @@ Global RADS configuration file
 	<compress>int2 1e-3</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<var name="swh_rms_ku_plrm" field="2813" sat="3a 3b">
+<var name="swh_rms_ku_plrm" field="2813" sat="3a 3b c2">
 	<long_name>std dev of Ku-band significant wave height (PLRM)</long_name>
 	<units>m</units>
 	<limits>0.0 1.5</limits> <!--Might need to be changed-->
@@ -3090,7 +3091,7 @@ Global RADS configuration file
 	<default>0</default>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<var name="sig0_rms_ku_plrm" field="2913" sat="3a 3b">
+<var name="sig0_rms_ku_plrm" field="2913" sat="3a 3b c2">
 	<long_name>std dev of Ku-band backscatter coefficient (PLRM)</long_name>
 	<units>dB</units>
 	<limits>0.0 1.0</limits>
@@ -3590,6 +3591,7 @@ Global RADS configuration file
 	<parameters sat="3a">   3   0  0  0 0</parameters>
 	<parameters sat="3b">  10   0  0  0 0</parameters>
 	<parameters sat="c2"> -34   0  0  0 0</parameters>
+	<parameters sat="c2.op"> -29   0  0  0 0</parameters>
 	<parameters sat="e1">  21   0  0  0 0</parameters>
 	<parameters sat="e2">  62   0  0  0 0</parameters>
 	<parameters sat="gs">   0 -65  0  0 5</parameters>

@@ -46,7 +46,7 @@ type :: fileinfo
 	real(eightbytereal) :: time0, time1, lat0, lat1, lon0, lon1
 	character(len=rads_cmdl) :: filenm
 end type
-type(fileinfo) :: fin(20)
+type(fileinfo) :: fin(50)
 
 ! Group names
 
@@ -64,9 +64,11 @@ character(len=1) :: timesep = 'T'
 integer(fourbyteint), parameter :: mpass = 254 * 500
 real(eightbytereal), parameter :: sec2000 = 473299200d0
 integer(fourbyteint) :: i0, i, j, ngrps = 3, timegrp = 1, ncid1(0:3), nrec, ios, varid, in_max = huge(fourbyteint), &
-	nfile = 0, ipass = 1, ipass0 = 0, verbose_level = 3, cycle_number, pass_number
+	nfile = 0, ipass = 1, ipass0 = 0, verbose_level = 3, cycle_number, pass_number, abs_orbit_number
+integer(fourbyteint) :: p, q, r, dpass
 real(eightbytereal), allocatable :: time(:), lat(:), lon(:)
 real(eightbytereal) :: last_time = 0
+character(len=1) :: ascending_flag = 'A'
 logical :: first = .true., check_pass = .false.
 
 ! Print description, if requested
@@ -108,6 +110,10 @@ else if (filenm(i:) == 'standard_measurement.nc' .or. filenm(i:) == 'reduced_mea
 	tll = (/'time_01  ', 'lat_01   ', 'lon_01   '/)
 	timegrp = 0
 	ngrps = 0
+else if (filenm(i:i+1) == 'CS') then
+	tll = (/'time_01  ', 'lat_01   ', 'lon_01   '/)
+        timegrp = 0
+        ngrps = 0
 else
 	call rads_exit ('Wrong filetype')
 endif
@@ -164,8 +170,20 @@ do
 ! Read global attributes
 
 	if (sat(:2) /= 'JA') call nfs(nf90_get_att(ncid1(0),nf90_global,'product_name',product_name))
-	call nfs(nf90_get_att(ncid1(0),nf90_global,'cycle_number',cycle_number))
-	call nfs(nf90_get_att(ncid1(0),nf90_global,'pass_number',pass_number))
+	if (sat(:2) /= 'CS') then
+		call nfs(nf90_get_att(ncid1(0),nf90_global,'cycle_number',cycle_number))
+		call nfs(nf90_get_att(ncid1(0),nf90_global,'pass_number',pass_number))
+	else
+		call nfs(nf90_get_att(ncid1(0),nf90_global,'abs_orbit_number',abs_orbit_number))
+ 		call nfs(nf90_get_att(ncid1(0),nf90_global,'ascending_flag',ascending_flag))
+		dpass = 1
+		if (ascending_flag(1:1) == 'A') dpass = 2
+		p = 2*abs_orbit_number - 1 + dpass - 19
+		q = modulo (p, 10688)
+		r = modulo (q, 2462)
+		cycle_number = (p / 10688) * 13 + (q / 2462) * 3 + r / 840 + 1
+		pass_number = modulo (r, 840) + 1
+	endif
 
 ! Read the time dimension
 
@@ -255,7 +273,7 @@ contains
 subroutine fill_fin (i0, i1)
 integer, intent(in) :: i0, i1
 nfile = nfile + 1
-if (nfile > 20) call rads_exit ('Number of granules too large (> 20)')
+if (nfile > 50) call rads_exit ('Number of granules too large (> 50)')
 fin(nfile)%ncid = ncid1
 fin(nfile)%nrec = nrec
 fin(nfile)%filenm = filenm
@@ -322,6 +340,7 @@ nrec = sum(fin(1:nfile)%rec1 - fin(1:nfile)%rec0 + 1)
 610 format (a,'P',i3.3,'_',i3.3,'.nc') ! JA? format
 611 format (a,i3.3,'_',i3.3,a,'.nc') ! S3? format
 612 format (a,'RED_',a,i3.3,'_',i3.3,a,'.nc') ! S6? format
+613 format (a,'_',i3.3,'_',i3.3,'.nc') ! CS format
 
 write (dirnm,605) trim(destdir),cycle_number
 inquire (file=dirnm,exist=exist)
@@ -330,8 +349,10 @@ if (sat(:2) == 'JA') then
 	write (prdnm,610) product_name(:11),cycle_number,pass_number
 else if (sat(:2) == 'S3') then
 	write (prdnm,611) product_name(:15),cycle_number,pass_number,product_name(77:94)
-else
+else if (sat(:2) == 'S6') then
 	write (prdnm,612) product_name(:13),product_name(92:95),cycle_number,pass_number,product_name(95:98)
+else if (sat(:2) == 'CS') then
+	write (prdnm,613) product_name(:15),cycle_number,pass_number
 endif
 outnm = trim(dirnm) // '/' // trim(prdnm)
 inquire (file=outnm,exist=exist)
