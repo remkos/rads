@@ -363,8 +363,8 @@ endif
 	call cpy_var (ncid, 'ssha_01_ku', 'ssha')
 	call cpy_var (ncid, 'ssha_01_plrm_ku', 'ssha_plrm')
 	call cpy_var (ncid, 'surf_type_01', 'surface_class')
-	call get_var (ncid, 'flag_alt_oper_mode', a)
-	call new_var ('flag_instr_op_mode_01', a - 1)
+	call get_var (ncid, 'flag_instr_op_mode_01', a)
+	call new_var ('flag_alt_oper_mode', a - 1)
 	a = latency
 	call new_var ('latency', a)
 
