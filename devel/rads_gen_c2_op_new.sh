@@ -44,8 +44,8 @@ for type in ${types}; do
 	mrk=$type/.bookmark
 	TZ=UTC touch -t ${d0}0000 "$mrk"
 	find $type/ -name "*.nc" -a -newer "$mrk" | sort > "$lst"
-	date >  "$log" 2>&1
-	rads_gen_c2_op		$options --ymd=$d0 < "$lst"	>> "$log" 2>&1
+	date >>  "$log" 2>&1
+	rads_gen_c2_op		$options < "$lst"	>> "$log" 2>&1
 done
 
 # General geophysical corrections
@@ -56,5 +56,21 @@ rads_add_iono     $options --all				>> "$log" 2>&1
 rads_add_sla      $options					>> "$log" 2>&1
 
 date								>> "$log" 2>&1
+
+# Set Navy data aside
+files=`egrep 'NOP|IOP' $log | awk '{print $NF}' | awk -F/ '{printf "%s/%s\n",$3,$4}'`
+dirs=`echo $files | awk -F/ '{print $1}' | sort | uniq`
+
+pushd $SANDBOX/c2.op/a
+for dir in ${dirs[*]} ; do
+	mkdir -p $RADSROOT/ext/c2/to_navy/$dir
+	for file in ${files[*]} ; do
+		ncrename -hOv alt_gdrd,alt_eiggl04s $file $RADSROOT/ext/c2/to_navy/$file >& /dev/null
+	done
+done
+# Remove old Navy data
+popd
+find to_navy -type f -mtime +30 | xargs rm -f
+find to_navy -type d -empty | xargs rmdir
 
 rads_close_sandbox
