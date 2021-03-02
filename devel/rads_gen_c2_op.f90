@@ -91,15 +91,14 @@ use netcdf
 
 ! Command line arguments
 
-integer(fourbyteint) :: ios, i, j, ip, iq, ir, oldcyc=0, oldpass=0
+integer(fourbyteint) :: ios, i, j, ip, iq, ir
 character(len=rads_cmdl) :: filename, arg
-character(len=rads_strl) :: filenames = ''
 
 ! Header variables
 
 integer(fourbyteint) :: passnr(2), cycnr(2), recnr(2), ncid, varid
 integer(fourbyteint) :: abs_orbit_number, first_meas_lat=0
-real(eightbytereal) :: equator_time, equator_long
+real(eightbytereal) :: equator_time
 
 ! Data variables
 
@@ -259,7 +258,6 @@ endif
 ! Store input file name
 
 	i = index(filename, '/', .true.) + 1
-	filenames = trim(filenames) // rads_linefeed // filename(j:)
 	P%original = trim(filename(i:)) // ' (' // trim(arg) // ')'
 
 ! Allocate variables
