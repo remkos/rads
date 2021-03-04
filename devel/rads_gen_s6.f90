@@ -342,13 +342,16 @@ do
 	call cpy_var (ncidk, 'range_ocean_rms', 'range_rms_ku')
 	call cpy_var (ncidk, 'range_ocean_numval', 'range_numval')
 	call cpy_var (ncidk, 'range_ocean_qual', 'qual_range')
+	call cpy_var (ncidk, 'net_instr_cor_range_ocean', 'drange_ku')
 	if (lr) then
 		call cpy_var (ncidk, 'range_ocean_mle3', 'range_ku_mle3')
 		call cpy_var (ncidk, 'range_ocean_mle3_rms', 'range_rms_ku_mle3')
 		call cpy_var (ncidk, 'range_ocean_mle3_numval', 'range_numval_ku_mle3')
+		call cpy_var (ncidk, 'net_instr_cor_range_ocean_mle3', 'drange_ku_mle3')
 		call cpy_var (ncidc, 'range_ocean', 'range_c')
 		call cpy_var (ncidc, 'range_ocean_rms', 'range_rms_c')
 		call cpy_var (ncidc, 'range_ocean_numval', 'range_numval_c')
+		call cpy_var (ncidc, 'net_instr_cor_range_ocean', 'drange_c')
 	endif
 
 ! SWH
@@ -356,11 +359,14 @@ do
 	call cpy_var (ncidk, 'swh_ocean', 'swh_ku')
 	call cpy_var (ncidk, 'swh_ocean_rms', 'swh_rms_ku')
 	call cpy_var (ncidk, 'swh_ocean_qual', 'qual_swh')
+	call cpy_var (ncidk, 'net_instr_cor_swh_ocean', 'dswh_ku')
 	if (lr) then
 		call cpy_var (ncidk, 'swh_ocean_mle3', 'swh_ku_mle3')
 		call cpy_var (ncidk, 'swh_ocean_mle3_rms', 'swh_rms_ku_mle3')
+		call cpy_var (ncidk, 'net_instr_cor_swh_ocean_mle3', 'dswh_ku_mle3')
 		call cpy_var (ncidc, 'swh_ocean', 'swh_c')
 		call cpy_var (ncidc, 'swh_ocean_rms', 'swh_rms_c')
+		call cpy_var (ncidc, 'net_instr_cor_swh_ocean', 'dswh_c')
 	endif
 
 ! Backscatter
@@ -368,13 +374,16 @@ do
 	call cpy_var (ncidk, 'sig0_ocean', 'sig0_ku')
 	call cpy_var (ncidk, 'sig0_ocean_rms', 'sig0_rms_ku')
 	call cpy_var (ncidk, 'sig0_ocean_qual', 'qual_sig0')
+	call cpy_var (ncidk, 'net_instr_cor_sig0_ocean', 'dsig0_ku')
 	call cpy_var (ncidk, 'atm_cor_sig0', 'dsig0_atmos_ku')
 	if (lr) then
 		call cpy_var (ncidk, 'sig0_ocean_mle3', 'sig0_ku_mle3')
 		call cpy_var (ncidk, 'sig0_ocean_mle3_rms', 'sig0_rms_ku_mle3')
+		call cpy_var (ncidk, 'net_instr_cor_sig0_ocean_mle3', 'dsig0_ku_mle3')
 		call cpy_var (ncidc, 'sig0_ocean', 'sig0_c')
 		call cpy_var (ncidc, 'sig0_ocean_rms', 'sig0_rms_c')
 		call cpy_var (ncidc, 'atm_cor_sig0', 'dsig0_atmos_c')
+		call cpy_var (ncidc, 'net_instr_cor_sig0_ocean', 'dsig0_c')
 	endif
 	call cpy_var (ncid1, 'climato_use_flag', 'qual_dsig0_atmos')
 

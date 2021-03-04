@@ -2848,19 +2848,28 @@ Global RADS configuration file
 	</flag_masks>
 </var>
 
-<var name="drange_ku" field="2701" sat="2a c2 e1 e2 gs n1 tx">
+<var name="drange_ku" field="2701" sat="2a 6a c2 e1 e2 gs n1 tx">
 	<long_name>Ku-band range bias</long_name>
-	<long_name sat="tx.r50">net instrument correction to Ku-band range</long_name>
+	<long_name sat="tx.r50 6a">net instrument correction to Ku-band range</long_name>
 	<long_name sat="tx">Cal1 range correction</long_name>
 	<long_name sat="c2">Ku-band retracker range (relative to window delay)</long_name>
 	<units>m</units>
 	<data>drange_ku</data>
 	<compress>int2 1e-3</compress>
 	<compress sat="tx">int2 1e-4</compress>
+	<compress sat="6a">int2 1e-4</compress>
 	<format>f6.3</format>
-	<format sat="tx">f7.4</format>
+	<format sat="tx 6a">f7.4</format>
 	<comment>Range correction already added to range</comment>
 	<comment sat="tx">This correction was added back to the Ku-band range</comment>
+</var>
+<var name="drange_ku_mle3" sat="6a">
+	<long_name>net instrument correction to Ku-band range (MLE3)</long_name>
+	<units>m</units>
+	<data>drange_ku_mle3</data>
+	<compress>int4 1e-4</compress>
+	<format>f7.4</format>
+	<comment>Range correction already added to range</comment>
 </var>
 <var name="drange_ku_retrk" sat="tx.r50">
 	<long_name>net instrument correction to retracked Ku-band range</long_name>
@@ -2870,12 +2879,14 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<comment>Range correction already added to range</comment>
 </var>
-<var name="drange_c" sat="2a tx.r50">
+<var name="drange_c" sat="2a 6a tx.r50">
 	<long_name>net instrument correction to C-band range</long_name>
 	<units>m</units>
 	<data>drange_c</data>
 	<compress>int2 1e-3</compress>
+	<compress sat="6a">int4 1e-4</compress>
 	<format>f6.3</format>
+	<format sat="6a">f7.4</format>
 	<comment>Range correction already added to range</comment>
 </var>
 <var name="drange_c_retrk" sat="tx.r50">
@@ -3238,7 +3249,7 @@ Global RADS configuration file
 	<dimensions>2</dimensions>
 </var>
 
-<var name="dswh_ku" field="3101" sat="2a tx">
+<var name="dswh_ku" field="3101" sat="2a 6a tx">
 	<long_name>net instrument correction to Ku-band significant wave height</long_name>
 	<units>m</units>
 	<data>dswh_ku</data>
@@ -3247,7 +3258,16 @@ Global RADS configuration file
 	<compress>int2 1e-3</compress>
 	<comment>Correction already added to significant wave height</comment>
 </var>
-<var name="dswh_c" field="3102" sat="2a tx">
+<var name="dswh_ku_mle3" sat="6a">
+	<long_name>net instrument correction to Ku-band significant wave height (MLE3)</long_name>
+	<units>m</units>
+	<data>dswh_ku_mle3</data>
+	<format>f6.3</format>
+	<default>0</default>
+	<compress>int2 1e-3</compress>
+	<comment>Correction already added to significant wave height</comment>
+</var>
+<var name="dswh_c" field="3102" sat="2a 6a tx">
 	<long_name>net instrument correction to C-band significant wave height</long_name>
 	<units>m</units>
 	<data>dswh_c</data>
@@ -3274,8 +3294,8 @@ Global RADS configuration file
 </var>
 <alias name="dswh" field="31" sat="tx">dswh_ku</alias>
 
-<var name="dsig0_ku" field="3201" sat="2a e1 e2 tx">
-	<long_name>Ku-band backscatter coefficient bias</long_name>
+<var name="dsig0_ku" field="3201" sat="2a 6a e1 e2 tx">
+	<long_name>net instrument correction to Ku-band backscatter coefficient</long_name>
 	<units>dB</units>
 	<data>dsig0_ku</data>
 	<format>f6.2</format>
@@ -3283,8 +3303,17 @@ Global RADS configuration file
 	<compress>int2 1e-2</compress>
 	<comment>Correction already added to backscatter coefficient</comment>
 </var>
-<var name="dsig0_c" field="3202" sat="2a tx">
-	<long_name>C-band backscatter coefficient bias</long_name>
+<var name="dsig0_ku_mle3" sat="6a">
+	<long_name>net instrument correction to Ku-band backscatter coefficient (MLE3)</long_name>
+	<units>dB</units>
+	<data>dsig0_ku_mle3</data>
+	<format>f6.2</format>
+	<default>0</default>
+	<compress>int2 1e-2</compress>
+	<comment>Correction already added to backscatter coefficient</comment>
+</var>
+<var name="dsig0_c" field="3202" sat="2a 6a tx">
+	<long_name>net instrument correction to C-band backscatter coefficient</long_name>
 	<units>dB</units>
 	<data>dsig0_c</data>
 	<format>f6.2</format>
