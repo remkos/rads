@@ -76,12 +76,12 @@ case $type in
 	gdr)
 		find -L ${type}/cycle_??? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
 		if [ -s "$lst" ]; then
-			rads_gen_jason $options < "$lst"			>> "$log" 2>&1
+			rads_gen_jason_gdrf $options < "$lst"			>> "$log" 2>&1
 		fi
 		;;
 	*)
 		find -L ${type}/c??? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
-		rads_gen_jason --ymd=$d0 $options < "$lst"	>> "$log" 2>&1
+		rads_gen_jason_gdrf --ymd=$d0 $options < "$lst"	>> "$log" 2>&1
 		rads_add_orbit   $options -Valt_cnes --dir=gdr-e-moe --equator --loc-7 --rate	>> "$log" 2>&1
 		;;
 esac
