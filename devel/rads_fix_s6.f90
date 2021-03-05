@@ -141,7 +141,7 @@ if (lrange) then
 	if (nrt) then
 		if (chd_ver < '003') drange = 2 * 0.528d0 - 0.0435d0
 	else
-		drange = 2 * 0.528d0
+		if (cnf_ver < '005') drange = 2 * 0.528d0
 	endif
 	if (.not.lr .and. P%cycle == 8 .and. (P%pass >= 12 .and. P%pass <= 59)) drange = drange + 24 * gate_width
 endif
