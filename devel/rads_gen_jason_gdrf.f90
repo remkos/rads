@@ -331,7 +331,7 @@ do
 	call cpy_var (ncidk, 'swh_ocean', 'swh_ku')
 	call cpy_var (ncidk, 'swh_ocean_rms', 'swh_rms_ku')
 	call cpy_var (ncidk, 'swh_ocean_compression_qual', 'qual_swh')
-	call cpy_var (ncidk, 'swh_ocean_mle3', 'swh_ku')
+	call cpy_var (ncidk, 'swh_ocean_mle3', 'swh_ku_mle3')
 	call cpy_var (ncidk, 'swh_ocean_mle3_rms', 'swh_rms_ku_mle3')
 	call cpy_var (ncidc, 'swh_ocean', 'swh_c')
 	call cpy_var (ncidc, 'swh_ocean_rms', 'swh_rms_c')
