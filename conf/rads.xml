@@ -2857,7 +2857,7 @@ Global RADS configuration file
 	<data>drange_ku</data>
 	<compress>int2 1e-3</compress>
 	<compress sat="tx">int2 1e-4</compress>
-	<compress sat="6a">int2 1e-4</compress>
+	<compress sat="6a">int4 1e-4</compress>
 	<format>f6.3</format>
 	<format sat="tx 6a">f7.4</format>
 	<comment>Range correction already added to range</comment>
