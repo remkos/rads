@@ -3625,7 +3625,7 @@ Global RADS configuration file
 	<parameters sat="3a">   3   0  0  0 0</parameters>
 	<parameters sat="3b">  10   0  0  0 0</parameters>
 	<parameters sat="c2"> -34   0  0  0 0</parameters>
-	<parameters sat="c2.op"> -39   0  0  0 0</parameters>
+	<parameters sat="c2.op"> -49   0  0  0 0</parameters>
 	<parameters sat="e1">  21   0  0  0 0</parameters>
 	<parameters sat="e2">  62   0  0  0 0</parameters>
 	<parameters sat="gs">   0 -65  0  0 5</parameters>
