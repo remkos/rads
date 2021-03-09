@@ -22,7 +22,7 @@
 # syntax: rads_gen_c2_op.sh directory
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
-rads_open_sandbox c2.op
+rads_open_sandbox c2
 
 find "$@" -name "*.nc"| sort > "$lst"
 date >  "$log" 2>&1

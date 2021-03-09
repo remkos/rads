@@ -1569,7 +1569,7 @@ Global RADS configuration file
 <alias name="ssb" field="15" sat="e1 e2 pn">ssb_bm3</alias>
 <alias name="ssb" field="15" sat="c2 g1 gs">ssb_hyb</alias>
 <alias name="ssb" field="15" sat="sa">ssb_tran2019</alias>
-<alias name="ssb" field="15" sat="2a 3a 3b 6a c2.op j1 j2 j3 n1 tx">ssb_cls</alias>
+<alias name="ssb" field="15" sat="2a 3a 3b 6a c2 j1 j2 j3 n1 tx">ssb_cls</alias>
 
 <var name="geoid_egm96" field="1601" sat="3a 3b j2 j3 sa tx.r50">
 	<long_name>EGM96 geoid height</long_name>
@@ -2439,8 +2439,8 @@ Global RADS configuration file
 		<long_name>Ku-band peakiness</long_name>
 		<units>1</units>
 		<limits sat="n1">1.4 1.9</limits>
-		<limits sat="c2">1.1 1.6</limits>
-		<limits sat="c2.op">0.0 1.6</limits>
+		<limits sat="c2.igdr">1.1 1.6</limits>
+		<limits sat="c2">0.0 1.6</limits>
 		<data>peakiness_ku</data>
 		<format>f6.2</format>
 		<compress>int2 1e-2</compress>
@@ -2476,17 +2476,17 @@ Global RADS configuration file
 	<dimensions>2</dimensions>
 </var>
 
-<var name="flag_alt_oper_mode" field="2516" sat="3a 3b 6a c2 c2.op e1 j1 j2 j3 n1 pn tx">
+<var name="flag_alt_oper_mode" field="2516" sat="3a 3b 6a c2.igdr c2 e1 j1 j2 j3 n1 pn tx">
 	<long_name>altimeter operating mode</long_name>
 	<flag_values>nominal bad</flag_values>
-	<flag_values sat="3a 3b c2">LRM SAR</flag_values>
+	<flag_values sat="3a 3b c2.igdr">LRM SAR</flag_values>
 	<flag_values sat="e1">sptr_available sptr_not_available</flag_values>
 	<flag_values sat="j1 j2 j3 n1">side_A side_B</flag_values>
 	<plot_range>0 1</plot_range>
 	<data source="flags">0</data>
 	<format>z1</format>
 	<compress>int1</compress>
-	<if sat="c2.op">
+	<if sat="c2">
 		<flag_values>LRM SAR SARIN</flag_values>
 		<data>flag_alt_oper_mode</data>
 		<plot_range>0 2</plot_range>
@@ -3624,8 +3624,13 @@ Global RADS configuration file
 	<parameters>0</parameters>
 	<parameters sat="3a">   3   0  0  0 0</parameters>
 	<parameters sat="3b">  10   0  0  0 0</parameters>
+<<<<<<< Updated upstream
 	<parameters sat="c2"> -34   0  0  0 0</parameters>
-	<parameters sat="c2.op"> -29   0  0  0 0</parameters>
+	<parameters sat="c2.op"> -34   0  0  0 0</parameters>
+=======
+	<parameters sat="c2.igdr"> -34   0  0  0 0</parameters>
+	<parameters sat="c2"> -29   0  0  0 0</parameters>
+>>>>>>> Stashed changes
 	<parameters sat="e1">  21   0  0  0 0</parameters>
 	<parameters sat="e2">  62   0  0  0 0</parameters>
 	<parameters sat="gs">   0 -65  0  0 5</parameters>

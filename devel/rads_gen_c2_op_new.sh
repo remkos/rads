@@ -37,7 +37,7 @@ done
 
 d0=`date -u -v -${days}d +%Y%m%d 2>&1` || d0=`date -u --date="${days} days ago" +%Y%m%d`
 
-dir=c2.op
+dir=c2
 rads_open_sandbox $dir
 
 for type in ${types}; do
@@ -45,7 +45,11 @@ for type in ${types}; do
 	TZ=UTC touch -t ${d0}0000 "$mrk"
 	find $type/ -name "*.nc" -a -newer "$mrk" | sort > "$lst"
 	date >>  "$log" 2>&1
-	rads_gen_c2_op		$options < "$lst"	>> "$log" 2>&1
+	if [ "$type" == "gop" ]; then
+		rads_gen_c2_op 	$options < "$lst"	>> "$log" 2>&1
+	else
+		rads_gen_c2_op --ymd=$d0 	$options < "$lst"	>> "$log" 2>&1
+	fi
 done
 
 # General geophysical corrections
@@ -61,11 +65,16 @@ date								>> "$log" 2>&1
 files=`egrep 'NOP|IOP' $log | awk '{print $NF}' | awk -F/ '{printf "%s/%s\n",$3,$4}'`
 dirs=`echo $files | awk -F/ '{print $1}' | sort | uniq`
 
-pushd $SANDBOX/c2.op/a
+pushd $SANDBOX/c2/a
 for dir in ${dirs[*]} ; do
 	mkdir -p $RADSROOT/ext/c2/to_navy/$dir
 	for file in ${files[*]} ; do
+<<<<<<< Updated upstream
 		ncrename -hOv alt_gdre,alt_eiggl04s $file $RADSROOT/ext/c2/to_navy/$file >& /dev/null
+=======
+#		ncrename -hOv alt_gdre,alt_eiggl04s $file $RADSROOT/ext/c2/to_navy/$file >& /dev/null
+		cp $file $RADSROOT/ext/c2/to_navy/$file
+>>>>>>> Stashed changes
 	done
 done
 # Remove old Navy data
