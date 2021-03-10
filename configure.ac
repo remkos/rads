@@ -19,8 +19,8 @@
 # -----------------------------------------------------------------
 # Define and show package version
 # -----------------------------------------------------------------
-AC_INIT([RADS], [4.3.6], [remko.scharroo@eumetsat.int])
-AC_PREREQ([2.67])
+AC_INIT([RADS],[4.3.7],[remko.scharroo@eumetsat.int])
+AC_PREREQ([2.71])
 AC_MSG_NOTICE([AC_PACKAGE_NAME, version AC_PACKAGE_VERSION])
 
 # -----------------------------------------------------------------
@@ -32,7 +32,7 @@ AC_CONFIG_SRCDIR(src/rads.f90)
 # Set some defaults
 # -----------------------------------------------------------------
 AC_PREFIX_DEFAULT(`pwd`)
-AC_CANONICAL_SYSTEM
+AC_CANONICAL_TARGET
 
 # -----------------------------------------------------------------
 # Specify user options
@@ -47,7 +47,7 @@ AC_ARG_ENABLE([devel],    [  --enable-devel             Compile developer tools 
 # Process user options
 # -----------------------------------------------------------------
 AC_MSG_NOTICE([checking user options])
-configure_options="`$as_echo "$ac_configure_args" | sed "s/^ //; s/\'//g"`" #'
+configure_options="`AS_ECHO(["$ac_configure_args"]) | sed "s/^ //; s/\'//g"`" #'
 AC_SUBST(CONFIGURE_OPTIONS, $configure_options)
 
 # -----------------------------------------------------------------
@@ -267,12 +267,7 @@ AC_SUBST(LAPACK_LIB)
 # -----------------------------------------------------------------
 # Do we have big or little endian
 # -----------------------------------------------------------------
-AC_C_BIGENDIAN
-if test "x$ac_cv_c_bigendian" = "xyes"; then
-	LITTLE_ENDIAN="false"
-else
-	LITTLE_ENDIAN="true"
-fi
+AC_C_BIGENDIAN(LITTLE_ENDIAN="false",LITTLE_ENDIAN="true",LITTLE_ENDIAN="true",LITTLE_ENDIAN="true")
 AC_SUBST(LITTLE_ENDIAN)
 
 # -----------------------------------------------------------------
@@ -295,4 +290,5 @@ AC_SUBST(INSTALL_DIR)
 # -----------------------------------------------------------------
 # Substitute in .in files
 # -----------------------------------------------------------------
-AC_OUTPUT(config.mk src/rads-config doc/manuals/rads_config.tex)
+AC_CONFIG_FILES([config.mk src/rads-config doc/manuals/rads_config.tex])
+AC_OUTPUT
