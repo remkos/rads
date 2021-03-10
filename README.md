@@ -29,6 +29,13 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 This does not include explanations of changes to the code that generates the data base.
 
+### v4.3.7 (10 Mar 2021)
+* Switch CryoSat-2 (c2) data over from NOAA=generated IGDR to NOP/IOP/GOP products
+* Updated `config.sub` and `config.guess`
+* `rads.xml` prepared for Sentinel-6A (6a)
+* Switch SARAL (sa) data over to GDR-F; Change default ssb for SARAL to i`ssb_tran2019` (which is what GDR-F does)
+* Switch Jason data production over to GDR-F
+
 ### v4.3.6 (15 Aug 2019)
 * `rads.xml`: Updated `ref_frame_offset` for JA3 (raise by 1 mm)
 * `rads.xml`: Added `ref_frame_offset` for S3A/S3B PLRM
