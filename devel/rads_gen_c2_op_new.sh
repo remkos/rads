@@ -61,7 +61,7 @@ rads_add_sla      $options					>> "$log" 2>&1
 
 date								>> "$log" 2>&1
 
-# Set Navy data aside
+# Set Navy and NHC data aside
 files=`egrep 'NOP|IOP' $log | awk '{print $NF}' | awk -F/ '{printf "%s/%s\n",$3,$4}'`
 dirs=`echo $files | awk -F/ '{print $1}' | sort | uniq`
 
@@ -73,9 +73,9 @@ for dir in ${dirs[*]} ; do
 		cp $file $RADSROOT/ext/c2/to_navy/$file
 	done
 done
-# Remove old Navy data
+# Remove old Navy/NHC data
 popd
-find to_navy -type f -mtime +30 | xargs rm -f
+find to_navy -type f -mtime +7 | xargs rm -f
 find to_navy -type d -empty | xargs rmdir
 
 rads_close_sandbox
