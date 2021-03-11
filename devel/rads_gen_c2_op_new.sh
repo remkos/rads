@@ -69,12 +69,8 @@ pushd $SANDBOX/c2/a
 for dir in ${dirs[*]} ; do
 	mkdir -p $RADSROOT/ext/c2/to_navy/$dir
 	for file in ${files[*]} ; do
-<<<<<<< Updated upstream
-		ncrename -hOv alt_gdre,alt_eiggl04s $file $RADSROOT/ext/c2/to_navy/$file >& /dev/null
-=======
 #		ncrename -hOv alt_gdre,alt_eiggl04s $file $RADSROOT/ext/c2/to_navy/$file >& /dev/null
 		cp $file $RADSROOT/ext/c2/to_navy/$file
->>>>>>> Stashed changes
 	done
 done
 # Remove old Navy data
