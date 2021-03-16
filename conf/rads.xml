@@ -3836,7 +3836,7 @@ Global RADS configuration file
 	<standard_name>sea_ice_area_fraction</standard_name>
 	<source>OSIAF sea ice concentration</source>
 	<units>%</units>
-	<data>seaice_conc</data>
+	<data>seaice_conc_osiaf</data>
 	<format>f3.0</format>
 	<compress>int1</compress>
 </var>
