@@ -3770,6 +3770,26 @@ Global RADS configuration file
 	<compress>int2 1e-3</compress>
 </var>
 
+<var name="mean_wave_period" sat="j3">
+	<long_name>t02 mean wave period</long_name>
+	<standard_name>sea_surface_swell_wave_to_direction</standard_name>
+	<source>MFWAM/Meteo France</source>
+	<units>s</units>
+	<data>mean_wave_period_t02</data>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+</var>
+
+<var name="mean_wave_direction" sat="j3">
+	<long_name>mean direction of the sea surface wave</long_name>
+	<standard_name>sea_surface_swell_wave_to_direction</standard_name>
+	<source>MFWAM/Meteo France</source>
+	<units>degrees</units>
+	<data>mean_wave_direction</data>
+	<format>f6.3</format>
+	<compress>int4 1e-3</compress>
+</var>
+
 <var name="dist_coast" field="4501 45">
 	<long_name>distance to coast</long_name>
 	<source>GMT/GSHHS</source>

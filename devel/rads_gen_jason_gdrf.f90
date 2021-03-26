@@ -439,6 +439,10 @@ do
 	call cpy_var (ncid1, 'rad_cloud_liquid_water', 'liquid_water_rad')
 	call cpy_var (ncid1, 'rad_water_vapor', 'water_vapor_rad')
 
+! Waves
+call cpy_var (ncid1, 'mean_wave_period_t02', 'mean_wave_period')
+call cpy_var (ncid1, 'mean_wave_direction', 'mean_wave_direction')
+
 ! SSHA
 
 	call cpy_var (ncidk, 'ssha', 'ssha')
