@@ -263,6 +263,8 @@ do
 	call cpy_var (ncid, 'wind_speed_model_u', 'wind_speed_ecmwf_u')
 	call cpy_var (ncid, 'wind_speed_model_v', 'wind_speed_ecmwf_v')
 	call cpy_var (ncid, 'wind_speed_alt')
+	call cpy_var (ncid, 'mean_wave_period_t02', 'mean_wave_period')
+	call cpy_var (ncid, 'mean_wave_direction', 'mean_wave_direction')
 	call cpy_var (ncid, 'rad_water_vapor', 'water_vapor_rad')
 	call cpy_var (ncid, 'rad_liquid_water', 'liquid_water_rad')
 	call get_var (ncid, 'range_used_40hz', d)
