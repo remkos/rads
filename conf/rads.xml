@@ -3775,7 +3775,7 @@ Global RADS configuration file
 	<standard_name>sea_surface_swell_wave_to_direction</standard_name>
 	<source>MFWAM/Meteo France</source>
 	<units>s</units>
-	<data>mean_wave_period_t02</data>
+	<data>mean_wave_period</data>
 	<format>f6.3</format>
 	<compress>int2 1e-3</compress>
 </var>
@@ -3786,7 +3786,7 @@ Global RADS configuration file
 	<source>MFWAM/Meteo France</source>
 	<units>degrees</units>
 	<data>mean_wave_direction</data>
-	<format>f6.3</format>
+	<format>f7.3</format>
 	<compress>int4 1e-3</compress>
 </var>
 
