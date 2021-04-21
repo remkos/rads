@@ -58,7 +58,7 @@ case $type in
 	gdr)
 		find -L ${type}/cycle_??? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
 		if [ -s "$lst" ]; then
-			rads_gen_jason $options < "$lst"			>> "$log" 2>&1
+			rads_gen_jason_gdrf $options < "$lst"			>> "$log" 2>&1
 		fi
 		;;
 	*)
