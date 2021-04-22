@@ -48,6 +48,7 @@ esac
 case $dir in
 *OPE/*) type=${type}o ;;
 *VAL/*) type=${type}v ;;
+*DEV/*) type=${type}d ;;
 esac
 
 # Process "unadultered" files
