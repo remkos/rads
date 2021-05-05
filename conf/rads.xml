@@ -1431,11 +1431,10 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
-<var name="ssb_hyb" field="1504" sat="c2 g1 gs n1 pn sa">
+<var name="ssb_hyb" field="1504" sat="g1 gs n1 pn sa">
 	<long_name>hybrid sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<source>NOAA/EUMETSAT hybrid model</source>
-	<parameters sat="c2">c2_l1c_hyb.nc?ssb_hyb</parameters>
 	<parameters sat="g1">g1_c037_c184_hyb.nc</parameters>
 	<parameters sat="gs">gs_hyb.nc</parameters>
 	<parameters sat="n1">n1_hyb.nc?ssb_hyb</parameters>
@@ -1567,7 +1566,7 @@ Global RADS configuration file
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
 <alias name="ssb" field="15" sat="e1 e2 pn">ssb_bm3</alias>
-<alias name="ssb" field="15" sat="c2 g1 gs">ssb_hyb</alias>
+<alias name="ssb" field="15" sat="g1 gs">ssb_hyb</alias>
 <alias name="ssb" field="15" sat="sa">ssb_tran2019</alias>
 <alias name="ssb" field="15" sat="2a 3a 3b 6a c2 j1 j2 j3 n1 tx">ssb_cls</alias>
 
