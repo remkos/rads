@@ -37,7 +37,7 @@ INCLUDES = $(MOD_FLAG). $(MOD_FLAG)../src $(MOD_FLAG)$(ALTIM)/include $(NETCDF_I
 LIB     = ../src/librads.a $(ALTIM)/lib/rssubs.a
 LDLIBS  = $(NETCDF_LIB) $(NETCDF_C_LIB) $(GRIB_LIB)
 
-# Shell scripts
+# Shell or perl scripts
 SCRIPTS = rads_add_common \
 		rads_gen_3a.sh rads_gen_3a_new.sh rads_gen_3a_new_calval.sh rads_gen_3a_calval.sh \
 		rads_gen_3b.sh rads_gen_3b_new.sh rads_gen_3b_new_calval.sh rads_gen_3b_calval.sh \
@@ -46,7 +46,8 @@ SCRIPTS = rads_add_common \
 		rads_gen_j1.sh rads_gen_j2.sh \
 		rads_gen_j3.sh rads_gen_j3_new.sh rads_gen_j3_new_calval.sh \
 		rads_gen_tx_rgdr.sh rads_gen_saral.sh rads_gen_saral_new.sh \
-		rads_purge_older.sh rads_sandbox.sh
+		rads_purge_older.sh rads_sandbox.sh \
+		radscyclesindex
 
 #-----------------------------------------------------------------------
 # What to create?
