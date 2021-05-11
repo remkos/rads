@@ -1,0 +1,32 @@
+#!/usr/bin/perl -w
+#
+# Make cycle index out of pass index (read from standard input)
+
+while (defined($line = <STDIN>)) {
+   ($phase,$cycle,$pass,$startsec,$endsec,$eqtime,$eqlon,$recs)=split(' ',$line);
+   $starttime{$cycle}{$pass} = $startsec;
+   $endtime{$cycle}{$pass} = $endsec;
+   $number{$cycle} += $recs;
+   $npass{$cycle}++;
+   $eqtime = $eqlon;
+}
+
+# Sort passes and print out table
+
+foreach $cycle ( sort { $starttime{$a} <=> $starttime{$b} } keys %starttime ) {
+# The comment needed to circumvent bug in perl
+  @passes = ( sort keys %{ $starttime{$cycle} } );
+  $firstpass = $passes[0];
+  $length = @passes;
+  $lastpass = $passes[$length-1];
+  $startsec = $starttime{$cycle}{$firstpass};
+  $endsec = $endtime{$cycle}{$lastpass};
+  $startsec =~ s/ //g;
+  $endsec =~ s/ //g;
+  $startdate = `convdate sec=$startsec +ymd`;
+  $enddate = `convdate sec=$endsec +ymd`;
+  $recs = `printf "%4i %7i" $npass{$cycle} $number{$cycle}`;
+  chomp $startdate;
+  chomp $enddate;
+  print "$phase $cycle $firstpass $lastpass $startdate $enddate $recs\n";
+}
