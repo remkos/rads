@@ -605,10 +605,12 @@ else
 	write (format_string,'("(a1,",a,",",i0,"(1x,",a,"),")') &
 		trim(S(nsat)%sel(1)%info%format),ncols-1,trim(S(nsat)%sel(1)%info%format)
 endif
-do i = 2,nsel
-	write (format_string(len_trim(format_string)+1:),'(i0,"(1x,",a,"),")') &
-		ncols,trim(S(nsat)%sel(i)%info%format)
-enddo
+if (ncols > 0) then
+	do i = 2,nsel
+		write (format_string(len_trim(format_string)+1:),'(i0,"(1x,",a,"),")') &
+			ncols,trim(S(nsat)%sel(i)%info%format)
+	enddo
+endif
 format_string(len_trim(format_string)+1:) = '2i9,a)'
 
 ! Do a transfer of bit patterns if needed
