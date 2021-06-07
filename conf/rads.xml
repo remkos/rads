@@ -1465,7 +1465,7 @@ Global RADS configuration file
 		<comment edit="append">This model is actually based on Jason-2 data and not Sentinel-3, and will be replaced later.</comment>
 	</if>
 	<if sat="j3 6a">
-		<long_name>Tran et al. 2020 non-parametric sea state bias</long_name>
+		<long_name>Tran et al. 2020 non-parametric sea state bias (C-band)</long_name>
 		<parameters>AUX_SBLC_S6A_002.nc?SSB -xwind_speed_alt -yswh_ku</parameters>
 		<source>SSB_2020_J3_GDRF</source>
 		<comment edit="append">This model is actually based on Jason-3 data and not Sentinel-6, and will be replaced later.</comment>
@@ -1483,7 +1483,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 	<if sat="j3 6a">
-		<long_name>Tran et al. 2020 non-parametric sea state bias</long_name>
+		<long_name>Tran et al. 2020 non-parametric sea state bias (MLE3)</long_name>
 		<parameters>AUX_SBLK_S6A_002.nc?SSB -xwind_speed_alt_mle3 -yswh_ku_mle3</parameters>
 		<source>SSB_2020_J3_GDRF</source>
 		<comment edit="append">This model is actually based on Jason-3 data and not Sentinel-6, and will be replaced later.</comment>
