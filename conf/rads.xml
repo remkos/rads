@@ -1416,7 +1416,7 @@ Global RADS configuration file
 		<long_name>Tran et al. 2020 non-parametric sea state bias</long_name>
 		<parameters>AUX_SBLK_S6A_002.nc?SSB -xwind_speed_alt -yswh_ku</parameters>
 		<source>SSB_2020_J3_GDRF</source>
-		<comment edit="append">This model is actually based on Jason-3 data and not Sentinel-6, and will be replaced later.</comment>
+		<comment sat="6a" edit="append">This model is actually based on Jason-3 data and not Sentinel-6, and will be replaced later.</comment>
 	</if>
 </var>
 <var name="ssb_csr" field="1503" sat="tx">
@@ -1468,7 +1468,7 @@ Global RADS configuration file
 		<long_name>Tran et al. 2020 non-parametric sea state bias (C-band)</long_name>
 		<parameters>AUX_SBLC_S6A_002.nc?SSB -xwind_speed_alt -yswh_ku</parameters>
 		<source>SSB_2020_J3_GDRF</source>
-		<comment edit="append">This model is actually based on Jason-3 data and not Sentinel-6, and will be replaced later.</comment>
+		<comment sat="6a" edit="append">This model is actually based on Jason-3 data and not Sentinel-6, and will be replaced later.</comment>
 	</if>
 </var>
 <var name="ssb_cls_mle3" field="1512" sat="6a j2 j3">
@@ -1486,7 +1486,7 @@ Global RADS configuration file
 		<long_name>Tran et al. 2020 non-parametric sea state bias (MLE3)</long_name>
 		<parameters>AUX_SBLK_S6A_002.nc?SSB -xwind_speed_alt_mle3 -yswh_ku_mle3</parameters>
 		<source>SSB_2020_J3_GDRF</source>
-		<comment edit="append">This model is actually based on Jason-3 data and not Sentinel-6, and will be replaced later.</comment>
+		<comment sat="6a" edit="append">This model is actually based on Jason-3 data and not Sentinel-6, and will be replaced later.</comment>
 	</if>
 </var>
 <var name="ssb_cls_plrm" field="1514" sat="3a 3b c2">
