@@ -122,7 +122,7 @@ logical :: lr
 ! Other local variables
 
 real(eightbytereal), parameter :: sec2000=473299200d0	! UTC seconds from 1 Jan 1985 to 1 Jan 2000
-real(eightbytereal), allocatable :: telemetry_type_flag(:)
+real(eightbytereal), allocatable :: b(:), telemetry_type_flag(:)
 
 ! Initialise
 
@@ -271,7 +271,7 @@ do
 
 ! Allocate variables
 
-	allocate (a(nrec),flags(nrec),flags_mle3(nrec),flags_save(nrec))
+	allocate (a(nrec),b(nrec),flags(nrec),flags_mle3(nrec),flags_save(nrec))
 	nvar = 0
 
 ! Get NetCDF ID for 20-Hz data (if available)
@@ -337,11 +337,12 @@ do
 
 ! Telemetry type (copied from 20-Hz to 1-Hz)
 
-	call get_var (ncidk, 'index_first_20hz_measurement', a)
-	! Note: index_first_20hz_measurement starts with 0, so add 1 in Fortran
 	if (ncid20k /= 0) then
+		call get_var (ncidk, 'index_first_20hz_measurement', a)
+		! Note: index_first_20hz_measurement starts with 0, so add 1 in Fortran
+		call get_var (ncidk, 'numtotal_20hz_measurement', b)
 		call get_var (ncid20k, 'telemetry_type_flag', telemetry_type_flag)
-		call new_var ('flag_alt_oper_mode', telemetry_type_flag(nint(a(:)+1)) - 1)
+		call new_var ('flag_alt_oper_mode', telemetry_type_flag(nint(a+b/2)) - 1)
 		! Note: 1 subtracted because in PGF: 0 = null_record.
 	endif
 
@@ -507,7 +508,7 @@ do
 
 	call nfs(nf90_close(ncid))
 	call put_rads
-	deallocate (a, flags, flags_mle3, flags_save)
+	deallocate (a, b, flags, flags_mle3, flags_save)
 	if (nrec20 /= 0) deallocate (telemetry_type_flag)
 
 enddo
