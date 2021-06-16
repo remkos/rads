@@ -2187,7 +2187,7 @@ Global RADS configuration file
 		<standard_name>altimeter_range number_of_observations</standard_name>
 		<units>1</units>
 		<limits>16.5 20.5</limits>
-		<limits sat="j1 j2 j3">15.5 20.5</limits>
+		<limits sat="6a j1 j2 j3">15.5 20.5</limits>
 		<limits sat="g1 gs tx">8.5 10.5</limits> <!--GFO, Geosat, TOPEX are only 10 Hz-->
 		<limits sat="3a 3b">16.5 21.5</limits> <!--SAR mode data can have up to 21 in 1 second-->
 		<plot_range>0 21</plot_range>
@@ -2213,7 +2213,7 @@ Global RADS configuration file
 	<long_name>number of valid Ku-band measurements (PLRM)</long_name>
 	<standard_name>altimeter_range number_of_observations</standard_name>
 	<units>1</units>
-	<limits>15.5 20.5</limits>
+	<limits>16.5 21.5</limits>
 	<plot_range>0 21</plot_range>
 	<data>range_numval_ku_plrm</data>
 	<format>f3.0</format>
