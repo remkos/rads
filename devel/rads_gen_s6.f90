@@ -222,6 +222,13 @@ do
 		read (infile(i+17:i+23),'(i3,1x,i3)') cyclenr, passnr
 	endif
 
+! Knowing that pass 1 and 2 could have the wrong cycle number [AR 1751], fix it here
+
+	if (passnr <= 2) then
+		call nfs(nf90_get_att(ncid,nf90_global,'absolute_rev_number',i))
+		cyclenr = i/127 + 2
+	endif
+
 ! Skip passes of which the cycle number or equator crossing time is outside the specified interval
 
 	if (equator_time < times(1) .or. equator_time > times(2) .or. cyclenr < cycles(1) .or. cyclenr > cycles(2)) then
@@ -331,9 +338,11 @@ do
 ! Telemetry type (copied from 20-Hz to 1-Hz)
 
 	call get_var (ncidk, 'index_first_20hz_measurement', a)
+	! Note: index_first_20hz_measurement starts with 0, so add 1 in Fortran
 	if (ncid20k /= 0) then
 		call get_var (ncid20k, 'telemetry_type_flag', telemetry_type_flag)
-		call new_var ('flag_alt_oper_mode', telemetry_type_flag(nint(a(:))) - 1)
+		call new_var ('flag_alt_oper_mode', telemetry_type_flag(nint(a(:)+1)) - 1)
+		! Note: 1 subtracted because in PGF: 0 = null_record.
 	endif
 
 ! Range
