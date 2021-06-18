@@ -1604,7 +1604,7 @@ Global RADS configuration file
 	<long_name>EGM2008 geoid height</long_name>
 	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
 	<source>EGM2008</source>
-	<parameters>EGM2008/und_min1x1_egm2008_Nmax2190_MeanTide_global.nc</parameters>
+	<parameters>EGM2008/und_min1x1_egm2008_Nmax2190_MeanTide_global.nc -s</parameters>
 	<units>m</units>
 	<data>geoid_egm2008</data>
 	<format>f10.4</format>
@@ -1635,7 +1635,7 @@ Global RADS configuration file
 	<long_name>UCL04 mean sea surface height</long_name>
 	<source>UCL</source>
 	<units>m</units>
-	<data>mss_ucl04</data>
+	<data>mss_ucl04 -s</data>
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
 </var>
@@ -1653,7 +1653,7 @@ Global RADS configuration file
 <var name="mss_cnescls11" field="1615">
 	<long_name>CNES-CLS11 mean sea surface height</long_name>
 	<source>CNES-CLS11</source>
-	<parameters>MSS_CNES-CLS11/MSS_CNES-CLS11.nc</parameters>
+	<parameters>MSS_CNES-CLS11/MSS_CNES-CLS11.nc -s</parameters>
 	<units>m</units>
 	<data>mss_cnescls11</data>
 	<format>f10.4</format>
@@ -1662,7 +1662,7 @@ Global RADS configuration file
 <var name="mss_dtu13" field="1616">
 	<long_name>DTU13 mean sea surface height</long_name>
 	<source>DTU13</source>
-	<parameters>DTU13/DTU13MSS_1min.nc</parameters>
+	<parameters>DTU13/DTU13MSS_1min.nc -s</parameters>
 	<units>m</units>
 	<data>mss_dtu13</data>
 	<format>f10.4</format>
@@ -1672,7 +1672,7 @@ Global RADS configuration file
 	<long_name>EIGEN6 geoid height</long_name>
 	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
 	<source>EIGEN6c3stat</source>
-	<parameters>EIGEN6/und_min1x1_eigen-6c3stat_Nmax1949_MeanTide_global.nc</parameters>
+	<parameters>EIGEN6/und_min1x1_eigen-6c3stat_Nmax1949_MeanTide_global.nc -s</parameters>
 	<units>m</units>
 	<data>geoid_eigen6</data>
 	<format>f10.4</format>
@@ -1681,7 +1681,7 @@ Global RADS configuration file
 <var name="mss_dtu15" field="1618">
 	<long_name>DTU15 mean sea surface height</long_name>
 	<source>DTU15</source>
-	<parameters>DTU15/DTU15MSS_1min.nc</parameters>
+	<parameters>DTU15/DTU15MSS_1min.nc -s</parameters>
 	<units>m</units>
 	<data>mss_dtu15</data>
 	<format>f10.4</format>
@@ -1690,7 +1690,7 @@ Global RADS configuration file
 <var name="mss_cnescls15" field="1619">
 	<long_name>CNES-CLS15 mean sea surface height</long_name>
 	<source>CNES-CLS15</source>
-	<parameters>MSS_CNES-CLS15/MSS_CNES-CLS15.nc</parameters>
+	<parameters>MSS_CNES-CLS15/MSS_CNES-CLS15.nc -s</parameters>
 	<units>m</units>
 	<data>mss_cnescls15</data>
 	<format>f10.4</format>
@@ -1700,7 +1700,7 @@ Global RADS configuration file
 	<long_name>XGM2016 geoid height</long_name>
 	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
 	<source>XGM2016</source>
-	<parameters>XGM2016/XGM2016_Nmax720_MeanTide_global.nc</parameters>
+	<parameters>XGM2016/XGM2016_Nmax720_MeanTide_global.nc -s</parameters>
 	<units>m</units>
 	<data>geoid_xgm2016</data>
 	<format>f10.4</format>
@@ -1709,7 +1709,7 @@ Global RADS configuration file
 <var name="mss_dtu18" field="1621">
 	<long_name>DTU18 mean sea surface height</long_name>
 	<source>DTU18</source>
-	<parameters>DTU18/DTU18MSS_1min.nc</parameters>
+	<parameters>DTU18/DTU18MSS_1min.nc -s</parameters>
 	<units>m</units>
 	<data>mss_dtu18</data>
 	<format>f10.4</format>
@@ -1718,7 +1718,7 @@ Global RADS configuration file
 <var name="mss_comp21" field="1621">
 	<long_name>composite mean sea surface height (SCRIPPS, CNES/CLS15, DTU15)</long_name>
 	<source>SCRIPSS, CNES/CLS15, DTU15</source>
-	<parameters>DT21/MSS_Combine_SIO_CNES15_DTU15.nc</parameters>
+	<parameters>DT21/MSS_Combine_SIO_CNES15_DTU15.nc -s</parameters>
 	<units>m</units>
 	<data>mss_comp21</data>
 	<format>f10.4</format>
