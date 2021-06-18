@@ -3801,7 +3801,7 @@ Global RADS configuration file
 <var name="dist_coast" field="4501 45">
 	<long_name>distance to coast</long_name>
 	<source>GMT/GSHHS</source>
-	<parameters>distance-to-coast_1m.nc</parameters>
+	<parameters>distance-to-coast/distance-to-coast_1m.nc</parameters>
 	<units>km</units>
 	<data>dist_coast</data>
 	<format>f6.0</format>
@@ -3836,6 +3836,8 @@ Global RADS configuration file
 	<long_name>angle of approach to the coast</long_name>
 	<source>EUMETSAT</source>
 	<data>angle_coast</data>
+	<parameters>distance-to-coast/angle-to-coast_1m_s6.nc -p</parameters>
+	<parameters sat="3a 3b">distance-to-coast/angle-to-coast_1m_s3.nc -p</parameters>
 	<format>f7.2</format>
 	<compress>int2 1e-2</compress>
 	<comment>Angle of approach to the closest coast. 0 is parallel to the coast with the land on the right. Positive values indicate the satellite is approaching the land. Negative values indicate the satellite is leaving the land. Values close to +/-180 degrees have the land on the left.</comment>
