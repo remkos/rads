@@ -1716,8 +1716,8 @@ Global RADS configuration file
 	<compress>int4 1e-4</compress>
 </var>
 <var name="mss_comp21" field="1621">
-	<long_name>composite mean sea surface height (SCRIPPS, CNES/CLS15, DTU15)</long_name>
-	<source>SCRIPSS, CNES/CLS15, DTU15</source>
+	<long_name>combined mean sea surface height (SIO/CNES_CLS15/DTU15)</long_name>
+	<source>SIO/CNES_CLS15/DTU15</source>
 	<parameters>DT21/MSS_Combine_SIO_CNES15_DTU15.nc -s</parameters>
 	<units>m</units>
 	<data>mss_comp21</data>
