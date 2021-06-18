@@ -1,5 +1,5 @@
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2020  Remko Scharroo
+# Copyright (c) 2011-2021  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -60,10 +60,10 @@ subs:	$(SUBS_TEX) $(PROGS_HLP) $(PROGS_OUT) $(TABS_TEX)
 #-----------------------------------------------------------------------
 
 $(SUBS_TEX):	robodoc.rc
-sub/%.tex:	../../src/%.f90
-	$(ROBODOC) --src ../../src/$*.f90 --doc $(TMPDIR)/$* --singlefile
-	sed 's/\\index{unsorted![^}]*}//g' $(TMPDIR)/$*.tex > sub/$*.tex
-	$(RM) $(TMPDIR)/$*.tex
+#sub/%.tex:	../../src/%.f90
+#	$(ROBODOC) --src ../../src/$*.f90 --doc $(TMPDIR)/$* --singlefile
+#	sed 's/\\index{unsorted![^}]*}//g' $(TMPDIR)/$*.tex > sub/$*.tex
+#	$(RM) $(TMPDIR)/$*.tex
 
 #-----------------------------------------------------------------------
 # Make table of the MATH commands

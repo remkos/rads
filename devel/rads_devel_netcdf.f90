@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2020  Remko Scharroo
+! Copyright (c) 2011-2021  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@ module rads_devel_netcdf
 use typesizes
 use rads, only: rads_sat, rads_pass, rads_var
 
-integer(fourbyteint), parameter :: mrec=3600, mvar=100
+integer(fourbyteint), parameter :: mrec=3700, mvar=100
 integer(fourbyteint) :: nvar, nrec=0
 real(eightbytereal), allocatable :: a(:)
 integer(twobyteint), allocatable :: flags(:)

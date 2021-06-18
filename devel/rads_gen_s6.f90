@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2020  Remko Scharroo and Eric Leuliette
+! Copyright (c) 2011-2021  Remko Scharroo and Eric Leuliette
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -115,13 +115,14 @@ real(eightbytereal) :: equator_time
 integer(twobyteint), allocatable :: flags_mle3(:), flags_save(:)
 character(len=2) :: mss_cnescls_ver = '15', mss_dtu_ver = '18', tide_fes_ver = '14'
 character(len=3) :: tide_got_ver = '410'
+character(len=8) :: chd_ver, cha_ver, cnf_ver
 integer :: latency = rads_nrt
 logical :: lr
 
 ! Other local variables
 
 real(eightbytereal), parameter :: sec2000=473299200d0	! UTC seconds from 1 Jan 1985 to 1 Jan 2000
-real(eightbytereal), allocatable :: telemetry_type_flag(:)
+real(eightbytereal), allocatable :: b(:), telemetry_type_flag(:)
 
 ! Initialise
 
@@ -221,6 +222,13 @@ do
 		read (infile(i+17:i+23),'(i3,1x,i3)') cyclenr, passnr
 	endif
 
+! Knowing that pass 1 and 2 could have the wrong cycle number [AR 1751], fix it here
+
+	if (passnr <= 2) then
+		call nfs(nf90_get_att(ncid,nf90_global,'absolute_rev_number',i))
+		cyclenr = i/127 + 2
+	endif
+
 ! Skip passes of which the cycle number or equator crossing time is outside the specified interval
 
 	if (equator_time < times(1) .or. equator_time > times(2) .or. cyclenr < cycles(1) .or. cyclenr > cycles(2)) then
@@ -245,18 +253,25 @@ do
 	call nfs(nf90_get_att(ncid,nf90_global,'last_measurement_time',arg))
 	P%end_time = strp1985f(arg)
 
-! Determine L2 processing version (currently not used)
+! Determine L2 processing baseline, characterisation and configuration versions
+
+	call nfs(nf90_get_att(ncid,nf90_global,'xref_altimeter_characterization',arg))
+	chd_ver = arg(11:14) // ' ' // arg(96:98)
+	call nfs(nf90_get_att(ncid,nf90_global,'xref_altimeter_characterization_array',arg))
+	cha_ver = arg(11:14) // ' ' // arg(96:98)
+	call nfs(nf90_get_att(ncid,nf90_global,'xref_processor_configuration',arg))
+	cnf_ver = arg(11:14) // ' ' // arg(96:98)
 
 	call nfs(nf90_get_att(ncid,nf90_global,'source',arg))
 
 ! Store input file name
 
 	i = index(infile, '/', .true.) + 1
-	P%original = trim(infile(i:)) // ' (' // trim(arg) // ')'
+	P%original = trim(infile(i:)) // ' (' // trim(arg) // ', ' // chd_ver // ', ' // cha_ver // ', ' // cnf_ver // ')'
 
 ! Allocate variables
 
-	allocate (a(nrec),flags(nrec),flags_mle3(nrec),flags_save(nrec))
+	allocate (a(nrec),b(nrec),flags(nrec),flags_mle3(nrec),flags_save(nrec))
 	nvar = 0
 
 ! Get NetCDF ID for 20-Hz data (if available)
@@ -322,10 +337,13 @@ do
 
 ! Telemetry type (copied from 20-Hz to 1-Hz)
 
-	call get_var (ncidk, 'index_first_20hz_measurement', a)
 	if (ncid20k /= 0) then
+		call get_var (ncidk, 'index_first_20hz_measurement', a)
+		! Note: index_first_20hz_measurement starts with 0, so add 1 in Fortran
+		call get_var (ncidk, 'numtotal_20hz_measurement', b)
 		call get_var (ncid20k, 'telemetry_type_flag', telemetry_type_flag)
-		call new_var ('flag_alt_oper_mode', telemetry_type_flag(nint(a(:))) - 1)
+		call new_var ('flag_alt_oper_mode', telemetry_type_flag(nint(a+b/2)) - 1)
+		! Note: 1 subtracted because in PGF: 0 = null_record.
 	endif
 
 ! Range
@@ -334,13 +352,16 @@ do
 	call cpy_var (ncidk, 'range_ocean_rms', 'range_rms_ku')
 	call cpy_var (ncidk, 'range_ocean_numval', 'range_numval')
 	call cpy_var (ncidk, 'range_ocean_qual', 'qual_range')
+	call cpy_var (ncidk, 'net_instr_cor_range_ocean', 'drange_ku')
 	if (lr) then
 		call cpy_var (ncidk, 'range_ocean_mle3', 'range_ku_mle3')
 		call cpy_var (ncidk, 'range_ocean_mle3_rms', 'range_rms_ku_mle3')
 		call cpy_var (ncidk, 'range_ocean_mle3_numval', 'range_numval_ku_mle3')
+		call cpy_var (ncidk, 'net_instr_cor_range_ocean_mle3', 'drange_ku_mle3')
 		call cpy_var (ncidc, 'range_ocean', 'range_c')
 		call cpy_var (ncidc, 'range_ocean_rms', 'range_rms_c')
 		call cpy_var (ncidc, 'range_ocean_numval', 'range_numval_c')
+		call cpy_var (ncidc, 'net_instr_cor_range_ocean', 'drange_c')
 	endif
 
 ! SWH
@@ -348,11 +369,14 @@ do
 	call cpy_var (ncidk, 'swh_ocean', 'swh_ku')
 	call cpy_var (ncidk, 'swh_ocean_rms', 'swh_rms_ku')
 	call cpy_var (ncidk, 'swh_ocean_qual', 'qual_swh')
+	call cpy_var (ncidk, 'net_instr_cor_swh_ocean', 'dswh_ku')
 	if (lr) then
 		call cpy_var (ncidk, 'swh_ocean_mle3', 'swh_ku_mle3')
 		call cpy_var (ncidk, 'swh_ocean_mle3_rms', 'swh_rms_ku_mle3')
+		call cpy_var (ncidk, 'net_instr_cor_swh_ocean_mle3', 'dswh_ku_mle3')
 		call cpy_var (ncidc, 'swh_ocean', 'swh_c')
 		call cpy_var (ncidc, 'swh_ocean_rms', 'swh_rms_c')
+		call cpy_var (ncidc, 'net_instr_cor_swh_ocean', 'dswh_c')
 	endif
 
 ! Backscatter
@@ -360,14 +384,18 @@ do
 	call cpy_var (ncidk, 'sig0_ocean', 'sig0_ku')
 	call cpy_var (ncidk, 'sig0_ocean_rms', 'sig0_rms_ku')
 	call cpy_var (ncidk, 'sig0_ocean_qual', 'qual_sig0')
+	call cpy_var (ncidk, 'net_instr_cor_sig0_ocean', 'dsig0_ku')
 	call cpy_var (ncidk, 'atm_cor_sig0', 'dsig0_atmos_ku')
 	if (lr) then
 		call cpy_var (ncidk, 'sig0_ocean_mle3', 'sig0_ku_mle3')
 		call cpy_var (ncidk, 'sig0_ocean_mle3_rms', 'sig0_rms_ku_mle3')
+		call cpy_var (ncidk, 'net_instr_cor_sig0_ocean_mle3', 'dsig0_ku_mle3')
 		call cpy_var (ncidc, 'sig0_ocean', 'sig0_c')
 		call cpy_var (ncidc, 'sig0_ocean_rms', 'sig0_rms_c')
 		call cpy_var (ncidc, 'atm_cor_sig0', 'dsig0_atmos_c')
+		call cpy_var (ncidc, 'net_instr_cor_sig0_ocean', 'dsig0_c')
 	endif
+	call cpy_var (ncid1, 'climato_use_flag', 'qual_dsig0_atmos')
 
 ! Wind speed
 
@@ -381,6 +409,7 @@ do
 
 	call cpy_var (ncid1, 'rain_flag', 'qual_alt_rain_ice')
 	call cpy_var (ncid1, 'rad_rain_flag rad_sea_ice_flag IOR', 'qual_rad_rain_ice')
+	call cpy_var (ncid1, 'rain_attenuation', 'dsig0_atten')
 
 ! Off-nadir angle
 
@@ -479,7 +508,7 @@ do
 
 	call nfs(nf90_close(ncid))
 	call put_rads
-	deallocate (a, flags, flags_mle3, flags_save)
+	deallocate (a, b, flags, flags_mle3, flags_save)
 	if (nrec20 /= 0) deallocate (telemetry_type_flag)
 
 enddo

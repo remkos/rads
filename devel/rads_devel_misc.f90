@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2020  Remko Scharroo
+! Copyright (c) 2011-2021  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -54,6 +54,8 @@ case ('JA2')
 	call parseenv ('${RADSROOT}/ext/j2/JA2_ORF.txt', line)
 case ('JA3')
 	call parseenv ('${RADSROOT}/ext/j3/JA3_ORF.txt', line)
+case ('CS_')
+	call parseenv ('${ALTIM}/data/ODR.CRYOSAT2/orf.txt', line)
 case ('SRL')
 	call parseenv ('${RADSROOT}/ext/sa/SRL_ORF.txt', line)
 	nr_passes = 1024
@@ -69,7 +71,7 @@ case ('S6A')
 case ('S6B')
 	call parseenv ('${RADSROOT}/ext/6b/S6B_ORF.txt', line)
 case default
-	stop 'Wrong satellite code'
+	stop 'Wrong satellite code: '//sat
 end select
 unit = getlun()
 open (unit, file=line, status='old')

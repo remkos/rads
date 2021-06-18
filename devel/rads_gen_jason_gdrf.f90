@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2020  Remko Scharroo and Eric Leuliette
+! Copyright (c) 2011-2021  Remko Scharroo and Eric Leuliette
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -208,7 +208,6 @@ do
 	call nfs(nf90_get_att(ncid,nf90_global,'pass_number',passnr))
 	call nfs(nf90_get_att(ncid,nf90_global,'equator_time',arg))
 	equator_time = strp1985f (arg)
-	write (*,*) "equator_time =",arg,equator_time
 
 ! If pass_number is 0, get cycle and pass number from the file name
 
@@ -223,7 +222,6 @@ do
 		call log_string ('Skipped', .true.)
 		cycle
 	endif
-	write (*,*) "times =", times, equator_time
 
 ! Set mission phase based on equator_time
 
@@ -253,7 +251,6 @@ do
 
 	allocate (a(nrec),dh(nrec),flags(nrec),flags_mle3(nrec),flags_save(nrec))
 	nvar = 0
-	write (*,*) "nrec =", nrec
 
 ! Get NetCDF ID for 20-Hz data (if available)
 
@@ -334,7 +331,7 @@ do
 	call cpy_var (ncidk, 'swh_ocean', 'swh_ku')
 	call cpy_var (ncidk, 'swh_ocean_rms', 'swh_rms_ku')
 	call cpy_var (ncidk, 'swh_ocean_compression_qual', 'qual_swh')
-	call cpy_var (ncidk, 'swh_ocean_mle3', 'swh_ku')
+	call cpy_var (ncidk, 'swh_ocean_mle3', 'swh_ku_mle3')
 	call cpy_var (ncidk, 'swh_ocean_mle3_rms', 'swh_rms_ku_mle3')
 	call cpy_var (ncidc, 'swh_ocean', 'swh_c')
 	call cpy_var (ncidc, 'swh_ocean_rms', 'swh_rms_c')
@@ -345,7 +342,7 @@ do
 	call cpy_var (ncidk, 'sig0_ocean_rms', 'sig0_rms_ku')
 	call cpy_var (ncidk, 'sig0_ocean_compression_qual', 'qual_sig0')
 	call cpy_var (ncidk, 'sig0_cor_atm', 'dsig0_atmos_ku')
-	call cpy_var (ncidk, 'sig0_ocean_mle3', 'sig0_ku')
+	call cpy_var (ncidk, 'sig0_ocean_mle3', 'sig0_ku_mle3')
 	call cpy_var (ncidk, 'sig0_ocean_mle3_rms', 'sig0_rms_ku_mle3')
 	call cpy_var (ncidc, 'sig0_ocean', 'sig0_c')
 	call cpy_var (ncidc, 'sig0_ocean_rms', 'sig0_rms_c')
@@ -441,6 +438,10 @@ do
 	call cpy_var (ncid1, 'rad_tb_340_qual 2 MUL rad_tb_238_qual ADD 2 MUL rad_tb_187_qual ADD', 'qual_rad_tb')
 	call cpy_var (ncid1, 'rad_cloud_liquid_water', 'liquid_water_rad')
 	call cpy_var (ncid1, 'rad_water_vapor', 'water_vapor_rad')
+
+! Waves
+call cpy_var (ncid1, 'mean_wave_period_t02', 'mean_wave_period')
+call cpy_var (ncid1, 'mean_wave_direction', 'mean_wave_direction')
 
 ! SSHA
 

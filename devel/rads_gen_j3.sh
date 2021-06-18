@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2020  Remko Scharroo
+# Copyright (c) 2011-2021  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -32,8 +32,10 @@ for tar in "$@"; do
 		*.tgz) tar -xzf "$tar"; dir=`basename "$tar" .tgz` ;;
 		*) dir="$tar" ;;
 	esac
-	ls "$dir"/JA3_???_2P*.nc > "$lst"
+	ls "$dir"/JA3_???_2Pd*.nc > "$lst"
 	rads_gen_jason	$options < "$lst"				>> "$log" 2>&1
+	ls "$dir"/JA3_???_2Pf*.nc > "$lst"
+	rads_gen_jason_gdrf	$options < "$lst"			>> "$log" 2>&1
 	case "$tar" in
 		*.t?z) chmod -R u+w "$dir"; rm -rf "$dir" ;;
 	esac

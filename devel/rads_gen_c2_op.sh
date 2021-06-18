@@ -1,5 +1,6 @@
+#!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2021  Remko Scharroo
+# Copyright (c) 2011-2021  Remko Scharroo and Eric Leuliette
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -12,20 +13,28 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
 #-----------------------------------------------------------------------
-
-include ../config.mk
-
+#
+# Convert latest CryoSat-2 NOP, IOP, and GOP files to RADS
+#
+# The most recently updated data in the nop, iop, and gop directories
+# will be processed.
+#
+# syntax: rads_gen_c2_op.sh directory
 #-----------------------------------------------------------------------
-# What to create?
-#-----------------------------------------------------------------------
+. rads_sandbox.sh
+rads_open_sandbox c2
 
-all:
+find "$@" -name "*.nc"| sort > "$lst"
+date >  "$log" 2>&1
+rads_gen_c2_op		$options < "$lst"	>> "$log" 2>&1
 
-install:	all
-	$(INSTALL_DIR) $(bindir) $(datadir)/conf
-	$(INSTALL_DATA) *.xml $(datadir)/conf
+# General geophysical corrections
+rads_add_common   $options		>> "$log" 2>&1
+#rads_add_refframe $options		>> "$log" 2>&1
+rads_add_iono     $options --all	>> "$log" 2>&1
+# Redetermine SSHA
+rads_add_sla      $options		>> "$log" 2>&1
 
-man:
-clean:
-spotless:
-test:
+date			>> "$log" 2>&1
+
+rads_close_sandbox

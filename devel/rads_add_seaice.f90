@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2020  Remko Scharroo
+! Copyright (c) 2011-2021  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -149,8 +149,6 @@ do i = 1,n
 		endif
 		if (err) then
 			call log_string ('Warning: No OSIAF field for current time')
-			call log_records (0)
-			stop
 		endif
 		grids_nh = grid_nh
 		where (grids_nh .eq. -999) grids_nh = nan
@@ -320,6 +318,7 @@ l = strf1985(filenm, path, day1985*86400)
 write (*,600,advance='no') trim(filenm)
 if (nft(nf90_open(filenm,nf90_nowrite,ncid))) then
 	write (*,1300) 'Error opening file',filenm(:l)
+	grid(:,:) = -999
 	return
 endif
 
@@ -342,10 +341,6 @@ if (nft(nf90_get_att(ncid,v_id,'add_offset',z0))) z0=0
 if (nft(nf90_get_att(ncid,v_id,'scale_factor',dz))) dz=1
 
 if (nft(nf90_get_var(ncid,v_id,grid(:,:),count = (/ nx, ny, 1 /)))) call fin('Error reading data grid')
-
-! Set missing value to 0
-
-!where (grid .eq. -999) grid = 0
 
 ! Copy Date Line meridian
 
