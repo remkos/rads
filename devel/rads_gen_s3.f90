@@ -109,9 +109,9 @@ real(eightbytereal) :: equator_time
 ! Data variables
 
 integer(twobyteint), allocatable :: flags_plrm(:), flags_save(:)
-character(len=2) :: mss_cnescls_ver, mss_dtu_ver, tide_fes_ver
+character(len=16) :: mss_sol1_var, mss_sol2_var
 integer :: latency = rads_nrt
-logical :: iono_alt_smooth = .false.
+logical :: iono_alt_smooth = .false., tide_internal = .false.
 
 ! Other local variables
 
@@ -257,17 +257,23 @@ do
 
 	call nfs(nf90_get_att(ncid,nf90_global,'source',arg))
 
-! Default versions for MSS CNES-CLS and FES tides for PB 2.19 (IPF-SM-2 06.08) and later
+! Default versions for MSS
 
-	mss_cnescls_ver = '15'
-	mss_dtu_ver = '15'
-	tide_fes_ver = '14'
+	mss_sol1_var = 'mss_cnescls15'
+	mss_sol2_var = 'mss_dtu15'
 
 ! Update the version of MSS DTU and switch on smoothed iono for PB 2.49 (IPF-SM-2 06.16) and later
 
 	if (arg(10:14) >= '06.16') then
-		mss_dtu_ver = '18'
+		mss_sol2_var = 'mss_dtu18'
 		iono_alt_smooth = .true.
+	endif
+
+! Update the version of MSS CNES/CLS and switch on internal tide IPF-SM-2 06.51 and later
+
+	if (arg(10:14) >= '06.51') then
+		mss_sol1_var = 'mss_comp21'
+		tide_internal = .true.
 	endif
 
 ! Store input file name
@@ -356,21 +362,22 @@ do
 	endif
 	call cpy_var (ncid, 'solid_earth_tide_01', 'tide_solid')
 	call cpy_var (ncid, 'ocean_tide_sol1_01 load_tide_sol1_01 SUB', 'tide_ocean_got410')
-	call cpy_var (ncid, 'ocean_tide_sol2_01 load_tide_sol2_01 SUB ocean_tide_non_eq_01 ADD', 'tide_ocean_fes' // tide_fes_ver)
+	call cpy_var (ncid, 'ocean_tide_sol2_01 load_tide_sol2_01 SUB ocean_tide_non_eq_01 ADD', 'tide_ocean_fes14')
 	call cpy_var (ncid, 'load_tide_sol1_01', 'tide_load_got410')
-	call cpy_var (ncid, 'load_tide_sol2_01', 'tide_load_fes' // tide_fes_ver)
+	call cpy_var (ncid, 'load_tide_sol2_01', 'tide_load_fes14')
 	call cpy_var (ncid, 'ocean_tide_eq_01', 'tide_equil')
 	call cpy_var (ncid, 'ocean_tide_non_eq_01', 'tide_non_equil')
 	call cpy_var (ncid, 'pole_tide_01', 'tide_pole')
+	if (tide_internal) call cpy_var (ncid, 'internal_tide_sol1_01', 'tide_internal')
 	call cpy_var (ncid, 'sea_state_bias_01_ku', 'ssb_cls')
 	call cpy_var (ncid, 'sea_state_bias_01_plrm_ku', 'ssb_cls_plrm')
 	call cpy_var (ncid, 'sea_state_bias_01_c', 'ssb_cls_c')
 	call get_var (ncid, 'geoid_01', a)
 	call new_var ('geoid_egm2008', a + dh)
 	call get_var (ncid, 'mean_sea_surf_sol1_01', a)
-	call new_var ('mss_cnescls' // mss_cnescls_ver, a + dh)
+	call new_var (mss_sol1_var, a + dh)
 	call get_var (ncid, 'mean_sea_surf_sol2_01', a)
-	call new_var ('mss_dtu' // mss_dtu_ver, a + dh)
+	call new_var (mss_sol2_var, a + dh)
 	call cpy_var (ncid, 'swh_ocean_01_ku', 'swh_ku')
 	call cpy_var (ncid, 'swh_ocean_01_plrm_ku', 'swh_ku_plrm')
 	call cpy_var (ncid, 'swh_ocean_01_c', 'swh_c')

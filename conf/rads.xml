@@ -1715,6 +1715,15 @@ Global RADS configuration file
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
 </var>
+<var name="mss_comp21" field="1621">
+	<long_name>composite mean sea surface height (SCRIPPS, CNES/CLS15, DTU15)</long_name>
+	<source>SCRIPSS, CNES/CLS15, DTU15</source>
+	<parameters>DT21/MSS_Combine_SIO_CNES15_DTU15.nc</parameters>
+	<units>m</units>
+	<data>mss_comp21</data>
+	<format>f10.4</format>
+	<compress>int4 1e-4</compress>
+</var>
 <alias name="mss" field="16">mss_dtu15</alias>
 
 <var name="latency">
