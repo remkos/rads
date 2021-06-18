@@ -111,7 +111,7 @@ real(eightbytereal) :: equator_time
 integer(twobyteint), allocatable :: flags_plrm(:), flags_save(:)
 character(len=16) :: mss_sol1_var, mss_sol2_var
 integer :: latency = rads_nrt
-logical :: iono_alt_smooth = .false., tide_internal = .false.
+logical :: iono_alt_smooth = .false., ipf651 = .false.
 
 ! Other local variables
 
@@ -273,7 +273,7 @@ do
 
 	if (arg(10:14) >= '06.51') then
 		mss_sol1_var = 'mss_comp21'
-		tide_internal = .true.
+		ipf651 = .true.
 	endif
 
 ! Store input file name
@@ -368,7 +368,11 @@ do
 	call cpy_var (ncid, 'ocean_tide_eq_01', 'tide_equil')
 	call cpy_var (ncid, 'ocean_tide_non_eq_01', 'tide_non_equil')
 	call cpy_var (ncid, 'pole_tide_01', 'tide_pole')
-	if (tide_internal) call cpy_var (ncid, 'internal_tide_sol1_01', 'tide_internal')
+	if (ipf651) then
+		call cpy_var (ncid, 'internal_tide_sol1_01', 'tide_internal')
+		call cpy_var (ncid, 'angle_coast_01', 'angle_coast')
+		call cpy_var (ncid, 'dist_coast_01 1e-3 MUL', 'dist_coast')
+	endif
 	call cpy_var (ncid, 'sea_state_bias_01_ku', 'ssb_cls')
 	call cpy_var (ncid, 'sea_state_bias_01_plrm_ku', 'ssb_cls_plrm')
 	call cpy_var (ncid, 'sea_state_bias_01_c', 'ssb_cls_c')

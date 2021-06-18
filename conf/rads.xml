@@ -3832,7 +3832,7 @@ Global RADS configuration file
 	<comment>Dimensionless measure of the effect of land over altimetric waveforms, where -1 means unaffected by land (open-ocean) and 1 means totally affected by land (inland); can be used for screening purposes in place of distance from coast</comment>
 </var>
 
-<var name="angle_coast" sat="6a j3">
+<var name="angle_coast" sat="3a 3b 6a j3">
 	<long_name>angle of approach to the coast</long_name>
 	<source>EUMETSAT</source>
 	<data>angle_coast</data>
