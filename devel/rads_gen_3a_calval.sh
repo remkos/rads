@@ -34,29 +34,30 @@ type=$(basename $type)
 dir=3a.${type}0
 rads_open_sandbox "$dir"
 
-date													>  $log 2>&1
+date													>  "$log" 2>&1
 
 find "$@" -name "*.nc" | sort		> "$lst"
-rads_gen_s3 	$options --min-rec=6 < "$lst"			>> $log 2>&1
+rads_gen_s3 	$options --min-rec=6 < "$lst"			>> "$log" 2>&1
 rads_close_sandbox
 
 # Now process do the same again, and do the post-processing
 dir=3a.${type}1
 rads_open_sandbox $dir
 
-date													>  $log 2>&1
+date													>  "$log" 2>&1
 
 find "$@" -name "*.nc" | sort		> "$lst"
-rads_gen_s3 	  $options --min-rec=6 < "$lst"			>> $log 2>&1
+rads_gen_s3 	  $options --min-rec=6 < "$lst"			>> "$log" 2>&1
 
 # General geophysical corrections
-rads_add_common   $options								>> $log 2>&1
-rads_add_refframe $options --ext=plrm					>> $log 2>&1
-rads_add_iono     $options --all						>> $log 2>&1
+rads_add_grid     $options -Vangle_coast                >> "$log" 2>&1
+rads_add_common   $options								>> "$log" 2>&1
+rads_add_refframe $options --ext=plrm					>> "$log" 2>&1
+rads_add_iono     $options --all						>> "$log" 2>&1
 # Redetermine SSHA
-rads_add_sla      $options								>> $log 2>&1
-rads_add_sla      $options --ext=plrm					>> $log 2>&1
+rads_add_sla      $options								>> "$log" 2>&1
+rads_add_sla      $options --ext=plrm					>> "$log" 2>&1
 
-date													>> $log 2>&1
+date													>> "$log" 2>&1
 
 rads_close_sandbox
