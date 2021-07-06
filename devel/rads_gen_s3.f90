@@ -272,7 +272,7 @@ do
 ! Update the version of MSS CNES/CLS and switch on internal tide IPF-SM-2 06.51 and later
 
 	if (arg(10:14) >= '06.51') then
-		mss_sol1_var = 'mss_comp21'
+		mss_sol1_var = 'mss_comb15'
 		ipf651 = .true.
 	endif
 
