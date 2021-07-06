@@ -51,8 +51,8 @@ case $dir in
 *DEV/*) type=${type}d ;;
 esac
 case $dir in
-data) red=STD ;;
-   *) red=RED ;;
+*/data) red=STD ;;
+     *) red=RED ;;
 esac
 
 # Process "unadultered" files
