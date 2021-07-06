@@ -41,14 +41,18 @@ case $dir in
 *HR/*) type=hr ;;
 esac
 case $dir in
-*/NR) type=${type}nr ;;
-*/ST) type=${type}st ;;
-*/NT) type=${type}nt ;;
+*/NR*) type=${type}nr ;;
+*/ST*) type=${type}st ;;
+*/NT*) type=${type}nt ;;
 esac
 case $dir in
 *OPE/*) type=${type}o ;;
 *VAL/*) type=${type}v ;;
 *DEV/*) type=${type}d ;;
+esac
+case $dir in
+data) red=STD ;;
+   *) red=RED ;;
 esac
 
 # Process "unadultered" files
@@ -61,7 +65,7 @@ date													>  "$log" 2>&1
 mrk=$RADSDATAROOT/.bookmark
 TZ=UTC touch -t ${d0}0000 "$mrk"
 
-find "$@" -name "*RED*.nc" -a -newer "$mrk" | sort		>  "$lst"
+find "$@" -name "*${red}*.nc" -a -newer "$mrk" | sort	>  "$lst"
 rads_gen_s6 	$options --min-rec=6 < "$lst"			>> "$log" 2>&1
 rads_close_sandbox
 
@@ -75,7 +79,7 @@ date													>  "$log" 2>&1
 mrk=$RADSDATAROOT/.bookmark
 TZ=UTC touch -t ${d0}0000 "$mrk"
 
-find "$@" -name "*RED*.nc" -a -newer "$mrk" | sort		>  "$lst"
+find "$@" -name "*${red}*.nc" -a -newer "$mrk" | sort	>  "$lst"
 rads_gen_s6		$options --min-rec=6 < "$lst"			>> "$log" 2>&1
 rads_fix_s6		$options --all							>> "$log" 2>&1
 
