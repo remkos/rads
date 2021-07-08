@@ -213,7 +213,7 @@ do
 	call nfs(nf90_get_att(ncid,nf90_global,'cycle_number',cyclenr))
 	call nfs(nf90_get_att(ncid,nf90_global,'pass_number',passnr))
 	call nfs(nf90_get_att(ncid,nf90_global,'equator_time',arg))
-	equator_time = strp1985f (arg)
+	equator_time = nint(strp1985f (arg) * 1d3, eightbyteint) * 1d-3 ! Round nicely to nearest millisecond
 
 ! If pass_number is 0, get cycle and pass number from the file name
 
@@ -248,10 +248,6 @@ do
 	P%pass = passnr
 	P%equator_time = equator_time
 	call nfs(nf90_get_att(ncid,nf90_global,'equator_longitude',P%equator_lon))
-	call nfs(nf90_get_att(ncid,nf90_global,'first_measurement_time',arg))
-	P%start_time = strp1985f(arg)
-	call nfs(nf90_get_att(ncid,nf90_global,'last_measurement_time',arg))
-	P%end_time = strp1985f(arg)
 
 ! Determine L2 processing baseline, characterisation and configuration versions
 
@@ -328,7 +324,10 @@ do
 ! Time and location
 
 	call get_var (ncid1, 'time', a)
-	call new_var ('time', a + sec2000)
+	a = a + sec2000
+	P%start_time = a(1)  ! Using 1-Hz time stamps, not the ones from the header which are
+	P%end_time = a(nrec) ! the time stamps of the 20-Hz measurements
+	call new_var ('time', a)
 	call cpy_var (ncid1, 'latitude', 'lat')
 	call cpy_var (ncid1, 'longitude','lon')
 	call cpy_var (ncid1, 'altitude delta_ellipsoid_tp_wgs84 SUB', 'alt_gdrf')
