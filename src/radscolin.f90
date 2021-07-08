@@ -30,10 +30,10 @@ integer(fourbyteint), parameter :: msat = 20
 type(rads_sat) :: S(msat)
 integer(fourbyteint) :: nsel = 0, reject = -2, cycle, pass, i, j, ios, &
 	nbins, nsat = 0, ntrx = 0, ntrx1, ntrx2, ntrx3, ntrx4, type_sla = 1, out_diff = 0, step = 1, ncols
-real(eightbytereal) :: dt = 0d0
+real(eightbytereal) :: dt = 0d0, equator_time
 character(len=rads_naml) :: prefix = 'radscolin_p', suffix = '.nc', satlist
 logical :: ascii = .true., out_data = .true., out_mean = .false., out_sdev = .false., out_extr = .false., &
-	out_track = .true., out_cumul = .false., keep = .false., force = .false., boz_format = .false.
+	out_track = .true., out_cumul = .false., keep = .false., force = .false., boz_format = .false., eqtime = .false.
 real(eightbytereal), allocatable :: data(:,:,:)
 logical, allocatable :: mask(:,:)
 integer(fourbyteint), allocatable :: nr_in_bin(:), idx(:)
@@ -53,7 +53,7 @@ character(len=rads_strl) :: format_string
 ! Initialize RADS or issue help
 call synopsis
 call rads_set_options ('acdefklnNo::r::st ' // &
-	'cumul diff diff-no-coord diff1 dt: reject-on-nan:: extremes force keep mean minmax no-pass no-track ' // &
+	'cumul diff diff-no-coord diff1 dt: eqtime reject-on-nan:: extremes force keep mean minmax no-pass no-track ' // &
 	'output:: stddev step:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
@@ -113,6 +113,8 @@ do i = 1,rads_nopt
 	case ('diff1')
 		out_diff = 3
 		keep = .true.
+	case ('eqtime')
+		eqtime = .true.
 	case ('d', 'no-pass')
 		out_data = .false.
 	case ('t', 'no-track')
@@ -250,6 +252,7 @@ write (*,1300)
 '      --diff-no-coord       Same as --diff, but excluding coordinates from computing difference'/ &
 '      --diff1               Same as --diff-no-coord, writing one cycle at a time, chronologically'/ &
 '                            (cannot be combined with -o, -a, -s, or -l)' / &
+'      --eqtime              Add equator time to per-pass statistics in ascii' / &
 '  -f, --force               Force comparison, even when missions are not considered collinear'/ &
 '  -o, --output [FILENAME]   Create NetCDF output by pass (default is ascii output to stdout).'/ &
 '                            Optionally specify FILENAME including "#", to be replaced by the pass'/ &
@@ -274,6 +277,7 @@ nr_in_bin = 0
 mask = .false.
 stat = stat_ (0, 0d0, 0d0)
 ndata = 0
+equator_time = nan
 
 ! Read in data
 do m = 1,nsat
@@ -292,6 +296,7 @@ do m = 1,nsat
 			info(ntrx) = info_ ('    '//S(m)%sat, S(m)%satid, int(cycle,twobyteint), P%ndata)
 		endif
 		if (P%ndata > 0) then
+			if (isnan_(equator_time)) equator_time = P%equator_time
 			allocate (temp(P%ndata),bin(P%ndata))
 			bin = nint((P%tll(:,1) - P%equator_time) / dt) ! Store bin nr associated with measurement
 			! Guard against rogue timings
@@ -632,7 +637,11 @@ if (out_track) then
 endif
 
 ! Write per-pass stats
-call write_pass_stat (stat(1:ncols,:), S(1)%cycles(1), pass, ' # ')
+if (eqtime) then
+	call write_pass_stat (stat(1:ncols,:), S(1)%cycles(1), pass, ' ' // strf1985f(equator_time, 'T') // ' # ')
+else
+	call write_pass_stat (stat(1:ncols,:), S(1)%cycles(1), pass, ' # ')
+endif
 
 first = .false.
 
