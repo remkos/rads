@@ -2165,7 +2165,7 @@ Global RADS configuration file
 	</var>
 	<alias name="range_numval" field="21">range_numval_ku</alias>
 </else>
-<var name="range_numval_ku_mle3" field="2101" sat="6a j2 j3">
+<var name="range_numval_ku_mle3" field="2111" sat="6a j2 j3">
 	<long_name>number of valid Ku-band measurements (MLE3)</long_name>
 	<standard_name>altimeter_range number_of_observations</standard_name>
 	<units>1</units>
