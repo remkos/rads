@@ -245,6 +245,20 @@ do j = 1,nsel
 	call rads_get_var (S, Pin, S%sel(j), z(:,j))
 enddo
 
+if (S2%sat /= '') then
+	call rads_open_pass (S2, P2, cycle, pass, echofilepaths=echofilepaths)
+	if (P2%ndata > 0) then
+		allocate (a(0:P2%ndata),idx(P2%ndata))
+		call make_idx (Pin%ndata, Pin%tll(:,1), P2%ndata, P2%tll(:,1), idx)
+		do j = 1,nsel
+			call rads_get_var (S2, P2, S(2), S%sel(j), a)
+			z(:,j) = z(:,j) - a(idx(:))
+		enddo
+		deallocate (a, idx)
+	endif
+	call rads_close_pass (S2, P2)
+endif
+
 ! Update the statistics with data in this pass
 do i = 1,ndata
 	if (reject > 0) then
@@ -273,6 +287,20 @@ do i = 1,ndata
 	nr = nr + 1
 enddo
 end subroutine process_pass
+
+!***********************************************************************
+! Create index from pass A to pass B by linking the common times
+
+call make_idx (na, ta, nb, tb, idx)
+integer(fourbyteint), intent(in) :: na, nb
+real(eightbytereal), intent(in) :: ta(:), tb(:)
+integer(fourbyteint), intent(out) :: idx(:)
+integer(fourbyteint) :: ia, ib
+ib = 1
+do ia = 1,na
+	if (nint(tb(ib)) < nint(ta(ia)) .and. ib > 1) then
+		ib = ib - 1
+	else if (nint())
 
 !***********************************************************************
 ! Update statistics inside a given box
