@@ -97,10 +97,10 @@ write (*,1310)
 'Additional [processing_options] are:' / &
 '  --range                   Fix range biases known for PDAP v3.0 and v3.1' / &
 '                            Also fix result of temporary error in radar data base (RMC only, 34 gates)' / &
-'  --sig0                    Add -7.50 dB to HR sigma0' / &
-'  --wind                    Add biases to sigma0 before calling wind model (pre L2 CONF 003)' / &
-'  --ssb                     Update SSB when wind is changed' / &
-'  --rain                    Add biases to sigma0 before calling rain model (pre L2 CONF 003)' / &
+'  --sig0                    Add -7.41 dB to HR sigma0' / &
+'  --wind                    Add biases to sigma0 before calling wind model (pre L2 CONF 008)' / &
+'  --ssb                     Update SSB (pre L2 CONF 008)' / &
+'  --rain                    Add biases to sigma0 before calling rain model (pre L2 CONF 008)' / &
 '  --all                     All of the above')
 stop
 end subroutine synopsis
@@ -150,23 +150,23 @@ do_range = any(drange /= 0d0)
 ! sigma0: -7.50 dB: rough alignment of HR with LR
 
 dsig0 = 0d0
-if (lsig0 .and. .not.lr) dsig0(1) = -7.50d0
+if (lsig0 .and. .not.lr) dsig0(1) = -7.41d0
 do_sig0 = any(dsig0 /= 0d0)
 
-! wind: apply biases before calling wind model (PDAP v3.0 only)
+! wind: apply biases before calling wind model, to be used with proper wind model
 
 dwind = 0d0
-if (lwind .and. cnf_ver < '003') dwind = (/ -1.15d0, -1.08d0 /)
+if (lwind .and. cnf_ver < '008') dwind = (/ 1.29d0, 1.37d0 /)
 do_wind = any(dwind /= 0d0)
 
 ! ssb: do when requested and wind has changed
 
-do_ssb = (lssb .and. do_wind)
+do_ssb = (lssb .and. cnf_ver < '008')
 
-! rain: apply biases before calling rain model (PDAP v3.0 only)
+! rain: apply biases before calling rain model
 
 drain = 0d0
-if (lrain .and. lr .and. cnf_ver < '003') drain = (/ 1.22d0, 3.00d0 /)
+if (lrain .and. lr .and. cnf_ver < '008') drain = (/ 1.23d0, 1.64d0 /)
 do_rain = any(drain /= 0d0)
 
 ! If nothing to change, skip
@@ -207,7 +207,7 @@ endif
 
 if (do_wind) then
 	if (lr) then
-		if (need_file('AUX_WNDL_S6A_001.nc', aux_wind)) then
+		if (need_file('AUX_WNDL_S6A_002.nc', aux_wind)) then
 			if (grid_load(aux_wind,info_wind) /= 0) call rads_exit ('Error loading '//trim(aux_wind))
 		endif
 		call rads_get_var (S, P, 'swh_ku_mle3', swh_ku_mle3, .true.)
@@ -226,14 +226,14 @@ endif
 
 if (do_ssb) then
 	if (lr) then
-		if (need_file('AUX_SBLK_S6A_001.nc', aux_ssbk)) then
+		if (need_file('AUX_SBLK_S6A_002.nc', aux_ssbk)) then
 			if (grid_load(aux_ssbk,info_ssbk) /= 0) call rads_exit ('Error loading '//trim(aux_ssbk))
 		endif
-		if (need_file('AUX_SBLC_S6A_001.nc', aux_ssbc)) then
+		if (need_file('AUX_SBLC_S6A_002.nc', aux_ssbc)) then
 			if (grid_load(aux_ssbc,info_ssbc) /= 0) call rads_exit ('Error loading '//trim(aux_ssbc))
 		endif
 	else
-		if (need_file('AUX_SBHK_S6A_001.nc', aux_ssbk)) then
+		if (need_file('AUX_SBHK_S6A_002.nc', aux_ssbk)) then
 			if (grid_load(aux_ssbk,info_ssbk) /= 0) call rads_exit ('Error loading '//trim(aux_ssbk))
 		endif
 	endif
