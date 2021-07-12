@@ -51,14 +51,14 @@ integer(fourbyteint), parameter :: period_day=1, period_pass=2, period_cycle=3
 integer(fourbyteint) :: nr, minnr=2, cycle, pass, i, output_format=0, &
 	period=period_day, wmode=0, nx, ny, kx, ky, ios, sizes(2), ncid, varid(2)
 real(eightbytereal), allocatable :: lat_w(:)
-real(eightbytereal) :: sini, step=1d0, x0, y0, res(2)=(/3d0,1d0/), start_time
+real(eightbytereal) :: sini, step=1d0, x0, y0, res(2)=(/3d0,1d0/), start_time, dt
 type :: stat
 	integer(fourbyteint) :: nr
 	real(eightbytereal) :: wgt, mean, sum2, xmin, xmax
 end type
 type(stat), allocatable :: box(:,:,:), tot(:)
-type(rads_sat) :: S
-type(rads_pass) :: Pin, Pout
+type(rads_sat) :: S(2)
+type(rads_pass) :: P(2), Pout
 logical :: ascii = .true., fullyear = .false., boz_format = .false.
 logical :: echofilepaths = .false. 
 
@@ -67,10 +67,10 @@ call synopsis
 call rads_set_options ('c::d::p::b::maslo::r:: ' // &
 	'format-cycle format-day format-pass full-year echo-file-paths min: minmax res: output::')
 call rads_init (S)
-if (S%error /= rads_noerr) call rads_exit ('Fatal error')
+if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 
 ! If no sel= is given, use sla
-if (S%nsel == 0)  call rads_parse_varlist (S, 'sla')
+if (S(1)%nsel == 0)  call rads_parse_varlist (S(1), 'sla')
 
 ! Scan command line arguments
 do i = 1,rads_nopt
@@ -83,7 +83,7 @@ do i = 1,rads_nopt
 		period = period_pass
 		read (rads_opt(i)%arg, *, iostat=ios) step
 		if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
-		step = dble(S%passes(2))/nint(S%passes(2)/step)
+		step = dble(S(1)%passes(2))/nint(S(1)%passes(2)/step)
 	case ('c')
 		period = period_cycle
 		read (rads_opt(i)%arg, *, iostat=ios) step
@@ -126,7 +126,7 @@ do i = 1,rads_nopt
 			reject = 0
 			read (rads_opt(i)%arg, *, iostat=ios) reject
 			if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
-			if (reject < 0 .or. reject > S%nsel) call rads_exit ('-r# used with invalid value')
+			if (reject < 0 .or. reject > S(1)%nsel) call rads_exit ('-r# used with invalid value')
 		endif
 	end select
 enddo
@@ -138,20 +138,20 @@ if (output_format == 0) output_format = period
 
 ! If SLA is among the selected variables, remember index
 ! Also check if we have boz-formats
-do i = 1,S%nsel
-	if (reject == -1 .and. S%sel(i)%info%datatype == rads_type_sla) reject = i
-	if (S%sel(i)%info%boz_format) boz_format = .true.
+do i = 1,S(1)%nsel
+	if (reject == -1 .and. S(1)%sel(i)%info%datatype == rads_type_sla) reject = i
+	if (S(1)%sel(i)%info%boz_format) boz_format = .true.
 enddo
 
 ! Set up the boxes
-x0 = S%lon%info%limits(1)
-y0 = S%lat%info%limits(1)
-nx = int((S%lon%info%limits(2)-x0)/res(1)+0.999d0)
-ny = int((S%lat%info%limits(2)-y0)/res(2)+0.999d0)
-allocate (box(0:S%nsel,nx,ny),tot(0:S%nsel),lat_w(ny))
+x0 = S(1)%lon%info%limits(1)
+y0 = S(1)%lat%info%limits(1)
+nx = int((S(1)%lon%info%limits(2)-x0)/res(1)+0.999d0)
+ny = int((S(1)%lat%info%limits(2)-y0)/res(2)+0.999d0)
+allocate (box(0:S(1)%nsel,nx,ny),tot(0:S(1)%nsel),lat_w(ny))
 
 ! Set up the weights
-sini = sin(S%inclination*rad)
+sini = sin(S(1)%inclination*rad)
 if (wmode == 1) then
 	lat_w = 1d0
 else if (wmode == 3) then
@@ -159,6 +159,9 @@ else if (wmode == 3) then
 else
 	forall (ky=1:ny) lat_w(ky) = cos((y0+(ky-0.5d0)*res(2))*rad)
 endif
+
+! Determine bin size (when computing differences)
+dt = maxval(S%dt1hz)
 
 ! Initialize statistics
 call init_stat
@@ -169,16 +172,16 @@ else
 endif
 
 ! Start looping through cycles and passes
-do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
+do cycle = S(1)%cycles(1), S(1)%cycles(2), S(1)%cycles(3)
 	! Process passes one-by-one
-	do pass = S%passes(1), S%passes(2), S%passes(3)
-		call rads_open_pass (S, Pin, cycle, pass, echofilepaths=echofilepaths)
+	do pass = S(1)%passes(1), S(1)%passes(2), S(1)%passes(3)
+		call rads_open_pass (S(1), P(1), cycle, pass, echofilepaths=echofilepaths)
 		! Process the pass data
-		if (Pin%ndata > 0) call process_pass (Pin%ndata, S%nsel)
+		if (P(1)%ndata > 0) call process_pass (P(1)%ndata, S(1)%nsel)
 		! Print the statistics at the end of the data pass (if requested)
 		if (period == period_pass .and. nint(modulo(dble(pass),step)) == 0) call output_stat
 		! Close the pass file
-		call rads_close_pass (S, Pin)
+		call rads_close_pass (S(1), P(1))
 	enddo
 
 	! Print the statistics at the end of the cycle (if requested)
@@ -186,8 +189,8 @@ do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
 enddo
 
 ! Flush the statistics and close RADS4
-cycle = S%cycles(2)
-pass = S%passes(2)
+cycle = S(1)%cycles(2)
+pass = S(1)%passes(2)
 call output_stat
 if (rads_verbose >= 1) call rads_stat (S)
 call rads_end (S)
@@ -237,26 +240,29 @@ end subroutine synopsis
 subroutine process_pass (ndata, nsel)
 integer(fourbyteint), intent(in) :: ndata, nsel
 real(eightbytereal) :: z(ndata,0:nsel)
+real(eightbytereal), allocatable :: a(:)
+integer, allocatable :: idx(:)
 integer :: i, j
 
 ! Read the data for this pass
-z(:,0) = Pin%tll(:,1)	! Store time
+z(:,0) = P(1)%tll(:,1)	! Store time
 do j = 1,nsel
-	call rads_get_var (S, Pin, S%sel(j), z(:,j))
+	call rads_get_var (S(1), P(1), S(1)%sel(j), z(:,j))
 enddo
 
-if (S2%sat /= '') then
-	call rads_open_pass (S2, P2, cycle, pass, echofilepaths=echofilepaths)
-	if (P2%ndata > 0) then
-		allocate (a(0:P2%ndata),idx(P2%ndata))
-		call make_idx (Pin%ndata, Pin%tll(:,1), P2%ndata, P2%tll(:,1), idx)
+if (S(2)%sat /= '') then
+	call rads_open_pass (S(2), P(2), S(2)%cycles(1) - S(1)%cycles(1) + cycle, pass, echofilepaths=echofilepaths)
+	if (P(2)%ndata > 0) then
+		allocate (a(0:P(2)%ndata), idx(P(1)%ndata))
+		call make_idx (P(1)%ndata, nint((P(1)%tll(:,1) - P(1)%equator_time)/dt), &
+					   P(2)%ndata, nint((P(2)%tll(:,1) - P(2)%equator_time)/dt), idx)
 		do j = 1,nsel
-			call rads_get_var (S2, P2, S(2), S%sel(j), a)
+			call rads_get_var (S(2), P(2), S(2)%sel(j), a)
 			z(:,j) = z(:,j) - a(idx(:))
 		enddo
 		deallocate (a, idx)
 	endif
-	call rads_close_pass (S2, P2)
+	call rads_close_pass (S(2), P(2))
 endif
 
 ! Update the statistics with data in this pass
@@ -268,17 +274,17 @@ do i = 1,ndata
 	endif
 
 	if (period == period_day) then	! If "daily" statistics are requested
-		if (Pin%tll(i,1) >= start_time + step) call output_stat	! Output stat when beyond end of "day"
+		if (P(1)%tll(i,1) >= start_time + step) call output_stat	! Output stat when beyond end of "day"
 		! First call (after start or statistics reset) sets the start time to integer multiple of "step"
-		if (isnan_(start_time)) start_time = floor(Pin%tll(i,1)/step) * step
+		if (isnan_(start_time)) start_time = floor(P(1)%tll(i,1)/step) * step
 	else
 		! First call (after start or statistics reset) saves the start time
-		if (isnan_(start_time)) start_time = Pin%tll(i,1)
+		if (isnan_(start_time)) start_time = P(1)%tll(i,1)
 	endif
 
 	! Update the box statistics
-	kx = floor((Pin%tll(i,3)-x0)/res(1) + 1d0)
-	ky = floor((Pin%tll(i,2)-y0)/res(2) + 1d0)
+	kx = floor((P(1)%tll(i,3)-x0)/res(1) + 1d0)
+	ky = floor((P(1)%tll(i,2)-y0)/res(2) + 1d0)
 	kx = max(1,min(kx,nx))
 	ky = max(1,min(ky,ny))
 	do j = 0,nsel
@@ -291,16 +297,19 @@ end subroutine process_pass
 !***********************************************************************
 ! Create index from pass A to pass B by linking the common times
 
-call make_idx (na, ta, nb, tb, idx)
-integer(fourbyteint), intent(in) :: na, nb
-real(eightbytereal), intent(in) :: ta(:), tb(:)
+subroutine make_idx (na, ta, nb, tb, idx)
+integer(fourbyteint), intent(in) :: na, ta(:), nb, tb(:)
 integer(fourbyteint), intent(out) :: idx(:)
 integer(fourbyteint) :: ia, ib
+idx = 0
 ib = 1
 do ia = 1,na
-	if (nint(tb(ib)) < nint(ta(ia)) .and. ib > 1) then
-		ib = ib - 1
-	else if (nint())
+	do while (tb(ib) < ta(ia) .and. ib < nb)
+		ib = ib + 1
+	enddo
+	if (tb(ib) == ta(ia)) idx(ia) = ib
+enddo
+end subroutine make_idx
 
 !***********************************************************************
 ! Update statistics inside a given box
@@ -378,8 +387,8 @@ if (ascii) then
 		write (*,602,advance='no') cycle,yy,mm,dd
 	endselect
 	if (boz_format) then
-		do j=1,S%nsel
-			if (.not.S%sel(j)%info%boz_format) cycle
+		do j=1,S(1)%nsel
+			if (.not.S(1)%sel(j)%info%boz_format) cycle
 			call bit_transfer (tot(j)%mean)
 			call bit_transfer (tot(j)%sum2)
 			call bit_transfer (tot(j)%xmin)
@@ -387,31 +396,31 @@ if (ascii) then
 		enddo
 	endif
 	if (lstat == 2) then
-		write (*,format_string) nr, tot(0)%mean, (tot(j)%mean,tot(j)%sum2,j=1,S%nsel)
+		write (*,format_string) nr, tot(0)%mean, (tot(j)%mean,tot(j)%sum2,j=1,S(1)%nsel)
 	else
-		write (*,format_string) nr, tot(0)%mean, (tot(j)%mean,tot(j)%sum2,tot(j)%xmin,tot(j)%xmax,j=1,S%nsel)
+		write (*,format_string) nr, tot(0)%mean, (tot(j)%mean,tot(j)%sum2,tot(j)%xmin,tot(j)%xmax,j=1,S(1)%nsel)
 	endif
 
 ! Write output to NetCDF if requested
 else
 	call nfs (nf90_put_var (ncid, varid(1), nr, start(2:2)))
 	if (output_format /= period_day) then
-		var => rads_varptr (S, 'cycle')
-		call rads_put_var (S, Pout, var, (/ dble(cycle) /), start(2:2))
+		var => rads_varptr (S(1), 'cycle')
+		call rads_put_var (S(1), Pout, var, (/ dble(cycle) /), start(2:2))
 	endif
 	if (output_format == period_pass) then
-		var => rads_varptr (S, 'pass')
-		call rads_put_var (S, Pout, var, (/ dble(pass) /), start(2:2))
+		var => rads_varptr (S(1), 'pass')
+		call rads_put_var (S(1), Pout, var, (/ dble(pass) /), start(2:2))
 	endif
-	call rads_put_var (S, Pout, S%time, (/ tot(0)%mean /), start(2:2))
+	call rads_put_var (S(1), Pout, S(1)%time, (/ tot(0)%mean /), start(2:2))
 	if (lstat == 2) then
-		do j = 1,S%nsel
-			call rads_put_var (S, Pout, S%sel(j), &
+		do j = 1,S(1)%nsel
+			call rads_put_var (S(1), Pout, S(1)%sel(j), &
 				(/ tot(j)%mean, tot(j)%sum2 /), start)
 		enddo
 	else
-		do j = 1,S%nsel
-			call rads_put_var (S, Pout, S%sel(j), &
+		do j = 1,S(1)%nsel
+			call rads_put_var (S(1), Pout, S(1)%sel(j), &
 				(/ tot(j)%mean, tot(j)%sum2, tot(j)%xmin, tot(j)%xmax /), start)
 		enddo
 	endif
@@ -452,8 +461,8 @@ integer :: j0, j, l
 621 format ('# (',i2,'-',i2,') mean and stddev of ')
 622 format ('# (',i2,'-',i2,') mean, stddev, min and max of ')
 
-write (*,600) trim(wtype(wmode)), timestamp(), trim(S%command), &
-	trim(S%sat), trim(S%phase%name), S%cycles(1:2), S%passes(1:2)
+write (*,600) trim(wtype(wmode)), timestamp(), trim(S(1)%command), &
+	trim(S(1)%sat), trim(S(1)%phase%name), S(1)%cycles(1:2), S(1)%passes(1:2)
 select case (output_format)
 case (period_day)
 	write (*,610)
@@ -465,24 +474,24 @@ case default
 	write (*,612)
 	j0 = 2
 endselect
-write (*,620) j0+1,j0+2,trim(S%time%info%units)
+write (*,620) j0+1,j0+2,trim(S(1)%time%info%units)
 
 format_string = '(i9,f12.0'
-do j = 1,S%nsel
+do j = 1,S(1)%nsel
 	! Write description of variables
 	if (lstat == 2) then
 		write (*,621,advance='no') 2*j+j0+1,2*j+j0+2
 	else
 		write (*,622,advance='no') 4*j+j0-1,4*j+j0+2
 	endif
-	call rads_long_name_and_units(S%sel(j))
+	call rads_long_name_and_units(S(1)%sel(j))
 	! Assemble format for statistics lines
 	l = len_trim(format_string)
 	! Add one decimal to an f-format, or copy boz-format
-	if (S%sel(j)%info%boz_format) then
-		write (format_string(l+1:),'(",",i0,"(1x,",a,")")') lstat,trim(S%sel(j)%info%format)
+	if (S(1)%sel(j)%info%boz_format) then
+		write (format_string(l+1:),'(",",i0,"(1x,",a,")")') lstat,trim(S(1)%sel(j)%info%format)
 	else
-		call read_val (S%sel(j)%info%format(2:), sizes, '.')
+		call read_val (S(1)%sel(j)%info%format(2:), sizes, '.')
 		if (sizes(1) > 0) sizes(1) = sizes(1) + 1
 		sizes(2) = sizes(2) + 1
 		write (format_string(l+1:),'(",",i0,"(1x,f",i0,".",i0,")")') lstat,sizes
@@ -512,9 +521,9 @@ Pout%rw = .true.
 ! Define "time" variables
 call nfs (nf90_def_var (ncid, 'nr', nf90_int4, dimid(1:1), varid(1)))
 call nfs (nf90_put_att (ncid, varid(1), 'long_name', 'number of measurements'))
-if (output_format /= period_day) call rads_def_var (S, Pout, 'cycle')
-if (output_format == period_pass) call rads_def_var (S, Pout, 'pass')
-call rads_def_var (S, Pout, S%time)
+if (output_format /= period_day) call rads_def_var (S(1), Pout, 'cycle')
+if (output_format == period_pass) call rads_def_var (S(1), Pout, 'pass')
+call rads_def_var (S(1), Pout, S(1)%time)
 
 ! Define "stat" variable
 call nfs (nf90_def_var (ncid, 'stat', nf90_int1, dimid(2:2), varid(2)))
@@ -528,9 +537,9 @@ else
 endif
 
 ! Define selected variables
-do j = 1,S%nsel
-	S%sel(j)%info%ndims = 2
-	call rads_def_var (S, Pout, S%sel(j))
+do j = 1,S(1)%nsel
+	S(1)%sel(j)%info%ndims = 2
+	call rads_def_var (S(1), Pout, S(1)%sel(j))
 enddo
 
 ! Define global attibutes
@@ -540,7 +549,7 @@ call nfs (nf90_put_att (ncid, nf90_global, 'institution', 'EUMETSAT / NOAA / TU 
 call nfs (nf90_put_att (ncid, nf90_global, 'references', 'RADS Data Manual, Version ' // trim(rads_version_id)))
 call nfs (nf90_put_att (ncid, nf90_global, 'weights', trim(wtype(wmode))))
 call nfs (nf90_put_att (ncid, nf90_global, 'box_size', res))
-call nfs (nf90_put_att (ncid, nf90_global, 'history', timestamp()//' UTC: '//trim(S%command)))
+call nfs (nf90_put_att (ncid, nf90_global, 'history', timestamp()//' UTC: '//trim(S(1)%command)))
 call nfs (nf90_enddef (ncid))
 
 ! Write "stat" coordinate
