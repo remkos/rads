@@ -102,7 +102,7 @@ use netcdf
 
 ! Command line arguments
 
-integer(fourbyteint) :: ios, i
+integer(fourbyteint) :: ios, i, ascdes(1:1)
 character(len=rads_cmdl) :: infile, arg
 
 ! Header variables
@@ -222,11 +222,17 @@ do
 		read (infile(i+17:i+23),'(i3,1x,i3)') cyclenr, passnr
 	endif
 
-! Knowing that pass 1 and 2 could have the wrong cycle number [AR 1751], fix it here
+! Knowing that pass 1 could have the wrong cycle number or pass number [AR 1751], fix it here
 
-	if (passnr <= 2) then
-		call nfs(nf90_get_att(ncid,nf90_global,'absolute_rev_number',i))
-		cyclenr = i/127 + 2
+	if (passnr == 1) then
+		call nfs(nf90_inq_varid(ncid1, 'pass_direction_flag', varid))
+		call nfs(nf90_get_var(ncid1, varid, ascdes(1:1)))
+		if (ascdes(1) == 0) then ! Descending pass mean pass 254
+			passnr = 254
+		else ! Recompute the cycle number (may be one too low)
+			call nfs(nf90_get_att(ncid,nf90_global,'absolute_rev_number',i))
+			cyclenr = i/127 + 2
+		endif
 	endif
 
 ! Skip passes of which the cycle number or equator crossing time is outside the specified interval
