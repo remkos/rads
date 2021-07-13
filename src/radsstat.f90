@@ -65,7 +65,7 @@ logical :: echofilepaths = .false.
 ! Initialize RADS or issue help
 call synopsis
 call rads_set_options ('c::d::p::b::maslo::r:: ' // &
-	'format-cycle format-day format-pass full-year echo-file-paths min: minmax res: output::')
+	'format-cycle format-day format-pass full-year echo-file-paths min: minmax reject-on-nan: res: output::')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 
@@ -119,15 +119,8 @@ do i = 1,rads_nopt
 	case ('o', 'output')
 		filename = rads_opt(i)%arg
 		if (filename == '') filename = 'radsstat.nc'
-	case ('r')
-		if (rads_opt(i)%arg == 'n') then
-			reject = -2
-		else
-			reject = 0
-			read (rads_opt(i)%arg, *, iostat=ios) reject
-			if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
-			if (reject < 0 .or. reject > S(1)%nsel) call rads_exit ('-r# used with invalid value')
-		endif
+	case ('r', 'reject-on-nan')
+		call parse_r_option (S(1), rads_opt(i)%opt, rads_opt(i)%arg)
 	end select
 enddo
 ascii = (filename == '')
@@ -203,17 +196,45 @@ contains
 
 !***********************************************************************
 
+subroutine parse_r_option (S, opt, arg)
+type(rads_sat), intent(in) :: S
+character(len=*), intent(in) :: opt, arg
+integer(fourbyteint) :: i
+select case (arg)
+case ('n', 'any')
+	reject = -2
+case ('', '0', 'none')
+	reject = 0
+case default
+	if (arg(1:1) >= '0' .and. arg(1:1) <= '9') then
+		reject = 0
+		read (arg, *, iostat=i) reject
+	else
+		do i = 1,S%nsel
+			if (arg == S%sel(i)%name .or. arg == S%sel(i)%info%name) then
+				reject = i
+				return
+			endif
+		enddo
+		call rads_exit ('Option -'//trim(opt)//' <varname> does not refer to variable specified on -V option')
+	endif
+end select
+end subroutine parse_r_option
+
+!***********************************************************************
+
 subroutine synopsis
 if (rads_version ('Print RADS statistics per cycle, pass or day(s)')) return
 call rads_synopsis
 write (*,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
-'  -r#                       Reject records if data item number # on -V specifier is NaN'/ &
-'                            (default: reject if SLA field is NaN)'/ &
-'  -r0, -r                   Do not reject measurement records with NaN values'/ &
-'                            In both cases above, all NaN values per variable are averaged'/ &
-'  -rn                       Reject measurement records if any value is NaN'/ &
+'  -r, --reject-on-nan VAR   Reject records if variable VAR is NaN (default: reject if SLA is NaN)'/ &
+'  -r NR                     Reject records if data item number NR on -V specifier is NaN'/ &
+'  -r 0, -r none, -r         Do not reject measurement records with NaN values'/ &
+'                            In all cases above, all non-NaN values per variable are averaged'/ &
+'  -r n, -r any              Reject measurement records if any value is NaN'/ &
+'                      Note: If no -r option is given, -r sla is assumed'/ &
 '  -c [N]                    Statistics per cycle or N cycles'/ &
 '  -d [N]                    Statistics per day (default) or N days'/ &
 '  -p [N]                    Statistics per pass or N passes'/ &
@@ -243,6 +264,7 @@ real(eightbytereal) :: z(ndata,0:nsel)
 real(eightbytereal), allocatable :: a(:)
 integer, allocatable :: idx(:)
 integer :: i, j
+real(eightbytereal) :: equator_time_2
 
 ! Read the data for this pass
 z(:,0) = P(1)%tll(:,1)	! Store time
@@ -255,13 +277,19 @@ if (S(2)%sat /= '') then
 	if (P(2)%ndata > 0) then
 		allocate (a(0:P(2)%ndata), idx(P(1)%ndata))
 		a(0) = nan
-		call make_idx (P(1)%ndata, nint((P(1)%tll(:,1) - P(1)%equator_time)/dt), &
-					   P(2)%ndata, nint((P(2)%tll(:,1) - P(2)%equator_time)/dt), idx)
+		! If the equator times are almost the same, use the same
+		equator_time_2 = P(2)%equator_time
+		if (abs(P(1)%equator_time - P(2)%equator_time) < 1d0) equator_time_2 = P(1)%equator_time
+		! The little delta of 1 microsecond is to avoid bin jump at equator when it is xx.5000000
+		call make_idx (P(1)%ndata, nint((P(1)%tll(:,1) - P(1)%equator_time + 1d6)/dt), &
+					   P(2)%ndata, nint((P(2)%tll(:,1) - equator_time_2    + 1d6)/dt), idx)
 		do j = 1,nsel
 			call rads_get_var (S(2), P(2), S(2)%sel(j), a(1:))
 			z(:,j) = z(:,j) - a(idx(:))
 		enddo
 		deallocate (a, idx)
+	else
+		z(:,1:) = nan
 	endif
 	call rads_close_pass (S(2), P(2))
 endif
@@ -309,7 +337,9 @@ do ia = 1,na
 		ib = ib + 1
 	enddo
 	if (tb(ib) == ta(ia)) idx(ia) = ib
+!	write (*,*) ia, idx(ia), ia - idx(ia), ta(ia), tb(ia), P(1)%tll(ia,1), P(2)%tll(ia,1)
 enddo
+! write (*,*) P(1)%equator_time, P(2)%equator_time
 end subroutine make_idx
 
 !***********************************************************************
