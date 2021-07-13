@@ -150,18 +150,23 @@ do_range = any(drange /= 0d0)
 ! sigma0: -7.50 dB: rough alignment of HR with LR
 
 dsig0 = 0d0
-if (lsig0 .and. .not.lr) dsig0(1) = -7.41d0
+if (lsig0 .and. .not.lr) then
+	dsig0(1) = -7.41d0
+	if (cnf_ver >= '009') dsig0(1) = -5.67d0	! Changed by 1.74 dB since L2 CONF 009
+endif
 do_sig0 = any(dsig0 /= 0d0)
 
-! wind: apply biases before calling wind model, to be used with proper wind model
+! wind: apply biases before calling wind model
+! L2 CONF < 008: did not use proper wind model and/or bias
+! L2 CONF = 009: did not use proper sig0 bias in HR
 
 dwind = 0d0
-if (lwind .and. cnf_ver < '008') dwind = (/ 1.29d0, 1.37d0 /)
+if (lwind .and. (cnf_ver < '008' .or. cnf_ver == '009')) dwind = (/ 1.29d0, 1.37d0 /)
 do_wind = any(dwind /= 0d0)
 
 ! ssb: do when requested and wind has changed
 
-do_ssb = (lssb .and. cnf_ver < '008')
+do_ssb = (lssb .and. do_wind)
 
 ! rain: apply biases before calling rain model
 
