@@ -254,10 +254,11 @@ if (S(2)%sat /= '') then
 	call rads_open_pass (S(2), P(2), S(2)%cycles(1) - S(1)%cycles(1) + cycle, pass, echofilepaths=echofilepaths)
 	if (P(2)%ndata > 0) then
 		allocate (a(0:P(2)%ndata), idx(P(1)%ndata))
+		a(0) = nan
 		call make_idx (P(1)%ndata, nint((P(1)%tll(:,1) - P(1)%equator_time)/dt), &
 					   P(2)%ndata, nint((P(2)%tll(:,1) - P(2)%equator_time)/dt), idx)
 		do j = 1,nsel
-			call rads_get_var (S(2), P(2), S(2)%sel(j), a)
+			call rads_get_var (S(2), P(2), S(2)%sel(j), a(1:))
 			z(:,j) = z(:,j) - a(idx(:))
 		enddo
 		deallocate (a, idx)
