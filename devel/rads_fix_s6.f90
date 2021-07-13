@@ -218,7 +218,7 @@ if (do_wind) then
 		call rads_get_var (S, P, 'swh_ku_mle3', swh_ku_mle3, .true.)
 		if (.not.do_sig0) call rads_get_var (S, P, 'sig0_ku_mle3', sig0_ku_mle3, .true.)
 		call grid_inter (info_wind, n, sig0_ku_mle3 + dwind(2), swh_ku_mle3, wind_speed_alt_mle3)
-	else if (need_file('AUX_WNDH_S6A_001.nc', aux_wind)) then
+	else if (need_file('AUX_WNDH_S6A_002.nc', aux_wind)) then
 		if (grid_load(aux_wind,info_wind) /= 0) call rads_exit ('Error loading '//trim(aux_wind))
 	endif
 	call rads_get_var (S, P, 'swh_ku', swh_ku, .true.)
