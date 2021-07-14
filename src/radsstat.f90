@@ -51,7 +51,7 @@ integer(fourbyteint), parameter :: period_day=1, period_pass=2, period_cycle=3
 integer(fourbyteint) :: nr, minnr=2, cycle, pass, i, output_format=0, &
 	period=period_day, wmode=0, nx, ny, kx, ky, ios, sizes(2), ncid, varid(2)
 real(eightbytereal), allocatable :: lat_w(:)
-real(eightbytereal) :: sini, step=1d0, x0, y0, res(2)=(/3d0,1d0/), start_time, dt
+real(eightbytereal) :: sini, step=1d0, x0, y0, res(2)=(/3d0,1d0/), start_time, dt = 0d0
 type :: stat
 	integer(fourbyteint) :: nr
 	real(eightbytereal) :: wgt, mean, sum2, xmin, xmax
@@ -59,18 +59,27 @@ end type
 type(stat), allocatable :: box(:,:,:), tot(:)
 type(rads_sat) :: S(2)
 type(rads_pass) :: P(2), Pout
-logical :: ascii = .true., fullyear = .false., boz_format = .false.
+logical :: ascii = .true., fullyear = .false., boz_format = .false., force = .false.
 logical :: echofilepaths = .false. 
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('c::d::p::b::maslo::r:: ' // &
-	'format-cycle format-day format-pass full-year echo-file-paths min: minmax reject-on-nan: res: output::')
+call rads_set_options ('ab::c::d::flmo::p::r::s ' // &
+	'dt echo-file-paths force format-cycle format-day format-pass full-year min: minmax output:: reject-on-nan: res:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 
-! If no sel= is given, use sla
-if (S(1)%nsel == 0)  call rads_parse_varlist (S(1), 'sla')
+! Determine how many satellites and cycles.
+! Also check that the same number of variables have been selected for each satellite
+do i = 1,2
+	if (S(i)%sat == '') exit
+	if (S(i)%nsel == 0) call rads_parse_varlist (S(i), 'sla')
+	if (S(i)%nsel /= S(1)%nsel) call rads_exit ('Unequal amount of variables requested for different missions')
+	if (S(i)%cycles(3) /= S(1)%cycles(3)) call rads_exit ('Cycle step size should be the same for all missions')
+	if (S(i)%inclination /= S(1)%inclination) &
+		call rads_exit ('Missions need to have the same inclination to be considered collinear')
+	dt = max(dt,S(i)%dt1hz)
+enddo
 
 ! Scan command line arguments
 do i = 1,rads_nopt
@@ -116,11 +125,16 @@ do i = 1,rads_nopt
 	case ('res')
 		call read_val (rads_opt(i)%arg, res, '/-+x', iostat=ios)
 		if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
+	case ('f', 'force')
+		force = .true.
 	case ('o', 'output')
 		filename = rads_opt(i)%arg
 		if (filename == '') filename = 'radsstat.nc'
 	case ('r', 'reject-on-nan')
 		call parse_r_option (S(1), rads_opt(i)%opt, rads_opt(i)%arg)
+	case ('dt')
+		read (rads_opt(i)%arg, *, iostat=ios) dt
+		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	end select
 enddo
 ascii = (filename == '')
@@ -152,9 +166,6 @@ else if (wmode == 3) then
 else
 	forall (ky=1:ny) lat_w(ky) = cos((y0+(ky-0.5d0)*res(2))*rad)
 endif
-
-! Determine bin size (when computing differences)
-dt = maxval(S%dt1hz)
 
 ! Initialize statistics
 call init_stat
@@ -243,6 +254,7 @@ write (*,1300)
 '  -a                        Weight measurements by cosine of latitude'/ &
 '  -s                        Use inclination-dependent weight'/ &
 '  -l, --minmax              Output min and max in addition to mean and stddev'/ &
+'  --dt DT                   Set minimum bin size in seconds (default is determined by satellite)'/ &
 '  --full-year               Write date as YYYYMMDD instead of the default YYMMDD'/ &
 '  --min MINNR               Minimum number of measurements per statistics record (default: 2)'/ &
 '  --res DX,DY               Size of averaging boxes in degrees (default: 3,1)'/ &
@@ -250,6 +262,7 @@ write (*,1300)
 '  --format-cycle            Output format starts with CYCLE, [YY]YYMMDD (default with -c)'/ &
 '  --format-day              Output format starts with [YY]YYMMDD (default with -d)'/ &
 '  --format-pass             Output format starts with CYCLE, PASS (default with -p)'/ &
+'  -f, --force               Force comparison, even when missions are not considered collinear'/ &
 '  -o, --output [OUTNAME]    Create NetCDF output instead of ASCII (default output'/ &
 '                            filename is "radsstat.nc")')
 stop
@@ -274,6 +287,13 @@ enddo
 
 if (S(2)%sat /= '') then
 	call rads_open_pass (S(2), P(2), S(2)%cycles(1) - S(1)%cycles(1) + cycle, pass, echofilepaths=echofilepaths)
+	if (force) then
+		! Skip the next check, do collinear anyway
+	else if (S(2)%phase%passes /= S(1)%phase%passes .or. S(2)%phase%ref_lon /= S(1)%phase%ref_lon) then
+		! Pass ranges should be the same for all satellites, otherwise we do not have collinear tracks
+		call rads_exit ('Satellite missions '//S(2)%sat//'/'//trim(S(2)%phase%name)// &
+			' and '//S(1)%sat//'/'//trim(S(1)%phase%name)//' are not collinear')
+	endif
 	if (P(2)%ndata > 0) then
 		allocate (a(0:P(2)%ndata), idx(P(1)%ndata))
 		a(0) = nan
