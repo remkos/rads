@@ -53,8 +53,8 @@ character(len=rads_strl) :: format_string
 ! Initialize RADS or issue help
 call synopsis
 call rads_set_options ('acdefklnNo::r::st ' // &
-	'cumul diff diff-no-coord diff1 dt: eqtime reject-on-nan:: extremes force keep mean minmax no-pass no-track ' // &
-	'output:: stddev step:')
+	'cumul diff diff-no-coord diff1 dt: eqtime extremes force keep mean minmax no-pass no-track ' // &
+	'output:: reject-on-nan:: stddev step:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 
@@ -65,6 +65,8 @@ do i = 1,msat
 	if (S(i)%nsel == 0) call rads_parse_varlist (S(i), 'sla')
 	if (S(i)%nsel /= S(1)%nsel) call rads_exit ('Unequal amount of variables requested for different missions')
 	if (S(i)%cycles(3) /= S(1)%cycles(3)) call rads_exit ('Cycle step size should be the same for all missions')
+	if (S(i)%inclination /= S(1)%inclination) &
+		call rads_exit ('Missions need to have the same inclination to be considered collinear')
 	ntrx = ntrx + (S(i)%cycles(2) - S(i)%cycles(1)) / S(i)%cycles(3) + 1
 	dt = max(dt,S(i)%dt1hz)
 	nsat = i
