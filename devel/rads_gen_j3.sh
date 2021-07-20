@@ -32,8 +32,6 @@ for tar in "$@"; do
 		*.tgz) tar -xzf "$tar"; dir=`basename "$tar" .tgz` ;;
 		*) dir="$tar" ;;
 	esac
-	ls "$dir"/JA3_???_2Pd*.nc > "$lst"
-	rads_gen_jason	$options < "$lst"				>> "$log" 2>&1
 	ls "$dir"/JA3_???_2Pf*.nc > "$lst"
 	rads_gen_jason_gdrf	$options < "$lst"			>> "$log" 2>&1
 	case "$tar" in
