@@ -45,42 +45,66 @@ program rads_gen_jason_gdrf
 ! range_* - Ocean range (retracked)
 ! range_rms_* - Std dev of range
 ! range_numval_* - Nr of averaged range measurements
+! qual_range - Quality of range measurement
+! swh_* - Significant wave height
+! swh_rms_* - Std dev of SWH
+! qual_swh - Quality of SWH measurement
+! sig0_* - Sigma0
+! sig0_rms_* - Std dev of sigma0
+! qual_sig0 - Quality of sigma0 measurement
+! dsig0_atmos_* - Atmospheric attenuation of sigma0
+! wind_speed_alt - Altimeter wind speed
+! wind_speed_alt_mle3 - Altimeter wind speed (MLE3)
+! wind_speed_rad - Radiometer wind speed
+! wind_speed_ecmwf_u - ECMWF wind speed (U)
+! wind_speed_ecmwf_v - ECMWF wind speed (V)
+! qual_alt_rain_ice - Altimeter rain flag
+! qual_rad_rain_ice - Radiometer rain flag
+! off_nadir_angle2_wf_ku - Mispointing from waveform squared
+! off_nadir_angle2_wf_rms_ku - RMS of mispointing from waveform squared
+! qaul_attitude - Quality of attitude measurement
 ! dry_tropo_ecmwf - ECMWF dry tropospheric correction
 ! wet_tropo_ecmwf - ECMWF wet tropo correction
 ! wet_tropo_rad - Radiometer wet tropo correction
 ! iono_alt - Dual-frequency ionospheric correction
 ! iono_alt_smooth - Filtered dual-frequency ionospheric correction
+! iono_alt_mle3 - Dual-frequency ionospheric correction (MLE3)
+! iono_alt_smooth_mle3 - Filtered dual-frequency ionospheric correction (MLE3)
+! qual_iono_alt - Quality of dual-frequency ionosphere correction
 ! iono_gim - GIM ionosphetic correction
+! ssb_cls_* - SSB
 ! inv_bar_static - Inverse barometer
 ! inv_bar_mog2d - MOG2D
-! ssb_cls_* - SSB
-! swh_* - Significant wave height
-! swh_rms_* - Std dev of SWH
-! sig0_* - Sigma0
-! sig0_rms_* - Std dev of sigma0
-! dsig0_atmos_* - Atmospheric attenuation of sigma0
-! wind_speed_alt - Altimeter wind speed
-! wind_speed_rad - Radiometer wind speed
-! wind_speed_ecmwf_u - ECMWF wind speed (U)
-! wind_speed_ecmwf_v - ECMWF wind speed (V)
 ! tide_ocean/load_got410 - GOT4.10c ocean and load tide
 ! tide_ocean/load_fes14 - FES2014 ocean and load tide
-! tide_pole - Pole tide
+! tide_non_equal - Long-period non-equilibrium tide
 ! tide_solid - Solid earth tide
-! topo_ace2 - ACE2 topography
+! tide_pole - Pole tide
 ! geoid_egm2008 - EGM2008 geoid
 ! cnescls15 - CNES/CLS15 mean sea surface
 ! mss_dtu18 - DTU13 mean sea surface
+! topo_ace2 - ACE2 topography
+! surface_class - Surgace classification
+! surface_type_rad - Radiometer surface type
+! dist_coast - Distance to the coast
+! angle_coast - Angle to the coast
+! rads_dist_coast - Radiometer distance to the coast
+! tb_187 - Brightness temperature (18.7 GHz)
 ! tb_238 - Brightness temperature (23.8 GHz)
 ! tb_365 - Brightness temperature (36.5 GHz)
-! flags - Engineering flags
-! off_nadir_angle2_wf_ku - Mispointing from waveform squared
+! qual_rad_tb - Quality of brightness temperatures
 ! rad_liquid_water - Liquid water content
 ! rad_water_vapor - Water vapor content
+! mean_wave_period - Mean wave period (t02)
+! mean_wave_direction - Mean wave direction
 ! ssha - Sea surface height anomaly
+! ssha_mle3 - Sea surface height anomaly (MLE3)
+! latency - Latency (NRT, STC, NTC)
+! flags - Engineering flags
 !
 ! Extensions _* are:
 ! _ku:      Ku-band
+! _ku_mle3  Ku-band MLE3
 ! _c:       C-band
 !-----------------------------------------------------------------------
 use rads
@@ -388,11 +412,7 @@ do
 ! IB
 
 	call cpy_var (ncid1, 'inv_bar_cor', 'inv_bar_static')
-	if (latency == rads_nrt) then
-		call cpy_var (ncid1, 'inv_bar_cor', 'inv_bar_mog2d')
-	else
-		call cpy_var (ncid1, 'dac', 'inv_bar_mog2d')
-	endif
+	call cpy_var (ncid1, 'dac', 'inv_bar_mog2d')
 
 ! Tides
 
@@ -439,9 +459,10 @@ do
 	call cpy_var (ncid1, 'rad_cloud_liquid_water', 'liquid_water_rad')
 	call cpy_var (ncid1, 'rad_water_vapor', 'water_vapor_rad')
 
-! Waves
-call cpy_var (ncid1, 'mean_wave_period_t02', 'mean_wave_period')
-call cpy_var (ncid1, 'mean_wave_direction', 'mean_wave_direction')
+! Wave model
+
+	call cpy_var (ncid1, 'mean_wave_period_t02', 'mean_wave_period')
+	call cpy_var (ncid1, 'mean_wave_direction', 'mean_wave_direction')
 
 ! SSHA
 
