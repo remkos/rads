@@ -64,20 +64,21 @@ rads_add_sla      $options					>> "$log" 2>&1
 date								>> "$log" 2>&1
 
 # Set Navy and NHC data aside
-files=`egrep 'NOP|IOP' $log | awk '{print $NF}' | awk -F/ '{printf "%s/%s\n",$3,$4}'`
-dirs=`echo $files | awk -F/ '{print $1}' | sort | uniq`
+files_iop=`grep IOP $log | grep written | awk '{print $NF}' | awk -F/ '{printf "%s/%s\n",$3,$4}' | sort | uniq`
+files_nop=`grep NOP $log | grep written | awk '{print $NF}' | awk -F/ '{printf "%s/%s\n",$3,$4}' | sort | uniq`
 
 pushd $SANDBOX/c2/a
-for dir in ${dirs[*]} ; do
-	mkdir -p $RADSROOT/ext/c2/to_navy/$dir
-	for file in ${files[*]} ; do
-#		ncrename -hOv alt_gdre,alt_eiggl04s $file $RADSROOT/ext/c2/to_navy/$file >& /dev/null
-		cp $file $RADSROOT/ext/c2/to_navy/$file
-	done
+for file in ${files_iop[*]} ; do
+	bfile=`basename $file`
+	cp $file $RADSROOT/ext/c2/to_navy/igdr/$bfile
 done
+for file in ${files_nop[*]} ; do
+	bfile=`basename $file`
+	cp $file $RADSROOT/ext/c2/to_navy/ogdr/$bfile
+done
+
 # Remove old Navy/NHC data
 popd
 find to_navy -type f -mtime +7 | xargs rm -f
-find to_navy -type d -empty | xargs rmdir
 
 rads_close_sandbox
