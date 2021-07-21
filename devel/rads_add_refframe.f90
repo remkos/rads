@@ -172,12 +172,6 @@ endif
 
 if (S%sat == 'j1' .and. S%phase%name == 'c') cor = cor + 5d-3
 
-! If Jason-3 GDR-F, add 23.2 mm
-if (S%sat == 'j3') then
-	i = index(P%original, 'Baseline F')
-	if (i > 0) cor = cor + 23.2d-3
-endif
-
 ! If Sentinel-3 prior to SM-2 version 6.10, add 25 mm
 
 if (S%sat == '3a') then
