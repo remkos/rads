@@ -23,7 +23,7 @@ MAN = rads4_data_manual.pdf rads4_user_manual.pdf
 SUBS = rads rads_geo rads_grid rads_math rads_misc rads_netcdf rads_time
 SUBS_TEX = $(foreach sub,$(SUBS),sub/$(sub).tex)
 PROGS = rads2asc4 rads2nc rads2grd4 radscolin4 radspassesindex4 radsstat4
-PROGS_EXTRA = rads2grd4-o radscolin4-r radsstat4-h
+PROGS_EXTRA = rads2grd4-o radscolin4-r radsstat4-h radsstat4-2
 PROGS_HLP = $(foreach prog,$(PROGS),sub/$(prog).hlp)
 PROGS_OUT = $(foreach prog,$(PROGS) $(PROGS_EXTRA),sub/$(prog).out)
 TABS_TEX = sub/rads_math.tab
@@ -117,9 +117,10 @@ sub/radscolin4-r.out:	Makefile ../../src/radscolin4
 	rm -f $(@F)
 
 sub/radsstat4.out:	Makefile ../../src/radsstat4
-	PATH=../../src radsstat4 -S e2 -C 0,2 -d -V lat,sla,swh > $(@F)
-	(head -n 18 $(@F); $(SEPARATOR); tail -n 4 $(@F)) > $@
-	rm -f $(@F)
+	PATH=../../src radsstat4 -d -S j3 -C 11 -S j2 -C 291 -V sla,swh > $@
+
+sub/radsstat4-2.out:	Makefile ../../src/radsstat4
+	PATH=../../src radsstat4 -d -S j3 -C 11 -S j2 -C 291 -V sla,swh > $@
 
 sub/radspassesindex4.out:	Makefile ../../src/radspassesindex4
 	PATH=../../src radspassesindex4 -S e2 -C 0 -P 901,910 -h -y -p > $@ 0>&2
