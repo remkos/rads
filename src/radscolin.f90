@@ -256,6 +256,7 @@ write (*,1300)
 '                            (cannot be combined with -o, -a, -s, or -l)' / &
 '      --eqtime              Add equator time to per-pass statistics in ascii' / &
 '  -f, --force               Force comparison, even when missions are not considered collinear'/ &
+'                            or when equator time is not corrected' / &
 '  -o, --output [FILENAME]   Create NetCDF output by pass (default is ascii output to stdout).'/ &
 '                            Optionally specify FILENAME including "#", to be replaced by the pass'/ &
 '                            number. Default is "radscolin_p#.nc"')
@@ -302,7 +303,7 @@ do m = 1,nsat
 			allocate (temp(P%ndata),bin(P%ndata))
 			bin = nint((P%tll(:,1) - P%equator_time) / dt) ! Store bin nr associated with measurement
 			! Guard against rogue timings
-			if (minval(bin) < -nbins .or. maxval(bin) > nbins) then
+			if ((minval(bin) < -nbins .or. maxval(bin) > nbins) .and. .not.force) then
 				call rads_message ('Skipping pass because of rogue timings (time(:) or equator_time):', P)
 			else
 				do j = 1,nsel
