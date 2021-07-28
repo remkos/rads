@@ -60,10 +60,10 @@ subs:	$(SUBS_TEX) $(PROGS_HLP) $(PROGS_OUT) $(TABS_TEX)
 #-----------------------------------------------------------------------
 
 $(SUBS_TEX):	robodoc.rc
-#sub/%.tex:	../../src/%.f90
-#	$(ROBODOC) --src ../../src/$*.f90 --doc $(TMPDIR)/$* --singlefile
-#	sed 's/\\index{unsorted![^}]*}//g' $(TMPDIR)/$*.tex > sub/$*.tex
-#	$(RM) $(TMPDIR)/$*.tex
+sub/%.tex:	../../src/%.f90
+	$(ROBODOC) --src ../../src/$*.f90 --doc $(TMPDIR)/$* --singlefile
+	sed 's/\\index{unsorted![^}]*}//g' $(TMPDIR)/$*.tex > sub/$*.tex
+	$(RM) $(TMPDIR)/$*.tex
 
 #-----------------------------------------------------------------------
 # Make table of the MATH commands
