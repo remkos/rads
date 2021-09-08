@@ -111,12 +111,12 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-real(eightbytereal) :: range_ku(n), range_ku_mle3(n), range_c(n), &
+real(eightbytereal) :: latency(n), range_ku(n), range_ku_mle3(n), range_c(n), &
 	sig0_ku(n), sig0_ku_mle3(n), sig0_c(n), dsig0_atmos_ku(n), dsig0_atmos_c(n), dsig0_atten(n), &
 	swh_ku(n), swh_ku_mle3(n), wind_speed_alt(n), wind_speed_alt_mle3(n), qual_alt_rain_ice(n), flags(n), &
 	ssb_cls(n), ssb_cls_mle3(n), ssb_cls_c(n)
 real(eightbytereal) :: drange(2), dsig0(2), dwind(2), drain(2)
-logical :: lr, nrt, do_range, do_sig0, do_wind, do_ssb, do_rain
+logical :: lr, do_range, do_sig0, do_wind, do_ssb, do_rain
 integer :: i
 character(len=3) :: chd_ver, cnf_ver
 
@@ -125,23 +125,29 @@ call log_pass (P)
 ! Determine if LR/HR, latency, CHD and CONF versions
 
 lr = (index(P%original, '_LR_') > 0)
-nrt = (index(P%original, '_NR_') > 0)
 i = index(P%original, 'CHD')
 chd_ver = P%original(i+5:i+7)
 i = index(P%original, 'CONF')
 cnf_ver = P%original(i+5:i+7)
 
+! Get latency
+
+call rads_get_var (S, P, 'latency', latency, .true.)
+
 ! Determine offsets to solve known biases
-! range: 2 * 0.528 m: sign error in COG offset, present in PDAP v3.0 and still present in STC/NTC in PDAP v3.1
-!        -00435 m: error in characterisation file
-!        24 gates: error in radar data base
+! range: 2 * 0.528 m: sign error in COG offset, present in PDAP v3.0 and still present in STC/NTC
+!                     through the platform file
+!          -0.0435 m: error in characterisation file
+!           24 gates: error in radar data base
 
 drange = 0d0
 if (lrange) then
-	if (nrt) then
+	if (latency(1) == rads_nrt) then
 		if (chd_ver < '003') drange = 2 * 0.528d0 - 0.0435d0
-	else
+	else if (latency(1) == rads_stc) then
 		if (cnf_ver < '005') drange = 2 * 0.528d0
+	else ! if (latency(1) == rads_ntc) then
+		if (P%cycle < 10 .or. (P%cycle == 10 .and. P%pass <= 4)) drange = 2 * 0.528d0
 	endif
 	if (.not.lr .and. P%cycle == 8 .and. (P%pass >= 12 .and. P%pass <= 59)) drange = drange + 24 * gate_width
 endif
