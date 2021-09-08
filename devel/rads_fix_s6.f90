@@ -40,7 +40,7 @@ type(grid) :: info_wind, info_ssbk, info_ssbc
 logical :: lrange = .false., lsig0 = .false., lwind = .false., lssb = .false., lrain = .false.
 integer, parameter :: sig0_nx = 500
 real(eightbytereal) :: exp_ku_sigma0(sig0_nx), rms_exp_ku_sigma0(sig0_nx)
-real(eightbytereal), parameter :: sig0_dx = 0.1d0, gate_width = 0.3795d0
+real(eightbytereal), parameter :: sig0_dx = 0.1d0, gate_width = 0.3795d0, sign_error = 2 * 0.528d0
 
 ! Scan command line for options
 
@@ -116,15 +116,16 @@ real(eightbytereal) :: latency(n), range_ku(n), range_ku_mle3(n), range_c(n), &
 	swh_ku(n), swh_ku_mle3(n), wind_speed_alt(n), wind_speed_alt_mle3(n), qual_alt_rain_ice(n), flags(n), &
 	ssb_cls(n), ssb_cls_mle3(n), ssb_cls_c(n)
 real(eightbytereal) :: drange(2), dsig0(2), dwind(2), drain(2)
-logical :: lr, do_range, do_sig0, do_wind, do_ssb, do_rain
+logical :: lr, val, do_range, do_sig0, do_wind, do_ssb, do_rain
 integer :: i
 character(len=3) :: chd_ver, cnf_ver
 
 call log_pass (P)
 
-! Determine if LR/HR, latency, CHD and CONF versions
+! Determine if LR/HR, OPE/VAL, CHD and CONF versions
 
 lr = (index(P%original, '_LR_') > 0)
+val = (index(P%original, '_VAL_') > 0)
 i = index(P%original, 'CHD')
 chd_ver = P%original(i+5:i+7)
 i = index(P%original, 'CONF')
@@ -143,11 +144,15 @@ call rads_get_var (S, P, 'latency', latency, .true.)
 drange = 0d0
 if (lrange) then
 	if (latency(1) == rads_nrt) then
-		if (chd_ver < '003') drange = 2 * 0.528d0 - 0.0435d0
+		if (chd_ver < '003') drange = sign_error - 0.0435d0
 	else if (latency(1) == rads_stc) then
-		if (cnf_ver < '005') drange = 2 * 0.528d0
-	else ! if (latency(1) == rads_ntc) then
-		if (P%cycle < 10 .or. (P%cycle == 10 .and. P%pass <= 4)) drange = 2 * 0.528d0
+		if (cnf_ver < '005') drange = sign_error
+	else if (val) then
+		if (P%cycle * 1000 + P%pass < 9002) drange = sign_error
+	else if (lr) then
+		if (P%cycle * 1000 + P%pass < 10004) drange = sign_error
+	else
+		if (P%cycle * 1000 + P%pass < 9113) drange = sign_error
 	endif
 	if (.not.lr .and. P%cycle == 8 .and. (P%pass >= 12 .and. P%pass <= 59)) drange = drange + 24 * gate_width
 endif
