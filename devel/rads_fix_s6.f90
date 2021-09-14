@@ -35,17 +35,18 @@ type(rads_pass) :: P
 ! Other local variables
 
 character(len=rads_cmdl) :: aux_wind = '', aux_ssbk = '', aux_ssbc = '', aux_rain = ''
-integer(fourbyteint) :: i, cyc, pass
+integer(fourbyteint) :: i, cyc, pass, ios
 type(grid) :: info_wind, info_ssbk, info_ssbc
 logical :: lrange = .false., lsig0 = .false., lwind = .false., lssb = .false., lrain = .false.
 integer, parameter :: sig0_nx = 500
 real(eightbytereal) :: exp_ku_sigma0(sig0_nx), rms_exp_ku_sigma0(sig0_nx)
+real(eightbytereal) :: bias_range(2) = 0d0, bias_sig0(2) = 0d0
 real(eightbytereal), parameter :: sig0_dx = 0.1d0, gate_width = 0.3795d0, sign_error = 2 * 0.528d0
 
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options (' range sig0 wind ssb rain all')
+call rads_set_options (' range sig0 wind ssb rain all bias_range: bias_sig0:')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
@@ -65,6 +66,10 @@ do i = 1,rads_nopt
 		lwind = .true.
 		lssb = .true.
 		lrain = .true.
+	case ('bias_range')
+		read (rads_opt(i)%arg, *, iostat=ios) bias_range
+	case ('bias_sig0')
+		read (rads_opt(i)%arg, *, iostat=ios) bias_sig0
 	end select
 enddo
 
@@ -101,7 +106,9 @@ write (*,1310)
 '  --wind                    Add biases to sigma0 before calling wind model (pre L2 CONF 008)' / &
 '  --ssb                     Update SSB (pre L2 CONF 008)' / &
 '  --rain                    Add biases to sigma0 before calling rain model (pre L2 CONF 008)' / &
-'  --all                     All of the above')
+'  --all                     All of the above' / &
+'  --bias_range              Add additional bias to range (Ku, C)' / &
+'  --bias_sig0               Add additional bias to sig0 (Ku, C)')
 stop
 end subroutine synopsis
 
@@ -155,15 +162,19 @@ if (lrange) then
 		if (P%cycle * 1000 + P%pass < 9113) drange = sign_error
 	endif
 	if (.not.lr .and. P%cycle == 8 .and. (P%pass >= 12 .and. P%pass <= 59)) drange = drange + 24 * gate_width
+	drange = drange + bias_range
 endif
 do_range = any(drange /= 0d0)
 
 ! sigma0: -7.50 dB: rough alignment of HR with LR
 
 dsig0 = 0d0
-if (lsig0 .and. .not.lr) then
-	dsig0(1) = -7.41d0
-	if (cnf_ver >= '009') dsig0(1) = -5.67d0	! Changed by 1.74 dB since L2 CONF 009
+if (lsig0) then
+	if (.not.lr) then
+		dsig0(1) = -7.41d0
+		if (cnf_ver >= '009') dsig0(1) = -5.67d0	! Changed by 1.74 dB since L2 CONF 009
+	endif
+	dsig0 = dsig0 + bias_sig0
 endif
 do_sig0 = any(dsig0 /= 0d0)
 
@@ -172,7 +183,9 @@ do_sig0 = any(dsig0 /= 0d0)
 ! L2 CONF = 009: did not use proper sig0 bias in HR
 
 dwind = 0d0
-if (lwind .and. (cnf_ver < '008' .or. cnf_ver == '009')) dwind = (/ 1.29d0, 1.37d0 /)
+if (lwind) then
+	if (cnf_ver < '008' .or. cnf_ver == '009' .or. bias_sig0(1) /= 0) dwind = (/ 1.29d0, 1.37d0 /)
+endif
 do_wind = any(dwind /= 0d0)
 
 ! ssb: do when requested and wind has changed
@@ -182,7 +195,9 @@ do_ssb = (lssb .and. do_wind)
 ! rain: apply biases before calling rain model
 
 drain = 0d0
-if (lrain .and. lr .and. cnf_ver < '008') drain = (/ 1.23d0, 1.64d0 /)
+if (lrain .and. lr) then
+	if (cnf_ver < '008' .or. any(bias_sig0 /= 0d0)) drain = (/ 1.23d0, 1.64d0 /)
+endif
 do_rain = any(drain /= 0d0)
 
 ! If nothing to change, skip
