@@ -276,6 +276,11 @@ do
 	allocate (a(nrec),b(nrec),flags(nrec),flags_mle3(nrec),flags_save(nrec))
 	nvar = 0
 
+! Get the L1B file name so we can look for the calibration values
+
+	call nfs(nf90_get_att(ncid,nf90_global,'xref_altimeter_level1b',arg))
+	call get_cal1 (arg, a(1), b(1))
+
 ! Get NetCDF ID for 20-Hz data (if available)
 
 	if (nft(nf90_inq_ncid(ncid, 'data_20', ncid20))) then
@@ -527,7 +532,7 @@ contains
 !-----------------------------------------------------------------------
 
 subroutine synopsis (flag)
-character(len=*), optional :: flag
+character(len=*), optional, intent(in) :: flag
 if (rads_version ('Write Sentinel-6 data to RADS', flag=flag)) return
 call synopsis_devel (' < list_of_Sentinel6_file_names')
 write (*,1310)
@@ -539,5 +544,31 @@ write (*,1310)
 'The directory is created automatically and old files are overwritten.')
 stop
 end subroutine synopsis
+
+!-----------------------------------------------------------------------
+! Get the CAL1 values from the L1B file
+!-----------------------------------------------------------------------
+
+subroutine get_cal1 (filenm, cal1_range, cal1_power)
+character(len=*), intent(in) :: filenm
+real(eightbytereal), intent(out) :: cal1_range, cal1_power
+character(len=rads_strl) :: pathnm
+integer(fourbyteint) :: ncid, ncid20, ncid20k, ncid20c
+
+call log_string('l1b = ' // filenm)
+call parseenv('${RADSROOT}/ext/' // S%sat // '/' // filenm(89:91) // '/' // filenm(11:12) // '/' // &
+	filenm(93:94) // '/L1B/c' // filenm(72:74) // '/' // trim(filenm) // '/measurement.nc', pathnm)
+write (*,*) trim(pathnm)
+cal1_range = 0
+cal1_power = 0
+if (nft(nf90_open(pathnm,nf90_nowrite,ncid))) then
+	call log_string ('Error: failed to open cal1 file', .true.)
+endif
+call nfs(nf90_inq_ncid(ncid, 'data_20', ncid20))
+call nfs(nf90_inq_ncid(ncid20, 'ku', ncid20k))
+if (lr) call nfs(nf90_inq_ncid(ncid20, 'c', ncid20c))
+call nfs(nf90_close(ncid))
+
+end subroutine get_cal1
 
 end program rads_gen_s6
