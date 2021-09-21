@@ -3041,6 +3041,7 @@ contains
 
 subroutine rads_set_limits_info (info)
 type(rads_varinfo), pointer :: info
+real(eightbytereal), parameter :: sec1970 = -473385600d0
 if (.not.associated(info)) return
 if (present(lo)) info%limits(1) = lo
 if (present(hi)) info%limits(2) = hi
@@ -3056,7 +3057,12 @@ if (info%datatype == rads_type_lat .or. info%datatype == rads_type_lon) then
 else if (info%datatype == rads_type_time) then
 	! If time limits are changed, also limit the cycles
 	if (isan_(info%limits(1))) S%cycles(1) = max(S%cycles(1), rads_time_to_cycle (S, info%limits(1)))
-	if (isan_(info%limits(2))) S%cycles(2) = min(S%cycles(2), rads_time_to_cycle (S, info%limits(2)))
+	! If no upper time limit is set, use the current time
+	if (isan_(info%limits(2))) then
+		S%cycles(2) = min(S%cycles(2), rads_time_to_cycle (S, info%limits(2)))
+	else
+		S%cycles(2) = min(S%cycles(2), rads_time_to_cycle (S, time()+sec1970))
+	endif
 else if (var%name == 'flags') then
 	call rads_set_limits_by_flagmask (S, info%limits)
 endif
