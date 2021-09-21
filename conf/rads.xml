@@ -1812,6 +1812,14 @@ Global RADS configuration file
 		<units>dB</units>
 		<limits>6 27</limits>
 		<plot_range>7 17</plot_range>
+		<if sat="j3">
+			<limits>8 29</limits>
+			<plot_range>9 19</plot_range>
+		</if>
+		<if sat="6a">
+			<limits>7 28</limits>
+			<plot_range>8 18</plot_range>
+		</if>
 		<data>sig0_ku</data>
 		<format>f6.2</format>
 		<compress>int2 1e-2</compress>
@@ -1824,6 +1832,14 @@ Global RADS configuration file
 	<units>dB</units>
 	<limits>6 27</limits>
 	<plot_range>10 20</plot_range>
+	<if sat="j3">
+		<limits>7 28</limits>
+		<plot_range>11 21</plot_range>
+	</if>
+	<if sat="6a">
+		<limits>5 26</limits>
+		<plot_range>9 19</plot_range>
+	</if>
 	<data>sig0_c</data>
 	<format>f6.2</format>
 	<compress>int2 1e-2</compress>
