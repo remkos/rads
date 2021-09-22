@@ -1502,7 +1502,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays. This model is actually based on Jason-2 data and not Sentinel-3, and will be replaced later.</comment>
 </var>
-<var name="ssb_tran2012" field="1513" sat="6a j1 j2 j3">
+<var name="ssb_tran2012" field="1513" sat="j1 j2 j3">
 	<long_name>Tran et al. 2012 non-parametric sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<if sat="j1">
@@ -1812,6 +1812,14 @@ Global RADS configuration file
 		<units>dB</units>
 		<limits>6 27</limits>
 		<plot_range>7 17</plot_range>
+		<if sat="j3">
+			<limits>8 29</limits>
+			<plot_range>9 19</plot_range>
+		</if>
+		<if sat="6a">
+			<limits>7 28</limits>
+			<plot_range>8 18</plot_range>
+		</if>
 		<data>sig0_ku</data>
 		<format>f6.2</format>
 		<compress>int2 1e-2</compress>
@@ -1824,6 +1832,14 @@ Global RADS configuration file
 	<units>dB</units>
 	<limits>6 27</limits>
 	<plot_range>10 20</plot_range>
+	<if sat="j3">
+		<limits>7 28</limits>
+		<plot_range>11 21</plot_range>
+	</if>
+	<if sat="6a">
+		<limits>5 26</limits>
+		<plot_range>9 19</plot_range>
+	</if>
 	<data>sig0_c</data>
 	<format>f6.2</format>
 	<compress>int2 1e-2</compress>

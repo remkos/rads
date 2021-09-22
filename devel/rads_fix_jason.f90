@@ -21,6 +21,7 @@
 !
 ! sig0:
 ! - Adjust backscatter coefficient for apparent off-nadir angle
+! - Add optional bias to Ku and C sigma0
 !
 ! rad:
 ! - Add offset to radiometer wet tropo (only used to patch non-calibration
@@ -53,19 +54,19 @@ type(rads_pass) :: P
 
 ! Other local variables
 
-real(eightbytereal), parameter :: dsig0_ku = -2.40d0, dsig0_c = -0.73d0	! Ku- and C-band Sigma0 bias of Jason-1
-real(eightbytereal) :: dwet = 0d0
+real(eightbytereal) :: dwet = 0d0, dsig0(2) = 0d0
 integer(fourbyteint) :: i, ios, cyc, pass
 logical :: lrad = .false., lsig0 = .false., lwind = .false.
 
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options (' sig0 all rad: wind')
+call rads_set_options (' sig0:: rad: wind all')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
-	case ('sig0', 'all')
+	case ('sig0')
+		read (rads_opt(i)%arg, *, iostat=ios) dsig0
 		lsig0 = .true.
 	case ('rad')
 		read (rads_opt(i)%arg, *, iostat=ios) dwet
@@ -73,6 +74,11 @@ do i = 1,rads_nopt
 		lrad = .true.
 	case ('wind')
 		lwind = .true.
+	case ('all')
+		if (S%sat(:2) /= 'j3') then
+			dsig0 = (/ -2.40d0, -0.73d0 /) ! Ku- and C-band Sigma0 bias of Jason-1
+			lsig0 = .true.
+		endif
 	end select
 enddo
 
@@ -103,8 +109,9 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
-'  --sig0                    Adjust backscatter coefficient for apparent off-nadir angle' / &
-'  --all                     All of the above' / &
+'  --sig0[=BIAS_KU,BIAS_C]   Adjust backscatter coefficient for apparent off-nadir angle, and' / &
+'                            optionally add biases to the Ku and C band values' / &
+'  --all                     JA1/JA2: --sig0=-2.40,-0.73; JA3: none' / &
 '  --rad=OFFSET              Add OFFSET mm to radiometer wet tropo' / &
 '  --wind                    Recompute wind speed from adjusted sigma0 based on Collard model')
 stop
@@ -135,8 +142,8 @@ if (lsig0) then
 	call rads_get_var (S, P, 'off_nadir_angle2_wf_ku', psi2, .true.)
 	call rads_get_var (S, P, 'sig0_ku', sig0_ku, .true.)
 	call rads_get_var (S, P, 'sig0_c', sig0_c, .true.)
-	sig0_ku = sig0_ku - 11.34d0 * psi2 + dsig0_ku
-	sig0_c  = sig0_c  -  2.01d0 * psi2 + dsig0_c
+	sig0_ku = sig0_ku - 11.34d0 * psi2 + dsig0(1)
+	sig0_c  = sig0_c  -  2.01d0 * psi2 + dsig0(2)
 endif
 
 ! Compute wind speed from Collard model (using unadjusted sig0_ku)
@@ -145,7 +152,7 @@ if (lwind) then
 	call rads_get_var (S, P, 'swh_ku', swh_ku, .true.)
 	if (.not.lsig0) call rads_get_var (S, P, 'sig0_ku', sig0_ku, .true.)
 	do i = 1,n
-		u(i) = wind_j1 (1, sig0_ku(i) - dsig0_ku, swh_ku(i))
+		u(i) = wind_j1 (1, sig0_ku(i) - dsig0(1), swh_ku(i))
 	enddo
 endif
 
