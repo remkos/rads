@@ -16,11 +16,16 @@
 #
 # Convert Jason-3 O/I/GDR files to RADS
 #
-# syntax: rads_gen_j3.sh <directories>
+# syntax: rads_gen_j3.sh [ .<type> ] <directories>
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
 
-rads_open_sandbox j3
+type=
+case $1 in
+	.*) type=$1; shift ;;
+esac
+
+rads_open_sandbox j3${type}
 lst=$SANDBOX/rads_gen_j3.lst
 
 date												>  "$log" 2>&1
