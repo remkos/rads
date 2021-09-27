@@ -117,7 +117,7 @@ character(len=2) :: mss_cnescls_ver = '15', mss_dtu_ver = '18', tide_fes_ver = '
 character(len=3) :: tide_got_ver = '410'
 character(len=8) :: chd_ver, cha_ver, cnf_ver
 integer :: latency = rads_nrt
-logical :: lr
+logical :: lr, lcal1
 
 ! Other local variables
 
@@ -127,9 +127,16 @@ real(eightbytereal), allocatable :: b(:), telemetry_type_flag(:)
 ! Initialise
 
 call synopsis
-call rads_gen_getopt ('', ' min-rec:')
+call rads_gen_getopt ('', ' cal1 min-rec:')
 call synopsis ('--head')
 if (sat /= '') call rads_init (S, sat)
+
+do i = 1,rads_nopt
+	select case (rads_opt(i)%opt)
+	case ('cal1')
+		lcal1 = .true.
+	end select
+enddo
 
 !----------------------------------------------------------------------
 ! Read all file names from standard input
@@ -275,11 +282,6 @@ do
 
 	allocate (a(nrec),b(nrec),flags(nrec),flags_mle3(nrec),flags_save(nrec))
 	nvar = 0
-
-! Get the L1B file name so we can look for the calibration values
-
-	call nfs(nf90_get_att(ncid,nf90_global,'xref_altimeter_level1b',arg))
-	call get_cal1 (arg, a(1), b(1))
 
 ! Get NetCDF ID for 20-Hz data (if available)
 
@@ -514,6 +516,13 @@ do
 	a = latency
 	call new_var ('latency', a)
 
+! Get the L1B file name so we can look for the calibration values
+
+	if (lcal1) then
+		call nfs(nf90_get_att(ncid,nf90_global,'xref_altimeter_level1b',arg))
+		call copy_cal1 (arg)
+	endif
+
 ! Dump the data
 
 	call nfs(nf90_close(ncid))
@@ -538,7 +547,8 @@ call synopsis_devel (' < list_of_Sentinel6_file_names')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
-'  --min-rec=MIN_REC         Specify minimum number of records per pass to process' // &
+'  --min-rec=MIN_REC         Specify minimum number of records per pass to process' / &
+'  --cal1                    Read the CAL1 values from the appropriate L1B file' // &
 'This program converts Sentinel-6 NRT/STC/NTC Level 2 products to RADS data' / &
 'files with the name $RADSDATAROOT/data/SS/F/pPPPP/s6pPPPPcCCC.nc.' / &
 'The directory is created automatically and old files are overwritten.')
@@ -546,29 +556,43 @@ stop
 end subroutine synopsis
 
 !-----------------------------------------------------------------------
-! Get the CAL1 values from the L1B file
+! Copy the CAL1 values from the L1B file into RADS
 !-----------------------------------------------------------------------
 
-subroutine get_cal1 (filenm, cal1_range, cal1_power)
+subroutine copy_cal1 (filenm)
 character(len=*), intent(in) :: filenm
-real(eightbytereal), intent(out) :: cal1_range, cal1_power
 character(len=rads_strl) :: pathnm
 integer(fourbyteint) :: ncid, ncid20, ncid20k, ncid20c
+real(eightbytereal) :: cal1(4)
 
 call log_string('l1b = ' // filenm)
 call parseenv('${RADSROOT}/ext/' // S%sat // '/' // filenm(89:91) // '/' // filenm(11:12) // '/' // &
 	filenm(93:94) // '/L1B/c' // filenm(72:74) // '/' // trim(filenm) // '/measurement.nc', pathnm)
-write (*,*) trim(pathnm)
-cal1_range = 0
-cal1_power = 0
+cal1 = 0
 if (nft(nf90_open(pathnm,nf90_nowrite,ncid))) then
-	call log_string ('Error: failed to open cal1 file', .true.)
+	call log_string ('Error: failed to open L1B file')
+	return
 endif
 call nfs(nf90_inq_ncid(ncid, 'data_20', ncid20))
 call nfs(nf90_inq_ncid(ncid20, 'ku', ncid20k))
-if (lr) call nfs(nf90_inq_ncid(ncid20, 'c', ncid20c))
+call get_var (ncid20k, 'range_cor_internal_delay_cal', cal1(1:1))
+call get_var (ncid20k, 'cal1_power', cal1(2:2))
+
+call new_var ('cal1_range_ku', cal1(1:1))
+call new_var ('cal1_power_ku', cal1(2:2))
+
+if (lr) then
+	call nfs(nf90_inq_ncid(ncid20, 'c', ncid20c))
+	call get_var(ncid20c, 'range_cor_internal_delay_cal', cal1(3:3))
+	call get_var(ncid20c, 'cal1_power', cal1(4:4))
+
+	call new_var ('cal1_range_c', cal1(3:3))
+	call new_var ('cal1_power_c', cal1(4:4))
+endif
+
+write (*,'(4f13.4)') cal1
 call nfs(nf90_close(ncid))
 
-end subroutine get_cal1
+end subroutine copy_cal1
 
 end program rads_gen_s6
