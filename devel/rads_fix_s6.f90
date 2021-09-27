@@ -24,32 +24,34 @@ program rads_fix_s6
 
 use rads
 use rads_devel
+use rads_devel_netcdf
 use rads_misc
 use rads_grid
 
-! Data variables
-
-type(rads_sat) :: S
-type(rads_pass) :: P
-
 ! Other local variables
 
-character(len=rads_cmdl) :: aux_wind = '', aux_ssbk = '', aux_ssbc = '', aux_rain = ''
+character(len=rads_cmdl) :: aux_wind = '', aux_ssbk = '', aux_ssbc = '', aux_rain = '', aux_cal1 = ''
 integer(fourbyteint) :: i, cyc, pass, ios
 type(grid) :: info_wind, info_ssbk, info_ssbc
-logical :: lrange = .false., lsig0 = .false., lwind = .false., lssb = .false., lrain = .false.
+logical :: lcal1 = .false., lrange = .false., lsig0 = .false., lwind = .false., lssb = .false., lrain = .false.
 integer, parameter :: sig0_nx = 500
 real(eightbytereal) :: exp_ku_sigma0(sig0_nx), rms_exp_ku_sigma0(sig0_nx)
 real(eightbytereal) :: bias_range(2) = 0d0, bias_sig0(2) = 0d0
 real(eightbytereal), parameter :: sig0_dx = 0.1d0, gate_width = 0.3795d0, sign_error = 2 * 0.528d0
+! For loading CAL1 file
+integer :: ncal
+real(eightbytereal), allocatable :: cal1_time(:), cal1(:,:), cal1_flags(:)
+logical, allocatable :: cal1_mask(:)
 
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options (' range sig0 wind ssb rain all bias_range: bias_sig0:')
+call rads_set_options (' cal1 range sig0 wind ssb rain all bias_range: bias_sig0:')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
+	case ('cal1')
+		lcal1 = .true.
 	case ('range')
 		lrange = .true.
 	case ('sig0')
@@ -75,7 +77,7 @@ enddo
 
 ! If nothing selected, stop here
 
-if (.not.(lrange .or. lsig0 .or. lwind .or. lssb .or. lrain)) stop
+if (.not.(lcal1 .or. lrange .or. lsig0 .or. lwind .or. lssb .or. lrain)) stop
 
 ! Run process for all files
 
@@ -100,6 +102,7 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
+'  --cal1                    Replace CAL1 range and power by values from LTM file' / &
 '  --range                   Fix range biases known for PDAP v3.0 and v3.1' / &
 '                            Also fix result of temporary error in radar data base (RMC only, 34 gates)' / &
 '  --sig0                    Add -7.41 dB to HR sigma0' / &
@@ -121,13 +124,18 @@ integer(fourbyteint), intent(in) :: n
 real(eightbytereal) :: latency(n), range_ku(n), range_ku_mle3(n), range_c(n), &
 	sig0_ku(n), sig0_ku_mle3(n), sig0_c(n), dsig0_atmos_ku(n), dsig0_atmos_c(n), dsig0_atten(n), &
 	swh_ku(n), swh_ku_mle3(n), wind_speed_alt(n), wind_speed_alt_mle3(n), qual_alt_rain_ice(n), flags(n), &
-	ssb_cls(n), ssb_cls_mle3(n), ssb_cls_c(n)
-real(eightbytereal) :: drange(2), dsig0(2), dwind(2), drain(2)
-logical :: lr, val, do_range, do_sig0, do_wind, do_ssb, do_rain
-integer :: i
+	ssb_cls(n), ssb_cls_mle3(n), ssb_cls_c(n), dum(n)
+real(eightbytereal) :: drange(2), dsig0(2), dwind(2), drain(2), cal1_old(4), cal1_new(4)
+logical :: lr, redundant, val, do_range, do_sig0, do_wind, do_ssb, do_rain
 character(len=3) :: chd_ver, cnf_ver
 
+! Initialise
+
 call log_pass (P)
+drange = 0d0
+dsig0 = 0d0
+dwind = 0d0
+drain = 0d0
 
 ! Determine if LR/HR, OPE/VAL, CHD and CONF versions
 
@@ -135,6 +143,7 @@ lr = (index(P%original, '_LR_') > 0)
 val = (index(P%original, '_VAL_') > 0)
 i = index(P%original, 'CHD')
 chd_ver = P%original(i+5:i+7)
+redundant = (P%original(i+3:i+3) == 'R')
 i = index(P%original, 'CONF')
 cnf_ver = P%original(i+5:i+7)
 
@@ -142,13 +151,32 @@ cnf_ver = P%original(i+5:i+7)
 
 call rads_get_var (S, P, 'latency', latency, .true.)
 
-! Determine offsets to solve known biases
+! cal1: Replace the values with those from the LTM
+
+if (lcal1) then
+	if (need_file ('S6A_P4_1__C1HR_AX.nc', aux_cal1)) call load_cal1
+	call cal1_average (P%equator_time, cal1_new, redundant)
+	call rads_get_var (S, P, 'cal1_range_ku', dum)
+	cal1_old(1:1) = dum(1)
+	call rads_get_var (S, P, 'cal1_power_ku', dum)
+	cal1_old(2:2) = dum(1)
+	if (lr) then
+		call rads_get_var (S, P, 'cal1_range_c',  dum)
+		cal1_old(3:3) = dum(1)
+		call rads_get_var (S, P, 'cal1_power_c',  dum)
+		cal1_old(4:4) = dum(1)
+	endif
+
+	write (*,'(/a,2(f10.4,f8.2))') "cal1_old: ", cal1_old
+	write (*,'(a,2(f10.4,f8.2))') "cal1_new: ", cal1_new
+endif
+
+! range: Determine offsets to solve known biases
 ! range: 2 * 0.528 m: sign error in COG offset, present in PDAP v3.0 and still present in STC/NTC
 !                     through the platform file
 !          -0.0435 m: error in characterisation file
 !           24 gates: error in radar data base
 
-drange = 0d0
 if (lrange) then
 	if (latency(1) == rads_nrt) then
 		if (chd_ver < '003') drange = sign_error - 0.0435d0
@@ -166,9 +194,8 @@ if (lrange) then
 endif
 do_range = any(drange /= 0d0)
 
-! sigma0: -7.50 dB: rough alignment of HR with LR
+! sigma0: alignment of HR with LR
 
-dsig0 = 0d0
 if (lsig0) then
 	if (.not.lr) then
 		dsig0(1) = -7.41d0
@@ -182,7 +209,6 @@ do_sig0 = any(dsig0 /= 0d0)
 ! L2 CONF < 008: did not use proper wind model and/or bias
 ! L2 CONF = 009: did not use proper sig0 bias in HR
 
-dwind = 0d0
 if (lwind) then
 	if (cnf_ver < '008' .or. cnf_ver == '009' .or. bias_sig0(1) /= 0) dwind = (/ 1.29d0, 1.37d0 /)
 endif
@@ -194,7 +220,6 @@ do_ssb = (lssb .and. do_wind)
 
 ! rain: apply biases before calling rain model
 
-drain = 0d0
 if (lrain .and. lr) then
 	if (cnf_ver < '008' .or. any(bias_sig0 /= 0d0)) drain = (/ 1.23d0, 1.64d0 /)
 endif
@@ -342,11 +367,61 @@ character(len=*), intent(inout) :: pathnm
 
 need_file = (index(pathnm, filenm) == 0)
 if (need_file) then
-	call parseenv ('${ALTIM}/data/models/' // trim(filenm), pathnm)
+	if (filenm(:3) == 'AUX') then
+		call parseenv ('${ALTIM}/data/models/' // trim(filenm), pathnm)
+	else
+		call parseenv ('${RADSROOT}/ext/6a/' // trim(filenm), pathnm)
+	endif
 	write (*,600) trim(filenm)
 endif
 600 format ('(Loading ',a,') ... ', $)
 end function need_file
+
+! Load CAL1 values
+
+subroutine load_cal1
+use netcdf
+use rads_netcdf
+integer(fourbyteint) :: ncid, ncidk, ncidc, dimid
+
+call nfs(nf90_open(aux_cal1, nf90_nowrite, ncid))
+call nfs(nf90_inq_ncid(ncid, 'ku', ncidk))
+call nfs(nf90_inq_dimid(ncidk, 'time', dimid))
+call nfs(nf90_inquire_dimension(ncidk, dimid, len=ncal))
+allocate (cal1_time(ncal), cal1(ncal,4), cal1_flags(ncal), cal1_mask(ncal))
+call get_var(ncidk, 'time 473299200 ADD', cal1_time)
+call get_var(ncidk, 'p4_instrument_configuration_flags', cal1_flags)
+call get_var(ncidk, 'cog_delay -149896229 MUL', cal1(:,1))
+call get_var(ncidk, 'total_power', cal1(:,2))
+call nfs(nf90_inq_ncid(ncid, 'c', ncidc))
+call get_var(ncidc, 'cog_delay -149896229 MUL', cal1(:,3))
+call get_var(ncidc, 'total_power', cal1(:,4))
+call nfs(nf90_close(ncid))
+end subroutine load_cal1
+
+! Average CAL1 values
+
+subroutine cal1_average (time, cal1_avg, redundant)
+real(eightbytereal), intent(in) :: time
+real(eightbytereal), intent(out) :: cal1_avg(:)
+logical, intent(in) :: redundant
+integer(fourbyteint) :: navg, flags
+real(eightbytereal), parameter :: dt = 86400d0
+if (redundant) then
+	flags = 33
+else
+	flags = 1
+endif
+cal1_mask = (cal1_time >= time - dt .and. cal1_time <= time + dt .and. cal1_flags == flags)
+navg = count(cal1_mask)
+if (navg == 0) then
+	cal1_avg = cal1(size(cal1),:)
+else
+	do i = 1,4
+		cal1_avg(i) = sum(cal1(:,i), cal1_mask) / navg
+	enddo
+endif
+end subroutine cal1_average
 
 ! Interpolate grid
 
