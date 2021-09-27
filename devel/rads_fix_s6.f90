@@ -63,6 +63,7 @@ do i = 1,rads_nopt
 	case ('rain')
 		lrain = .true.
 	case ('all')
+		lcal1 = .true.
 		lrange = .true.
 		lsig0 = .true.
 		lwind = .true.
@@ -171,6 +172,7 @@ if (lcal1) then
 	write (*,'(a,2(f10.4,f8.2))') "cal1_new: ", cal1_new
 endif
 
+! range: Replace CAL1 and/or add additional bias
 ! range: Determine offsets to solve known biases
 ! range: 2 * 0.528 m: sign error in COG offset, present in PDAP v3.0 and still present in STC/NTC
 !                     through the platform file
@@ -178,39 +180,36 @@ endif
 !           24 gates: error in radar data base
 
 if (lrange) then
+	if (lcal1 .and. all(isan_(cal1_old))) drange = drange + (cal1_old(1:3:2) - cal1_new(1:3:2))
+	drange = drange + bias_range
 	if (latency(1) == rads_nrt) then
-		if (chd_ver < '003') drange = sign_error - 0.0435d0
+		if (chd_ver < '003') drange = drange + sign_error - 0.0435d0
 	else if (latency(1) == rads_stc) then
-		if (cnf_ver < '005') drange = sign_error
+		if (cnf_ver < '005') drange = drange + sign_error
 	else if (val) then
-		if (P%cycle * 1000 + P%pass < 9002) drange = sign_error
+		if (P%cycle * 1000 + P%pass < 9002) drange = drange + sign_error
 	else if (lr) then
-		if (P%cycle * 1000 + P%pass < 10004) drange = sign_error
+		if (P%cycle * 1000 + P%pass < 10004) drange = drange + sign_error
 	else
-		if (P%cycle * 1000 + P%pass < 9113) drange = sign_error
+		if (P%cycle * 1000 + P%pass < 9113) drange = drange + sign_error
 	endif
 	if (.not.lr .and. P%cycle == 8 .and. (P%pass >= 12 .and. P%pass <= 59)) drange = drange + 24 * gate_width
-	drange = drange + bias_range
 endif
 do_range = any(drange /= 0d0)
 
-! sigma0: alignment of HR with LR
+! sigma0: Replace CAL1 and/or add additional bias
 
 if (lsig0) then
-	if (.not.lr) then
-		dsig0(1) = -7.41d0
-		if (cnf_ver >= '009') dsig0(1) = -5.67d0	! Changed by 1.74 dB since L2 CONF 009
-	endif
+	if (lcal1 .and. all(isan_(cal1_old))) dsig0 = dsig0 + (cal1_old(2:4:2) - cal1_new(2:4:2))
 	dsig0 = dsig0 + bias_sig0
 endif
-do_sig0 = any(dsig0 /= 0d0)
 
 ! wind: apply biases before calling wind model
-! L2 CONF < 008: did not use proper wind model and/or bias
+! L2 CONF < 008: did not use proper wind model and/or sig0 bias
 ! L2 CONF = 009: did not use proper sig0 bias in HR
 
 if (lwind) then
-	if (cnf_ver < '008' .or. cnf_ver == '009' .or. bias_sig0(1) /= 0) dwind = (/ 1.29d0, 1.37d0 /)
+	if (cnf_ver < '008' .or. cnf_ver == '009' .or. dsig0(1) /= 0) dwind = (/ 1.29d0, 1.37d0 /)
 endif
 do_wind = any(dwind /= 0d0)
 
@@ -219,11 +218,22 @@ do_wind = any(dwind /= 0d0)
 do_ssb = (lssb .and. do_wind)
 
 ! rain: apply biases before calling rain model
+! L2 CONF < 008: did not use proper sig0 bias
 
 if (lrain .and. lr) then
-	if (cnf_ver < '008' .or. any(bias_sig0 /= 0d0)) drain = (/ 1.23d0, 1.64d0 /)
+	if (cnf_ver < '008' .or. any(dsig0 /= 0d0)) drain = (/ 1.23d0, 1.64d0 /)
 endif
 do_rain = any(drain /= 0d0)
+
+! sigma0: alignment of HR with LR
+
+if (lsig0) then
+	if (.not.lr) then
+		dsig0(1) = dsig0(1) - 7.41d0
+		if (cnf_ver >= '009') dsig0(1) = dsig0(1) - 5.67d0	! Changed by 1.74 dB since L2 CONF 009
+	endif
+endif
+do_sig0 = any(dsig0 /= 0d0)
 
 ! If nothing to change, skip
 
@@ -320,6 +330,15 @@ call rads_put_passinfo (S, P)
 call rads_put_history (S, P)
 
 ! Write out all the data
+
+if (lcal1) then
+	call rads_put_var (S, P, 'cal1_range_ku', cal1_new(1))
+	call rads_put_var (S, P, 'cal1_power_ku', cal1_new(2))
+	if (lr) then
+		call rads_put_var (S, P, 'cal1_range_c', cal1_new(3))
+		call rads_put_var (S, P, 'cal1_power_c', cal1_new(4))
+	endif
+endif
 
 if (do_range) then
 	call rads_put_var (S, P, 'range_ku', range_ku)

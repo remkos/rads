@@ -4559,14 +4559,26 @@ end subroutine rads_def_var_by_name
 subroutine rads_put_var_by_var_0d (S, P, var, data)
 use netcdf
 use rads_netcdf
+use rads_misc
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 type(rads_var), intent(in) :: var
 real(eightbytereal), intent(in) :: data
-integer(fourbyteint) :: varid
+integer(fourbyteint) :: e, ncid, varid
 varid = rads_put_var_helper (S, P, var%name)
 if (varid == 0) return
-if (nft(nf90_put_var (P%fileinfo(1)%ncid, varid, data))) call rads_error (S, rads_err_nc_put, &
+ncid = P%fileinfo(1)%ncid
+select case (var%info%nctype)
+case (nf90_int1)
+	e = nf90_put_var (ncid, varid, nint1((data - var%info%add_offset) / var%info%scale_factor))
+case (nf90_int2)
+	e = nf90_put_var (ncid, varid, nint2((data - var%info%add_offset) / var%info%scale_factor))
+case (nf90_int4)
+	e = nf90_put_var (ncid, varid, nint4((data - var%info%add_offset) / var%info%scale_factor))
+case default
+	e = nf90_put_var (ncid, varid, (data - var%info%add_offset) / var%info%scale_factor)
+end select
+if (e /= 0) call rads_error (S, rads_err_nc_put, &
 	'Error writing data for variable "'//trim(var%name)//'" to file', P)
 end subroutine rads_put_var_by_var_0d
 

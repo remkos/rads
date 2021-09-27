@@ -3904,28 +3904,13 @@ Global RADS configuration file
 	<comment>Indication about which orbit solution was used for alt_gdre</comment>
 </var>
 
-<var name="cal1_power_ku" sat="6a">
-	<long_name>CAL1 power scaling applied to Ku-band sigma0</long_name>
-	<units>dB</units>
-	<data>cal1_power_ku</data>
-	<dimensions>0</dimensions>
-	<compress>int2 1e-2</compress>
-</var>
-
-<var name="cal1_power_c" sat="6a">
-	<long_name>CAL1 power scaling applied to C-band sigma0</long_name>
-	<units>dB</units>
-	<data>cal1_power_c</data>
-	<dimensions>0</dimensions>
-	<compress>int2 1e-2</compress>
-</var>
-
 <var name="cal1_range_ku" sat="6a">
 	<long_name>CAL1 range correction applied to Ku-band range</long_name>
 	<units>dB</units>
 	<data>cal1_range_ku</data>
 	<dimensions>0</dimensions>
-	<compress>int2 1e-4</compress>
+	<format>f7.4</format>
+	<compress>dble</compress>
 </var>
 
 <var name="cal1_range_c" sat="6a">
@@ -3933,7 +3918,26 @@ Global RADS configuration file
 	<units>dB</units>
 	<data>cal1_range_c</data>
 	<dimensions>0</dimensions>
-	<compress>int2 1e-4</compress>
+	<format>f7.4</format>
+	<compress>dble</compress>
+</var>
+
+<var name="cal1_power_ku" sat="6a">
+	<long_name>CAL1 power scaling applied to Ku-band sigma0</long_name>
+	<units>dB</units>
+	<data>cal1_power_ku</data>
+	<dimensions>0</dimensions>
+	<format>f7.2</format>
+	<compress>dble</compress>
+</var>
+
+<var name="cal1_power_c" sat="6a">
+	<long_name>CAL1 power scaling applied to C-band sigma0</long_name>
+	<units>dB</units>
+	<data>cal1_power_c</data>
+	<dimensions>0</dimensions>
+	<format>f7.2</format>
+	<compress>dble</compress>
 </var>
 
 <!-- "Global attributes" -->
