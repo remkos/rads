@@ -116,8 +116,8 @@ integer(twobyteint), allocatable :: flags_mle3(:), flags_save(:)
 character(len=2) :: mss_cnescls_ver = '15', mss_dtu_ver = '18', tide_fes_ver = '14'
 character(len=3) :: tide_got_ver = '410'
 character(len=8) :: chd_ver, cha_ver, cnf_ver
-integer :: latency = rads_nrt
-logical :: lr, lcal1
+integer :: latency = rads_nrt, nsat
+logical :: lr, lcal1 = .false.
 
 ! Other local variables
 
@@ -127,9 +127,11 @@ real(eightbytereal), allocatable :: b(:), telemetry_type_flag(:)
 ! Initialise
 
 call synopsis
-call rads_gen_getopt ('', ' cal1 min-rec:')
+call rads_gen_getopt ('', ' min-rec:')
 call synopsis ('--head')
 if (sat /= '') call rads_init (S, sat)
+call rads_set_options (' cal1')
+call rads_load_options (nsat)
 
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
@@ -518,14 +520,12 @@ do
 
 ! Get the L1B file name so we can look for the calibration values
 
-	if (lcal1) then
-		call nfs(nf90_get_att(ncid,nf90_global,'xref_altimeter_level1b',arg))
-		call copy_cal1 (arg)
-	endif
+	call nfs(nf90_get_att(ncid,nf90_global,'xref_altimeter_level1b',arg))
+	call nfs(nf90_close(ncid))
+	if (lcal1) call copy_cal1 (arg)
 
 ! Dump the data
 
-	call nfs(nf90_close(ncid))
 	call put_rads
 	deallocate (a, b, flags, flags_mle3, flags_save)
 	if (nrec20 /= 0) deallocate (telemetry_type_flag)

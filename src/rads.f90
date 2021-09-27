@@ -262,7 +262,7 @@ private :: rads_traxxing, rads_free_sat_struct, rads_free_pass_struct, rads_free
 ! xml      : (optional) Array of names of additional XML files to be loaded
 !****-------------------------------------------------------------------
 private :: rads_init_sat_0d, rads_init_sat_1d, &
-	rads_init_cmd_0d, rads_init_cmd_1d, rads_load_options, rads_parse_options
+	rads_init_cmd_0d, rads_init_cmd_1d
 interface rads_init
 	module procedure rads_init_sat_0d
 	module procedure rads_init_sat_1d

@@ -40,17 +40,19 @@ real(eightbytereal) :: bias_range(2) = 0d0, bias_sig0(2) = 0d0
 real(eightbytereal), parameter :: sig0_dx = 0.1d0, gate_width = 0.3795d0, sign_error = 2 * 0.528d0
 ! For loading CAL1 file
 integer :: ncal
+real(eightbytereal) :: cal1_interval(2) = (/ -1d0, 1d0 /)
 real(eightbytereal), allocatable :: cal1_time(:), cal1(:,:), cal1_flags(:)
 logical, allocatable :: cal1_mask(:)
 
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options (' cal1 range sig0 wind ssb rain all bias_range: bias_sig0:')
+call rads_set_options (' cal1:: range sig0 wind ssb rain all bias_range: bias_sig0:')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
 	case ('cal1')
+		read (rads_opt(i)%arg, *, iostat=ios) cal1_interval
 		lcal1 = .true.
 	case ('range')
 		lrange = .true.
@@ -75,6 +77,7 @@ do i = 1,rads_nopt
 		read (rads_opt(i)%arg, *, iostat=ios) bias_sig0
 	end select
 enddo
+cal1_interval = cal1_interval * 86400d0
 
 ! If nothing selected, stop here
 
@@ -103,7 +106,8 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
-'  --cal1                    Replace CAL1 range and power by values from LTM file' / &
+'  --cal1[=T0,T1]            Replace CAL1 range and power by values from LTM file, averaged over time' / &
+'                            interval T0,T1 days around measurement time (default: -1,1)' / &
 '  --range                   Fix range biases known for PDAP v3.0 and v3.1' / &
 '                            Also fix result of temporary error in radar data base (RMC only, 34 gates)' / &
 '  --sig0                    Add -7.41 dB to HR sigma0' / &
@@ -418,26 +422,26 @@ call get_var(ncidc, 'total_power', cal1(:,4))
 call nfs(nf90_close(ncid))
 end subroutine load_cal1
 
-! Average CAL1 values
+! Average CAL1 values from the CAL1 LTM file and round to 0.1 mm and 0.01 dB, resp.
 
 subroutine cal1_average (time, cal1_avg, redundant)
 real(eightbytereal), intent(in) :: time
 real(eightbytereal), intent(out) :: cal1_avg(:)
 logical, intent(in) :: redundant
 integer(fourbyteint) :: navg, flags
-real(eightbytereal), parameter :: dt = 86400d0
+real(eightbytereal), parameter :: cal1_scale(4) = (/ 1d-4, 1d-2, 1d-4, 1d-2 /)
 if (redundant) then
 	flags = 33
 else
 	flags = 1
 endif
-cal1_mask = (cal1_time >= time - dt .and. cal1_time <= time + dt .and. cal1_flags == flags)
+cal1_mask = (cal1_time >= time + cal1_interval(1) .and. cal1_time <= time + cal1_interval(2) .and. cal1_flags == flags)
 navg = count(cal1_mask)
 if (navg == 0) then
 	cal1_avg = cal1(size(cal1),:)
 else
 	do i = 1,4
-		cal1_avg(i) = sum(cal1(:,i), cal1_mask) / navg
+		cal1_avg(i) = nint(sum(cal1(:,i), cal1_mask) / navg / cal1_scale(i)) * cal1_scale(i)
 	enddo
 endif
 end subroutine cal1_average
