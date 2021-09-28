@@ -56,28 +56,23 @@ case $dir in
 esac
 
 # Process "unadultered" files
-dir=6a.${type}0
-rads_open_sandbox "$dir"
+rads_open_sandbox "6a.${type}0"
 
 date													>  "$log" 2>&1
 
 # Set bookmark according to $d0
 mrk=$RADSDATAROOT/.bookmark
 TZ=UTC touch -t ${d0}0000 "$mrk"
-LIST=`mktemp ${TMPDIR:-/tmp}/rads.XXXXXX.lst`
-find "$@" -name "*${red}*.nc" -a -newer "$mrk" | sort			>  "$LIST"
+find "$@" -name "*${red}*.nc" -a -newer "$mrk" | sort			>  "$lst"
 
 # Convert only to RADS, nothing else
-rads_gen_s6       $options --cal1 --min-rec=6 < "$LIST"		>> "$log" 2>&1
-rads_close_sandbox
+rads_gen_s6       $options --cal1 --min-rec=6 < "$lst"			>> "$log" 2>&1
 
-# Now process do the same again, and do the post-processing
-dir=6a.${type}1
-rads_open_sandbox $dir
+date													>> "$log" 2>&1
 
-date													>  "$log" 2>&1
+# Now continue with the post-processing
+rads_reuse_sandbox "6a.${type}1"
 
-rads_gen_s6       $options --cal1 --min-rec=6 < "$LIST"		>> "$log" 2>&1
 rads_fix_s6       $options --all							>> "$log" 2>&1
 
 # Add MOE orbit (for NRT only)
@@ -95,4 +90,3 @@ rads_add_sla      $options								>> "$log" 2>&1
 date													>> "$log" 2>&1
 
 rads_close_sandbox
-rm -f $LIST
