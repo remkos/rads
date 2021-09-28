@@ -107,7 +107,7 @@ character(len=rads_cmdl) :: infile, arg
 
 ! Header variables
 
-integer(fourbyteint) :: ncid, ncid1, ncidk, ncidc, ncid20, ncid20k, cyclenr, passnr, varid, nrec20
+integer(fourbyteint) :: ncid, ncid1, ncidk, ncidc, ncid20, ncid20k, ncid20c, cyclenr, passnr, varid, nrec20
 real(eightbytereal) :: equator_time
 
 ! Data variables
@@ -116,8 +116,8 @@ integer(twobyteint), allocatable :: flags_mle3(:), flags_save(:)
 character(len=2) :: mss_cnescls_ver = '15', mss_dtu_ver = '18', tide_fes_ver = '14'
 character(len=3) :: tide_got_ver = '410'
 character(len=8) :: chd_ver, cha_ver, cnf_ver
-integer :: latency = rads_nrt
-logical :: lr
+integer :: latency = rads_nrt, nsat
+logical :: lr, lcal1 = .false.
 
 ! Other local variables
 
@@ -130,6 +130,15 @@ call synopsis
 call rads_gen_getopt ('', ' min-rec:')
 call synopsis ('--head')
 if (sat /= '') call rads_init (S, sat)
+call rads_set_options (' cal1')
+call rads_load_options (nsat)
+
+do i = 1,rads_nopt
+	select case (rads_opt(i)%opt)
+	case ('cal1')
+		lcal1 = .true.
+	end select
+enddo
 
 !----------------------------------------------------------------------
 ! Read all file names from standard input
@@ -509,9 +518,39 @@ do
 	a = latency
 	call new_var ('latency', a)
 
+! Get the L1B file name so we can look for the calibration values
+
+	call nfs(nf90_get_att(ncid,nf90_global,'xref_altimeter_level1b',arg))
+	call nfs(nf90_close(ncid))
+
+! When requested, load the calibration values from the L1B file
+
+	if (lcal1) then
+		call log_string(arg)
+		call parseenv('${RADSROOT}/ext/' // S%sat // '/' // arg(89:91) // '/' // arg(11:12) // '/' // &
+			arg(93:94) // '/L1B/c' // arg(72:74) // '/' // trim(arg) // '/measurement.nc', infile)
+		if (nft(nf90_open(infile,nf90_nowrite,ncid))) then
+			call log_string ('Error: failed to open L1B file')
+		else
+			call nfs(nf90_inq_ncid(ncid, 'data_20', ncid20))
+			call nfs(nf90_inq_ncid(ncid20, 'ku', ncid20k))
+			call get_var (ncid20k, 'range_cor_internal_delay_cal', a(1:1))
+			call new_var ('cal1_range_ku', a(1:1))
+			call get_var (ncid20k, 'cal1_power', a(1:1))
+			call new_var ('cal1_power_ku', a(1:1))
+			if (lr) then
+				call nfs(nf90_inq_ncid(ncid20, 'c', ncid20c))
+				call get_var(ncid20c, 'range_cor_internal_delay_cal', a(1:1))
+				call new_var ('cal1_range_c', a(1:1))
+				call get_var(ncid20c, 'cal1_power', a(1:1))
+				call new_var ('cal1_power_c', a(1:1))
+			endif
+			call nfs(nf90_close(ncid))
+		endif
+	endif
+
 ! Dump the data
 
-	call nfs(nf90_close(ncid))
 	call put_rads
 	deallocate (a, b, flags, flags_mle3, flags_save)
 	if (nrec20 /= 0) deallocate (telemetry_type_flag)
@@ -527,13 +566,14 @@ contains
 !-----------------------------------------------------------------------
 
 subroutine synopsis (flag)
-character(len=*), optional :: flag
+character(len=*), optional, intent(in) :: flag
 if (rads_version ('Write Sentinel-6 data to RADS', flag=flag)) return
 call synopsis_devel (' < list_of_Sentinel6_file_names')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
-'  --min-rec=MIN_REC         Specify minimum number of records per pass to process' // &
+'  --min-rec=MIN_REC         Specify minimum number of records per pass to process' / &
+'  --cal1                    Read the CAL1 values from the appropriate L1B file' // &
 'This program converts Sentinel-6 NRT/STC/NTC Level 2 products to RADS data' / &
 'files with the name $RADSDATAROOT/data/SS/F/pPPPP/s6pPPPPcCCC.nc.' / &
 'The directory is created automatically and old files are overwritten.')
