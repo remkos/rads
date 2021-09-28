@@ -41,7 +41,7 @@ use rads
 use rads_time
 use rads_misc
 use rads_netcdf
-integer(fourbyteint) :: lstat=2, reject=-1
+integer(fourbyteint) ::  lstat = 2, reject = -1
 character(len=*), parameter :: wtype(0:3)=(/ &
 	'box weight                  ', 'constant weight             ', &
 	'area weighted               ', 'inclination-dependent weight'/)
@@ -65,7 +65,7 @@ logical :: echofilepaths = .false.
 ! Initialize RADS or issue help
 call synopsis
 call rads_set_options ('ab::c::d::flmo::p::r::s ' // &
-	'dt echo-file-paths force format-cycle format-day format-pass full-year min: minmax output:: reject-on-nan: res:')
+	'dt echo-file-paths force format-cycle format-day format-pass full-year min: minmax no-stddev output:: reject-on-nan: res:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 
@@ -107,6 +107,8 @@ do i = 1,rads_nopt
 		wmode = 2
 	case ('s')
 		wmode = 3
+	case ('no-stddev')
+		lstat = 1
 	case ('l', 'minmax')
 		lstat = 4
 	case ('format-cycle')
@@ -446,7 +448,9 @@ if (ascii) then
 			call bit_transfer (tot(j)%xmax)
 		enddo
 	endif
-	if (lstat == 2) then
+	if (lstat == 1) then
+		write (*,format_string) nr, tot(0)%mean, (tot(j)%mean,j=1,S(1)%nsel)
+	else if (lstat == 2) then
 		write (*,format_string) nr, tot(0)%mean, (tot(j)%mean,tot(j)%sum2,j=1,S(1)%nsel)
 	else
 		write (*,format_string) nr, tot(0)%mean, (tot(j)%mean,tot(j)%sum2,tot(j)%xmin,tot(j)%xmax,j=1,S(1)%nsel)
@@ -464,7 +468,11 @@ else
 		call rads_put_var (S(1), Pout, var, (/ dble(pass) /), start(2:2))
 	endif
 	call rads_put_var (S(1), Pout, S(1)%time, (/ tot(0)%mean /), start(2:2))
-	if (lstat == 2) then
+	if (lstat == 1) then
+		do j = 1,S(1)%nsel
+			call rads_put_var (S(1), Pout, S(1)%sel(j), (/ tot(j)%mean /), start)
+		enddo
+	else if (lstat == 2) then
 		do j = 1,S(1)%nsel
 			call rads_put_var (S(1), Pout, S(1)%sel(j), &
 				(/ tot(j)%mean, tot(j)%sum2 /), start)
@@ -509,8 +517,9 @@ integer :: j0, j, l
 611 format ('# ( 1, 2) cycle and pass')
 612 format ('#    ( 1) cycle'/'#    ( 2) date at beginning of cycle [YYMMDD]')
 620 format ('#    (',i2,') nr of measurements'/'#    (',i2,') mean time [',a,']')
-621 format ('# (',i2,'-',i2,') mean and stddev of ')
-622 format ('# (',i2,'-',i2,') mean, stddev, min and max of ')
+621 format ('#    (',i2,') mean of ')
+622 format ('# (',i2,'-',i2,') mean and stddev of ')
+624 format ('# (',i2,'-',i2,') mean, stddev, min and max of ')
 
 write (*,600) trim(wtype(wmode)), timestamp(), trim(S(1)%command), &
 	trim(S(1)%sat), trim(S(1)%phase%name), S(1)%cycles(1:2), S(1)%passes(1:2)
@@ -530,10 +539,12 @@ write (*,620) j0+1,j0+2,trim(S(1)%time%info%units)
 format_string = '(i9,f12.0'
 do j = 1,S(1)%nsel
 	! Write description of variables
-	if (lstat == 2) then
-		write (*,621,advance='no') 2*j+j0+1,2*j+j0+2
+	if (lstat == 1) then
+		write (*,621,advance='no') (j-1)+j0+3
+	else if (lstat == 2) then
+		write (*,622,advance='no') 2*(j-1)+j0+3,2*j+j0+2
 	else
-		write (*,622,advance='no') 4*j+j0-1,4*j+j0+2
+		write (*,624,advance='no') 4*(j-1)+j0+3,4*j+j0+2
 	endif
 	call rads_long_name_and_units(S(1)%sel(j))
 	! Assemble format for statistics lines
@@ -581,7 +592,9 @@ call nfs (nf90_def_var (ncid, 'stat', nf90_int1, dimid(2:2), varid(2)))
 call nfs (nf90_put_att (ncid, varid(2), 'long_name', 'statistics type'))
 call nfs (nf90_put_att (ncid, varid(2), 'flag_values', istat))
 call nfs (nf90_put_att (ncid, varid(2), 'flag_meanings', 'mean standard_deviation minimum maximum'))
-if (lstat == 2) then
+if (lstat == 1) then
+	call nfs (nf90_put_att (ncid, varid(2), 'comment', 'Data columns are mean values'))
+else if (lstat == 2) then
 	call nfs (nf90_put_att (ncid, varid(2), 'comment', 'Data columns are mean and standard deviation'))
 else
 	call nfs (nf90_put_att (ncid, varid(2), 'comment', 'Data columns are mean, standard deviation, minimum, and maximum'))
