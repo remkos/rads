@@ -234,8 +234,11 @@ do_rain = any(drain /= 0d0)
 
 if (lsig0) then
 	if (.not.lr) then
-		dsig0(1) = dsig0(1) - 7.41d0
-		if (cnf_ver >= '009') dsig0(1) = dsig0(1) - 5.67d0	! Changed by 1.74 dB since L2 CONF 009
+		if (cnf_ver < '009') then
+			dsig0(1) = dsig0(1) - 7.41d0
+		else
+			dsig0(1) = dsig0(1) - 5.67d0	! Changed by 1.74 dB since L2 CONF 009
+		endif
 	endif
 endif
 do_sig0 = any(dsig0 /= 0d0)
