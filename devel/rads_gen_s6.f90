@@ -107,7 +107,7 @@ character(len=rads_cmdl) :: infile, arg
 
 ! Header variables
 
-integer(fourbyteint) :: ncid, ncid1, ncidk, ncidc, ncid20, ncid20k, cyclenr, passnr, varid, nrec20
+integer(fourbyteint) :: ncid, ncid1, ncidk, ncidc, ncid20, ncid20k, ncid20c, cyclenr, passnr, varid, nrec20
 real(eightbytereal) :: equator_time
 
 ! Data variables
@@ -522,7 +522,34 @@ do
 
 	call nfs(nf90_get_att(ncid,nf90_global,'xref_altimeter_level1b',arg))
 	call nfs(nf90_close(ncid))
-	if (lcal1) call copy_cal1 (arg)
+
+! When requested, load the calibration values from the L1B file
+
+	if (lcal1) then
+		call log_string(arg)
+		call parseenv('${RADSROOT}/ext/' // S%sat // '/' // arg(89:91) // '/' // arg(11:12) // '/' // &
+			arg(93:94) // '/L1B/c' // arg(72:74) // '/' // trim(arg) // '/measurement.nc', infile)
+		if (nft(nf90_open(infile,nf90_nowrite,ncid))) then
+			call log_string ('Error: failed to open L1B file')
+			return
+		endif
+		call nfs(nf90_inq_ncid(ncid, 'data_20', ncid20))
+		call nfs(nf90_inq_ncid(ncid20, 'ku', ncid20k))
+		call get_var (ncid20k, 'range_cor_internal_delay_cal', a(1:1))
+		call new_var ('cal1_range_ku', a(1:1))
+		call get_var (ncid20k, 'cal1_power', a(1:1))
+		call new_var ('cal1_power_ku', a(1:1))
+
+		if (lr) then
+			call nfs(nf90_inq_ncid(ncid20, 'c', ncid20c))
+			call get_var(ncid20c, 'range_cor_internal_delay_cal', a(1:1))
+			call new_var ('cal1_range_c', a(1:1))
+			call get_var(ncid20c, 'cal1_power', a(1:1))
+			call new_var ('cal1_power_c', a(1:1))
+		endif
+
+		call nfs(nf90_close(ncid))
+	endif
 
 ! Dump the data
 
@@ -554,45 +581,5 @@ write (*,1310)
 'The directory is created automatically and old files are overwritten.')
 stop
 end subroutine synopsis
-
-!-----------------------------------------------------------------------
-! Copy the CAL1 values from the L1B file into RADS
-!-----------------------------------------------------------------------
-
-subroutine copy_cal1 (filenm)
-character(len=*), intent(in) :: filenm
-character(len=rads_strl) :: pathnm
-integer(fourbyteint) :: ncid, ncid20, ncid20k, ncid20c
-real(eightbytereal) :: cal1(4)
-
-call log_string('l1b = ' // filenm)
-call parseenv('${RADSROOT}/ext/' // S%sat // '/' // filenm(89:91) // '/' // filenm(11:12) // '/' // &
-	filenm(93:94) // '/L1B/c' // filenm(72:74) // '/' // trim(filenm) // '/measurement.nc', pathnm)
-cal1 = 0
-if (nft(nf90_open(pathnm,nf90_nowrite,ncid))) then
-	call log_string ('Error: failed to open L1B file')
-	return
-endif
-call nfs(nf90_inq_ncid(ncid, 'data_20', ncid20))
-call nfs(nf90_inq_ncid(ncid20, 'ku', ncid20k))
-call get_var (ncid20k, 'range_cor_internal_delay_cal', cal1(1:1))
-call get_var (ncid20k, 'cal1_power', cal1(2:2))
-
-call new_var ('cal1_range_ku', cal1(1:1))
-call new_var ('cal1_power_ku', cal1(2:2))
-
-if (lr) then
-	call nfs(nf90_inq_ncid(ncid20, 'c', ncid20c))
-	call get_var(ncid20c, 'range_cor_internal_delay_cal', cal1(3:3))
-	call get_var(ncid20c, 'cal1_power', cal1(4:4))
-
-	call new_var ('cal1_range_c', cal1(3:3))
-	call new_var ('cal1_power_c', cal1(4:4))
-endif
-
-write (*,'(4f13.4)') cal1
-call nfs(nf90_close(ncid))
-
-end subroutine copy_cal1
 
 end program rads_gen_s6

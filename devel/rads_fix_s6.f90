@@ -171,9 +171,6 @@ if (lcal1) then
 		call rads_get_var (S, P, 'cal1_power_c',  dum)
 		cal1_old(4:4) = dum(1)
 	endif
-
-	write (*,'(/a,2(f10.4,f8.2))') "cal1_old: ", cal1_old
-	write (*,'(a,2(f10.4,f8.2))') "cal1_new: ", cal1_new
 endif
 
 ! range: Replace CAL1 and/or add additional bias
@@ -184,7 +181,7 @@ endif
 !           24 gates: error in radar data base
 
 if (lrange) then
-	if (lcal1 .and. all(isan_(cal1_old))) drange = drange + (cal1_old(1:3:2) - cal1_new(1:3:2))
+	if (lcal1 .and. all(isan_(cal1_old))) drange = drange + (cal1_new(1:3:2) - cal1_old(1:3:2))
 	drange = drange + bias_range
 	if (latency(1) == rads_nrt) then
 		if (chd_ver < '003') drange = drange + sign_error - 0.0435d0
