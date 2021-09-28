@@ -256,6 +256,7 @@ write (*,1300)
 '  -a                        Weight measurements by cosine of latitude'/ &
 '  -s                        Use inclination-dependent weight'/ &
 '  -l, --minmax              Output min and max in addition to mean and stddev'/ &
+'  --no-stddev               Output mean values only' / &
 '  --dt DT                   Set minimum bin size in seconds (default is determined by satellite)'/ &
 '  --full-year               Write date as YYYYMMDD instead of the default YYMMDD'/ &
 '  --min MINNR               Minimum number of measurements per statistics record (default: 2)'/ &

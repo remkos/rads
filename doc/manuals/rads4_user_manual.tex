@@ -408,7 +408,6 @@ It is also possible to read global or variable attributes, which will then be as
 Operator & Description \\
 \hline
 \input{sub/rads_math.tab}
-\hline
 \end{tabular}
 \caption{Math operators that can be used in the \protect\ctag{data}-tag. Left of the operator (in uppercase) are the input value(s); on the right of the operator the output value(s).}
 \label{tab:math-operators}
@@ -979,6 +978,7 @@ Average measurements by boxes of a given size in degrees (by default box-weighti
 \item[\sopt{s}] Weight the measurements by a weight dependent on latitude and inclination
 \item[\opt{l}{minmax}] ~\\
 Output the minimum and maximum for each variable, in addition to their mean and standard deviation
+\item[\lopt{no-stddev}] Output mean values only
 \item[\loptc{dt}{DT}] ~\\
 Set the minimum bin size in seconds. The default is the maximum 1-Hz sampling rate of the missions selected.
 \item[\lopt{full-year}] Write date as YYYYMMDD instead of the default YYMMDD
