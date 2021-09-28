@@ -159,7 +159,11 @@ call rads_get_var (S, P, 'latency', latency, .true.)
 ! cal1: Replace the values with those from the LTM
 
 if (lcal1) then
-	if (need_file ('S6A_P4_1__C1HR_AX.nc', aux_cal1)) call load_cal1
+	if (val) then
+		if (need_file ('VAL/S6A_P4_1__C1HR_AX.nc', aux_cal1)) call load_cal1
+	else
+		if (need_file ('OPE/S6A_P4_1__C1HR_AX.nc', aux_cal1)) call load_cal1
+	endif
 	call cal1_average (P%equator_time, cal1_new, redundant)
 	call rads_get_var (S, P, 'cal1_range_ku', dum)
 	cal1_old(1:1) = dum(1)

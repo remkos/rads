@@ -64,9 +64,11 @@ date													>  "$log" 2>&1
 # Set bookmark according to $d0
 mrk=$RADSDATAROOT/.bookmark
 TZ=UTC touch -t ${d0}0000 "$mrk"
+LIST=`mktemp ${TMPDIR:-/tmp}/rads.XXXXXX.lst`
+find "$@" -name "*${red}*.nc" -a -newer "$mrk" | sort			>  "$LIST"
 
-find "$@" -name "*${red}*.nc" -a -newer "$mrk" | sort	>  "$lst"
-rads_gen_s6 	$options --min-rec=6 < "$lst"			>> "$log" 2>&1
+# Convert only to RADS, nothing else
+rads_gen_s6       $options --cal1 --min-rec=6 < "$LIST"		>> "$log" 2>&1
 rads_close_sandbox
 
 # Now process do the same again, and do the post-processing
@@ -75,13 +77,8 @@ rads_open_sandbox $dir
 
 date													>  "$log" 2>&1
 
-# Set bookmark according to $d0
-mrk=$RADSDATAROOT/.bookmark
-TZ=UTC touch -t ${d0}0000 "$mrk"
-
-find "$@" -name "*${red}*.nc" -a -newer "$mrk" | sort	>  "$lst"
-rads_gen_s6		$options --min-rec=6 < "$lst"			>> "$log" 2>&1
-rads_fix_s6		$options --all							>> "$log" 2>&1
+rads_gen_s6       $options --cal1 --min-rec=6 < "$LIST"		>> "$log" 2>&1
+rads_fix_s6       $options --all							>> "$log" 2>&1
 
 # Add MOE orbit (for NRT only)
 case $type in
@@ -90,7 +87,7 @@ esac
 
 # General geophysical corrections
 rads_add_common   $options								>> "$log" 2>&1
-rads_add_iono     $options --all						>> "$log" 2>&1
+rads_add_iono     $options --all							>> "$log" 2>&1
 rads_add_mog2d    $options								>> "$log" 2>&1
 # Redetermine SSHA
 rads_add_sla      $options								>> "$log" 2>&1
@@ -98,3 +95,4 @@ rads_add_sla      $options								>> "$log" 2>&1
 date													>> "$log" 2>&1
 
 rads_close_sandbox
+rm -f $LIST

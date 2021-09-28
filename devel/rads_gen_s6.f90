@@ -531,24 +531,22 @@ do
 			arg(93:94) // '/L1B/c' // arg(72:74) // '/' // trim(arg) // '/measurement.nc', infile)
 		if (nft(nf90_open(infile,nf90_nowrite,ncid))) then
 			call log_string ('Error: failed to open L1B file')
-			return
+		else
+			call nfs(nf90_inq_ncid(ncid, 'data_20', ncid20))
+			call nfs(nf90_inq_ncid(ncid20, 'ku', ncid20k))
+			call get_var (ncid20k, 'range_cor_internal_delay_cal', a(1:1))
+			call new_var ('cal1_range_ku', a(1:1))
+			call get_var (ncid20k, 'cal1_power', a(1:1))
+			call new_var ('cal1_power_ku', a(1:1))
+			if (lr) then
+				call nfs(nf90_inq_ncid(ncid20, 'c', ncid20c))
+				call get_var(ncid20c, 'range_cor_internal_delay_cal', a(1:1))
+				call new_var ('cal1_range_c', a(1:1))
+				call get_var(ncid20c, 'cal1_power', a(1:1))
+				call new_var ('cal1_power_c', a(1:1))
+			endif
+			call nfs(nf90_close(ncid))
 		endif
-		call nfs(nf90_inq_ncid(ncid, 'data_20', ncid20))
-		call nfs(nf90_inq_ncid(ncid20, 'ku', ncid20k))
-		call get_var (ncid20k, 'range_cor_internal_delay_cal', a(1:1))
-		call new_var ('cal1_range_ku', a(1:1))
-		call get_var (ncid20k, 'cal1_power', a(1:1))
-		call new_var ('cal1_power_ku', a(1:1))
-
-		if (lr) then
-			call nfs(nf90_inq_ncid(ncid20, 'c', ncid20c))
-			call get_var(ncid20c, 'range_cor_internal_delay_cal', a(1:1))
-			call new_var ('cal1_range_c', a(1:1))
-			call get_var(ncid20c, 'cal1_power', a(1:1))
-			call new_var ('cal1_power_c', a(1:1))
-		endif
-
-		call nfs(nf90_close(ncid))
 	endif
 
 ! Dump the data
