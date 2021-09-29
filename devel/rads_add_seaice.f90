@@ -159,7 +159,7 @@ do i = 1,n
 
 ! Set weights for bi-linear interpolation in space
 
-	if (lon(i) < -360d0 .or. lat(i) < -360d0) then
+	if (lon(i) < -360d0 .or. lat(i) > 360d0) then
 		ice(i) = nan
 		cycle
 	endif
@@ -169,69 +169,61 @@ do i = 1,n
 		cycle
 	endif
 
-	if (lat(i) > 31d0 .or. lat(i) < -39d0) then
-		if (lon(i) < 0d0) lon(i) = lon(i) + 360d0
+	if (lon(i) < 0d0) lon(i) = lon(i) + 360d0
 
-		if (lat(i) > 31d0 ) then
-			mf = cos(sp)/((1d0-((e**2d0)*(cos(sp)**2d0)))**0.5d0)
-			t = tan((pi/4d0)-((lat(i)*d2r)/2d0))*(((1d0+(e*sin(lat(i)*d2r)))/ &
-				(1d0-(e*sin(lat(i)*d2r))))**(e/2d0))
-			tf = tan((pi/4d0)-(sp/2d0))*(((1d0+(e*sin(sp)))/(1d0-(e*sin(sp))))**(e/2d0))
-			k0 = mf*((((1d0+e)**(1d0+e))*((1d0-e)**(1d0-e)))**0.5d0)/(2d0*tf)
-			rho = (2d0*a*k0*t)/((((1d0+e)**(1d0+e))*((1d0-e)**(1d0-e)))**0.5d0)
-			dE = -rho*cos((lon(i)*d2r)+lambda_nh)
-			dN = rho*sin((lon(i)*d2r)+lambda_nh)
-			wx = 385.5d0 + ((FE-dE)/10000d0)
-			wy = 585.5d0 - ((FN+dN)/10000d0)
-		endif
+	if (lat(i) > 31d0 ) then
+		mf = cos(sp)/((1d0-((e**2d0)*(cos(sp)**2d0)))**0.5d0)
+		t = tan((pi/4d0)-((lat(i)*d2r)/2d0))*(((1d0+(e*sin(lat(i)*d2r)))/ &
+			(1d0-(e*sin(lat(i)*d2r))))**(e/2d0))
+		tf = tan((pi/4d0)-(sp/2d0))*(((1d0+(e*sin(sp)))/(1d0-(e*sin(sp))))**(e/2d0))
+		k0 = mf*((((1d0+e)**(1d0+e))*((1d0-e)**(1d0-e)))**0.5d0)/(2d0*tf)
+		rho = (2d0*a*k0*t)/((((1d0+e)**(1d0+e))*((1d0-e)**(1d0-e)))**0.5d0)
+		dE = -rho*cos((lon(i)*d2r)+lambda_nh)
+		dN = rho*sin((lon(i)*d2r)+lambda_nh)
+		wx = 385.5d0 + ((FE-dE)/10000d0)
+		wy = 585.5d0 - ((FN+dN)/10000d0)
+	else
+		mf = cos(-sp)/((1d0-((e**2d0)*(cos(-sp)**2d0)))**0.5d0)
+		t = tan((pi/4d0)+((lat(i)*d2r)/2d0))/(((1d0+(e*sin(lat(i)*d2r)))/ &
+			(1d0-(e*sin(lat(i)*d2r))))**(e/2d0))
+		tf = tan((pi/4d0)+(-sp/2d0))/(((1d0+(e*sin(-sp)))/(1d0-(e*sin(-sp))))**(e/2d0))
+		k0 = mf*((((1d0+e)**(1d0+e))*((1d0-e)**(1d0-e)))**0.5d0)/(2d0*tf)
+		rho = (2d0*a*k0*t)/((((1d0+e)**(1d0+e))*((1d0-e)**(1d0-e)))**0.5d0)
+		dE = rho * sin((lon(i)*d2r)-lambda_sh)
+		dN = rho * cos((lon(i)*d2r)-lambda_sh)
+		wx = 395.5d0 + ((FE+dE)/10000d0)
+		wy = 435.5d0 - ((FN+dN)/10000d0)
+	endif
 
-		if (lat(i) < -39d0 ) then
-			mf = cos(-sp)/((1d0-((e**2d0)*(cos(-sp)**2d0)))**0.5d0)
-			t = tan((pi/4d0)+((lat(i)*d2r)/2d0))/(((1d0+(e*sin(lat(i)*d2r)))/ &
-				(1d0-(e*sin(lat(i)*d2r))))**(e/2d0))
-			tf = tan((pi/4d0)+(-sp/2d0))/(((1d0+(e*sin(-sp)))/(1d0-(e*sin(-sp))))**(e/2d0))
-			k0 = mf*((((1d0+e)**(1d0+e))*((1d0-e)**(1d0-e)))**0.5d0)/(2d0*tf)
-			rho = (2d0*a*k0*t)/((((1d0+e)**(1d0+e))*((1d0-e)**(1d0-e)))**0.5d0)
-			dE = rho * sin((lon(i)*d2r)-lambda_sh)
-			dN = rho * cos((lon(i)*d2r)-lambda_sh)
-			wx = 395.5d0 + ((FE+dE)/10000d0)
-			wy = 435.5d0 - ((FN+dN)/10000d0)
-		endif
+	ix = floor(wx)
+	iy = floor(wy)
+	wx = wx - ix
+	wy = wy - iy
 
-		ix = floor(wx)
-		iy = floor(wy)
-		wx = wx - ix
-		wy = wy - iy
-
-		f(1,:,:) = (1d0-wx)
-		f(2,:,:) = wx
-		f(:,1,:) = f(:,1,:) * (1d0-wy)
-		f(:,2,:) = f(:,2,:) * wy
+	f(1,:,:) = (1d0-wx)
+	f(2,:,:) = wx
+	f(:,1,:) = f(:,1,:) * (1d0-wy)
+	f(:,2,:) = f(:,2,:) * wy
 
 ! Set weights for linear interpolation in time
 
-		wt = (time(i)/86400d0 - t1)/(t2 - t1)
-		f(:,:,1) = f(:,:,1) * (1d0-wt)
-		f(:,:,2) = f(:,:,2) * wt
+	wt = (time(i)/86400d0 - t1)/(t2 - t1)
+	f(:,:,1) = f(:,:,1) * (1d0-wt)
+	f(:,:,2) = f(:,:,2) * wt
 
 ! Interpolate ice concentration (has invalid values)
 
-		if (lat(i) > 31d0) then
-			if (ix > 0d0 .and. iy > 0d0 .and. ix < 761d0 .and. iy < 1121d0) then
-				ice(i) = mat_product(grids_nh(ix:ix+1,iy:iy+1,:),f)
-				ice(i)=ice(i)*.01d0
-			else
-				ice(i)=nan
-			endif
+	if (lat(i) > 31d0) then
+		if (ix > 0d0 .and. iy > 0d0 .and. ix < 761d0 .and. iy < 1121d0) then
+			ice(i) = mat_product(grids_nh(ix:ix+1,iy:iy+1,:),f) * 1d-2
+		else
+			ice(i) = nan
 		endif
-
-		if (lat(i) < -39d0) then
-			if (ix > 0d0 .and. iy > 0d0 .and. ix < 791d0 .and. iy < 831d0) then
-				ice(i) = mat_product(grids_sh(ix:ix+1,iy:iy+1,:),f)
-				ice(i)=ice(i)*.01d0
-			else
-				ice(i)=nan
-			endif
+	else
+		if (ix > 0d0 .and. iy > 0d0 .and. ix < 791d0 .and. iy < 831d0) then
+			ice(i) = mat_product(grids_sh(ix:ix+1,iy:iy+1,:),f) * 1d-2
+		else
+			ice(i) = nan
 		endif
 	endif
 enddo
