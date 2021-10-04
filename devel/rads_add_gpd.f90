@@ -37,7 +37,7 @@ integer(fourbyteint) :: cyc, pass
 type(rads_sat) :: S
 type(rads_pass) :: P
 character(rads_cmdl) :: gpd_filenm
-integer(fourbyteint) :: gpd_nr, gpd_done, ncid, dimid
+integer(fourbyteint) :: gpd_nr, ncid, dimid
 real(eightbytereal), allocatable :: gpd_time(:), gpd_wet_tropo_cor(:), gpd_reference_height(:), gpd_source_flag(:)
 
 ! Other local variables
@@ -83,12 +83,10 @@ do
 	call get_var (ncid, 'gpd_reference_height_01', gpd_reference_height)
 	call get_var (ncid, 'gpd_source_flag_01', gpd_source_flag)
 	call nfs(nf90_close(ncid))
-	gpd_done = 0
 
 	do pass = S%passes(1), S%passes(2), S%passes(3)
 		call rads_open_pass (S, P, cyc, pass, .true.)
 		if (P%ndata > 0) call process_pass (P%ndata)
-		gpd_done = gpd_done + P%ndata
 		call rads_close_pass (S, P)
 	enddo
 enddo
@@ -118,15 +116,21 @@ subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
 integer(fourbyteint) :: i
 real(eightbytereal) :: time(n)
+logical :: fail
 
 call log_pass (P)
 
-! Get time and check against GPD time
+! Get time and find the matching GPD times
 
 call rads_get_var (S, P, 'time', time, .true.)
-i = count (time /= gpd_time(gpd_done+1:gpd_done+n))
-if (i > 0) then
-	call log_string ('Error: time_gpd /= time')
+i = findloc (gpd_time, time(1), 1) - 1
+if (i < 0) then
+	fail = .true.
+else
+	fail = (count (time == gpd_time(i+1:i+n)) < n)
+endif
+if (fail) then
+	call log_string ('Error: cannot find matching times')
 	call log_records (0)
 	return
 endif
@@ -141,9 +145,9 @@ call rads_def_var (S, P, 'gpd_source_flag')
 
 ! Write output variable
 
-call rads_put_var (S, P, 'gpd_wet_tropo_cor', gpd_wet_tropo_cor)
-call rads_put_var (S, P, 'gpd_reference_height', gpd_reference_height)
-call rads_put_var (S, P, 'gpd_source_flag', gpd_source_flag)
+call rads_put_var (S, P, 'gpd_wet_tropo_cor', gpd_wet_tropo_cor(i+1:i+n))
+call rads_put_var (S, P, 'gpd_reference_height', gpd_reference_height(i+1:i+n))
+call rads_put_var (S, P, 'gpd_source_flag', gpd_source_flag(i+1:i+n))
 
 call log_records (n)
 end subroutine process_pass
