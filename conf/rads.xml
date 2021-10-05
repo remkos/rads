@@ -930,8 +930,9 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Computed at the altimeter time-tag through space-time objective analysis using the GPD+ algorithm, by combining all available observations. The correction is calibrated against the SSMIS data set. A wet tropospheric correction must be added (negative value) to the instrument range to correct this range measurement for the wet tropospheric range delay of the radar pulse.</comment>
 </var>
+<alias name="wet_tropo_gpd">gpd_wet_tropo_cor</alias>
 <var name="gpd_reference_height">
-	<long_name>Height at which the GPD+ WTC has been computed</long_name>
+	<long_name>height at which the GPD+ WTC has been computed</long_name>
 	<source>UPorto GPD+</source>
 	<units>m</units>
 	<data>gpd_reference_height</data>

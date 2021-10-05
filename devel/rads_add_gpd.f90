@@ -59,11 +59,7 @@ do j = 1,rads_nopt
 	end select
 enddo
 
-! Process all GPD input data files
-! NOTE: This is not the most efficient way to do things in case this is run instide a SANDBOX.
-!       In that case it would be futile to open and read every input file until later to discover that
-!       there are no corresponding RADS pass files to process.
-!       So later the opening/reading of the GPD input files should be put within the pass loop.
+! Process all GPD input data files, but only open and read them when corresponding RADS files are found
 
 do
 	read (*,'(a)',iostat = ios) gpd_filenm
@@ -72,23 +68,28 @@ do
 	cyc = -1
 	read (gpd_filenm(l+2:l+4),*,iostat = ios) cyc
     if (cyc < S%cycles(1) .or. cyc > S%cycles(2)) cycle
-
-	call log_string ('(' // trim(gpd_filenm) // ')')
-	call nfs(nf90_open(gpd_filenm,nf90_nowrite,ncid))
-	call nfs(nf90_inq_dimid(ncid, 'time_01', dimid))
-	call nfs(nf90_inquire_dimension(ncid, dimid, len=gpd_nr))
-	allocate (gpd_time(gpd_nr), gpd_wet_tropo_cor(gpd_nr), gpd_reference_height(gpd_nr), gpd_source_flag(gpd_nr))
-	call get_var (ncid, 'time_01 473299200 ADD', gpd_time)
-	call get_var (ncid, 'gpd_wet_tropo_cor_01', gpd_wet_tropo_cor)
-	call get_var (ncid, 'gpd_reference_height_01', gpd_reference_height)
-	call get_var (ncid, 'gpd_source_flag_01', gpd_source_flag)
-	call nfs(nf90_close(ncid))
+    gpd_nr = 0
 
 	do pass = S%passes(1), S%passes(2), S%passes(3)
 		call rads_open_pass (S, P, cyc, pass, .true.)
-		if (P%ndata > 0) call process_pass (P%ndata)
+		if (P%ndata > 0) then
+			if (gpd_nr == 0) then
+				call log_string ('(' // trim(gpd_filenm) // ')')
+				call nfs(nf90_open(gpd_filenm,nf90_nowrite,ncid))
+				call nfs(nf90_inq_dimid(ncid, 'time_01', dimid))
+				call nfs(nf90_inquire_dimension(ncid, dimid, len=gpd_nr))
+				allocate (gpd_time(gpd_nr), gpd_wet_tropo_cor(gpd_nr), gpd_reference_height(gpd_nr), gpd_source_flag(gpd_nr))
+				call get_var (ncid, 'time_01 473299200 ADD', gpd_time)
+				call get_var (ncid, 'gpd_wet_tropo_cor_01', gpd_wet_tropo_cor)
+				call get_var (ncid, 'gpd_reference_height_01', gpd_reference_height)
+				call get_var (ncid, 'gpd_source_flag_01', gpd_source_flag)
+				call nfs(nf90_close(ncid))
+			endif
+			call process_pass (P%ndata)
+		endif
 		call rads_close_pass (S, P)
 	enddo
+	if (gpd_nr > 0) deallocate (gpd_time, gpd_wet_tropo_cor, gpd_reference_height, gpd_source_flag)
 enddo
 
 contains
