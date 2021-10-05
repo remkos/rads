@@ -124,8 +124,13 @@ call log_pass (P)
 ! Get time and find the matching GPD times
 
 call rads_get_var (S, P, 'time', time, .true.)
-i = findloc (gpd_time, time(1), 1) - 1
-if (i < 0) then
+! The function findloc is only supported since gfortran 9.0, so here we need a simple replacement
+! i = findloc (gpd_time, time(1), 1) - 1
+do i = 1, gpd_nr
+	if (gpd_time(i) == time(1)) exit
+enddo
+i = i - 1
+if (i < 0 .or. i >= gpd_nr) then
 	fail = .true.
 else
 	fail = (count (time == gpd_time(i+1:i+n)) < n)
