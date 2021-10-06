@@ -36,23 +36,22 @@ esac
 
 # Determine type
 dir=$(dirname $1)
+red=STD
 case $dir in
-*LR/*) type=lr ;;
-*HR/*) type=hr ;;
+	*LR/*|*P4_2__LR*) type=lr ;;
+	*HR/*|*P4_2__HR*) type=hr ;;
 esac
 case $dir in
-*/NR*) type=${type}nr ;;
-*/ST*) type=${type}st ;;
-*/NT*) type=${type}nt ;;
+	*/NR*) type=${type}nr; red=RED ;;
+	*/ST*) type=${type}st ;;
+	*/NT*) type=${type}nt ;;
 esac
 case $dir in
-*OPE/*) type=${type}o ;;
-*VAL/*) type=${type}v ;;
-*DEV/*) type=${type}d ;;
-esac
-case $dir in
-*/data) red=STD ;;
-     *) red=RED ;;
+	*OPE/*) type=${type}o ;;
+	*VAL/*) type=${type}v ;;
+	*DEV/*) type=${type}d ;;
+	*REP/*) type=${type:0:2}rep ;;
+	*RMC/*) type=hrrmc ;;
 esac
 
 # Process "unadultered" files

@@ -115,7 +115,7 @@ real(eightbytereal) :: equator_time
 
 integer(twobyteint), allocatable :: flags_mle3(:), flags_save(:)
 character(len=2) :: mss_cnescls_ver = '15', mss_dtu_ver = '18', tide_fes_ver = '14'
-character(len=3) :: tide_got_ver = '410'
+character(len=3) :: tide_got_ver = '410', env
 character(len=8) :: chd_ver, cha_ver, cnf_ver
 integer :: latency = rads_nrt, nsat
 logical :: lr, lcal1 = .false.
@@ -513,7 +513,14 @@ do
 
 	if (lcal1) then
 		call log_string(arg)
-		call parseenv('${RADSROOT}/ext/' // S%sat // '/' // arg(89:91) // '/' // arg(11:12) // '/' // &
+		if (index(infile, 'REP/') > 0) then
+			env = 'REP'
+		else if (index(infile, 'RMC/') > 0) then
+			env = 'RMC'
+		else
+			env = arg(89:91)
+		endif
+		call parseenv('${RADSROOT}/ext/' // S%sat // '/' // env // '/' // arg(11:12) // '/' // &
 			arg(93:94) // '/L1B/c' // arg(72:74) // '/' // trim(arg) // '/measurement.nc', infile)
 		if (nft(nf90_open(infile,nf90_nowrite,ncid))) then
 			call log_string ('Error: failed to open L1B file')
