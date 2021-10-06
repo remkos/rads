@@ -128,10 +128,10 @@ real(eightbytereal), allocatable :: b(:), telemetry_type_flag(:)
 ! Initialise
 
 call synopsis
-call rads_gen_getopt ('', ' min-rec:')
+call rads_gen_getopt ('', ' cal1 min-rec:')
 call synopsis ('--head')
+call rads_set_options (' cal1 min-rec:')
 if (sat /= '') call rads_init (S, sat)
-call rads_set_options (' cal1')
 call rads_load_options (nsat)
 
 do i = 1,rads_nopt
