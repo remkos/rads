@@ -386,7 +386,9 @@ endif
 call log_records (n)
 end subroutine process_pass
 
+!-----------------------------------------------------------------------
 ! Determine if file needs to be loaded
+!-----------------------------------------------------------------------
 
 logical function need_file (filenm, pathnm)
 character(len=*), intent(in) :: filenm
@@ -404,7 +406,9 @@ endif
 600 format ('(Loading ',a,') ... ', $)
 end function need_file
 
+!-----------------------------------------------------------------------
 ! Load CAL1 values
+!-----------------------------------------------------------------------
 
 subroutine load_cal1
 use netcdf
@@ -426,7 +430,9 @@ call get_var(ncidc, 'total_power', cal1(:,4))
 call nfs(nf90_close(ncid))
 end subroutine load_cal1
 
+!-----------------------------------------------------------------------
 ! Average CAL1 values from the CAL1 LTM file and round to 0.1 mm and 0.01 dB, resp.
+!-----------------------------------------------------------------------
 
 subroutine cal1_average (time, cal1_avg, redundant)
 real(eightbytereal), intent(in) :: time
@@ -434,6 +440,8 @@ real(eightbytereal), intent(out) :: cal1_avg(:)
 logical, intent(in) :: redundant
 integer(fourbyteint) :: navg, flags
 real(eightbytereal), parameter :: cal1_scale(4) = (/ 1d-4, 1d-2, 1d-4, 1d-2 /)
+
+! Take only the data from the appropriate side of the altimeter and within the required interval
 if (redundant) then
 	flags = 33
 else
@@ -441,13 +449,18 @@ else
 endif
 cal1_mask = (cal1_time >= time + cal1_interval(1) .and. cal1_time <= time + cal1_interval(2) .and. cal1_flags == flags)
 navg = count(cal1_mask)
+
+! If there are no CAL1 values matching the criterion, take the closest in time
 if (navg == 0) then
-	cal1_avg = cal1(size(cal1),:)
-else
-	do i = 1,4
-		cal1_avg(i) = nint(sum(cal1(:,i), cal1_mask) / navg / cal1_scale(i)) * cal1_scale(i)
-	enddo
+	i = minloc (abs(cal1_time(:) - time), 1, (cal1_flags(:) == flags))
+	cal1_avg = cal1(i,:)
+	return
 endif
+
+! Otherwise, average and round
+do i = 1,4
+	cal1_avg(i) = nint(sum(cal1(:,i), cal1_mask) / navg / cal1_scale(i)) * cal1_scale(i)
+enddo
 end subroutine cal1_average
 
 ! Interpolate grid
