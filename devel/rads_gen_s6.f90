@@ -517,6 +517,8 @@ do
 			env = 'REP'
 		else if (index(infile, 'RMC/') > 0) then
 			env = 'RMC'
+		else if (index(infile, 'DEV/') > 0) then
+			env = 'DEV'
 		else
 			env = arg(89:91)
 		endif
