@@ -33,27 +33,35 @@ use rads_grid
 character(len=rads_cmdl) :: aux_wind = '', aux_ssbk = '', aux_ssbc = '', aux_rain = '', aux_cal1 = ''
 integer(fourbyteint) :: i, cyc, pass, ios
 type(grid) :: info_wind, info_ssbk, info_ssbc
-logical :: lcal1 = .false., lrange = .false., lsig0 = .false., lwind = .false., lssb = .false., lrain = .false.
+logical :: lcal1 = .false., lsideB_range = .false., lsideB_sig0 = .false., lrange = .false., lsig0 = .false., &
+	lwind = .false., lssb = .false., lrain = .false.
 integer, parameter :: sig0_nx = 500
 real(eightbytereal) :: exp_ku_sigma0(sig0_nx), rms_exp_ku_sigma0(sig0_nx)
 real(eightbytereal) :: bias_range(2) = 0d0, bias_sig0(2) = 0d0
 real(eightbytereal), parameter :: sig0_dx = 0.1d0, gate_width = 0.3795d0, sign_error = 2 * 0.528d0
 ! For loading CAL1 file
 integer :: ncal
-real(eightbytereal) :: cal1_interval(2) = (/ -1d0, 1d0 /)
+real(eightbytereal) :: cal1_interval(2) = (/ -1d0, 1d0 /), &
+	drange_sideB(2) = (/ -2d-3, 0d-3 /), dsig0_sideB(2) = (/ -0.07d0, 0.49d0 /)
 real(eightbytereal), allocatable :: cal1_time(:), cal1(:,:), cal1_flags(:)
 logical, allocatable :: cal1_mask(:)
 
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options (' cal1:: range sig0 wind ssb rain all bias_range: bias_sig0:')
+call rads_set_options (' cal1:: sideB_range:: sideB_sig0:: range sig0 wind ssb rain all bias_range: bias_sig0:')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
 	case ('cal1')
 		read (rads_opt(i)%arg, *, iostat=ios) cal1_interval
 		lcal1 = .true.
+	case ('sideB_range')
+		read (rads_opt(i)%arg, *, iostat=ios) drange_sideB
+		lsideB_range = .true.
+	case ('sideB_sig0')
+		read (rads_opt(i)%arg, *, iostat=ios) dsig0_sideB
+		lsideB_sig0 = .true.
 	case ('range')
 		lrange = .true.
 	case ('sig0')
@@ -66,6 +74,8 @@ do i = 1,rads_nopt
 		lrain = .true.
 	case ('all')
 		lcal1 = .true.
+		lsideB_range = .true.
+		lsideB_sig0 = .true.
 		lrange = .true.
 		lsig0 = .true.
 		lwind = .true.
@@ -108,15 +118,17 @@ write (*,1310)
 'Additional [processing_options] are:' / &
 '  --cal1[=T0,T1]            Replace CAL1 range and power by values from LTM file, averaged over time' / &
 '                            interval T0,T1 days around measurement time (default: -1,1)' / &
+'  --sideB_range[=KU,C]      Add biases to range (Ku, C, in m) for Side B and CHDR < 005 (def: -0.002,0.000)' / &
+'  --sideB_sig0[=KU,C]       Add biases to sig0 (Ku, C, in dB) for Side B and CHDR < 005 (def: -0.07,+0.49)' / &
 '  --range                   Fix range biases known for PDAP v3.0 and v3.1' / &
 '                            Also fix result of temporary error in radar data base (RMC only, 34 gates)' / &
 '  --sig0                    Add -7.41 dB to HR sigma0' / &
-'  --wind                    Add biases to sigma0 before calling wind model (pre L2 CONF 008)' / &
-'  --ssb                     Update SSB (pre L2 CONF 008)' / &
-'  --rain                    Add biases to sigma0 before calling rain model (pre L2 CONF 008)' / &
+'  --rain                    Add biases to sigma0 before calling rain model (L2 CONF < 008 or with --sig0)' / &
+'  --wind                    Add biases to sigma0 before calling wind model (L2 CONF < 008 or 009 or with --sig0)' / &
+'  --ssb                     Update SSB (with --wind)' / &
 '  --all                     All of the above' / &
-'  --bias_range              Add additional bias to range (Ku, C)' / &
-'  --bias_sig0               Add additional bias to sig0 (Ku, C)')
+'  --bias_range=KU,C         Add additional bias to range (Ku, C, in m)' / &
+'  --bias_sig0=KU,C          Add additional bias to sig0 (Ku, C, in dB)')
 stop
 end subroutine synopsis
 
@@ -175,6 +187,13 @@ if (lcal1) then
 		call rads_get_var (S, P, 'cal1_power_c',  dum)
 		cal1_old(4:4) = dum(1)
 	endif
+endif
+
+! sideB: Add biases to range and sigma0
+
+if (redundant .and. chd_ver < '005') then
+	if (lsideB_range) drange = drange + drange_sideB
+	if (lsideB_sig0) dsig0 = dsig0 + dsig0_sideB
 endif
 
 ! range: Replace CAL1 and/or add additional bias
