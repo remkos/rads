@@ -85,6 +85,9 @@ rads_add_iono     $options --all							>> "$log" 2>&1
 rads_add_mog2d    $options								>> "$log" 2>&1
 # Redetermine SSHA
 rads_add_sla      $options								>> "$log" 2>&1
+case $type in
+	*lr*) rads_add_sla  $options --ext=mle3					>> "$log" 2>&1 ;;
+esac
 
 date													>> "$log" 2>&1
 
