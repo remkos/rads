@@ -3784,7 +3784,7 @@ Global RADS configuration file
 
 <var name="mean_wave_period" sat="j3 sa">
 	<long_name>t02 mean wave period</long_name>
-	<standard_name>sea_surface_swell_wave_to_direction</standard_name>
+	<standard_name>sea_surface_wind_wave_mean_period_from_variance_spectral_density_second_frequency_moment</standard_name>
 	<source>MFWAM/Meteo France</source>
 	<units>s</units>
 	<data>mean_wave_period</data>
