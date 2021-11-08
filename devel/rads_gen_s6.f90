@@ -509,9 +509,9 @@ do
 	call nfs(nf90_get_att(ncid,nf90_global,'xref_altimeter_level1b',arg))
 	call nfs(nf90_close(ncid))
 
-! When requested, load the calibration values from the L1B file
+! When requested, load the calibration values from the L1B file (Baseline < F04)
 
-	if (lcal1 .and. cnf_ver(6:8) < '005') then
+	if (lcal1 .and. cnf_ver(6:8) < '011') then
 		call log_string(arg)
 		if (index(infile, 'REP/') > 0) then
 			env = 'REP'
@@ -568,7 +568,7 @@ write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
 '  --min-rec=MIN_REC         Specify minimum number of records per pass to process' / &
-'  --cal1                    Read the CAL1 values from the appropriate L1B file' // &
+'  --cal1                    Read the CAL1 values from the appropriate L1B file (L2 CONF < 011)' // &
 'This program converts Sentinel-6 NRT/STC/NTC Level 2 products to RADS data' / &
 'files with the name $RADSDATAROOT/data/SS/F/pPPPP/s6pPPPPcCCC.nc.' / &
 'The directory is created automatically and old files are overwritten.')
