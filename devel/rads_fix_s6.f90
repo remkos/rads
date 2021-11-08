@@ -117,7 +117,7 @@ write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
 '  --cal1[=T0,T1]            Replace CAL1 range and power by values from LTM file, averaged over time' / &
-'                            interval T0,T1 days around measurement time (default: -1,1)' / &
+'                            interval T0,T1 days around measurement time (default: -1,1) (L2 CONF < 011)' / &
 '  --sideB_range[=KU,C]      Add biases to range (Ku, C, in m) for Side B and CHDR < 005 (def: -0.002,0.000)' / &
 '  --sideB_sig0[=KU,C]       Add biases to sig0 (Ku, C, in dB) for Side B and CHDR < 005 (def: -0.07,+0.49)' / &
 '  --range                   Fix range biases known for PDAP v3.0 and v3.1' / &
@@ -168,9 +168,9 @@ cnf_ver = P%original(i+5:i+7)
 
 call rads_get_var (S, P, 'latency', latency, .true.)
 
-! cal1: Replace the values with those from the LTM
+! cal1: Replace the values with those from the LTM (prior to Baseline F04)
 
-if (lcal1) then
+if (lcal1 .and. cnf_ver < '011') then
 	if (val) then
 		if (need_file ('VAL/S6A_P4_1__C1HR_AX.nc', aux_cal1)) call load_cal1
 	else
@@ -189,7 +189,7 @@ if (lcal1) then
 	endif
 endif
 
-! sideB: Add biases to range and sigma0
+! sideB: Add biases to range and sigma0 (prior to CHDR version 005)
 
 if (redundant .and. chd_ver < '005') then
 	if (lsideB_range) drange = drange + drange_sideB
