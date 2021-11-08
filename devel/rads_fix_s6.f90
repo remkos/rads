@@ -144,7 +144,7 @@ real(eightbytereal) :: latency(n), range_ku(n), range_ku_mle3(n), range_c(n), &
 	ssb_cls(n), ssb_cls_mle3(n), ssb_cls_c(n), dum(n)
 real(eightbytereal) :: drange(2), dsig0(2), dwind(2), drain(2), cal1_old(4), cal1_new(4)
 logical :: lr, redundant, val, do_range, do_sig0, do_wind, do_ssb, do_rain
-character(len=3) :: chd_ver, cnf_ver
+character(len=3) :: chd_ver, cnf_ver, baseline
 
 ! Initialise
 
@@ -158,6 +158,8 @@ drain = 0d0
 
 lr = (index(P%original, '_LR_') > 0)
 val = (index(P%original, '_VAL_') > 0)
+i = index(P%original, 'Baseline')
+baseline = P%original(i+9:i+11)
 i = index(P%original, 'CHD')
 chd_ver = P%original(i+5:i+7)
 redundant = (P%original(i+3:i+3) == 'R')
@@ -170,7 +172,7 @@ call rads_get_var (S, P, 'latency', latency, .true.)
 
 ! cal1: Replace the values with those from the LTM (prior to Baseline F04)
 
-if (lcal1 .and. cnf_ver < '011') then
+if (lcal1 .and. baseline < 'F04') then
 	if (val) then
 		if (need_file ('VAL/S6A_P4_1__C1HR_AX.nc', aux_cal1)) call load_cal1
 	else

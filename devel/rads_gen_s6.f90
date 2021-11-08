@@ -115,7 +115,7 @@ real(eightbytereal) :: equator_time
 
 integer(twobyteint), allocatable :: flags_mle3(:), flags_save(:)
 character(len=2) :: mss_cnescls_ver = '15', mss_dtu_ver = '18', tide_fes_ver = '14'
-character(len=3) :: tide_got_ver = '410', env
+character(len=3) :: tide_got_ver = '410', env, baseline
 character(len=8) :: chd_ver, cha_ver, cnf_ver
 integer :: latency = rads_nrt, nsat
 logical :: lr, lcal1 = .false.
@@ -260,6 +260,7 @@ do
 	cnf_ver = arg(11:14) // ' ' // arg(96:98)
 
 	call nfs(nf90_get_att(ncid,nf90_global,'source',arg))
+	baseline = arg(21:23)
 
 ! Store input file name
 
@@ -511,7 +512,7 @@ do
 
 ! When requested, load the calibration values from the L1B file (Baseline < F04)
 
-	if (lcal1 .and. cnf_ver(6:8) < '011') then
+	if (lcal1 .and. baseline < 'F04') then
 		call log_string(arg)
 		if (index(infile, 'REP/') > 0) then
 			env = 'REP'
