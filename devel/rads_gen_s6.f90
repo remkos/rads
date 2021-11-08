@@ -511,7 +511,7 @@ do
 
 ! When requested, load the calibration values from the L1B file
 
-	if (lcal1) then
+	if (lcal1 .and. cnf_ver(6:8) < '005') then
 		call log_string(arg)
 		if (index(infile, 'REP/') > 0) then
 			env = 'REP'
