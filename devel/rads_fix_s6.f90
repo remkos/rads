@@ -189,6 +189,8 @@ if (lcal1 .and. baseline < 'F04') then
 		call rads_get_var (S, P, 'cal1_power_c',  dum)
 		cal1_old(4:4) = dum(1)
 	endif
+else
+	cal1_old = nan
 endif
 
 ! sideB: Add biases to range and sigma0 (prior to CHDR version 005)
@@ -206,7 +208,7 @@ endif
 !           24 gates: error in radar data base
 
 if (lrange) then
-	if (lcal1 .and. all(isan_(cal1_old))) drange = drange + (cal1_new(1:3:2) - cal1_old(1:3:2))
+	if (all(isan_(cal1_old))) drange = drange + (cal1_new(1:3:2) - cal1_old(1:3:2))
 	drange = drange + bias_range
 	if (latency(1) == rads_nrt) then
 		if (chd_ver < '003') drange = drange + sign_error - 0.0435d0
@@ -226,7 +228,7 @@ do_range = any(drange /= 0d0)
 ! sigma0: Replace CAL1 and/or add additional bias
 
 if (lsig0) then
-	if (lcal1 .and. all(isan_(cal1_old))) dsig0 = dsig0 + (cal1_old(2:4:2) - cal1_new(2:4:2))
+	if (all(isan_(cal1_old))) dsig0 = dsig0 + (cal1_old(2:4:2) - cal1_new(2:4:2))
 	dsig0 = dsig0 + bias_sig0
 endif
 
