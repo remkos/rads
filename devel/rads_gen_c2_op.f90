@@ -91,7 +91,7 @@ use netcdf
 
 ! Command line arguments
 
-integer(fourbyteint) :: ios, i, j, ip, iq, ir
+integer(fourbyteint) :: ios, i, ip, iq, ir
 character(len=rads_cmdl) :: filename, arg
 
 ! Header variables
@@ -114,6 +114,7 @@ character(len=1) :: ascending_flag
 
 real(eightbytereal), parameter :: sec2000=473299200d0	! UTC seconds from 1 Jan 1985 to 1 Jan 2000
 real(eightbytereal), allocatable :: dh(:)
+type(quicksort_pair), allocatable :: pair(:)
 
 ! Initialise
 
@@ -262,7 +263,7 @@ endif
 
 ! Allocate variables
 
-	allocate (a(nrec),dh(nrec),flags(nrec),flags_plrm(nrec),flags_save(nrec))
+	allocate (a(nrec),dh(nrec),flags(nrec),flags_plrm(nrec),flags_save(nrec),pair(nrec))
 	nvar = 0
 
 ! Compile flag bits
@@ -293,76 +294,127 @@ endif
 
 ! Convert all the necessary fields to RADS
 	call get_var (ncid, 'time_01', a)
-	call new_var ('time', a + sec2000)
+	pair%order = (/(i, i=1, nrec)/)
+! Check for time reversal
+	if (ANY(a(2:nrec) - a(1:nrec-1) .lt. 0)) then
+		call log_string ('Error: Time reversal detected', .true.)
+		forall (i = 1:nrec)
+			pair(i) = quicksort_pair (i, a(i))
+		end forall
+		call quicksort (pair)
+	endif
+	call new_var ('time', a(pair%order) + sec2000)
 	call cpy_var (ncid, 'lat_01', 'lat')
 ! Compute ellipsoid corrections
 	do i = 1,nrec
-		dh(i) = dhellips(1,a(i))
+		dh(i) = dhellips(1,a(pair(i)%order))
 	enddo
-	call cpy_var (ncid, 'lon_01','lon')
+	call get_var (ncid, 'lon_01', a)
+	call new_var ('lon' , a(pair%order))
 	call get_var (ncid, 'alt_01', a)
-	call new_var ('alt_gdre', a + dh)
-	call cpy_var (ncid, 'orb_alt_rate_01', 'alt_rate')
-	call cpy_var (ncid, 'range_ocean_01_ku','range_ku')
-	call cpy_var (ncid, 'range_ocean_01_plrm_ku', 'range_ku_plrm')
-! Add zero or meas altitude tropo measurements?
-	call cpy_var (ncid, 'mod_dry_tropo_cor_01', 'dry_tropo_ecmwf')
-	call cpy_var (ncid, 'mod_wet_tropo_cor_01', 'wet_tropo_ecmwf')
-	call cpy_var (ncid, 'gpd_wet_tropo_cor_01', 'wet_tropo_comp')
-	call cpy_var (ncid, 'iono_cor_gim_01', 'iono_gim')
-	call cpy_var (ncid, 'inv_bar_cor_01', 'inv_bar_static')
+	call new_var ('alt_gdre', a(pair%order) + dh)
+	call get_var (ncid, 'orb_alt_rate_01', a)
+	call new_var ('alt_rate' , a(pair%order))
+	call get_var (ncid, 'range_ocean_01_ku', a)
+	call new_var ('range_ku' , a(pair%order))
+	call get_var (ncid, 'range_ocean_01_plrm_ku', a)
+	call new_var ('range_ku_plrm' , a(pair%order))
+	! Add zero or meas altitude tropo measurements?
+	call get_var (ncid, 'mod_dry_tropo_cor_01', a)
+	call new_var ('dry_tropo_ecmwf' , a(pair%order))
+	call get_var (ncid, 'mod_wet_tropo_cor_01', a)
+	call new_var ('wet_tropo_ecmwf' , a(pair%order))
+	call get_var (ncid, 'gpd_wet_tropo_cor_01', a)
+	call new_var ('wet_tropo_comp' , a(pair%order))
+	call get_var (ncid, 'iono_cor_gim_01', a)
+	call new_var ('iono_gim' , a(pair%order))
+	call get_var (ncid, 'inv_bar_cor_01', a)
+	call new_var ('inv_bar_static' , a(pair%order))
 ! Note that ESA Ocean Products define hf_fluct_cor_01 as including inv_bar_cor_01
 	if (latency == rads_nrt) then
-		call cpy_var (ncid, 'inv_bar_cor_01', 'inv_bar_mog2d')
+		call get_var (ncid, 'inv_bar_cor_01', a)
+		call new_var ('inv_bar_mog2d' , a(pair%order))
 	else
-		call cpy_var (ncid, 'hf_fluct_cor_01', 'inv_bar_mog2d')
+		call get_var (ncid, 'hf_fluct_cor_01', a)
+		call new_var ('inv_bar_mog2d' , a(pair%order))
 	endif
-	call cpy_var (ncid, 'solid_earth_tide_01', 'tide_solid')
-	call cpy_var (ncid, 'ocean_tide_sol1_01 load_tide_sol1_01 SUB', 'tide_ocean_got410')
-	call cpy_var (ncid, 'ocean_tide_sol2_01 load_tide_sol2_01 SUB ocean_tide_non_eq_01 ADD', 'tide_ocean_fes' // tide_fes_ver)
-	call cpy_var (ncid, 'load_tide_sol1_01', 'tide_load_got410')
-	call cpy_var (ncid, 'load_tide_sol2_01', 'tide_load_fes' // tide_fes_ver)
-	call cpy_var (ncid, 'ocean_tide_eq_01', 'tide_equil')
-	call cpy_var (ncid, 'ocean_tide_non_eq_01', 'tide_non_equil')
-	call cpy_var (ncid, 'pole_tide_01', 'tide_pole')
-	call cpy_var (ncid, 'sea_state_bias_01_ku', 'ssb_cls')
-	call cpy_var (ncid, 'sea_state_bias_01_plrm_ku', 'ssb_cls_plrm')
+	call get_var (ncid, 'solid_earth_tide_01', a)
+	call new_var ('tide_solid' , a(pair%order))
+	call get_var (ncid, 'ocean_tide_sol1_01 load_tide_sol1_01 SUB', a)
+	call new_var ('tide_ocean_got410' , a(pair%order))
+	call get_var (ncid, 'ocean_tide_sol2_01 load_tide_sol2_01 SUB ocean_tide_non_eq_01 ADD', a)
+	call new_var ('tide_ocean_fes' // tide_fes_ver , a(pair%order))
+	call get_var (ncid, 'load_tide_sol1_01', a)
+	call new_var ('tide_load_got410' , a(pair%order))
+	call get_var (ncid, 'load_tide_sol2_01', a)
+	call new_var ('tide_load_fes' // tide_fes_ver , a(pair%order))
+	call get_var (ncid, 'ocean_tide_eq_01', a)
+	call new_var ('tide_equil' , a(pair%order))
+	call get_var (ncid, 'ocean_tide_non_eq_01', a)
+	call new_var ('tide_non_equil' , a(pair%order))
+	call get_var (ncid, 'pole_tide_01', a)
+	call new_var ('tide_pole' , a(pair%order))
+	call get_var (ncid, 'sea_state_bias_01_ku', a)
+	call new_var ('ssb_cls' , a(pair%order))
+	call get_var (ncid, 'sea_state_bias_01_plrm_ku', a)
+	call new_var ('ssb_cls_plrm' , a(pair%order))
 	call get_var (ncid, 'geoid_01', a)
-	call new_var ('geoid_egm2008', a + dh)
+	call new_var ('geoid_egm2008', a(pair%order) + dh)
 	call get_var (ncid, 'mean_sea_surf_sol1_01', a)
-	call new_var ('mss_cnescls' // mss_cnescls_ver, a + dh)
+	call new_var ('mss_cnescls' // mss_cnescls_ver, a(pair%order) + dh)
 	call get_var (ncid, 'mean_sea_surf_sol2_01', a)
-	call new_var ('mss_dtu' // mss_dtu_ver, a + dh)
-	call cpy_var (ncid, 'swh_ocean_01_ku', 'swh_ku')
-	call cpy_var (ncid, 'swh_ocean_01_plrm_ku', 'swh_ku_plrm')
-	call cpy_var (ncid, 'sig0_ocean_01_ku', 'sig0_ku')
-	call cpy_var (ncid, 'sig0_ocean_01_plrm_ku', 'sig0_ku_plrm')
-	call cpy_var (ncid, 'wind_speed_alt_01_ku', 'wind_speed_alt')
-	call cpy_var (ncid, 'wind_speed_alt_01_plrm_ku', 'wind_speed_alt_plrm')
-	call cpy_var (ncid, 'wind_speed_mod_u_01', 'wind_speed_ecmwf_u')
-	call cpy_var (ncid, 'wind_speed_mod_v_01', 'wind_speed_ecmwf_v')
+	call new_var ('mss_dtu' // mss_dtu_ver, a(pair%order) + dh)
+	call get_var (ncid, 'swh_ocean_01_ku', a)
+	call new_var ('swh_ku', a(pair%order))
+	call get_var (ncid, 'swh_ocean_01_plrm_ku', a)
+	call new_var ('swh_ku_plrm', a(pair%order))
+	call get_var (ncid, 'sig0_ocean_01_ku', a)
+	call new_var ('sig0_ku', a(pair%order))
+	call get_var (ncid, 'sig0_ocean_01_plrm_ku', a)
+	call new_var ('sig0_ku_plrm', a(pair%order))
+	call get_var (ncid, 'wind_speed_alt_01_ku', a)
+	call new_var ('wind_speed_alt', a(pair%order))
+	call get_var (ncid, 'wind_speed_alt_01_plrm_ku', a)
+	call new_var ('wind_speed_alt_plrm', a(pair%order))
+	call get_var (ncid, 'wind_speed_mod_u_01', a)
+	call new_var ('wind_speed_ecmwf_u', a(pair%order))
+	call get_var (ncid, 'wind_speed_mod_v_01', a)
+	call new_var ('wind_speed_ecmwf_v', a(pair%order))
 	! In case of SAR, there is no estimated attitude, so we rely on the PLRM values.
 	! It may not be good to use these for editing (?)
-	call cpy_var (ncid, 'off_nadir_angle_wf_ocean_01_ku off_nadir_angle_wf_ocean_01_plrm_ku AND', 'off_nadir_angle2_wf_ku')
-	call cpy_var (ncid, 'range_ocean_rms_01_ku', 'range_rms_ku')
-	call cpy_var (ncid, 'range_ocean_rms_01_plrm_ku', 'range_rms_ku_plrm')
-	call cpy_var (ncid, 'range_ocean_numval_01_ku', 'range_numval_ku')
-	call cpy_var (ncid, 'range_ocean_numval_01_plrm_ku', 'range_numval_ku_plrm')
+	call get_var (ncid, 'off_nadir_angle_wf_ocean_01_ku off_nadir_angle_wf_ocean_01_plrm_ku AND', a)
+	call new_var ('off_nadir_angle2_wf_ku', a(pair%order))
+	call get_var (ncid, 'range_ocean_rms_01_ku', a)
+	call new_var ('range_rms_ku', a(pair%order))
+	call get_var (ncid, 'range_ocean_rms_01_plrm_ku', a)
+	call new_var ('range_rms_ku_plrm', a(pair%order))
+	call get_var (ncid, 'range_ocean_numval_01_ku', a)
+	call new_var ('range_numval_ku', a(pair%order))
+	call get_var (ncid, 'range_ocean_numval_01_plrm_ku', a)
+	call new_var ('range_numval_ku_plrm', a(pair%order))
 	call get_var (ncid, 'peakiness_01_ku', a)
-	call new_var ('peakiness_ku' , a/10.0)
+	call new_var ('peakiness_ku' , a(pair%order)/10.0)
 !	call cpy_var (ncid, 'peakiness_01_plrm_ku', 'peakiness_ku_plrm')
-	call cpy_var (ncid, 'odle_01', 'topo_ace2')
-	call new_var ('flags', dble(flags))
-	call new_var ('flags_plrm', dble(flags_plrm))
-	call cpy_var (ncid, 'swh_ocean_rms_01_ku', 'swh_rms_ku')
-	call cpy_var (ncid, 'swh_ocean_rms_01_plrm_ku', 'swh_rms_ku_plrm')
-	call cpy_var (ncid, 'sig0_ocean_rms_01_ku', 'sig0_rms_ku')
-	call cpy_var (ncid, 'sig0_ocean_rms_01_plrm_ku', 'sig0_rms_ku_plrm')
-	call cpy_var (ncid, 'ssha_01_ku', 'ssha')
-	call cpy_var (ncid, 'ssha_01_plrm_ku', 'ssha_plrm')
-	call cpy_var (ncid, 'surf_type_01', 'surface_class')
+	call get_var (ncid, 'odle_01', a)
+	call new_var ('topo_ace2' , a(pair%order))
+	call new_var ('flags', dble(flags(pair%order)))
+	call new_var ('flags_plrm', dble(flags_plrm(pair%order)))
+	call get_var (ncid, 'swh_ocean_rms_01_ku', a)
+	call new_var ('swh_rms_ku', a(pair%order))
+	call get_var (ncid, 'swh_ocean_rms_01_plrm_ku', a)
+	call new_var ('swh_rms_ku_plrm', a(pair%order))
+	call get_var (ncid, 'sig0_ocean_rms_01_ku', a)
+	call new_var ('sig0_rms_ku', a(pair%order))
+	call get_var (ncid, 'sig0_ocean_rms_01_plrm_ku', a)
+	call new_var ('sig0_rms_ku_plrm', a(pair%order))
+	call get_var (ncid, 'ssha_01_ku', a)
+	call new_var ('ssha', a(pair%order))
+	call get_var (ncid, 'ssha_01_plrm_ku', a)
+	call new_var ('ssha_plrm', a(pair%order))
+	call get_var (ncid, 'surf_type_01', a)
+	call new_var ('surface_class', a(pair%order))
 	call get_var (ncid, 'flag_instr_op_mode_01', a)
-	call new_var ('flag_alt_oper_mode', a - 1)
+	call new_var ('flag_alt_oper_mode', a(pair%order) - 1)
 	a = latency
 	call new_var ('latency', a)
 
@@ -370,7 +422,7 @@ endif
 
 	call nfs(nf90_close(ncid))
 	call put_rads
-	deallocate (a, dh, flags, flags_plrm, flags_save)
+	deallocate (a, dh, flags, flags_plrm, flags_save, pair)
 
 enddo
 
