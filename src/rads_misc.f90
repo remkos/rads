@@ -1081,6 +1081,35 @@ else
 endif
 end subroutine round_up
 
+
+!****f* rads_misc/findloc1
+! SUMMARY
+! Find specified value in array
+!
+! SYNOPSIS
+pure function findloc1 (array, value)
+use typesizes
+real(eightbytereal), intent(in) :: array(:), value
+integer(fourbyteint) :: findloc1
+!
+! PURPOSE
+! Determines the location of the first element in the array <array> with the value given
+! in the <value> argument. If no matching value is found, the function returns 0.
+!
+! This function replaces the Fortran function call FINDLOC (ARRAY, VALUE, 1),
+! since FINDLOC was only implemented in gfortran version 9.
+!
+! ARGUMENTS
+! array    : Array of values
+! value    : Value to be searched for
+! findloc1 : Location of <value> in <array> or 0 if not found
+!****-------------------------------------------------------------------
+do findloc1 = 1, size(array)
+	if (array(findloc1) == value) return
+enddo
+findloc1 = 0
+end function findloc1
+
 !***********************************************************************
 
 elemental function d_int1 (i)
