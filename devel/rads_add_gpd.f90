@@ -101,7 +101,7 @@ contains
 subroutine synopsis (flag)
 character(len=*), optional :: flag
 if (rads_version ('Add GPD along-track data to RADS data', flag=flag)) return
-call synopsis_devel (' [processing_options]')
+call synopsis_devel (' [processing_options] < GPD_filenames')
 write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
