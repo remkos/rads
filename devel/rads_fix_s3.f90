@@ -18,14 +18,8 @@
 ! This program makes numerous patches to the Sentinel-3 RADS data processed
 ! by rads_gen_s3. These patches include:
 !
-!  --atten                   Replace NaN attenuation with ECMWF derivation and add to sigma0
-!  --sig0[=dKu,dC]           Adjust sigma0 for apparent biases [0,3.3]
-!  --wind                    Update wind speed using Envisat model
-!  --tb                      Adjust brightness temperatures for apparent biases
-!  --mwr                     Update radiometer wet parameters
-!  --range                   Subtract 59.3 mm from Ku- and C-band ranges
-!  --all                      < PB 2.19: --atten --sig0 --wind
-!                            >= PB 2.19: --sig0 --wind
+!  --uso                     Apply USO correction (S3B only)
+!  --all                     All the above
 !
 ! usage: rads_fix_s3 [data-selectors] [options]
 !-----------------------------------------------------------------------
@@ -41,41 +35,56 @@ use meteo_subs
 type(rads_sat) :: S
 type(rads_pass) :: P
 
+! To store USO table
+
+integer(fourbyteint), parameter :: m_uso = 10000
+integer(fourbyteint) :: n_uso = 0, i_uso = 1, t_uso(m_uso)
+real(eightbytereal) :: f_uso(m_uso)
+
 ! Other local variables
 
-real(eightbytereal) :: dsig0_ku = 0.0d0, dsig0_c = 3.3d0	! Default Ku- and C-band Sigma0 bias
-real(eightbytereal), parameter :: dtb_238 = 2.0d0, dtb_365 = 3.0d0	! Rough values from MTR presentation by M. Frery.
-real(eightbytereal), parameter :: drange = 59.3d-3 ! Range bias in earlier rep_002 data
-integer(fourbyteint) :: i, cyc, pass, ios
-logical :: latten = .false., lsig0 = .false., lwind = .false., ltb = .false., lmwr = .false., lrange = .false., &
-	lall = .false.
+integer(fourbyteint) :: i, cyc, pass, ios, yyyy, mm, dd
+real(eightbytereal) :: uso_scale
+logical :: luso = .false.
+character(len=320) :: uso_filenm
 
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options (' atten sig0 wind tb mwr all range')
+call rads_set_options (' uso all')
 call rads_init (S)
+if (S%sat /= "3b") stop
+
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
-	case ('atten')
-		latten = .true.
-	case ('sig0')
-		lsig0 = .true.
-		read(rads_opt(i)%arg,*,iostat=ios) dsig0_ku, dsig0_c
-	case ('wind')
-		lwind = .true.
-	case ('tb')
-		ltb = .true.
-	case ('mwr')
-		lmwr = .true.
+	case ('uso')
+		luso = .true.
 	case ('all')
-		lall = .true.	! To later determine if --atten is to be used
-		lsig0 = .true.	! Use these two always
-		lwind = .true.
-	case ('range')
-		lrange = .true.
+		luso = .true.
 	end select
 enddo
+
+if (.not.luso) stop
+
+! Load the USO table
+
+call parseenv ('${RADSROOT}/altim/data/tables/S3B.cor_uso_freq.daily.csv', uso_filenm)
+call log_string ('(' // trim(uso_filenm) // ')')
+i = getlun()
+open (unit=i, file=uso_filenm, status='old', iostat=ios)
+if (ios /= 0) call rads_exit ('Error reading USO file ' // trim(uso_filenm))
+read (i,600)
+do
+	read (i,600,iostat=ios) yyyy, mm, dd, uso_scale
+	if (ios /= 0) exit
+	n_uso = n_uso + 1
+	call ymd2mjd (yyyy, mm, dd, t_uso(n_uso))
+	f_uso(n_uso) = uso_scale
+enddo
+close (i)
+t_uso(:n_uso) = t_uso(:n_uso) - 46066	! Convert to days since 1985
+
+600 format (i4,1x,i2,1x,i2,1x,f18.16)
 
 ! Run process for all files
 
@@ -95,19 +104,13 @@ contains
 
 subroutine synopsis (flag)
 character(len=*), optional :: flag
-if (rads_version ('Patch Sentinel-3 data for several anomalies', flag=flag)) return
+if (rads_version ('Patch Sentinel-3B data for several anomalies', flag=flag)) return
 call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
-'  --atten                   Replace NaN attenuation with ECMWF derivation and add to sigma0' / &
-'  --sig0[=dKu,dC]           Adjust sigma0 for apparent biases [0,3.3]' / &
-'  --wind                    Update wind speed using Envisat model' / &
-'  --tb                      Adjust brightness temperatures for apparent biases' / &
-'  --mwr                     Update radiometer wet parameters' / &
-'  --range                   Subtract 59.3 mm from Ku- and C-band ranges' / &
-'  --all                     PB <  2.19: --atten --sig0 --wind' / &
-'                            PB >= 2.19: --sig0 --wind')
+'  --uso                     Apply USO correction to range' / &
+'  --all                     All the above')
 stop
 end subroutine synopsis
 
@@ -116,85 +119,21 @@ end subroutine synopsis
 !-----------------------------------------------------------------------
 
 subroutine process_pass (n)
+use rads_time
 integer(fourbyteint), intent(in) :: n
-real(eightbytereal) :: sig0_ku(n), sig0_ku_plrm(n), sig0_c(n), atten_ku(n), atten_c(n), tb_238(n), tb_365(n), &
-	wet_tropo_ecmwf(n), wet_tropo_rad(n), range_ku(n), range_ku_plrm(n), range_c(n), ssha(n), ssha_plrm(n), &
-	wind_speed_alt(n), wind_speed_alt_plrm(n)
-integer(fourbyteint) :: i
+real(eightbytereal) :: range_ku(n), range_ku_plrm(n), range_c(n), uso_scale
 
 call log_pass (P)
 
-i = len_trim(P%original)
-if (lall) latten = (P%original(i-5:i-1) < '06.08')
+! Get the USO scale factor
 
-if (latten .or. lsig0 .or. lmwr .or. lwind) then
-	call rads_get_var (S, P, 'sig0_ku', sig0_ku, .true.)
-	call rads_get_var (S, P, 'sig0_ku_plrm', sig0_ku_plrm, .true.)
-	call rads_get_var (S, P, 'sig0_c', sig0_c, .true.)
-endif
-if (latten) then
-	call rads_get_var (S, P, 'dsig0_atmos_ku', atten_ku, .true.)
-	call rads_get_var (S, P, 'dsig0_atmos_c', atten_c, .true.)
-	call rads_get_var (S, P, 'wet_tropo_ecmwf', wet_tropo_ecmwf, .true.)
-endif
-if (ltb .or. lmwr) then
-	call rads_get_var (S, P, 'tb_238', tb_238, .true.)
-	call rads_get_var (S, P, 'tb_365', tb_365, .true.)
-endif
-
-! Adjust brightness temperatures for bias
-
-if (ltb) then
-	tb_238 = tb_238 + dtb_238
-	tb_365 = tb_365 + dtb_365
-endif
-
-! Adjust radiometer parameters using Envisat NN model
-! Note that the original sig0 is NOT corrected for atmospheric attenuation
-
-if (lmwr) then
-	do i = 1,n
-		atten_ku(i)      = nn_l2_mwr (tb_238(i), tb_365(i), sig0_ku(i) + dsig0_ku, 1)
-		wet_tropo_rad(i) = nn_l2_mwr (tb_238(i), tb_365(i), sig0_ku(i) + dsig0_ku, 3)
-	enddo
-endif
-
-! Fill in the defaulted attenuation values with functional form of ECMWF wet tropo correction
-! (See notes of 2016-04-14 "Simple backup for sig0 attenuation")
-! Add the attenuation correction to sigma0
-
-if (latten) then
-	where (isnan_(atten_ku)) atten_ku = 0.118d0 - 0.456d0 * wet_tropo_ecmwf
-	where (isnan_(atten_c))  atten_c  = 0.09d0
-	sig0_ku = sig0_ku + atten_ku
-	sig0_ku_plrm = sig0_ku_plrm + atten_ku
-	sig0_c = sig0_c + atten_c
-endif
-
-! Add apparent bias to sigma0
-
-if (lsig0) then
-	sig0_ku = sig0_ku + dsig0_ku
-	sig0_ku_plrm = sig0_ku_plrm + dsig0_ku
-	sig0_c = sig0_c + dsig0_c
-endif
-
-! Adjust wind speed
-
-if (lwind) then
-	wind_speed_alt = wind_ecmwf (sig0_ku)
-	wind_speed_alt_plrm = wind_ecmwf (sig0_ku_plrm)
-endif
+call get_uso (P%equator_time / 86400d0, uso_scale)
 
 ! Update ranges
 
-if (lrange) then
-	call rads_get_var (S, P, 'range_ku', range_ku, .true.)
-	call rads_get_var (S, P, 'range_ku_plrm', range_ku_plrm, .true.)
-	call rads_get_var (S, P, 'range_c', range_c, .true.)
-	call rads_get_var (S, P, 'ssha', ssha, .true.)
-	call rads_get_var (S, P, 'ssha_plrm', ssha_plrm, .true.)
-endif
+call rads_get_var (S, P, 'range_ku', range_ku, .true.)
+call rads_get_var (S, P, 'range_ku_plrm', range_ku_plrm, .true.)
+call rads_get_var (S, P, 'range_c', range_c, .true.)
 
 ! Update history
 
@@ -203,33 +142,26 @@ call rads_put_history (S, P)
 
 ! Write out all the data
 
-if (lsig0 .or. latten) then
-	call rads_put_var (S, P, 'sig0_ku', sig0_ku)
-	call rads_put_var (S, P, 'sig0_ku_plrm', sig0_ku_plrm)
-	call rads_put_var (S, P, 'sig0_c' , sig0_c)
-endif
-if (ltb) then
-	call rads_put_var (S, P, 'tb_238', tb_238)
-	call rads_put_var (S, P, 'tb_365', tb_365)
-endif
-if (lwind) then
-	call rads_put_var (S, P, 'wind_speed_alt', wind_speed_alt)
-	call rads_put_var (S, P, 'wind_speed_alt_plrm', wind_speed_alt_plrm)
-endif
-if (lmwr) call rads_put_var (S, P, 'wet_tropo_rad', wet_tropo_rad)
-if (lmwr .or. latten) then
-	call rads_put_var (S, P, 'dsig0_atmos_ku', atten_ku)
-	call rads_put_var (S, P, 'dsig0_atmos_c' , atten_c)
-endif
-if (lrange) then
-	call rads_put_var (S, P, 'range_ku', range_ku - drange)
-	call rads_put_var (S, P, 'range_ku_plrm', range_ku_plrm - drange)
-	call rads_put_var (S, P, 'range_c', range_c - drange)
-	call rads_put_var (S, P, 'ssha', ssha + drange)
-	call rads_put_var (S, P, 'ssha_plrm', ssha_plrm + drange)
-endif
+call rads_put_var (S, P, 'range_ku', range_ku * uso_scale)
+call rads_put_var (S, P, 'range_ku_plrm', range_ku_plrm * uso_scale)
+call rads_put_var (S, P, 'range_c', range_c * uso_scale)
 
 call log_records (n)
 end subroutine process_pass
+
+!-----------------------------------------------------------------------
+! Find and interpolate USO scale factor at given date
+!-----------------------------------------------------------------------
+
+subroutine get_uso (t, uso_scale)
+real(eightbytereal), intent(in) :: t
+real(eightbytereal), intent(out) :: uso_scale
+real(eightbytereal) :: x
+do while (i_uso < n_uso - 1 .and. t_uso(i_uso) < t)
+	i_uso = i_uso + 1
+enddo
+x = t - t_uso(i_uso)
+uso_scale = f_uso(i_uso) * (1-x) + f_uso(i_uso+1) * x
+end subroutine get_uso
 
 end program rads_fix_s3
