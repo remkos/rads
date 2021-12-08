@@ -53,6 +53,7 @@ for type in ${types}; do
 	find $type/c??? -name "*.nc" -a -newer "$mrk" | sort > "$lst"
 	date >  "$log" 2>&1
 	rads_gen_s3		$options --min-rec=6 --ymd=$d0 < "$lst"	>> "$log" 2>&1
+	rads_fix_s3		$options --all							>> "$log" 2>&1
 
 # Add MOE orbit (for NRT and STC only)
 	case $type in

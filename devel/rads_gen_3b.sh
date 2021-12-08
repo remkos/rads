@@ -30,6 +30,7 @@ date													>  "$log" 2>&1
 
 find "$@" -name "*.nc" | sort > "$lst"
 rads_gen_s3 	  $options --min-rec=6 < "$lst"			>> "$log" 2>&1
+rads_fix_s3		  $options --all						>> "$log" 2>&1
 
 # General geophysical corrections
 rads_add_grid     $options -Vangle_coast                >> "$log" 2>&1
