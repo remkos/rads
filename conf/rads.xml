@@ -3635,7 +3635,7 @@ Global RADS configuration file
 	<dimensions>0</dimensions>
 	<parameters>0</parameters>
 	<parameters sat="3a">   3   0  0  0 0</parameters>
-	<parameters sat="3b">  10   0  0  0 0</parameters>
+	<parameters sat="3b"> -10   0  0  0 0</parameters>
 	<parameters sat="c2.igdr"> -34   0  0  0 0</parameters>
 	<parameters sat="c2"> -29   0  0  0 0</parameters>
 	<parameters sat="e1">  21   0  0  0 0</parameters>
@@ -3669,7 +3669,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<dimensions>0</dimensions>
 	<parameters sat="3a">  13   0  0  0 0</parameters>
-	<parameters sat="3b">  27   0  0  0 0</parameters>
+	<parameters sat="3b">   7   0  0  0 0</parameters>
 </var>
 
 <var name="tide_equil" field="3901 39">
