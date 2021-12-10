@@ -20,6 +20,9 @@
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
 
+# Exit when no directory names are provided
+[[ $# -eq 0 ]] && exit
+
 rads_open_sandbox sa
 lst=$SANDBOX/rads_gen_saral.lst
 

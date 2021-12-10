@@ -26,6 +26,9 @@
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
 
+# Exit when no directory names are provided
+[[ $# -eq 0 ]] && exit
+
 # Determine type
 type=$(dirname $1)
 type=$(basename $type)

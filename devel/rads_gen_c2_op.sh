@@ -19,9 +19,13 @@
 # The most recently updated data in the nop, iop, and gop directories
 # will be processed.
 #
-# syntax: rads_gen_c2_op.sh directory
+# syntax: rads_gen_c2_op.sh <directories>
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
+
+# Exit when no directory names are provided
+[[ $# -eq 0 ]] && exit
+
 rads_open_sandbox c2
 
 find "$@" -name "*.nc"| sort > "$lst"

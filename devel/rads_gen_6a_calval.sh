@@ -34,6 +34,9 @@ case $1 in
 		;;
 esac
 
+# Exit when no directory names are provided
+[[ $# -eq 0 ]] && exit
+
 # Determine type
 dir=$(dirname $1)
 red=STD

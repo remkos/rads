@@ -23,6 +23,9 @@
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
 
+# Exit when no directory names are provided
+[[ $# -eq 0 ]] && exit
+
 rads_open_sandbox 3a
 lst=$SANDBOX/rads_gen_3a.lst
 

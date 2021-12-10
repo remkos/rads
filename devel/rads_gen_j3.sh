@@ -20,6 +20,9 @@
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
 
+# Exit when no directory names are provided
+[[ $# -eq 0 ]] && exit
+
 type=
 case $1 in
 	.*) type=$1; shift ;;
