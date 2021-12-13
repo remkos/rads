@@ -196,7 +196,7 @@ logical :: old
 
 ! Open NetCDF file
 600 format (/'# File name     = ',a)
-if (nft (nf90_open (filename, nf90_write, ncid))) then
+if (nft (nf90_open (filename, nf90_nowrite, ncid))) then
 	call rads_message ('error opening file '//trim(filename))
 	return
 endif
