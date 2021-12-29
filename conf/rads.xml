@@ -413,7 +413,7 @@ Global RADS configuration file
 	<compress>int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_gdrd" field="418" sat="2a c2 j1 j2 n1 sa tx.r50">
+<var name="alt_gdrd" field="418" sat="2a c2 j1 j2 n1 sa">
 	<long_name>CNES GDR-D orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>CNES, GDR-D standards</source>
@@ -528,7 +528,7 @@ Global RADS configuration file
 	<compress sat="6a j1 j2 j3 tx">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<alias name="alt" field="4" sat="2a tx.r50">alt_gdrd</alias>
+<alias name="alt" field="4" sat="2a">alt_gdrd</alias>
 <alias name="alt" field="4" sat="j3 3a 3b c2 sa">alt_gdrf alt_gdre</alias>
 <alias name="alt" field="4" sat="6a">alt_gdrf</alias>
 <alias name="alt" field="4" sat="c2">alt_gdre alt_cnes</alias>
@@ -606,44 +606,6 @@ Global RADS configuration file
 	</var>
 	<alias name="range" field="6">range_ku</alias>
 </else>
-<var name="range_ku_retrk" sat="tx.r50">
-	<long_name>Ku-band retracked range corrected for instr. effects</long_name>
-	<standard_name>altimeter_range</standard_name>
-	<units>m</units>
-	<limits>1300e3 1400e3</limits>
-	<data>range_ku_retrk</data>
-	<format>f12.4</format>
-	<compress>int4 1e-4 1300e3</compress>
-</var>
-<var name="range_c" field="602" sat="2a 3a 3b 6a j1 j2 j3 tx">
-	<long_name>C-band range corrected for instr. effects</long_name>
-	<standard_name>altimeter_range</standard_name>
-	<units>m</units>
-	<limits>1300e3 1400e3</limits>
-	<limits sat="2a 3a 3b">750e3 850e3</limits>
-	<data>range_c</data>
-	<format>f12.4</format>
-	<compress>int4 1e-4 1300e3</compress>
-	<compress sat="3a 3b">int4 1e-4 700e3</compress>
-</var>
-<var name="range_c_retrk" sat="tx.r50">
-	<long_name>C-band retracked range corrected for instr. effects</long_name>
-	<standard_name>altimeter_range</standard_name>
-	<units>m</units>
-	<limits>1300e3 1400e3</limits>
-	<data>range_c_retrk</data>
-	<format>f12.4</format>
-	<compress>int4 1e-4 1300e3</compress>
-</var>
-<var name="range_s" field="602" sat="n1">
-	<long_name>S-band range corrected for instr. effects</long_name>
-	<standard_name>altimeter_range</standard_name>
-	<units>m</units>
-	<limits>750e3 850e3</limits>
-	<data>range_s</data>
-	<format>f11.3</format>
-	<compress>int3 1e-4</compress>
-</var>
 <var name="range_corrected" field="603" sat="gs">
 	<long_name>corrected altimeter range</long_name>
 	<standard_name>altimeter_range</standard_name>
@@ -668,6 +630,14 @@ Global RADS configuration file
 	<format>f12.4</format>
 	<compress>int4 1e-4 700e3</compress>
 </var>
+<var name="range_ku_adaptive" field="612" sat="j3">
+	<long_name>Ku-band range corrected for instr. effects (apative retracking)</long_name>
+	<standard_name>altimeter_range</standard_name>
+	<units>m</units>
+	<data>range_ku_adaptive</data>
+	<format>f12.4</format>
+	<compress>int4 1e-4 700e3</compress>
+</var>
 <var name="range_20hz_ku" sat="c2">
 	<long_name>20-Hz Ku-band range corrected for instr. effects</long_name>
 	<standard_name>altimeter_range</standard_name>
@@ -679,6 +649,27 @@ Global RADS configuration file
 	<dimensions>2</dimensions>
 </var>
 <alias name="range_20hz" sat="c2">range_20hz_ku</alias>
+
+<var name="range_c" field="602" sat="2a 3a 3b 6a j1 j2 j3 tx">
+	<long_name>C-band range corrected for instr. effects</long_name>
+	<standard_name>altimeter_range</standard_name>
+	<units>m</units>
+	<limits>1300e3 1400e3</limits>
+	<limits sat="2a 3a 3b">750e3 850e3</limits>
+	<data>range_c</data>
+	<format>f12.4</format>
+	<compress>int4 1e-4 1300e3</compress>
+	<compress sat="3a 3b">int4 1e-4 700e3</compress>
+</var>
+<var name="range_s" field="602" sat="n1">
+	<long_name>S-band range corrected for instr. effects</long_name>
+	<standard_name>altimeter_range</standard_name>
+	<units>m</units>
+	<limits>750e3 850e3</limits>
+	<data>range_s</data>
+	<format>f11.3</format>
+	<compress>int3 1e-4</compress>
+</var>
 
 <var name="range_tracker_20hz_ku" sat="c2">
 	<long_name>20-Hz Ku-band tracker range corrected for instr. effects</long_name>
@@ -961,18 +952,6 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<var name="iono_alt_retrk" sat="tx.r50">
-	<long_name>dual-frequency ionospheric correction from retracked ranges</long_name>
-	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
-	<source>dual-frequency altimeter</source>
-	<units>m</units>
-	<limits>-0.4 0.04</limits>
-	<plot_range>-0.15 0.02</plot_range>
-	<data>iono_alt_retrk</data>
-	<format>f7.4</format>
-	<compress>int2 1e-4</compress>
-	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
-</var>
 <var name="iono_bent" field="902" sat="c2 e1 e2 pn tx">
 	<long_name>Bent ionospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
@@ -1092,6 +1071,18 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
+<var name="iono_alt_adaptive" sat="j3">
+	<long_name>dual-frequency ionospheric correction (adaptive retracking)</long_name>
+	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
+	<source>dual-frequency altimeter</source>
+	<units>m</units>
+	<limits>-0.4 0.04</limits>
+	<plot_range>-0.15 0.02</plot_range>
+	<data>iono_alt_adaptive</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
+</var>
 <var name="iono_alt_smooth_mle3" field="913" sat="6a j2 j3">
 	<long_name>smoothed dual-frequency ionospheric correction (MLE3)</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
@@ -1112,6 +1103,18 @@ Global RADS configuration file
 	<limits>-0.4 0.04</limits>
 	<plot_range>-0.15 0.02</plot_range>
 	<data>iono_alt_smooth_plrm</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
+</var>
+<var name="iono_alt_smooth_adaptive" sat="j3">
+	<long_name>smoothed dual-frequency ionospheric correction (adaptive retracking)</long_name>
+	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
+	<source>dual-frequency altimeter after smoothing</source>
+	<units>m</units>
+	<limits>-0.4 0.04</limits>
+	<plot_range>-0.15 0.02</plot_range>
+	<data>iono_alt_smooth_adaptive</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
@@ -1574,24 +1577,24 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
-<var name="ssb_walsh" sat="tx.r50">
-	<long_name>Walsh sea state bias</long_name>
+<var name="ssb_cls_adaptive" sat="j3">
+	<long_name>Tran et al. 2020 sea state bias for retracked range (adaptive retracking)</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<units>m</units>
 	<limits>-1 1</limits>
 	<plot_range>-0.30 0.05</plot_range>
-	<data>ssb_walsh</data>
+	<data>ssb_adaptive_tran2012</data>
 	<format>f6.3</format>
 	<compress>int2 1e-3</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
-<var name="ssb_retrk" sat="tx.r50">
-	<long_name>sea state bias for retracked range</long_name>
+<var name="ssb_tran2019_3d_adaptive" sat="j3">
+	<long_name>Tran et al. 2019 3D sea state bias for retracked range (adaptive retracking)</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<units>m</units>
 	<limits>-1 1</limits>
 	<plot_range>-0.30 0.05</plot_range>
-	<data>ssb_retrk</data>
+	<data>ssb_adaptive_tran2019_3d</data>
 	<format>f6.3</format>
 	<compress>int2 1e-3</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
@@ -1601,7 +1604,7 @@ Global RADS configuration file
 <alias name="ssb" field="15" sat="sa">ssb_tran2019</alias>
 <alias name="ssb" field="15" sat="2a 3a 3b 6a c2 j1 j2 j3 n1 tx">ssb_cls</alias>
 
-<var name="geoid_egm96" field="1601" sat="3a 3b j2 j3 sa tx.r50">
+<var name="geoid_egm96" field="1601" sat="3a 3b j2 j3 sa">
 	<long_name>EGM96 geoid height</long_name>
 	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
 	<source>EGM96</source>
@@ -1750,12 +1753,12 @@ Global RADS configuration file
 	</var>
 	<alias name="swh" field="17">swh_ku</alias>
 </else>
-<var name="swh_ku_retrk" sat="tx.r50">
-	<long_name>retracked Ku-band significant wave height</long_name>
+<var name="swh_ku_adaptive">
+	<long_name>retracked Ku-band significant wave height (adaptive retracking)</long_name>
 	<standard_name>sea_surface_wave_significant_height</standard_name>
 	<units>m</units>
 	<limits>-0.5 8</limits>
-	<data>swh_ku_retrk</data>
+	<data>swh_ku_adaptive</data>
 	<format>f6.3</format>
 	<compress>int2 1e-3</compress>
 </var>
@@ -1765,15 +1768,6 @@ Global RADS configuration file
 	<units>m</units>
 	<limits>0 8</limits>
 	<data>swh_c</data>
-	<format>f6.3</format>
-	<compress>int2 1e-3</compress>
-</var>
-<var name="swh_c_retrk" sat="tx.r50">
-	<long_name>retracked C-band significant wave height</long_name>
-	<standard_name>sea_surface_wave_significant_height</standard_name>
-	<units>m</units>
-	<limits>0 8</limits>
-	<data>swh_c_retrk</data>
 	<format>f6.3</format>
 	<compress>int2 1e-3</compress>
 </var>
@@ -1956,17 +1950,6 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<compress>int2 1e-2</compress>
 </var>
-<var name="wind_speed_alt_retrk" sat="tx.r50">
-	<long_name>altimeter wind speed (retracked product)</long_name>
-	<standard_name>wind_speed</standard_name>
-	<source>altimeter</source>
-	<units>m/s</units>
-	<limits>-1 30</limits>
-	<plot_range>0 16</plot_range>
-	<data>wind_speed_alt_retrk</data>
-	<format>f6.3</format>
-	<compress>int2 1e-2</compress>
-</var>
 <var name="wind_speed_rad" field="1902" sat="2a 6a j1 j2 j3 pn tx">
 	<long_name>radiometer wind speed</long_name>
 	<standard_name>wind_speed</standard_name>
@@ -2077,6 +2060,17 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<compress>int2 1e-2</compress>
 </var>
+<var name="wind_speed_alt_adaptive" sat="j3">
+	<long_name>altimeter wind speed (adaptive retracking)</long_name>
+	<standard_name>wind_speed</standard_name>
+	<source>altimeter</source>
+	<units>m/s</units>
+	<limits>-1 30</limits>
+	<plot_range>0 16</plot_range>
+	<data>wind_speed_alt_adaptive</data>
+	<format>f6.3</format>
+	<compress>int2 1e-2</compress>
+</var>
 <alias name="wind_speed" field="19">wind_speed_alt</alias>
 
 <var name="range_rms_norm" field="2001">
@@ -2119,44 +2113,6 @@ Global RADS configuration file
 	</var>
 	<alias name="range_rms" field="20">range_rms_ku</alias>
 </else>
-<var name="range_rms_ku_retrk" sat="tx.r50">
-	<long_name>std dev of retracked Ku-band range</long_name>
-	<units>m</units>
-	<limits>0.0 0.4</limits>
-	<plot_range>0.0 0.2</plot_range>
-	<data>range_rms_ku_retrk</data>
-	<format>f6.4</format>
-	<default>0</default>
-	<compress>int2 1e-4</compress>
-	<comment>Based on valid retracked high-rate measurements</comment>
-</var>
-<var name="range_rms_c" field="2004" sat="2a 3a 3b 6a j1 j2 j3">
-	<long_name>std dev of C-band range</long_name>
-	<units>m</units>
-	<limits>0.0 0.4</limits>
-	<data>range_rms_c</data>
-	<format>f6.4</format>
-	<compress>int2 1e-4</compress>
-	<comment>Based on valid high-rate measurements</comment>
-</var>
-<var name="range_rms_c_retrk" sat="tx.r50">
-	<long_name>std dev of retracked C-band range</long_name>
-	<units>m</units>
-	<limits>0.0 0.4</limits>
-	<data>range_rms_c_retrk</data>
-	<format>f6.4</format>
-	<compress>int2 1e-4</compress>
-	<comment>Based on valid retracked high-rate measurements</comment>
-</var>
-<var name="range_rms_s" field="2004" sat="n1">
-	<long_name>std dev of S-band range</long_name>
-	<units>m</units>
-	<limits>0.0 0.4</limits>
-	<data>range_rms_s</data>
-	<format>f6.4</format>
-	<compress>int2 1e-4</compress>
-	<comment>Based on valid high-rate measurements</comment>
-</var>
 <var name="range_rms_ku_mle3" field="2012" sat="6a j2 j3">
 	<long_name>std dev of Ku-band range (MLE3)</long_name>
 	<units>m</units>
@@ -2176,6 +2132,36 @@ Global RADS configuration file
 	<data>range_rms_ku_plrm</data>
 	<format>f6.4</format>
 	<default>0</default>
+	<compress>int2 1e-4</compress>
+	<comment>Based on valid high-rate measurements</comment>
+</var>
+<var name="range_rms_ku_adaptive" sat="j3">
+	<long_name>std dev of retracked Ku-band range (adaptive retracking)</long_name>
+	<units>m</units>
+	<limits>0.0 0.4</limits>
+	<plot_range>0.0 0.2</plot_range>
+	<data>range_rms_ku_adaptive</data>
+	<format>f6.4</format>
+	<default>0</default>
+	<compress>int2 1e-4</compress>
+	<comment>Based on valid retracked high-rate measurements</comment>
+</var>
+
+<var name="range_rms_c" field="2004" sat="2a 3a 3b 6a j1 j2 j3">
+	<long_name>std dev of C-band range</long_name>
+	<units>m</units>
+	<limits>0.0 0.4</limits>
+	<data>range_rms_c</data>
+	<format>f6.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Based on valid high-rate measurements</comment>
+</var>
+<var name="range_rms_s" field="2004" sat="n1">
+	<long_name>std dev of S-band range</long_name>
+	<units>m</units>
+	<limits>0.0 0.4</limits>
+	<data>range_rms_s</data>
+	<format>f6.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
@@ -2232,14 +2218,13 @@ Global RADS configuration file
 	<format>f3.0</format>
 	<compress>int1</compress>
 </var>
-
-<var name="range_numval_ku_retrk" sat="tx.r50">
-	<long_name>number of valid retracked Ku-band measurements</long_name>
+<var name="range_numval_ku_adaptive" sat="j3">
+	<long_name>number of valid retracked Ku-band measurements (adaptive retracking)</long_name>
 	<standard_name>altimeter_range number_of_observations</standard_name>
 	<units>1</units>
 	<limits>8.5 10.5</limits> <!--TOPEX is only 10 Hz-->
 	<plot_range>0 11</plot_range>
-	<data>range_numval_ku_retrk</data>
+	<data>range_numval_ku_adaptive</data>
 	<format>f3.0</format>
 	<compress>int1</compress>
 </var>
@@ -2254,17 +2239,8 @@ Global RADS configuration file
 	<format>f3.0</format>
 	<compress>int1</compress>
 </var>
-<var name="range_numval_c_retrk" sat="tx.r50">
-	<long_name>number of valid retracked C-band measurements</long_name>
-	<standard_name>altimeter_range number_of_observations</standard_name>
-	<units>1</units>
-	<limits>3.5 5.5</limits>
-	<data>range_numval_c_retrk</data>
-	<format>f3.0</format>
-	<compress>int1</compress>
-</var>
 
-<var name="topo_dtm2000" field="2202" sat="3a 3b j1 j2 j3 n1 sa tx.r50">
+<var name="topo_dtm2000" field="2202" sat="3a 3b j1 j2 j3 n1 sa">
 	<long_name>DTM2000 topography</long_name>
 	<source>DTM2000</source>
 	<units>m</units>
@@ -2862,7 +2838,7 @@ Global RADS configuration file
 
 <var name="drange_ku" field="2701" sat="2a 6a c2 e1 e2 gs n1 tx">
 	<long_name>Ku-band range bias</long_name>
-	<long_name sat="tx.r50 6a">net instrument correction to Ku-band range</long_name>
+	<long_name sat="6a">net instrument correction to Ku-band range</long_name>
 	<long_name sat="tx">Cal1 range correction</long_name>
 	<long_name sat="c2">Ku-band retracker range (relative to window delay)</long_name>
 	<units>m</units>
@@ -2883,15 +2859,16 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<comment>Range correction already added to range</comment>
 </var>
-<var name="drange_ku_retrk" sat="tx.r50">
-	<long_name>net instrument correction to retracked Ku-band range</long_name>
+<var name="drange_ku_adaptive" sat="j3">
+	<long_name>net instrument correction to retracked Ku-band range (adaptive retracking)</long_name>
 	<units>m</units>
-	<data>drange_ku_retrk</data>
+	<data>drange_ku_adaptive</data>
 	<compress>int2 1e-3</compress>
 	<format>f6.3</format>
 	<comment>Range correction already added to range</comment>
 </var>
-<var name="drange_c" sat="2a 6a tx.r50">
+
+<var name="drange_c" sat="2a 6a">
 	<long_name>net instrument correction to C-band range</long_name>
 	<units>m</units>
 	<data>drange_c</data>
@@ -2899,14 +2876,6 @@ Global RADS configuration file
 	<compress sat="6a">int4 1e-4</compress>
 	<format>f6.3</format>
 	<format sat="6a">f7.4</format>
-	<comment>Range correction already added to range</comment>
-</var>
-<var name="drange_c_retrk" sat="tx.r50">
-	<long_name>net instrument correction to retracked C-band range</long_name>
-	<units>m</units>
-	<data>drange_c_retrk</data>
-	<compress>int2 1e-3</compress>
-	<format>f6.3</format>
 	<comment>Range correction already added to range</comment>
 </var>
 <var name="drange_cal" field="2702" sat="c2 e1 e2 gs">
@@ -3167,23 +3136,6 @@ Global RADS configuration file
 	</var>
 	<alias name="attitude" field="30">off_nadir_angle2_wf_ku</alias>
 </else>
-<var name="off_nadir_angle2_wf_ku_retrk" sat="tx.r50">
-	<long_name>off-nadir pointing angle squared from retracked Ku-band waveform</long_name>
-	<units>degrees^2</units>
-	<data>off_nadir_angle2_wf_ku_retrk</data>
-	<plot_range>-0.04 0.04</plot_range>
-	<format>f7.4</format>
-	<default>0</default>
-	<compress>int2 1e-4</compress>
-</var>
-<var name="off_nadir_angle2_wf_c_retrk" sat="tx.r50">
-	<long_name>off-nadir pointing angle squared from retracked C-band waveform</long_name>
-	<units>degrees^2</units>
-	<data>off_nadir_angle2_wf_c_retrk</data>
-	<format>f7.4</format>
-	<default>0</default>
-	<compress>int2 1e-4</compress>
-</var>
 <var name="off_nadir_angle_pf" field="3003" sat="2a 3a 3b 6a c2 j2 j3 pn">
 	<long_name>off-nadir pointing angle from platform</long_name>
 	<units>degrees</units>
@@ -3443,7 +3395,7 @@ Global RADS configuration file
 	<compress>int2 1e-2</compress>
 </var>
 
-<var name="water_vapor_rad" field="3302" sat="2a 3a 3b 6a e1 e2 j1 j2 j3 sa tx.r50">
+<var name="water_vapor_rad" field="3302" sat="2a 3a 3b 6a e1 e2 j1 j2 j3 sa">
 	<long_name>radiometer water vapor content</long_name>
 	<standard_name>atmosphere_mass_content_of_water_vapor</standard_name>
 	<units>kg/m^2</units>
