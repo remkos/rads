@@ -395,7 +395,7 @@ if (nr < minnr) then
 endif
 
 ! Init global stats
-tot = stat(0, 0d0, 0d0, 0d0, nan, nan)
+tot = stat(0, 0d0, 0d0, 0d0, huge(1d0), -huge(1d0))
 
 ! Cycle trough all boxes and determine overall weighted mean
 do ky=1,ny
@@ -426,6 +426,10 @@ where (tot%nr > 1)
 	tot%sum2 = sqrt(max(tot%sum2 / tot%wgt - tot%mean*tot%mean, 0d0) * tot%nr / (tot%nr - 1d0)) ! max() avoids tiny negatives
 else where
 	tot%sum2 = nan
+end where
+where (tot%nr == 0)
+	tot%xmin = nan
+	tot%xmax = nan
 end where
 
 ! Write out statistics in ASCII
@@ -499,7 +503,7 @@ end subroutine output_stat
 ! Initialise statistics
 
 subroutine init_stat
-box = stat(0, 0d0, 0d0, 0d0, nan, nan)
+box = stat(0, 0d0, 0d0, 0d0, huge(1d0), -huge(1d0))
 nr = 0
 start_time = nan
 end subroutine init_stat
