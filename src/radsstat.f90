@@ -108,9 +108,9 @@ do i = 1,rads_nopt
 	case ('s')
 		wmode = 3
 	case ('no-stddev')
-		lstat = 1
+		if (lstat == 2 .or. lstat == 4) lstat = lstat - 1
 	case ('l', 'minmax')
-		lstat = 4
+		if (lstat == 1 .or. lstat == 2) lstat = lstat + 2
 	case ('format-cycle')
 		output_format = period_cycle
 	case ('format-day')
@@ -139,7 +139,16 @@ do i = 1,rads_nopt
 		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	end select
 enddo
+
+! At this point, lstat indicates the number of output columns, being either
+! 1 = mean only
+! 2 = mean. srddev
+! 3 = mean, min, amx
+! 4 = mean, stddev, min, max
+
+! If no filename is given, we have ASCII output
 ascii = (filename == '')
+
 if (period == period_day) step = step * 86400d0 ! Convert from days to seconds
 
 ! Determine output format if undefined
@@ -443,7 +452,7 @@ if (ascii) then
 		write (*,601,advance='no') cycle,pass
 	case default
 		write (*,602,advance='no') cycle,yy,mm,dd
-	endselect
+	end select
 	if (boz_format) then
 		do j=1,S(1)%nsel
 			if (.not.S(1)%sel(j)%info%boz_format) cycle
@@ -453,13 +462,16 @@ if (ascii) then
 			call bit_transfer (tot(j)%xmax)
 		enddo
 	endif
-	if (lstat == 1) then
+	select case (lstat)
+	case (1)
 		write (*,format_string) nr, tot(0)%mean, (tot(j)%mean,j=1,S(1)%nsel)
-	else if (lstat == 2) then
+	case (2)
 		write (*,format_string) nr, tot(0)%mean, (tot(j)%mean,tot(j)%sum2,j=1,S(1)%nsel)
-	else
+	case (3)
+		write (*,format_string) nr, tot(0)%mean, (tot(j)%mean,tot(j)%xmin,tot(j)%xmax,j=1,S(1)%nsel)
+	case default
 		write (*,format_string) nr, tot(0)%mean, (tot(j)%mean,tot(j)%sum2,tot(j)%xmin,tot(j)%xmax,j=1,S(1)%nsel)
-	endif
+	end select
 
 ! Write output to NetCDF if requested
 else
@@ -473,21 +485,27 @@ else
 		call rads_put_var (S(1), Pout, var, (/ dble(pass) /), start(2:2))
 	endif
 	call rads_put_var (S(1), Pout, S(1)%time, (/ tot(0)%mean /), start(2:2))
-	if (lstat == 1) then
+	select case (lstat)
+	case (1)
 		do j = 1,S(1)%nsel
 			call rads_put_var (S(1), Pout, S(1)%sel(j), (/ tot(j)%mean /), start)
 		enddo
-	else if (lstat == 2) then
+	case (2)
 		do j = 1,S(1)%nsel
 			call rads_put_var (S(1), Pout, S(1)%sel(j), &
 				(/ tot(j)%mean, tot(j)%sum2 /), start)
 		enddo
-	else
+	case (3)
+		do j = 1,S(1)%nsel
+			call rads_put_var (S(1), Pout, S(1)%sel(j), &
+				(/ tot(j)%mean, tot(j)%xmin, tot(j)%xmax /), start)
+		enddo
+	case default
 		do j = 1,S(1)%nsel
 			call rads_put_var (S(1), Pout, S(1)%sel(j), &
 				(/ tot(j)%mean, tot(j)%sum2, tot(j)%xmin, tot(j)%xmax /), start)
 		enddo
-	endif
+	end select
 	start(2) = start(2) + 1
 endif
 
@@ -524,6 +542,7 @@ integer :: j0, j, l
 620 format ('#    (',i2,') nr of measurements'/'#    (',i2,') mean time [',a,']')
 621 format ('#    (',i2,') mean of ')
 622 format ('# (',i2,'-',i2,') mean and stddev of ')
+623 format ('# (',i2,'-',i2,') mean, min and max of ')
 624 format ('# (',i2,'-',i2,') mean, stddev, min and max of ')
 
 write (*,600) trim(wtype(wmode)), timestamp(), trim(S(1)%command), &
@@ -538,19 +557,22 @@ case (period_pass)
 case default
 	write (*,612)
 	j0 = 2
-endselect
+end select
 write (*,620) j0+1,j0+2,trim(S(1)%time%info%units)
 
 format_string = '(i9,f12.0'
 do j = 1,S(1)%nsel
 	! Write description of variables
-	if (lstat == 1) then
+	select case (lstat)
+	case (1)
 		write (*,621,advance='no') (j-1)+j0+3
-	else if (lstat == 2) then
+	case (2)
 		write (*,622,advance='no') 2*(j-1)+j0+3,2*j+j0+2
-	else
+	case (3)
+		write (*,623,advance='no') 3*(j-1)+j0+3,3*j+j0+2
+	case default
 		write (*,624,advance='no') 4*(j-1)+j0+3,4*j+j0+2
-	endif
+	end select
 	call rads_long_name_and_units(S(1)%sel(j))
 	! Assemble format for statistics lines
 	l = len_trim(format_string)
@@ -597,13 +619,16 @@ call nfs (nf90_def_var (ncid, 'stat', nf90_int1, dimid(2:2), varid(2)))
 call nfs (nf90_put_att (ncid, varid(2), 'long_name', 'statistics type'))
 call nfs (nf90_put_att (ncid, varid(2), 'flag_values', istat))
 call nfs (nf90_put_att (ncid, varid(2), 'flag_meanings', 'mean standard_deviation minimum maximum'))
-if (lstat == 1) then
+select case (lstat)
+case (1)
 	call nfs (nf90_put_att (ncid, varid(2), 'comment', 'Data columns are mean values'))
-else if (lstat == 2) then
+case (2)
 	call nfs (nf90_put_att (ncid, varid(2), 'comment', 'Data columns are mean and standard deviation'))
-else
+case (3)
+	call nfs (nf90_put_att (ncid, varid(2), 'comment', 'Data columns are mean, minimum, and maximum'))
+case default
 	call nfs (nf90_put_att (ncid, varid(2), 'comment', 'Data columns are mean, standard deviation, minimum, and maximum'))
-endif
+end select
 
 ! Define selected variables
 do j = 1,S(1)%nsel
