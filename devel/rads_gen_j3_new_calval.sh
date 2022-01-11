@@ -82,19 +82,16 @@ case $type in
 	*)
 		find -L ${type}/c??? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
 		rads_gen_jason_gdrf --ymd=$d0 $options < "$lst"	>> "$log" 2>&1
-		rads_add_orbit   $options -Valt_cnes --dir=gdr-e-moe --equator --loc-7 --rate	>> "$log" 2>&1
 		;;
 esac
 
 # Do the patches to all data
 
 rads_fix_jason    $options --all					>> "$log" 2>&1
-rads_add_iono     $options --all					>> "$log" 2>&1
 rads_add_common   $options							>> "$log" 2>&1
-rads_add_refframe $options --ext=mle3				>> "$log" 2>&1
-rads_add_ib       $options							>> "$log" 2>&1
-rads_add_ww3_222  $options --all					>> "$log" 2>&1
+rads_add_iono     $options --all					>> "$log" 2>&1
 rads_add_sla      $options							>> "$log" 2>&1
+rads_add_refframe $options --ext=mle3				>> "$log" 2>&1
 rads_add_sla      $options --ext=mle3				>> "$log" 2>&1
 case $type in
 	gdr)

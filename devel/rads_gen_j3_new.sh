@@ -45,13 +45,10 @@ rads_gen_jason_gdrf < "$lst"								>> "$log" 2>&1
 # Do the patches to all data
 
 rads_fix_jason    $options --all					>> "$log" 2>&1
-rads_add_orbit    $options -Valt_gdre --dir=gdr-e-moe --equator --loc-7 --rate	>> "$log" 2>&1
-rads_add_iono     $options --all					>> "$log" 2>&1
 rads_add_common   $options							>> "$log" 2>&1
-rads_add_refframe $options --ext=mle3				>> "$log" 2>&1
-rads_add_ib       $options							>> "$log" 2>&1
-rads_add_ww3_222  $options --all					>> "$log" 2>&1
+rads_add_iono     $options --all					>> "$log" 2>&1
 rads_add_sla      $options							>> "$log" 2>&1
+rads_add_refframe $options --ext=mle3				>> "$log" 2>&1
 rads_add_sla      $options --ext=mle3				>> "$log" 2>&1
 
 date												>> "$log" 2>&1
