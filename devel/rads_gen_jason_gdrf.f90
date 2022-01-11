@@ -130,7 +130,7 @@ real(eightbytereal) :: equator_time
 
 ! Data variables
 
-integer(twobyteint), allocatable :: flags_mle3(:), flags_save(:)
+integer(twobyteint), allocatable :: flags_mle3(:), flags_adaptive(:), flags_save(:)
 character(len=2) :: mss_cnescls_ver = '15', mss_dtu_ver = '18', tide_fes_ver = '14'
 character(len=3) :: tide_got_ver = '410'
 integer :: latency = rads_nrt
@@ -273,7 +273,7 @@ do
 
 ! Allocate variables
 
-	allocate (a(nrec),dh(nrec),flags(nrec),flags_mle3(nrec),flags_save(nrec))
+	allocate (a(nrec),dh(nrec),flags(nrec),flags_mle3(nrec),flags_adaptive(nrec),flags_save(nrec))
 	nvar = 0
 
 ! Get NetCDF ID for 20-Hz data (if available)
@@ -311,17 +311,27 @@ do
 ! Now do specifics for MLE3
 
 	flags_save = flags	! Keep flags for later
-	call nc2f (ncidk, 'range_ocean_mle3_compression_qual', 11)			! bit 11: Quality range
-	call nc2f (ncidk, 'swh_ocean_mle3_compression_qual', 12)			! bit 12: Quality SWH
-	call nc2f (ncidk, 'sig0_ocean_mle3_compression_qual', 13)			! bit 13: Quality Sigma0
+	call nc2f (ncidk, 'range_ocean_mle3_compression_qual', 11)		! bit 11: Quality range
+	call nc2f (ncidk, 'swh_ocean_mle3_compression_qual', 12)		! bit 12: Quality SWH
+	call nc2f (ncidk, 'sig0_ocean_mle3_compression_qual', 13)		! bit 13: Quality Sigma0
 	flags_mle3 = flags	! Copy result for MLE3
-	flags = flags_save	! Continue with nominal ocean retracking flags
+
+! Now do specifics for adaptive retracking
+
+	if (latency == rads_ntc) then
+		flags = flags_save	! Reset to general flags
+		call nc2f (ncidk, 'range_adaptive_compression_qual', 11)	! bit 11: Quality range
+		call nc2f (ncidk, 'swh_adaptive_compression_qual', 12)		! bit 12: Quality SWH
+		call nc2f (ncidk, 'sig0_adaptive_compression_qual', 13)		! bit 13: Quality Sigma0
+		flags_adaptive = flags	! Copy result for adaptive retracking
+	endif
 
 ! Redo the last ones for standard retracker
 
-	call nc2f (ncidk, 'range_ocean_compression_qual', 11)					! bit 11: Quality range
-	call nc2f (ncidk, 'swh_ocean_compression_qual', 12)						! bit 12: Quality SWH
-	call nc2f (ncidk, 'sig0_ocean_compression_qual', 13)					! bit 13: Quality Sigma0
+	flags = flags_save	! Reset to general flags
+	call nc2f (ncidk, 'range_ocean_compression_qual', 11)			! bit 11: Quality range
+	call nc2f (ncidk, 'swh_ocean_compression_qual', 12)				! bit 12: Quality SWH
+	call nc2f (ncidk, 'sig0_ocean_compression_qual', 13)			! bit 13: Quality Sigma0
 
 ! Time and location
 
@@ -349,6 +359,15 @@ do
 	call cpy_var (ncidc, 'range_ocean', 'range_c')
 	call cpy_var (ncidc, 'range_ocean_rms', 'range_rms_c')
 	call cpy_var (ncidc, 'range_ocean_numval', 'range_numval_c')
+	call cpy_var (ncidk, 'range_cor_ocean_net_instr', 'drange_ku')
+	call cpy_var (ncidk, 'range_cor_ocean_mle3_net_instr', 'drange_ku_mle3')
+	call cpy_var (ncidc, 'range_cor_ocean_net_instr', 'drange_c')
+	if (latency == rads_ntc) then
+		call cpy_var (ncidk, 'range_adaptive', 'range_ku_adaptive')
+		call cpy_var (ncidk, 'range_adaptive_rms', 'range_rms_ku_adaptive')
+		call cpy_var (ncidk, 'range_adaptive_numval', 'range_numval_ku_adaptive')
+		call cpy_var (ncidk, 'range_cor_adaptive_net_instr', 'drange_ku_adaptive')
+	endif
 
 ! SWH
 
@@ -359,6 +378,14 @@ do
 	call cpy_var (ncidk, 'swh_ocean_mle3_rms', 'swh_rms_ku_mle3')
 	call cpy_var (ncidc, 'swh_ocean', 'swh_c')
 	call cpy_var (ncidc, 'swh_ocean_rms', 'swh_rms_c')
+	call cpy_var (ncidk, 'swh_cor_ocean_net_instr', 'dswh_ku')
+	call cpy_var (ncidk, 'swh_cor_ocean_mle3_net_instr', 'dswh_ku_mle3')
+	call cpy_var (ncidc, 'swh_cor_ocean_net_instr', 'dswh_c')
+	if (latency == rads_ntc) then
+		call cpy_var (ncidk, 'swh_adaptive', 'swh_ku_adaptive')
+		call cpy_var (ncidk, 'swh_adaptive_rms', 'swh_rms_ku_adaptive')
+		call cpy_var (ncidk, 'swh_cor_adaptive_net_instr', 'dswh_ku_adaptive')
+	endif
 
 ! Backscatter
 
@@ -371,6 +398,14 @@ do
 	call cpy_var (ncidc, 'sig0_ocean', 'sig0_c')
 	call cpy_var (ncidc, 'sig0_ocean_rms', 'sig0_rms_c')
 	call cpy_var (ncidc, 'sig0_cor_atm', 'dsig0_atmos_c')
+	call cpy_var (ncidk, 'sig0_cor_ocean_net_instr', 'dswh_ku')
+	call cpy_var (ncidk, 'sig0_cor_ocean_mle3_net_instr', 'dsig0_ku_mle3')
+	call cpy_var (ncidc, 'sig0_cor_ocean_net_instr', 'dsig0_c')
+	if (latency == rads_ntc) then
+		call cpy_var (ncidk, 'sig0_adaptive', 'sig0_ku_adaptive')
+		call cpy_var (ncidk, 'sig0_adaptive_rms', 'sig0_rms_ku_adaptive')
+		call cpy_var (ncidk, 'sig0_cor_adaptive_net_instr', 'dsig0_ku_adaptive')
+	endif
 
 ! Wind speed
 
@@ -379,6 +414,7 @@ do
 	call cpy_var (ncid1, 'rad_wind_speed', 'wind_speed_rad')
 	call cpy_var (ncid1, 'wind_speed_mod_u', 'wind_speed_ecmwf_u')
 	call cpy_var (ncid1, 'wind_speed_mod_v', 'wind_speed_ecmwf_v')
+	if (latency == rads_ntc) call cpy_var (ncid1  , 'wind_speed_alt_adaptive', 'wind_speed_alt_adaptive')
 
 ! Rain or ice
 
@@ -402,12 +438,22 @@ do
 	call cpy_var (ncidk, 'iono_cor_alt_filtered_mle3', 'iono_alt_smooth_mle3')
 	call cpy_var (ncidc, 'range_ocean_compression_qual', 'qual_iono_alt')
 	call cpy_var (ncidk, 'iono_cor_gim', 'iono_gim')
+	if (latency == rads_ntc) then
+		call cpy_var (ncidk, 'iono_cor_alt_adaptive', 'iono_alt_adaptive')
+		call cpy_var (ncidk, 'iono_cor_alt_filtered_adaptive', 'iono_alt_smooth_adaptive')
+	endif
 
 ! SSB
 
 	call cpy_var (ncidk, 'sea_state_bias', 'ssb_cls')
 	call cpy_var (ncidk, 'sea_state_bias_mle3', 'ssb_cls_mle3')
+	call cpy_var (ncidk, 'sea_state_bias_3d_mp2', 'ssb_cls_3d')
 	call cpy_var (ncidc, 'sea_state_bias', 'ssb_cls_c')
+	if (latency == rads_ntc) then
+		call cpy_var (ncidk, 'sea_state_bias_adaptive', 'ssb_cls_adaptive')
+		call cpy_var (ncidk, 'sea_state_bias_adaptive_3d_mp2', 'ssb_cls_3d_adaptive')
+		call cpy_var (ncidc, 'sea_state_bias_adaptive', 'ssb_cls_c_adaptive')
+	endif
 
 ! IB
 
@@ -448,6 +494,7 @@ do
 
 	call new_var ('flags', dble(flags))
 	call new_var ('flags_mle3', dble(flags_mle3))
+	if (latency == rads_ntc) call new_var ('flags_adaptive', dble(flags_adaptive))
 
 ! Other radiometer measurements
 ! Selected smoothed TBs
@@ -478,7 +525,7 @@ do
 
 	call nfs(nf90_close(ncid))
 	call put_rads
-	deallocate (a, dh, flags, flags_mle3, flags_save)
+	deallocate (a, dh, flags, flags_mle3, flags_adaptive, flags_save)
 
 enddo
 
