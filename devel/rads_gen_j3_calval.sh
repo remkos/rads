@@ -63,9 +63,10 @@ date												>> "$log" 2>&1
 # Now continue with the post-processing
 rads_reuse_sandbox "j3.${type}"
 
-# Add MOE orbit (for OGDR and IGDR only)
+# Add MOE orbit (for OGDR only)
 case $type in
-	ogdr|igdr) rads_add_orbit    $options -Valt_gdre --dir=gdr-e-moe --equator --loc-7 --rate	>> "$log" 2>&1
+	ogdr) rads_add_orbit    $options -Valt_cnes --dir=gdr-e-moe --equator --rate	>> "$log" 2>&1
+		;;
 esac
 
 # Do the patches to all data

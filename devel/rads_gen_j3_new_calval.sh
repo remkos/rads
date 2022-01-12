@@ -50,7 +50,7 @@ for type in ${types}; do
 rads_open_sandbox j3.${type}0
 lst=$SANDBOX/rads_gen_j3_tmp.lst
 
-date												>  "$log" 2>&1
+date													>  "$log" 2>&1
 
 omrk=${type}/.bookmark
 TZ=UTC touch -t ${d0}0000 $omrk
@@ -58,7 +58,7 @@ case $type in
 	gdr)
 		find -L ${type}/cycle_??? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
 		if [ -s "$lst" ]; then
-			rads_gen_jason_gdrf $options < "$lst"			>> "$log" 2>&1
+			rads_gen_jason_gdrf $options < "$lst"		>> "$log" 2>&1
 		fi
 		;;
 	*)
@@ -76,12 +76,18 @@ case $type in
 	gdr)
 		find -L ${type}/cycle_??? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
 		if [ -s "$lst" ]; then
-			rads_gen_jason_gdrf $options < "$lst"			>> "$log" 2>&1
+			rads_gen_jason_gdrf $options < "$lst"								>> "$log" 2>&1
 		fi
 		;;
 	*)
 		find -L ${type}/c??? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
-		rads_gen_jason_gdrf --ymd=$d0 $options < "$lst"	>> "$log" 2>&1
+		rads_gen_jason_gdrf --ymd=$d0 $options < "$lst"							>> "$log" 2>&1
+		;;
+esac
+
+# Add MOE orbit (for OGDR only)
+case $type in
+	ogdr) rads_add_orbit $options -Valt_cnes --dir=gdr-e-moe --equator --rate	>> "$log" 2>&1
 		;;
 esac
 
