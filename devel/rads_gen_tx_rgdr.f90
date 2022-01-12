@@ -178,9 +178,8 @@ do
 	P%start_time = strp1985f(arg)
 	call nfs(nf90_get_att(ncid,nf90_global,'last_meas_time',arg))
 	P%end_time = strp1985f(arg)
-	i = index(infile, '/', .true.) + 1
 	call nfs(nf90_get_att(ncid,nf90_global,'version',arg))
-	P%original = trim(infile(i:)) // ' (' // trim(arg) // ')'
+	P%original = trim(basename(infile)) // ' (' // trim(arg) // ')'
 
 ! Allocate variables
 

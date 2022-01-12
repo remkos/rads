@@ -266,10 +266,10 @@ do
 ! Determine L2 processing version (currently not used)
 
 	call nfs(nf90_get_att(ncid,nf90_global,'source',arg))
+
 ! Store input file name
 
-	i = index(infile, '/', .true.) + 1
-	P%original = trim(infile(i:)) // ' (' // trim(arg) // ')'
+	P%original = trim(basename(infile)) // ' (' // trim(arg) // ')'
 
 ! Allocate variables
 

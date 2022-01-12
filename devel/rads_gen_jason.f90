@@ -93,7 +93,7 @@ use netcdf
 
 ! Command line arguments
 
-integer(fourbyteint) :: ios, i, j, q, r
+integer(fourbyteint) :: ios, j, q, r
 character(len=rads_cmdl) :: infile, arg
 
 ! Header variables
@@ -128,7 +128,7 @@ do
 
 ! Open input file
 
-	call log_string (infile)
+	call log_string (basename(infile))
 	if (nf90_open(infile,nf90_nowrite,ncid) /= nf90_noerr) then
 		call log_string ('Error: failed to open input file', .true.)
 		cycle
@@ -267,9 +267,8 @@ do
 ! Determine L2 processing version
 
 	call nfs(nf90_get_att(ncid,nf90_global,'references',arg))
-	i = index(infile, '/', .true.) + 1
 	j = index(arg, 'L2 library=')
-	P%original = trim(infile(i:)) // ' (' // arg(j+11:)
+	P%original = trim(basename(infile)) // ' (' // arg(j+11:)
 	j = index(P%original, ',')
 	P%original(j:) = ')'
 

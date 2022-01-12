@@ -213,7 +213,7 @@ filenm = infile(i:)
 
 ! Check input file name
 
-call log_string (infile)
+call log_string (basename(infile))
 if (filenm(8:17) /= '_ERS_ALT_2') then
 	call log_string ('Error: wrong input file type', .true.)
 	return

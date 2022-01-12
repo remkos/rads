@@ -135,7 +135,7 @@ do
 
 ! Open input file
 
-	call log_string (infile)
+	call log_string (basename(infile))
 	if (nf90_open(infile,nf90_nowrite,ncid) /= nf90_noerr) then
 		call log_string ('Error: failed to open input file', .true.)
 		cycle
@@ -278,8 +278,7 @@ do
 
 ! Store input file name
 
-	i = index(infile, '/', .true.) + 1
-	P%original = trim(infile(i:)) // ' (' // trim(arg) // ')'
+	P%original = trim(basename(infile)) // ' (' // trim(arg) // ')'
 
 ! Allocate variables
 
