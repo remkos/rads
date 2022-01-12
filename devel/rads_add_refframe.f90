@@ -58,7 +58,7 @@ integer(fourbyteint) :: cyc, pass
 real(eightbytereal) :: coef(5) = 0d0, a(5)
 logical :: constant
 type(rads_var), pointer :: var
-character(len=5) :: ext = ''
+character(len=40) :: ext = ''
 
 ! Other variables
 
@@ -75,7 +75,7 @@ call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
 	case ('x', 'ext')
-		ext = '_' // rads_opt(i)%arg(:4)
+		ext = '_' // rads_opt(i)%arg(:39)
 	end select
 enddo
 
