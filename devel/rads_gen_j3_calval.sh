@@ -53,7 +53,14 @@ date												>  "$log" 2>&1
 # Set bookmark according to $d0
 mrk=$RADSDATAROOT/.bookmark
 TZ=UTC touch -t ${d0}0000 "$mrk"
-find "$@" -name "*.nc" -a -newer "$mrk" | sort		>  "$lst"
+dirs=
+for dir in "$@"; do
+	case "$dir" in
+		*.txz) tar -C$SANDBOX -xJf "$dir"; dir=$SANDBOX/`basename "$dir" .txz`; chmod -R u+w "$dir" ;;
+	esac
+	dirs="$dirs $dir"
+done
+find $dirs -name "*.nc" -a -newer "$mrk" | sort > "$lst"
 
 # Convert only to RADS, nothing else
 rads_gen_jason_gdrf $options < "$lst"				>> "$log" 2>&1
