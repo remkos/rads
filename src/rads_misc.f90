@@ -467,6 +467,32 @@ do i = 1,len(string)
 enddo
 end function strtoupper
 
+!****f* rads_misc/basename
+! SUMMARY
+! Get basename of full pathname
+!
+! SYNOPSIS
+elemental function basename (pathname) result (filename)
+character(len=*), intent(in) :: pathname
+character(len=len(pathname)) :: filename
+!
+! PURPOSE
+! Convert character string of a pathname to its base filename.
+! Example: basename("bar/foo.txt") results in "foo.txt"
+!
+! ARGUMENTS
+! pathname : Full pathname
+! filename : Base filename
+!****-------------------------------------------------------------------
+integer :: i
+i = index(pathname, '/', back=.true.)
+if (i > 0) then
+	filename = pathname(i+1:)
+else
+	filename = pathname
+endif
+end function basename
+
 !****f* rads_misc/getlun
 ! SUMMARY
 ! Get free logical unit number
