@@ -36,7 +36,7 @@ type(rads_sat) :: S
 type(rads_pass) :: P
 integer(fourbyteint) :: cyc, pass, i
 logical :: update = .false.
-character(len=5) :: ext = ''
+character(len=40) :: ext = ''
 
 ! Initialise
 
@@ -54,7 +54,7 @@ do i = 1,rads_nopt
 	case ('mle')	! For backward compatibility only
 		if (rads_opt(i)%arg == '3') ext = '_mle3'
 	case ('x', 'ext')
-		ext = '_' // rads_opt(i)%arg(:4)
+		ext = '_' // rads_opt(i)%arg(:39)
 	end select
 enddo
 

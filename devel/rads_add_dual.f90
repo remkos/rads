@@ -43,7 +43,7 @@ type(rads_pass) :: P
 integer(fourbyteint) :: ntot, cyc, pass, i
 integer(fourbyteint), parameter :: nmax = 3000000
 integer(twobyteint) :: mask = 2072 ! Bits 3, 4, 11
-character(len=5) :: ext = ''
+character(len=40) :: ext = ''
 real(eightbytereal) :: twin = 35d0, iwin = 8d0, f
 real(eightbytereal) :: time(nmax), lat(nmax), flags(nmax), iono1(nmax), iono2(nmax)
 logical :: recompute = .false., new = .false.
@@ -68,7 +68,7 @@ do i = 1,rads_nopt
 	case ('m', 'mle')	! For backward compatibility only
 		if (rads_opt(i)%arg == '3') ext = '_mle3'
 	case ('x', 'ext')
-		ext = '_' // rads_opt(i)%arg(:4)
+		ext = '_' // rads_opt(i)%arg(:39)
 	case ('i', 'iwin')
 		read (rads_opt(i)%arg,*) iwin
 	case ('b', 'mask')
