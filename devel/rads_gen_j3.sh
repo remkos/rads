@@ -51,6 +51,7 @@ done
 
 rads_fix_jason    $options --all					>> "$log" 2>&1
 rads_add_common   $options							>> "$log" 2>&1
+rads_add_ww3_222  $options --all					>> "$log" 2>&1
 rads_add_iono     $options --all					>> "$log" 2>&1
 rads_add_sla      $options							>> "$log" 2>&1
 rads_add_refframe $options --ext=mle3				>> "$log" 2>&1
