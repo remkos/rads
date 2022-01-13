@@ -515,6 +515,7 @@ do
 
 	call cpy_var (ncidk, 'ssha', 'ssha')
 	call cpy_var (ncidk, 'ssha_mle3', 'ssha_mle3')
+	if (latency == rads_ntc) call cpy_var (ncidk, 'ssha_adaptive', 'ssha_adaptive')
 
 ! Misc
 
