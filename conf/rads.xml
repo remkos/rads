@@ -1857,6 +1857,15 @@ Global RADS configuration file
 	<format>f5.2</format>
 	<compress>int2 1e-2</compress>
 </var>
+<var name="swh_mfwam" sat="6a j3">
+	<long_name>MFWAM significant wave height</long_name>
+	<standard_name>sea_surface_wave_significant_height</standard_name>
+	<units>m</units>
+	<source>MFWAM/Meteo France</source>
+	<data>swh_mfwam</data>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+</var>
 <var name="swh_20hz_ku" sat="c2">
 	<long_name>20-Hz Ku-band significant wave height</long_name>
 	<standard_name>sea_surface_wave_significant_height</standard_name>

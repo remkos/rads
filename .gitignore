@@ -23,6 +23,7 @@ devel/rads_add_gpd
 devel/rads_add_grid
 devel/rads_add_ib
 devel/rads_add_iono
+devel/rads_add_mfwam
 devel/rads_add_mog2d
 devel/rads_add_ncep
 devel/rads_add_orbit
