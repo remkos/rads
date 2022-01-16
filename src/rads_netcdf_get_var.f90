@@ -32,6 +32,7 @@
 ! R2      |  a b R2   | a*a + b*b
 ! ISNAN   |  a ISNAN  | if (isnan(a)) 1 else 0
 ! IOR     |  a b IOR  | bitwise OR of a and b
+! FMOD    |  a b FMOD | a MOD b
 ! --------------------------------------------
 ! Only 2 buffers can be used, so the computation has to remain relatively
 ! simple.
@@ -77,6 +78,8 @@ do
 		elsewhere
 			array = ior(nint(array),nint(temp))
 		endwhere
+	case ('FMOD')
+		array = modulo(array,temp)
 	case default
 		if (index('.+-0123456789', varnm(ia:ia)) > 0) then
 			scale_factor = 0d0

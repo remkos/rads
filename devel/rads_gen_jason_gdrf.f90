@@ -507,9 +507,10 @@ do
 	call cpy_var (ncid1, 'rad_water_vapor', 'water_vapor_rad')
 
 ! Wave model
+! Convert direction from 0/360 range to -180/180 range
 
 	call cpy_var (ncid1, 'mean_wave_period_t02', 'mean_wave_period')
-	call cpy_var (ncid1, 'mean_wave_direction', 'mean_wave_direction')
+	call cpy_var (ncid1, 'mean_wave_direction 180 ADD 360 FMOD 180 SUB', 'mean_wave_direction')
 
 ! SSHA
 
