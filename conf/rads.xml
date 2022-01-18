@@ -1857,7 +1857,7 @@ Global RADS configuration file
 	<format>f5.2</format>
 	<compress>int2 1e-2</compress>
 </var>
-<var name="swh_mfwam" sat="6a j3">
+<var name="swh_mfwam" sat="3a 3b 6a j3">
 	<long_name>MFWAM significant wave height</long_name>
 	<standard_name>sea_surface_wave_significant_height</standard_name>
 	<units>m</units>
@@ -3867,7 +3867,7 @@ Global RADS configuration file
 	<compress>int2 1e-3</compress>
 </var>
 
-<var name="mean_wave_period" sat="6a j3 sa">
+<var name="mean_wave_period" sat="3a 3b 6a j3 sa">
 	<long_name>t02 mean wave period</long_name>
 	<standard_name>sea_surface_wind_wave_mean_period_from_variance_spectral_density_second_frequency_moment</standard_name>
 	<source>MFWAM/Meteo France</source>
@@ -3877,7 +3877,7 @@ Global RADS configuration file
 	<compress>int2 1e-2</compress>
 </var>
 
-<var name="mean_wave_direction" sat="6a j3 sa">
+<var name="mean_wave_direction" sat="3a 3b 6a j3 sa">
 	<long_name>mean direction of the sea surface wave</long_name>
 	<standard_name>sea_surface_wave_from_direction</standard_name>
 	<source>MFWAM/Meteo France</source>
