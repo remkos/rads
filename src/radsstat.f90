@@ -369,6 +369,7 @@ do ia = 1,na
 		ib = ib + 1
 	enddo
 	if (tb(ib) == ta(ia)) idx(ia) = ib
+	if (ib < nb .and. tb(ib+1) == tb(ib)) ib = ib + 1 ! Encourage indexing to the next point if two points are in the same bin
 !	write (*,*) ia, idx(ia), ia - idx(ia), ta(ia), tb(ia), P(1)%tll(ia,1), P(2)%tll(ia,1)
 enddo
 ! write (*,*) P(1)%equator_time, P(2)%equator_time
