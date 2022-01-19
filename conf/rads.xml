@@ -2799,12 +2799,12 @@ Global RADS configuration file
 	-->
 	<format>b16.16</format>
 	<compress>int2</compress>
-	<flag_masks> <!--This is for j2 and j3-->
+	<flag_masks>
 		alt_side_B attitude_bad continental_ice alt_iono_bad
 		alt_land alt_non_ocean rad_land alt_rain_or_ice
 		rad_rain_or_ice tb1_tb2_bad tb2_bad range_suspect
 		swh_suspect backscatter_suspect not_used orbit_degraded
-	</flag_masks>
+	</flag_masks>		<!--This is for 6a, j2, and j3-->
 	<flag_masks sat="j1">
 		alt_side_B attitude_bad continental_ice alt_iono_bad
 		alt_land alt_non_ocean rad_land alt_rain_or_ice
