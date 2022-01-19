@@ -20,7 +20,7 @@ rads_add_grid     "$@" -Vdist_coast,inv_bar_mog2d_mean,gia,basin
 rads_add_grid     "$@" -Vgeoid_egm2008,mss_cnescls15
 rads_add_grid     "$@" -Vtopo_dtu10,mss_dtu15,mss_dtu18
 rads_add_grid     "$@" -Vmss_comb15,topo_srtm30plus
-rads_add_grid     "$@" -Vgeoid_eigen6,geoid_xgm2016
+rads_add_grid     "$@" -Vgeoid_eigen6
 rads_add_grid     "$@" -Vtopo_srtm15plus
 rads_add_grid     "$@" -Vprox_coast
 rads_add_surface  "$@"
