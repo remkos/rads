@@ -338,11 +338,11 @@ do
 	call get_var (ncid1, 'time', a)
 	call new_var ('time', a + sec2000)
 	call cpy_var (ncid1, 'latitude', 'lat')
-	call cpy_var (ncid1, 'longitude','lon')
 	! Compute ellipsoid corrections
 	do i = 1,nrec
 		dh(i) = dhellips(1,a(i))
 	enddo
+	call cpy_var (ncid1, 'longitude','lon')
 	call get_var (ncid1, 'altitude', a)
 	call new_var ('alt_gdrf', a + dh)
 	call cpy_var (ncid1, 'altitude_rate', 'alt_rate')
