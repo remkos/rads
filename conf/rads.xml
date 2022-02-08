@@ -1756,13 +1756,23 @@ Global RADS configuration file
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
 </var>
-<var name="mss_comb15" field="1621">
+<var name="mss_comb15">
 	<long_name>Combined SIO/CNES_CLS15/DTU15 mean sea surface height</long_name>
 	<standard_name>sea_surface_height_above_reference_ellipsoid</standard_name>
 	<source>SIO/CNES_CLS15/DTU15</source>
 	<parameters>DT21/MSS_Combine_SIO_CNES15_DTU15.nc -s</parameters>
 	<units>m</units>
 	<data>mss_comb15</data>
+	<format>f10.4</format>
+	<compress>int4 1e-4</compress>
+</var>
+<var name="mss_dtu21">
+	<long_name>DTU21 mean sea surface height</long_name>
+	<standard_name>sea_surface_height_above_reference_ellipsoid</standard_name>
+	<source>DTU21</source>
+	<parameters>DTU21/DTU21MSS_1min_TP.nc -s</parameters>
+	<units>m</units>
+	<data>mss_dtu21</data>
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
 </var>
