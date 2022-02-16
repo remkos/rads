@@ -37,7 +37,7 @@ use netcdf
 
 ! Struct for orbit info
 
-type(orfinfo) :: orf(200000)
+type(orfinfo) :: orf(300000)
 
 ! Scruct to store input file information
 
