@@ -23,20 +23,8 @@
 ! In practice we will use a zero offset for TOPEX.
 !
 ! Special provisions are made for the following missions:
-! C2: In order to keep on properly patching baseline B data, there is
-!     a special provision made to update reference frame offsets that
-!     were previously < -500 mm (C00 term only). If so, then we use a value
-!     673 mm less than the configured value.
 ! J1: The reference frame offset for Phase A and B is given in the
 !     configuration. For Phase C, 5 mm is added to the C00 term.
-! J2: The reference frame offset for the SLA from MLE4 measurements is
-!     given in the configuration. For MLE3 measurements 28.5 mm is added
-!     to the C00 term.
-! J3: The reference frame offset for the SLA from GDR-D MLE4 is given
-!     in the configuration. For GDR-F 23.2 mm is added to the C00 term.
-! 3A: The reference frame offset is for the latest product baseline.
-!     For data before PB2.19 (SM-2 6.10) increase the reference frame offset
-!     by 23 mm. See notes of 2018-01-26.
 !
 ! usage: rads_add_refframe [data-selectors] [options]
 !-----------------------------------------------------------------------
@@ -55,14 +43,16 @@ type(grid) :: info
 ! Command line arguments
 
 integer(fourbyteint) :: cyc, pass
-real(eightbytereal) :: coef(5) = 0d0, a(5)
-logical :: constant
-type(rads_var), pointer :: var
-character(len=40) :: ext = ''
+real(eightbytereal) :: a(5)
 
 ! Other variables
 
-integer(fourbyteint) :: i, ios
+integer(fourbyteint) :: i, k, ios
+type :: var_
+	real(eightbytereal) :: coef(5)
+	logical :: constant
+end type
+type(var_), allocatable :: var(:)
 
 ! Initialise
 
@@ -74,38 +64,48 @@ call rads_init (S)
 
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
-	case ('x', 'ext')
-		ext = '_' // rads_opt(i)%arg(:39)
+	case ('x', 'ext')	! For backward compatibility only
+		call rads_parse_varlist (S, 'ref_frame_offset_' // rads_opt(i)%arg)
 	end select
 enddo
+! Default to adding 'ssha' only
+if (S%nsel == 0) call rads_parse_varlist (S, 'ref_frame_offset')
+allocate(var(S%nsel))
 
 ! Get default coefficients from rads.xml file
 
-var => rads_varptr (S, 'ref_frame_offset'//ext)
-read (var%info%parameters, *, iostat=ios) coef
+do k = 1,S%nsel
+	var(k)%coef = 0d0
+	read (S%sel(k)%info%parameters, *, iostat=ios) var(k)%coef
+enddo
 
 ! Check for --coef option
 
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
 	case ('coef')
-		coef = 0d0
-		read (rads_opt(i)%arg, *, iostat=ios) coef
+		var(1)%coef = 0d0
+		read (rads_opt(i)%arg, *, iostat=ios) var(1)%coef
 		if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
+		do k = 2,S%nsel
+			var(k)%coef = var(1)%coef
+		enddo
 	end select
 enddo
 
 ! Convert coefficients from mm to m
 
-coef = coef*1d-3
-constant = all(coef(2:5) == 0d0)
+do k = 1,S%nsel
+	var(k)%coef = var(k)%coef*1d-3
+	var(k)%constant = all(var(k)%coef(2:5) == 0d0)
+enddo
 
 ! Process all data files
 
 do cyc = S%cycles(1), S%cycles(2), S%cycles(3)
 	do pass = S%passes(1), S%passes(2), S%passes(3)
 		call rads_open_pass (S, P, cyc, pass, .true.)
-		if (P%ndata > 0) call process_pass (P%ndata)
+		if (P%ndata > 0) call process_pass (P%ndata, S%nsel)
 		call rads_close_pass (S, P)
 	enddo
 enddo
@@ -127,8 +127,8 @@ call synopsis_devel ('')
 write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
-'  -x, --ext EXT             Produce field ref_frame_offset_EXT (e.g. mle3 or plrm)' / &
-' --coef C00,C10,C11,S11,C20 Set reference frame offset coefficients (mm)' / &
+'  -V, --var=VAR1[,VAR2,...] Add specified variables (e.g. ref_frame_offset,ref_frame_offset_mle3)'/ &
+' --coef C00,C10,C11,S11,C20 Set reference frame offset coefficients (mm); applies to all variables' / &
 '                            (default values come from rads.xml)')
 stop
 end subroutine synopsis
@@ -137,53 +137,44 @@ end subroutine synopsis
 ! Process a single pass
 !-----------------------------------------------------------------------
 
-subroutine process_pass (n)
-integer(fourbyteint), intent(in) :: n
-real(eightbytereal) :: lon(n), lat(n), cor(n), ref_frame_offset(n)
+subroutine process_pass (n, m)
+integer(fourbyteint), intent(in) :: n, m
+real(eightbytereal) :: lon(n), lat(n), cor(n,m)
 real(eightbytereal), parameter :: rad=atan(1d0)/45d0
-integer(fourbyteint) :: i
+integer(fourbyteint) :: i, k
 
 call log_pass (P)
 
 ! Get lat, lon
 
-call rads_get_var (S, P, 'lon', lon, .true.)
-call rads_get_var (S, P, 'lat', lat, .true.)
-
-! Compute correction
-
-if (constant) then
-	cor = coef(1)
+if (all(var(:)%constant)) then
+	do k = 1,m
+		cor(:,k) = var(k)%coef(1)
+	enddo
 else
+	call rads_get_var (S, P, 'lon', lon, .true.)
+	call rads_get_var (S, P, 'lat', lat, .true.)
 	do i = 1,n
 		call get_spharm(lat(i)*rad,lon(i)*rad,a)
-		cor(i) = dot_product(coef,a)
+		do k = 1,m
+			cor(i,k) = dot_product(var(k)%coef,a)
+		enddo
 	enddo
-endif
-
-! If CryoSat-2 and we had values less than -500 mm, then use C00 - 673 mm.
-
-if (S%sat == 'c2' .and. cyc < 63) then
-	call rads_get_var (S, P, var, ref_frame_offset, .true.)
-	if (ref_frame_offset(1) < -500d-3) cor = cor - 673d-3
 endif
 
 ! If Jason-1 phase C, add 5 mm
 
 if (S%sat == 'j1' .and. S%phase%name == 'c') cor = cor + 5d-3
 
-! If Sentinel-3 prior to SM-2 version 6.10, add 25 mm
-
-if (S%sat == '3a') then
-	i = index(P%original, 'IPF-SM-2')
-	if (i > 0 .and. P%original(i+9:i+13) < '06.10') cor = cor + 25d-3
-endif
-
 ! Store all data fields.
 
 call rads_put_history (S, P)
-call rads_def_var (S, P, var)
-call rads_put_var (S, P, var, cor)
+do k = 1,m
+	call rads_def_var (S, P, S%sel(k))
+enddo
+do k = 1,m
+	call rads_put_var (S, P, S%sel(k), cor(:,k))
+enddo
 
 call log_records (n)
 end subroutine process_pass
