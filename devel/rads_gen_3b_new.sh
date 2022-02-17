@@ -57,11 +57,10 @@ done
 # General geophysical corrections
 rads_add_grid     $options -Vangle_coast                >> "$log" 2>&1
 rads_add_common   $options								>> "$log" 2>&1
-rads_add_refframe $options --ext=plrm					>> "$log" 2>&1
 rads_add_iono     $options --all						>> "$log" 2>&1
 # Redetermine SSHA
-rads_add_sla      $options								>> "$log" 2>&1
-rads_add_sla      $options --ext=plrm					>> "$log" 2>&1
+rads_add_refframe $options -x -x plrm					>> "$log" 2>&1
+rads_add_sla      $options -x -x plrm					>> "$log" 2>&1
 
 date													>> "$log" 2>&1
 

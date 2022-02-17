@@ -40,18 +40,20 @@ done
 
 # Do the patches to all data
 
-rads_add_iono    $options -C1-220 --iri2007 --nic09		>> "$log" 2>&1
-rads_add_iono    $options -C221-481 --all				>> "$log" 2>&1
-rads_add_common  $options								>> "$log" 2>&1
-rads_add_dual    $options								>> "$log" 2>&1
+rads_add_iono     $options -C1-220 --iri2007 --nic09	>> "$log" 2>&1
+rads_add_iono     $options -C221-481 --all				>> "$log" 2>&1
+rads_add_common   $options								>> "$log" 2>&1
+rads_add_dual     $options								>> "$log" 2>&1
 #rads_add_ncep    $options -gdwu --sig0-saral			>> "$log" 2>&1
 #rads_fix_tp      $options								>> "$log" 2>&1
-rads_add_mog2d   $options								>> "$log" 2>&1
-rads_add_ib      $options								>> "$log" 2>&1
-rads_add_orbit   $options -Valt_gdrcp					>> "$log" 2>&1
-rads_add_orbit   $options -Valt_std1204 --equator --loc-7 --rate	>> "$log" 2>&1
-rads_add_ww3_314 $options -C269-481 --all				>> "$log" 2>&1
-rads_add_sla     $options           					>> "$log" 2>&1
+rads_add_mog2d    $options								>> "$log" 2>&1
+rads_add_ib       $options								>> "$log" 2>&1
+rads_add_orbit    $options -Valt_gdrcp					>> "$log" 2>&1
+rads_add_orbit    $options -Valt_std1204 --equator --loc-7 --rate	>> "$log" 2>&1
+rads_add_ww3_314  $options -C269-481 --all				>> "$log" 2>&1
+# Redetermine SSHA
+rads_add_refframe $options								>> "$log" 2>&1
+rads_add_sla      $options								>> "$log" 2>&1
 
 date													>> "$log" 2>&1
 

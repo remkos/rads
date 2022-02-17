@@ -47,22 +47,22 @@ for tar in "$@"; do
 	esac
 done
 
+# Add adaptive retracker for NTC
+
+case $type in
+	ogdr|igdr) extra= ;;
+	        *) extra="-x adaptive" ;;
+esac
+
 # Do the patches to all data
 
 rads_fix_jason    $options --all					>> "$log" 2>&1
 rads_add_common   $options							>> "$log" 2>&1
 rads_add_ww3_222  $options --all					>> "$log" 2>&1
 rads_add_iono     $options --all					>> "$log" 2>&1
-rads_add_sla      $options							>> "$log" 2>&1
-rads_add_refframe $options --ext=mle3				>> "$log" 2>&1
-rads_add_sla      $options --ext=mle3				>> "$log" 2>&1
-case $type in
-	ogdr|igdr) ;;
-	*)
-		rads_add_refframe  $options --ext=adaptive	>> "$log" 2>&1
-		rads_add_sla       $options --ext=adaptive	>> "$log" 2>&1
-		;;
-esac
+# Redetermine SSHA
+rads_add_refframe $options -x -x mle3 $extra		>> "$log" 2>&1
+rads_add_sla      $options -x -x mle3 $extra		>> "$log" 2>&1
 
 date												>> "$log" 2>&1
 

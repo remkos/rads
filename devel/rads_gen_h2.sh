@@ -42,15 +42,17 @@ done
 
 #rads_fix_h2      $options --all					>> "$log" 2>&1
 #rads_add_ssb     $options --ssb=ssb_tran2012	>> "$log" 2>&1
-rads_add_iono    $options --all					>> "$log" 2>&1
-rads_add_common  $options						>> "$log" 2>&1
-rads_add_dual    $options						>> "$log" 2>&1
-rads_add_ib      $options						>> "$log" 2>&1
-rads_add_ecmwf   $options --all --wind			>> "$log" 2>&1
+rads_add_iono     $options --all					>> "$log" 2>&1
+rads_add_common   $options							>> "$log" 2>&1
+rads_add_dual     $options							>> "$log" 2>&1
+rads_add_ib       $options							>> "$log" 2>&1
+rads_add_ecmwf    $options --all --wind				>> "$log" 2>&1
 #rads_add_orbit   $options -Valt_gdre    -C0-253	>> "$log" 2>&1
-rads_add_mog2d   $options						>> "$log" 2>&1
-rads_add_ww3_222 $options --all					>> "$log" 2>&1
-rads_add_sla     $options           			>> "$log" 2>&1
+rads_add_mog2d    $options							>> "$log" 2>&1
+rads_add_ww3_222  $options --all					>> "$log" 2>&1
+# Redetermine SSHA
+rads_add_refframe $options           				>> "$log" 2>&1
+rads_add_sla      $options           				>> "$log" 2>&1
 
 date											>> "$log" 2>&1
 

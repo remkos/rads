@@ -41,19 +41,21 @@ rads_gen_reaper  < "$lst"							>  "$log" 2>&1
 
 # Do the patches to all data
 
-rads_fix_reaper  $options --tide --tbias		>> "$log" 2>&1
-rads_add_flags   $options --file=$RADSROOT/ext/reaper/e${1}_flags.dat	>> "$log" 2>&1
-rads_add_orbit   $options -Valt_reaper_deos		>> "$log" 2>&1
-rads_add_ssb     $options --ssb=ssb_hyb			>> "$log" 2>&1
+rads_fix_reaper   $options --tide --tbias			>> "$log" 2>&1
+rads_add_flags    $options --file=$RADSROOT/ext/reaper/e${1}_flags.dat	>> "$log" 2>&1
+rads_add_orbit    $options -Valt_reaper_deos		>> "$log" 2>&1
+rads_add_ssb      $options --ssb=ssb_hyb			>> "$log" 2>&1
 case $ers in
-1) rads_add_iono $options --nic09				>> "$log" 2>&1 ;;
-2) rads_add_iono $options -C0-34 --nic09		>> "$log" 2>&1
-   rads_add_iono $options -C35-85 --nic09 --gim >> "$log" 2>&1 ;;
+1) rads_add_iono  $options --nic09					>> "$log" 2>&1 ;;
+2) rads_add_iono  $options -C0-34 --nic09			>> "$log" 2>&1
+   rads_add_iono  $options -C35-85 --nic09 --gim 	>> "$log" 2>&1 ;;
 esac
-rads_add_mog2d   $options						>> "$log" 2>&1
-rads_add_common  $options						>> "$log" 2>&1
-rads_add_sla     $options           			>> "$log" 2>&1
+rads_add_mog2d    $options							>> "$log" 2>&1
+rads_add_common   $options							>> "$log" 2>&1
+# Redetermine SSHA
+rads_add_refframe $options							>> "$log" 2>&1
+rads_add_sla      $options							>> "$log" 2>&1
 
-date											>> "$log" 2>&1
+date												>> "$log" 2>&1
 
 rads_close_sandbox

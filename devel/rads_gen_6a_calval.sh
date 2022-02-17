@@ -82,16 +82,20 @@ case $type in
 	*nr*) rads_add_orbit  $options -Valt_gdrf --dir=moe_doris	>> "$log" 2>&1 ;;
 esac
 
+# For LR, add mle3
+case $type in
+	*lr*) extra="-x mle3" ;;
+	   *) extra= ;;
+esac
+
 # General geophysical corrections
 rads_add_common   $options								>> "$log" 2>&1
 rads_add_mfwam    $options --all						>> "$log" 2>&1
 rads_add_iono     $options --all						>> "$log" 2>&1
 rads_add_mog2d    $options								>> "$log" 2>&1
 # Redetermine SSHA
-rads_add_sla      $options								>> "$log" 2>&1
-case $type in
-	*lr*) rads_add_sla  $options --ext=mle3				>> "$log" 2>&1 ;;
-esac
+rads_add_refframe $options -x $extra					>> "$log" 2>&1
+rads_add_sla      $options -x $extra					>> "$log" 2>&1
 
 date													>> "$log" 2>&1
 

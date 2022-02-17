@@ -55,13 +55,13 @@ done
 # General geophysical corrections
 rads_add_common   $options					>> "$log" 2>&1
 # Include GOT4.8 model for Navy
-rads_add_tide     $options --models=got48			>> "$log" 2>&1
-#rads_add_refframe $options					>> "$log" 2>&1
-rads_add_iono     $options --all				>> "$log" 2>&1
+rads_add_tide     $options --models=got48	>> "$log" 2>&1
+rads_add_iono     $options --all			>> "$log" 2>&1
 # Redetermine SSHA
+rads_add_refframe $options					>> "$log" 2>&1
 rads_add_sla      $options					>> "$log" 2>&1
 
-date								>> "$log" 2>&1
+date										>> "$log" 2>&1
 
 # Set Navy and NHC data aside
 files_iop=`grep IOP $log | grep written | awk '{print $NF}' | awk -F/ '{printf "%s/%s\n",$3,$4}' | sort | uniq`
