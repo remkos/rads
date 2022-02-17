@@ -40,7 +40,7 @@ logical :: update = .false.
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('mux: mle: multi-hz update ext: all')
+call rads_set_options ('mux:: multi-hz update ext:: all')
 call rads_init (S)
 
 ! Check all options
@@ -50,8 +50,12 @@ do i = 1,rads_nopt
 		update = .true.
 	case ('m', 'multi-hz')
 		S%n_hz_output = .true.
-	case ('x', 'ext')	! For backward compatibility only
-		call rads_parse_varlist (S, 'ssha_' // rads_opt(i)%arg)
+	case ('x', 'ext')
+		if (rads_opt(i)%arg == '') then
+			call rads_parse_varlist (S, 'ssha')
+		else
+			call rads_parse_varlist (S, 'ssha_' // rads_opt(i)%arg)
+		endif
 	end select
 enddo
 ! Default to adding 'ssha' only
@@ -82,6 +86,7 @@ write (*,1310)
 'Additional [processing_options] are:'/ &
 '  --all                     (Has no effect)'/ &
 '  -V, --var=VAR1[,VAR2,...] Add specified variables (e.g. ssha,ssha_mle3)'/ &
+'  -x, --ext EXT             Produce field ssha_EXT (e.g. "-x -x mle3" for "-Vssha,ssha_mle3")' / &
 '  -m, --multi-hz            Do multi-Hertz SLA (only)'/ &
 '  -u, --update              Update files only when there are changes')
 stop

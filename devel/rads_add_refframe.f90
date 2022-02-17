@@ -57,18 +57,22 @@ type(var_), allocatable :: var(:)
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('x: ext: coef:')
+call rads_set_options ('x:: ext:: coef:')
 call rads_init (S)
 
 ! Check for -x or --ext options
 
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
-	case ('x', 'ext')	! For backward compatibility only
-		call rads_parse_varlist (S, 'ref_frame_offset_' // rads_opt(i)%arg)
+	case ('x', 'ext')
+		if (rads_opt(i)%arg == '') then
+			call rads_parse_varlist (S, 'ref_frame_offset')
+		else
+			call rads_parse_varlist (S, 'ref_frame_offset_' // rads_opt(i)%arg)
+		endif
 	end select
 enddo
-! Default to adding 'ssha' only
+! Default to adding 'ref_frame_offset' only
 if (S%nsel == 0) call rads_parse_varlist (S, 'ref_frame_offset')
 allocate(var(S%nsel))
 
@@ -128,6 +132,7 @@ write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
 '  -V, --var=VAR1[,VAR2,...] Add specified variables (e.g. ref_frame_offset,ref_frame_offset_mle3)'/ &
+'  -x, --ext EXT             Produce field ssha_EXT (e.g. "-x -x mle3" for "-Vref_frame_offset,ref_frame_offset_mle3")' / &
 ' --coef C00,C10,C11,S11,C20 Set reference frame offset coefficients (mm); applies to all variables' / &
 '                            (default values come from rads.xml)')
 stop
