@@ -186,18 +186,31 @@ endif
 	call nfs(nf90_get_att(ncid,nf90_global,'abs_orbit_number',abs_orbit_number))
 	call nfs(nf90_get_att(ncid,nf90_global,'first_record_lat',first_meas_lat))
 	call nfs(nf90_get_att(ncid,nf90_global,'ascending_flag',ascending_flag))
-	ip = abs_orbit_number*2 - 1
-	!if (ascending_flag == 'A') then
-	if (first_meas_lat < 0) then
-		ip = ip + 2
+	if (abs_orbit_number < 54368) then
+! Geodetic orbit
+		ip = abs_orbit_number*2 - 1
+!if (ascending_flag == 'A') then
+		if (first_meas_lat < 0) then
+			ip = ip + 2
+		else
+			ip = ip + 1
+		endif
+		ip = ip - 19
+		iq = modulo(ip,10688)
+		ir = modulo(iq,2462)
+		cycnr(1) = (ip / 10688) * 13 + (iq / 2462) * 3 + ir / 840 + 1
+		passnr(1) = modulo(ir,840) + 1
 	else
-		ip = ip + 1
+		! CRYO2ICE orbit
+		if (first_meas_lat < 0) then
+			ip = 2
+		else
+			ip = 1
+		endif
+		ir = 2*(abs_orbit_number - 54367) + ip - 1
+		cycnr(1) = ir/3562 + 134
+		passnr(1) = modulo(ir, 3562) + 1
 	endif
-	ip = ip - 19
-	iq = modulo(ip,10688)
-	ir = modulo(iq,2462)
-	cycnr(1) = (ip / 10688) * 13 + (iq / 2462) * 3 + ir / 840 + 1
-	passnr(1) = modulo(ir,840) + 1
 	cycnr(2) = cycnr(1)
 	passnr(2) = passnr(1)
 
@@ -205,8 +218,8 @@ endif
 	call nfs(nf90_inq_varid(ncid, 'lat_01',varid))
 	call nfs(nf90_get_var(ncid,varid,lat))
 	dlat = lat(2:)-lat
-	if (ANY(dlat .gt. 0) .and. ANY(dlat .lt. 0)) then
-	    if (minloc(lat,1) .eq. 1) then
+	if (ANY(dlat .gt. 0) .and. ANY(dlat .lt. 0) .and. abs_orbit_number < 54368) then
+		if (minloc(lat,1) .eq. 1) then
 			recnr(2) = maxloc(lat,1)
 		else
 			recnr(2) = minloc(lat,1)
