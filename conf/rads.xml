@@ -4257,6 +4257,13 @@ Global RADS configuration file
 		<start_time>2010-07-14</start_time>
 		<subcycles>840 840 782 840 840 782 840 840 782 840 840 782 840</subcycles>
 	</phase>
+	<phase name="b">
+		<mission>CRYO2ICE Phase</mission>
+		<cycles>134 200</cycles>
+		<ref_pass>2020-08-01T11:11:37 0.23 134 1 54368</ref_pass>
+		<repeat>122.746192 3562</repeat>
+		<start_time>2020-08-01T10:46:45.775</start_time>
+	</phase>
 </if>
 
 <if sat="e1">
