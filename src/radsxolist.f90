@@ -54,7 +54,7 @@ character(len=3*msat) :: satlist = '', use_sats = ''
 type(rads_sat) :: S
 character(len=*), parameter :: optlist = &
 	'S:X:e::b::o:r:dsnltp sat: xml: lon: lat: dt: edit:: bin:: order: replace: dual single nolist both-legs both-times ' // &
-	' time: ymd: doy: sec: check-flag: full-year tbias add-tbias: sub-tbias: pass-info'
+	' time: ymd: doy: sec: check-flag: full-year tbias add-tbias: sub-tbias: pass-info dual-asc dual-des'
 
 integer(fourbyteint) :: var0 = 0, check_flag = -1
 logical :: diff = .true., stat_only, singles = .true., duals = .true., xostat, fullyear = .false., &
