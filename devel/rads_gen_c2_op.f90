@@ -98,7 +98,7 @@ character(len=rads_cmdl) :: filename, arg
 
 integer(fourbyteint) :: passnr(2), cycnr(2), recnr(2), ncid, varid
 integer(fourbyteint) :: abs_orbit_number, first_meas_lat=0
-real(eightbytereal) :: equator_time
+real(eightbytereal) :: equator_time, tai_utc_difference
 
 ! Data variables
 
@@ -151,6 +151,9 @@ endif
 
 	call nfs(nf90_inq_dimid(ncid, 'time_01',varid))
 	call nfs(nf90_inquire_dimension(ncid,varid,len=nrec))
+	call nfs(nf90_inq_varid(ncid, 'time_01',varid))
+	call nfs(nf90_get_att(ncid,varid,'tai_utc_difference',tai_utc_difference))
+!	tai_utc_difference = 37
 	recnr(1)=nrec
 	recnr(2)=0
 	if (nrec == 0) then
@@ -165,7 +168,7 @@ endif
 	endif
 	call nfs(nf90_get_att(ncid,nf90_global,'mission',arg))
 	if (arg /= 'Cryosat') then
-		call log_string ('Error: file skipped: wrong misson-name found in header', .true.)
+		call log_string ('Error: file skipped: wrong mission-name found in header', .true.)
 		cycle
 	endif
 
@@ -235,6 +238,13 @@ endif
 	call nfs(nf90_get_att(ncid,nf90_global,'equator_cross_time',arg))
 	equator_time = strp1985f (arg(5:))
 
+! Fix incorrect equator crossing times in ESA OP Products
+	if (first_meas_lat < 0) then
+		equator_time = equator_time + 5954.75
+	else
+		equator_time = equator_time + 5954.75/2
+	endif
+
 ! Skip passes of which the cycle number or equator crossing time is outside the specified interval
 
 	if (equator_time < times(1) .or. equator_time > times(2) .or. cycnr(1) < cycles(1) .or. cycnr(1) > cycles(2)) then
@@ -253,11 +263,13 @@ endif
 	P%cycle = cycnr(1)
 	P%pass = passnr(1)
 	P%equator_time = equator_time
+! The OP files have the incorrect equator_lon; needs to be fixed
 	call nfs(nf90_get_att(ncid,nf90_global,'equator_cross_long',P%equator_lon))
+! start time and end time are in TAI; need to be converted to UTC
 	call nfs(nf90_get_att(ncid,nf90_global,'first_record_time',arg))
-	P%start_time = strp1985f(arg(5:))
+	P%start_time = strp1985f(arg(5:)) + tai_utc_difference
 	call nfs(nf90_get_att(ncid,nf90_global,'last_record_time',arg))
-	P%end_time = strp1985f(arg(5:))
+	P%end_time = strp1985f(arg(5:)) + tai_utc_difference
 
 ! Determine L2 processing version
 !
