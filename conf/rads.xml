@@ -2302,7 +2302,7 @@ Global RADS configuration file
 	<long_name>number of valid retracked Ku-band measurements (adaptive retracking)</long_name>
 	<standard_name>altimeter_range number_of_observations</standard_name>
 	<units>1</units>
-	<limits>8.5 10.5</limits> <!--TOPEX is only 10 Hz-->
+	<limits>16.5 21.5</limits>
 	<plot_range>0 11</plot_range>
 	<data>range_numval_ku_adaptive</data>
 	<format>f3.0</format>
