@@ -2651,11 +2651,12 @@ Global RADS configuration file
 	<data source="flags">6</data>
 	<format>z1</format>
 	<compress>int1</compress>
-	<if sat="6a">
+	<if sat="6a j3">
 		<long_name>radiometer surface type</long_name>
-		<flag_values>open_ocean coastal_ocean land</flag_values>
+		<flag_values>open_ocean coastal_ocean coastal_amr land</flag_values>
 		<data>surface_type_rad</data>
-		<plot_range>0 2</plot_range>
+		<plot_range>0 3</plot_range>
+		<comment>The processing of radiometer data depends on this flag: 0 = open ocean, 1 = coastal ocean processing with HRMR and AMR, 2 = coastal ocean processing with AMR only, 3 = invalid due to land contamination</comment>
 	</if>
 </var>
 

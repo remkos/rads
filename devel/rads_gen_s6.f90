@@ -294,7 +294,11 @@ do
 	call nc2f (ncid1, 'surface_classification_flag', 4, eq=1)
 	call nc2f (ncid1, 'surface_classification_flag', 4, ge=3)	! bit  4: Water/land
 	call nc2f (ncid1, 'surface_classification_flag', 5, ge=1)	! bit  5: Ocean/other
+	if (baseline < 'F07') then
 	call nc2f (ncid1, 'rad_surface_type_flag', 6, ge=2)			! bit  6: Radiometer land flag
+	else
+		call nc2f (ncid1, 'rad_surface_type_flag', 6, ge=3)		! bit  6: Radiometer land flag
+	endif
 	call nc2f (ncid1, 'rain_flag', 7, eq=1)
 	call nc2f (ncid1, 'rain_flag', 7, eq=2)
 	call nc2f (ncid1, 'rain_flag', 7, eq=4)						! bit  7: Altimeter rain or ice flag
@@ -447,7 +451,7 @@ do
 ! IB
 
 	call cpy_var (ncid1, 'inv_bar_cor', 'inv_bar_static')
-	if (latency == rads_nrt) then
+	if (baseline < 'F07' .and. latency == rads_nrt) then
 		call cpy_var (ncid1, 'inv_bar_cor', 'inv_bar_mog2d')
 	else
 		call cpy_var (ncid1, 'dac', 'inv_bar_mog2d')
@@ -475,7 +479,13 @@ do
 
 	call cpy_var (ncid1, 'depth_or_elevation', 'topo_ace2')
 	call cpy_var (ncid1, 'surface_classification_flag', 'surface_class')
+	if (baseline < 'F07') then
+		call get_var (ncid1, 'rad_surface_type_flag', a)
+		where (a > 0) a = a + 1
+		call new_var ('surface_type_rad', a)
+	else
 	call cpy_var (ncid1, 'rad_surface_type_flag', 'surface_type_rad')
+	endif
 	call cpy_var (ncid1, 'distance_to_coast 1e-3 MUL', 'dist_coast') ! Convert m to km
 	call cpy_var (ncid1, 'angle_of_approach_to_coast', 'angle_coast')
 	call cpy_var (ncid1, 'rad_distance_to_land 1e-3 MUL', 'rad_dist_coast') ! Convert m to km
