@@ -295,7 +295,7 @@ do
 	call nc2f (ncid1, 'surface_classification_flag', 4, ge=3)	! bit  4: Water/land
 	call nc2f (ncid1, 'surface_classification_flag', 5, ge=1)	! bit  5: Ocean/other
 	if (baseline < 'F07') then
-	call nc2f (ncid1, 'rad_surface_type_flag', 6, ge=2)			! bit  6: Radiometer land flag
+		call nc2f (ncid1, 'rad_surface_type_flag', 6, ge=2)		! bit  6: Radiometer land flag
 	else
 		call nc2f (ncid1, 'rad_surface_type_flag', 6, ge=3)		! bit  6: Radiometer land flag
 	endif
@@ -484,11 +484,15 @@ do
 		where (a > 0) a = a + 1
 		call new_var ('surface_type_rad', a)
 	else
-	call cpy_var (ncid1, 'rad_surface_type_flag', 'surface_type_rad')
+		call cpy_var (ncid1, 'rad_surface_type_flag', 'surface_type_rad')
 	endif
 	call cpy_var (ncid1, 'distance_to_coast 1e-3 MUL', 'dist_coast') ! Convert m to km
 	call cpy_var (ncid1, 'angle_of_approach_to_coast', 'angle_coast')
 	call cpy_var (ncid1, 'rad_distance_to_land 1e-3 MUL', 'rad_dist_coast') ! Convert m to km
+
+! Other flags
+
+	call cpy_var (ncid1, 'manoeuvre_flag', 'flag_manoeuvre')
 
 ! Bit flags
 

@@ -2793,6 +2793,17 @@ Global RADS configuration file
 	<comment>Computed from a mask built with MODIS and GlobCover data</comment>
 </var>
 
+<var name="flag_manoeuvre" sat="6a j3 sa">
+	<long_name>flag indicating whether the satellite is in a manoeuvre</long_name>
+	<standard_name>status_flag</standard_name>
+	<flag_values>no_manoeuvre manoeuvre_ongoing</flag_values>
+	<data>flag_manoeuvre</data>
+	<default>0</default>
+	<plot_range>0 1</plot_range>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+
 <var name="flags" field="2601 26">
 	<long_name>flag word</long_name>
 	<limits>65512 0</limits>

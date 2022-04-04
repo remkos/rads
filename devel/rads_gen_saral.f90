@@ -266,6 +266,22 @@ do
 	call cpy_var (ncid, 'mean_wave_direction', 'mean_wave_direction')
 	call cpy_var (ncid, 'rad_water_vapor', 'water_vapor_rad')
 	call cpy_var (ncid, 'rad_liquid_water', 'liquid_water_rad')
+	if (latency == rads_nrt) then
+		call get_var (ncid, 'orb_state_flag_diode', a)
+		where (a == 9)
+			a = 1
+		elsewhere
+			a = 0
+		endwhere
+	else
+		call get_var (ncid, 'orb_state_flag_rest', a)
+		where (a == 4)
+			a = 1
+		elsewhere
+			a = 0
+		endwhere
+	endif
+	call new_var ('flag_manoeuvre', a)
 	call get_var (ncid, 'range_used_40hz', d)
 	valid = (d == 0d0)
 	call get_var (ncid, 'peakiness_40hz', d)

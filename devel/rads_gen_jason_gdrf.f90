@@ -307,6 +307,12 @@ do
 	call nc2f (ncid1, 'rad_tb_187_qual',  9)
 	call nc2f (ncid1, 'rad_tb_238_qual',  9)					! bit  9: Quality 18.7 or 23.8 GHz channel
 	call nc2f (ncid1, 'rad_tb_340_qual', 10)					! bit 10: Quality 34.0 GHz channel
+	if (latency == rads_nrt) then
+		call nc2f (ncid, 'orb_state_diode_flag',15,ge=2)		! bit 15: Quality of DIODE orbit
+	else
+		call nc2f (ncid, 'orb_state_rest_flag',15,neq=3)		! bit 15: Quality of restituted orbit
+	endif
+
 
 ! Now do specifics for MLE3
 
@@ -491,6 +497,25 @@ do
 	call cpy_var (ncid1, 'distance_to_coast 1e-3 MUL', 'dist_coast') ! Convert m to km
 	call cpy_var (ncid1, 'angle_of_approach_to_coast', 'angle_coast')
 	call cpy_var (ncid1, 'rad_distance_to_land 1e-3 MUL', 'rad_dist_coast') ! Convert m to km
+
+! Other flags
+
+	if (latency == rads_nrt) then
+		call get_var (ncid1, 'orb_state_diode_flag', a)
+		where (a == 9)
+			a = 1
+		elsewhere
+			a = 0
+		endwhere
+	else
+		call get_var (ncid1, 'orb_state_rest_flag', a)
+		where (a == 4)
+			a = 1
+		elsewhere
+			a = 0
+		endwhere
+	endif
+	call new_var ('flag_manoeuvre', a)
 
 ! Bit flags
 
