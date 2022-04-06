@@ -3740,7 +3740,7 @@ Global RADS configuration file
 	<parameters sat="g1">  73   0  0  0 0</parameters>
 	<parameters sat="j1">  85   0  0  0 0</parameters>
 	<parameters sat="j2"> -15   0  0  0 0</parameters>
-	<parameters sat="j3"> -19.8 0  0  0 0</parameters>
+	<parameters sat="j3"> -23   0  0  0 0</parameters>
 	<parameters sat="n1"> 451   0  0  0 0</parameters>
 	<parameters sat="pn"> -15   0  0  0 0</parameters>
 	<parameters sat="sa"> -87   0  0  0 0</parameters>
@@ -3755,7 +3755,7 @@ Global RADS configuration file
 	<dimensions>0</dimensions>
 	<parameters>0</parameters>
 	<parameters sat="j2">  13.5 0  0  0 0</parameters>
-	<parameters sat="j3">  -6.0 0  0  0 0</parameters>
+	<parameters sat="j3">  -9.0 0  0  0 0</parameters>
 </var>
 <var name="ref_frame_offset_plrm" field="3812" sat="3a 3b">
 	<long_name>reference frame offset (PLRM)</long_name>
@@ -3778,7 +3778,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<dimensions>0</dimensions>
 	<parameters>0</parameters>
-	<parameters sat="j3"> -58.0 0  0  0 0</parameters>
+	<parameters sat="j3"> -48.0 0  0  0 0</parameters>
 </var>
 
 <var name="tide_equil" field="3901 39">
