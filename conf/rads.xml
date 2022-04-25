@@ -4517,8 +4517,8 @@ Global RADS configuration file
 		<mission>Interleaved Mission</mission>
 		<cycles>229 999</cycles>
 		<repeat>9.91564280 254</repeat>
-		<ref_pass>2022-04-22T06:26:27 98.51 229 1 29277</ref_pass>
-		<start_time>2022-04-23</start_time>
+		<ref_pass>2022-04-29T05:02:49 98.51 230 1 29366</ref_pass>
+		<start_time>2022-04-25</start_time>
 	</phase>
 </if>
 
