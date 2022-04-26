@@ -4515,9 +4515,9 @@ Global RADS configuration file
 	</phase>
 	<phase name="b">
 		<mission>Interleaved Mission</mission>
-		<cycles>229 999</cycles>
+		<cycles>300 999</cycles>
 		<repeat>9.91564280 254</repeat>
-		<ref_pass>2022-04-29T05:02:49 98.51 230 1 29366</ref_pass>
+		<ref_pass>2022-04-29T05:02:49 98.51 301 1 29366</ref_pass>
 		<start_time>2022-04-25</start_time>
 	</phase>
 </if>
