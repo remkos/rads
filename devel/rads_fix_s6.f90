@@ -210,7 +210,9 @@ endif
 if (lrange) then
 	if (all(isan_(cal1_old))) drange = drange + (cal1_new(1:3:2) - cal1_old(1:3:2))
 	drange = drange + bias_range
-	if (latency(1) == rads_nrt) then
+	if (latency(1) > rads_ntc) then
+		! All fixed in reprocessing
+	else if (latency(1) == rads_nrt) then
 		if (chd_ver < '003') drange = drange + sign_error - 0.0435d0
 	else if (latency(1) == rads_stc) then
 		if (cnf_ver < '005') drange = drange + sign_error

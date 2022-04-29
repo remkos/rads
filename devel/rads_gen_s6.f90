@@ -165,14 +165,16 @@ do
 		cycle
 	endif
 
-! Determine latency (NRT, STC, NTC) and resolution (LR, HR)
+! Determine latency (NRT, STC, NTC, REP) and resolution (LR, HR)
 
-	if (index(arg, '_NR_') > 0) then
-		latency = rads_nrt
-	else if (index(arg, '_ST_') > 0) then
-		latency = rads_stc
+	if (index(arg, 'REP_NT_F06') > 0) then
+		latency = rads_ntc + 1
 	else if (index(arg, '_NT_') > 0) then
 		latency = rads_ntc
+	else if (index(arg, '_ST_') > 0) then
+		latency = rads_stc
+	else if (index(arg, '_NR_') > 0) then
+		latency = rads_nrt
 	else
 		call log_string ('Error: file skipped: unknown latency', .true.)
 		cycle
