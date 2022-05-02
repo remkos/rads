@@ -26,35 +26,51 @@
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
 
+# Make a temporary list file
+tmplst=`mktemp ${TMPDIR:-/tmp}/rads.XXXXXX`
+
 # Do only latest files when using -d<days>
 d0=20000101
 case $1 in
-	-d*) days=${1:2}; shift
-		d0=`date -u -v -${days}d +%Y%m%d 2>&1` || d0=`date -u --date="${days} days ago" +%Y%m%d`
-		;;
+	-d*)	days=${1:2}; shift
+		d0=`date -u -v -${days}d +%Y%m%d 2>&1` || d0=`date -u --date="${days} days ago" +%Y%m%d` ;;
+	-|"")	cat - > "$tmplst"; shift ;;
+	*)	[[ ! -d "$1" ]] && cat "$1" > "$tmplst" ;;
 esac
 
-# Exit when no directory names are provided
-[[ $# -eq 0 ]] && exit
+# If list not yet made, use find to make it
+if [ ! -s "$tmplst" ] && [ $# -gt 0 ] ; then
+	# Set bookmark according to $d0
+	mrk=$RADSDATAROOT/.bookmark
+	TZ=UTC touch -t ${d0}0000 "$mrk"
+	# First try only STD files
+	find "$@" -name "*STD*.nc" -a -newer "$mrk" | sort > "$tmplst"
+	# If still empty, try RED files
+	[[ ! -s "$tmplst" ]] && find "$@" -name "*RED*.nc" -a -newer "$mrk" | sort > "$tmplst"
+fi
+
+# Get the first file name
+dir=`head -n 1 "$tmplst"`
+
+# Exit when no file names are provided
+[[ -z $dir ]] && rm -f "$tmplst" && exit
 
 # Determine type
-dir=$(dirname $1)
-red=STD
 case $dir in
-	*LR/*|*P4_2__LR*) type=lr ;;
-	*HR/*|*P4_2__HR*) type=hr ;;
+	*/LR*|*P4_2__LR*) type=lr ;;
+	*/HR*|*P4_2__HR*) type=hr ;;
 esac
 case $dir in
-	*/NR*) type=${type}nr; red=RED ;;
-	*/ST*) type=${type}st ;;
-	*/NT*) type=${type}nt ;;
+	*/NR*|*_NR_*) type=${type}nr ;;
+	*/ST*|*_ST_*) type=${type}st ;;
+	*/NT*|*_NT_*) type=${type}nt ;;
 esac
 case $dir in
-	*OPE/*) type=${type}o ;;
-	*VAL/*) type=${type}v ;;
-	*DEV/*) type=${type}d ;;
-	*REP/*) type=${type:0:2}rep ;;
-	*RMC/*) type=hrrmc ;;
+	*REP/*|*_REP_*) type=${type:0:2}rep ;;
+	*OPE/*|*_OPE_*) type=${type}o ;;
+	*VAL/*|*_VAL_*) type=${type}v ;;
+	*DEV/*|*_DEV_*) type=${type}d ;;
+	*RMC/*)         type=hrrmc ;;
 esac
 
 # Process "unadultered" files
@@ -62,10 +78,8 @@ rads_open_sandbox "6a.${type}0"
 
 date													>  "$log" 2>&1
 
-# Set bookmark according to $d0
-mrk=$RADSDATAROOT/.bookmark
-TZ=UTC touch -t ${d0}0000 "$mrk"
-find "$@" -name "*${red}*.nc" -a -newer "$mrk" | sort	>  "$lst"
+# Move list of files
+mv -f "$tmplst" "$lst"
 
 # Convert only to RADS, nothing else
 rads_gen_s6       $options --cal1 --min-rec=6 < "$lst"	>> "$log" 2>&1
