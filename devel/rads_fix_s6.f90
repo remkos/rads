@@ -143,7 +143,7 @@ real(eightbytereal) :: latency(n), range_ku(n), range_ku_mle3(n), range_c(n), &
 	swh_ku(n), swh_ku_mle3(n), wind_speed_alt(n), wind_speed_alt_mle3(n), qual_alt_rain_ice(n), flags(n), &
 	ssb_cls(n), ssb_cls_mle3(n), ssb_cls_c(n), dum(n)
 real(eightbytereal) :: drange(2), dsig0(2), dwind(2), drain(2), cal1_old(4), cal1_new(4)
-logical :: lr, redundant, val, do_range, do_sig0, do_wind, do_ssb, do_rain
+logical :: lr, redundant, val, do_range, do_sig0, do_wind, do_ssb, do_rain, do_cal1
 character(len=3) :: chd_ver, cnf_ver, baseline
 
 ! Initialise
@@ -172,7 +172,8 @@ call rads_get_var (S, P, 'latency', latency, .true.)
 
 ! cal1: Replace the values with those from the LTM (prior to Baseline F04)
 
-if (lcal1 .and. baseline < 'F04') then
+do_cal1 = (lcal1 .and. baseline < 'F04')
+if (do_cal1) then
 	if (val) then
 		if (need_file ('VAL/S6A_P4_1__C1HR_AX.nc', aux_cal1)) call load_cal1
 	else
@@ -364,7 +365,7 @@ call rads_put_history (S, P)
 
 ! Write out all the data
 
-if (lcal1) then
+if (do_cal1) then
 	call rads_put_var (S, P, 'cal1_range_ku', cal1_new(1))
 	call rads_put_var (S, P, 'cal1_power_ku', cal1_new(2))
 	if (lr) then
