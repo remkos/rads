@@ -1360,7 +1360,7 @@ if (pass < S%passes(1) .or. pass > S%passes(2) .or. pass > S%phase%passes) then
 endif
 
 ! Predict equator crossing info
-call rads_predict_equator (S, P, cycle, pass)
+call rads_predict_equator (S, P)
 
 ! Do checking of pass ends on the time criteria (only when such are given)
 if (.not.all(isnan_(S%time%info%limits))) then
@@ -3800,14 +3800,14 @@ end subroutine rads_set_phase_by_time
 ! Predict equator crossing time and longitude
 !
 ! SYNOPSIS
-subroutine rads_predict_equator (S, P, cycle, pass)
+subroutine rads_predict_equator (S, P)
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
-integer(fourbyteint), intent(in) :: cycle, pass
 !
 ! PURPOSE
 ! This routine estimates the equator time and longitude, as well
-! as the start and end time of a given <cycle> and <pass>.
+! as the start and end time of given cycle number and pass number
+! stored in the pass struct <P>..
 !
 ! The routine works for exact repeat orbits as well as drifting
 ! orbits.
@@ -3818,8 +3818,6 @@ integer(fourbyteint), intent(in) :: cycle, pass
 ! ARGUMENTS
 ! S        : Satellite/mission dependent structure
 ! P        : Pass structure
-! cycle    : Cycle number
-! pass     : Pass number
 !
 ! ERROR CODE
 ! S%error  : rads_noerr, rads_err_nophase
@@ -3828,18 +3826,18 @@ integer(fourbyteint) :: cc, pp
 real(eightbytereal) :: d, e
 logical :: error
 
+ cc = P%cycle
+ pp = P%pass
+
 ! If the cycle is out of range for the current phase, look for a new phase
-call rads_set_phase (S, cycle, error)
+call rads_set_phase (S, cc, error)
 if (error) return
 
 ! For constructions with subcycles, convert first to "real" cycle/pass number
 if (associated(S%phase%subcycles)) then
-	cc = cycle - S%phase%subcycles%i
-	pp = S%phase%subcycles%list(modulo(cc,S%phase%subcycles%n)+1) + pass
+	cc = cc - S%phase%subcycles%i
+	pp = S%phase%subcycles%list(modulo(cc,S%phase%subcycles%n)+1) + pp
 	cc = cc / S%phase%subcycles%n + 1
-else
-	cc = cycle
-	pp = pass
 endif
 
 ! Now do the estimation process
@@ -3876,11 +3874,11 @@ integer(fourbyteint), intent(out), optional :: abs_orbit
 ! appropriate structure containing the phase information.
 !
 ! ARGUMENTS
-! S        : Satellite/mission dependent structure
-! time     : Time in seconds since 1985
-! cycle    : Cycle number in which <time> falls
-! pass     : Pass number in which <time> falls
-! abs_orbit: Absolute orbit number (optional)
+! S            : Satellite/mission dependent structure
+! time         : Time in seconds since 1985
+! cycle        : Cycle number in which <time> falls
+! pass         : Pass number in which <time> falls
+! abs_orbit    : Absolute orbit number (optional)
 !****-------------------------------------------------------------------
 integer :: i, j, n
 real(eightbytereal) :: d, t0, x
