@@ -107,9 +107,8 @@ character(len=rads_cmdl) :: infile, arg
 
 ! Header variables
 
-integer(fourbyteint) :: ncid, ncid1, ncidk, ncidc, ncid20, ncid20k, ncid20c, cyclenr, passnr, varid, nrec20, &
-	cyclenr_orig, passnr_orig
-real(eightbytereal) :: equator_time
+integer(fourbyteint) :: ncid, ncid1, ncidk, ncidc, ncid20, ncid20k, ncid20c, cycle, pass, varid, nrec20
+real(eightbytereal) :: first_measurement_time, last_measurement_time, equator_time, equator_lon
 
 ! Data variables
 
@@ -220,37 +219,52 @@ do
 		cycle
 	endif
 
-! Read cycle, pass, equator time
+! Read cycle and pass number, start and stop time, equator time and longitude
 
-	call nfs(nf90_get_att(ncid,nf90_global,'cycle_number',cyclenr_orig))
-	call nfs(nf90_get_att(ncid,nf90_global,'pass_number',passnr_orig))
+	call nfs(nf90_get_att(ncid,nf90_global,'cycle_number',cycle))
+	call nfs(nf90_get_att(ncid,nf90_global,'pass_number',pass))
+	call nfs(nf90_get_att(ncid,nf90_global,'first_measurement_time',arg))
+	first_measurement_time = strp1985f (arg)
+	call nfs(nf90_get_att(ncid,nf90_global,'last_measurement_time',arg))
+	last_measurement_time = strp1985f (arg)
 	call nfs(nf90_get_att(ncid,nf90_global,'equator_time',arg))
 	equator_time = nint(strp1985f (arg) * 1d3, eightbyteint) * 1d-3 ! Round nicely to nearest millisecond
+	call nfs(nf90_get_att(ncid,nf90_global,'equator_longitude',equator_lon))
 
-! Recompute the cycle and pass number since they cannot fully be relied on [AR 1751]
+! Initialise pass struct
 
-	call rads_time_to_cycle_pass (S, equator_time, cyclenr, passnr)
-	if (cyclenr /= cyclenr_orig .or. passnr /= passnr_orig) call log_string('Warning: cycle/pass nr adjusted')
+	call rads_init_pass_struct (S, P)
 
-! Skip passes of which the cycle number or equator crossing time is outside the specified interval
+! Recompute the cycle and pass number since they cannot fully be relied on [AR 1751], but neither appears to be
+! the equator time, so using the mid-time instead
 
-	if (equator_time < times(1) .or. equator_time > times(2) .or. cyclenr < cycles(1) .or. cyclenr > cycles(2)) then
-		call nfs(nf90_close(ncid))
-		call log_string ('Skipped', .true.)
-		cycle
-	endif
+	call rads_time_to_cycle_pass (S, (first_measurement_time + last_measurement_time) / 2, P%cycle, P%pass)
+	if (cycle /= P%cycle .or. pass /= P%pass) call log_string('Warning: cycle/pass nr adjusted')
 
 ! Set mission phase based on equator_time
 
 	call rads_set_phase (S, equator_time)
 
-! Store relevant info
+! Predict the equator time and longitude
 
-	call rads_init_pass_struct (S, P)
-	P%cycle = cyclenr
-	P%pass = passnr
-	P%equator_time = equator_time
-	call nfs(nf90_get_att(ncid,nf90_global,'equator_longitude',P%equator_lon))
+	call rads_predict_equator (S, P)
+
+! Check if the equator_time and equator_lon need updating
+
+	if (abs(equator_time - P%equator_time) > 300d0 .or. abs(equator_lon - P%equator_lon) > 5d0) then
+		call log_string('Warning: equator time/longitude adjusted')
+	else ! Replace the predictions by the values from the product
+		P%equator_time = equator_time
+		P%equator_lon = equator_lon
+	endif
+
+! Skip passes of which the cycle number or equator crossing time is outside the specified interval
+
+	if (P%equator_time < times(1) .or. P%equator_time > times(2) .or. P%cycle < cycles(1) .or. P%cycle > cycles(2)) then
+		call nfs(nf90_close(ncid))
+		call log_string ('Skipped', .true.)
+		cycle
+	endif
 
 ! Determine L2 processing baseline, characterisation and configuration versions
 
