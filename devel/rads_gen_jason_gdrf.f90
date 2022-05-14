@@ -249,7 +249,7 @@ do
 
 ! Set mission phase based on equator_time
 
-!	call rads_set_phase (S, equator_time)
+	call rads_set_phase (S, equator_time)
 
 ! Store relevant info
 
