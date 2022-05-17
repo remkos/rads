@@ -96,6 +96,11 @@ case $type in
 	*nr*) rads_add_orbit  $options -Valt_gdrf --dir=moe_doris	>> "$log" 2>&1 ;;
 esac
 
+# Add updated POE orbit (for NTC Cycle 1-45 only)
+case $type in
+	*nt*) rads_add_orbit  $options -Valt_gdrf -C1-45 --dir=poe_cnes	>> "$log" 2>&1 ;;
+esac
+
 # For LR, add mle3
 case $type in
 	*lr*) extra="-x mle3" ;;
