@@ -4246,9 +4246,9 @@ Global RADS configuration file
 	</phase>
 	<phase name="a">
 		<mission>Exact Repeat Mission</mission>
-		<cycles>4 999</cycles>
+		<cycles>4 199</cycles>
 		<repeat>9.91564280 254</repeat>
-		<ref_pass>2020-12-17T10:35:01 99.92 4 1 331</ref_pass><!--S6A 30 seconds behind JA3-->
+		<ref_pass>2020-12-27T08:33:32 99.92 5 1 458</ref_pass><!--S6A 30 seconds behind JA3-->
 		<start_time>2020-12-17T21:21:30</start_time>
 	</phase>
 </if>
