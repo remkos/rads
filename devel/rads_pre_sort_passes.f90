@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2021  Remko Scharroo
+! Copyright (c) 2011-2022  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -37,7 +37,8 @@ use netcdf
 
 ! Struct for orbit info
 
-type(orfinfo) :: orf(300000)
+integer(fourbyteint), parameter :: mpass = 300000 ! Enough for 30 years
+type(orfinfo) :: orf(mpass)
 
 ! Scruct to store input file information
 
@@ -61,13 +62,12 @@ character(len=15) :: newer_than = '00000000T000000'
 character(len=3) :: sat
 character(len=9) :: tll(3) = (/'time     ', 'latitude ', 'longitude'/)
 character(len=1) :: timesep = 'T'
-integer(fourbyteint), parameter :: mpass = 254 * 500
 real(eightbytereal), parameter :: sec2000 = 473299200d0
 integer(fourbyteint) :: i0, i, j, ngrps = 3, timegrp = 1, ncid1(0:3), nrec, ios, varid, in_max = huge(fourbyteint), &
 	nfile = 0, ipass = 1, ipass0 = 0, verbose_level = 3, cycle_number, pass_number, abs_orbit_number
 integer(fourbyteint) :: p, q, r, dpass
 real(eightbytereal), allocatable :: time(:), lat(:), lon(:)
-real(eightbytereal) :: last_time = 0
+real(eightbytereal) :: last_time = 0d0
 character(len=1) :: ascending_flag = 'A'
 logical :: first = .true., check_pass = .false.
 
@@ -234,7 +234,6 @@ do
 
 	call which_pass (time(i0))
 	if (ipass /= ipass0) call write_output
-	last_time = time(nrec)
 
 ! Two reasons to split a file into two pieces:
 
@@ -254,6 +253,7 @@ do
 	enddo
 ! - Register the remaining bit
 	call fill_fin (i0, nrec)
+	last_time = time(nrec)
 
 ! Deallocate time and location arrays
 
@@ -298,11 +298,11 @@ subroutine which_pass (time)
 real(eightbytereal), intent(in) :: time
 do while (time < orf(ipass)%starttime)
 	ipass = ipass - 1
-	if (ipass < 1) call rads_exit ('Times are beyond limits of ORF file')
+	if (ipass < 1) call rads_exit ('Time is before the start of the ORF file')
 enddo
 do while (time > orf(ipass+1)%starttime)
 	ipass = ipass + 1
-	if (orf(ipass)%cycle < 0) call rads_exit ('Times are beyond limits of ORF file')
+	if (orf(ipass)%cycle < 0) call rads_exit ('Time is after the end of the ORF file')
 enddo
 end subroutine which_pass
 
@@ -316,6 +316,14 @@ real(eightbytereal) :: equator_time, equator_longitude, x
 character(len=rads_naml) :: dirnm, prdnm, outnm
 logical :: exist
 
+! How many records are buffered for output?
+! Skip if there is nothing left
+
+if (nfile == 0 .or. ipass0 == 0) then
+	ipass0 = ipass
+	return
+endif
+
 ! Retrieve the pass variables
 
 cycle_number = orf(ipass0)%cycle
@@ -328,10 +336,6 @@ equator_time = orf(ipass0)%eqtime + sec2000
 equator_longitude = orf(ipass0)%eqlon
 ipass0 = ipass
 
-! How many records are buffered for output?
-! Skip if there is nothing left
-
-if (nfile == 0 .or. ipass0 == 0) return
 nrec = sum(fin(1:nfile)%rec1 - fin(1:nfile)%rec0 + 1)
 
 ! Open the output file. Make directory if needed.
