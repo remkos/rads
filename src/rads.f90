@@ -3022,8 +3022,8 @@ integer(fourbyteint), intent(out), optional :: iostat
 ! ARGUMENTS
 ! S        : Satellite/mission dependent structure
 ! varname  : Variable name
-! lo, hi   : Lower and upper limit
-! string   : String of up to two values, with separating whitespace
+! lo, hi   : (optional) Lower and upper limit
+! string   : (optional) String of up to two values, with separating whitespace
 !            or comma or slash.
 ! iostat   : (optional) iostat code from reading string
 !
