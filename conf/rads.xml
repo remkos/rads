@@ -4235,14 +4235,14 @@ Global RADS configuration file
 		<cycles>0 2</cycles>
 		<repeat>9.872055 254 15.61</repeat>
 		<ref_pass>2020-12-03T21:29:03 338.10 2 59 157</ref_pass>
-		<start_time>2020-11-27</start_time>
+		<start_time>2020-11-30T14:00:00</start_time>
 	</phase>
 	<phase name="1">
 		<mission>Drift Phase</mission>
 		<cycles>2 3</cycles>
 		<repeat>9.899811 254 5.69</repeat>
 		<ref_pass>2020-12-10T04:35:47 211.99 2 221 238</ref_pass>
-		<start_time>2020-12-10T05:01</start_time>
+		<start_time>2020-12-10T05:01:00</start_time>
 	</phase>
 	<phase name="a">
 		<mission>Exact Repeat Mission</mission>
