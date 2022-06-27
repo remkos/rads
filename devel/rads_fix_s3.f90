@@ -68,7 +68,7 @@ if (.not.luso) stop
 
 ! Load the USO table
 
-call parseenv ('${RADSROOT}/altim/data/tables/S3B.cor_uso_freq.daily.csv', uso_filenm)
+call parseenv ('${ALTIM}/data/tables/S3B.cor_uso_freq.daily.csv', uso_filenm)
 call log_string ('(' // trim(uso_filenm) // ')')
 i = getlun()
 open (unit=i, file=uso_filenm, status='old', iostat=ios)
