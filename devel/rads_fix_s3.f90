@@ -125,6 +125,13 @@ real(eightbytereal) :: range_ku(n), range_ku_plrm(n), range_c(n), uso_scale
 
 call log_pass (P)
 
+! Do this routine only for Baseline < 005
+
+if (P%original(38:40) >= '005') then
+	call log_records(0)
+	return
+endif
+
 ! Get the USO scale factor
 
 call get_uso (P%equator_time / 86400d0, uso_scale)
