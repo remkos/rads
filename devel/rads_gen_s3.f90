@@ -111,7 +111,7 @@ real(eightbytereal) :: equator_time
 integer(twobyteint), allocatable :: flags_plrm(:), flags_save(:)
 character(len=16) :: mss_sol1_var, mss_sol2_var
 integer :: latency = rads_nrt
-logical :: iono_alt_smooth = .false., ipf651 = .false., ipf701 = .true.
+logical :: iono_alt_smooth = .false., ipf651 = .false., ipf701 = .false.
 
 ! Other local variables
 
@@ -259,10 +259,13 @@ do
 
 	call nfs(nf90_get_att(ncid,nf90_global,'source',arg))
 
-! Default versions for MSS
+! Default settings
 
 	mss_sol1_var = 'mss_cnescls15'
 	mss_sol2_var = 'mss_dtu15'
+	iono_alt_smooth = .false.
+	ipf651 = .false.
+	ipf701 = .false.
 
 ! Update the version of MSS DTU and switch on smoothed iono for PB 2.49 (IPF-SM-2 06.16) and later
 
@@ -278,9 +281,12 @@ do
 		ipf651 = .true.
 	endif
 
-! IPF v7 removes comp_wet_tropo_cor and introduces gpd_wet_tropo_cor
+! Update the version of MSS DTU, remove comp_wet_tropo_cor and introduce gpd_wet_tropo_cor
 
-	ipf701 = (arg(10:14) >= '07.01')
+	if (arg(10:14) >= '07.01') then
+		mss_sol2_var = 'mss_dtu21'
+		ipf701 = .true.
+	endif
 
 ! Store input file name
 
