@@ -1780,7 +1780,7 @@ Global RADS configuration file
 
 <var name="latency">
 	<long_name>source product latency flag</long_name>
-	<flag_values>NRT_OGDR STC_IGDR NTC_GDR REP_001 REP_002 REP_003 REP_004 REP_005 REP_006 REP_007 REP_008</flag_values>
+	<flag_values>NRT_OGDR STC_IGDR NTC_GDR REP_001 REP_002 REP_003 REP_004 REP_005 REP_006 REP_007 REP_008 REP_009</flag_values>
 	<plot_range>0 10</plot_range>
 	<data>latency</data>
 	<format>z1</format>
