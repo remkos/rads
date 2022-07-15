@@ -1467,10 +1467,8 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 	<if sat="3a 3b">
-		<long_name>Tran et al. 2012 non-parametric sea state bias</long_name>
-		<parameters>MainAuxSSBTable_J2_2012.nc?ssb_ku -xwind_speed_alt -yswh_ku</parameters>
-		<source>Tran et al., 2012</source>
-		<comment edit="append">This model is actually based on Jason-2 data and not Sentinel-3, and will be replaced later.</comment>
+		<long_name>Tran et al. 2021 non-parametric sea state bias</long_name>
+		<source>Tran et al., 2021</source>
 	</if>
 	<if sat="j3 6a">
 		<long_name>Tran et al. 2020 non-parametric sea state bias</long_name>
