@@ -4629,7 +4629,7 @@ Global RADS configuration file
 	</phase>
 	<phase name="b">
 		<mission>Drifting Phase</mission>
-		<cycles>58 99</cycles>
+		<cycles>58 199</cycles>
 		<repeat>35.0054 1002 -1.99</repeat>
 		<ref_pass>2018-08-13T16:30:07 202.15 58 1 28558</ref_pass>
 		<start_time>2018-08-13T16:04:58</start_time>
