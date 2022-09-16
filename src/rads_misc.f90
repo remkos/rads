@@ -965,9 +965,10 @@ end function next_word
 ! Compute mean and rms of multi-Hz array
 !
 ! SYNOPSIS
-pure subroutine mean_1hz (y, mean, rms)
+pure subroutine mean_1hz (y, mean, rms, nr)
 real(eightbytereal), intent(in) :: y(:,:)
 real(eightbytereal), intent(out) :: mean(:), rms(:)
+integer(fourbyteint), intent(out), optional :: nr(:)
 !
 ! PURPOSE
 ! Compute mean and stddev values from multi-Hz array <y(m,n)> where <m> is
@@ -981,6 +982,7 @@ real(eightbytereal), intent(out) :: mean(:), rms(:)
 ! y     : Input array of dimension (m,n)
 ! mean  : Average of y per 1-Hz, dimension n
 ! rms   : Standard deviation of 1-Hz, dimension n
+! nr    : (Optional) number of valid points, dimension n
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: i, j, n
 do j = 1,size(y,2)
@@ -1003,6 +1005,7 @@ do j = 1,size(y,2)
 	else
 		rms(j) = sqrt ((rms(j) - n * mean(j)**2) / (n - 1))
 	endif
+	if (present(nr)) nr(j) = n
 enddo
 end subroutine mean_1hz
 
@@ -1011,9 +1014,10 @@ end subroutine mean_1hz
 ! Compute mean and rms of multi-Hz array with trend removal
 !
 ! SYNOPSIS
-pure subroutine trend_1hz (x, x0, y, mean, rms)
+pure subroutine trend_1hz (x, x0, y, mean, rms, nr)
 real(eightbytereal), intent(in) :: x(:,:), x0(:), y(:,:)
 real(eightbytereal), intent(out) :: mean(:), rms(:)
+integer(fourbyteint), intent(out), optional :: nr(:)
 !
 ! PURPOSE
 ! Compute mean and stddev values from multi-Hz array <y(m,n)> where <m> is
@@ -1032,6 +1036,7 @@ real(eightbytereal), intent(out) :: mean(:), rms(:)
 ! y     : Input array of dimension (m,n)
 ! mean  : Average of y per 1-Hz, dimension n
 ! rms   : Standard deviation of 1-Hz, dimension n
+! nr    : (Optional) number of valid points, dimension n
 !****-------------------------------------------------------------------
 real(eightbytereal) :: sumx,sumy,sumxx,sumxy,sumyy,uxx,uxy,uyy,a,b,xx
 integer(fourbyteint) :: i, j, n
@@ -1068,6 +1073,7 @@ do j = 1,size(y,2)
 			rms(j) = sqrt ((sumyy - a * sumy - b * sumxy) / (n-2))
 		endif
 	endif
+	if (present(nr)) nr(j) = n
 enddo
 end subroutine trend_1hz
 
