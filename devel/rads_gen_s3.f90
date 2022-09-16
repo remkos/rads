@@ -290,7 +290,7 @@ do
 
 ! Store input file name
 
-	P%original = trim(basename(infile)) // ' (' // trim(arg) // ')'
+	P%original = trim(product_name) // ' (' // trim(arg) // ')'
 
 ! Allocate variables
 
