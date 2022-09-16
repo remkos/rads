@@ -22,7 +22,7 @@
 # $RADSDATAROOT/3b.<type>0 - Unadultered files
 # $RADSDATAROOT/3b.<type>1 - RADSified files
 #
-# syntax: rads_gen_3b_calval.sh <directory>/<types>/<cycles(s)>
+# syntax: rads_gen_3b_calval.sh <directory>/<type>/<cycles(s)>
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
 
@@ -34,25 +34,19 @@ type=$(dirname $1)
 type=$(basename $type)
 
 # Process "unadultered" files
-dir=3b.${type}0
-rads_open_sandbox "$dir"
+rads_open_sandbox "3b.${type}0"
 
 date													>  "$log" 2>&1
 
-find "$@" -name "*.nc" | sort		> "$lst"
-rads_gen_s3 	$options --min-rec=6 < "$lst"				>> "$log" 2>&1
-rads_close_sandbox
+find "$@" -name "S3B_*.nc" -o -name "standard_measurement.nc" | sort	> "$lst"
+rads_gen_s3 	$options --min-rec=6 < "$lst"			>> "$log" 2>&1
 
-# Now process do the same again, and do the post-processing
-dir=3b.${type}1
-rads_open_sandbox "$dir"
+# Now continue with the post-processing
+rads_reuse_sandbox "3b.${type}1"
 
-date													>  "$log" 2>&1
+date													>> "$log" 2>&1
 
-find "$@" -name "*.nc" | sort		> "$lst"
-rads_gen_s3 	  $options --min-rec=6 < "$lst"			>> "$log" 2>&1
 rads_fix_s3		  $options --all						>> "$log" 2>&1
-
 
 # General geophysical corrections
 rads_add_grid     $options -Vangle_coast                >> "$log" 2>&1
