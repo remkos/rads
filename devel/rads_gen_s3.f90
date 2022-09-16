@@ -99,7 +99,7 @@ use netcdf
 ! Command line arguments
 
 integer(fourbyteint) :: ios, i
-character(len=rads_cmdl) :: infile, arg
+character(len=rads_cmdl) :: infile, arg, product_name
 
 ! Header variables
 
@@ -185,12 +185,12 @@ do
 
 ! Determine latency (NRT, STC, NTC)
 
-	call nfs(nf90_get_att(ncid,nf90_global,'product_name',arg))
-	if (index(arg, '_NR_') > 0) then
+	call nfs(nf90_get_att(ncid,nf90_global,'product_name',product_name))
+	if (index(product_name, '_NR_') > 0) then
 		latency = rads_nrt
-	else if (index(arg, '_ST_') > 0) then
+	else if (index(product_name, '_ST_') > 0) then
 		latency = rads_stc
-	else if (index(arg, '_NT_') > 0) then
+	else if (index(product_name, '_NT_') > 0) then
 		latency = rads_ntc
 	else
 		call log_string ('Error: file skipped: unknown latency', .true.)
@@ -199,15 +199,15 @@ do
 
 ! Detect REP_006 (S3A) or REP_007 (S3B) or REP_008
 
-	if (index(arg, '_R_NT_003') > 0) then
+	if (index(product_name, '_R_NT_003') > 0) then
 		if (S%sat == '3a') then
 			latency = rads_ntc + 6 ! REP_006
 		else
 			latency = rads_ntc + 7 ! REP_007
 		endif
-	else if (index(arg, '_R_NT_004') > 0) then
+	else if (index(product_name, '_R_NT_004') > 0) then
 		latency = rads_ntc + 8 ! REP_008
-	else if (index(arg, '_R_NT_005') > 0) then
+	else if (index(product_name, '_R_NT_005') > 0) then
 		latency = rads_ntc + 9 ! REP_009
 	endif
 
