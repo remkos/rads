@@ -3729,8 +3729,8 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<dimensions>0</dimensions>
 	<parameters>0</parameters>
-	<parameters sat="3a">   3   0  0  0 0</parameters>
-	<parameters sat="3b"> -10   0  0  0 0</parameters>
+	<parameters sat="3a"> -19   0  0  0 0</parameters>
+	<parameters sat="3b"> -16   0  0  0 0</parameters>
 	<parameters sat="c2"> -29   0  0  0 0</parameters>
 	<parameters sat="e1">  21   0  0  0 0</parameters>
 	<parameters sat="e2">  62   0  0  0 0</parameters>
