@@ -51,6 +51,12 @@ rads_add_grid     $options -Vangle_coast                >> "$log" 2>&1
 rads_add_common   $options								>> "$log" 2>&1
 rads_add_mfwam    $options -C40-199 --all				>> "$log" 2>&1
 rads_add_iono     $options --all						>> "$log" 2>&1
+# Add GPD correction on reprocessed data (temporary fix)
+case ${type} in
+	rep) \ls -1 GPD/*.nc > $SANDBOX/gpd.lst
+		rads_add_gpd $options < $SANDBOX/gpd.lst		>> "$log" 2>&1
+		;;
+esac
 # Redetermine SSHA
 rads_add_refframe $options -x -x plrm					>> "$log" 2>&1
 rads_add_sla      $options -x -x plrm					>> "$log" 2>&1
