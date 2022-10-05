@@ -360,7 +360,7 @@ do
 
 	if (.not.ipf701) then
 		call cpy_var (ncid, 'comp_wet_tropo_cor_01_ku', 'wet_tropo_comp')
-	else if (latency == rads_ntc) then
+	else if (latency >= rads_ntc) then
 		call cpy_var (ncid, 'gpd_wet_tropo_cor_01', 'gpd_wet_tropo_cor')
 		call cpy_var (ncid, 'gpd_source_flag_01', 'gpd_source_flag')
 	endif
