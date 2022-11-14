@@ -278,6 +278,10 @@ do
 	call nfs(nf90_get_att(ncid,nf90_global,'source',arg))
 	baseline = arg(21:23)
 
+! TEMPORARY for F08 TDS: configuration version 016 indicates F08
+
+	if (baseline < 'F08' .and. nf90_inq_varid(ncid1,'iono_cor_alt_nr',varid) == nf90_noerr) baseline = 'F08'
+
 ! Determine if we have numerical retrackers
 
 	has_nr = (baseline == 'F08' .and. lr) .or. baseline >= 'F09'
