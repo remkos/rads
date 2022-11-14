@@ -55,23 +55,25 @@ dir=`head -n 1 "$tmplst"`
 # Exit when no file names are provided
 [[ -z $dir ]] && rm -f "$tmplst" && exit
 
-# Determine type
-case $dir in
-	*/LR*|*P4_2__LR*) type=lr ;;
-	*/HR*|*P4_2__HR*) type=hr ;;
-esac
-case $dir in
-	*/NR*|*_NR_*) type=${type}nr ;;
-	*/ST*|*_ST_*) type=${type}st ;;
-	*/NT*|*_NT_*) type=${type}nt ;;
-esac
-case $dir in
-	*REP/*|*_REP_*) type=${type:0:2}rep ;;
-	*OPE/*|*_OPE_*) type=${type}o ;;
-	*VAL/*|*_VAL_*) type=${type}v ;;
-	*DEV/*|*_DEV_*) type=${type}d ;;
-	*RMC/*)         type=hrrmc ;;
-esac
+# Determine type (unless already specified)
+if test -z $type ; then
+	case $dir in
+		*/LR*|*P4_2__LR*) type=lr ;;
+		*/HR*|*P4_2__HR*) type=hr ;;
+	esac
+	case $dir in
+		*/NR*|*_NR_*) type=${type}nr ;;
+		*/ST*|*_ST_*) type=${type}st ;;
+		*/NT*|*_NT_*) type=${type}nt ;;
+	esac
+	case $dir in
+		*REP/*|*_REP_*) type=${type:0:2}rep ;;
+		*OPE/*|*_OPE_*) type=${type}o ;;
+		*VAL/*|*_VAL_*) type=${type}v ;;
+		*DEV/*|*_DEV_*) type=${type}d ;;
+		*RMC/*)         type=hrrmc ;;
+	esac
+fi
 
 # Process "unadultered" files
 rads_open_sandbox "6a.${type}0"
@@ -103,6 +105,7 @@ esac
 
 # For LR, add mle3
 case $type in
+	*lr3*) extra="-x mle3 -x nr" ;;
 	*lr*) extra="-x mle3" ;;
 	   *) extra= ;;
 esac

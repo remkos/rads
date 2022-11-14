@@ -112,12 +112,12 @@ real(eightbytereal) :: first_measurement_time, last_measurement_time, equator_ti
 
 ! Data variables
 
-integer(twobyteint), allocatable :: flags_mle3(:), flags_save(:)
+integer(twobyteint), allocatable :: flags_mle3(:), flags_nr(:), flags_save(:)
 character(len=2) :: mss_cnescls_ver = '15', mss_dtu_ver = '18', tide_fes_ver = '14'
 character(len=3) :: tide_got_ver = '410', env, baseline
 character(len=8) :: chd_ver, cha_ver, cnf_ver
 integer :: latency = rads_nrt, nsat
-logical :: lr, lcal1 = .false.
+logical :: lr, has_nr, lcal1 = .false.
 
 ! Other local variables
 
@@ -278,13 +278,17 @@ do
 	call nfs(nf90_get_att(ncid,nf90_global,'source',arg))
 	baseline = arg(21:23)
 
+! Determine if we have numerical retrackers
+
+	has_nr = (baseline == 'F08' .and. lr) .or. baseline >= 'F09'
+
 ! Store input file name
 
 	P%original = trim(basename(infile)) // ' (' // trim(arg) // ', ' // chd_ver // ', ' // cha_ver // ', ' // cnf_ver // ')'
 
 ! Allocate variables
 
-	allocate (a(nrec),b(nrec),flags(nrec),flags_mle3(nrec),flags_save(nrec))
+	allocate (a(nrec),b(nrec),flags(nrec),flags_mle3(nrec),flags_nr(nrec),flags_save(nrec))
 	nvar = 0
 
 ! Get NetCDF ID for 20-Hz data (if available)
@@ -336,6 +340,17 @@ do
 		flags = flags_save	! Continue with nominal ocean retracking flags
 	endif
 
+! Now do specifics for numerical retracker
+
+	if (has_nr) then
+		flags_save = flags	! Keep flags for later
+		call nc2f (ncidk, 'range_ocean_nr_qual', 11)			! bit 11: Quality range
+		call nc2f (ncidk, 'swh_ocean_nr_qual', 12)				! bit 12: Quality SWH
+		call nc2f (ncidk, 'sig0_ocean_nr_qual', 13)				! bit 13: Quality Sigma0
+		flags_nr = flags	! Copy result for NR
+		flags = flags_save	! Continue with nominal ocean retracking flags
+	endif
+
 ! Redo the last ones for standard retracker
 
 	call nc2f (ncidk, 'range_ocean_qual', 11)					! bit 11: Quality range
@@ -377,11 +392,19 @@ do
 		call cpy_var (ncidk, 'range_ocean_mle3', 'range_ku_mle3')
 		call cpy_var (ncidk, 'range_ocean_mle3_rms', 'range_rms_ku_mle3')
 		call cpy_var (ncidk, 'range_ocean_mle3_numval', 'range_numval_ku_mle3')
+		call cpy_var (ncidk, 'range_ocean_mle3_qual', 'qual_range_mle3')
 		call cpy_var (ncidk, 'net_instr_cor_range_ocean_mle3', 'drange_ku_mle3')
 		call cpy_var (ncidc, 'range_ocean', 'range_c')
 		call cpy_var (ncidc, 'range_ocean_rms', 'range_rms_c')
 		call cpy_var (ncidc, 'range_ocean_numval', 'range_numval_c')
 		call cpy_var (ncidc, 'net_instr_cor_range_ocean', 'drange_c')
+	endif
+	if (has_nr) then
+		call cpy_var (ncidk, 'range_ocean_nr', 'range_ku_nr')
+		call cpy_var (ncidk, 'range_ocean_nr_rms', 'range_rms_ku_nr')
+		call cpy_var (ncidk, 'range_ocean_nr_numval', 'range_numval_ku_nr')
+		call cpy_var (ncidk, 'range_ocean_nr_qual', 'qual_range_nr')
+		call cpy_var (ncidk, 'net_instr_cor_range_ocean_nr', 'drange_ku_nr')
 	endif
 
 ! SWH
@@ -393,7 +416,17 @@ do
 	if (lr) then
 		call cpy_var (ncidk, 'swh_ocean_mle3', 'swh_ku_mle3')
 		call cpy_var (ncidk, 'swh_ocean_mle3_rms', 'swh_rms_ku_mle3')
+		call cpy_var (ncidk, 'swh_ocean_mle3_qual', 'qual_swh_mle3')
 		call cpy_var (ncidk, 'net_instr_cor_swh_ocean_mle3', 'dswh_ku_mle3')
+		call cpy_var (ncidc, 'swh_ocean', 'swh_c')
+		call cpy_var (ncidc, 'swh_ocean_rms', 'swh_rms_c')
+		call cpy_var (ncidc, 'net_instr_cor_swh_ocean', 'dswh_c')
+	endif
+	if (has_nr) then
+		call cpy_var (ncidk, 'swh_ocean_nr', 'swh_ku_nr')
+		call cpy_var (ncidk, 'swh_ocean_nr_rms', 'swh_rms_ku_nr')
+		call cpy_var (ncidk, 'swh_ocean_nr_qual', 'qual_swh_nr')
+		call cpy_var (ncidk, 'net_instr_cor_swh_ocean_nr', 'dswh_ku_nr')
 		call cpy_var (ncidc, 'swh_ocean', 'swh_c')
 		call cpy_var (ncidc, 'swh_ocean_rms', 'swh_rms_c')
 		call cpy_var (ncidc, 'net_instr_cor_swh_ocean', 'dswh_c')
@@ -415,12 +448,22 @@ do
 		call cpy_var (ncidc, 'atm_cor_sig0', 'dsig0_atmos_c')
 		call cpy_var (ncidc, 'net_instr_cor_sig0_ocean', 'dsig0_c')
 	endif
+	if (has_nr) then
+		call cpy_var (ncidk, 'sig0_ocean_nr', 'sig0_ku_nr')
+		call cpy_var (ncidk, 'sig0_ocean_nr_rms', 'sig0_rms_ku_nr')
+		call cpy_var (ncidk, 'net_instr_cor_sig0_ocean_nr', 'dsig0_ku_nr')
+		call cpy_var (ncidc, 'sig0_ocean', 'sig0_c')
+		call cpy_var (ncidc, 'sig0_ocean_rms', 'sig0_rms_c')
+		call cpy_var (ncidc, 'atm_cor_sig0', 'dsig0_atmos_c')
+		call cpy_var (ncidc, 'net_instr_cor_sig0_ocean', 'dsig0_c')
+	endif
 	call cpy_var (ncid1, 'climato_use_flag', 'qual_dsig0_atmos')
 
 ! Wind speed
 
 	call cpy_var (ncid1, 'wind_speed_alt', 'wind_speed_alt')
 	if (lr) call cpy_var (ncid1, 'wind_speed_alt_mle3', 'wind_speed_alt_mle3')
+	if (has_nr) call cpy_var (ncid1, 'wind_speed_alt_nr', 'wind_speed_alt_nr')
 	call cpy_var (ncid1, 'rad_wind_speed', 'wind_speed_rad')
 	call cpy_var (ncid1, 'wind_speed_mod_u', 'wind_speed_ecmwf_u')
 	call cpy_var (ncid1, 'wind_speed_mod_v', 'wind_speed_ecmwf_v')
@@ -438,6 +481,11 @@ do
 		call cpy_var (ncidk, 'off_nadir_angle_wf_ocean_rms', 'off_nadir_angle2_wf_rms_ku')
 		call cpy_var (ncidk, 'off_nadir_angle_wf_ocean_qual', 'qual_attitude')
 	endif
+	if (lr .and. has_nr) then
+		call cpy_var (ncidk, 'off_nadir_angle_wf_ocean_nr', 'off_nadir_angle2_wf_ku_nr')
+		call cpy_var (ncidk, 'off_nadir_angle_wf_ocean_nr_rms', 'off_nadir_angle2_wf_rms_ku_nr')
+		call cpy_var (ncidk, 'off_nadir_angle_wf_ocean_nr_qual', 'qual_attitude_nr')
+	endif
 	call cpy_var (ncid1, 'off_nadir_pitch_angle_pf', 'attitude_pitch')
 	call cpy_var (ncid1, 'off_nadir_roll_angle_pf', 'attitude_roll')
 	call cpy_var (ncid1, 'off_nadir_yaw_angle_pf', 'attitude_yaw')
@@ -454,6 +502,10 @@ do
 		call cpy_var (ncid1, 'iono_cor_alt_filtered_mle3', 'iono_alt_smooth_mle3')
 		call cpy_var (ncidc, 'range_ocean_qual', 'qual_iono_alt')
 	endif
+	if (has_nr) then
+		call cpy_var (ncid1, 'iono_cor_alt_nr', 'iono_alt_nr')
+		call cpy_var (ncid1, 'iono_cor_alt_filtered_nr', 'iono_alt_smooth_nr')
+	endif
 	call cpy_var (ncidk, 'iono_cor_gim', 'iono_gim')
 
 ! SSB
@@ -462,6 +514,10 @@ do
 	if (lr) then
 		call cpy_var (ncidk, 'sea_state_bias_mle3', 'ssb_cls_mle3')
 		call cpy_var (ncidc, 'sea_state_bias', 'ssb_cls_c')
+	endif
+	if (has_nr) then
+		call cpy_var (ncidk, 'sea_state_bias_nr', 'ssb_cls_nr')
+		call cpy_var (ncidc, 'sea_state_bias_nr', 'ssb_cls_c_nr')
 	endif
 
 ! IB
@@ -514,6 +570,7 @@ do
 
 	call new_var ('flags', dble(flags))
 	if (lr) call new_var ('flags_mle3', dble(flags_mle3))
+	if (has_nr) call new_var ('flags_nr', dble(flags_nr))
 
 ! Other radiometer measurements
 
@@ -528,6 +585,7 @@ do
 
 	call cpy_var (ncidk, 'ssha', 'ssha')
 	if (lr) call cpy_var (ncidk, 'ssha_mle3', 'ssha_mle3')
+	if (has_nr) call cpy_var (ncidk, 'ssha_nr', 'ssha_nr')
 
 ! Misc
 
@@ -577,7 +635,7 @@ do
 ! Dump the data
 
 	call put_rads
-	deallocate (a, b, flags, flags_mle3, flags_save)
+	deallocate (a, b, flags, flags_mle3, flags_nr, flags_save)
 	if (nrec20 /= 0) deallocate (telemetry_type_flag)
 
 enddo
