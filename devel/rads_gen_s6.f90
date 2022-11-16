@@ -370,7 +370,7 @@ do
 
 	call cpy_var (ncidk, 'range_ocean', 'range_ku')
 	call cpy_var (ncidk, 'range_ocean_rms', 'range_rms_ku')
-	call cpy_var (ncidk, 'range_ocean_numval', 'range_numval')
+	call cpy_var (ncidk, 'range_ocean_numval', 'range_numval_ku')
 	call cpy_var (ncidk, 'range_ocean_qual', 'qual_range')
 	call cpy_var (ncidk, 'net_instr_cor_range_ocean', 'drange_ku')
 	if (lr) then
