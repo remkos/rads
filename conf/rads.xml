@@ -1608,8 +1608,8 @@ Global RADS configuration file
 	<limits>-1 1</limits>
 	<plot_range>-0.30 0.05</plot_range>
 	<data>ssb_cls_3d</data>
-	<format>f6.3</format>
-	<compress>int2 1e-3</compress>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
 <var name="ssb_cls_adaptive" sat="j3">
@@ -1619,8 +1619,8 @@ Global RADS configuration file
 	<limits>-1 1</limits>
 	<plot_range>-0.30 0.05</plot_range>
 	<data>ssb_cls_adaptive</data>
-	<format>f6.3</format>
-	<compress>int2 1e-3</compress>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
 <var name="ssb_cls_3d_adaptive" sat="j3">
@@ -1630,8 +1630,8 @@ Global RADS configuration file
 	<limits>-1 1</limits>
 	<plot_range>-0.30 0.05</plot_range>
 	<data>ssb_cls_3d_adaptive</data>
-	<format>f6.3</format>
-	<compress>int2 1e-3</compress>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
 <var name="ssb_cls_c_adaptive" sat="j3">
