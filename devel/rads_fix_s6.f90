@@ -34,7 +34,7 @@ character(len=rads_cmdl) :: aux_wind = '', aux_ssbk = '', aux_ssbc = '', aux_rai
 integer(fourbyteint) :: i, cyc, pass, ios
 type(grid) :: info_wind, info_ssbk, info_ssbc
 logical :: lcal1 = .false., lsideB_range = .false., lsideB_sig0 = .false., lrange = .false., lsig0 = .false., &
-	lwind = .false., lssb = .false., lrain = .false.
+	lwind = .false., lssb = .false., lrain = .false., nr_only = .false.
 integer, parameter :: sig0_nx = 500
 real(eightbytereal) :: exp_ku_sigma0(sig0_nx), rms_exp_ku_sigma0(sig0_nx)
 real(eightbytereal) :: bias_range(2) = 0d0, bias_sig0(2) = 0d0
@@ -49,17 +49,17 @@ logical, allocatable :: cal1_mask(:)
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options (' cal1:: sideB_range:: sideB_sig0:: range sig0 wind ssb rain all bias_range: bias_sig0:')
+call rads_set_options (' cal1:: sideB-range:: sideB-sig0:: range sig0 wind ssb rain all bias-range: bias-sig0: nr-only')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
 	case ('cal1')
 		read (rads_opt(i)%arg, *, iostat=ios) cal1_interval
 		lcal1 = .true.
-	case ('sideB_range')
+	case ('sideB-range')
 		read (rads_opt(i)%arg, *, iostat=ios) drange_sideB
 		lsideB_range = .true.
-	case ('sideB_sig0')
+	case ('sideB-sig0')
 		read (rads_opt(i)%arg, *, iostat=ios) dsig0_sideB
 		lsideB_sig0 = .true.
 	case ('range')
@@ -81,10 +81,12 @@ do i = 1,rads_nopt
 		lwind = .true.
 		lssb = .true.
 		lrain = .true.
-	case ('bias_range')
+	case ('bias-range')
 		read (rads_opt(i)%arg, *, iostat=ios) bias_range
-	case ('bias_sig0')
+	case ('bias-sig0')
 		read (rads_opt(i)%arg, *, iostat=ios) bias_sig0
+	case ('nr-only')
+		nr_only = .true.
 	end select
 enddo
 cal1_interval = cal1_interval * 86400d0
@@ -118,8 +120,8 @@ write (*,1310)
 'Additional [processing_options] are:' / &
 '  --cal1[=T0,T1]            Replace CAL1 range and power by values from LTM file, averaged over time' / &
 '                            interval T0,T1 days around measurement time (default: -1,1) (L2 CONF < 011)' / &
-'  --sideB_range[=KU,C]      Add biases to range (Ku, C, in m) for Side B and CHDR < 005 (def: -0.002,0.000)' / &
-'  --sideB_sig0[=KU,C]       Add biases to sig0 (Ku, C, in dB) for Side B and CHDR < 005 (def: -0.07,+0.49)' / &
+'  --sideB-range[=KU,C]      Add biases to range (Ku, C, in m) for Side B and CHDR < 005 (def: -0.002,0.000)' / &
+'  --sideB-sig0[=KU,C]       Add biases to sig0 (Ku, C, in dB) for Side B and CHDR < 005 (def: -0.07,+0.49)' / &
 '  --range                   Fix range biases known for PDAP v3.0 and v3.1' / &
 '                            Also fix result of temporary error in radar data base (RMC only, 34 gates)' / &
 '  --sig0                    Add -7.41 dB to HR sigma0' / &
@@ -127,8 +129,8 @@ write (*,1310)
 '  --wind                    Add biases to sigma0 before calling wind model (L2 CONF < 008 or 009 or with --sig0)' / &
 '  --ssb                     Update SSB (with --wind)' / &
 '  --all                     All of the above' / &
-'  --bias_range=KU,C         Add additional bias to range (Ku, C, in m)' / &
-'  --bias_sig0=KU,C          Add additional bias to sig0 (Ku, C, in dB)')
+'  --bias-range=KU,C         Add additional bias to range (Ku, C, in m)' / &
+'  --bias-sig0=KU,C          Add additional bias to sig0 (Ku, C, in dB)')
 stop
 end subroutine synopsis
 
@@ -143,7 +145,8 @@ real(eightbytereal) :: latency(n), range_ku(n), range_ku_mle3(n), range_c(n), &
 	swh_ku(n), swh_ku_mle3(n), wind_speed_alt(n), wind_speed_alt_mle3(n), qual_alt_rain_ice(n), flags(n), &
 	ssb_cls(n), ssb_cls_mle3(n), ssb_cls_c(n), dum(n)
 real(eightbytereal) :: drange(2), dsig0(2), dwind(2), drain(2), cal1_old(4), cal1_new(4)
-logical :: lr, redundant, val, do_range, do_sig0, do_wind, do_ssb, do_rain, do_cal1
+logical :: lr, redundant, val, do_range = .false., do_sig0 = .false., do_wind = .false., &
+	do_ssb = .false., do_rain = .false., do_cal1 = .false.
 character(len=3) :: chd_ver, cnf_ver, baseline
 
 ! Initialise
@@ -210,7 +213,6 @@ endif
 
 if (lrange) then
 	if (all(isan_(cal1_old))) drange = drange + (cal1_new(1:3:2) - cal1_old(1:3:2))
-	drange = drange + bias_range
 	if (latency(1) > rads_ntc) then
 		! All fixed in reprocessing
 	else if (latency(1) == rads_nrt) then
@@ -226,35 +228,15 @@ if (lrange) then
 	endif
 	if (.not.lr .and. P%cycle == 8 .and. (P%pass >= 12 .and. P%pass <= 59)) drange = drange + 24 * gate_width
 endif
+
+drange = drange + bias_range
 do_range = any(drange /= 0d0)
 
 ! sigma0: Replace CAL1 and/or add additional bias
 
 if (lsig0) then
 	if (all(isan_(cal1_old))) dsig0 = dsig0 + (cal1_old(2:4:2) - cal1_new(2:4:2))
-	dsig0 = dsig0 + bias_sig0
 endif
-
-! wind: apply biases before calling wind model
-! L2 CONF < 008: did not use proper wind model and/or sig0 bias
-! L2 CONF = 009: did not use proper sig0 bias in HR
-
-if (lwind) then
-	if (cnf_ver < '008' .or. cnf_ver == '009' .or. dsig0(1) /= 0) dwind = (/ 1.29d0, 1.37d0 /)
-endif
-do_wind = any(dwind /= 0d0)
-
-! ssb: do when requested and wind has changed
-
-do_ssb = (lssb .and. do_wind)
-
-! rain: apply biases before calling rain model
-! L2 CONF < 008: did not use proper sig0 bias
-
-if (lrain .and. lr) then
-	if (cnf_ver < '008' .or. any(dsig0 /= 0d0)) drain = (/ 1.23d0, 1.64d0 /)
-endif
-do_rain = any(drain /= 0d0)
 
 ! sigma0: alignment of HR with LR
 
@@ -267,7 +249,30 @@ if (lsig0) then
 		endif
 	endif
 endif
+
+dsig0 = dsig0 + bias_sig0
 do_sig0 = any(dsig0 /= 0d0)
+
+! wind: apply biases before calling wind model
+! L2 CONF < 008: did not use proper wind model and/or sig0 bias
+! L2 CONF = 009: did not use proper sig0 bias in HR
+
+if (lwind) then
+	if (cnf_ver < '008' .or. cnf_ver == '009' .or. dsig0(1) /= 0) dwind = (/ 1.29d0, 1.37d0 /)
+	do_wind = any(dwind /= 0d0) .or. do_sig0
+endif
+
+! ssb: do when requested and wind has changed
+
+do_ssb = (lssb .and. do_wind)
+
+! rain: apply biases before calling rain model
+! L2 CONF < 008: did not use proper sig0 bias
+
+if (lrain .and. lr) then
+	if (cnf_ver < '008' .or. any(dsig0 /= 0d0)) drain = (/ 1.23d0, 1.64d0 /)
+	do_rain = any(drain /= 0d0) .or. do_sig0
+endif
 
 ! If nothing to change, skip
 
@@ -279,27 +284,35 @@ endif
 ! Adjust range for offset
 
 if (do_range) then
-	call rads_get_var (S, P, 'range_ku', range_ku, .true.)
-	range_ku = range_ku + drange(1)
-	if (lr) then
-		call rads_get_var (S, P, 'range_ku_mle3', range_ku_mle3, .true.)
-		range_ku_mle3 = range_ku_mle3 + drange(1)
-		call rads_get_var (S, P, 'range_c', range_c, .true.)
-		range_c = range_c + drange(2)
+	if (nr_only) then
+		call rads_get_var (S, P, 'range_ku_nr', range_ku, .true.)
+	else
+		call rads_get_var (S, P, 'range_ku', range_ku, .true.)
+		if (lr) then
+			call rads_get_var (S, P, 'range_ku_mle3', range_ku_mle3, .true.)
+			range_ku_mle3 = range_ku_mle3 + drange(1)
+			call rads_get_var (S, P, 'range_c', range_c, .true.)
+			range_c = range_c + drange(2)
+		endif
 	endif
+	range_ku = range_ku + drange(1)
 endif
 
 ! Adjust sigma0 for offset
 
 if (do_sig0) then
-	call rads_get_var (S, P, 'sig0_ku', sig0_ku, .true.)
-	sig0_ku = sig0_ku + dsig0(1)
-	if (lr) then
-		call rads_get_var (S, P, 'sig0_ku_mle3', sig0_ku_mle3, .true.)
-		sig0_ku_mle3 = sig0_ku_mle3 + dsig0(1)
-		call rads_get_var (S, P, 'sig0_c', sig0_c, .true.)
-		sig0_c = sig0_c + dsig0(2)
+	if (nr_only) then
+		call rads_get_var (S, P, 'sig0_ku_nr', sig0_ku, .true.)
+	else
+		call rads_get_var (S, P, 'sig0_ku', sig0_ku, .true.)
+		if (lr) then
+			call rads_get_var (S, P, 'sig0_ku_mle3', sig0_ku_mle3, .true.)
+			sig0_ku_mle3 = sig0_ku_mle3 + dsig0(1)
+			call rads_get_var (S, P, 'sig0_c', sig0_c, .true.)
+			sig0_c = sig0_c + dsig0(2)
+		endif
 	endif
+	sig0_ku = sig0_ku + dsig0(1)
 endif
 
 ! Compute wind speed from 2D wind model after adding biases
@@ -310,14 +323,21 @@ if (do_wind) then
 		if (need_file('AUX_WNDL_S6A_002.nc', aux_wind)) then
 			if (grid_load(aux_wind,info_wind) /= 0) call rads_exit ('Error loading '//trim(aux_wind))
 		endif
-		call rads_get_var (S, P, 'swh_ku_mle3', swh_ku_mle3, .true.)
-		if (.not.do_sig0) call rads_get_var (S, P, 'sig0_ku_mle3', sig0_ku_mle3, .true.)
-		call grid_inter (info_wind, n, sig0_ku_mle3 + dwind(2), swh_ku_mle3, wind_speed_alt_mle3)
+		if (.not.nr_only) then
+			call rads_get_var (S, P, 'swh_ku_mle3', swh_ku_mle3, .true.)
+			if (.not.do_sig0) call rads_get_var (S, P, 'sig0_ku_mle3', sig0_ku_mle3, .true.)
+			call grid_inter (info_wind, n, sig0_ku_mle3 + dwind(2), swh_ku_mle3, wind_speed_alt_mle3)
+		endif
 	else if (need_file('AUX_WNDH_S6A_002.nc', aux_wind)) then
 		if (grid_load(aux_wind,info_wind) /= 0) call rads_exit ('Error loading '//trim(aux_wind))
 	endif
-	call rads_get_var (S, P, 'swh_ku', swh_ku, .true.)
-	if (.not.do_sig0) call rads_get_var (S, P, 'sig0_ku', sig0_ku, .true.)
+	if (nr_only) then
+		call rads_get_var (S, P, 'swh_ku_nr', swh_ku, .true.)
+		if (.not.do_sig0) call rads_get_var (S, P, 'sig0_ku_nr', sig0_ku, .true.)
+	else
+		call rads_get_var (S, P, 'swh_ku', swh_ku, .true.)
+		if (.not.do_sig0) call rads_get_var (S, P, 'sig0_ku', sig0_ku, .true.)
+	endif
 	call grid_inter (info_wind, n, sig0_ku + dwind(1), swh_ku, wind_speed_alt)
 endif
 
@@ -338,7 +358,7 @@ if (do_ssb) then
 		endif
 	endif
 	call grid_inter (info_ssbk, n, wind_speed_alt, swh_ku, ssb_cls)
-	if (lr) then
+	if (lr .and. .not.nr_only) then
 		call grid_inter (info_ssbk, n, wind_speed_alt_mle3, swh_ku_mle3, ssb_cls_mle3)
 		call grid_inter (info_ssbc, n, wind_speed_alt, swh_ku, ssb_cls_c)
 	endif
@@ -346,7 +366,7 @@ endif
 
 ! Determine rain flag after adding biases
 
-if (do_rain) then
+if (do_rain .and. .not.nr_only) then
 	if (need_file('AUX_SIGL_S6A_001.nc', aux_rain)) call rain_table
 	if (dsig0(1) == 0d0) call rads_get_var (S, P, 'sig0_ku', sig0_ku, .true.)
 	if (dsig0(2) == 0d0) call rads_get_var (S, P, 'sig0_c', sig0_c, .true.)
@@ -375,35 +395,52 @@ if (do_cal1) then
 endif
 
 if (do_range) then
-	call rads_put_var (S, P, 'range_ku', range_ku)
-	if (lr) then
-		call rads_put_var (S, P, 'range_ku_mle3', range_ku_mle3)
-		call rads_put_var (S, P, 'range_c', range_c)
+	if (nr_only) then
+		call rads_put_var (S, P, 'range_ku_nr', range_ku)
+	else
+		call rads_put_var (S, P, 'range_ku', range_ku)
+		if (lr) then
+			call rads_put_var (S, P, 'range_ku_mle3', range_ku_mle3)
+			call rads_put_var (S, P, 'range_c', range_c)
+		endif
 	endif
 endif
 
 if (do_sig0) then
-	call rads_put_var (S, P, 'sig0_ku', sig0_ku)
-	if (lr) then
-		call rads_put_var (S, P, 'sig0_ku_mle3', sig0_ku_mle3)
-		call rads_put_var (S, P, 'sig0_c', sig0_c)
+	if (nr_only) then
+		call rads_put_var (S, P, 'sig0_ku_nr', sig0_ku)
+	else
+		call rads_put_var (S, P, 'sig0_ku', sig0_ku)
+		if (lr) then
+			call rads_put_var (S, P, 'sig0_ku_mle3', sig0_ku_mle3)
+			call rads_put_var (S, P, 'sig0_c', sig0_c)
+		endif
 	endif
 endif
 
 if (do_wind) then
-	call rads_put_var (S, P, 'wind_speed_alt', wind_speed_alt)
-	if (lr) call rads_put_var (S, P, 'wind_speed_alt_mle3', wind_speed_alt_mle3)
-endif
-
-if (do_ssb) then
-	call rads_put_var (S, P, 'ssb_cls', ssb_cls)
-	if (lr) then
-		call rads_put_var (S, P, 'ssb_cls_mle3', ssb_cls_mle3)
-		call rads_put_var (S, P, 'ssb_cls_c', ssb_cls_c)
+	if (nr_only) then
+		call rads_put_var (S, P, 'wind_speed_alt_nr', wind_speed_alt)
+	else
+		call rads_put_var (S, P, 'wind_speed_alt', wind_speed_alt)
+		if (lr) call rads_put_var (S, P, 'wind_speed_alt_mle3', wind_speed_alt_mle3)
 	endif
 endif
 
-if (do_rain) then
+if (do_ssb) then
+	if (nr_only) then
+		call rads_put_var (S, P, 'ssb_cls_nr', ssb_cls)
+		if (lr) call rads_put_var (S, P, 'ssb_cls_c_nr', ssb_cls_c)
+	else
+		call rads_put_var (S, P, 'ssb_cls', ssb_cls)
+		if (lr) then
+			call rads_put_var (S, P, 'ssb_cls_mle3', ssb_cls_mle3)
+			call rads_put_var (S, P, 'ssb_cls_c', ssb_cls_c)
+		endif
+	endif
+endif
+
+if (do_rain .and. .not.nr_only) then
 	call rads_put_var (S, P, 'qual_alt_rain_ice', qual_alt_rain_ice)
 	call rads_put_var (S, P, 'dsig0_atten', dsig0_atten)
 	call rads_put_var (S, P, 'flags', flags)
