@@ -31,25 +31,26 @@ use rads_grid
 ! Other local variables
 
 character(len=rads_cmdl) :: aux_wind = '', aux_ssbk = '', aux_ssbc = '', aux_rain = '', aux_cal1 = ''
-integer(fourbyteint) :: i, cyc, pass, ios
+integer(fourbyteint) :: i, cyc, pass, ios, lrain = 0, lwind = 0
 type(grid) :: info_wind, info_ssbk, info_ssbc
 logical :: lcal1 = .false., lsideB_range = .false., lsideB_sig0 = .false., lrange = .false., lsig0 = .false., &
-	lwind = .false., lssb = .false., lrain = .false., nr_only = .false.
+	lssb = .false., nr_only = .false.
 integer, parameter :: sig0_nx = 500
 real(eightbytereal) :: exp_ku_sigma0(sig0_nx), rms_exp_ku_sigma0(sig0_nx)
-real(eightbytereal) :: bias_range(2) = 0d0, bias_sig0(2) = 0d0
+real(eightbytereal) :: bias_range(2) = 0d0, bias_sig0(2) = 0d0, &
+	drange_sideB(2) = (/ -2d-3, 0d-3 /), dsig0_sideB(2) = (/ -0.07d0, 0.49d0 /), &
+	dwind(2) = (/ 1.29d0, 1.37d0 /), drain(2) = (/ 1.23d0, 1.64d0 /)
 real(eightbytereal), parameter :: sig0_dx = 0.1d0, gate_width = 0.3795d0, sign_error = 2 * 0.528d0
 ! For loading CAL1 file
 integer :: ncal
-real(eightbytereal) :: cal1_interval(2) = (/ -1d0, 1d0 /), &
-	drange_sideB(2) = (/ -2d-3, 0d-3 /), dsig0_sideB(2) = (/ -0.07d0, 0.49d0 /)
+real(eightbytereal) :: cal1_interval(2) = (/ -1d0, 1d0 /)
 real(eightbytereal), allocatable :: cal1_time(:), cal1(:,:), cal1_flags(:)
 logical, allocatable :: cal1_mask(:)
 
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options (' cal1:: sideB-range:: sideB-sig0:: range sig0 wind ssb rain all bias-range: bias-sig0: nr-only')
+call rads_set_options (' cal1:: sideB-range:: sideB-sig0:: range sig0 wind:: ssb rain:: all bias-range: bias-sig0: nr-only')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
@@ -67,20 +68,24 @@ do i = 1,rads_nopt
 	case ('sig0')
 		lsig0 = .true.
 	case ('wind')
-		lwind = .true.
+		read (rads_opt(i)%arg, *, iostat=ios) dwind
+		lwind = 1
+		if (ios == 0) lwind = 2
 	case ('ssb')
 		lssb = .true.
 	case ('rain')
-		lrain = .true.
+		read (rads_opt(i)%arg, *, iostat=ios) drain
+		lrain = 1
+		if (ios == 0) lrain = 2
 	case ('all')
 		lcal1 = .true.
 		lsideB_range = .true.
 		lsideB_sig0 = .true.
 		lrange = .true.
 		lsig0 = .true.
-		lwind = .true.
+		lwind = 1
 		lssb = .true.
-		lrain = .true.
+		lrain = 1
 	case ('bias-range')
 		read (rads_opt(i)%arg, *, iostat=ios) bias_range
 	case ('bias-sig0')
@@ -93,7 +98,7 @@ cal1_interval = cal1_interval * 86400d0
 
 ! If nothing selected, stop here
 
-if (.not.(lcal1 .or. lrange .or. lsig0 .or. lwind .or. lssb .or. lrain)) stop
+if (.not.(lcal1 .or. lrange .or. lsig0 .or. lwind > 0 .or. lssb .or.  lrain > 0)) stop
 
 ! Run process for all files
 
@@ -124,13 +129,16 @@ write (*,1310)
 '  --sideB-sig0[=KU,C]       Add biases to sig0 (Ku, C, in dB) for Side B and CHDR < 005 (def: -0.07,+0.49)' / &
 '  --range                   Fix range biases known for PDAP v3.0 and v3.1' / &
 '                            Also fix result of temporary error in radar data base (RMC only, 34 gates)' / &
-'  --sig0                    Add -7.41 dB to HR sigma0' / &
-'  --rain                    Add biases to sigma0 before calling rain model (L2 CONF < 008 or with --sig0)' / &
-'  --wind                    Add biases to sigma0 before calling wind model (L2 CONF < 008 or 009 or with --sig0)' / &
+'  --sig0                    Add -5.67 dB to HR sigma0' / &
+'  --rain[=KU,C]             Add biases to sigma0 (KU, C, in dB) before calling rain model' / &
+'                            (for L2 CONF < 008 or with --sig0 use default 1.23,1.64)' / &
+'  --wind[=MLE4,MLE3]        Add biases to sigma0 (MLE4, MLE3, in dB) before calling wind model' / &
+'                            (for L2 CONF < 008 or 009 or with --sig0 use default 1.29,1.37)' / &
 '  --ssb                     Update SSB (with --wind)' / &
 '  --all                     All of the above' / &
 '  --bias-range=KU,C         Add additional bias to range (Ku, C, in m)' / &
-'  --bias-sig0=KU,C          Add additional bias to sig0 (Ku, C, in dB)')
+'  --bias-sig0=KU,C          Add additional bias to sig0 (Ku, C, in dB)' / &
+'  --nr-only                 Only update numerical retracker values')
 stop
 end subroutine synopsis
 
@@ -144,7 +152,7 @@ real(eightbytereal) :: latency(n), range_ku(n), range_ku_mle3(n), range_c(n), &
 	sig0_ku(n), sig0_ku_mle3(n), sig0_c(n), dsig0_atmos_ku(n), dsig0_atmos_c(n), dsig0_atten(n), &
 	swh_ku(n), swh_ku_mle3(n), wind_speed_alt(n), wind_speed_alt_mle3(n), qual_alt_rain_ice(n), flags(n), &
 	ssb_cls(n), ssb_cls_mle3(n), ssb_cls_c(n), dum(n)
-real(eightbytereal) :: drange(2), dsig0(2), dwind(2), drain(2), cal1_old(4), cal1_new(4)
+real(eightbytereal) :: drange(2), dsig0(2), cal1_old(4), cal1_new(4)
 logical :: lr, redundant, val, do_range = .false., do_sig0 = .false., do_wind = .false., &
 	do_ssb = .false., do_rain = .false., do_cal1 = .false.
 character(len=3) :: chd_ver, cnf_ver, baseline
@@ -152,9 +160,8 @@ character(len=3) :: chd_ver, cnf_ver, baseline
 ! Initialise
 
 call log_pass (P)
-drange = 0d0
-dsig0 = 0d0
-dwind = 0d0
+drange = bias_range
+dsig0 = bias_sig0
 drain = 0d0
 
 ! Determine if LR/HR, OPE/VAL, CHD and CONF versions
@@ -229,7 +236,6 @@ if (lrange) then
 	if (.not.lr .and. P%cycle == 8 .and. (P%pass >= 12 .and. P%pass <= 59)) drange = drange + 24 * gate_width
 endif
 
-drange = drange + bias_range
 do_range = any(drange /= 0d0)
 
 ! sigma0: Replace CAL1 and/or add additional bias
@@ -240,26 +246,22 @@ endif
 
 ! sigma0: alignment of HR with LR
 
-if (lsig0) then
-	if (.not.lr) then
-		if (cnf_ver < '009') then
-			dsig0(1) = dsig0(1) - 7.41d0
-		else
-			dsig0(1) = dsig0(1) - 5.67d0	! Changed by 1.74 dB since L2 CONF 009
-		endif
+if (lsig0 .and. .not.lr) then
+	if (cnf_ver < '009') then
+		dsig0(1) = dsig0(1) - 7.41d0
+	else
+		dsig0(1) = dsig0(1) - 5.67d0	! Changed by 1.74 dB since L2 CONF 009
 	endif
 endif
 
-dsig0 = dsig0 + bias_sig0
 do_sig0 = any(dsig0 /= 0d0)
 
 ! wind: apply biases before calling wind model
 ! L2 CONF < 008: did not use proper wind model and/or sig0 bias
 ! L2 CONF = 009: did not use proper sig0 bias in HR
 
-if (lwind) then
-	if (cnf_ver < '008' .or. cnf_ver == '009' .or. dsig0(1) /= 0) dwind = (/ 1.29d0, 1.37d0 /)
-	do_wind = any(dwind /= 0d0) .or. do_sig0
+if (lwind > 0) then
+	do_wind = (cnf_ver < '008' .or. cnf_ver == '009' .or. dsig0(1) /= 0 .or. lwind == 2)
 endif
 
 ! ssb: do when requested and wind has changed
@@ -269,9 +271,8 @@ do_ssb = (lssb .and. do_wind)
 ! rain: apply biases before calling rain model
 ! L2 CONF < 008: did not use proper sig0 bias
 
-if (lrain .and. lr) then
-	if (cnf_ver < '008' .or. any(dsig0 /= 0d0)) drain = (/ 1.23d0, 1.64d0 /)
-	do_rain = any(drain /= 0d0) .or. do_sig0
+if (lrain > 0 .and. lr .and. .not.nr_only) then
+	do_rain = (cnf_ver < '008' .or. do_sig0 .or. lrain == 2)
 endif
 
 ! If nothing to change, skip
@@ -366,7 +367,7 @@ endif
 
 ! Determine rain flag after adding biases
 
-if (do_rain .and. .not.nr_only) then
+if (do_rain) then
 	if (need_file('AUX_SIGL_S6A_001.nc', aux_rain)) call rain_table
 	if (dsig0(1) == 0d0) call rads_get_var (S, P, 'sig0_ku', sig0_ku, .true.)
 	if (dsig0(2) == 0d0) call rads_get_var (S, P, 'sig0_c', sig0_c, .true.)
@@ -440,7 +441,7 @@ if (do_ssb) then
 	endif
 endif
 
-if (do_rain .and. .not.nr_only) then
+if (do_rain) then
 	call rads_put_var (S, P, 'qual_alt_rain_ice', qual_alt_rain_ice)
 	call rads_put_var (S, P, 'dsig0_atten', dsig0_atten)
 	call rads_put_var (S, P, 'flags', flags)
