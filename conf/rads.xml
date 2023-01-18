@@ -1969,8 +1969,8 @@ Global RADS configuration file
 	<units>m</units>
 	<source>MFWAM/Meteo France</source>
 	<data>swh_mfwam</data>
-	<format>f6.3</format>
-	<compress>int2 1e-3</compress>
+	<format>f5.2</format>
+	<compress>int2 1e-2</compress>
 </var>
 <var name="swh_20hz_ku" sat="c2">
 	<long_name>20-Hz Ku-band significant wave height</long_name>
