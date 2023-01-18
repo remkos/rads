@@ -53,8 +53,8 @@ logical :: update = .false.
 
 character(rads_cmdl) :: path
 integer(fourbyteint), parameter :: nvar=3, i2min=-32767
-integer(fourbyteint) :: mjd, mjdold=-99999, j, mvar = 0, nx = 0, ny = 0, nt = 0
-real(eightbytereal) :: xmin, xmax, ymin, ymax
+integer(fourbyteint) :: mjd, mjdold=-99999, j, mvar = 0, nx = 0, ny = 0, nt = 0, ios
+real(eightbytereal) :: xmin, xmax, ymin, ymax, wmin = 0.5d0
 
 type :: var_
 	character(len=5) :: ncname
@@ -68,7 +68,7 @@ type(var_) :: var(nvar)
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('sdpu swh direction period all update')
+call rads_set_options ('sdpu swh direction period all wmin: update')
 call rads_init (S)
 
 ! Get template for path name
@@ -89,6 +89,8 @@ do j = 1,rads_nopt
 		call add_var ('VHM0', 'swh_mfwam')
 		call add_var ('VMDR', 'mean_wave_direction')
 		call add_var ('VTM02', 'mean_wave_period')
+	case ('wmin')
+		read (rads_opt(j)%arg, *, iostat=ios) wmin
 	case ('u', 'update')
 		update = .true.
 	end select
@@ -122,6 +124,7 @@ write (*,1310)
 '  -d, --direction           Add mean wave direction (mean_wave_direction)' / &
 '  -p, --period              Add mean wave peiod (mean_wave_period)' / &
 '  --all                     All of the above' / &
+'  --wmin=WMIN               Minumum total weight for interpolation (default: 0.5)' / &
 '  -u, --update              Update files only when there are changes')
 stop
 end subroutine synopsis
@@ -210,7 +213,7 @@ do i = 1,n
 
 ! If total weight is less than 0.5 set to nan
 
-	if (wsum < 0.5d0) then
+	if (wsum == 0 .or. wsum < wmin) then
 		wave(i,:) = nan
 		cycle
 	endif
