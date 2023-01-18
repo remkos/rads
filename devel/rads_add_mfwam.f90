@@ -53,7 +53,7 @@ logical :: update = .false.
 
 character(rads_cmdl) :: path
 integer(fourbyteint), parameter :: nvar=3, i2min=-32767
-integer(fourbyteint) :: mjd, mjdold=-99999, j, mvar = 0, nx = 0, ny = 0, nt = 0, ios
+integer(fourbyteint) :: mjd, mjdold=-99999, j, mvar = 0, nx = 0, ny = 0, nt = 0, ios, smear=0
 real(eightbytereal) :: xmin, xmax, ymin, ymax, wmin = 0.5d0
 
 type :: var_
@@ -68,7 +68,7 @@ type(var_) :: var(nvar)
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('sdpu swh direction period all wmin: update')
+call rads_set_options ('sdpu swh direction period all wmin: smear: update')
 call rads_init (S)
 
 ! Get template for path name
@@ -91,6 +91,8 @@ do j = 1,rads_nopt
 		call add_var ('VTM02', 'mean_wave_period')
 	case ('wmin')
 		read (rads_opt(j)%arg, *, iostat=ios) wmin
+	case ('smear')
+		read (rads_opt(j)%arg, *, iostat=ios) smear
 	case ('u', 'update')
 		update = .true.
 	end select
@@ -125,6 +127,7 @@ write (*,1310)
 '  -p, --period              Add mean wave peiod (mean_wave_period)' / &
 '  --all                     All of the above' / &
 '  --wmin=WMIN               Minumum total weight for interpolation (default: 0.5)' / &
+'  --smear=SEC               Smear values into NaN areas by up to SEC seconds' / &
 '  -u, --update              Update files only when there are changes')
 stop
 end subroutine synopsis
@@ -136,7 +139,7 @@ end subroutine synopsis
 subroutine process_pass (n, mvar)
 integer(fourbyteint), intent(in) :: n, mvar
 real(eightbytereal) :: time(n), lat(n), lon(n), wave(n,mvar), tmp(n), x, y, t, w(2,2,2), z(2,2,2), wsum
-integer(fourbyteint) :: i, j, ix, iy, it
+integer(fourbyteint) :: i, j, k, ix, iy, it
 logical :: err
 
 call log_pass (P)
@@ -227,6 +230,20 @@ do i = 1,n
 			wave(i,j) = atan2 (sum(sin(z) * w), sum(cos(z) * w)) / rad
 		else
 			wave(i,j) = sum(z * w) / wsum
+		endif
+	enddo
+enddo
+
+! "Smear" points into areas with NaNs
+
+do k = 1, smear
+	do i = 1+smear, n-smear
+		if (isan_(wave(i,1))) then
+			! skip
+		else if (isan_(wave(i-k,1))) then
+			wave(i,:) = wave (i-k,:)
+		else if (isan_(wave(i+k,1))) then
+			wave(i,:) = wave (i+k,:)
 		endif
 	enddo
 enddo
