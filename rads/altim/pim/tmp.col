@@ -1,0 +1,26 @@
+#COL
+#
+# This file was created from /home/edwin/colourmaps/tmp.col
+#
+C_BG    255 255 255
+C_FG      0   0   0
+C_LAND  254 254 254
+C_BAD   255 255 255
+C_COAST   0   0   0
+C_CONT    0   0   0
+#
+# Now follows a colour range of  13
+#
+C_RNG   255 255 255
+C_RNG   232 232 232
+C_RNG   209 209 209
+C_RNG   186 186 186
+C_RNG   163 163 163
+C_RNG   140 140 140
+C_RNG   117 117 117
+C_RNG    94  94  94
+C_RNG    71  71  71
+C_RNG    48  48  48
+C_RNG    25  25  25
+C_RNG     2   2   2
+C_RNG   254 254 254

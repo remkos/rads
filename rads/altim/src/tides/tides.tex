@@ -1,0 +1,42 @@
+\documentclass[a4paper]{article}
+\usepackage{a4wide,verbatim,som}
+\title{TIDES \\ Tide Generating Routines \\
+User's Guide and Reference}
+\author{Remko Scharroo}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\SECTION#1{\subsection{#1}}
+\def\SUBSECTION#1{\subsubsection{#1}}
+\def\Input#1{\vbox{\input{#1}}}
+%\let\Input\input
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\tableofcontents
+
+\section{Introduction}
+TIDES is a FORTRAN subroutine library that contains some tide generating
+routines.
+
+The TIDES library has been ported to various systems.
+Presently it is available at DEOS/LR on the IBM Risk 6000 and the SGI
+servers. At NOAA it is available for Linux.
+
+The library can be linked to any of your
+FORTRAN programs by specifying the library in you FORTRAN link step, \eg
+\begin{verbatim}
+f77 example.f -o example $ALTIM/lib/tides.a
+\end{verbatim}
+
+The TIDES library contains drivers for several routines written by other
+institutes. The drivers are similar in definition of their calls in order
+to improve exchangability.
+
+\section{Subroutine Synopsis}
+\Input{airtide}
+\Input{csrtide}
+\Input{etide_ce}
+\Input{festide}
+\Input{gottide}
+\Input{webtide}
+\Input{lpetide}
+\Input{poletide}
+\end{document}

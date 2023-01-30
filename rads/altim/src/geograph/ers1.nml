@@ -1,0 +1,3 @@
+ &geograph_nml
+ incl=98.56, period=35.0, cycles=501,
+ &end

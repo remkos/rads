@@ -1,0 +1,52 @@
+<!--
+Copyright (c) 2011-2022  Remko Scharroo
+See LICENSE.TXT file for copying and redistribution conditions.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+** Description **
+Special settings for REAPER data (ERS-1 and ERS-2 only)
+-->
+
+<if sat="e1 e2">
+	<var name="ssb_hyb">
+		<long_name>hybrid sea state bias</long_name>
+		<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+		<source>Empirical solution fitted on REAPER commissioning data</source>
+		<parameters sat="e1">e1_ssb_hyb.nc?ssb_hyb</parameters>
+		<parameters sat="e2">e2_ssb_hyb.nc?ssb_hyb</parameters>
+		<units>m</units>
+		<limits>-1 1</limits>
+		<data>ssb_hyb</data>
+		<format>f7.4</format>
+		<compress>int2 1e-4</compress>
+	</var>
+	<alias name="ssb" field="15">ssb_hyb</alias>
+
+	<var name="flags">
+		<limits>65513 0</limits>
+	</var>
+
+	<var name="ref_frame_offset">
+		<parameters sat="e1">651 0 0 0 0</parameters>
+		<parameters sat="e2">655 0 0 0 0</parameters>
+	</var>
+
+	<var name="flag_alt_oper_mode" field="2516">
+		<long_name>altimeter operating mode</long_name>
+		<flag_values>ocean_mode ice_mode</flag_values>
+		<data source="flags">0</data>
+		<format>z1</format>
+		<compress>int1</compress>
+	</var>
+
+	<alias name="dry_tropo">dry_tropo_era</alias>
+</if>

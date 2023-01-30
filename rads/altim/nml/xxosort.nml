@@ -1,0 +1,6 @@
+ &xxosort_nml
+ period=35d0,
+ nrev=501,
+ incl=98.545d0,
+ lon0=0.142072d0,
+ &end

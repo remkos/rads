@@ -1,0 +1,23 @@
+#COL
+#
+# This file was created from /home/edwin/colourmaps/diff2.col
+#
+C_BG      0  90 100
+C_FG    235 235 235
+C_LAND   20  90   0
+C_BAD    60  60  60
+C_COAST   0  50   0
+C_CONT   40  40  40
+#
+# Now follows a colour range of  10
+#
+C_RNG     0   0 100
+C_RNG     0  40 125
+C_RNG     0  80 150
+C_RNG    60 100 135
+C_RNG   120 120 120
+C_RNG   120 120 120
+C_RNG   135 105  60
+C_RNG   150  90   0
+C_RNG   125  45   0
+C_RNG   100   0   0

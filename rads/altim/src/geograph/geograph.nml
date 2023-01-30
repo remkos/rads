@@ -1,0 +1,6 @@
+ &geograph_nml
+ incl=98.56, period=35.0, cycles=501,
+ deadband=0.00, lmax=70,
+ test=f,
+ x0=-180,x1=180,y0=-80,y1=80,dx=1,dy=1,
+ &end

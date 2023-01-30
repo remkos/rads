@@ -1,0 +1,69 @@
+ Initialisation ...please be patient ...
+ Used path variable : /user/altim/data/fes/
+ Read file : /user/altim/data/fes/Q1_fes99_re.grd
+ Read file : /user/altim/data/fes/Q1_fes99_im.grd
+ Read file : /user/altim/data/fes/Q1_drfes99_re.grd
+ Read file : /user/altim/data/fes/Q1_drfes99_im.grd
+   Wave Q1       ok...
+ Read file : /user/altim/data/fes/O1_fes99_re.grd
+ Read file : /user/altim/data/fes/O1_fes99_im.grd
+ Read file : /user/altim/data/fes/O1_drfes99_re.grd
+ Read file : /user/altim/data/fes/O1_drfes99_im.grd
+   Wave O1       ok...
+ Read file : /user/altim/data/fes/K1_fes99_re.grd
+ Read file : /user/altim/data/fes/K1_fes99_im.grd
+ Read file : /user/altim/data/fes/K1_drfes99_re.grd
+ Read file : /user/altim/data/fes/K1_drfes99_im.grd
+   Wave K1       ok...
+ Read file : /user/altim/data/fes/2N2_fes99_re.grd
+ Read file : /user/altim/data/fes/2N2_fes99_im.grd
+ Read file : /user/altim/data/fes/2N2_drfes99_re.grd
+ Read file : /user/altim/data/fes/2N2_drfes99_im.grd
+   Wave 2N2      ok...
+ Read file : /user/altim/data/fes/N2_fes99_re.grd
+ Read file : /user/altim/data/fes/N2_fes99_im.grd
+ Read file : /user/altim/data/fes/N2_drfes99_re.grd
+ Read file : /user/altim/data/fes/N2_drfes99_im.grd
+   Wave N2       ok...
+ Read file : /user/altim/data/fes/M2_fes99_re.grd
+ Read file : /user/altim/data/fes/M2_fes99_im.grd
+ Read file : /user/altim/data/fes/M2_drfes99_re.grd
+ Read file : /user/altim/data/fes/M2_drfes99_im.grd
+   Wave M2       ok...
+ Read file : /user/altim/data/fes/K2_fes99_re.grd
+ Read file : /user/altim/data/fes/K2_fes99_im.grd
+ Read file : /user/altim/data/fes/K2_drfes99_re.grd
+ Read file : /user/altim/data/fes/K2_drfes99_im.grd
+   Wave K2       ok...
+ Read file : /user/altim/data/fes/S2_fes99_re.grd
+ Read file : /user/altim/data/fes/S2_fes99_im.grd
+ Read file : /user/altim/data/fes/S2_drfes99_re.grd
+ Read file : /user/altim/data/fes/S2_drfes99_im.grd
+   Wave S2       ok...
+ Now ready !!!
+NASA_d  Hour  Latitude Longitude Short_tid    LP_tid Pure_Tide  Geo_Tide  Rad_Tide
+  9131  0.00    -7.688    59.195   -92.844     1.038   -91.807   -87.933     3.874
+  9131  1.00    -7.688    59.195  -132.032     1.012  -131.020  -126.599     4.421
+  9131  2.00    -7.688    59.195  -137.309     0.986  -136.323  -132.449     3.873
+  9131  3.00    -7.688    59.195  -106.707     0.960  -105.747  -103.431     2.316
+  9131  4.00    -7.688    59.195   -47.350     0.933   -46.417   -46.326     0.091
+  9131  5.00    -7.688    59.195    26.303     0.905    27.208    24.921    -2.287
+  9131  6.00    -7.688    59.195    96.058     0.877    96.935    92.677    -4.258
+  9131  7.00    -7.688    59.195   144.545     0.849   145.393   140.040    -5.353
+  9131  8.00    -7.688    59.195   159.568     0.820   160.388   155.076    -5.312
+  9131  9.00    -7.688    59.195   137.167     0.790   137.957   133.812    -4.145
+  9131 10.00    -7.688    59.195    82.613     0.760    83.373    81.238    -2.135
+  9131 11.00    -7.688    59.195     9.096     0.730     9.826    10.066     0.240
+  9131 12.00    -7.688    59.195   -65.572     0.699   -64.873   -62.452     2.421
+  9131 13.00    -7.688    59.195  -123.402     0.668  -122.734  -118.827     3.908
+  9131 14.00    -7.688    59.195  -150.700     0.636  -150.064  -145.683     4.381
+  9131 15.00    -7.688    59.195  -141.454     0.604  -140.850  -137.070     3.781
+  9131 16.00    -7.688    59.195   -98.779     0.571   -98.208   -95.894     2.314
+  9131 17.00    -7.688    59.195   -34.068     0.539   -33.529   -33.128     0.401
+  9131 18.00    -7.688    59.195    35.933     0.506    36.438    35.005    -1.434
+  9131 19.00    -7.688    59.195    93.374     0.472    93.847    91.147    -2.699
+  9131 20.00    -7.688    59.195   123.814     0.439   124.253   121.193    -3.060
+  9131 21.00    -7.688    59.195   119.844     0.405   120.249   117.825    -2.424
+  9131 22.00    -7.688    59.195    82.925     0.371    83.296    82.331    -0.964
+  9131 23.00    -7.688    59.195    22.977     0.336    23.313    24.239     0.925
+  9131 24.00    -7.688    59.195   -44.165     0.302   -43.864   -41.131     2.732

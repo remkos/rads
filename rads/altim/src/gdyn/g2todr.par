@@ -1,0 +1,72 @@
+'ERS-1'		<- satellite name
+9105001		<- satellite ID
+'setenv orgdir /home/ersorb/ERS-1/ODR ; setenv noaadir pub/delft/ODR.ERS-1'	<- directory names
+48446.0 3.5 1.0	<- epoch of arc#000, interval, skip
+35000		<- repeat cycle ID
+3		<- number of models
+50 6378137.0d0 'GEM-T2' 9	<- ndeg, ae, model name, remark ID
+70 6378137.0d0 'JGM-1' 201	<- ndeg, ae, model name, remark ID
+70 6378136.3d0 'JGM-2' 301	<- ndeg, ae, model name, remark ID
+0		<- number of stations
+0		<- number of normal points
+0		<- RMS (cm)
+'ERS-2'		<- satellite name
+9502101		<- satellite ID
+'setenv orgdir /home/ersorb/ERS-2/ODR ; setenv noaadir pub/delft/ODR.ERS-2'	<- directory names
+49825.0 3.5 1.0	<- epoch of arc#000, interval, skip
+35000		<- repeat cycle ID
+1		<- number of models
+70 6378136.3d0 'JGM-3' 302	<- ndeg, ae, model name, remark ID
+0		<- number of stations
+0		<- number of normal points
+0		<- RMS (cm)
+'CHAMP'	<- satellite name
+0909001		<- satellite ID
+'setenv orgdir /home/ersorb/champ/ODR ; setenv noaadir pub/delft/ODR.ENVISAT'	<- directory names
+52194.5 1.0 0.0	<- epoch of arc#000, interval, skip
+35000		<- repeat cycle ID
+1		<- number of models
+70 6378136.3d0 'GRIM5-S1' 303	<- ndeg, ae, model name, remark ID
+0		<- number of stations
+0		<- number of normal points
+0		<- RMS (cm)
+'ENVISAT'	<- satellite name
+0200901		<- satellite ID
+'setenv orgdir /home/ersorb/envisat/ODR ; setenv noaadir pub/delft/ODR.ENVISAT'	<- directory names
+52194.5 3.5 1.0	<- epoch of arc#000, interval, skip
+35000		<- repeat cycle ID
+1		<- number of models
+70 6378136.3d0 'GRIM5-S1' 303	<- ndeg, ae, model name, remark ID
+0		<- number of stations
+0		<- number of normal points
+0		<- RMS (cm)
+'T/P'           <- satellite name
+9205201         <- satellite ID
+'setenv orgdir /home/ersorb/TOPEX/ODR ; setenv noaadir pub/delft/ODR.TOPEX'	<- directory names
+48835.0 10. 1.0 <- epoch of arc#000, interval, skip
+10000           <- repeat cycle ID
+1               <- number of models
+70 6378136.3d0 'JGM-3' 302	<- ndeg, ae, model name, remark ID
+0               <- number of stations
+0               <- number of normal points
+0               <- RMS (cm)
+'JASON-1'       <- satellite name
+0105501         <- satellite ID
+'setenv orgdir /home/ersorb/jason1/ODR ; setenv noaadir pub/delft/ODR.jason1'	<- directory names
+52284.0 10. 1.0 <- epoch of arc#000, interval, skip
+10000           <- repeat cycle ID
+1               <- number of models
+70 6378136.3d0 'JGM-3' 302	<- ndeg, ae, model name, remark ID
+0               <- number of stations
+0               <- number of normal points
+0               <- RMS (cm)
+'CRYOSAT'       <- satellite name
+9201101         <- satellite ID
+' '	<- directory names
+52883.0 3.0 1.0 <- epoch of arc#000, interval, skip
+3000            <- repeat cycle ID
+1               <- number of models
+70 6378136.3d0 'DGM-E04' 502	<- ndeg, ae, model name, remark ID
+0               <- number of stations
+0               <- number of normal points
+0               <- RMS (cm)

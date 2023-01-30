@@ -1,0 +1,25 @@
+#COL
+#
+# This file was created from /home/edwin/colourmaps/gvarps.col
+#
+C_BG    255 255 255
+C_FG      0   0   0
+C_LAND  254 254 254
+C_BAD   255 255 255
+C_COAST   0   0   0
+C_CONT    0   0   0
+#
+# Now follows a colour range of  12
+#
+C_RNG   255 255 255
+C_RNG   254 254 254
+C_RNG   232 232 232
+C_RNG   209 209 209
+C_RNG   186 186 186
+C_RNG   162 162 162
+C_RNG   139 139 139
+C_RNG   116 116 116
+C_RNG    93  93  93
+C_RNG    69  69  69
+C_RNG    46  46  46
+C_RNG    23  23  23

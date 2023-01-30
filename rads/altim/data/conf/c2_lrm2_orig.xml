@@ -1,0 +1,24 @@
+<!--
+Copyright (c) 2011-2022  Remko Scharroo
+See LICENSE.TXT file for copying and redistribution conditions.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+** Description **
+CryoSat-2: Use original tide, SSB and MSS from LRM L2 products
+-->
+
+<if sat="c2">
+	<alias name="tide_ocean">tide_ocean_fes04</alias>
+	<alias name="tide_load">tide_load_fes04</alias>
+	<alias name="ssb">ssb_bm3</alias>
+	<alias name="mss">mss_ucl04</alias>
+</if>

@@ -1,0 +1,73 @@
+#COL
+#
+# This file was created by xrgb
+#
+C_BG    255 255 255
+C_FG      0   0   0
+C_LAND   57 113   0
+C_BAD     0   0   0
+C_COAST 255 255 255
+C_CONT    0   0   0
+#
+# Now follows a colour range of 60
+#
+C_RNG      0 157 231
+C_RNG      0 161 234
+C_RNG      0 164 238
+C_RNG      0 168 241
+C_RNG      0 172 245
+C_RNG      0 176 248
+C_RNG      0 179 252
+C_RNG      0 183 255
+C_RNG      0 180 239
+C_RNG      0 177 223
+C_RNG      0 174 207
+C_RNG      0 171 191
+C_RNG      0 168 175
+C_RNG      0 165 159
+C_RNG      0 162 143
+C_RNG      0 160 128
+C_RNG      0 157 112
+C_RNG      0 154  96
+C_RNG      0 151  80
+C_RNG      0 148  64
+C_RNG      0 145  48
+C_RNG      0 142  32
+C_RNG      0 139  16
+C_RNG      0 136   0
+C_RNG     16 143   0
+C_RNG     32 151   0
+C_RNG     48 158   0
+C_RNG     64 166   0
+C_RNG     80 173   0
+C_RNG     96 181   0
+C_RNG    112 188   0
+C_RNG    128 196   0
+C_RNG    143 203   0
+C_RNG    159 210   0
+C_RNG    175 218   0
+C_RNG    191 225   0
+C_RNG    207 233   0
+C_RNG    223 240   0
+C_RNG    239 248   0
+C_RNG    255 255   0
+C_RNG    251 239   0
+C_RNG    246 223   0
+C_RNG    242 207   0
+C_RNG    238 191   0
+C_RNG    233 175   0
+C_RNG    229 159   0
+C_RNG    224 143   0
+C_RNG    220 128   0
+C_RNG    216 112   0
+C_RNG    211  96   0
+C_RNG    207  80   0
+C_RNG    203  64   0
+C_RNG    198  48   0
+C_RNG    194  32   0
+C_RNG    189  16   0
+C_RNG    185   0   0
+C_RNG    187  13  13
+C_RNG    189  26  27
+C_RNG    190  39  40
+C_RNG    192  52  53

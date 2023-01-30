@@ -1,0 +1,347 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+   <TITLE>GETORB -- README</TITLE>
+   <META NAME="GENERATOR" CONTENT="Mozilla/3.01Gold (X11; I; AIX 1) [Netscape]">
+</HEAD>
+<BODY>
+
+<H1 ALIGN=CENTER>GETORB 2.3.0 -- README</H1>
+
+<P>
+<HR>
+
+<P>This README file pertains to the distribution of <TT>getorb_2.3.x.tar.gz</TT>.
+Read this file carefully before installing or using the different components.
+
+<P>Last modification: 10 Jan 2006
+
+<P>
+<HR>
+
+<H2>Contents</H2>
+
+<MENU>
+<LI><A HREF="#intro">Introduction</A> </LI>
+<LI><A HREF="#whatsnew">What's new</A> </LI>
+<LI><A HREF="#install">Installation</A> </LI>
+<LI><A HREF="#orbits">Delft Orbits</A> </LI>
+<LI><A HREF="#lodr">Listing ODRs with <B>lodr</B></A></LI>
+<LI><A HREF="#getorb">Interpolating orbits with <B>getorb.a</B> and <B>getorb</B></A></LI>
+<LI><A HREF="#convdate">Date conversions with <B>convdate</B></A> </LI>
+<LI><A HREF="#info">More Information</A> </LI>
+</MENU>
+
+<P><A NAME="intro"></A>
+<HR>
+
+<H2>Introduction</H2>
+
+This is the latest release of the software supporting the Delft ERS
+orbits. The software consists of a program <B><A HREF="#lodr">lodr</A></B>
+to list the content of the Orbital Data Records (ODRs), a subroutine library
+<B><A HREF="#getorb">getorb.a</A></B> that can be ported to some other
+program to interpolate the orbits and any given moment, and an example
+program <B><A HREF="#getorb">getorb</A></B> to demonstrate the use of the
+<B>getorb.a</B> library. 
+
+<P>The FORTRAN source code works on nearly all Unix workstations, including
+<B>Little Endian</B> machines such as DEC workstations (running Ultrix)
+and PCs (running Linux), as well as <B>Big Endian</B> machines: IBM RS6000,
+SGI, Convex, Mac, HP. 
+
+<P><A NAME="whatsnew"></A>
+<HR>
+
+<H2>What's new ?</H2>
+
+New in Version 2.0 is the use of a new format for the ODRs. Because
+of the demand from the InSAR community to have a more accurate cross-track
+resolution, the latitude and longitude coordinates are now in 10^-7 degrees
+(0.1 microdegree). This also meant changing the interval for the longitudes
+from 0/360 to -180/+180 degrees. Obviously, the new subroutine handles
+both the old (1.0 microdegrees) and new resolution data sets. 
+
+<P>A couple of additional enhancements have been made to reduce the number
+of code lines and to prepare the software for satellites Envisat
+and Jason. 
+
+<P>Those who have been using former versions of the <B><A HREF="#getorb">getorb.a</A></B>
+library are recommended to use the new one. It avoids problems when switching
+to the enhanced resolution data sets in the near future. 
+
+<P><B>With Version 2.0 all previous versions expired. Version 2.1 and later
+are Y2K compliant.</B> 
+
+<P>Additional changes after the release of Version 2.1.0 are:
+
+<DL>
+<DT><B>2.3.0 (10 Jan 2006)</B>
+<DD>Removed fastio so that source is fully Fortran.
+<DT><B>2.2.0 (22 Nov 2004)</B>
+<DD>Allow arc numbers larger than 999.
+<DT><B>2.1.10 (13 Aug 2004)</B>
+<DD>Made sure no unwarrented error exits are given with "unknown satellites."
+<DT><B>2.1.9 (5 Aug 2004)</B>
+<DD>Removed trap for unknown satellites in odrinfo.f.
+    Additional functionality in mdate.f
+<DT><B>2.1.8 (21 Nov 2003)</B>
+<DD>Include of unistd.h added to fastio.c to work on Mac OS X and Cygwin.
+    Update of Makefile (more help).
+<DT><B>2.1.7 (17 Jun 2003)</B>
+<DD>New version of fastio.c included, plus related changes.
+    Removed need for sysdep.h in Fortran sources. Included ltlend.f.
+<DT><B>2.1.6 (6 Mar 2003)</B>
+<DD>New version of fastio.c included, plus related changes.
+<DT><B>2.1.5 (16 Nov 2000)</B>
+<DD>Changes to the Makefile and odrinfo.F for compatibility with newer
+Linux versions (<I>e.g.</I> Redhat 7.0)
+<DT><B>2.1.4 (27 Oct 2000)</B>
+<DD>Update of manual. Small change to convdate.
+<DT><B>2.1.3 (11 Apr 2000)</B>
+<DD>Added <TT>convdate</TT> program. No functional changes to <TT>getorb</TT>.
+<DT><B>2.1.2 (25 Jan 2000)</B>
+<DD>Added source for <TT>lnblnk</TT>. No functional changes.
+<DT><B>2.1.1 (26 Nov 1999)</B>
+<DD>Minor change of SEC85. New manual.
+<DT><B>2.1.0 (9 Nov 1999)</B>
+<DD>Made Y2K compliant. Introduced convdate.
+</DL>
+
+<P><A NAME="install"></A>
+
+<HR>
+
+<H2>Installation</H2>
+
+There are only a couple considerations for making the programs work
+properly: 
+
+<UL>
+<LI>You might like to make some changes to the <TT>Makefile</TT>
+regarding your preferred location of the executables (currently set to
+<TT>/usr/local/bin</TT>). Consult the <TT><A HREF="Makefile">Makefile</A></TT>
+for more information on system dependencies and values that you should
+change or set manually.</LI>
+</UL>
+
+<P>Once any changes have been made to the makefile, you should be able
+to compile the library and the two programs via <B>make all</B> or simply
+<B>make</B>. 
+
+<P>After you <B>make</B> the program, you can <B>make test</B> to check
+that the outputs agree with reference files included in the tar archive.
+It runs the programs <B><A HREF="#lodr">lodr</A></B> and <B><A HREF="#getorb">getorb</A></B>
+and compares the resulting output files with included references. 
+
+<P>Finally, once you've successfully tested the program you can <B>make
+install</B> to place the executables in <TT>/usr/local/bin</TT> (or wherever
+you like if you modify the <TT>BIN_DIR</TT> parameter in the <TT><A HREF="Makefile">Makefile</A></TT>);
+and then <B>make clean</B> to remove the relocatable files. 
+
+<P>To compile the additional utility <B><A HREF=#convdate>convdate</A></B>
+use <B>make convdate</B>. Since this requires interaction with a C routine,
+its compilation has been kept separate from the rest.
+
+<P><A NAME="orbits"></A>
+<HR>
+
+<H2>Delft Orbits</H2>
+
+Delft ERS-1 orbits are generally available through the anonymous FTP
+site at NOAA: <TT><A HREF="ftp://falcon.grdl.noaa.gov/pub/delft/ODR.ERS-1">ftp://falcon.grdl.noaa.gov/pub/delft/ODR.ERS-1</A></TT>.
+Various subdirectories relate to the different orbit determination versions
+(different gravity models or tracking data). Recently also ERS-2 orbits
+are added on the same site: <TT><A HREF="ftp://falcon.grdl.noaa.gov/pub/delft/ODR.ERS-2">ftp://falcon.grdl.noaa.gov/pub/delft/ODR.ERS-2</A></TT>.
+
+<P>These directories contain the Orbital Data Records (ODRs) spanning each
+5.5-days with a 2-day overlap with consecutive ODRs. The binary format
+of the ODRs (and some more information) is given in the file <TT><A HREF="docs/odr_fmt.txt">docs/odr_fmt.txt</A></TT>.
+To list the contents of the ODRs use the program <B><A HREF="#lodr">lodr</A></B>.
+
+
+<P>For the most up-to-date information of the status of the ERS-1 and ERS-2
+orbit determination and details consult the DUT/DEOS Web page with the
+URL: 
+
+<PRE><A HREF="http://www.deos.tudelft.nl/ers/precorbs/">http://www.deos.tudelft.nl/ers/precorbs/</A>
+</PRE>
+
+<P>Orbit files can also be accessed through this page. 
+
+<P>Store all the ODR files (at least for your required period) in one directory
+together with the list of ODR files <TT>arclist.</TT> The name of this
+directory is one of the input variables for the orbit interpolation routine.
+
+<P><A NAME="lodr"></A>
+<HR>
+
+<H2>Listing ODRs with lodr</H2>
+
+The program <B>lodr</B> lists the contents of an ODR. The syntax is:
+
+<PRE>
+       lodr [-s n=n0,n1 t=t0,t1] ODR-filename
+</PRE>
+
+<P>where 
+
+<DL>
+<DT><B>-s</B> </DT>
+
+<DD>Print a summary only </DD>
+
+<DT><B>n=n0,n1</B> </DT>
+
+<DD>Request listing of record numbers n0 through n1 only </DD>
+
+<DT><B>t=t0,t1</B> </DT>
+
+<DD>Requests listing of records of period t0 through t1 only, where t0
+and t1 may be specified as MJD.D, [YY]YYMMDD.D, or [YY}YYMMDDHHMMSS.S.
+To specify epochs as YYDDD.D use the prefix <B>doy=</B> in stead of
+<B>t=</B>. For Seconds of 1985 use the prefix <B>sec=</B>.
+After 2003 the use of prefix <B>t=</B> will not properly recognise MJD.D,
+use prefix <B>mjd=</B> instead.
+
+<DT><B>ODR-filename</B> </DT>
+
+<DD>Name of the input ODR file. </DD>
+</DL>
+
+<P>This program is included in the <B><A HREF="#getorb">getorb</A></B>
+package and is made with <B>make lodr</B>, but also with <B>make all</B>
+or just <B>make</B>. When executing the tests (<B>make test</B>) the proper
+functioning of <B>lodr</B> is checked as well. 
+
+<P><A NAME="getorb"></A>
+<HR>
+
+<H2>Interpolating orbits with getorb.a and getorb</H2>
+
+The program <B>getorb</B> is a little quick'n'dirty front-end to the
+getorb library <TT>getorb.a</TT>. The program allows you to interpolate
+the DUT orbit at any required epoch (during the span of the data files)
+or for a range of epochs.
+The program prints out time (UTC), error value, latitude, longitude, orbital
+altitude (GRS80), and XYZ (Earth Fixed).
+The syntax: 
+
+<PRE>
+       getorb [t=|ymd=|mjd=|doy=|sec=]t0[,t1,dt] [+]path
+</PRE>
+
+<P>where: 
+
+<DL>
+<DT><B>t0</B> </DT>
+<DD>epoch for the orbit interpolation in various date formats.
+<DT><B>t0,t1,dt</B>
+<DD>start and end epoch (as above) and step size (in seconds) for the orbit
+interpolation
+<DT><B>ymd=</B>
+<DD>indicates that the epochs are specified as [YY]YYMMDD.DDD or
+[YY]YYMMDDHHMMSS.SSS. You may use the extra century indication, but it
+is not necessary for any date between 1950 and 2049.
+<DT><B>mjd=</B>
+<DD>indicates that the epochs are in Modified Julian Dates (MJD).
+<DT><B>doy=</B>
+<DD>is used when epochs are specied as [YY]YYDDD.DDD (year and
+day of year)
+<DT><B>sec=</B>
+<DD>specifies epochs in UTC seconds since 1 January 1985.
+<DT><B>[t=]</B>
+<DD><B>t=</B> is an optional prefix. In will try to identify whether
+MJD.D, [YY]YYMMDD.D, or [YY]YYMMDDHHMMSS.S where specified (same as when
+<B>t=</B> is omitted.  After
+2003 the use of prefix <B>t=</B> will not properly recognise MJD.D, use
+prefix <B>mjd=</B> instead.
+
+<DT><B>path</B> </DT>
+
+<DD>full or relative path name of the directory in which the ODR files
+are stored. When a <B>+</B> is added in front of the path name, the path name is
+considered to be of a single ODR file.
+</DL>
+
+<P><B>Examples:</B>
+<PRE>
+   getorb mjd=50001.500 /home/ers2/ODR
+   getorb ymd=991231235959,000101000159,60 .
+</PRE>
+
+<P>The <TT>getorb.a</TT> library contains all subroutines used by the <B>getorb</B>
+program. See the file <TT><A HREF="getorb.F">getorb.F</A></TT> for a detailed
+information of the use of this routine.
+
+<P><A NAME="convdate"></A>
+<HR>
+<H2>Date conversions with convdate</H2>
+Since the Delft orbits are time tagged in seconds from 1985 and you may like to
+handle year-month-day, year-dayofyear, or MJD, date conversions are often necessary.
+You'll see in <B>getorb_main.f</B> how this is done with the
+subroutines <B>sec85</B> and <B>mdate</B>. These two routines are also at the heart
+of a nice little tool what runs from the command line. It accepts almost any from of
+input date and writes it out in almost any date format you like too. In addition it
+can add some extra time to the data you give. Very practical to determine the day of
+tomorrow.
+
+<P> The syntax:
+
+<PRE>
+       convdate [options] <date> <format>
+
+Converts specified <date> into a string according to <format>
+
+where [options] are:
+  offs=delta : add 'delta' seconds to given <date>
+  offm=delta : add 'delta' minutes to given <date>
+  offh=delta : add 'delta' hours to given <date>
+  offd=delta : add 'delta' days to given <date>
+
+and <date> is either:
+  ymd=[YY]YYMMDD.D       : Year-Month-Day
+  ymd=[YY]YYMMDDHHMMSS.S : Year-Month-Day-Hour-Minutes-Seconds
+  mjd=MJD.DDD            : Modified Julian Day
+  doy=[YY]YYDDD.DDD          : Year-DayOfYear
+  sec=SEC85.SSS          : Seconds since 1.0 Jan 1985
+  [t=]MJD or [YY]YYMMDD[HHMMSS] : free choise
+
+and <format> is either:
+  +ymd    : YYMMDDHHMMSS.SSS (real)
+  +YMD    : same as +%y%m%d%H%M%S (int)
+  +mjd    : Modified Julian Day (real)
+  +MJD    : Modified Julian Day (int)
+  +sec    : Seconds since 1.0 Jan 1985 (real)
+  +SEC    : Seconds since 1.0 Jan 1985 (nint)
+  +txt    : same as +%c (int, default)
+  +doy    : same as +%y%j (int)
+  +<spec> : Format spec like 'date' command (int)
+</PRE>
+
+<P><A NAME="info"></A>
+<HR>
+
+<H2>More Information</H2>
+
+For more up-to-date information on this package and the DUT orbits,
+netsurf to <A HREF="http://www.deos.tudelft.nl/ers/precorbs/">http://www.deos.tudelft.nl/ers/precorbs/</A>
+or contact: <A HREF="http://www.deos.tudelft.nl/~remko/">Remko Scharroo</A>
+(<A HREF="mailto:remko@deos.tudelft.nl">remko@deos.tudelft.nl</A>)
+
+
+<P>
+<HR>
+
+<TABLE>
+<TR>
+<TD><A HREF="http://www.deos.tudelft.nl/"><IMG SRC="http://www.deos.tudelft.nl/img/butt/deoshome.gif" ALT="DEOS" ALIGN=CENTER></A>
+</TD>
+
+<TD>This was brought to you by <A HREF="http://www.deos.tudelft.nl/~remko/">Remko
+Scharroo</A>, <A HREF="mailto:remko@deos.tudelft.nl">remko@deos.tudelft.nl</A></TD>
+</TR>
+</TABLE>
+
+</BODY>
+</HTML>

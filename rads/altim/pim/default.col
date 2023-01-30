@@ -1,0 +1,17 @@
+#COL
+#
+# This file contains the default colour settings for PIM
+#
+C_BG      0  90 100
+C_FG    235 235 235
+C_LAND   57 113   0
+C_BAD   140   0 120
+C_COAST 235 235 235
+C_CONT   40  40  40
+C_RED   255   0   0
+C_BLUE    0  64 255
+C_WHITE 255 255 255
+C_BLACK   0   0   0
+C_GREY  191 191 191
+C_DGREY 111 111 111
+C_LGREY 231 231 231

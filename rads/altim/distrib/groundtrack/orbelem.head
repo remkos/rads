@@ -1,0 +1,19 @@
+# Output of orbelem
+#
+# Columns:
+#  1: arc number
+#  2: start of period (MJD)
+#  3: end of period (MJD)
+#  4: step size (sec)
+#  5: semi-major axis (m)
+#  6: eccentricity (-)
+#  7: inclination (deg)
+#  8: node at epoch (deg), wrt Greenwich
+#  9: node rate (deg/day), wrt Greenwich
+# 10: perigee at epoch (deg)
+# 11: perigee rate (deg/day)
+# 12: mean longitude at epoch (deg)
+# 13: angular motion (deg/day)
+# 14: max position error (km)
+# 15: rms position error (km)
+#

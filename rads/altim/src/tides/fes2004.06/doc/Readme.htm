@@ -1,0 +1,566 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>FES C SDK</title>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+</head>
+<body>
+<div
+ style="font-family: helvetica,arial,sans-serif; text-align: center;"><font
+ size="-1"><font size="+2">FES C SDK<br>
+Programmer's Guide</font> </font> </div>
+<br>
+<br style="font-family: helvetica,arial,sans-serif;">
+<font size="-1"><font size="+1"><span
+ style="font-family: helvetica,arial,sans-serif;">FES License<br
+ style="font-family: helvetica,arial,sans-serif;">
+</span></font><span style="font-family: helvetica,arial,sans-serif;"></span></font><font
+ style="font-family: Helvetica,Arial,sans-serif;" size="-1"><font
+ size="+2"><small><small><small> This
+software have been tested on Linux platform and</small></small></small></font></font><font
+ style="font-family: Helvetica,Arial,sans-serif;" size="-1"><font
+ size="+2"><small><small><small> It's
+provided without any guarantees.</small></small></small></font></font><br
+ style="font-family: Helvetica,Arial,sans-serif; font-weight: bold; font-style: italic;">
+<font face="Helvetica, Arial, sans-serif" size="2"><br>
+</font><font size="-1"><font size="+1"><span
+ style="font-family: helvetica,arial,sans-serif;">For report bug,
+please contact</span></font></font><font
+ face="Helvetica, Arial, sans-serif" size="2">:<br>
+<a href="mailto:fabien.lefevre@cls.fr">Fabien Levefvre</a><br>
+</font><a href="http://www.cls.fr"><font
+ style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;"
+ size="-1"><font size="+2"><small><small><small>CLS</small></small></small></font></font></a><br
+ style="font-family: Helvetica,Arial,sans-serif;">
+<font style="font-family: Helvetica,Arial,sans-serif;" size="-1"><font
+ size="+2"><small><small><small>Direction
+Oc&eacute;anographie Spatiale</small></small></small></font></font><br
+ style="font-family: Helvetica,Arial,sans-serif;">
+<font style="font-family: Helvetica,Arial,sans-serif;" size="-1"><font
+ size="+2"><small><small><small>8-10, rue
+Herm&egrave;s - Parc Technologique du Canal</small></small></small></font></font><br
+ style="font-family: Helvetica,Arial,sans-serif;">
+<font style="font-family: Helvetica,Arial,sans-serif;" size="-1"><font
+ size="+2"><small><small><small>31526
+Ramonville Saint-Agne cedex - France</small></small></small></font></font><br
+ style="font-family: Helvetica,Arial,sans-serif;">
+<font style="font-family: Helvetica,Arial,sans-serif;" size="-1"><font
+ size="+2"><small><small><small>Tel: +33
+(0)5 61 39 37 45 Fax: +33 (0)5 61 39 37 82<br>
+<br>
+</small></small></small></font></font><font size="-1"><font size="+1"><span
+ style="font-family: helvetica,arial,sans-serif;">Note<br>
+</span></font></font><font
+ style="font-family: Helvetica,Arial,sans-serif;" size="-1"><font
+ size="+2"><small><small><small>This software is based on the former
+versions </small></small></small></font></font><font
+ style="font-family: Helvetica,Arial,sans-serif;" size="-1"><font
+ size="+2"><small><small><small>developed by Jean-Marc MOLINES and
+Florent LYARD.</small></small></small></font></font><br
+ style="font-family: Helvetica,Arial,sans-serif; font-weight: bold; font-style: italic;">
+<br>
+<font size="-1"><font size="+1"><span
+ style="font-family: helvetica,arial,sans-serif;">Data
+type and structure</span></font><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;">This chapter
+describes the data structures and data types used by functions in the
+FES API.</span> </font> <span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">fesData</span><font
+ size="-1"><br style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;">fesData is a
+type of structure representing the internal data. fesData is not
+completely defined in fes.h because the fields within the structure are
+not intended to be accessible.</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;">To create and
+free a fesData structure, call the following functions:</span> </font>
+<ul style="font-family: helvetica,arial,sans-serif;">
+  <li> <font size="-1">To create a fesData structure, call the fesNew
+function.</font> </li>
+  <li> <font size="-1">To free the fesData structure, call the
+fesDelete function.</font></li>
+</ul>
+<font size="+1"> <span style="font-family: helvetica,arial,sans-serif;">Function
+reference</span></font><font size="-1"><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;">This chapter
+contains a reference to the public functions of the FES C SDK. Along
+with a detailed description of each function, the function reference
+details the function header file and syntax, the function parameters,
+and what the function returns. In many cases an example program is
+included with the description.<span style="font-weight: bold;"><br>
+<br>
+</span></span></font><span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">fesNew()</span><font
+ size="-1"><br style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"></span></font><font
+ size="-1"><span style="font-family: helvetica,arial,sans-serif;">The
+fesNew function initializes the computation of the tide.</span><span
+ style="font-family: helvetica,arial,sans-serif;"> You can specify
+the computation mode (</span></font><font size="-1"><span
+ style="font-family: monospace;">FES_SHORT_TIDE</span></font><font
+ size="-1"><span style="font-family: helvetica,arial,sans-serif;"> or </span></font><font
+ size="-1"><span style="font-family: monospace;">FES_RADIAL_TIDE</span></font><font
+ size="-1"><span style="font-family: helvetica,arial,sans-serif;">).</span></font><font
+ size="-1"><span style="font-family: helvetica,arial,sans-serif;"></span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">Syntax</span><span
+ style="font-family: monospace;"><br>
+</span></font><font size="-1"><span style="font-family: monospace;">#include
+&lt;fes.h&gt;</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">int fesNew(fesData** fes, const
+int mode, const
+int shortTide, const char* const dir);</span></font><font size="-1"><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"></span><span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">Parameters</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;">This function
+has the following parameters:</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"></span></font>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="0">
+  <tbody>
+    <tr>
+      <td>fesData<br>
+      </td>
+      <td><font size="-1"><span
+ style="font-family: helvetica,arial,sans-serif;">Internal data handle,
+which is a pointer to a </span></font><font size="-1"><span
+ style="font-family: monospace;">fesData</span></font><font size="-1"><span
+ style="font-family: helvetica,arial,sans-serif;"> structure containing
+information about the tide computation.</span></font></td>
+    </tr>
+    <tr>
+      <td>shortTide<br>
+      </td>
+      <td><font size="-1"><span
+ style="font-family: helvetica,arial,sans-serif;">Computation mode. If
+mode is equals to </span></font><font size="-1"><span
+ style="font-family: monospace;">FES_SHORT_TIDE</span></font><font
+ size="-1"><span style="font-family: helvetica,arial,sans-serif;">, </span></font><font
+ size="-1"><span style="font-family: monospace;">fesCore</span></font><font
+ size="-1"><span style="font-family: helvetica,arial,sans-serif;">
+computes the short tide otherwise she computes the radial tide.</span></font></td>
+    </tr>
+    <tr>
+    </tr>
+    <tr>
+      <td>mode<br>
+      </td>
+      <td><font size="-1"><span
+ style="font-family: helvetica,arial,sans-serif;">One&nbsp; of&nbsp; </span></font><font
+ size="-1"><span style="font-family: helvetica,arial,sans-serif;"></span></font><font
+ size="-1"><span style="font-family: monospace;">FES_MEM</span></font><font
+ size="-1"><span style="font-family: helvetica,arial,sans-serif;">, </span></font><font
+ size="-1"><span style="font-family: helvetica,arial,sans-serif;"></span></font><font
+ size="-1"><span style="font-family: monospace;">FES_IO</span></font><font
+ size="-1"><span style="font-family: helvetica,arial,sans-serif;">, </span></font><font
+ size="-1"><span style="font-family: helvetica,arial,sans-serif;"></span></font><font
+ size="-1"><span style="font-family: monospace;">FES_ASCII</span></font><font
+ size="-1"><span style="font-family: helvetica,arial,sans-serif;">
+which request loading grids into memory, direct access from binary
+grids or loading ASCII grids into memory.<br>
+      </span> </font> </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">dir<br>
+      </td>
+      <td style="vertical-align: top;"><font size="-1"><span
+ style="font-family: helvetica,arial,sans-serif;">Directory containing
+grids.</span></font></td>
+    </tr>
+  </tbody>
+</table>
+<font size="-1"> <span style="font-family: helvetica,arial,sans-serif;"></span><span
+ style="font-family: helvetica,arial,sans-serif;"></span><span
+ style="font-family: helvetica,arial,sans-serif;"></span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">Returns</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;">One of the
+fallowing values:</span> </font>
+<ul>
+  <li> <font size="-1"> <span style="font-family: monospace;">FES_SUCCESS</span></font><font
+ size="-1"><span style="font-family: helvetica,arial,sans-serif;"> if
+successful.</span></font> </li>
+  <li> <font size="-1"> <span style="font-family: monospace;">FES_NO_MEMORY</span></font><font
+ size="-1"><span style="font-family: helvetica,arial,sans-serif;"> if
+memory cannot be allocated.</span></font> </li>
+  <li> <font size="-1"> <span style="font-family: monospace;">FES_ACCESS_ERROR</span></font><font
+ size="-1"><span style="font-family: helvetica,arial,sans-serif;"> if
+grids are not readable</span></font> </li>
+  <li> <font size="-1"> <span style="font-family: monospace;">FES_INPUT_ERROR</span></font><font
+ size="-1"><span style="font-family: helvetica,arial,sans-serif;"> if
+an error occurred when FES reading a grid.</span></font> </li>
+  <li> <font size="-1"> <span style="font-family: monospace;">FES_GRIDS_CONSTANT</span></font><font
+ size="-1"><span style="font-family: helvetica,arial,sans-serif;"> if
+the definition of the grids are not constant.</span></font></li>
+  <li><font size="-1"><span style="font-family: monospace;">FES_MODE_ERROR</span></font><font
+ size="-1"><span style="font-family: helvetica,arial,sans-serif;"> if
+the requested mode to grids is not allowed.</span></font></li>
+</ul>
+<font size="-1"> <span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">Example
+</span></font>
+<hr style="width: 100%; height: 2px;"> <font size="-1"> <span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;"></span></font><font
+ size="-1"><span style="font-family: monospace;">#include "fes.h"</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">fesData*&nbsp;&nbsp;&nbsp; fes;</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">char* dir ="./data";</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">...</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">fesNew(&amp;fes, FES_SHORT_TIDE,
+FES_IO, dir);</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">...</span> </font><font size="-1">
+<br>
+<br>
+<span style="font-family: helvetica,arial,sans-serif;"></span></font><span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">fesCore()</span><font
+ size="-1"><br style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"></span><span
+ style="font-family: helvetica,arial,sans-serif;">Computes tide.</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"></span><span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">Syntax</span><span
+ style="font-family: monospace;"><br>
+</span></font><font size="-1"><span style="font-family: monospace;">#include
+&lt;fes.h&gt;</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">int fesCore(fesData*
+fes, const double lat, const double lon, const double time, double*
+h, double* hLp);</span> </font><font size="-1"> <br
+ style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;">&nbsp;</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">Parameters
+</span></font><font size="-1"><span
+ style="font-family: helvetica,arial,sans-serif;">This function has the
+following parameters:</span> </font> <br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="0">
+  <tbody>
+    <tr>
+      <td>fes<br>
+      </td>
+      <td><font size="-1"><span style="font-family: monospace;"></span></font><font
+ size="-1"><span style="font-family: helvetica,arial,sans-serif;">Internal
+data handle,
+which is a pointer to a </span></font><font size="-1"><span
+ style="font-family: monospace;">fesData</span></font><font size="-1"><span
+ style="font-family: helvetica,arial,sans-serif;"> structure containing
+information about the tide computation.</span></font></td>
+    </tr>
+    <tr>
+      <td>lat<br>
+      </td>
+      <td><font size="-1"><span
+ style="font-family: helvetica,arial,sans-serif;">Latitude in degrees
+(positive north) for the position at which tide is computed.</span></font></td>
+    </tr>
+    <tr>
+      <td>lon<br>
+      </td>
+      <td><font size="-1"><span
+ style="font-family: helvetica,arial,sans-serif;">Longitude in degrees
+(positive north) for the position at which tide is computed.</span></font></td>
+    </tr>
+    <tr>
+      <td>time<br>
+      </td>
+      <td><font size="-1"><span
+ style="font-family: helvetica,arial,sans-serif;">Julian day (days
+since 1950-01-01 00:00:00.000 UTC).</span></font></td>
+    </tr>
+    <tr>
+      <td>h<br>
+      </td>
+      <td><font size="-1"><span
+ style="font-family: helvetica,arial,sans-serif;">Computed height of
+the diurnal and semi-diunral constituents of the tidal spectrum (in
+centimeters).</span></font> </td>
+    </tr>
+    <tr>
+      <td>hLp<br>
+      </td>
+      <td><font size="-1"><span
+ style="font-family: helvetica,arial,sans-serif;">Computed height of
+the long period wave constituents of the tidal spectrum (in
+centimeters). It's always equal to zero for the radial tide.</span></font>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<font size="-1"> <span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;"> </span><span
+ style="font-family: helvetica,arial,sans-serif;"></span><span
+ style="font-family: helvetica,arial,sans-serif;"></span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"></span><span
+ style="font-family: helvetica,arial,sans-serif;"></span><span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">Returns</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;">One of the
+fallowing values:</span> </font>
+<ul>
+  <li> <font size="-1"> <span style="font-family: monospace;">FES_SUCCESS</span></font><font
+ size="-1"><span style="font-family: helvetica,arial,sans-serif;"> if
+successful.</span></font> </li>
+  <li> <font size="-1"> <span style="font-family: monospace;">FES_NO_DATA</span></font><font
+ size="-1"><span style="font-family: helvetica,arial,sans-serif;"> if
+no data is available in grids at this position.</span></font></li>
+</ul>
+<font size="-1"> <span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">Description</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;">compute
+elevation for tides and loading effects</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"></span><span
+ style="font-family: helvetica,arial,sans-serif;"></span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">Example
+</span></font>
+<hr style="width: 100%; height: 2px;"> <font size="-1"> <span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;"></span></font><font
+ size="-1"><span style="font-family: monospace;">...</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;"> rc = fesCore(fes, lat, lon,
+time, &amp;h, &amp;hLp);</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">if( rc == FES_SUCCESS )</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;"> &nbsp;&nbsp;&nbsp;
+fprintf(stdout, "Geocentric tide is %8.6lf\n", h + hLp);</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">else if( rc == FES_NO_DATA )</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;
+fprintf(stdout, "No tide available at this position (land or grid
+mask)\n");</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">else</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;
+fprintf(stderr, "An error occurred: %s\n", fessErr2String(rc));</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">....</span></font><font size="-1"><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"></span> </font>
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;"><br>
+fesDelete()</span><font size="-1"><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"></span><span
+ style="font-family: helvetica,arial,sans-serif;"></span></font><font
+ size="-1"><span style="font-family: helvetica,arial,sans-serif;">The
+fesDelete() function frees a fesData structure from memory. Call this
+function to free any fesData structures that you have allocated by
+fesNew function call.</span></font><font size="-1"><span
+ style="font-family: helvetica,arial,sans-serif;"></span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"></span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">Syntax</span></font><font
+ size="-1"><br>
+<span style="font-family: monospace;">#include
+&lt;fes.h&gt;</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">void fesDelete(fesData* fes);</span>
+</font><font size="-1"> <br
+ style="font-family: helvetica,arial,sans-serif;">
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">Parameters</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;">This function
+has the following parameters:</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"></span></font>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="0">
+  <tbody>
+    <tr>
+      <td>fes<br>
+      </td>
+      <td><font size="-1"><span
+ style="font-family: helvetica,arial,sans-serif;">Pointer to the </span></font><font
+ size="-1"><span style="font-family: monospace;">fesData</span></font><font
+ size="-1"><span style="font-family: helvetica,arial,sans-serif;">
+structure that you want to free.</span></font></td>
+    </tr>
+  </tbody>
+</table>
+<font size="-1"> <span style="font-family: helvetica,arial,sans-serif;"></span><span
+ style="font-family: helvetica,arial,sans-serif;"></span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">Example</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"></span></font><font
+ size="-1"><span style="font-family: monospace;">#include "fes.h"</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">fesData*&nbsp;&nbsp;&nbsp; fes;</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">...</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">fesDelete(fes);</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">...</span> </font><font size="-1">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"></span></font><span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;"><br>
+fesErr2String()</span><font size="-1"><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"></span><span
+ style="font-family: helvetica,arial,sans-serif;">The fesErr2String()
+function returns the corresponding error message for an error code.</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">Syntax</span><span
+ style="font-family: monospace;"><br>
+</span></font><font size="-1"><span style="font-family: monospace;">#include
+"fes.h"</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">char* fesErr2String( const int
+err );</span></font><font size="-1"><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">Parameters</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;">This function
+has the following parameters:</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"></span></font>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="0">
+  <tbody>
+    <tr>
+      <td>err<br>
+      </td>
+      <td><font size="-1"><span
+ style="font-family: helvetica,arial,sans-serif;">Error code that you
+want interpreted into an error message.</span></font></td>
+    </tr>
+  </tbody>
+</table>
+<font size="-1"> <span style="font-family: helvetica,arial,sans-serif;"></span><span
+ style="font-family: helvetica,arial,sans-serif;"></span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">Returns</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;">One of the
+following values:</span> </font>
+<ul>
+  <li> <font size="-1"> <span
+ style="font-family: helvetica,arial,sans-serif;">If successful,
+returns the corresponding error message for the error code.</span></font>
+  </li>
+  <li> <font size="-1"> <span
+ style="font-family: helvetica,arial,sans-serif;">If unsuccessful (for
+example, if the error code is not a valid FES API error code), returns </span></font><font
+ size="-1"><span style="font-family: monospace;">"Unknown error"</span></font><font
+ size="-1"><span style="font-family: helvetica,arial,sans-serif;">.</span></font></li>
+</ul>
+<font size="-1"> <span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">Example</span>
+</font>
+<hr style="width: 100%; height: 2px;"> <font size="-1"> <span
+ style="font-family: helvetica,arial,sans-serif;"></span></font><font
+ size="-1"><span style="font-family: monospace;">...</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">err_msg = fesErr2String(
+fesCore(fes, lat, lon, time, &amp;h, &amp;hLp, &amp;hInt) );</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">...</span> </font><font size="-1">
+<br style="font-family: helvetica,arial,sans-serif;">
+<font size="+1"> <span style="font-family: helvetica,arial,sans-serif;">Result
+code</span></font><br style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"></span><span
+ style="font-family: helvetica,arial,sans-serif;">This chapter lists
+the result codes that can be returned by functions in the FES C SDK.</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">FES_SUCCESS</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;">This result code
+indicates that the LDAP operation was successful.</span><span
+ style="font-family: helvetica,arial,sans-serif;">&nbsp;</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">FES_INPUT_ERROR</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;">This result code
+indicates that an error occurred when FES read a grid.</span><span
+ style="font-family: helvetica,arial,sans-serif;">&nbsp;</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">FES_ACCESS_ERROR</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;">This result code
+indicates that the grids are not readable.</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"></span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">FES_GRIDS_CONSTANT</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;">This result code
+indicates that the Definition of the grids is not constant.</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">FES_NO_MEMORY</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;">This result code
+indicates that no memory is available.</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"></span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">FES_NO_DATA</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;">This result code
+indicates that no data is available.<br>
+</span></font><font size="-1"><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">FES_MODE_ERORR</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;">This result code
+indicates that the request mode to grids is not allowed.</span></font><br>
+</body>
+</html>

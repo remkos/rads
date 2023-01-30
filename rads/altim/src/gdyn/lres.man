@@ -1,0 +1,153 @@
+SHORT BUT ADEQUATE MANUAL TO LRES AND GBFEDIT
+=============================================
+
+LRES
+----
+
+LRES is a program to list statistics of GEODYN residual files and is
+available on the DUTLRU workstations. In principle it can handle in a legible
+format: SLR, DORIS, PRARE, and altimeter residuals.
+
+Statistics are presented first on pass-by-pass basis, either sorted on
+station number (default or with -s option), or in time sequence (with -t
+option). At the end of the list a full summary of the statistics per
+station are presented.
+
+Example:
+
+|------------------- short format -------------------------------------------|- long format only --|
+
+					       nr of measurem     residuals     rms-  range timing
+       time of pass          satel    station     total  used    mean     rms of-fit   bias   bias
+
+920410 14:56:26 - 15:02:16  9105001 7090 ML05cc      16    16    -1.6     3.0    2.2   -1.7    2.5
+920410 18:43:45 - 18:48:51  9105001 1884 RIGLAS      10     9    -9.8    13.7    8.3   -7.9  -17.8 !
+920410 20:14:35 - 20:19:11  9105001 7831 HELLAS       8     8     1.0     6.2    2.1    1.2  -11.8
+920410 20:17:40 - 20:21:32  9105001 7512 MT0131       8     8    -8.8     9.2    1.9   -6.9   -5.9
+920410 20:21:43 - 20:26:47  9105001 7839 AUSLAS      22    22    -4.3     4.8     .9   -7.2    7.5
+920410 20:22:12 - 20:24:01  9105001 7835 GRASSE       8     8    18.4    18.6    2.2   17.1    7.1 !
+920410 20:22:53 - 20:23:03  9105001 1884 RIGLAS       2     2   -11.8    12.8     .0 -129.7 -295.1 !
+..... (line removed)
+920415 22:46:24 - 22:47:07  9105001 7840 RGOLAS       4     4   -12.0    12.0     .8  -12.6    4.9
+
+                        24  9105001  100 XOVER      124   124     -.3     8.9
+                         3  9105001 1181 GDRLAS      17    14     4.3    13.6
+                         2  9105001 1863 MDNLAS      14    14      .0     8.7
+			 ........ (line removed)
+                         4  9105001 7882 TL0414      13    11     -.5     4.3
+                         2  9105001 8834 WLRS01      10    10     1.0     2.1
+
+                        50  9105001   15      SLR   520   495      .0     6.9
+                        24  9105001    1    XOVER   124   124     -.3     8.9
+
+The is a short and long list format (with -l option). The exclamation mark at
+the end of the long-list format indicates possible erroneous pass.
+THIS ONLY FUNCTIONS WELL FOR SLR RESIDUALS.
+This switched on when either:
+- Two or less measurements per pass are available.
+- One or more measurements were removed in the pass.
+- The RMS around the tilt/bias fit exceeds system noise or 4 cm
+  (whatever is greater).
+- The range bias is greater than the system noise.
+- The timing bias is greater than 50 microseconds.
+
+Based on these criteria a pass edit file can be generated with the -d
+option (-dfilename, lres.del is assumed for filename when omitted).
+
+To manually edit the data use the -e option (-edevice, /xs is assumed
+when device is not given). The residuals (dots) are presented in a
+range-versus-range rate plot on pass-by-pass basis.
+Different colours indicate:
+Green    GOOD
+Blue     Edited by elevation
+Red      BAD
+Yellow   Good, but out of plotting range, use - to zoom out.
+
+A tilt/bias fit is presented and estimates of timing and range bias are
+plotted. 
+
+When editing, use the following keystrokes:
+Notepad:   Keyboard:
+7 (Home)   u         Go to first pass
+1 (End)    n         Go to last pass
+9 (PgUp)   o         Move 10 passes back
+8 (^)      i         Move 1 pass back
+2 (V)      m         Move 1 pass forward
+3 (PgDn)   ,         Move 10 passes forward
+4 (<)      j         Move cursor 1 measurement back
+6 (>)      l         Move cursor 1 measurement forward
+0 (Ins)    b         Select all measurements as GOOD
+. (Del)    .         Select all measurements as BAD
+-          -         Zoom out (multiply vertical range by 2)
++          +         Zoom in  (divide   vertical range by 2)
+
+Keyboard:
+/          Toggle between relative-to-fit and full residuals
+a          Show all passes
+w	   Show only suspicious passes (see above)
+<space>    Toggle current measurement between GOOD and BAD
+q or Esc   Quit and save delete file
+x          Exit without saving
+
+Mouse:
+Move       	Move mouse to move to required measurement
+Left but.  	Select measurement
+Middle but.	Move to and toggle measurement between GODD and BAD
+Right but. 	Goto next pass
+
+
+| usage: lres [options] [ filenames(s) ]
+| 
+| where [options] are:
+| 
+|   -t       : sort by time
+|   -s       : sort by station (default)
+|   -z       : exclude stations without proper observations
+|   -a       : exclude pass-by-pass altimeter residuals
+|   -l       : print long information per pass
+|   -D       : print statistics of the deleted measurements
+|   -f       : adjust editing using data fit
+|   -d[file] : print delete cards to 'file' (default: lres.del)
+|   -e[dev]  : edit passes using plot device 'dev' (default: /xs)
+|              (option also sets -t -a -l -d)
+| 
+| and
+| 
+| filename(s): residual file name(s), default=fort.19
+
+
+
+
+GBFEDIT
+-------
+
+GBFEDIT is a little program to edit or merge GBF files.
+When merging GBF files just use:
+
+gbfedit inputfiles outputfile
+
+A time selection can be made using the t=t0,t1 option, where
+t0 and t1 are begin and end times in MJD, YYMMDD, YYDDD, or SEC95
+
+The option del=file indicates that "file" is the file with delete files
+generated with LRES. GFBEDIT will NOT remove the passes, but switch the
+sigma of the measurements to negative. Current GEODYN versions will
+ignore these measurements and keep them as BAD in the residual file.
+
+A file of SIGMA cards can be attached to imbed the station-depended
+sigma into the GBF file. (THIS IS HIGHLY RECOMMENDED).
+
+| GBFEDIT -- Edit GBF files
+| 
+| syntax: gbfedit [options] infile(s) outfile
+| 
+| where
+| 
+| infile(s) : input GBF file(s)
+| outfile   : output GBF file
+| 
+| and [options] are:
+| t=t0,t1   : select period t0,t1 (sec85,mjd,yymmdd,yyddd)
+| del=file  : read DELETE cards from "file"
+|             (cards must be ordered by time)
+| sig=file  : read SIGMA cards from "file"

@@ -1,0 +1,110 @@
+#!/bin/sh
+#-----------------------------------------------------------------------
+# src/rads-config.  Generated from rads-config.in by configure.
+#
+# Copyright (c) 2011-2022  Remko Scharroo
+# See LICENSE.TXT file for copying and redistribution conditions.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#-----------------------------------------------------------------------
+#
+# This forms the basis for the rads-config utility, which informs
+# users of the configuration of the RADS installation.
+
+configure="--prefix=/opt/local --datadir=/Users/davidtrossman/Documents/Code/rads/data --with-netcdf-lib=/opt/local/lib/ --with-netcdf-inc=/opt/local/include/ --enable-devel FC=/opt/local/bin/gfortran-mp-12 --oldincludedir=/Users/davidtrossman/Documents/Code/rads/altim/include ALTIM=/Users/davidtrossman/Documents/Code/rads/altim"
+prefix="/opt/local"
+exec_prefix="${prefix}"
+datadir="/Users/davidtrossman/Documents/Code/rads/data"
+datarootdir="${prefix}/share"
+bindir="${exec_prefix}/bin"
+docdir="${datarootdir}/doc/${PACKAGE_TARNAME}"
+includedir="${prefix}/include"
+libdir="${exec_prefix}/lib"
+
+fc="/opt/local/bin/gfortran-mp-12"
+fflags="-O2 -I${includedir}"
+libs="-L${libdir} -lrads -L/opt/local/lib/ -lnetcdff -lnetcdf"
+version="RADS 4.4.0"
+vernum="4.4.0"
+
+usage()
+{
+    cat <<EOF
+Usage: $0 [OPTION]
+
+Available values for OPTION include:
+
+  --help        display this help message and exit
+  --all         display all options
+  --fc          Fortran compiler
+  --fflags      flags needed to compile a Fortran program
+  --libs        libraries needed to link program
+  --configure   configure flags used when building library
+  --prefix      install prefix
+  --includedir  include directory
+  --libdir      library directory
+  --bindir      directory for executables
+  --datadir     RADS data directory
+  --version     RADS library name and version
+  --vernum      RADS library version number
+EOF
+
+    exit $1
+}
+
+all()
+{
+	cat <<EOF
+
+This $version has been built with the following features:
+
+  --fc          -> $fc
+  --fflags      -> $fflags
+  --libs        -> $libs
+
+  --configure   -> $configure
+  --prefix      -> $prefix
+  --includedir  -> $includedir
+  --libdir      -> $libdir
+  --bindir      -> $bindir
+  --datadir     -> $datadir
+  --version     -> $version
+  --vernum      -> $vernum
+
+EOF
+}
+
+if test $# -eq 0; then
+    usage 1
+fi
+
+while test $# -gt 0; do
+	case "$1" in
+
+	--help)			usage 0 ;;
+	--all)			all ;;
+	--configure)	echo $configure ;;
+	--fc)			echo $fc ;;
+	--fflags)		echo $fflags ;;
+	--libs)			echo $libs ;;
+	--prefix)		echo "$prefix" ;;
+	--includedir)	echo "$includedir" ;;
+	--libdir)		echo "$libdir" ;;
+	--bindir)		echo "$bindir" ;;
+	--datadir)		echo "$datadir" ;;
+	--version)		echo $version ;;
+	--vernum)		echo $vernum ;;
+	*)				echo "$0: unknown option: $1"; usage 1 ;;
+	esac
+	shift
+done
+
+exit 0

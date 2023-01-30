@@ -1,0 +1,76 @@
+% file: formats.tex
+%
+\begin{table*}
+\centering
+\caption{WDB table file format (all types)}
+\label{tab:table format}
+\medskip
+\begin{tabular}{|ccp{0.7\textwidth}|}
+\hline
+\multicolumn{3}{|c|}{\ceiling TABLE FILE HEADER} \\
+\hline\ceiling
+\em Item & \em Type & \em Explanation \\
+  1  &   A4  &  File specifier ({\tt @WDB} or {\tt @LND}). \\
+  2  &   I4  &  Resolution (units per degree). \\
+\hline\hline
+\multicolumn{3}{|c|}{\ceiling TABLE RECORDS} \\
+\hline\ceiling
+\em Item & \em Type & \em Explanation \\
+  1  &   I4  &  Rank. \\
+  2  &   I4  &  Number of points in the segment. \\
+  3  &   I4  &  Record number of the first point. \\
+  4  &   I4  &  Minimum longitude (in units of resolution). \\
+  5  &   I4  &  Maximum longitude (in units of resolution). \\
+  6  &   I4  &  Minimum latitude (in units of resolution). \\
+  7  &   I4  &  Maximum latitude (in units of resolution). \\
+  8  &   I4  &  Start longitude (in units of resolution). \\
+  9  &   I4  &  Start latitude (in units of resolution). \\
+\hline
+\multicolumn{3}{|c|}{\ceiling The last record in the file contains all zeros.} \\
+\hline
+\end{tabular}
+\end{table*}
+%
+\begin{table*}
+\centering
+\caption{WDB data file format (.cil .bdy .pby .riv .mnt .bth)}
+\label{tab:data format 1}
+\medskip
+\begin{tabular}{|ccp{0.7\textwidth}|}
+\hline
+\multicolumn{3}{|c|}{\ceiling DATA FILE HEADER} \\
+\hline\ceiling
+\em Item & \em Type & \em Explanation \\
+  1  &   A2  &  File specifier ({\tt @@}). \\
+\hline\hline
+\multicolumn{3}{|c|}{\ceiling DATA RECORDS} \\
+\hline\ceiling
+\em Item & \em Type & \em Explanation \\
+  1  &   A1  &  Longitude increment (in units of resolution) + 127, stored
+		as a character. \\
+  2  &   A1  &  Latitude increment (in units of resolution) +127, stored
+		as a character. \\
+\hline
+\end{tabular}
+\end{table*}
+%
+\begin{table*}
+\centering
+\caption{WDB data file format (.lnd only)}
+\label{tab:data format 2}
+\medskip
+\begin{tabular}{|ccp{0.7\textwidth}|}
+\hline
+\multicolumn{3}{|c|}{\ceiling DATA FILE HEADER} \\
+\hline\ceiling
+\em Item & \em Type & \em Explanation \\
+  1  &   A4  &  File specifier ({\tt @@LN}). \\
+\hline\hline
+\multicolumn{3}{|c|}{\ceiling DATA RECORDS} \\
+\hline\ceiling
+\em Item & \em Type & \em Explanation \\
+  1  &   I2  &  Longitude increment (in units of resolution). \\
+  2  &   I2  &  Latitude increment (in units of resolution). \\
+\hline
+\end{tabular}
+\end{table*}

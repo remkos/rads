@@ -1,0 +1,22 @@
+#COL
+#
+# This file was created by xrgb
+#
+C_BG      0   0   0
+C_FG    255 255 255
+C_LAND   57 113   0
+C_BAD     0   0   0
+C_COAST 255 255 255
+C_CONT    0   0   0
+#
+# Now follows a colour range of  61
+#
+C_RNG      0  46 128
+C_RNG      0 115 192
+C_RNG      0 183 255
+C_RNG      0 163 144
+C_RNG      0 142  32
+C_RNG    128 199  16
+C_RNG    255 255   0
+C_RNG    220 128   0
+C_RNG    185   0   0

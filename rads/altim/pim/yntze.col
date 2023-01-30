@@ -1,0 +1,75 @@
+#COL
+#
+# This file was created by xrgb
+#
+C_BG    255 255 255
+C_FG      0   0   0
+C_LAND  179 204 179
+C_BAD   255 255 255
+C_COAST   0   0   0
+C_CONT    0   0   0 
+#
+C_RNG #00008f
+C_RNG #00009f
+C_RNG #0000af
+C_RNG #0000bf
+C_RNG #0000cf
+C_RNG #0000df
+C_RNG #0000ef
+C_RNG #0000ff
+C_RNG #000fff
+C_RNG #001fff 
+C_RNG #002fff
+C_RNG #003fff
+C_RNG #004fff
+C_RNG #005fff
+C_RNG #006fff
+C_RNG #007fff
+C_RNG #008fff
+C_RNG #009fff
+C_RNG #00afff
+C_RNG #00bfff 
+C_RNG #00cfff
+C_RNG #00dfff
+C_RNG #00efff
+C_RNG #00ffff
+C_RNG #0fffff
+C_RNG #1fffef
+C_RNG #2fffdf
+C_RNG #3fffcf
+C_RNG #4fffbf
+C_RNG #5fffaf 
+C_RNG #6fff9f
+C_RNG #7fff8f
+C_RNG #8fff7f
+C_RNG #9fff6f
+C_RNG #afff5f
+C_RNG #bfff4f
+C_RNG #cfff3f
+C_RNG #dfff2f
+C_RNG #efff1f
+C_RNG #ffff0f 
+C_RNG #ffff00
+C_RNG #ffef00
+C_RNG #ffdf00
+C_RNG #ffcf00
+C_RNG #ffbf00
+C_RNG #ffaf00
+C_RNG #ff9f00
+C_RNG #ff8f00
+C_RNG #ff7f00
+C_RNG #ff6f00 
+C_RNG #ff5f00
+C_RNG #ff4f00
+C_RNG #ff3f00
+C_RNG #ff2f00
+C_RNG #ff1f00
+C_RNG #ff0f00
+C_RNG #ff0000
+C_RNG #ef0000
+C_RNG #df0000
+C_RNG #cf0000 
+C_RNG #bf0000
+C_RNG #af0000
+C_RNG #9f0000
+C_RNG #8f0000 

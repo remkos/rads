@@ -1,0 +1,87 @@
+MAIN MENU
+Exit
+Read grid from file
+Write grid to file
+Buffer maintenance
+Grid size/shape manipulations
+Data manipulations on one grid
+Data manipulations on more grids
+Setup grid of function
+Various utilities
+-
+FILE FORMAT MENU
+None (quit to main menu)
+BINARY Grid Format
+ASCII Grid Format
+Movie Function Format
+Mask File Format
+-
+-
+-
+-
+-
+BUFFER MENU
+Back to main menu
+Copy buffer
+Move buffer
+Clear buffer
+Mark all buffers as unchanged
+Save modified buffers to /tmp
+Re-pack buffers
+Show buffer status
+-
+-
+GRID SIZE/SHAPE MENU
+Back to main menu
+Select subsection of grid
+Expand grid by certain number
+Give grid new x & y dimensions
+Make patchwork of a number of grids
+Overlap grids
+Rotate grid
+-
+-
+-
+MENU: DATA TRANSFORMATION ON ONE GRID
+Back to main menu
+Print grid statistics
+Linear transformation of one grid
+Linear transf. of grid using mask
+Compute square
+Take square root
+Subtract mean
+Illuminate geometry grid
+Take reciprocal of grid
+Compute 10log
+MENU: DATA TRANSFORMATION ON MORE GRIDS
+Return to main menu
+Print grid statistics
+Linear combination of several grids
+Compute mean grid of several grids
+Compute RMS grid of several grids
+Deviations of grids from ref. grid
+Estimate best fitting grid
+Estimate best fitting linear comb.
+Compute correlations between grids
+Compute product of several grids
+FUNCTION MENU
+Return to main menu
+Change bilinear function
+Change f1
+Change f2
+Toggle sine(pi*f1) application
+Toggle sine(pi*f2) application
+Change F1 polynomial
+Change F2 polynomial
+Execute grid generation
+List current parameters
+UTILITIES MENU
+Back to main menu
+Print grid statistics
+Show buffer status
+Overlap grids
+En-/dis-able alternative file format
+Enable/disable buffer listing
+Enter system commands
+-
+-

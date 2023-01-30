@@ -1,0 +1,391 @@
+#*****************************************************************************************
+#****h* rads/robodoc
+#
+#  NAME
+#    robodoc.rc
+#
+#  DESCRIPTION
+#    robodoc.rc for rads
+#
+#  SOURCE
+
+ignore files:
+	*~
+	#*#
+
+items:
+	ARGUMENT
+	ARGUMENTS
+	AUTHOR
+	BUGS
+	COPYRIGHT
+	DESCRIPTION
+	ERROR CODE
+	EXAMPLE
+	FUNCTION
+	HISTORY
+	INPUT
+	INPUTS
+	LICENSE
+	MODIFIED
+	NAME
+	NOTE
+	NOTES
+	OUTPUT
+	OUTPUTS
+	PURPOSE
+	REFERENCES
+	RESULT
+	RETURN VALUE
+	SEE ALSO
+	SUMMARY
+	SYNOPSIS
+	SYNTAX
+	USAGE
+	USES
+	WARNINGS
+
+source items:
+	SYNOPSIS
+
+source line comments:
+	!
+
+headertypes:
+	f  "functions"        robo_functions
+	h  "modules"          robo_modules     5
+	d  "parameters"       robo_definitions 4
+	M  "macros"           robo_macros      3
+	c  "classes"          robo_classes     2
+	I  "interfaces"       robo_interfaces  1
+
+options:
+	--headless
+	--footless
+	--nosort
+	--tabsize 4
+	--latex
+	--nogeneratedwith
+	--documenttitle "RADS User Manual"
+	--sectionnameonly
+
+item order:
+	SUMMARY
+	SYNTAX
+	SYNOPSIS
+	PURPOSE
+	ARGUMENT
+	ARGUMENTS
+	ERROR CODE
+	RETURN VALUE
+
+keywords:
+	abs
+	abstract
+	achar
+	acos
+	acosh
+	adjustl
+	adjustr
+	aimag
+	aint
+	all
+	allocatable
+	allocate
+	allocated
+	anint
+	any
+	asin
+	asinh
+	assign
+	associate
+	associated
+	asynchronous
+	atan
+	atan2
+	atanh
+	atomic_define
+	atomic_ref
+	backspace
+	bessel_j0
+	bessel_j1
+	bessel_jn
+	bessel_y0
+	bessel_y1
+	bessel_yn
+	bge
+	bgt
+	bind
+	bit_size
+	ble
+	block
+	block data
+	blt
+	btest
+	call
+	case
+	case default
+	ceiling
+	char
+	character
+	class
+	close
+	cmplx
+	codimension
+	command_argument_count
+	common
+	complex
+	conjg
+	contains
+	contiguous
+	continue
+	cos
+	cosh
+	count
+	cpu_time
+	critical
+	cshift
+	cycle
+	data
+	date_and_time
+	dble
+	deallocate
+	deferred
+	digits
+	dim
+	dimension
+	do
+	do concurrent
+	do while
+	dot_product
+	double precision
+	dprod
+	dshiftl
+	dshiftr
+	elemental
+	else
+	else if
+	elseif
+	elsewhere
+	end
+	end associate
+	end block
+	end block data
+	end critical
+	end do
+	end enum
+	end forall
+	end function
+	end if
+	end interface
+	end module
+	end program
+	end select
+	end submodule
+	end subroutine
+	end type
+	end where
+	endfile
+	endif
+	entry
+	enum
+	enumerator
+	eoshift
+	epsilon
+	equivalence
+	erf
+	erfc
+	erfc_scaled
+	error stop
+	execute_command_line
+	exit
+	exp
+	exponent
+	extends
+	extends_type_of
+	external
+	final
+	findloc
+	floor
+	flush
+	forall
+	format
+	fraction
+	function
+	gamma
+	generic
+	get_command
+	get_command_argument
+	get_environment_variable
+	go to
+	goto
+	huge
+	hypot
+	iachar
+	iall
+	iand
+	iany
+	ibclr
+	ibits
+	ibset
+	ichar
+	ieor
+	if
+	image_index
+	implicit
+	implicit none
+	import
+	include
+	index
+	inquire
+	int
+	integer
+	intent
+	interface
+	intrinsic
+	ior
+	iparity
+	is_contiguous
+	is_iostat_end
+	is_iostat_eor
+	ishft
+	ishftc
+	kind
+	lbound
+	lcobound
+	leadz
+	len
+	len_trim
+	lge
+	lgt
+	lle
+	llt
+	lock
+	log
+	log_gamma
+	log10
+	logical
+	maskl
+	maskr
+	matmul
+	max
+	maxexponent
+	maxloc
+	maxval
+	merge
+	merge_bits
+	min
+	minexponent
+	minloc
+	minval
+	mod
+	module
+	module procedure
+	modulo
+	move_alloc
+	mvbits
+	namelist
+	nearest
+	new_line
+	nint
+	non_overridable
+	none
+	nopass
+	norm2
+	not
+	null
+	nullify
+	num_images
+	only
+	open
+	operator
+	optional
+	pack
+	parameter
+	parity
+	pass
+	pause
+	pointer
+	popcnt
+	poppar
+	precision
+	present
+	print
+	private
+	procedure
+	product
+	program
+	protected
+	public
+	pure
+	radix
+	random_number
+	random_seed
+	range
+	read
+	real
+	recursive
+	repeat
+	reshape
+	result
+	return
+	rewind
+	rewrite
+	rrspacing
+	save
+	scale
+	scan
+	select
+	select case
+	select type
+	selected_char_kind
+	selected_int_kind
+	selected_real_kind
+	sequence
+	set_exponent
+	shape
+	shifta
+	shiftl
+	shiftr
+	sign
+	sin
+	sinh
+	size
+	spacing
+	spread
+	sqrt
+	stop
+	storage_size
+	submodule
+	subroutine
+	sum
+	sync all
+	sync images
+	sync memory
+	system_clock
+	tan
+	tanh
+	target
+	then
+	this_image
+	tiny
+	trailz
+	transfer
+	transpose
+	trim
+	type
+	type_as
+	ubound
+	ucobound
+	unlock
+	unpack
+	use
+	value
+	verify
+	volatile
+	wait
+	where
+	while
+	write
+
+#*****************************************************************************************

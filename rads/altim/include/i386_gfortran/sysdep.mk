@@ -1,0 +1,16 @@
+FC	= gfortran
+CC	= gcc
+FFLAGS  = -Wall -Wtabs -fimplicit-none -ffixed-line-length-none -fPIC
+CFLAGS  = -Wall -Wimplicit -fPIC
+FEXTSRC = -ffixed-line-length-none
+RECUR   = -qrecur
+CPLUS	=
+MATHLIB = -llapack -lblas
+SHARED_LD       = $(CC) -shared
+SHARED_LIB_LIBS =#
+SHARED_EXT	= so
+PGPLOT	= -L$(ALTIM)/lib -lpgplot -L/usr/X11R6/lib -lX11 -lpng
+PMPLOT	= -L$(ALTIM)/lib -lpmplot -L/usr/X11R6/lib -lX11 -lpng
+CPPFLAGS=
+F90	= $(FC)
+NETCDF  = $(if $(NETCDFHOME),-L$(NETCDFHOME)/lib -lnetcdff -lnetcdf)

@@ -1,0 +1,15 @@
+FC	= gfortran
+FFLAGS  = -Wall -Wtabs -fimplicit-none -ffixed-line-length-132
+CFLAGS  = -Wall -Wimplicit
+RECUR   = -qrecur
+CPLUS	=
+MATHLIB = -Wl,-framework,Accelerate
+SHARED_LD       = gfortran -dynamiclib -single_module
+SHARED_LIB_LIBS = -L/usr/lib -lgcc -L/usr/X11R6/lib -lX11 -L/sw/lib -laquaterm -Wl,-framework,Foundation -lpng
+SHARED_EXT	= dylib
+PGPLOT	= -L$(ALTIM)/lib -lpgplot -Wl,-framework,Foundation
+PMPLOT	= -L$(ALTIM)/lib -lpmplot -Wl,-framework,Foundation
+CPP	= /usr/bin/cpp -P $(IFLAGS) $(CPPFLAGS)
+CPPFLAGS=# -traditional -E
+F90	= $(FC)
+NETCDF	= $(if $(NETCDFHOME),-L/sw/lib -L$(NETCDFHOME)/lib -lnetcdff -lnetcdf)

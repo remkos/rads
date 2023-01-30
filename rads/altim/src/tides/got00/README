@@ -1,0 +1,61 @@
+   The ocean tide model available at this site, called GOT00.2, is
+the latest solution in a series beginning with the work described in:
+
+E J O Schrama and R Ray, Journal of Geophysical Research, v.99, p 24799, 1994.
+
+Its immediate predecessor (GOT99.2) is desribed in:
+
+R Ray, A global ocean tide model from Topex/Poseidon altimetry: GOT99.2,
+   NASA Tech Memo 209478, 58 pages, Sept. 1999.
+
+   Solution GOT00.2 used 286 10-day cycles of Topex and Poseidon data, 
+supplemented in shallow seas and in polar seas (latitudes above 66deg)
+by 81 35-day cycles of ERS-1 and ERS-2 data.  The solution consists of
+independent near-global estimates of 7 constituents (Q1,O1,K1,N2,M2,S2,K2,
+with P1 inferred).  An a priori model was used that consisted of the
+hydrodynamic model FES94.1 of Le Provost et al., and several other
+local hydrodynamic models, including Mike Foreman's in the Gulf of
+Alaska.  Some effort was devoted to removing the boundary problems in
+FES94.1, although this was not 100% successful.  The ERS data appear most
+useful in the Norwegian and Barents Seas.
+
+   Two sets of ascii tide grids are provided.  One set is for the ocean 
+tide only, another for the ocean+load tide.  The latter should be used for 
+computing corrections to altimetry.  The former should be consistent with
+what a conventional tide gauge measures.  (A third set providing the load
+tide, defined everywhere including on land, is also available upon request.)
+
+   There are two different software modules in this directory.  One called
+PERTH2 is a subroutine to do tidal prediction given a lat/lon/time.
+The other is GRIDIO which can be used to read the ascii grids.  If you
+only require prediction, then you need not worry about GRIDIO.
+
+   The prediction software PERTH2 runs on any of the provided sets of tidal
+grids, depending on what kind of tide the user wants to calculate.
+It returns predictions in the same units as in the amplitude grids
+(generally cm, but check the header records to be sure).
+   The prediction software includes 16 minor tides by inference.  These
+16 tides are:  2Q1, sigma1, rho1, M1, chi1, pi1, phi1, theta1, J1, OO1, 
+2N2, mu2, nu2, lambda2, L2, T2.
+    Note that when running PERTH2, it expects the 8 main tide grids to be
+concatenated into one file.  So before running PERTH2, do
+         cat q1.d o1.d p1.d k1.d n2.d m2.d s2.d k2.d > fort.30
+or the equivalent for your operating system.  If you don't understand the
+time system used by PERTH2 (modified julian date), then contact me; I have
+conversion subroutines.
+
+    If you're interested in reading the actual tidal grids for some
+particular reason, then use GRIDIO to read them. In any dataset, e.g. 
+m2.d, the amplitude and phase grids are concatenated, so reading both 
+requires simply two calls to the reader subroutine gridin.
+  
+  A small routine written several years ago by D Cartwright is also provided
+for predicting equilibrium long-period tides.
+
+    It should go without saying that these satellite-based data were
+developed primarily for use in space geodesy.  They must NOT be used
+in coastal (or other) applications risking life or property, and they
+should NEVER be used for coastal navigation purposes.
+
+R D Ray, Goddard Space Flight Center                       6 Feb 2001
+richard.ray@gsfc.nasa.gov

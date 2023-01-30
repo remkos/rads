@@ -1,0 +1,3 @@
+plotarea -90 10 -20 20
+coast 2.sam.cil
+device /xs

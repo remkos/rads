@@ -1,0 +1,60 @@
+\\SECTION{CSRTIDE -- Compute tides according to CSR model}
+\\begin{verbatim}
+subroutine csrtide (utc, lat, lon, tide, tide_lp, tide_load)
+use csrmod
+real(eightbytereal), intent(in) :: utc, lat, lon
+real(eightbytereal), intent(out) :: tide, tide_lp, tide_load
+
+Compute ocean tidal height for given time and location from grids
+of ortho weights for one of the CSR models.
+This routine is heavily based on the routine CSRTPTIDE by Richard Eanes.
+
+For partical purposes I have changed the input to netCDF grids.
+These grids can be found in $ALTIM/data/csr_tides, where $ALTIM is an
+environment variable.
+
+To initialize the computation, the function csrinit should be
+called first. It allocates the appropriate amount of memory and
+loads the grids into memory. To release the memory for further
+use, call csrfree.
+
+Longitude and latitude are to be specified in degrees; time in UTC
+seconds since 1 Jan 1985. All predicted tides are output in meters.
+If the tide is requested in a point where it is not defined, NaN
+(Not-a-Number) is returned.
+
+Input arguments:
+ utc      : UTC time in seconds since 1 Jan 1985
+ lat      : Latitude (degrees)
+ lon      : Longitude (degrees)
+
+Output arguments:
+ tide     : Predicted short-period tide (m)
+ tide_lp  : Predicted long-period tide (m)
+ tide_load: Predicted loading effect (m)
+\\end{verbatim}
+
+\\SUBSECTION{CSRINIT -- Initialize CSR tide model}
+\\begin{verbatim}
+subroutine csrinit (name, wantload)
+use csrmod
+character(*) :: name
+logical :: wantload
+
+Allocate memory for CSR tide modeling and read grids into memory.
+When WANTLOAD is .TRUE., loading tide grids are loaded and load tide
+will be computed. When .FALSE., CSRTIDE will return a zero load tide.
+
+Input arguments:
+ name     : Name of the CSR tide model (csr_3.0 or csr_4.0)
+ wantload : Specify that load tide has to be computed
+\\end{verbatim}
+
+\\SUBSECTION{CSRFREE -- Free up space allocated by CSRINIT}
+\\begin{verbatim}
+subroutine csrfree
+use csrmod
+
+This routine frees up memory allocated by a previous call to CSRINIT
+\\end{verbatim}
+

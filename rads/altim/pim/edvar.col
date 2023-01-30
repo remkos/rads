@@ -1,0 +1,33 @@
+#COL
+#
+# This file was created from /home/edwin/colourmaps/edvar.col
+#
+C_BG      0  90 100
+C_FG    235 235 235
+C_LAND   57 113   0
+C_BAD   140   0 120
+C_COAST 235 235 235
+C_CONT   40  40  40
+#
+# Now follows a colour range of  20
+#
+C_RNG   130 140 140
+C_RNG   142 153  50
+C_RNG   146 133  42
+C_RNG   151 113  33
+C_RNG   155  93  25
+C_RNG   159  72  17
+C_RNG   164  52   8
+C_RNG   168  32   0
+C_RNG   160  28  13
+C_RNG   151  25  27
+C_RNG   143  21  40
+C_RNG   134  18  53
+C_RNG   126  14  67
+C_RNG   117  11  80
+C_RNG   109   7  93
+C_RNG   100   4 107
+C_RNG    92   0 120
+C_RNG    61   0  80
+C_RNG    31   0  40
+C_RNG     0   0   0

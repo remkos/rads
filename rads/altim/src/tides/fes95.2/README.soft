@@ -1,0 +1,202 @@
+Distributed software for the computation of tidal corrections
+from the Grenoble model and from Andersen model
+---------------------------------------------------------------
+15 June 1995
+---------------
+
+WHAT IS DISTRIBUTED ?:
+-----------------------
+In this directory you will find the following files:
+README.soft  		: This file
+
+Makefile      \
+Makefile.HP   |---->	: Makefile(s) for building the software on
+Makefile.SGI  |           different platforms. 
+Makefile.Sun  /
+
+common.h		: file for the commons included in tide.F
+
+tide-a.F		: Package of subroutines for the core of the
+                          software. Note that this is .F file (it contains
+                          some cpp directives to be activate during compilation.
+
+lpeqmt.f		: Long Period Equilibrium Tide routine from R. Ray.
+
+main_otide_jmm.f |-->	: Examples of use for the driver routine otide.
+main_otide_oba.f |       (main_otide_oba uses as input files such as test.in)
+test.in          |
+
+ascii2bimg.f		: (optional)  A utility program that convert the
+fes95.2.hdr               distributed ASCII files to binary files. If you
+                          decide to convert to binary, you must compile the
+                          software with CPPFLAG= -DBIMG_FILE as explained below.
+	 		  File fes95.1.hdr is a header file that contains
+                          some ascii informations on the model, transcripted
+			  to the binary files, for an easier identification.
+
+tstpred.f		: A very simple test program to check the instalation
+			: of the program.
+tstpred.output.fes95.2	: output of testpred with FES95.1
+
+---------------------------
+HOW TO BUILD THE PACKAGE ?:
+---------------------------
+Once the software.tar file have been 'untared' (what you surely did successfully
+if you are able to read this README.soft file ), you have to follow the 
+following steps:
+
+1/ Choose the correct Makefile (provided for SunOS 4.1.3, HPUX9.05, IRIX 4.0.5
+   and Solaris 2.1)
+   and set to the proper values 
+   - the EXECDIR macro (must point to the directory where executables will 
+     be placed)
+   - the CPPFLAG macro (if you use the ASCII distributed files, CPPFLAG is 
+     empty, if you use the BIMG files, CPPFLAG=-DBIMG_FILE)
+
+2/ type make: This will compile the code and produce:
+   -libotidea.a : a library where all the end user objects are placed
+   -main_otide_jmm : an example of program using the software.
+   -main_otide_oba : a slightly different example from Ole B. Andersen.
+   -tstpred : a program for testing the code. Should produce results
+              comparable to tstpres.output when run with FES95.1.
+   -ascii2bimg : a program of conversion ASCII --> BIMG (BIMG is a local
+               binary format not copyrighted ...) for the data files.
+
+
+---------------------------
+HOW TO USE THE SOFTWARE ?:
+---------------------------
+The driver routine is 'otide'. Here is the 'man' page for otide:
+
+OTIDE  		 Grenoble Software Tide predicting routine    OTIDE
+
+NAME
+	otide - computes the oceanic tide at a given location and a given
+        time using 13 gridded harmonic constituents from various models. It
+	is possible to use directly the ASCII distributed files, but it is
+	much quicker to use the binary files. (See ascii2bimg). 
+
+SYNOPSIS
+	subroutine otide (model,tide,lat,long,jnasa,hour,istat)
+	character*20 model
+	real*4 tide, lat, long,
+	real*8 hour
+	integer*4 jnasa,istat
+
+DESCRIPTION
+	The statement call otide(model,tide,lat,long,jnasa,hour,istat),
+	will compute the oceanic tide correction tide (in cm), for the
+	point at latitude lat, longitude long, for the time corresponding to
+	hour for the day jnasa. jnasa is 0 the 1 January 1958. For the T/P
+	GDR users,
+	 Jnasa = Tim_Moy_1 (read from the cdrom) and 
+	  hour = (Tim_Moy_2/1000.d0+Tim_Moy_3/1.d6)/3600.d0.
+
+	istat is an integer value giving the number of points of the original 
+	grid used in the process of interpolation at (lat-long). 
+        istat = 0 the point (lat,long) is on the land and tide is set to 32767
+        istat = 1,2,3 the point (lat,long) is on the border of the domain
+        istat = 4 the point (lat-long) is fully inside the domain.
+	One should decide to take only the results for istat=4. 
+
+	model is a character variable, indicating the extension of the data 
+	files. (For example, if the data files you have are such as m2.fes95.1
+	then, model='fes95.1' --case sensitive-- )
+
+ENVIRONMENT
+	The software uses an environment variable called WAVE_PATH, which
+	indicates the path to the data files. You can set it by typing
+	setenv WAVE_PATH /users/..../grenoble_data     (for example in csh)
+	or
+	WAVE_PATH = /users/..../grenoble_data       
+	export WAVE_PATH                              (for example in sh)
+
+EXAMPLES
+	See the distributed examples main_otide_jmm.f, main_otide_oba.f and
+	testpred.f for the detailed use of otide.
+
+LIMITATION
+	Within a single program, otide cannot be called with different
+	model, as the data files are read only at the first call.
+
+FILES
+	libotidea.a this library includes all the required objects for
+                  the use of otide.
+		  Link your own program with libotidea.a.
+SEE ALSO
+	ascii2bimg
+
+BUGS
+	If any (?) please mail to Jean-Marc.Molines@img.fr
+
+Grenoble Tide Predicting Software    Last change: 14 March 1995
+
+--------------------------------------------------------------------
+man page for ascii2bimg:
+-----------------------
+ASCII2BIMG  		 Grenoble Tide Predicting Software    ASCII2BIMG
+
+NAME
+	ascii2bimg - translates the distributed ASCII files to binary
+	files, for their use in the Grenoble Tide Predicting Software.
+
+SYNOPSIS
+	ascii2bimg  ascii_file  header_file
+
+DESCRIPTION
+	ascii2bimg convert the file asciifile in bimg file, called
+	asciifile.bimg, containing information from the header_file.
+
+	header_file is an ASCII file containing 3 lines of 80 char (max),
+	describing the model associated with the distributed ASCII files. The
+	header files are provided with the ASCII files.
+
+	The use of BIMG files make the predicting software running quicker,
+	but is optional. If you decide to use BIMG files, compile the code
+	with the right CPPFLAG=-DBIMG_FILE
+
+EXAMPLES
+	demo% ls
+	m2.fes95.1      fes95.1.hdr
+	demo% ascii2bimg m2.fes95.1   fes95.1.hdr
+	..../...
+	demo% ls
+	m2.fes95.1      m2.fes95.1.bimg   fes95.1.hdr
+	
+
+BUGS
+	If any (?) please mail to Jean-Marc.Molines@img.fr
+
+Grenoble Tide Predicting Software    Last change: 14 March 1995
+
+---------------------
+IN CASE OF PROBLEMS :
+---------------------
+This software has been tested on various type of computer and ran successfully.
+But if you have problems, you can mail to Jean-Marc.Molines@img.fr, and I will
+try to do my best for helping you.
+
+_____________________________________________________________
+|                                                           |
+| Jean-Marc MOLINES                                         |  
+|                                                           |
+| Laboratoire des Ecoulements Geophysiques et Industriels   |
+| Institut de Mecanique de Grenoble                         |
+|                                                           |
+| BP 53x                                                    |
+| 38041 GRENOBLE Cedex                                      |
+| France                                                    |
+|                                                           |
+| Tel: (33) 76.82.50.62                                     |
+| Fax: (33) 76.82.52.71                                     |
+| e-mail: Jean-Marc.Molines@img.fr                          |
+|___________________________________________________________|
+
+
+
+
+
+
+
+	               
+

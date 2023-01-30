@@ -1,0 +1,41 @@
+\begin{thebibliography}{7}
+\providecommand{\natexlab}[1]{#1}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
+  \providecommand{\doi}{doi:\discretionary{}{}{}\begingroup
+  \urlstyle{rm}\Url}\fi
+
+\bibitem[{\textit{Francis}(1990)}]{francis1990a}
+Francis, C.~R. (1990), The {ERS-1} radar altimeter, paper presented at the 2nd
+  {ERS-1} PI meeting, Noordwijk,The Netherlands.
+
+\bibitem[{\textit{Francis et~al.}(1995)}]{francis1995a}
+Francis, C.~R., et~al. (1995), The {ERS-2} spacecraft and its payload,
+  \textit{ESA Bulletin}, \textit{83}, 13--31.
+
+\bibitem[{\textit{Francis et~al.}(1991)}]{francis1991a}
+Francis, C.~R., et~al. (1991), The {ERS-1} spacecraft and its payload,
+  \textit{ESA Bulletin}, \textit{65}, 26--48.
+
+\bibitem[{\textit{Fu et~al.}(1994)\textit{Fu, Christensen, Yamarone, Lefebvre,
+  M{\'e}nard, Dorrer, and Escudier}}]{fu1994}
+Fu, L.-L., E.~J. Christensen, C.~A. Yamarone, M.~Lefebvre, Y.~M{\'e}nard,
+  M.~Dorrer, and P.~Escudier (1994), {TOPEX} mission overview, \textit{J.\
+  Geophys.\ Res.}, \textit{99}(C12), 24,369--24,382.
+
+\bibitem[{\textit{Lambin et~al.}(2010)}]{lambin2010}
+Lambin, J., et~al. (2010), The {OSTM/Jason-2} mission, \textit{Mar.\ Geod.},
+  \textit{33}(S1), 4--25, \doi{10.1080/01490419.2010.491030}.
+
+\bibitem[{\textit{M{\'e}nard et~al.}(2003)\textit{M{\'e}nard, Fu, Escudier,
+  Haines, Kunstmann, Parisot, Perbos, Vincent, and Desai}}]{menard2003}
+M{\'e}nard, Y., L.-L. Fu, P.~Escudier, B.~J. Haines, G.~Kunstmann, F.~Parisot,
+  J.~Perbos, P.~Vincent, and S.~D. Desai (2003), The {Jason-1} mission,
+  \textit{J.\ Mar.\ Geod.}, \textit{Jason-1}.
+
+\bibitem[{\textit{Wingham et~al.}(2006)}]{wingham2006}
+Wingham, D.~J., et~al. (2006), {CryoSat}: A mission to determine the
+  fluctuations in {Earth's} land and marine ice fields, \textit{Adv.\ Space
+  Res.}, \textit{37}(4), 841--871, \doi{10.1016/j.asr.2005.07.027}.
+
+\end{thebibliography}

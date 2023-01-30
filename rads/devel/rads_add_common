@@ -1,0 +1,35 @@
+#!/bin/bash
+#-----------------------------------------------------------------------
+# Copyright (c) 2011-2022  Remko Scharroo
+# See LICENSE.TXT file for copying and redistribution conditions.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#-----------------------------------------------------------------------
+#
+# Add/overwrite numerous fields in the RADS data base
+#
+rads_add_grid     "$@" -Vdist_coast,inv_bar_mog2d_mean,gia,basin
+rads_add_grid     "$@" -Vgeoid_egm2008,mss_cnescls15
+rads_add_grid     "$@" -Vtopo_dtu10,mss_dtu15,mss_dtu18
+rads_add_grid     "$@" -Vmss_comb15,topo_srtm30plus
+rads_add_grid     "$@" -Vgeoid_eigen6,mss_dtu21
+rads_add_grid     "$@" -Vtopo_srtm15plus
+rads_add_grid     "$@" -Vprox_coast
+rads_add_surface  "$@"
+rads_add_surface  "$@" -s
+rads_add_tide     "$@" --models=stide,ptide,got410,annual
+rads_add_tide     "$@" --models=fes14,lptide
+rads_add_tide     "$@" --models=hret
+rads_add_webtide  "$@"
+rads_add_sst      "$@" --all
+rads_add_seaice   "$@"
+rads_add_ncep     "$@" --dry --wet --air
+rads_add_era      "$@" --dry --wet

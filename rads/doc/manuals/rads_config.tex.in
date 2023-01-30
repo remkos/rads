@@ -1,0 +1,3 @@
+% LaTeX File to give some RADS configuration information
+\newcommand\version{@PACKAGE_NAME@ @PACKAGE_VERSION@}
+\newcommand\vernum{@PACKAGE_VERSION@}

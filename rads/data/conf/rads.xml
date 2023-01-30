@@ -1,0 +1,4968 @@
+<?xml version="1.0"?>
+<!--
+Copyright (c) 2011-2022  Remko Scharroo
+See LICENSE.TXT file for copying and redistribution conditions.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+** Description **
+Global RADS configuration file
+-->
+
+<global_attributes>
+	Conventions CF-1.7
+	title RADS 4 pass file
+	institution EUMETSAT / NOAA / TU Delft
+	source radar altimeter
+	references RADS Data Manual, Version 4.2 or later
+	featureType trajectory
+	ellipsoid TOPEX
+</global_attributes>
+
+<satellites>
+	2a h2a hy-2a hy2a
+	3a s3a sentinel-3a sentinel3a sntnl-3a
+	3b s3b sentinel-3b sentinel3b sntnl-3b
+	6a s6a sentinel-6a sentinel6a sntnl-6a sentinel-6mf s6mf
+	c2 cs2 cryosat-2 cryosat2
+	e1 er1 ers-1 ers1
+	e2 er2 ers-2 ers2
+	g1 gfo gfo-1 gfo1
+	g3 ge3 geos-3 geos3
+	gs geo geosat
+	j1 ja1 jason-1 jason1
+	j2 ja2 jason-2 jason2
+	j3 ja3 jason-3 jason3
+	n1 en1 envisat
+	pn pos poseidon
+	tx top topex
+	sa srl saral
+	ss sea seasat-a
+</satellites>
+
+<var name="sla" field="0">
+	<long_name>sea level anomaly</long_name>
+	<standard_name>sea_surface_height_above_sea_level</standard_name>
+	<units>m</units>
+	<limits>-3 3</limits>
+	<plot_range>-0.4 0.4</plot_range>
+	<format>f8.4</format>
+	<compress>int2 1e-4</compress>
+	<data>alt range SUB dry_tropo SUB wet_tropo SUB iono SUB dac SUB tide_solid SUB tide_ocean SUB tide_load SUB
+		tide_pole SUB ssb SUB mss SUB ref_frame_offset SUB</data>
+	<quality_flag>swh sig0 range_rms range_numval flags</quality_flag>
+	<quality_flag sat="3a 3b 6a e1 e2 g1 j1 j2 j3 n1 tx" action="append">swh_rms</quality_flag>
+	<quality_flag sat="3a 3b 6a j1 j2 j3" action="append">sig0_rms</quality_flag>
+	<quality_flag sat="e2 j1 j2 j3" action="append">attitude</quality_flag><!--attitude not included for Sentinel-3/6 because there is no altimeter value in SAR mode (only PLRM)-->
+	<quality_flag sat="c2 n1 sa" action="append">peakiness</quality_flag>
+	<comment>Sea level determined from satellite altitude - range - all altimetric corrections</comment>
+</var>
+<var name="sla_20hz" sat="c2">
+	<long_name>20-Hz sea level anomaly</long_name>
+	<standard_name>sea_surface_height_above_sea_level</standard_name>
+	<units>m</units>
+	<limits>-3 3</limits>
+	<format>f8.4</format>
+	<compress>int2 1e-4</compress>
+	<dimensions>2</dimensions>
+	<data>alt_20hz range_20hz SUB dry_tropo SUB wet_tropo SUB iono SUB dac SUB tide_solid SUB tide_ocean SUB tide_load SUB
+		tide_pole SUB ssb SUB mss SUB ref_frame_offset SUB</data>
+	<quality_flag>swh sig0 range_rms range_numval flags peakiness</quality_flag>
+	<comment>Sea level determined from satellite 20-Hz altitude - 20-Hz range - all altimetric corrections</comment>
+</var>
+<var name="sla_mle3" sat="6a j2 j3">
+	<long_name>sea level anomaly (MLE3)</long_name>
+	<standard_name>sea_surface_height_above_sea_level</standard_name>
+	<units>m</units>
+	<limits>-3 3</limits>
+	<plot_range>-0.4 0.4</plot_range>
+	<format>f8.4</format>
+	<compress>int2 1e-4</compress>
+	<data>alt range_ku_mle3 SUB dry_tropo SUB wet_tropo SUB iono_alt_smooth_mle3 SUB dac SUB tide_solid SUB tide_ocean SUB tide_load SUB
+		tide_pole SUB ssb_cls_mle3 SUB mss SUB ref_frame_offset_mle3 SUB</data>
+	<quality_flag>swh_ku_mle3 sig0_ku_mle3 range_rms_ku_mle3 range_numval_ku_mle3 flags_mle3 swh_rms_ku_mle3 sig0_rms_ku_mle3</quality_flag>
+	<comment>Sea level determined from satellite altitude - MLE3 range - all (MLE3) altimetric corrections</comment>
+</var>
+<var name="sla_plrm" sat="3a 3b c2">
+	<long_name>sea level anomaly (PLRM)</long_name>
+	<standard_name>sea_surface_height_above_sea_level</standard_name>
+	<units>m</units>
+	<limits>-3 3</limits>
+	<plot_range>-0.8 0.0</plot_range>
+	<plot_range sat="3a">-0.3 0.5</plot_range>
+	<format>f8.4</format>
+	<compress>int2 1e-4</compress>
+	<data>alt range_ku_plrm SUB dry_tropo SUB wet_tropo_plrm SUB iono_alt_plrm SUB dac SUB tide_solid SUB tide_ocean SUB tide_load SUB
+		tide_pole SUB ssb_cls_plrm SUB mss SUB ref_frame_offset_plrm SUB</data>
+	<quality_flag>swh_ku_plrm sig0_ku_plrm range_rms_ku_plrm range_numval_ku_plrm flags swh_rms_ku_plrm sig0_rms_ku_plrm attitude</quality_flag>
+	<comment>Sea level determined from satellite altitude - PLRM range - all (PLRM) altimetric corrections</comment>
+</var>
+<var name="sla_adaptive" sat="j3">
+	<long_name>sea level anomaly (adaptive retracking)</long_name>
+	<standard_name>sea_surface_height_above_sea_level</standard_name>
+	<units>m</units>
+	<limits>-3 3</limits>
+	<plot_range>-0.4 0.4</plot_range>
+	<format>f8.4</format>
+	<compress>int2 1e-4</compress>
+	<data>alt range_ku_adaptive SUB dry_tropo SUB wet_tropo SUB iono_alt_smooth_adaptive SUB dac SUB tide_solid SUB tide_ocean SUB tide_load SUB
+		tide_pole SUB ssb_cls_adaptive SUB mss SUB ref_frame_offset_adaptive SUB</data>
+	<quality_flag>swh_ku_adaptive sig0_ku_adaptive range_rms_ku_adaptive range_numval_ku_adaptive flags_adaptive swh_rms_ku_adaptive sig0_rms_ku_adaptive</quality_flag>
+	<comment>Sea level determined from satellite altitude - range (adaptive retracking) - all altimetric corrections (adaptive retracking)</comment>
+</var>
+<alias name="sla_nr" sat="j3">sla_adaptive</alias>
+<var name="sla_nr" sat="6a">
+	<long_name>sea level anomaly (numerical retracking)</long_name>
+	<standard_name>sea_surface_height_above_sea_level</standard_name>
+	<units>m</units>
+	<limits>-3 3</limits>
+	<plot_range>-0.4 0.4</plot_range>
+	<format>f8.4</format>
+	<compress>int2 1e-4</compress>
+	<data>alt range_ku_nr SUB dry_tropo SUB wet_tropo SUB iono_alt_smooth_nr SUB dac SUB tide_solid SUB tide_ocean SUB tide_load SUB tide_pole SUB ssb_cls_nr SUB mss SUB ref_frame_offset_nr SUB</data>
+	<quality_flag>swh_ku_nr sig0_ku_nr range_rms_ku_nr range_numval_ku_nr flags_nr swh_rms_ku_nr sig0_rms_ku_nr</quality_flag>
+	<comment>Sea level determined from satellite altitude - range (numerical retracking) - all altimetric corrections (numerical retracking)</comment>
+</var>
+
+<var name="ssha">
+	<long_name>sea surface height anomaly</long_name>
+	<standard_name>sea_surface_height_above_sea_level</standard_name>
+	<units>m</units>
+	<limits>-3 3</limits>
+	<plot_range>-0.4 0.4</plot_range>
+	<data>ssha</data>
+	<format>f8.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Sea level determined from satellite altitude - range - all altimetric corrections.
+		These values were computed when the data set was created, in contrast to the sla variable.</comment>
+</var>
+<var name="ssha_20hz" sat="c2">
+	<long_name>20-Hz sea surface height anomaly</long_name>
+	<standard_name>sea_surface_height_above_sea_level</standard_name>
+	<units>m</units>
+	<limits>-3 3</limits>
+	<data>ssha_20hz</data>
+	<format>f8.4</format>
+	<compress>int2 1e-4</compress>
+	<dimensions>2</dimensions>
+	<comment>Sea level determined from satellite 20-Hz altitude - 20-Hz range - all altimetric corrections.
+		These values were computed when the data set was created, in contrast to the sla_20hz variable.</comment>
+</var>
+<var name="ssha_mle3" sat="6a j2 j3">
+	<long_name>sea surface height anomaly (MLE3)</long_name>
+	<standard_name>sea_surface_height_above_sea_level</standard_name>
+	<units>m</units>
+	<limits>-3 3</limits>
+	<plot_range>-0.4 0.4</plot_range>
+	<data>ssha_mle3</data>
+	<format>f8.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Sea level determined from satellite altitude - MLE3 range - all (MLE3) altimetric corrections.
+		These values were computed when the data set was created, in contrast to the sla_mle3 variable.</comment>
+</var>
+<var name="ssha_plrm" sat="3a 3b c2">
+	<long_name>sea surface height anomaly (PLRM)</long_name>
+	<standard_name>sea_surface_height_above_sea_level</standard_name>
+	<units>m</units>
+	<limits>-3 3</limits>
+	<plot_range>-0.4 0.4</plot_range>
+	<data>ssha_plrm</data>
+	<format>f8.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Sea level determined from satellite altitude - PLRM range - all (PLRM) altimetric corrections.
+		These values were computed when the data set was created, in contrast to the sla_plrm variable.</comment>
+</var>
+<var name="ssha_adaptive" sat="j3">
+	<long_name>sea surface height anomaly (adaptive retracking)</long_name>
+	<standard_name>sea_surface_height_above_sea_level</standard_name>
+	<units>m</units>
+	<limits>-3 3</limits>
+	<plot_range>-0.4 0.4</plot_range>
+	<data>ssha_adaptive</data>
+	<format>f8.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Sea level determined from satellite altitude - range (adaptive retracking) - all altimetric corrections (adaptive retracking).
+		These values were computed when the data set was created, in contrast to the sla_adaptive variable.</comment>
+</var>
+<alias name="ssha_nr" sat="j3">ssha_adaptive</alias>
+<var name="ssha_nr" sat="6a">
+	<long_name>sea surface height anomaly (numerical retracking)</long_name>
+	<standard_name>sea_surface_height_above_sea_level</standard_name>
+	<units>m</units>
+	<limits>-3 3</limits>
+	<plot_range>-0.4 0.4</plot_range>
+	<data>ssha_nr</data>
+	<format>f8.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Sea level determined from satellite altitude - range (numerical retracking) - all altimetric corrections (numerical retracking).
+		These values were computed when the data set was created, in contrast to the sla_nr variable.</comment>
+</var>
+
+<var name="adt">
+	<long_name>absolute dynamic topography</long_name>
+	<standard_name>absolute_dynamic_topography</standard_name>
+	<units>m</units>
+	<format>f10.4</format>
+	<compress>int4 1e-4</compress>
+	<data>sla mss ADD geoid SUB</data>
+</var>
+
+<var name="time" field="101 1">
+	<long_name>time</long_name>
+	<standard_name>time</standard_name>
+	<units>seconds since 1985-01-01 00:00:00 UTC</units>
+	<data>time</data>
+	<comment>UTC time of measurement. Attribute leap_second gives time of leap second if any occurs
+	during the data set</comment>
+	<format>f17.6</format>
+</var>
+<var name="time_rel_eq" field="102">
+	<long_name>time relative to equator crossing</long_name>
+	<standard_name>time</standard_name>
+	<units>s</units>
+	<data>time eqtime SUB</data>
+	<comment>UTC time relative to the equator crossing (negative is before, positive is after)</comment>
+	<format>f12.6</format>
+</var>
+<var name="time_local_solar" field="103">
+	<long_name>local solar time of day</long_name>
+	<standard_name>time</standard_name>
+	<units>s</units>
+	<data>time lon 240 MUL ADD 86400 FMOD</data>
+	<comment>Local solar time (in seconds) since start of the solar day</comment>
+	<format>f12.6</format>
+</var>
+<var name="time_ymdhms" field="104">
+	<long_name>time</long_name>
+	<standard_name>time</standard_name>
+	<units>yymmddhhmmss</units>
+	<data>time YMDHMS</data>
+	<comment>UTC time formatted as yymmddhhmmss</comment>
+	<format>f19.6</format>
+</var>
+<var name="time_mjd" field="105">
+	<long_name>Modified Julian Days</long_name>
+	<standard_name>time</standard_name>
+	<units>days since 1858-11-17 00:00:00 UTC</units>
+	<data>time 86400 DIV 46066 ADD</data>
+	<comment>UTC time of measurement expressed in Modified Julian Days</comment>
+	<format>f12.6</format>
+</var>
+<var name="time_2000" field="106">
+	<long_name>time</long_name>
+	<standard_name>time</standard_name>
+	<units>seconds since 2000-01-01 00:00:00 UTC</units>
+	<data>time 473299200 SUB</data>
+	<comment>UTC time of measurement</comment>
+	<format>f16.6</format>
+</var>
+<var name="time_1950">
+	<long_name>time</long_name>
+	<standard_name>time</standard_name>
+	<units>days since 1950-01-01 00:00:00 UTC</units>
+	<data>time 86400 DIV 12784 ADD</data>
+	<comment>UTC time of measurement</comment>
+	<format>f12.6</format>
+</var>
+<var name="time_20hz" sat="c2">
+	<long_name>20-Hz time</long_name>
+	<standard_name>time</standard_name>
+	<units>seconds since 1985-01-01 00:00:00 UTC</units>
+	<data>time_20hz</data>
+	<comment>UTC time of 20-Hz measurement. Attribute leap_second gives time of leap second if any occurs
+	during the data set</comment>
+	<format>f17.6</format>
+	<dimensions>2</dimensions>
+</var>
+
+<var name="meas_ind" sat="c2">
+	<long_name>elementary measurement index</long_name>
+	<standard_name>dimension</standard_name>
+	<units>1</units>
+	<data>meas_ind</data>
+	<comment>Added to be CF-compliant</comment>
+	<compress>int1</compress>
+	<dimensions>2</dimensions>
+</var>
+<var name="wvf_ind" sat="c2">
+	<long_name>waveform index</long_name>
+	<standard_name>dimension</standard_name>
+	<units>1</units>
+	<data>wnf_ind</data>
+	<comment>Added to be CF-compliant</comment>
+	<compress>int2</compress>
+	<dimensions>3</dimensions>
+</var>
+
+<var name="lat" field="201 2">
+	<long_name>latitude</long_name>
+	<standard_name>latitude</standard_name>
+	<units>degrees_north</units>
+	<limits>-90 90</limits>
+	<data>lat</data>
+	<format>f10.6</format>
+	<compress>int4 1e-6</compress>
+	<compress sat="c2">int4 1e-7</compress>
+	<comment>Positive latitude is North latitude, negative latitude is South latitude</comment>
+</var>
+<var name="lat_20hz" sat="c2">
+	<long_name>20-Hz latitude</long_name>
+	<standard_name>latitude</standard_name>
+	<units>degrees_north</units>
+	<limits>-90 90</limits>
+	<data>lat_20hz</data>
+	<format>f10.6</format>
+	<compress>int4 1e-7</compress>
+	<dimensions>2</dimensions>
+	<comment>Positive latitude is North latitude, negative latitude is South latitude</comment>
+</var>
+
+<var name="lon" field="301 3">
+	<long_name>longitude</long_name>
+	<standard_name>longitude</standard_name>
+	<units>degrees_east</units>
+	<limits>-180 180</limits>
+	<data>lon</data>
+	<format>f11.6</format>
+	<compress>int4 1e-6</compress>
+	<compress sat="c2">int4 1e-7</compress>
+	<comment>East longitude relative to Greenwich meridian</comment>
+</var>
+<var name="lon_20hz" sat="c2">
+	<long_name>20-Hz longitude</long_name>
+	<standard_name>longitude</standard_name>
+	<units>degrees_east</units>
+	<limits>-180 180</limits>
+	<data>lon_20hz</data>
+	<format>f11.6</format>
+	<compress>int4 1e-7</compress>
+	<dimensions>2</dimensions>
+	<comment>East longitude relative to Greenwich meridian</comment>
+</var>
+
+<var name="alt_jgm3" field="401" sat="gs pn tx">
+	<long_name>JGM-3 orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>GSFC, JGM-3</source>
+	<parameters>jgm3.latest</parameters>
+	<units>m</units>
+	<data>alt_jgm3</data>
+	<format>f11.3</format>
+	<compress>int4 1e-3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<var name="alt_dgme04" field="402" sat="e1 e2">
+	<long_name>DGM-E04 orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>DEOS, DGM-E04</source>
+	<parameters>dgm-e04.latest</parameters>
+	<units>m</units>
+	<data>alt_dgme04</data>
+	<format>f11.3</format>
+	<compress>int4 1e-3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<var name="alt_gfz" field="403" sat="e1 e2">
+	<long_name>GFZ orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>GFZ/D-PAF</source>
+	<units>m</units>
+	<data>alt_gfz</data>
+	<format>f11.3</format>
+	<compress>int4 1e-3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<var name="alt_cnes" field="404" sat="2a 3a 3b e1 e2 c2 j2 j3 n1 pn tx">
+	<long_name>CNES orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>CNES</source>
+	<units>m</units>
+	<data>alt_cnes</data>
+	<format>f11.3</format>
+	<compress>int4 1e-3</compress>
+	<compress sat="2a">int4 1e-4 900e3</compress>
+	<compress sat="c2">int4 1e-4 700e3</compress>
+	<compress sat="6a j3">int4 1e-4 1300e3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<var name="alt_pgs7777" field="410" sat="g1">
+	<long_name>PGS7777 orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>GSFC, PGS7777</source>
+	<parameters>pgs7777</parameters>
+	<units>m</units>
+	<data>alt_pgs7777</data>
+	<format>f11.3</format>
+	<compress>int4 1e-3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<var name="alt_eiggl04s" field="414" sat="j1">
+	<long_name>EIGEN-GL04c orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>EIGEN-GL04c</source>
+	<parameters>eigen-gl04c</parameters>
+	<units>m</units>
+	<data>alt_eiggl04s</data>
+	<format>f12.4</format>
+	<compress>int4 1e-4 1300e3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<var name="alt_gdrcp" field="415" sat="gs g1 j1 j2 n1 pn tx">
+	<long_name>GDR-C' orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>GDR-C' standards</source>
+	<parameters>gsfc_gdr_c_prime</parameters>
+	<units>m</units>
+	<data>alt_gdrcp</data>
+	<format>f11.3</format>
+	<compress>int4 1e-3</compress>
+	<if sat="j1 j2">
+		<format>f12.4</format>
+		<compress>int4 1e-4 1300e3</compress>
+	</if>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<var name="alt_gps" field="416" sat="j1 j2">
+	<long_name>GPS orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source sat="j1">JPL GPS orbits (jas1_gps/rlse11a)</source>
+	<source sat="j2">JPL GPS orbits (jas2_gps/rlse14a)</source>
+	<parameters>jpl_gps</parameters>
+	<units>m</units>
+	<data>alt_gps</data>
+	<format>f12.4</format>
+	<compress>int4 1e-4 1300e3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<var name="alt_eig6c" field="417" sat="c2 n1">
+	<long_name>ESOC EIGEN-6C orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>ESOC, EIGEN-6C</source>
+	<parameters>eigen-6c-esoc</parameters>
+	<units>m</units>
+	<data>alt_eig6c</data>
+	<compress>int4 1e-3</compress>
+	<format>f11.3</format>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<var name="alt_eig6s2" field="417" sat="j1 j2">
+	<long_name>ESOC EIGEN-6S2 orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>ESOC, EIGEN-6S2</source>
+	<parameters>eigen-6s2-esoc</parameters>
+	<units>m</units>
+	<data>alt_eig6s2</data>
+	<format>f12.4</format>
+	<compress>int4 1e-4 1300e3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<var name="alt_gdrd" field="418" sat="2a c2 j1 j2 n1 sa">
+	<long_name>CNES GDR-D orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>CNES, GDR-D standards</source>
+	<parameters>gdr-d</parameters>
+	<units>m</units>
+	<data>alt_gdrd</data>
+	<format>f12.4</format>
+	<compress>int4 1e-4 700e3</compress>
+	<compress sat="2a">int4 1e-4 900e3</compress>
+	<compress sat="j1 j2 tx">int4 1e-4 1300e3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<var name="alt_std1204" field="419" sat="j1 j2 pn tx">
+	<long_name>GSFC/Std1204 orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>GSFC/Std1204</source>
+	<parameters>gsfc_std1204</parameters>
+	<units>m</units>
+	<data>alt_std1204</data>
+	<format>f12.4</format>
+	<compress>int4 1e-4 1300e3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<var name="alt_reaper" field="420" sat="e1 e2">
+	<long_name>REAPER/COMBI orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>REAPER project, combined solution</source>
+	<parameters>reaper/combi</parameters>
+	<units>m</units>
+	<data>alt_reaper</data>
+	<format>f11.3</format>
+	<compress>int4 1e-4 700e3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<var name="alt_reaper_deos" field="421" sat="e1 e2">
+	<long_name>REAPER/DEOS orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>REAPER project, DEOS solution</source>
+	<parameters>reaper/deos</parameters>
+	<units>m</units>
+	<data>alt_reaper_deos</data>
+	<format>f11.3</format>
+	<compress>int4 1e-4 700e3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<var name="alt_reaper_gfz" field="422" sat="e1 e2">
+	<long_name>REAPER/GFZ orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>REAPER project, GFZ solution</source>
+	<parameters>reaper/gfz</parameters>
+	<units>m</units>
+	<data>alt_reaper_gfz</data>
+	<format>f11.3</format>
+	<compress>int4 1e-4 700e3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<var name="alt_reaper_esoc" field="423" sat="e1 e2">
+	<long_name>REAPER/ESOC orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>REAPER project, ESOC solution</source>
+	<parameters>reaper/esoc</parameters>
+	<units>m</units>
+	<data>alt_reaper_esoc</data>
+	<format>f11.3</format>
+	<compress>int4 1e-4 700e3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<var name="alt_std1404" field="424" sat="j2">
+	<long_name>GSFC/Std1404 orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>GSFC/Std1404</source>
+	<parameters>gsfc_std1404</parameters>
+	<units>m</units>
+	<data>alt_std1404</data>
+	<format>f12.4</format>
+	<compress>int4 1e-4 1300e3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<var name="alt_gdre" field="425" sat="3a 3b c2 j1 j2 j3 sa">
+	<long_name>CNES GDR-E orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>CNES, GDR-E standards</source>
+	<parameters>gdr-e</parameters>
+	<units>m</units>
+	<data>alt_gdre</data>
+	<format>f12.4</format>
+	<compress>int4 1e-4 700e3</compress>
+	<compress sat="j1 j2 j3 tx">int4 1e-4 1300e3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<var name="alt_slcci" field="426" sat="e1 e2 j1 j2 n1 pn tx">
+	<long_name>GFZ/SLCCI/VER11 orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>ESA SLCCI project</source>
+	<parameters>gfz_slcci</parameters>
+	<units>m</units>
+	<data>alt_slcci</data>
+	<format>f12.4</format>
+	<compress>int4 1e-4 700e3</compress>
+	<compress sat="j1 j2 pn tx">int4 1e-4 1300e3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<var name="alt_gdrf" field="427" sat="3a 3b 6a c2 j3 sa">
+	<long_name>CNES GDR-F orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>CNES, GDR-F standards</source>
+	<parameters>gdr-f</parameters>
+	<units>m</units>
+	<data>alt_gdrf</data>
+	<format>f12.4</format>
+	<compress>int4 1e-4 700e3</compress>
+	<compress sat="6a j1 j2 j3 tx">int4 1e-4 1300e3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<alias name="alt" field="4" sat="2a">alt_gdrd</alias>
+<alias name="alt" field="4" sat="3a 3b c2 sa">alt_gdrf alt_gdre</alias>
+<alias name="alt" field="4" sat="6a">alt_gdrf</alias>
+<alias name="alt" field="4" sat="c2">alt_gdre alt_cnes</alias>
+<alias name="alt" field="4" sat="e1 e2">alt_reaper alt_gfz</alias>
+<alias name="alt" field="4" sat="g1">alt_pgs7777</alias>
+<alias name="alt" field="4" sat="gs">alt_gdrcp</alias>
+<alias name="alt" field="4" sat="j1">alt_gdre</alias>
+<alias name="alt" field="4" sat="j2">alt_gdre alt_gdrd</alias>
+<alias name="alt" field="4" sat="j3">alt_gdrf alt_gdre</alias>
+<alias name="alt" field="4" sat="n1">alt_gdrd alt_gdrcp</alias>
+<alias name="alt" field="4" sat="pn tx">alt_gdrcp alt_jgm3</alias>
+<var name="alt_cnes_20hz" sat="c2">
+	<long_name>20-Hz CNES orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>CNES</source>
+	<units>m</units>
+	<data>alt_cnes_20hz</data>
+	<format>f11.3</format>
+	<compress>int4 1e-4 700e3</compress>
+	<dimensions>2</dimensions>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
+<alias name="alt_20hz" sat="c2">alt_cnes_20hz</alias>
+
+<var name="alt_rate" field="501 5">
+	<long_name>orbital altitude rate</long_name>
+	<units>m/s</units>
+	<limits>-30 30</limits>
+	<limits sat="c2">-40 40</limits>
+	<limits sat="gs">-60 60</limits>
+	<data>alt_rate</data>
+	<if sat="j1 j2 j3">
+		<format>f8.2</format>
+		<compress>int4 1e-2</compress>
+	</if>
+	<elseif sat="c2 gs">
+		<format>f7.3</format>
+		<compress>int2 2d-3</compress>
+	</elseif>
+	<else>
+		<format>f7.3</format>
+		<compress>int2 1e-3</compress>
+	</else>
+	<comment>The reference surface for the orbital altitude rate is MSS</comment>
+</var>
+
+<if sat="sa">
+	<var name="range_ka" field="601">
+		<long_name>Ka-band range corrected for instr. effects</long_name>
+		<standard_name>altimeter_range</standard_name>
+		<units>m</units>
+		<limits>750e3 850e3</limits>
+		<format>f11.4</format>
+		<data>range_ka</data>
+		<compress>int4 1e-4 700e3</compress>
+	</var>
+	<alias name="range" field="6">range_ka</alias>
+</if>
+<else>
+	<var name="range_ku" field="601">
+		<long_name>Ku-band range corrected for instr. effects</long_name>
+		<standard_name>altimeter_range</standard_name>
+		<units>m</units>
+		<limits>750e3 850e3</limits>
+		<limits sat="c2">700e3 800e3</limits>
+		<limits sat="2a">950e3 1050e3</limits>
+		<limits sat="6a j1 j2 j3 pn tx">1300e3 1400e3</limits>
+		<data>range_ku</data>
+		<format>f12.4</format>
+		<compress>int4 1e-4 700e3</compress>
+		<compress sat="2a">int4 1e-4 900e3</compress>
+		<if sat="6a j1 j2 j3 pn tx">
+			<format>f12.4</format>
+			<compress>int4 1e-4 1300e3</compress>
+		</if>
+	</var>
+	<alias name="range" field="6">range_ku</alias>
+</else>
+<var name="range_corrected" field="603" sat="gs">
+	<long_name>corrected altimeter range</long_name>
+	<standard_name>altimeter_range</standard_name>
+	<units>m</units>
+	<data>range_corrected</data>
+	<format>f11.3</format>
+	<compress>int3 1e-3</compress>
+</var>
+<var name="range_ku_mle3" field="611" sat="6a j2 j3">
+	<long_name>Ku-band range corrected for instr. effects (MLE3)</long_name>
+	<standard_name>altimeter_range</standard_name>
+	<units>m</units>
+	<data>range_ku_mle3</data>
+	<format>f12.4</format>
+	<compress>int4 1e-4 1300e3</compress>
+</var>
+<var name="range_ku_plrm" field="612" sat="3a 3b c2">
+	<long_name>Ku-band range corrected for instr. effects (PLRM)</long_name>
+	<standard_name>altimeter_range</standard_name>
+	<units>m</units>
+	<data>range_ku_plrm</data>
+	<format>f12.4</format>
+	<compress>int4 1e-4 700e3</compress>
+</var>
+<var name="range_ku_adaptive" field="612" sat="j3">
+	<long_name>Ku-band range corrected for instr. effects (adaptive retracking)</long_name>
+	<standard_name>altimeter_range</standard_name>
+	<units>m</units>
+	<data>range_ku_adaptive</data>
+	<format>f12.4</format>
+	<compress>int4 1e-4 1300e3</compress>
+</var>
+<alias name="range_ku_nr" sat="j3">range_ku_adaptive</alias>
+<var name="range_ku_nr" field="612" sat="6a">
+	<long_name>Ku-band range corrected for instr. effects (numerical retracking)</long_name>
+	<standard_name>altimeter_range</standard_name>
+	<units>m</units>
+	<data>range_ku_nr</data>
+	<format>f12.4</format>
+	<compress>int4 1e-4 1300e3</compress>
+</var>
+<var name="range_20hz_ku" sat="c2">
+	<long_name>20-Hz Ku-band range corrected for instr. effects</long_name>
+	<standard_name>altimeter_range</standard_name>
+	<units>m</units>
+	<limits>700e3 800e3</limits>
+	<data>range_20hz_ku</data>
+	<format>f11.3</format>
+	<compress>int4 1e-4 700e3</compress>
+	<dimensions>2</dimensions>
+</var>
+<alias name="range_20hz" sat="c2">range_20hz_ku</alias>
+
+<var name="range_c" field="602" sat="2a 3a 3b 6a j1 j2 j3 tx">
+	<long_name>C-band range corrected for instr. effects</long_name>
+	<standard_name>altimeter_range</standard_name>
+	<units>m</units>
+	<limits>1300e3 1400e3</limits>
+	<limits sat="2a 3a 3b">750e3 850e3</limits>
+	<data>range_c</data>
+	<format>f12.4</format>
+	<compress>int4 1e-4 1300e3</compress>
+	<compress sat="3a 3b">int4 1e-4 700e3</compress>
+</var>
+<var name="range_s" field="602" sat="n1">
+	<long_name>S-band range corrected for instr. effects</long_name>
+	<standard_name>altimeter_range</standard_name>
+	<units>m</units>
+	<limits>750e3 850e3</limits>
+	<data>range_s</data>
+	<format>f11.3</format>
+	<compress>int3 1e-4</compress>
+</var>
+
+<var name="range_tracker_20hz_ku" sat="c2">
+	<long_name>20-Hz Ku-band tracker range corrected for instr. effects</long_name>
+	<standard_name>altimeter_range</standard_name>
+	<units>m</units>
+	<limits>700e3 800e3</limits>
+	<data>range_tracker_20hz_ku</data>
+	<format>f11.3</format>
+	<compress>int4 1e-4 700e3</compress>
+	<dimensions>2</dimensions>
+	<comment>Position of the range window according to on-board tracker, corrected for internal delays and variations of USO</comment>
+</var>
+
+<var name="range_used_20hz_ku" sat="c2">
+	<long_name>20-Hz flag for utilization in the computation of 1-Hz Ku-band range</long_name>
+	<standard_name>altimeter_range status_flag</standard_name>
+	<flag_values>yes no</flag_values>
+	<data>range_used_20hz_ku</data>
+	<format>f11.3</format>
+	<compress>int1</compress>
+	<dimensions>2</dimensions>
+	<comment>Map of valid points used to compute the 1-Hz Ku-band altimeter range, SWH, and sigma0</comment>
+</var>
+
+<var name="dry_tropo_ecmwf" field="701" sat="!g1 gs">
+	<long_name>ECMWF dry tropospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_dry_troposphere</standard_name>
+	<source>ECMWF</source>
+	<units>m</units>
+	<limits>-2.4 -2.1</limits>
+	<plot_range>-2.4 -2.2</plot_range>
+	<data>dry_tropo_ecmwf</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A dry tropospheric correction must be added to range to correct for dry troposphere delays</comment>
+</var>
+<var name="dry_tropo_ncep" field="702">
+	<long_name>NCEP dry tropospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_dry_troposphere</standard_name>
+	<source>NOAA/NCEP reanalysis</source>
+	<units>m</units>
+	<limits>-2.4 -2.1</limits>
+	<plot_range>-2.4 -2.2</plot_range>
+	<data>dry_tropo_ncep</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A dry tropospheric correction must be added to range to correct for dry troposphere delays</comment>
+</var>
+<var name="dry_tropo_gfs" field="708">
+	<long_name>NOAA GFS dry tropospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_dry_troposphere</standard_name>
+	<source>NOAA Global Forecast System</source>
+	<units>m</units>
+	<limits>-2.4 -2.1</limits>
+	<plot_range>-2.4 -2.2</plot_range>
+	<data>dry_tropo_gfs</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A dry tropospheric correction must be added to range to correct for dry troposphere delays</comment>
+</var>
+<var name="dry_tropo_era" field="709">
+	<long_name>ERA dry tropospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_dry_troposphere</standard_name>
+	<source>ECMWF interim reanalysis</source>
+	<units>m</units>
+	<limits>-2.4 -2.1</limits>
+	<plot_range>-2.4 -2.2</plot_range>
+	<data>dry_tropo_era</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A dry tropospheric correction must be added to range to correct for dry troposphere delays</comment>
+</var>
+<alias name="dry_tropo" field="7" sat="!g1 gs">dry_tropo_ecmwf</alias>
+<alias name="dry_tropo" field="7" sat="g1 gs">dry_tropo_era</alias>
+
+<var name="wet_tropo_rad" field="801" sat="!c2 gs">
+	<long_name>radiometer wet tropospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
+	<source>radiometer</source>
+	<units>m</units>
+	<limits>-0.6 0.0</limits>
+	<limits sat="n1">-0.6 0.05</limits> <!--Due to model bias and noise, allow positive values-->
+	<limits sat="pn tx">-0.6 -0.001</limits> <!--Need to exclude bogus 0 values from TMR measurements-->
+	<plot_range>-0.4 0.0</plot_range>
+	<data>wet_tropo_rad</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
+</var>
+<var name="wet_tropo_rad_plrm" sat="3a 3b">
+	<long_name>radiometer wet tropospheric correction (PLRM)</long_name>
+	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
+	<source>radiometer</source>
+	<units>m</units>
+	<limits>-0.6 0.0</limits>
+	<plot_range>-0.4 0.0</plot_range>
+	<data>wet_tropo_rad_plrm</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
+</var>
+<var name="wet_tropo_rad_sst_gam" sat="3a 3b">
+	<long_name>radiometer wet tropospheric correction (using 5-parameter algorithm)</long_name>
+	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
+	<source>radiometer</source>
+	<units>m</units>
+	<limits>-0.6 0.0</limits>
+	<plot_range>-0.4 0.0</plot_range>
+	<data>wet_tropo_rad_plrm</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
+</var>
+<var name="wet_tropo_ecmwf" field="802" sat="!g1 gs">
+	<long_name>ECMWF wet tropospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
+	<source>ECMWF</source>
+	<units>m</units>
+	<limits>-0.6 0.0</limits>
+	<plot_range>-0.4 0.0</plot_range>
+	<data>wet_tropo_ecmwf</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
+</var>
+<var name="wet_tropo_ncep" field="803">
+	<long_name>NCEP wet tropospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
+	<source>NOAA/NCEP reanalysis</source>
+	<units>m</units>
+	<limits>-0.6 0.0</limits>
+	<plot_range>-0.4 0.0</plot_range>
+	<data>wet_tropo_ncep</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
+</var>
+<var name="wet_tropo_nvap" field="804" sat="gs">
+	<long_name>NVAP wet tropospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
+	<source>NVAP</source>
+	<units>m</units>
+	<limits>-0.6 0.0</limits>
+	<plot_range>-0.4 0.0</plot_range>
+	<data>wet_tropo_nvap</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
+</var>
+<var name="wet_tropo_tovs_ssmi" field="805" sat="gs">
+	<long_name>TOVS/SSMI wet tropospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
+	<source>TOVS and SSMI</source>
+	<units>m</units>
+	<limits>-0.6 0.0</limits>
+	<plot_range>-0.4 0.0</plot_range>
+	<data>wet_tropo_tovs_ssmi</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
+</var>
+<var name="wet_tropo_tovs_ncep" field="807" sat="gs">
+	<long_name>TOVS/NCEP wet tropospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
+	<source>TOVS and NOAA/NCEP</source>
+	<units>m</units>
+	<limits>-0.6 0.0</limits>
+	<plot_range>-0.4 0.0</plot_range>
+	<data>wet_tropo_tovs_ncep</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
+</var>
+<var name="wet_tropo_gfs" field="808">
+	<long_name>NOAA/GFS wet tropospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
+	<source>NOAA Global Forecast System</source>
+	<units>m</units>
+	<limits>-0.6 0.0</limits>
+	<plot_range>-0.4 0.0</plot_range>
+	<data>wet_tropo_gfs</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
+</var>
+-->
+<var name="wet_tropo_era" field="809">
+	<long_name>ERA wet tropospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
+	<source>ECMWF interim reanalysis</source>
+	<units>m</units>
+	<limits>-0.6 0.0</limits>
+	<plot_range>-0.4 0.0</plot_range>
+	<data>wet_tropo_era</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
+</var>
+<var name="wet_tropo_rad_enh" field="810" sat="j1">
+	<long_name>original radiometer wet tropospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
+	<source>radiometer with coastal correction</source>
+	<units>m</units>
+	<limits>-0.6 0.0</limits>
+	<plot_range>-0.4 0.0</plot_range>
+	<data>wet_tropo_rad_enh</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
+</var>
+<var name="wet_tropo_comp" field="811" sat="3a 3b c2">
+	<long_name>composite wet tropospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
+	<source>radiometer and external model and radiometer data</source>
+	<units>m</units>
+	<limits>-0.6 0.0</limits>
+	<plot_range>-0.4 0.0</plot_range>
+	<data>wet_tropo_comp</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
+</var>
+<var name="wet_tropo_diff">
+	<long_name>difference between radiometer and ECMWF wet tropospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
+	<units>m</units>
+	<limits>-0.6 0.6</limits>
+	<plot_range>-0.2 0.2</plot_range>
+	<data>wet_tropo_rad wet_tropo_ecmwf SUB</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Determined by subtracting wet_tropo_ecmwf from wet_tropo_rad</comment>
+</var>
+<alias name="wet_tropo" field="8" sat="!c2 g1 gs">wet_tropo_rad wet_tropo_ecmwf</alias>
+<alias name="wet_tropo" field="8" sat="c2">wet_tropo_ecmwf</alias>
+<alias name="wet_tropo" field="8" sat="g1">wet_tropo_rad wet_tropo_era</alias>
+<alias name="wet_tropo" field="8" sat="gs">wet_tropo_era</alias>
+<alias name="wet_tropo_plrm" sat="3a 3b">wet_tropo_rad_plrm wet_tropo_rad</alias>
+
+<var name="gpd_wet_tropo_cor">
+	<long_name>GPD+ wet tropospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
+	<source>UPorto GPD+</source>
+	<units>m</units>
+	<limits>-0.6 0.0</limits>
+	<plot_range>-0.4 0.0</plot_range>
+	<data>gpd_wet_tropo_cor</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Computed at the altimeter time-tag through space-time objective analysis using the GPD+ algorithm, by combining all available observations. The correction is calibrated against the SSMIS data set. A wet tropospheric correction must be added (negative value) to the instrument range to correct this range measurement for the wet tropospheric range delay of the radar pulse.</comment>
+</var>
+<alias name="wet_tropo_gpd">gpd_wet_tropo_cor</alias>
+<var name="gpd_reference_height">
+	<long_name>height at which the GPD+ WTC has been computed</long_name>
+	<source>UPorto GPD+</source>
+	<units>m</units>
+	<data>gpd_reference_height</data>
+	<compress>int2</compress>
+</var>
+<var name="gpd_source_flag">
+	<long_name>GPD+ wet tropospheric correction source flag</long_name>
+	<source>UPorto GPD+</source>
+	<flag_values>valid_onboard_mwr_value from_onboard_mwr_observations from_simwr_observations from_mwr_and_simwr_observations
+		from_gnss_observations_only from_mwr_and_gnss_observations from_simwr_and_gnss_observations
+		from_mwr_and_simwr_and_gnss_observations from_era5_model</flag_values>
+	<compress>int1</compress>
+	<data>gpd_source_flag</data>
+</var>
+
+
+<var name="iono_alt" field="901" sat="2a 3a 3b 6a j1 j2 j3 n1 tx">
+	<long_name>dual-frequency ionospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
+	<source>dual-frequency altimeter</source>
+	<units>m</units>
+	<limits>-0.4 0.04</limits>
+	<plot_range>-0.15 0.02</plot_range>
+	<data>iono_alt</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
+</var>
+<var name="iono_bent" field="902" sat="c2 e1 e2 pn tx">
+	<long_name>Bent ionospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
+	<source>Bent climatology</source>
+	<units>m</units>
+	<limits>-0.4 0.04</limits>
+	<plot_range>-0.15 0.02</plot_range>
+	<data>iono_bent</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
+</var>
+<var name="iono_alt_smooth" field="903" sat="2a 3a 3b 6a j1 j2 j3 n1 tx">
+	<long_name>smoothed dual-frequency ionospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
+	<source>dual-frequency altimeter after smoothing</source>
+	<units>m</units>
+	<limits>-0.4 0.04</limits>
+	<plot_range>-0.15 0.02</plot_range>
+	<data>iono_alt_smooth</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
+</var>
+<var name="iono_doris" field="904" sat="n1 pn tx">
+	<long_name>DORIS ionospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
+	<source>DORIS</source>
+	<units>m</units>
+	<limits>-0.4 0.04</limits>
+	<plot_range>-0.15 0.02</plot_range>
+	<data>iono_doris</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
+</var>
+<var name="iono_gim" field="906">
+	<long_name>JPL GIM ionospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
+	<source>JPL GIM 2-hourly maps</source>
+	<parameters>0.856</parameters>
+	<parameters sat="2a">0.880</parameters>
+	<parameters sat="3a 3b">0.859</parameters>
+	<parameters sat="c2">0.844</parameters>
+	<parameters sat="6a j1 j2 j3 pn tx">0.925</parameters>
+	<units>m</units>
+	<limits>-0.4 0.04</limits>
+	<plot_range>-0.15 0.02</plot_range>
+	<data>iono_gim</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
+</var>
+<var name="iono_gim_c" sat="6a j1 j2 j3">
+	<long_name>JPL GIM ionospheric correction (C-band)</long_name>
+	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
+	<source>JPL GIM 2-hourly maps</source>
+	<units>m</units>
+	<limits>-3 0.3</limits>
+	<plot_range>-1 0.15</plot_range>
+	<data>iono_gim 6.56036 MUL</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
+</var>
+
+<var name="iono_iri2007" field="907">
+	<long_name>IRI2007 ionospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
+	<source>IRI2007 climatology</source>
+	<units>m</units>
+	<limits>-0.4 0.04</limits>
+	<plot_range>-0.15 0.02</plot_range>
+	<data>iono_iri2007</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
+</var>
+<var name="iono_nic09" field="908">
+	<long_name>NIC09 ionospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
+	<source>NIC09 climatology</source>
+	<parameters>0.856</parameters>
+	<parameters sat="2a">0.880</parameters>
+	<parameters sat="3a 3b">0.859</parameters>
+	<parameters sat="c2">0.844</parameters>
+	<parameters sat="6a j1 j2 j3 pn tx">0.925</parameters>
+	<units>m</units>
+	<limits>-0.4 0.04</limits>
+	<plot_range>-0.15 0.02</plot_range>
+	<data>iono_nic09</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
+</var>
+<var name="iono_alt_mle3" field="911" sat="6a j2 j3">
+	<long_name>dual-frequency ionospheric correction (MLE3)</long_name>
+	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
+	<source>dual-frequency altimeter</source>
+	<units>m</units>
+	<limits>-0.4 0.04</limits>
+	<plot_range>-0.15 0.02</plot_range>
+	<data>iono_alt_mle3</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
+</var>
+<var name="iono_alt_plrm" field="912" sat="3a 3b c2">
+	<long_name>dual-frequency ionospheric correction (PLRM)</long_name>
+	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
+	<source>dual-frequency altimeter</source>
+	<units>m</units>
+	<limits>-0.4 0.04</limits>
+	<plot_range>-0.15 0.02</plot_range>
+	<data>iono_alt_plrm</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
+</var>
+<var name="iono_alt_adaptive" sat="j3">
+	<long_name>dual-frequency ionospheric correction (adaptive retracking)</long_name>
+	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
+	<source>dual-frequency altimeter</source>
+	<units>m</units>
+	<limits>-0.4 0.04</limits>
+	<plot_range>-0.15 0.02</plot_range>
+	<data>iono_alt_adaptive</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
+</var>
+<alias name="iono_alt_nr" sat="j3">iono_alt_adaptive</alias>
+<var name="iono_alt_nr" sat="6a">
+	<long_name>dual-frequency ionospheric correction (numerical retracking)</long_name>
+	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
+	<source>dual-frequency altimeter</source>
+	<units>m</units>
+	<limits>-0.4 0.04</limits>
+	<plot_range>-0.15 0.02</plot_range>
+	<data>iono_alt_nr</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
+</var>
+<var name="iono_alt_smooth_mle3" field="913" sat="6a j2 j3">
+	<long_name>smoothed dual-frequency ionospheric correction (MLE3)</long_name>
+	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
+	<source>dual-frequency altimeter after smoothing</source>
+	<units>m</units>
+	<limits>-0.4 0.04</limits>
+	<plot_range>-0.15 0.02</plot_range>
+	<data>iono_alt_smooth_mle3</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
+</var>
+<var name="iono_alt_smooth_plrm" field="913" sat="3a 3b c2">
+	<long_name>smoothed dual-frequency ionospheric correction (PLRM)</long_name>
+	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
+	<source>dual-frequency altimeter after smoothing</source>
+	<units>m</units>
+	<limits>-0.4 0.04</limits>
+	<plot_range>-0.15 0.02</plot_range>
+	<data>iono_alt_smooth_plrm</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
+</var>
+<var name="iono_alt_smooth_adaptive" sat="j3">
+	<long_name>smoothed dual-frequency ionospheric correction (adaptive retracking)</long_name>
+	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
+	<source>dual-frequency altimeter after smoothing</source>
+	<units>m</units>
+	<limits>-0.4 0.04</limits>
+	<plot_range>-0.15 0.02</plot_range>
+	<data>iono_alt_smooth_adaptive</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
+</var>
+<alias name="iono_alt_smooth_nr" sat="j3">iono_alt_smooth_adaptive</alias>
+<var name="iono_alt_smooth_nr" sat="6a">
+	<long_name>smoothed dual-frequency ionospheric correction (numerical retracking)</long_name>
+	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
+	<source>dual-frequency altimeter after smoothing</source>
+	<units>m</units>
+	<limits>-0.4 0.04</limits>
+	<plot_range>-0.15 0.02</plot_range>
+	<data>iono_alt_smooth_nr</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
+</var>
+<alias name="iono" field="9" sat="e1 gs pn">iono_nic09</alias>
+<alias name="iono" field="9" sat="c2 e2 g1 sa">iono_gim iono_nic09</alias>
+<alias name="iono" field="9" sat="2a 3a 3b 6a j1 j2 j3 n1 tx">iono_alt_smooth iono_gim iono_nic09</alias>
+
+<var name="inv_bar_static" field="1002">
+	<long_name>static inverse barometer correction</long_name>
+	<standard_name>sea_surface_height_correction_due_to_air_pressure_at_low_frequency</standard_name>
+	<source>ECMWF</source>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.4 0.6</plot_range>
+	<data>inv_bar_static</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Effect of the static atmospheric pressure on sea surface, subtracting global mean</comment>
+</var>
+<var name="inv_bar_global" field="1003">
+	<long_name>global mean inverse barometer correction</long_name>
+	<source>ECMWF</source>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<data>inv_bar_global</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Global mean effect of the static atmospheric pressure on sea surface height</comment>
+</var>
+<var name="inv_bar_mog2d" field="1004">
+	<long_name>MOG2D dynamic atmospheric correction</long_name>
+	<source>CNES/CNRS-LEGOS/CLS MOG2D-G HR barotropic model with ECMWF forcing</source>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.4 0.6</plot_range>
+	<data>inv_bar_mog2d</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Combined low and high frequency effect of atmospheric pressure and wind on sea surface height</comment>
+</var>
+<var name="inv_bar_mog2d_era" field="1006">
+	<long_name>MOG2D dynamic atmospheric correction (ERA Interim forcing)</long_name>
+	<source>CNES/CNRS-LEGOS/CLS MOG2D-G HR barotropic model with ERA-Interim forcing, ESA SLCCI project</source>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.4 0.6</plot_range>
+	<data>inv_bar_mog2d_era</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Combined low and high frequency effect of atmospheric pressure and wind on sea surface height</comment>
+</var>
+<var name="inv_bar_mok2d">
+	<long_name>MOK2D inverse barometer correction</long_name>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.4 0.6</plot_range>
+	<data>inv_bar_static 0.9603 MUL 0.0025 SUB</data>
+	<data sat="e1 e2">inv_bar_static 0.9555 MUL 0.0028 ADD</data>
+	<data sat="g1 gs">inv_bar_static 0.9740 MUL 0.0022 SUB</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Scaled version of static IB to match MOG2D</comment>
+</var>
+<var name="inv_bar_mog2d_mean" field="1005">
+	<long_name>local mean MOG2D dynamic atmospheric correction</long_name>
+	<source>MOG2D</source>
+	<parameters>dac/mog2d_combi_1993_2007_int.nc</parameters>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<data>inv_bar_mog2d_mean</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Long-term temporal mean of the MOG2D dynamic atmospheric correction at measurement location</comment>
+</var>
+<alias name="inv_bar">inv_bar_mog2d_era inv_bar_mog2d inv_bar_mok2d</alias>
+<alias name="dac" field="10">inv_bar_mog2d_era inv_bar_mog2d inv_bar_mok2d</alias>
+
+<var name="tide_solid" field="1101 11">
+	<long_name>solid earth tide</long_name>
+	<standard_name>sea_surface_height_amplitude_due_to_earth_tide</standard_name>
+	<source>Cartwright, Taylor, Edden</source>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<data>tide_solid</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Calculated using second and third degree constituents, excluding permanent tide</comment>
+</var>
+
+<var name="tide_ocean_got00" field="1207" sat="2a c2">
+	<long_name>GOT00.2 ocean tide</long_name>
+	<source>GOT00.2</source>
+	<units>m</units>
+	<limits>-5 5</limits>
+	<plot_range>-2 2</plot_range>
+	<data>tide_ocean_got00</data>
+	<format>f7.4</format>
+	<compress>int4 1e-4</compress>
+	<comment>Ocean tide variation including long-period equilibrium tides</comment>
+</var>
+<var name="tide_ocean_fes04" field="1213">
+	<long_name>FES2004 ocean tide</long_name>
+	<source>FES2004</source>
+	<units>m</units>
+	<limits>-5 5</limits>
+	<plot_range>-2 2</plot_range>
+	<data>tide_ocean_fes04</data>
+	<format>f7.4</format>
+	<compress>int4 1e-4</compress>
+	<comment>Ocean tide variation including long-period equilibrium and non-equilibrium tides</comment>
+</var>
+<var name="tide_ocean_webtide" field="1215">
+	<long_name>WebTide ocean tide</long_name>
+	<source>WebTide</source>
+	<parameters>sshelf ne_pac4 hudson arctic9 nwatl</parameters>
+	<units>m</units>
+	<limits>-5 5</limits>
+	<plot_range>-2 2</plot_range>
+	<data>tide_ocean_webtide</data>
+	<default>nan</default>
+	<format>f7.4</format>
+	<compress>int4 1e-4</compress>
+	<comment>Ocean tide variation including long-period equilibrium tides</comment>
+</var>
+<!--
+<var name="tide_ocean_got47" field="1217">
+	<long_name>GOT4.7 ocean tide</long_name>
+	<source>GOT4.7</source>
+	<units>m</units>
+	<limits>-5 5</limits>
+	<plot_range>-2 2</plot_range>
+	<data>tide_ocean_got47</data>
+	<format>f7.4</format>
+	<compress>int4 1e-4</compress>
+	<comment>Ocean tide variation including long-period equilibrium and non-equilibrium tides</comment>
+</var>
+-->
+<var name="tide_ocean_got48" field="1219">
+	<long_name>GOT4.8 ocean tide</long_name>
+	<source>GOT4.8</source>
+	<units>m</units>
+	<limits>-5 5</limits>
+	<plot_range>-2 2</plot_range>
+	<data>tide_ocean_got48</data>
+	<format>f7.4</format>
+	<compress>int4 1e-4</compress>
+	<comment>Ocean tide variation including long-period equilibrium tides</comment>
+</var>
+<!--
+<var name="tide_ocean_got49" field="1221">
+	<long_name>GOT4.9 ocean tide</long_name>
+	<source>GOT4.9</source>
+	<units>m</units>
+	<limits>-5 5</limits>
+	<plot_range>-2 2</plot_range>
+	<data>tide_ocean_got49</data>
+	<format>f7.4</format>
+	<compress>int4 1e-4</compress>
+	<comment>Ocean tide variation including long-period equilibrium and non-equilibrium tides</comment>
+</var>
+-->
+<var name="tide_ocean_got410" field="1222">
+	<long_name>GOT4.10c ocean tide (extrapolated)</long_name>
+	<source>GOT4.10c (extrapolated)</source>
+	<units>m</units>
+	<limits>-5 5</limits>
+	<plot_range>-2 2</plot_range>
+	<data>tide_ocean_got410</data>
+	<format>f7.4</format>
+	<compress>int4 1e-4</compress>
+	<comment>Ocean tide variation including long-period equilibrium tides, extrapolated into the coast</comment>
+</var>
+<!--
+<var name="tide_ocean_fes12" field="1223">
+	<long_name>FES2012 ocean tide</long_name>
+	<source>FES2012</source>
+	<units>m</units>
+	<limits>-5 5</limits>
+	<plot_range>-2 2</plot_range>
+	<data>tide_ocean_fes12</data>
+	<format>f7.4</format>
+	<compress>int4 1e-4</compress>
+	<comment>Ocean tide variation including long-period equilibrium and non-equilibrium tides</comment>
+</var>
+-->
+<var name="tide_ocean_fes14" field="1224">
+	<long_name>FES2014b ocean tide</long_name>
+	<source>FES2014b (extrapolated)</source>
+	<parameters>FES2014/extrapolated</parameters>
+	<units>m</units>
+	<limits>-5 5</limits>
+	<plot_range>-2 2</plot_range>
+	<data>tide_ocean_fes14</data>
+	<format>f7.4</format>
+	<compress>int4 1e-4</compress>
+	<comment>Ocean tide variation including long-period equilibrium and non-equilibrium tides, extrapolated into the coast</comment>
+</var>
+<alias name="tide_ocean" field="12">tide_ocean_fes14</alias>
+
+<var name="tide_load_got00" field="1307" sat="2a c2">
+	<long_name>GOT00.2 load tide</long_name>
+	<source>GOT00.2</source>
+	<units>m</units>
+	<limits>-0.5 0.5</limits>
+	<data>tide_load_got00</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Load tide variation to be added to ocean tide</comment>
+</var>
+<var name="tide_load_fes04" field="1313">
+	<long_name>FES2004 load tide</long_name>
+	<source>FES2004</source>
+	<units>m</units>
+	<limits>-0.5 0.5</limits>
+	<data>tide_load_fes04</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Load tide variation to be added to ocean tide</comment>
+</var>
+<!--
+<var name="tide_load_got47" field="1317">
+	<long_name>GOT4.7 load tide</long_name>
+	<source>GOT4.7</source>
+	<units>m</units>
+	<limits>-0.5 0.5</limits>
+	<data>tide_load_got47</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Load tide variation to be added to ocean tide</comment>
+</var>
+-->
+<var name="tide_load_got48" field="1319">
+	<long_name>GOT4.8 load tide</long_name>
+	<source>GOT4.8</source>
+	<units>m</units>
+	<limits>-0.5 0.5</limits>
+	<data>tide_load_got48</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Load tide variation to be added to ocean tide</comment>
+</var>
+<!--
+<var name="tide_load_got49" field="1321">
+	<long_name>GOT4.9 load tide</long_name>
+	<source>GOT4.9</source>
+	<units>m</units>
+	<limits>-0.5 0.5</limits>
+	<data>tide_load_got49</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Load tide variation to be added to ocean tide</comment>
+</var>
+-->
+<var name="tide_load_got410" field="1322">
+	<long_name>GOT4.10 load tide</long_name>
+	<source>GOT4.10</source>
+	<units>m</units>
+	<limits>-0.5 0.5</limits>
+	<data>tide_load_got410</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Load tide variation to be added to ocean tide</comment>
+</var>
+<var name="tide_load_fes14" field="1324">
+	<long_name>FES2014a load tide</long_name>
+	<source>FES2014a</source>
+	<units>m</units>
+	<limits>-0.5 0.5</limits>
+	<data>tide_load_fes14</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Load tide variation to be added to ocean tide</comment>
+</var>
+
+<alias name="tide_load" field="13">tide_load_fes14</alias>
+
+<var name="tide_pole" field="1401 14">
+	<long_name>pole tide</long_name>
+	<standard_name>sea_surface_height_amplitude_due_to_pole_tide</standard_name>
+	<source>Wahr [1985]</source>
+	<units>m</units>
+	<limits>-0.1 0.1</limits>
+	<data>tide_pole</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Variation of absolute sea level due to polar motion</comment>
+</var>
+
+<var name="tide_internal">
+	<long_name>HRET v8.1 internal tide</long_name>
+	<source>HRET v8.1</source>
+	<parameters>HRET_v8.1/HRET_v8.1_compressed.nc</parameters>
+	<units>m</units>
+	<limits>-0.2 0.2</limits>
+	<data>tide_internal</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Only includes the so-called static harmonic components. It is not included as a correction to the sea surface height, but users can use it to remove the internal tide from the sea surface height anomaly</comment>
+</var>
+
+<var name="ssb_bm3" field="1501" sat="c2 e1 e2 g1 gs pn sa tx">
+	<long_name>BM3 sea state bias</long_name>
+	<long_name sat="pn tx">BM4 sea state bias</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<source>BM3 model</source>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
+	<data>ssb_bm3</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
+</var>
+<var name="ssb_cls" field="1502" sat="2a 3a 3b 6a c2 j1 j2 j3 n1 tx">
+	<long_name>CLS non-parametric sea state bias</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<source>CLS</source>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
+	<data>ssb_cls</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
+	<if sat="3a 3b">
+		<long_name>Tran et al. 2021 non-parametric sea state bias</long_name>
+		<source>Tran et al., 2021</source>
+	</if>
+	<if sat="j3 6a">
+		<long_name>Tran et al. 2020 non-parametric sea state bias</long_name>
+		<parameters>AUX_SBLK_S6A_002.nc?SSB -xwind_speed_alt -yswh_ku</parameters>
+		<source>SSB_2020_J3_GDRF</source>
+		<comment sat="6a" edit="append">This model is actually based on Jason-3 data and not Sentinel-6, and will be replaced later.</comment>
+	</if>
+</var>
+<var name="ssb_csr" field="1503" sat="tx">
+	<long_name>CSR sea state bias</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<source>CSR</source>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
+	<data>ssb_csr</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
+</var>
+<var name="ssb_hyb" field="1504" sat="g1 gs n1 pn sa">
+	<long_name>hybrid sea state bias</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<source>NOAA/EUMETSAT hybrid model</source>
+	<parameters sat="g1">g1_c037_c184_hyb.nc</parameters>
+	<parameters sat="gs">gs_hyb.nc</parameters>
+	<parameters sat="n1">n1_hyb.nc?ssb_hyb</parameters>
+	<parameters sat="pn">pn_hyb.nc</parameters>
+	<parameters sat="sa">sa_ssb_hyb.nc?ssb_hyb</parameters>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
+	<data>ssb_hyb</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+</var>
+<var name="ssb_cls_c" field="1505" sat="2a 3a 3b 6a j1 j2 j3">
+	<long_name>CLS non-parametric sea state bias (C-band)</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<source>CLS</source>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
+	<data>ssb_cls_c</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>This sea state bias correction is added to C-band range when determining ionospheric correction.</comment>
+	<if sat="3a 3b">
+		<long_name>Tran et al. 2012 non-parametric sea state bias (C-band)</long_name>
+		<parameters>MainAuxSSBTable_J2_2012.nc?ssb_c -xwind_speed_alt -yswh_ku</parameters>
+		<source>Tran et al., 2012</source>
+		<comment edit="append">This model is actually based on Jason-2 data and not Sentinel-3, and will be replaced later.</comment>
+	</if>
+	<if sat="j3 6a">
+		<long_name>Tran et al. 2020 non-parametric sea state bias (C-band)</long_name>
+		<parameters>AUX_SBLC_S6A_002.nc?SSB -xwind_speed_alt -yswh_ku</parameters>
+		<source>SSB_2020_J3_GDRF</source>
+		<comment sat="6a" edit="append">This model is actually based on Jason-3 data and not Sentinel-6, and will be replaced later.</comment>
+	</if>
+</var>
+<var name="ssb_cls_mle3" field="1512" sat="6a j2 j3">
+	<long_name>CLS non-parametric sea state bias (MLE3)</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<source>CLS</source>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
+	<data>ssb_cls_mle3</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
+	<if sat="j3 6a">
+		<long_name>Tran et al. 2020 non-parametric sea state bias (MLE3)</long_name>
+		<parameters>AUX_SBLK_S6A_002.nc?SSB -xwind_speed_alt_mle3 -yswh_ku_mle3</parameters>
+		<source>SSB_2020_J3_GDRF</source>
+		<comment sat="6a" edit="append">This model is actually based on Jason-3 data and not Sentinel-6, and will be replaced later.</comment>
+	</if>
+</var>
+<var name="ssb_cls_plrm" field="1514" sat="3a 3b c2">
+	<long_name>Tran et al. 2012 non-parametric sea state bias (PLRM)</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<source>Tran et al. 2012</source>
+	<parameters>MainAuxSSBTable_J2_2012.nc?ssb_ku -xwind_speed_alt_plrm -yswh_ku_plrm</parameters>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
+	<data>ssb_cls_plrm</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A sea state bias correction must be added to range to correct for sea state delays. This model is actually based on Jason-2 data and not Sentinel-3, and will be replaced later.</comment>
+</var>
+<var name="ssb_tran2012" field="1513" sat="j1 j2 j3">
+	<long_name>Tran et al. 2012 non-parametric sea state bias</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<if sat="j1">
+		<source>Tran et al. 2012 (ssb_col_J1_1_111_v2012ostst.rs)</source>
+		<parameters>ssb_col_J1_1_111_v2012ostst.nc -xwind_speed_alt</parameters>
+	</if>
+	<else>
+		<source>Tran et al. 2012 (ssb_col_J2_Ku_mle4_1_36_v2012ostst.rs)</source>
+		<parameters>ssb_col_J2_Ku_mle4_1_36_v2012ostst.nc -xwind_speed_alt</parameters>
+	</else>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
+	<data>ssb_tran2012</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
+</var>
+<var name="ssb_tran2019" field="1514" sat="sa">
+	<long_name>Tran et al. 2019 non-parametric sea state bias</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
+	<data>ssb_tran2019</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
+</var>
+<var name="ssb_tran2019_3d" field="1515" sat="sa">
+	<long_name>Tran et al. 2019 3D non-parametric sea state bias</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
+	<data>ssb_tran2019_3d</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
+</var>
+<var name="ssb_cls_3d" sat="j3">
+	<long_name>Tran et al. 2020 3D sea state bias for retracked range</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
+	<data>ssb_cls_3d</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
+</var>
+<var name="ssb_cls_adaptive" sat="j3">
+	<long_name>Tran et al. 2020 sea state bias for retracked range (adaptive retracking)</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
+	<data>ssb_cls_adaptive</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
+</var>
+<alias name="ssb_cls_nr" sat="j3">ssb_cls_adaptive</alias>
+<var name="ssb_cls_nr" sat="6a">
+	<long_name>Tran et al. 2020 sea state bias for retracked range (numerical retracking)</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
+	<data>ssb_cls_nr</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
+</var>
+<var name="ssb_cls_3d_adaptive" sat="j3">
+	<long_name>Tran et al. 2020 3D sea state bias for retracked range (adaptive retracking)</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
+	<data>ssb_cls_3d_adaptive</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
+</var>
+<var name="ssb_cls_c_adaptive" sat="j3">
+	<long_name>Tran et al. 2020 non-parametric sea state bias (C-band) (adaptive retracking)</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<source>CLS</source>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
+	<data>ssb_cls_c_adaptive</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>This sea state bias correction is added to C-band range when determining ionospheric correction.</comment>
+	<parameters>AUX_SBLC_S6A_002.nc?SSB -xwind_speed_alt -yswh_ku</parameters>
+	<source>SSB_2020_J3_GDRF</source>
+</var>
+<alias name="ssb_cls_c_nr" sat="j3">ssb_cls_c_adaptive</alias>
+<var name="ssb_cls_c_nr" sat="6a">
+	<long_name>Tran et al. 2020 non-parametric sea state bias (C-band) (numerical retracking)</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<source>CLS</source>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
+	<data>ssb_cls_c_nr</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>This sea state bias correction is added to C-band range when determining ionospheric correction.</comment>
+	<parameters>AUX_SBLC_S6A_002.nc?SSB -xwind_speed_alt -yswh_ku</parameters>
+	<source>SSB_2020_J3_GDRF</source>
+</var>
+<alias name="ssb" field="15" sat="e1 e2 pn">ssb_bm3</alias>
+<alias name="ssb" field="15" sat="g1 gs">ssb_hyb</alias>
+<alias name="ssb" field="15" sat="sa">ssb_tran2019</alias>
+<alias name="ssb" field="15" sat="2a 3a 3b 6a c2 j1 j2 j3 n1 tx">ssb_cls</alias>
+
+<var name="geoid_egm96" field="1601" sat="3a 3b j2 j3 sa">
+	<long_name>EGM96 geoid height</long_name>
+	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
+	<source>EGM96</source>
+	<parameters>EGM96/egm96.nc -s</parameters>
+	<units>m</units>
+	<data>geoid_egm96</data>
+	<format>f10.4</format>
+	<compress>int4 1e-4</compress>
+</var>
+<var name="geoid_egm2008" field="1610">
+	<long_name>EGM2008 geoid height</long_name>
+	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
+	<source>EGM2008</source>
+	<parameters>EGM2008/und_min1x1_egm2008_Nmax2190_MeanTide_global.nc -s</parameters>
+	<units>m</units>
+	<data>geoid_egm2008</data>
+	<format>f10.4</format>
+	<compress>int4 1e-4</compress>
+</var>
+<alias name="geoid">geoid_egm2008</alias>
+<var name="mss_ucl04" field="1613" sat="c2 e1 e2">
+	<long_name>UCL04 mean sea surface height</long_name>
+	<standard_name>sea_surface_height_above_reference_ellipsoid</standard_name>
+	<source>UCL</source>
+	<units>m</units>
+	<data>mss_ucl04 -s</data>
+	<format>f10.4</format>
+	<compress>int4 1e-4</compress>
+</var>
+<var name="mss_cnescls11" field="1615">
+	<long_name>CNES-CLS11 mean sea surface height</long_name>
+	<standard_name>sea_surface_height_above_reference_ellipsoid</standard_name>
+	<source>CNES-CLS11</source>
+	<parameters>MSS_CNES-CLS11/MSS_CNES-CLS11.nc -s</parameters>
+	<units>m</units>
+	<data>mss_cnescls11</data>
+	<format>f10.4</format>
+	<compress>int4 1e-4</compress>
+</var>
+<var name="mss_dtu13" field="1616">
+	<long_name>DTU13 mean sea surface height</long_name>
+	<standard_name>sea_surface_height_above_reference_ellipsoid</standard_name>
+	<source>DTU13</source>
+	<parameters>DTU13/DTU13MSS_1min.nc -s</parameters>
+	<units>m</units>
+	<data>mss_dtu13</data>
+	<format>f10.4</format>
+	<compress>int4 1e-4</compress>
+</var>
+<var name="geoid_eigen6" field="1617">
+	<long_name>EIGEN6 geoid height</long_name>
+	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
+	<source>EIGEN6c3stat</source>
+	<parameters>EIGEN6/und_min1x1_eigen-6c3stat_Nmax1949_MeanTide_global.nc -s</parameters>
+	<units>m</units>
+	<data>geoid_eigen6</data>
+	<format>f10.4</format>
+	<compress>int4 1e-4</compress>
+</var>
+<var name="mss_dtu15" field="1618">
+	<long_name>DTU15 mean sea surface height</long_name>
+	<standard_name>sea_surface_height_above_reference_ellipsoid</standard_name>
+	<source>DTU15</source>
+	<parameters>DTU15/DTU15MSS_1min.nc -s</parameters>
+	<units>m</units>
+	<data>mss_dtu15</data>
+	<format>f10.4</format>
+	<compress>int4 1e-4</compress>
+</var>
+<var name="mss_cnescls15" field="1619">
+	<long_name>CNES-CLS15 mean sea surface height</long_name>
+	<standard_name>sea_surface_height_above_reference_ellipsoid</standard_name>
+	<source>CNES-CLS15</source>
+	<parameters>MSS_CNES-CLS15/MSS_CNES-CLS15.nc -s</parameters>
+	<units>m</units>
+	<data>mss_cnescls15</data>
+	<format>f10.4</format>
+	<compress>int4 1e-4</compress>
+</var>
+<var name="geoid_xgm2016" field="1620">
+	<long_name>XGM2016 geoid height</long_name>
+	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
+	<standard_name>sea_surface_height_above_reference_ellipsoid</standard_name>
+	<source>XGM2016</source>
+	<parameters>XGM2016/XGM2016_Nmax720_MeanTide_global.nc -s</parameters>
+	<units>m</units>
+	<data>geoid_xgm2016</data>
+	<format>f10.4</format>
+	<compress>int4 1e-4</compress>
+</var>
+<var name="mss_dtu18" field="1621">
+	<long_name>DTU18 mean sea surface height</long_name>
+	<standard_name>sea_surface_height_above_reference_ellipsoid</standard_name>
+	<source>DTU18</source>
+	<parameters>DTU18/DTU18MSS_1min.nc -s</parameters>
+	<units>m</units>
+	<data>mss_dtu18</data>
+	<format>f10.4</format>
+	<compress>int4 1e-4</compress>
+</var>
+<var name="mss_comb15">
+	<long_name>Combined SIO/CNES_CLS15/DTU15 mean sea surface height</long_name>
+	<standard_name>sea_surface_height_above_reference_ellipsoid</standard_name>
+	<source>SIO/CNES_CLS15/DTU15</source>
+	<parameters>DT21/MSS_Combine_SIO_CNES15_DTU15.nc -s</parameters>
+	<units>m</units>
+	<data>mss_comb15</data>
+	<format>f10.4</format>
+	<compress>int4 1e-4</compress>
+</var>
+<var name="mss_dtu21">
+	<long_name>DTU21 mean sea surface height</long_name>
+	<standard_name>sea_surface_height_above_reference_ellipsoid</standard_name>
+	<source>DTU21</source>
+	<parameters>DTU21/DTU21MSS_1min_TP.nc -s</parameters>
+	<units>m</units>
+	<data>mss_dtu21</data>
+	<format>f10.4</format>
+	<compress>int4 1e-4</compress>
+</var>
+<alias name="mss" field="16">mss_dtu15</alias>
+
+<var name="latency">
+	<long_name>source product latency flag</long_name>
+	<flag_values>NRT_OGDR STC_IGDR NTC_GDR REP_001 REP_002 REP_003 REP_004 REP_005 REP_006 REP_007 REP_008 REP_009</flag_values>
+	<plot_range>0 10</plot_range>
+	<data>latency</data>
+	<format>z1</format>
+	<compress>int1</compress>
+	<dimensions>0</dimensions>
+	<default>2</default>
+</var>
+
+<if sat="sa">
+	<var name="swh_ka" field="1701">
+		<long_name>Ka-band significant wave height</long_name>
+		<standard_name>sea_surface_wave_significant_height</standard_name>
+		<units>m</units>
+		<limits>0 8</limits>
+		<data>swh_ka</data>
+		<format>f6.3</format>
+		<compress>int2 1e-3</compress>
+	</var>
+	<alias name="swh" field="17">swh_ka</alias>
+</if>
+<else>
+	<var name="swh_ku" field="1701">
+		<long_name>Ku-band significant wave height</long_name>
+		<standard_name>sea_surface_wave_significant_height</standard_name>
+		<units>m</units>
+		<limits>0 8</limits>
+		<limits sat="c2 n1">-0.5 8.0</limits> <!--Due to model bias and noise, allow negative values-->
+		<data>swh_ku</data>
+		<format>f6.3</format>
+		<compress>int2 1e-3</compress>
+	</var>
+	<alias name="swh" field="17">swh_ku</alias>
+</else>
+<var name="swh_ku_adaptive">
+	<long_name>retracked Ku-band significant wave height (adaptive retracking)</long_name>
+	<standard_name>sea_surface_wave_significant_height</standard_name>
+	<units>m</units>
+	<limits>-0.5 8</limits>
+	<data>swh_ku_adaptive</data>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+</var>
+<var name="swh_ku_nr">
+	<long_name>retracked Ku-band significant wave height (numerical retracking)</long_name>
+	<standard_name>sea_surface_wave_significant_height</standard_name>
+	<units>m</units>
+	<limits>-0.5 8</limits>
+	<data>swh_ku_nr</data>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+</var>
+<var name="swh_c" field="1702" sat="2a 3a 3b 6a j1 j2 j3 tx">
+	<long_name>C-band significant wave height</long_name>
+	<standard_name>sea_surface_wave_significant_height</standard_name>
+	<units>m</units>
+	<limits>0 8</limits>
+	<data>swh_c</data>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+</var>
+<var name="swh_s" field="1702" sat="n1">
+	<long_name>S-band significant wave height</long_name>
+	<standard_name>sea_surface_wave_significant_height</standard_name>
+	<units>m</units>
+	<limits>-0.5 8</limits>
+	<data>swh_s</data>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+</var>
+<var name="swh_ku_mle3" field="1711" sat="6a j2 j3">
+	<long_name>Ku-band significant wave height (MLE3)</long_name>
+	<standard_name>sea_surface_wave_significant_height</standard_name>
+	<units>m</units>
+	<limits>0 8</limits>
+	<data>swh_ku_mle3</data>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+</var>
+<var name="swh_ku_plrm" field="1713" sat="3a 3b c2">
+	<long_name>Ku-band significant wave height (PLRM)</long_name>
+	<standard_name>sea_surface_wave_significant_height</standard_name>
+	<units>m</units>
+	<limits>0 8</limits>
+	<data>swh_ku_plrm</data>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+</var>
+<var name="swh_ww3" field="1712" sat="2a 3a 3b 6a c2 j2 j3 sa">
+	<long_name>WaveWatch3 significant wave height</long_name>
+	<standard_name>sea_surface_wave_significant_height</standard_name>
+	<units>m</units>
+	<data>swh_ww3</data>
+	<format>f5.2</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="swh_mfwam" sat="3a 3b 6a j3">
+	<long_name>MFWAM significant wave height</long_name>
+	<standard_name>sea_surface_wave_significant_height</standard_name>
+	<units>m</units>
+	<source>MFWAM/Meteo France</source>
+	<data>swh_mfwam</data>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+</var>
+<var name="swh_20hz_ku" sat="c2">
+	<long_name>20-Hz Ku-band significant wave height</long_name>
+	<standard_name>sea_surface_wave_significant_height</standard_name>
+	<units>m</units>
+	<limits>-0.5 8.0</limits> <!--Due to model bias and noise, allow negative values-->
+	<data>swh_20hz_ku</data>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+	<dimensions>2</dimensions>
+</var>
+
+<if sat="sa">
+	<var name="sig0_ka" field="1801">
+		<long_name>Ka-band backscatter coefficient</long_name>
+		<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
+		<units>dB</units>
+		<limits>6 27</limits>
+		<plot_range>7 17</plot_range>
+		<data>sig0_ka</data>
+		<format>f6.3</format>
+		<compress>int2 1e-3</compress>
+	</var>
+	<alias name="sig0" field="18">sig0_ka</alias>
+</if>
+<else>
+	<var name="sig0_ku" field="1801">
+		<long_name>Ku-band backscatter coefficient</long_name>
+		<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
+		<units>dB</units>
+		<limits>6 27</limits>
+		<plot_range>7 17</plot_range>
+		<if sat="j3">
+			<limits>8 29</limits>
+			<plot_range>9 19</plot_range>
+		</if>
+		<if sat="6a">
+			<limits>7 28</limits>
+			<plot_range>8 18</plot_range>
+		</if>
+		<data>sig0_ku</data>
+		<format>f6.2</format>
+		<compress>int2 1e-2</compress>
+	</var>
+	<alias name="sig0" field="18">sig0_ku</alias>
+</else>
+<var name="sig0_c" field="1802" sat="2a 3a 3b 6a j1 j2 j3 tx">
+	<long_name>C-band backscatter coefficient</long_name>
+	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
+	<units>dB</units>
+	<limits>6 27</limits>
+	<plot_range>10 20</plot_range>
+	<if sat="j3">
+		<limits>7 28</limits>
+		<plot_range>11 21</plot_range>
+	</if>
+	<if sat="6a">
+		<limits>5 26</limits>
+		<plot_range>9 19</plot_range>
+	</if>
+	<data>sig0_c</data>
+	<format>f6.2</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="sig0_s" field="1802" sat="n1">
+	<long_name>S-band backscatter coefficient</long_name>
+	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
+	<units>dB</units>
+	<limits>6 27</limits>
+	<plot_range>8 18</plot_range>
+	<data>sig0_s</data>
+	<format>f6.2</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="sig0_sdr" field="1803" sat="gs">
+	<long_name>Ku-band backscatter coefficient (SDR)</long_name>
+	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
+	<units>dB</units>
+	<limits>6 27</limits>
+	<data>sig0_sdr</data>
+	<format>f6.2</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="agc_ku" field="1803" sat="c2">
+	<long_name>Ku-band automatic gain control</long_name>
+	<units>dB</units>
+	<limits>0 70</limits>
+	<plot_range>20 35</plot_range>
+	<data>agc_ku</data>
+	<format>f6.2</format>
+	<compress>int2 1e-2</compress>
+	<comment>AGC setting corrected for individual biases, but not for drift</comment>
+</var>
+<var name="agc_20hz_ku" sat="c2">
+	<long_name>20-Hz Ku-band automatic gain control</long_name>
+	<units>dB</units>
+	<limits>0 70</limits>
+	<data>agc_20hz_ku</data>
+	<format>f6.2</format>
+	<compress>int2 1e-2</compress>
+	<comment>AGC setting corrected for individual biases, but not for drift</comment>
+	<dimensions>2</dimensions>
+</var>
+<var name="sig0_ku_mle3" field="1811" sat="6a j2 j3">
+	<long_name>Ku-band backscatter coefficient (MLE3)</long_name>
+	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
+	<units>dB</units>
+	<limits>6 27</limits>
+	<plot_range>7 17</plot_range>
+	<data>sig0_ku_mle3</data>
+	<format>f6.2</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="sig0_ku_plrm" field="1812" sat="3a 3b c2">
+	<long_name>Ku-band backscatter coefficient (PLRM)</long_name>
+	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
+	<units>dB</units>
+	<limits>6 27</limits>
+	<plot_range>7 17</plot_range>
+	<data>sig0_ku_plrm</data>
+	<format>f6.2</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="sig0_ku_adaptive" sat="j3">
+	<long_name>Ku-band backscatter coefficient (adaptive retracking)</long_name>
+	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
+	<units>dB</units>
+	<limits>6 27</limits>
+	<plot_range>7 17</plot_range>
+	<data>sig0_ku_adaptive</data>
+	<format>f6.2</format>
+	<compress>int2 1e-2</compress>
+</var>
+<alias name="sig0_ku_nr" sat="j3">sig0_ku_adaptive</alias>
+<var name="sig0_ku_nr" sat="6a">
+	<long_name>Ku-band backscatter coefficient (numerical retracking)</long_name>
+	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
+	<units>dB</units>
+	<limits>6 27</limits>
+	<plot_range>7 17</plot_range>
+	<data>sig0_ku_nr</data>
+	<format>f6.2</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="sig0_20hz_ku" sat="c2">
+	<long_name>20-Hz Ku-band backscatter coefficient</long_name>
+	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
+	<units>dB</units>
+	<limits>6 27</limits>
+	<data>sig0_20hz_ku</data>
+	<format>f6.2</format>
+	<compress>int2 1e-2</compress>
+	<dimensions>2</dimensions>
+</var>
+
+<var name="wind_speed_alt" field="1901">
+	<long_name>altimeter wind speed</long_name>
+	<standard_name>wind_speed</standard_name>
+	<source>altimeter</source>
+	<units>m/s</units>
+	<limits>-1 30</limits>
+	<plot_range>0 16</plot_range>
+	<data>wind_speed_alt</data>
+	<format>f6.3</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="wind_speed_rad" field="1902" sat="2a 6a j1 j2 j3 pn tx">
+	<long_name>radiometer wind speed</long_name>
+	<standard_name>wind_speed</standard_name>
+	<source>radiometer</source>
+	<units>m/s</units>
+	<limits>0 30</limits>
+	<plot_range>0 16</plot_range>
+	<data>wind_speed_rad</data>
+	<format>f6.3</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="wind_speed_ecmwf_u" field="1903" sat="!gs">
+	<long_name>ECMWF model zonal wind speed</long_name>
+	<standard_name>eastward_wind</standard_name>
+	<source>ECMWF</source>
+	<units>m/s</units>
+	<limits>-30 30</limits>
+	<plot_range>-16 16</plot_range>
+	<data>wind_speed_ecmwf_u</data>
+	<format>f7.3</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="wind_speed_ecmwf_v" field="1904" sat="!gs">
+	<long_name>ECMWF model meridional wind speed</long_name>
+	<standard_name>northward_wind</standard_name>
+	<source>ECMWF</source>
+	<units>m/s</units>
+	<limits>-30 30</limits>
+	<plot_range>-16 16</plot_range>
+	<data>wind_speed_ecmwf_v</data>
+	<format>f7.3</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="wind_speed_ecmwf" sat="!gs">
+	<long_name>ECMWF model wind speed</long_name>
+	<standard_name>wind_speed</standard_name>
+	<source>ECMWF</source>
+	<units>m/s</units>
+	<limits>0 30</limits>
+	<plot_range>0 16</plot_range>
+	<data>wind_speed_ecmwf_u wind_speed_ecmwf_v HYPOT</data>
+	<format>f7.3</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="wind_speed_gfs_u" sat="sa">
+	<long_name>NOAA/GFS model zonal wind speed</long_name>
+	<standard_name>eastward_wind</standard_name>
+	<source>NOAA Global Forecast System</source>
+	<units>m/s</units>
+	<limits>-30 30</limits>
+	<plot_range>-16 16</plot_range>
+	<data>wind_speed_gfs_u</data>
+	<format>f7.3</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="wind_speed_gfs_v" sat="sa">
+	<long_name>NOAA/GFS model meridional wind speed</long_name>
+	<standard_name>northward_wind</standard_name>
+	<source>NOAA Global Forecast System</source>
+	<units>m/s</units>
+	<limits>-30 30</limits>
+	<plot_range>-16 16</plot_range>
+	<data>wind_speed_gfs_v</data>
+	<format>f7.3</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="wind_speed_gfs" sat="sa">
+	<long_name>NOAA/GFS model wind speed</long_name>
+	<standard_name>wind_speed</standard_name>
+	<source>NOAA Global Forecast System</source>
+	<units>m/s</units>
+	<limits>0 30</limits>
+	<plot_range>0 16</plot_range>
+	<data>wind_speed_gfs_u wind_speed_gfs_v HYPOT</data>
+	<format>f7.3</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="wind_speed_cls" field="1905" sat="n1">
+	<long_name>altimeter wind speed (CLS algo)</long_name>
+	<standard_name>wind_speed</standard_name>
+	<source>altimeter, CLS algorithm</source>
+	<units>m/s</units>
+	<limits>0 30</limits>
+	<plot_range>0 16</plot_range>
+	<data>wind_speed_cls</data>
+	<format>f6.3</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="wind_speed_alt_mle3" field="1911" sat="6a j2 j3">
+	<long_name>altimeter wind speed (MLE3)</long_name>
+	<standard_name>wind_speed</standard_name>
+	<source>altimeter</source>
+	<units>m/s</units>
+	<limits>-1 30</limits>
+	<plot_range>0 16</plot_range>
+	<data>wind_speed_alt_mle3</data>
+	<format>f6.3</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="wind_speed_alt_plrm" field="1912" sat="3a 3b c2">
+	<long_name>altimeter wind speed (PLRM)</long_name>
+	<standard_name>wind_speed</standard_name>
+	<source>altimeter</source>
+	<units>m/s</units>
+	<limits>-1 30</limits>
+	<plot_range>0 16</plot_range>
+	<data>wind_speed_alt_plrm</data>
+	<format>f6.3</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="wind_speed_alt_adaptive" sat="j3">
+	<long_name>altimeter wind speed (adaptive retracking)</long_name>
+	<standard_name>wind_speed</standard_name>
+	<source>altimeter</source>
+	<units>m/s</units>
+	<limits>-1 30</limits>
+	<plot_range>0 16</plot_range>
+	<data>wind_speed_alt_adaptive</data>
+	<format>f6.3</format>
+	<compress>int2 1e-2</compress>
+</var>
+<alias name="wind_speed_alt_nr" sat="j3">wind_speed_alt_adaptive</alias>
+<var name="wind_speed_alt_nr" sat="6a">
+	<long_name>altimeter wind speed (numerical retracking)</long_name>
+	<standard_name>wind_speed</standard_name>
+	<source>altimeter</source>
+	<units>m/s</units>
+	<limits>-1 30</limits>
+	<plot_range>0 16</plot_range>
+	<data>wind_speed_alt_nr</data>
+	<format>f6.3</format>
+	<compress>int2 1e-2</compress>
+</var>
+<alias name="wind_speed" field="19">wind_speed_alt</alias>
+
+<var name="range_rms_norm" field="2001">
+	<long_name>normalized std dev of range</long_name>
+	<units>m</units>
+	<limits>0.0 0.4</limits>
+	<data>range_rms range_numval 2 SUB SQRT DIV</data>
+	<format>f6.4</format>
+	<compress>int2 1e-4</compress>
+</var>
+<if sat="sa">
+	<var name="range_rms_ka" field="2002">
+		<long_name>std dev of Ka-band range</long_name>
+		<units>m</units>
+		<limits>0.0 0.17</limits>
+		<plot_range>0.0 0.2</plot_range>
+		<data>range_rms_ka</data>
+		<format>f6.4</format>
+		<default>0</default>
+		<compress>int2 1e-4</compress>
+		<comment>Based on valid high-rate measurements</comment>
+	</var>
+	<alias name="range_rms" field="20">range_rms_ka</alias>
+</if>
+<else>
+	<var name="range_rms_ku" field="2002">
+		<long_name>std dev of Ku-band range</long_name>
+		<units>m</units>
+		<limits>0.0 0.4</limits>
+		<limits sat="g1 gs">0.0 0.25</limits> <!--GFO and Geosat on-board a-b trackers smooth the data-->
+		<limits sat="j1 j2 j3">0.00 0.17</limits> <!--Retracker noise on Jason is lower than others-->
+		<limits sat="c2">0.00 0.18</limits> <!--CryoSat-2 needs a little extra to allow PLRM-->
+		<limits sat="tx">0.00 0.15</limits> <!--TOPEX a-b tracker leads to much lower std dev than other satellites-->
+		<plot_range>0.0 0.2</plot_range>
+		<data>range_rms_ku</data>
+		<format>f6.4</format>
+		<default>0</default>
+		<compress>int2 1e-4</compress>
+		<comment>Based on valid high-rate measurements</comment>
+	</var>
+	<alias name="range_rms" field="20">range_rms_ku</alias>
+</else>
+<var name="range_rms_ku_mle3" field="2012" sat="6a j2 j3">
+	<long_name>std dev of Ku-band range (MLE3)</long_name>
+	<units>m</units>
+	<limits>0.00 0.17</limits> <!--May need adjustment-->
+	<plot_range>0.0 0.2</plot_range>
+	<data>range_rms_ku_mle3</data>
+	<format>f6.4</format>
+	<default>0</default>
+	<compress>int2 1e-4</compress>
+	<comment>Based on valid high-rate measurements</comment>
+</var>
+<var name="range_rms_ku_plrm" field="2013" sat="3a 3b c2">
+	<long_name>std dev of Ku-band range (PLRM)</long_name>
+	<units>m</units>
+	<limits>0.00 0.17</limits> <!--May need adjustment-->
+	<plot_range>0.0 0.2</plot_range>
+	<data>range_rms_ku_plrm</data>
+	<format>f6.4</format>
+	<default>0</default>
+	<compress>int2 1e-4</compress>
+	<comment>Based on valid high-rate measurements</comment>
+</var>
+<var name="range_rms_ku_adaptive" sat="j3">
+	<long_name>std dev of retracked Ku-band range (adaptive retracking)</long_name>
+	<units>m</units>
+	<limits>0.0 0.4</limits>
+	<plot_range>0.0 0.2</plot_range>
+	<data>range_rms_ku_adaptive</data>
+	<format>f6.4</format>
+	<default>0</default>
+	<compress>int2 1e-4</compress>
+	<comment>Based on valid retracked high-rate measurements</comment>
+</var>
+<alias name="range_rms_ku_nr" sat="j3">range_rms_ku_adaptive</alias>
+<var name="range_rms_ku_nr" sat="6a">
+	<long_name>std dev of retracked Ku-band range (numerical retracking)</long_name>
+	<units>m</units>
+	<limits>0.0 0.4</limits>
+	<plot_range>0.0 0.2</plot_range>
+	<data>range_rms_ku_nr</data>
+	<format>f6.4</format>
+	<default>0</default>
+	<compress>int2 1e-4</compress>
+	<comment>Based on valid retracked high-rate measurements</comment>
+</var>
+
+<var name="range_rms_c" field="2004" sat="2a 3a 3b 6a j1 j2 j3">
+	<long_name>std dev of C-band range</long_name>
+	<units>m</units>
+	<limits>0.0 0.4</limits>
+	<data>range_rms_c</data>
+	<format>f6.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Based on valid high-rate measurements</comment>
+</var>
+<var name="range_rms_s" field="2004" sat="n1">
+	<long_name>std dev of S-band range</long_name>
+	<units>m</units>
+	<limits>0.0 0.4</limits>
+	<data>range_rms_s</data>
+	<format>f6.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Based on valid high-rate measurements</comment>
+</var>
+
+<if sat="sa">
+	<var name="range_numval_ka" field="2101">
+		<long_name>number of valid Ka-band measurements</long_name>
+		<standard_name>altimeter_range number_of_observations</standard_name>
+		<units>1</units>
+		<limits>32.5 40.5</limits>
+		<plot_range>0 21</plot_range>
+		<data>range_numval_ka</data>
+		<default>40</default>
+		<format>f3.0</format>
+		<compress>int1</compress>
+	</var>
+	<alias name="range_numval" field="21">range_numval_ka</alias>
+</if>
+<else>
+	<var name="range_numval_ku" field="2101">
+		<long_name>number of valid Ku-band measurements</long_name>
+		<standard_name>altimeter_range number_of_observations</standard_name>
+		<units>1</units>
+		<limits>16.5 20.5</limits>
+		<limits sat="6a j1 j2 j3">15.5 20.5</limits>
+		<limits sat="g1 gs tx">8.5 10.5</limits> <!--GFO, Geosat, TOPEX are only 10 Hz-->
+		<limits sat="3a 3b">16.5 21.5</limits> <!--SAR mode data can have up to 21 in 1 second-->
+		<plot_range>0 21</plot_range>
+		<plot_range sat="g1 gs tx">0 11</plot_range>
+		<data>range_numval_ku</data>
+		<default>20</default>
+		<format>f3.0</format>
+		<compress>int1</compress>
+	</var>
+	<alias name="range_numval" field="21">range_numval_ku</alias>
+</else>
+<var name="range_numval_ku_mle3" field="2111" sat="6a j2 j3">
+	<long_name>number of valid Ku-band measurements (MLE3)</long_name>
+	<standard_name>altimeter_range number_of_observations</standard_name>
+	<units>1</units>
+	<limits>15.5 20.5</limits>
+	<plot_range>0 21</plot_range>
+	<data>range_numval_ku_mle3</data>
+	<format>f3.0</format>
+	<compress>int1</compress>
+</var>
+<var name="range_numval_ku_plrm" sat="3a 3b c2">
+	<long_name>number of valid Ku-band measurements (PLRM)</long_name>
+	<standard_name>altimeter_range number_of_observations</standard_name>
+	<units>1</units>
+	<limits>16.5 21.5</limits>
+	<plot_range>0 21</plot_range>
+	<data>range_numval_ku_plrm</data>
+	<format>f3.0</format>
+	<compress>int1</compress>
+</var>
+<var name="range_numval_ku_adaptive" sat="j3">
+	<long_name>number of valid retracked Ku-band measurements (adaptive retracking)</long_name>
+	<standard_name>altimeter_range number_of_observations</standard_name>
+	<units>1</units>
+	<limits>15.5 21.5</limits>
+	<plot_range>0 21</plot_range>
+	<data>range_numval_ku_adaptive</data>
+	<format>f3.0</format>
+	<compress>int1</compress>
+</var>
+<alias name="range_numvar_ku_nr" sat="j3">range_numval_ku_adaptive</alias>
+<var name="range_numval_ku_nr" sat="6a">
+	<long_name>number of valid retracked Ku-band measurements (numerical retracking)</long_name>
+	<standard_name>altimeter_range number_of_observations</standard_name>
+	<units>1</units>
+	<limits>15.5 21.5</limits>
+	<plot_range>0 21</plot_range>
+	<data>range_numval_ku_nr</data>
+	<format>f3.0</format>
+	<compress>int1</compress>
+</var>
+
+<var name="range_numval_c" field="2102" sat="2a 3a 3b 6a j1 j2 j3">
+	<long_name>number of valid C-band measurements</long_name>
+	<standard_name>altimeter_range number_of_observations</standard_name>
+	<units>1</units>
+	<limits>16.5 20.5</limits>
+	<plot_range>0 21</plot_range>
+	<data>range_numval_c</data>
+	<format>f3.0</format>
+	<compress>int1</compress>
+</var>
+
+<var name="topo_dtm2000" field="2202" sat="3a 3b j1 j2 j3 n1 sa">
+	<long_name>DTM2000 topography</long_name>
+	<source>DTM2000</source>
+	<units>m</units>
+	<data>topo_dtm2000</data>
+	<format>f7.0</format>
+	<compress>int2</compress>
+</var>
+<!--
+<var name="topo_dnsc08" field="2203">
+	<long_name>DNSC08 topography</long_name>
+	<source>DNSC08</source>
+	<parameters>DNSC08/DNSC08BAT_1min.nc</parameters>
+	<units>m</units>
+	<data>topo_dnsc08</data>
+	<format>f7.0</format>
+	<compress>int2</compress>
+</var>
+-->
+<var name="topo_srtm30plus" field="2204">
+	<long_name>SRTM30_PLUS topography</long_name>
+	<source>SRTM30_PLUS V10</source>
+	<parameters>SRTM30/srtmplus_v10_topo30.nc</parameters>
+	<units>m</units>
+	<data>topo_srtm30plus</data>
+	<format>f7.0</format>
+	<compress>int2</compress>
+</var>
+<var name="topo_dtu10" field="2205">
+	<long_name>DTU10 topography</long_name>
+	<source>DTU10</source>
+	<parameters>DTU10/DTU10BAT_1min.nc</parameters>
+	<units>m</units>
+	<data>topo_dtu10</data>
+	<format>f7.0</format>
+	<compress>int2</compress>
+</var>
+<var name="topo_macess" field="2206">
+	<long_name>MACESS topography</long_name>
+	<source>MACCESS</source>
+	<units>m</units>
+	<data>topo_macess</data>
+	<format>f7.0</format>
+	<compress>int2</compress>
+</var>
+<var name="topo_ace2" field="2207">
+	<long_name>ACE2 topography</long_name>
+	<source>ACE2</source>
+	<units>m</units>
+	<data>topo_ace2</data>
+	<format>f7.0</format>
+	<compress>int2</compress>
+</var>
+<var name="topo_etopo1" field="2208">
+	<long_name>ETOPO1 topography</long_name>
+	<source>ETOPO1</source>
+	<units>m</units>
+	<data>topo_etopo1</data>
+	<format>f7.0</format>
+	<compress>int2</compress>
+</var>
+<var name="topo_srtm15plus" field="2209">
+	<long_name>SRTM15_PLUS topography</long_name>
+	<source>SRTM15_PLUS V1</source>
+	<parameters>SRTM15/topo15_compressed.nc</parameters>
+	<units>m</units>
+	<data>topo_srtm15plus</data>
+	<format>f7.0</format>
+	<compress>int2</compress>
+</var>
+
+<alias name="topo" field="22">topo_srtm30plus topo_srtm15plus</alias>
+
+<if sat="pn tx">
+	<var name="tb_180" field="2301">
+		<long_name>radiometer brightness temperature (18.0 GHz)</long_name>
+		<standard_name>surface_brightness_temperature</standard_name>
+		<source>radiometer</source>
+		<units>K</units>
+		<data>tb_180</data>
+		<format>f6.2</format>
+		<compress>int2 1e-2</compress>
+		<comment>Brightness temperatures are unsmoothed</comment>
+	</var>
+	<alias name="tb1">tb_180</alias>
+</if>
+<if sat="2a 6a j1 j2 j3">
+	<var name="tb_187" field="2301">
+		<long_name>radiometer brightness temperature (18.7 GHz)</long_name>
+		<standard_name>surface_brightness_temperature</standard_name>
+		<source>radiometer</source>
+		<units>K</units>
+		<data>tb_187</data>
+		<format>f6.2</format>
+		<compress>int2 1e-2</compress>
+		<comment>Brightness temperatures are unsmoothed</comment>
+	</var>
+	<alias name="tb1">tb_187</alias>
+</if>
+
+<if sat="pn tx">
+	<var name="tb_210" field="2302">
+		<long_name>radiometer brightness temperature (21.0 GHz)</long_name>
+		<standard_name>surface_brightness_temperature</standard_name>
+		<source>radiometer</source>
+		<units>K</units>
+		<data>tb_210</data>
+		<format>f6.2</format>
+		<compress>int2 1e-2</compress>
+		<comment>Brightness temperatures are unsmoothed</comment>
+	</var>
+	<alias name="tb2" field="23">tb_210</alias>
+</if>
+<if sat="g1">
+		<var name="tb_222" field="2302" sat="g1">
+		<long_name>radiometer brightness temperature (22.2 GHz)</long_name>
+		<standard_name>surface_brightness_temperature</standard_name>
+		<source>radiometer</source>
+		<units>K</units>
+		<data>tb_222</data>
+		<format>f6.2</format>
+		<compress>int2 1e-2</compress>
+		<comment>Brightness temperatures are unsmoothed</comment>
+	</var>
+	<alias name="tb2" field="23">tb_222</alias>
+</if>
+<if sat="2a 3a 3b 6a e1 e2 j1 j2 j3 n1 sa">
+	<var name="tb_238" field="2302">
+		<long_name>radiometer brightness temperature (23.8 GHz)</long_name>
+		<standard_name>surface_brightness_temperature</standard_name>
+		<source>radiometer</source>
+		<units>K</units>
+		<plot_range>120 260</plot_range>
+		<data>tb_238</data>
+		<format>f6.2</format>
+		<compress>int2 1e-2</compress>
+		<comment>Brightness temperatures are unsmoothed</comment>
+	</var>
+	<alias name="tb2" field="23">tb_238</alias>
+</if>
+
+<if sat="6a j1 j2 j3">
+	<var name="tb_340" field="2303">
+		<long_name>radiometer brightness temperature (34.0 GHz)</long_name>
+		<standard_name>surface_brightness_temperature</standard_name>
+		<source>radiometer</source>
+		<units>K</units>
+		<data>tb_340</data>
+		<format>f6.2</format>
+		<compress>int2 1e-2</compress>
+		<comment>Brightness temperatures are unsmoothed</comment>
+	</var>
+	<alias name="tb3">tb_340</alias>
+</if>
+<if sat="3a 3b e1 e2 n1">
+	<var name="tb_365" field="2303">
+		<long_name>radiometer brightness temperature (36.5 GHz)</long_name>
+		<standard_name>surface_brightness_temperature</standard_name>
+		<source>radiometer</source>
+		<units>K</units>
+		<plot_range>140 200</plot_range>
+		<data>tb_365</data>
+		<format>f6.2</format>
+		<compress>int2 1e-2</compress>
+		<comment>Brightness temperatures are unsmoothed</comment>
+	</var>
+	<alias name="tb3">tb_365</alias>
+</if>
+<if sat="2a g1 pn sa tx">
+	<var name="tb_370" field="2303">
+		<long_name>radiometer brightness temperature (37.0 GHz)</long_name>
+		<standard_name>surface_brightness_temperature</standard_name>
+		<source>radiometer</source>
+		<units>K</units>
+		<data>tb_370</data>
+		<format>f6.2</format>
+		<compress>int2 1e-2</compress>
+		<comment>Brightness temperatures are unsmoothed</comment>
+	</var>
+	<alias name="tb3">tb_370</alias>
+</if>
+
+<if sat="c2 e1 e2 n1">
+	<var name="peakiness_ku" field="2401">
+		<long_name>Ku-band peakiness</long_name>
+		<units>1</units>
+		<limits sat="n1">1.4 1.9</limits>
+		<limits sat="c2.igdr">1.1 1.6</limits>
+		<limits sat="c2">0.0 1.6</limits>
+		<data>peakiness_ku</data>
+		<format>f6.2</format>
+		<compress>int2 1e-2</compress>
+	</var>
+	<alias name="peakiness" field="24">peakiness_ku</alias>
+</if>
+<elseif sat="sa">
+	<var name="peakiness_ka" field="2401">
+		<long_name>Ka-band peakiness</long_name>
+		<units>1</units>
+		<limits>3.2 6.0</limits>
+		<data>peakiness_ka</data>
+		<format>f6.2</format>
+		<compress>int2 1e-2</compress>
+	</var>
+	<alias name="peakiness" field="24">peakiness_ka</alias>
+</elseif>
+<var name="peakiness_s" field="2402" sat="n1">
+	<long_name>S-band peakiness</long_name>
+	<units>1</units>
+	<limits>1.4 1.9</limits>
+	<data>peakiness_s</data>
+	<format>f6.2</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="peakiness_20hz_ku" sat="c2">
+	<long_name>20-Hz Ku-band peakiness</long_name>
+	<units>1</units>
+	<limits>1.1 1.6</limits>
+	<data>peakiness_20hz_ku</data>
+	<format>f6.2</format>
+	<compress>int2 1e-2</compress>
+	<dimensions>2</dimensions>
+</var>
+
+<var name="flag_alt_oper_mode" field="2516" sat="3a 3b 6a c2.igdr c2 e1 j1 j2 j3 n1 pn tx">
+	<long_name>altimeter operating mode</long_name>
+	<flag_values>nominal bad</flag_values>
+	<flag_values sat="3a 3b c2.igdr">LRM SAR</flag_values>
+	<flag_values sat="e1">sptr_available sptr_not_available</flag_values>
+	<flag_values sat="j1 j2 j3 n1">side_A side_B</flag_values>
+	<plot_range>0 1</plot_range>
+	<data source="flags">0</data>
+	<format>z1</format>
+	<compress>int1</compress>
+	<if sat="c2">
+		<flag_values>LRM SAR SARIN</flag_values>
+		<data>flag_alt_oper_mode</data>
+		<plot_range>0 2</plot_range>
+	</if>
+	<if sat="6a">
+		<flag_values>LRM RAW RMC</flag_values>
+		<data>flag_alt_oper_mode</data>
+		<plot_range>0 2</plot_range>
+	</if>
+</var>
+<var name="qual_sptr" field="2516" sat="e1 e2">
+	<long_name>SPTR availability</long_name>
+	<flag_values>yes no</flag_values>
+	<plot_range>0 1</plot_range>
+	<data source="flags">0</data>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+
+<var name="qual_attitude" field="2501" sat="3a 3b 6a g1 gs j1 j2 j3 n1 pn sa tx">
+	<long_name>quality of attitude</long_name>
+	<flag_values>ok bad</flag_values>
+	<flag_values sat="g1 gs pn">ok suspect</flag_values>
+	<plot_range>0 1</plot_range>
+	<data source="flags">1</data>
+	<data sat="6a">qual_attitude</data>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+<var name="qual_attitude_nr" sat="6a">
+	<long_name>quality of attitude (numerical retracking)</long_name>
+	<flag_values>ok bad</flag_values>
+	<flag_values sat="g1 gs pn">ok suspect</flag_values>
+	<plot_range>0 1</plot_range>
+	<data>qual_attitude_nr</data>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+
+<if sat="gs">
+	<var name="qual_dh" field="2502">
+		<long_name>quality dH</long_name>
+		<flag_values>ok suspect</flag_values>
+		<plot_range>0 1</plot_range>
+		<data source="flags">2</data>
+		<format>z1</format>
+		<compress>int1</compress>
+	</var>
+</if>
+<if sat="pn tx">
+	<var name="flag_rad_oper_mode" field="2502">
+		<long_name>TMR 21 GHz Channel status</long_name>
+		<flag_values>A B</flag_values>
+		<plot_range>0 1</plot_range>
+		<data source="flags">2</data>
+		<format>z1</format>
+		<compress>int1</compress>
+	</var>
+</if>
+<if sat="3a 3b c2 j1 j2 j3 n1 sa">
+	<var name="flag_continental_ice" field="2502">
+		<long_name>continental ice flag</long_name>
+		<flag_values>no_continental_ice continental_ice</flag_values>
+		<plot_range>0 1</plot_range>
+		<data source="flags">2</data>
+		<format>z1</format>
+		<compress>int1</compress>
+	</var>
+</if>
+
+<var name="qual_iono_alt" field="2503" sat="3a 3b 6a j1 j2 j3 n1 tx">
+	<long_name>quality of dual-frequency ionospheric correction</long_name>
+	<flag_values>ok bad</flag_values>
+	<plot_range>0 1</plot_range>
+	<data source="flags">3</data>
+	<data sat="6a">qual_iono_alt</data>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+
+<var name="flag_water" field="2504">
+	<long_name>altimeter water/dry flag</long_name>
+	<flag_values>open_ocean_or_enclosed_sea_or_lake land</flag_values>
+	<plot_range>0 1</plot_range>
+	<data source="flags">4</data>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+
+<var name="flag_ocean" field="2505">
+	<long_name>altimeter ocean/land flag</long_name>
+	<flag_values>open_ocean land_or_enclosed_sea_or_lake</flag_values>
+	<plot_range>0 1</plot_range>
+	<data source="flags">5</data>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+
+<var name="surface_type_rad" field="2506" sat="!c2 gs">
+	<long_name>radiometer land flag</long_name>
+	<flag_values>water land</flag_values>
+	<plot_range>0 1</plot_range>
+	<data source="flags">6</data>
+	<format>z1</format>
+	<compress>int1</compress>
+	<if sat="6a j3">
+		<long_name>radiometer surface type</long_name>
+		<flag_values>open_ocean coastal_ocean coastal_amr land</flag_values>
+		<data>surface_type_rad</data>
+		<plot_range>0 3</plot_range>
+		<comment>The processing of radiometer data depends on this flag: 0 = open ocean, 1 = coastal ocean processing with HRMR and AMR, 2 = coastal ocean processing with AMR only, 3 = invalid due to land contamination</comment>
+	</if>
+</var>
+
+<var name="qual_alt_rain_ice" field="2507" sat="3a 3b 6a g1 j1 j2 j3 n1 pn sa tx">
+	<long_name>corruption of altimeter measurement (ice)</long_name>
+	<flag_values>no_ice ice</flag_values>
+	<plot_range>0 1</plot_range>
+	<data source="flags">7</data>
+	<format>z1</format>
+	<compress>int1</compress>
+	<if sat="n1">
+		<long_name>corruption of altimeter measurement (rain/ice)</long_name>
+		<flag_values>no_rain_ice rain_ice</flag_values>
+	</if>
+	<if sat="6a">
+		<long_name>altimeter rain flag</long_name>
+		<flag_values>no_rain rain high_rain_probability_from_altimeter high_probability_of_no_rain_from_altimeter ambiguous_situation_possibility_of_ice evaluation_not_possible</flag_values>
+		<plot_range>0 5</plot_range>
+		<data>qual_alt_rain_ice</data>
+	</if>
+</var>
+
+<var name="qual_rad_rain_ice" field="2508" sat="3a 3b 6a e1 e2 j1 j2 j3 n1 pn tx">
+	<long_name>corruption of radiometer measurement (rain or ice)</long_name>
+	<flag_values>ok rain_or_ice</flag_values>
+	<plot_range>0 1</plot_range>
+	<data source="flags">8</data>
+	<data sat="6a">qual_rad_rain_ice</data>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+
+<var name="qual_rad_tb" field="2509" sat="!c2 gs">
+	<long_name>quality of radiometer brightness temperatures</long_name>
+	<flag_masks sat="3a 3b e1 e2 n1">bad_tb_238 bad_tb_365</flag_masks>
+	<flag_masks sat="g1">bad_tb_220 bad_tb_370</flag_masks>
+	<flag_masks sat="j1 j2 j3">bad_tb_187_or_238 bad_tb_340</flag_masks>
+	<flag_masks sat="sa">bad_tb_238 bad_tb_370</flag_masks>
+	<flag_values sat="pn tx">ok interpolation_near_land extrapolation interpolation_failed</flag_values>
+	<plot_range>0 3</plot_range>
+	<data source="flags">9 2</data>
+	<format>z1</format>
+	<compress>int1</compress>
+	<if sat="6a">
+		<flag_masks>bad_tb_187 bad_tb_238 bad_tb_340</flag_masks>
+		<data>qual_rad_tb</data>
+		<plot_range>0 7</plot_range>
+	</if>
+</var>
+
+<var name="qual_range" field="2511">
+	<long_name>quality of the range estimate</long_name>
+	<standard_name>altimeter_range status_flag</standard_name>
+	<flag_values>ok suspect</flag_values>
+	<flag_values sat="gs">ok some_10Hz_measurements_invalid</flag_values>
+	<plot_range>0 1</plot_range>
+	<data source="flags">11</data>
+	<data sat="6a">qual_range</data>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+<var name="qual_range_mle3" sat="6a">
+	<long_name>quality of the range estimate (NLE3)</long_name>
+	<standard_name>altimeter_range status_flag</standard_name>
+	<flag_values>ok suspect</flag_values>
+	<flag_values sat="gs">ok some_10Hz_measurements_invalid</flag_values>
+	<plot_range>0 1</plot_range>
+	<data>qual_range_mle3</data>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+<var name="qual_range_nr" sat="6a">
+	<long_name>quality of the range estimate (numerical retracking)</long_name>
+	<standard_name>altimeter_range status_flag</standard_name>
+	<flag_values>ok suspect</flag_values>
+	<flag_values sat="gs">ok some_10Hz_measurements_invalid</flag_values>
+	<plot_range>0 1</plot_range>
+	<data>qual_range_nr</data>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+
+<var name="qual_swh" field="2512" sat="!n1">
+	<long_name>quality of the wave height estimate</long_name>
+	<standard_name>sea_surface_wave_significant_height status_flag</standard_name>
+	<long_name sat="gs">quality of sea state bias</long_name>
+	<flag_values>ok suspect</flag_values>
+	<plot_range>0 1</plot_range>
+	<data source="flags">12</data>
+	<data sat="6a">qual_swh</data>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+<var name="qual_swh_mle3" sat="6a">
+	<long_name>quality of the wave height estimate (MLE3)</long_name>
+	<standard_name>sea_surface_wave_significant_height status_flag</standard_name>
+	<long_name sat="gs">quality of sea state bias</long_name>
+	<flag_values>ok suspect</flag_values>
+	<plot_range>0 1</plot_range>
+	<data>qual_swh_mle3</data>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+<var name="qual_swh_nr" sat="6a">
+	<long_name>quality of the wave height estimate (numerical retracking)</long_name>
+	<standard_name>sea_surface_wave_significant_height status_flag</standard_name>
+	<long_name sat="gs">quality of sea state bias</long_name>
+	<flag_values>ok suspect</flag_values>
+	<plot_range>0 1</plot_range>
+	<data>qual_swh_nr</data>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+
+<var name="qual_sig0" field="2513">
+	<long_name>quality of the backscatter coefficient estimate</long_name>
+	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave status_flag</standard_name>
+	<long_name sat="gs">quality of wind speed estimate</long_name>
+	<flag_values>ok suspect</flag_values>
+	<plot_range>0 1</plot_range>
+	<data source="flags">13</data>
+	<data sat="6a">qual_sig0</data>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+<var name="qual_sig0_mle3" sat="6a">
+	<long_name>quality of the backscatter coefficient estimate (MLE3)</long_name>
+	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave status_flag</standard_name>
+	<long_name sat="gs">quality of wind speed estimate</long_name>
+	<flag_values>ok suspect</flag_values>
+	<plot_range>0 1</plot_range>
+	<data>qual_sig0_mle3</data>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+<var name="qual_sig0_nr" sat="6a">
+	<long_name>quality of the backscatter coefficient estimate (numerical retracking)</long_name>
+	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave status_flag</standard_name>
+	<long_name sat="gs">quality of wind speed estimate</long_name>
+	<flag_values>ok suspect</flag_values>
+	<plot_range>0 1</plot_range>
+	<data>qual_sig0_nr</data>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+
+<var name="flag_alt_track_mode" field="2514" sat="e1 e2 gs j1 pn tx">
+	<long_name>altimeter tracking mode</long_name>
+	<standard_name>altimeter_range status_flag</standard_name>
+	<flag_values>ocean_mode ice_mode</flag_values>
+	<flag_values sat="gs tx">nominal coarse_or_acquisition</flag_values>
+	<flag_values sat="j1">nominal c_band_coarse</flag_values>
+	<flag_values sat="pn">nominal acquisition</flag_values>
+	<plot_range>0 1</plot_range>
+	<data source="flags">14</data>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+
+<var name="qual_orbit" field="2515 25" sat="3a 3b 6a c2 e1 e2 j1 pn sa">
+	<long_name>quality of the orbit determination</long_name>
+	<standard_name>height_above_reference_ellipsoid status_flag</standard_name>
+	<flag_values>ok degraded</flag_values>
+	<plot_range>0 1</plot_range>
+	<data source="flags">15</data>
+	<format>z1</format>
+	<compress>int1</compress>
+	<if sat="6a">
+		<flag_values>navatt fos_pre fos_res doris_nav roe_gnss moe_doris moe_gnss undefined poe</flag_values>
+		<plot_range>0 8</plot_range>
+		<data>qual_orbit</data>
+	</if>
+</var>
+
+<var name="surface_type" field="2517">
+	<long_name>surface type</long_name>
+	<flag_values>open_ocean unused enclosed_sea_or_lake land continental_ice</flag_values>
+	<data source="flags">surface_type</data>
+	<source>GSHHG 2.3.7 coastlines</source>
+	<plot_range>0 4</plot_range>
+	<parameters>surface_type/landmask_GSHHG_2.3.7.nc</parameters>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+
+<var name="surface_class" field="2518">
+	<long_name>surface classification</long_name>
+	<flag_values>open_ocean land continental_water aquatic_vegetation continental_ice_snow floating_ice salted_basin</flag_values>
+	<parameters>surface_type/SurfaceClassification_ver2c.nc</parameters>
+	<data>surface_class</data>
+	<plot_range>0 6</plot_range>
+	<format>z1</format>
+	<compress>int1</compress>
+	<comment>Computed from a mask built with MODIS and GlobCover data</comment>
+</var>
+
+<var name="flag_manoeuvre" sat="6a j3 sa">
+	<long_name>flag indicating whether the satellite is in a manoeuvre</long_name>
+	<standard_name>status_flag</standard_name>
+	<flag_values>no_manoeuvre manoeuvre_ongoing</flag_values>
+	<data>flag_manoeuvre</data>
+	<default>0</default>
+	<plot_range>0 1</plot_range>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+
+<var name="flags" field="2601 26">
+	<long_name>flag word</long_name>
+	<limits>65512 0</limits>
+	<limits sat="3a 3b">65448 0</limits> <!--Temporary value, deselecting radiometer land flag-->
+	<limits sat="c2">32 0</limits>
+	<limits sat="g1">65384 0</limits>
+	<limits sat="gs">51176 0</limits>
+	<limits sat="j3">65384 0</limits> <!--Temporary value, deselecting altimeter rain flag-->
+	<limits sat="n1">36712 0</limits>
+	<limits sat="pn">480 0</limits>
+	<limits sat="tx">49640 0</limits>
+	<data>flags</data>
+	<!-- In future releases without NetCDF variable "flags", use this:
+	<data source="flags">flags</data>
+	-->
+	<format>b16.16</format>
+	<compress>int2</compress>
+	<flag_masks>
+		alt_side_B attitude_bad continental_ice alt_iono_bad
+		alt_land alt_non_ocean rad_land alt_rain_or_ice
+		rad_rain_or_ice tb1_tb2_bad tb2_bad range_suspect
+		swh_suspect backscatter_suspect not_used orbit_degraded
+	</flag_masks>		<!--This is for 6a, j2, and j3-->
+	<flag_masks sat="j1">
+		alt_side_B attitude_bad continental_ice alt_iono_bad
+		alt_land alt_non_ocean rad_land alt_rain_or_ice
+		rad_rain_or_ice tb1_tb2_bad tb2_bad range_suspect
+		swh_suspect backscatter_suspect c_band_coarse orbit_degraded
+	</flag_masks>
+	<flag_masks sat="tx">
+		hardware_bad attitude_bad flag_rad_oper_mode alt_iono_bad
+		alt_land alt_non_ocean rad_land alt_rain_or_ice
+		rad_rain_or_ice tb1_tb2_bad tb3_bad range_suspect
+		swh_suspect backscatter_suspect tracking_acquisition orbit_degraded
+	</flag_masks>
+	<flag_masks sat="pn">
+		hardware_bad attitude_bad flag_rad_oper_mode not_used
+		alt_land alt_non_ocean rad_land alt_rain_or_ice
+		rad_rain_or_ice tb1_tb2_bad tb3_bad range_suspect
+		swh_suspect backscatter_suspect tracking_acquisition orbit_degraded
+	</flag_masks>
+	<flag_masks sat="e1">
+		sptr_availability not_used not_used not_used
+		alt_land alt_non_ocean rad_land not_used
+		rad_rain_or_ice tb2_bad tb3_bad range_suspect
+		swh_suspect backscatter_suspect tracking_preset orbit_degraded
+	</flag_masks>
+	<flag_masks sat="e2">
+		not_used attitude_bad not_used not_used
+		alt_land alt_non_ocean rad_land not_used
+		rad_rain_or_ice tb2_bad tb3_bad range_suspect
+		swh_suspect backscatter_suspect tracking_preset orbit_degraded
+	</flag_masks>
+	<flag_masks sat="n1">
+		alt_side_B attitude_bad continental_ice alt_iono_bad
+		alt_land alt_non_ocean rad_land alt_rain_or_ice
+		rad_rain_or_ice tb2_bad tb3_bad range_suspect
+		swh_suspect backscatter_suspect tracking_preset orbit_degraded
+	</flag_masks>
+	<flag_masks sat="g1">
+		not_used attitude_bad not_used not_used
+		alt_land alt_non_ocean rad_land alt_rain_or_ice
+		not_used tb2_bad tb3_bad range_suspect
+		swh_suspect backscatter_suspect not_used orbit_degraded
+	</flag_masks>
+	<flag_masks sat="sa">
+		not_used not_used continental_ice not_used
+		alt_land alt_non_ocean rad_land alt_rain_or_ice
+		not_used tb2_bad tb3_bad range_suspect
+		swh_suspect backscatter_suspect not_used orbit_degraded
+	</flag_masks>
+	<flag_masks sat="c2">
+		sar_mode not_used continental_ice not_used
+		alt_land alt_non_ocean not_used not_used
+		not_used not_used not_used range_suspect
+		swh_suspect backscatter_suspect not_used orbit_degraded
+	</flag_masks>
+	<flag_masks sat="gs">
+		not_used attitude_bad range_suspect not_used
+		alt_land alt_non_ocean not_used not_used
+		not_used not_used not_used range_suspect
+		ssb_suspect wind_speed_suspect tracking_acquisition orbit_degraded
+	</flag_masks>
+	<flag_masks sat="3a 3b">
+		sar_mode attitude_bad continental_ice alt_iono_bad
+		alt_land alt_non_ocean rad_land alt_rain_or_ice
+		rad_rain_or_ice tb2_bad tb3_bad range_suspect
+		swh_suspect backscatter_suspect not_used orbit_degraded
+	</flag_masks>
+</var>
+<var name="flags_orig" field="2602" sat="j1">
+	<long_name>original flag word (before enhancement)</long_name>
+	<limits>65512 0</limits>
+	<data>flags_orig</data>
+	<format>b16.16</format>
+	<compress>int2</compress>
+</var>
+<var name="flags_mle3" field="2611" sat="6a j2 j3">
+	<long_name>flag word (MLE3)</long_name>
+	<limits>65512 0</limits>
+	<data>flags_mle3</data>
+	<format>b16.16</format>
+	<compress>int2</compress>
+	<flag_masks>
+		hardware_bad attitude_bad flag_rad_oper_mode alt_iono_bad
+		alt_land alt_non_ocean rad_land alt_rain_or_ice
+		rad_rain_or_ice tb1_bad tb2_bad range_suspect
+		swh_suspect backscatter_suspect tracking_preset orbit_degraded
+	</flag_masks>
+</var>
+<var name="flags_plrm" field="2612" sat="3a 3b c2">
+	<long_name>flag word (PLRM)</long_name>
+	<limits>65512 0</limits>
+	<data>flags_plrm</data>
+	<format>b16.16</format>
+	<compress>int2</compress>
+	<flag_masks>
+		hardware_bad attitude_bad flag_rad_oper_mode alt_iono_bad
+		alt_land alt_non_ocean rad_land alt_rain_or_ice
+		rad_rain_or_ice tb1_bad tb2_bad range_suspect
+		swh_suspect backscatter_suspect tracking_preset orbit_degraded
+	</flag_masks>
+</var>
+<var name="flags_adaptive" sat="j3">
+	<long_name>flag word (adaptive retracking)</long_name>
+	<limits>65512 0</limits>
+	<data>flags_adaptive</data>
+	<format>b16.16</format>
+	<compress>int2</compress>
+	<flag_masks>
+		hardware_bad attitude_bad flag_rad_oper_mode alt_iono_bad
+		alt_land alt_non_ocean rad_land alt_rain_or_ice
+		rad_rain_or_ice tb1_bad tb2_bad range_suspect
+		swh_suspect backscatter_suspect tracking_preset orbit_degraded
+	</flag_masks>
+</var>
+<alias name="flags_nr" sat="j3">flags_adaptive</alias>
+<var name="flags_nr" sat="6a">
+	<long_name>flag word (numerical retracking)</long_name>
+	<limits>65512 0</limits>
+	<data>flags_nr</data>
+	<format>b16.16</format>
+	<compress>int2</compress>
+	<flag_masks>
+		hardware_bad attitude_bad flag_rad_oper_mode alt_iono_bad
+		alt_land alt_non_ocean rad_land alt_rain_or_ice
+		rad_rain_or_ice tb1_bad tb2_bad range_suspect
+		swh_suspect backscatter_suspect tracking_preset orbit_degraded
+	</flag_masks>
+</var>
+
+<var name="drange_ku" field="2701" sat="2a 6a c2 e1 e2 gs j3 n1 tx">
+	<long_name>Ku-band range bias</long_name>
+	<long_name sat="6a">net instrument correction to Ku-band range</long_name>
+	<long_name sat="tx">Cal1 range correction</long_name>
+	<long_name sat="c2">Ku-band retracker range (relative to window delay)</long_name>
+	<units>m</units>
+	<data>drange_ku</data>
+	<compress>int2 1e-3</compress>
+	<compress sat="tx">int2 1e-4</compress>
+	<compress sat="6a j3">int4 1e-4</compress>
+	<format>f6.3</format>
+	<format sat="6a j3 tx">f7.4</format>
+	<comment>Range correction already added to range</comment>
+	<comment sat="tx">This correction was added back to the Ku-band range</comment>
+</var>
+<var name="drange_ku_mle3" sat="6a j3">
+	<long_name>net instrument correction to Ku-band range (MLE3)</long_name>
+	<units>m</units>
+	<data>drange_ku_mle3</data>
+	<compress>int4 1e-4</compress>
+	<format>f7.4</format>
+	<comment>Range correction already added to range</comment>
+</var>
+<var name="drange_ku_adaptive" sat="j3">
+	<long_name>net instrument correction to retracked Ku-band range (adaptive retracking)</long_name>
+	<units>m</units>
+	<data>drange_ku_adaptive</data>
+	<compress>int2 1e-3</compress>
+	<format>f6.3</format>
+	<comment>Range correction already added to range</comment>
+</var>
+<alias name="drange_ku_nr" sat="j3">drange_ku_adaptive</alias>
+<var name="drange_ku_nr" sat="6a">
+	<long_name>net instrument correction to retracked Ku-band range (numerical retracking)</long_name>
+	<units>m</units>
+	<data>drange_ku_nr</data>
+	<compress>int2 1e-3</compress>
+	<format>f6.3</format>
+	<comment>Range correction already added to range</comment>
+</var>
+
+<var name="drange_c" sat="2a 6a j3">
+	<long_name>net instrument correction to C-band range</long_name>
+	<units>m</units>
+	<data>drange_c</data>
+	<compress>int2 1e-3</compress>
+	<compress sat="6a j3">int4 1e-4</compress>
+	<format>f6.3</format>
+	<format sat="6a j3">f7.4</format>
+	<comment>Range correction already added to range</comment>
+</var>
+<var name="drange_cal" field="2702" sat="c2 e1 e2 gs">
+	<long_name>internal calibration correction to range</long_name>
+	<units>m</units>
+	<data>drange_cal</data>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+	<comment>Range correction already added to range</comment>
+</var>
+<var name="drange_uso" field="2703" sat="e1 e2 gs n1">
+	<long_name>USO correction to Ku-band range</long_name>
+	<units>m</units>
+	<data>drange_uso</data>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+	<comment>Range correction already added to range</comment>
+</var>
+<var name="drange_fm" field="2704" sat="e1 e2 c2">
+	<long_name>Doppler correction to range</long_name>
+	<units>m</units>
+	<data>drange_fm</data>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+	<comment>Range correction already added to range</comment>
+</var>
+<var name="drange_swh_att_ku" field="2705" sat="pn tx">
+	<long_name>Ku-band range correction due to SWH/attitude</long_name>
+	<units>m</units>
+	<data>drange_swh_att_ku</data>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+	<comment>Range correction already added to range</comment>
+</var>
+<var name="drange_swh_att_c" field="2706" sat="tx">
+	<long_name>C-band range correction due to SWH/attitude</long_name>
+	<units>m</units>
+	<data>drange_swh_att_c</data>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+	<comment>Range correction already added to range</comment>
+</var>
+<var name="drange_cg" field="2707" sat="pn tx">
+	<long_name>center-of-gravity correction to range</long_name>
+	<units>m</units>
+	<data>drange_cg</data>
+	<compress>int2 1e-3</compress>
+	<format>f6.3</format>
+	<comment>Range correction already added to range</comment>
+</var>
+<var name="drange_dat" field="2708" sat="j1">
+	<long_name>datation correction to range</long_name>
+	<units>m</units>
+	<data>drange_dat</data>
+	<format>f6.3</format>
+	<compress>int2 1e-4</compress>
+	<comment>Range correction already added to range</comment>
+</var>
+<var name="drange_sptr" field="2709" sat="e1 e2">
+	<long_name>SPTR correction to range</long_name>
+	<units>m</units>
+	<data>drange_sptr</data>
+	<format>f6.3</format>
+	<compress>int2 1e-4</compress>
+	<comment>Range correction already added to range</comment>
+</var>
+<alias name="drange" field="27" sat="c2 e1 e2 gs n1">drange_ku</alias>
+
+<var name="swh_rms_norm" field="2801">
+	<long_name>normalized std dev of significant wave height</long_name>
+	<units>m</units>
+	<limits>0.0 2.1</limits>
+	<data>swh_rms range_numval 1 SUB SQRT DIV</data>
+	<format>f5.3</format>
+	<compress>int2 1e-3</compress>
+</var>
+<if sat="sa">
+	<var name="swh_rms_ka" field="2802">
+		<long_name>std dev of Ka-band significant wave height</long_name>
+		<units>m</units>
+		<limits>0.0 2.1</limits>
+		<plot_range>0.2 1.0</plot_range>
+		<data>swh_rms_ka</data>
+		<format>f5.3</format>
+		<default>0</default>
+		<compress>int2 1e-3</compress>
+		<comment>Based on valid high-rate measurements</comment>
+	</var>
+	<alias name="swh_rms" field="28">swh_rms_ka</alias>
+</if>
+<else>
+	<var name="swh_rms_ku" field="2802">
+		<long_name>std dev of Ku-band significant wave height</long_name>
+		<units>m</units>
+		<limits>0.0 2.1</limits>
+		<limits sat="g1">0.0 0.5</limits> <!--GFO on-board a-b tracker smoothes the data-->
+		<limits sat="j1 j2 j3">0.0 1.5</limits> <!--Retracker noise on Jason is lower than others-->
+		<limits sat="tx">0.0 0.9</limits> <!--TOPEX a-b tracker leads to much lower std dev than other satellites-->
+		<plot_range>0.2 1.0</plot_range>
+		<data>swh_rms_ku</data>
+		<format>f5.3</format>
+		<default>0</default>
+		<compress>int2 1e-3</compress>
+		<comment>Based on valid high-rate measurements</comment>
+	</var>
+	<alias name="swh_rms" field="28">swh_rms_ku</alias>
+</else>
+<var name="swh_rms_c" field="2804" sat="2a 3a 3b 6a j1 j2 j3 tx">
+	<long_name>std dev of C-band significant wave height</long_name>
+	<units>m</units>
+	<limits>0.0 2.1</limits>
+	<plot_range>0.2 1.0</plot_range>
+	<data>swh_rms_c</data>
+	<format>f5.3</format>
+	<compress>int2 1e-3</compress>
+	<comment>Based on valid high-rate measurements</comment>
+</var>
+<var name="swh_rms_s" field="2804" sat="n1">
+	<long_name>std dev of S-band significant wave height</long_name>
+	<units>m</units>
+	<limits>0.0 2.1</limits>
+	<plot_range>0.2 1.0</plot_range>
+	<data>swh_rms_s</data>
+	<format>f5.3</format>
+	<compress>int2 1e-3</compress>
+	<comment>Based on valid high-rate measurements</comment>
+</var>
+<var name="swh_rms_ku_mle3" field="2812" sat="6a j2 j3">
+	<long_name>std dev of Ku-band significant wave height (MLE3)</long_name>
+	<units>m</units>
+	<limits>0.0 1.5</limits> <!--Might need to be changed-->
+	<plot_range>0.2 1.0</plot_range>
+	<data>swh_rms_ku_mle3</data>
+	<format>f5.3</format>
+	<default>0</default>
+	<compress>int2 1e-3</compress>
+	<comment>Based on valid high-rate measurements</comment>
+</var>
+<var name="swh_rms_ku_plrm" field="2813" sat="3a 3b c2">
+	<long_name>std dev of Ku-band significant wave height (PLRM)</long_name>
+	<units>m</units>
+	<limits>0.0 1.5</limits> <!--Might need to be changed-->
+	<plot_range>0.2 1.0</plot_range>
+	<data>swh_rms_ku_plrm</data>
+	<format>f5.3</format>
+	<default>0</default>
+	<compress>int2 1e-3</compress>
+	<comment>Based on valid high-rate measurements</comment>
+</var>
+<var name="swh_rms_ku_adaptive" sat="j3">
+	<long_name>std dev of Ku-band significant wave height (adaptive retracking)</long_name>
+	<units>m</units>
+	<limits>0.0 1.5</limits> <!--Might need to be changed-->
+	<plot_range>0.2 1.0</plot_range>
+	<data>swh_rms_ku_adaptive</data>
+	<format>f5.3</format>
+	<default>0</default>
+	<compress>int2 1e-3</compress>
+	<comment>Based on valid high-rate measurements</comment>
+</var>
+<alias name="swh_rms_ku_nr" sat="j3">swh_rms_ku_adaptive</alias>
+<var name="swh_rms_ku_nr" sat="6a">
+	<long_name>std dev of Ku-band significant wave height (numerical retracking)</long_name>
+	<units>m</units>
+	<limits>0.0 1.5</limits> <!--Might need to be changed-->
+	<plot_range>0.2 1.0</plot_range>
+	<data>swh_rms_ku_nr</data>
+	<format>f5.3</format>
+	<default>0</default>
+	<compress>int2 1e-3</compress>
+	<comment>Based on valid high-rate measurements</comment>
+</var>
+
+<var name="sig0_rms_norm" field="2901">
+	<long_name>normalized std dev of backscatter coefficient</long_name>
+	<units>dB</units>
+	<data>sig0_rms range_numval 1 SUB SQRT DIV</data>
+	<format>f5.3</format>
+	<compress>int2 1e-3</compress>
+</var>
+<if sat="sa">
+	<var name="sig0_rms_ka" field="2902">
+		<long_name>std dev of Ka-band backscatter coefficient</long_name>
+		<units>dB</units>
+		<limits>0.0 1.0</limits>
+		<plot_range>0.0 0.5</plot_range>
+		<data>sig0_rms_ka</data>
+		<format>f5.3</format>
+		<compress>int2 1e-3</compress>
+		<default>0</default>
+		<comment>Based on valid high-rate measurements</comment>
+	</var>
+	<alias name="sig0_rms" field="29">sig0_rms_ka</alias>
+</if>
+<else>
+	<var name="sig0_rms_ku" field="2902">
+		<long_name>std dev of Ku-band backscatter coefficient</long_name>
+		<units>dB</units>
+		<limits>0.0 1.0</limits>
+		<plot_range>0.0 0.5</plot_range>
+		<data>sig0_rms_ku</data>
+		<format>f5.3</format>
+		<compress>int2 1e-3</compress>
+		<default>0</default>
+		<comment>Based on valid high-rate measurements</comment>
+	</var>
+	<alias name="sig0_rms" field="29">sig0_rms_ku</alias>
+</else>
+<var name="sig0_rms_c" field="2904" sat="2a 3a 3b 6a j1 j2 j3 tx">
+	<long_name>std dev of C-band backscatter coefficient</long_name>
+	<units>dB</units>
+	<data>sig0_rms_c</data>
+	<format>f5.3</format>
+	<compress>int2 1e-3</compress>
+	<comment>Based on valid high-rate measurements</comment>
+</var>
+<var name="sig0_rms_s" field="2904" sat="n1">
+	<long_name>std dev of S-band backscatter coefficient</long_name>
+	<units>dB</units>
+	<data>sig0_rms_s</data>
+	<format>f5.3</format>
+	<compress>int2 1e-3</compress>
+	<comment>Based on valid high-rate measurements</comment>
+</var>
+<var name="sig0_rms_ku_mle3" field="2912" sat="6a j2 j3">
+	<long_name>std dev of Ku-band backscatter coefficient (MLE3)</long_name>
+	<units>dB</units>
+	<limits>0.0 1.0</limits>
+	<plot_range>0.0 0.5</plot_range>
+	<data>sig0_rms_ku_mle3</data>
+	<format>f5.3</format>
+	<compress>int2 1e-3</compress>
+	<default>0</default>
+	<comment>Based on valid high-rate measurements</comment>
+</var>
+<var name="sig0_rms_ku_plrm" field="2913" sat="3a 3b c2">
+	<long_name>std dev of Ku-band backscatter coefficient (PLRM)</long_name>
+	<units>dB</units>
+	<limits>0.0 1.0</limits>
+	<plot_range>0.0 0.5</plot_range>
+	<data>sig0_rms_ku_plrm</data>
+	<format>f5.3</format>
+	<compress>int2 1e-3</compress>
+	<default>0</default>
+	<comment>Based on valid high-rate measurements</comment>
+</var>
+<var name="sig0_rms_ku_adaptive" sat="j3">
+	<long_name>std dev of Ku-band backscatter coefficient (adaptive retracking)</long_name>
+	<units>dB</units>
+	<limits>0.0 1.0</limits>
+	<plot_range>0.0 0.5</plot_range>
+	<data>sig0_rms_ku_adaptive</data>
+	<format>f5.3</format>
+	<compress>int2 1e-3</compress>
+	<default>0</default>
+	<comment>Based on valid high-rate measurements</comment>
+</var>
+<alias name="sig0_rms_ku_nr" sat="j3">sig0_rms_ku_adaptive</alias>
+<var name="sig0_rms_ku_nr" sat="6a">
+	<long_name>std dev of Ku-band backscatter coefficient (numerical retracking)</long_name>
+	<units>dB</units>
+	<limits>0.0 1.0</limits>
+	<plot_range>0.0 0.5</plot_range>
+	<data>sig0_rms_ku_nr</data>
+	<format>f5.3</format>
+	<compress>int2 1e-3</compress>
+	<default>0</default>
+	<comment>Based on valid high-rate measurements</comment>
+</var>
+
+<var name="off_nadir_angle_wf_ku" field="3001" sat="!n1 sa">
+	<long_name>off-nadir pointing angle from waveform</long_name>
+	<units>degrees</units>
+	<data>off_nadir_angle2_wf_ku SQRT</data>
+	<data sat="gs pn tx">off_nadir_angle_wf_ku</data> <!--Geosat and T/P actually store off-nadir angle, not squared-->
+	<format>f5.3</format>
+	<compress>int2 1e-3</compress>
+</var>
+<if sat="sa">
+	<var name="off_nadir_angle2_wf_ka" field="3002">
+		<long_name>off-nadir pointing angle squared from waveform</long_name>
+		<units>degrees^2</units>
+		<data>off_nadir_angle2_wf_ka</data>
+		<plot_range>-0.04 0.08</plot_range>
+		<format>f7.4</format>
+		<default>0</default>
+		<compress>int2 1e-4</compress>
+	</var>
+	<alias name="attitude" field="30">off_nadir_angle2_wf_ka</alias>
+</if>
+<else>
+	<var name="off_nadir_angle2_wf_ku" field="3002">
+		<long_name>off-nadir pointing angle squared from waveform</long_name>
+		<long_name sat="e2">off-nadir angle squared from waveform (smoothed)</long_name>
+		<units>degrees^2</units>
+		<limits sat="j1 j2 j3">-0.20 0.64</limits> <!--Attitude^2 on Jason is pretty bad-->
+		<limits sat="e2">-0.05 0.05</limits>
+		<plot_range>-0.04 0.08</plot_range>
+		<data>off_nadir_angle2_wf_ku</data>
+		<data sat="gs pn tx">off_nadir_angle_wf_ku SQR</data> <!--Compute attitude^2 from attitude-->
+		<format>f7.4</format>
+		<default>0</default>
+		<compress>int2 1e-4</compress>
+	</var>
+	<alias name="attitude" field="30">off_nadir_angle2_wf_ku</alias>
+	<var name="off_nadir_angle2_wf_ku_nr" sat="6a">
+		<long_name>off-nadir pointing angle squared from waveform (numerical retracking)</long_name>
+		<units>degrees^2</units>
+		<plot_range>-0.04 0.08</plot_range>
+		<data>off_nadir_angle2_wf_ku_nr</data>
+		<format>f7.4</format>
+		<default>0</default>
+		<compress>int2 1e-4</compress>
+	</var>
+	<alias name="attitude_nr" sat="6a">off_nadir_angle2_wf_ku_nr</alias>
+</else>
+<var name="off_nadir_angle_pf" field="3003" sat="2a 3a 3b 6a c2 j2 j3 pn">
+	<long_name>off-nadir pointing angle from platform</long_name>
+	<units>degrees</units>
+	<data>off_nadir_angle2_pf SQRT</data>
+	<data sat="3a 3b c2">attitude_pitch attitude_roll HYPOT</data>
+	<data sat="pn tx">off_nadir_angle_pf</data> <!--T/P and CryoSat store off-nadir angle, not squared-->
+	<plot_range>0.00 0.01</plot_range>
+	<format>f5.3</format>
+	<compress>int2 1e-3</compress>
+</var>
+<var name="off_nadir_angle2_pf" field="3004" sat="2a 3a 3b 6a c2 j1 j2 j3 pn">
+	<long_name>off-nadir pointing angle squared from platform</long_name>
+	<units>degrees^2</units>
+	<data>off_nadir_angle2_pf</data>
+	<data sat="3a 3b c2">attitude_pitch attitude_roll R2</data>
+	<data sat="pn tx">off_nadir_angle_pf SQR</data> <!--Compute attitude^2 from attitude-->
+	<format>f7.4</format>
+	<default>0</default>
+	<compress>int2 1e-4</compress>
+</var>
+<var name="off_nadir_angle2_wf_rms_ku" field="3005" sat="3a 3b 6a c2 j3">
+	<long_name>std dev of off-nadir pointing angle squared from waveform</long_name>
+	<units>degrees^2</units>
+	<plot_range>0.0 0.04</plot_range>
+	<data>off_nadir_angle2_wf_rms_ku</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+</var>
+<var name="off_nadir_angle2_wf_rms_ku_nr" sat="6a">
+	<long_name>std dev of off-nadir pointing angle squared from waveform (numerical retracking)</long_name>
+	<units>degrees^2</units>
+	<plot_range>0.0 0.04</plot_range>
+	<data>off_nadir_angle2_wf_rms_ku_nr</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+</var>
+<var name="attitude_pitch" field="3006" sat="3a 3b 6a c2">
+	<long_name>platform pitch angle</long_name>
+	<units>degrees</units>
+	<data>attitude_pitch</data>
+	<plot_range>-0.16 0.02</plot_range>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+</var>
+<var name="attitude_pitch_20hz" sat="c2">
+	<long_name>20-Hz platform pitch angle</long_name>
+	<units>degrees</units>
+	<data>attitude_pitch_20hz</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<dimensions>2</dimensions>
+</var>
+<var name="attitude_roll" field="3007" sat="3a 3b 6a c2">
+	<long_name>platform roll angle</long_name>
+	<units>degrees</units>
+	<data>attitude_roll</data>
+	<plot_range>-0.16 0.02</plot_range>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+</var>
+<var name="attitude_roll_20hz" sat="c2">
+	<long_name>20-Hz platform roll angle</long_name>
+	<units>degrees</units>
+	<data>attitude_roll_20hz</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<dimensions>2</dimensions>
+</var>
+<var name="attitude_yaw" field="3008" sat="3a 3b 6a c2">
+	<long_name>platform yaw angle</long_name>
+	<units>degrees</units>
+	<data>attitude_yaw</data>
+	<plot_range>-0.12 0.12</plot_range>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+</var>
+<var name="attitude_yaw_20hz" sat="c2">
+	<long_name>20-Hz platform yaw angle</long_name>
+	<units>degrees</units>
+	<data>attitude_yaw_20hz</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<dimensions>2</dimensions>
+</var>
+
+<var name="dswh_ku" field="3101" sat="2a 6a j3 tx">
+	<long_name>net instrument correction to Ku-band significant wave height</long_name>
+	<units>m</units>
+	<data>dswh_ku</data>
+	<format>f6.3</format>
+	<default>0</default>
+	<compress>int2 1e-3</compress>
+	<comment>Correction already added to significant wave height</comment>
+</var>
+<var name="dswh_ku_mle3" sat="6a j3">
+	<long_name>net instrument correction to Ku-band significant wave height (MLE3)</long_name>
+	<units>m</units>
+	<data>dswh_ku_mle3</data>
+	<format>f6.3</format>
+	<default>0</default>
+	<compress>int2 1e-3</compress>
+	<comment>Correction already added to significant wave height</comment>
+</var>
+<var name="dswh_ku_adaptive" sat="j3">
+	<long_name>net instrument correction to Ku-band significant wave height (adaptive retracking)</long_name>
+	<units>m</units>
+	<data>dswh_ku_adaptive</data>
+	<format>f6.3</format>
+	<default>0</default>
+	<compress>int2 1e-3</compress>
+	<comment>Correction already added to significant wave height</comment>
+</var>
+<alias name="dswh_ku_nr" sat="j3">dswh_ku_adaptive</alias>
+<var name="dswh_ku_nr" sat="6a">
+	<long_name>net instrument correction to Ku-band significant wave height (numerical retracking)</long_name>
+	<units>m</units>
+	<data>dswh_ku_nr</data>
+	<format>f6.3</format>
+	<default>0</default>
+	<compress>int2 1e-3</compress>
+	<comment>Correction already added to significant wave height</comment>
+</var>
+<var name="dswh_c" field="3102" sat="2a 6a j3 tx">
+	<long_name>net instrument correction to C-band significant wave height</long_name>
+	<units>m</units>
+	<data>dswh_c</data>
+	<format>f6.3</format>
+	<default>0</default>
+	<compress>int2 1e-3</compress>
+	<comment>Correction already added to significant wave height</comment>
+</var>
+<var name="dswh_swh_att_ku" field="3103" sat="pn tx">
+	<long_name>Ku-band significant wave height correction due to SWH/attitude</long_name>
+	<units>m</units>
+	<data>dswh_swh_att_ku</data>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+	<comment>Correction already added to significant wave height</comment>
+</var>
+<var name="dswh_swh_att_c" field="3104" sat="tx">
+	<long_name>C-band significant wave height correction due to SWH/attitude</long_name>
+	<units>m</units>
+	<data>dswh_swh_att_c</data>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+	<comment>Correction already added to significant wave height</comment>
+</var>
+<alias name="dswh" field="31" sat="tx">dswh_ku</alias>
+
+<var name="dsig0_ku" field="3201" sat="2a 6a e1 e2 j3 tx">
+	<long_name>net instrument correction to Ku-band backscatter coefficient</long_name>
+	<units>dB</units>
+	<data>dsig0_ku</data>
+	<format>f6.2</format>
+	<default>0</default>
+	<compress>int2 1e-2</compress>
+	<comment>Correction already added to backscatter coefficient</comment>
+</var>
+<var name="dsig0_ku_mle3" sat="6a j3">
+	<long_name>net instrument correction to Ku-band backscatter coefficient (MLE3)</long_name>
+	<units>dB</units>
+	<data>dsig0_ku_mle3</data>
+	<format>f6.2</format>
+	<default>0</default>
+	<compress>int2 1e-2</compress>
+	<comment>Correction already added to backscatter coefficient</comment>
+</var>
+<var name="dsig0_ku_adaptive" sat="j3">
+	<long_name>net instrument correction to Ku-band backscatter coefficient (adaptive retracking)</long_name>
+	<units>dB</units>
+	<data>dsig0_ku_adaptive</data>
+	<format>f6.2</format>
+	<default>0</default>
+	<compress>int2 1e-2</compress>
+	<comment>Correction already added to backscatter coefficient</comment>
+</var>
+<alias name="dsig0_ku_nr" sat="j3">dsig0_ku_adaptive</alias>
+<var name="dsig0_ku_nr" sat="6a">
+	<long_name>net instrument correction to Ku-band backscatter coefficient (numerical retracking)</long_name>
+	<units>dB</units>
+	<data>dsig0_ku_nr</data>
+	<format>f6.2</format>
+	<default>0</default>
+	<compress>int2 1e-2</compress>
+	<comment>Correction already added to backscatter coefficient</comment>
+</var>
+<var name="dsig0_c" field="3202" sat="2a 6a j3 tx">
+	<long_name>net instrument correction to C-band backscatter coefficient</long_name>
+	<units>dB</units>
+	<data>dsig0_c</data>
+	<format>f6.2</format>
+	<default>0</default>
+	<compress>int2 1e-2</compress>
+	<comment>Correction already added to backscatter coefficient</comment>
+</var>
+<var name="dsig0_atmos_ka" field="3203" sat="sa">
+	<long_name>Ka-band backscatter coefficient correction due to atmosphere/attitude</long_name>
+	<units>dB</units>
+	<plot_range>0 1</plot_range>
+	<data>dsig0_atmos_ka</data>
+	<format>f5.3</format>
+	<compress>int2 1e-3</compress>
+	<comment>Correction already added to backscatter coefficient</comment>
+</var>
+<var name="dsig0_atmos_ku" field="3203" sat="2a 3a 3b 6a c2 e1 e2 j1 j2 j3 n1 pn tx">
+	<long_name>Ku-band backscatter coefficient correction due to atmosphere/attitude</long_name>
+	<units>dB</units>
+	<plot_range>0 0.5</plot_range>
+	<data>dsig0_atmos_ku</data>
+	<default>0.22</default>
+	<format>f4.2</format>
+	<compress>int1 1e-2</compress>
+	<compress sat="c2 j2 j3">int2 1e-2</compress>
+	<comment>Correction already added to backscatter coefficient</comment>
+</var>
+<var name="dsig0_atmos_c" field="3204" sat="2a 3a 3b 6a j1 j2 j3 tx">
+	<long_name>C-band backscatter coefficient correction due to atmosphere/attitude</long_name>
+	<units>dB</units>
+	<plot_range>0 1</plot_range>
+	<data>dsig0_atmos_c</data>
+	<format>f4.2</format>
+	<compress>int1 1e-2</compress>
+	<comment>Correction already added to backscatter coefficient</comment>
+</var>
+<var name="dsig0_atmos_s" field="3204" sat="n1">
+	<long_name>S-band backscatter coefficient correction due to atmosphere/attitude</long_name>
+	<units>dB</units>
+	<plot_range>0 1</plot_range>
+	<data>dsig0_atmos_s</data>
+	<format>f4.2</format>
+	<compress>int1 1e-2</compress>
+	<comment>Correction already added to backscatter coefficient</comment>
+</var>
+<var name="qual_dsig0_atmos" sat="6a">
+	<long_name>flag indicating the use of climatological values for the computation of sigma0 atmospheric attenuation</long_name>
+	<data>qual_dsig0_atmos</data>
+	<flag_values>not_used used</flag_values>
+	<format>z1</format>
+	<compress>int1</compress>
+</var>
+<var name="dsig0_atten" sat="6a">
+	<long_name>Difference between the expected Ku-band backscatter coefficient (based on the C-band backscatter coefficient) and the measured Ku-band backscatter coefficient</long_name>
+	<units>dB</units>
+	<plot_range>0 1</plot_range>
+	<data>dsig0_atten</data>
+	<format>f4.2</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="dsig0_swh_att" field="3205" sat="c2">
+	<long_name>backscatter coefficient correction due to SWH/attitude</long_name>
+	<units>dB</units>
+	<data>dsig0_swh_att</data>
+	<format>f6.2</format>
+	<compress>int1 1e-2</compress>
+	<comment>Correction already added to backscatter coefficient</comment>
+</var>
+<var name="dsig0_range" field="3206" sat="c2">
+	<long_name>backscatter coefficient correction due to range</long_name>
+	<units>dB</units>
+	<data>dsig0_range</data>
+	<format>f6.2</format>
+	<compress>int1 1e-2</compress>
+	<comment>Correction already added to backscatter coefficient</comment>
+</var>
+<var name="dsig0_temp" field="3207" sat="c2">
+	<long_name>backscatter coefficient correction due to temperature</long_name>
+	<units>dB</units>
+	<data>dsig0_temp</data>
+	<format>f6.2</format>
+	<compress>int1 1e-2</compress>
+	<comment>Correction already added to backscatter coefficient</comment>
+</var>
+<var name="dsig0_atmos_gfs_ka" field="3208" sat="sa">
+	<long_name>Ka-band backscatter coefficient correction due to atmosphere/attitude (GFS)</long_name>
+	<units>dB</units>
+	<data>dsig0_atmos_gfs_ka</data>
+	<default>1.01</default>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+	<comment>Alternative to dsig0_atmos_ka which is already applied</comment>
+</var>
+<alias name="dsig0" field="32" sat="e1 e2 tx">dsig0_ku</alias>
+<alias name="dsig0_atmos" sat="sa">dsig0_atmos_ka</alias>
+<alias name="dsig0_atmos" sat="3a 3b 6a c2 e1 e2 j1 j2 j3 n1 pn tx">dsig0_atmos_ku</alias>
+
+<var name="liquid_water_rad" field="3301 33" sat="2a 3a 3b 6a e1 e2 j1 j2 j3 n1 pn sa tx">
+	<long_name>radiometer liquid water content</long_name>
+	<standard_name>atmosphere_mass_content_of_cloud_liquid_water</standard_name>
+	<units>kg/m^2</units>
+	<data>liquid_water_rad</data>
+	<default>0</default>
+	<format>f6.2</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="liquid_water_gfs" sat="c2 sa">
+	<long_name>NOAA/GFS liquid water content</long_name>
+	<standard_name>atmosphere_mass_content_of_cloud_liquid_water</standard_name>
+	<source>NOAA Global Forecast System</source>
+	<units>kg/m^2</units>
+	<data>liquid_water_gfs</data>
+	<default>0</default>
+	<format>f6.2</format>
+	<compress>int2 1e-2</compress>
+</var>
+
+<var name="water_vapor_rad" field="3302" sat="2a 3a 3b 6a e1 e2 j1 j2 j3 sa">
+	<long_name>radiometer water vapor content</long_name>
+	<standard_name>atmosphere_mass_content_of_water_vapor</standard_name>
+	<units>kg/m^2</units>
+	<plot_range>0 70</plot_range>
+	<data>water_vapor_rad</data>
+	<default>0</default>
+	<if sat="e1 e2">
+		<format>f6.2</format>
+		<compress>int2 1e-2</compress>
+	</if>
+	<else>
+		<format>f6.1</format>
+		<compress>int2 1e-1</compress>
+	</else>
+</var>
+<var name="water_vapor_content_gfs" sat="c2 sa">
+	<long_name>NOAA/GFS water vapor content</long_name>
+	<standard_name>atmosphere_mass_content_of_water_vapor</standard_name>
+	<source>NOAA Global Forecast System</source>
+	<units>kg/m^2</units>
+	<plot_range>0 70</plot_range>
+	<data>water_vapor_content_gfs</data>
+	<default>0</default>
+	<format>f6.2</format>
+	<compress>int2 1e-2</compress>
+</var>
+
+<!--
+<var name="frame_count" field="3401">
+	<long_name>frame count</long_name>
+	<data>frame_count</data>
+	<format>f6.0</format>
+	<compress>int2</compress>
+</var>
+-->
+<var name="flags_sdr_status" field="3402" sat="gs">
+	<long_name>SDR status flags</long_name>
+	<data>flags_sdr_status</data>
+	<format>f6.0</format>
+	<compress>int2</compress>
+</var>
+<var name="flags_sdr_qual" field="3403" sat="gs">
+	<long_name>SDR quality flags</long_name>
+	<data>flags_sdr_qual</data>
+	<format>f6.0</format>
+	<compress>int2</compress>
+</var>
+<!--
+<var name="temp_rcvr" field="3404">
+	<long_name>receiver temperature</long_name>
+	<units>celsius</units>
+	<data>temp_rcvr</data>
+	<format>f6.2</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="vatt_t" field="3405" sat="gs">
+	<long_name>Vatt_t</long_name>
+	<units>volt</units>
+	<data>vatt_t</data>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+</var>
+-->
+<var name="flags_retrack" field="3406" sat="c2">
+	<long_name>retracking flags</long_name>
+	<data>flags_retrack</data>
+	<format>f6.0</format>
+	<compress>int2</compress>
+</var>
+<var name="gate_index_ku" field="3407" sat="tx">
+	<long_name>Ku-band gate index</long_name>
+	<data>gate_index_ku</data>
+	<format>f6.0</format>
+	<compress>int2</compress>
+</var>
+<var name="gate_index_c" field="3408" sat="tx">
+	<long_name>C-band gate index</long_name>
+	<data>gate_index_c</data>
+	<format>f6.0</format>
+	<compress>int2</compress>
+</var>
+<var name="mqe" field="3409" sat="e1 e2 c2">
+	<long_name>mean quadratic error of waveform fit</long_name>
+	<data>mqe</data>
+	<plot_range>0.1 0.7</plot_range>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+</var>
+<var name="mqe_20hz_ku" sat="c2">
+	<long_name>20-Hz mean quadratic error of Ku-band waveform fit</long_name>
+	<data>mqe_20hz_ku</data>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+	<dimensions>2</dimensions>
+</var>
+
+<var name="nr_iter" field="3410" sat="c2">
+	<long_name>number of iterations of retracking</long_name>
+	<data>nr_iter</data>
+	<plot_range>0 25</plot_range>
+	<format>f3.0</format>
+	<compress>int1</compress>
+</var>
+<var name="noise_floor_ku" field="3411" sat="c2">
+	<long_name>Ku-band noise floor of waveforms</long_name>
+	<data>noise_floor_ku</data>
+	<units>dB</units>
+	<plot_range>-40 -20</plot_range>
+	<format>f7.3</format>
+	<compress>int2 1e-3 -20</compress>
+</var>
+<var name="noise_floor_rms_ku" field="3412" sat="c2">
+	<long_name>std dev of Ku-band noise floor of waveforms</long_name>
+	<data>noise_floor_rms_ku</data>
+	<units>dB</units>
+	<format>f7.3</format>
+	<compress>int2 1e-3</compress>
+</var>
+<var name="noise_floor_20hz_ku" sat="c2">
+	<long_name>20-Hz Ku-band noise floor of waveforms</long_name>
+	<data>noise_floor_20hz_ku</data>
+	<units>dB</units>
+	<format>f7.3</format>
+	<compress>int2 1e-3 -20</compress>
+	<dimensions>2</dimensions>
+</var>
+<var name="flags_star_tracker" field="3413" sat="c2">
+	<long_name>star tracker flags</long_name>
+	<plot_range>0 8</plot_range>
+	<data>flags_star_tracker</data>
+	<flag_masks>str1_on str2_on str3_on</flag_masks>
+	<compress>int1</compress>
+	<format>z1</format>
+</var>
+<var name="track_mode" field="3415" sat="gs">
+	<long_name>tracking mode</long_name>
+	<data>track_mode</data>
+	<format>f6.0</format>
+	<compress>int2</compress>
+</var>
+<var name="seq_nr" field="3416" sat="gs">
+	<long_name>10-Hz sequence number</long_name>
+	<data>seq_nr</data>
+	<format>f6.0</format>
+	<compress>int2</compress>
+</var>
+
+<var name="rain_ice_index" field="3501 35" sat="n1 tx">
+	<long_name>rain/ice index</long_name>
+	<data>rain_ice_index</data>
+	<format>f4.2</format>
+	<compress>int2 1e-2</compress>
+</var>
+
+<var name="basin" field="3601 36">
+	<long_name>basin code</long_name>
+	<units>1</units>
+	<parameters>basin_codes.nc -q</parameters>
+	<data>basin</data>
+	<format>f3.0</format>
+	<compress>int1</compress>
+</var>
+
+<var name="waveform_20hz" sat="c2">
+	<long_name>waveform data</long_name>
+	<data>waveform_20hz</data>
+	<format>f6.0</format>
+	<compress>int2 1 32768</compress>
+	<dimensions>3</dimensions>
+</var>
+
+<var name="waveform_scale_20hz" sat="c2">
+	<long_name>waveform scale factor</long_name>
+	<units>dB</units>
+	<data>waveform_scale_20hz</data>
+	<format>f8.3</format>
+	<compress>int4 1e-3</compress>
+	<dimensions>2</dimensions>
+	<comment>scale factor (received/transmitted) power, converted to dB, including instrumental effects</comment>
+</var>
+
+<var name="ref_frame_offset" field="3801 38">
+	<long_name>reference frame offset</long_name>
+	<units>m</units>
+	<data>ref_frame_offset</data>
+	<format>f7.4</format>
+	<default>0</default>
+	<compress>int2 1e-4</compress>
+	<dimensions>0</dimensions>
+	<parameters>0</parameters>
+	<parameters sat="3a"> -19   0  0  0 0</parameters>
+	<parameters sat="3b"> -16   0  0  0 0</parameters>
+	<parameters sat="c2"> -29   0  0  0 0</parameters>
+	<parameters sat="e1">  21   0  0  0 0</parameters>
+	<parameters sat="e2">  62   0  0  0 0</parameters>
+	<parameters sat="gs">   0 -65  0  0 5</parameters>
+	<parameters sat="g1">  73   0  0  0 0</parameters>
+	<parameters sat="j1">  85   0  0  0 0</parameters>
+	<parameters sat="j2"> -15   0  0  0 0</parameters>
+	<parameters sat="j3"> -23   0  0  0 0</parameters>
+	<parameters sat="n1"> 451   0  0  0 0</parameters>
+	<parameters sat="pn"> -15   0  0  0 0</parameters>
+	<parameters sat="sa"> -87   0  0  0 0</parameters>
+</var>
+<var name="ref_frame_offset_mle3" field="3811" sat="6a j2 j3">
+	<long_name>reference frame offset (MLE3)</long_name>
+	<units>m</units>
+	<data>ref_frame_offset_mle3</data>
+	<format>f7.4</format>
+	<default>0</default>
+	<compress>int2 1e-4</compress>
+	<dimensions>0</dimensions>
+	<parameters sat="6a">     0 0  0  0 0</parameters>
+	<parameters sat="j2">  13.5 0  0  0 0</parameters>
+	<parameters sat="j3">  -9.0 0  0  0 0</parameters>
+</var>
+<var name="ref_frame_offset_plrm" field="3812" sat="3a 3b">
+	<long_name>reference frame offset (PLRM)</long_name>
+	<units>m</units>
+	<data>ref_frame_offset_plrm</data>
+	<format>f7.4</format>
+	<default>0</default>
+	<compress>int2 1e-4</compress>
+	<dimensions>0</dimensions>
+	<parameters sat="3a">  13   0  0  0 0</parameters>
+	<parameters sat="3b">   7   0  0  0 0</parameters>
+</var>
+<var name="ref_frame_offset_adaptive" sat="j3">
+	<long_name>reference frame offset (adaptive retracking)</long_name>
+	<units>m</units>
+	<data>ref_frame_offset_adaptive</data>
+	<format>f7.4</format>
+	<default>0</default>
+	<compress>int2 1e-4</compress>
+	<dimensions>0</dimensions>
+	<parameters> -48.0 0  0  0 0</parameters>
+</var>
+<alias name="ref_framge_offset_nr" sat="j3">ref_frame_offset_adaptive</alias>
+<var name="ref_frame_offset_nr" sat="6a">
+	<long_name>reference frame offset (numerical retracking)</long_name>
+	<units>m</units>
+	<data>ref_frame_offset_nr</data>
+	<format>f7.4</format>
+	<default>0</default>
+	<compress>int2 1e-4</compress>
+	<dimensions>0</dimensions>
+	<parameters>0</parameters>
+</var>
+
+<var name="tide_equil" field="3901 39">
+	<long_name>long-period equilibrium ocean tide</long_name>
+	<standard_name>sea_surface_height_amplitude_due_to_equilibrium_ocean_tide</standard_name>
+	<units>m</units>
+	<data>tide_equil</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>The long-period equilibrium ocean tide is included in the ocean tide values of the GOT and FES tide models</comment>
+</var>
+<var name="tide_non_equil" field="3902">
+	<long_name>long-period non-equilibrium ocean tide</long_name>
+	<standard_name>sea_surface_height_amplitude_due_to_non_equilibrium_ocean_tide</standard_name>
+	<units>m</units>
+	<data>tide_non_equil</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>The long-period non-equilibrium ocean tide results from the corresponding FES tide model and is included in the FES ocean tide value</comment>
+</var>
+<var name="tide_lunar_nodal">
+	<long_name>nodal lunar ocean tide</long_name>
+	<units>m</units>
+	<data>time 6.128907968287D-07 MUL 55.151702881 SUB 360 FMOD COSD lat SIND SQR 1.5 MUL 0.5 SUB MUL
+		0.01220911657 MUL</data>
+	<format>f7.4</format>
+	<compress>int1 1e-4</compress>
+</var>
+
+<var name="wave_m0" field="4001 40" sat="!e1 gs">
+	<long_name>WaveWatch3 wave height variance</long_name>
+	<source>WaveWatch3</source>
+	<units>m^2</units>
+	<data>wave_m0</data>
+	<compress>int2 1e-3</compress>
+</var>
+
+<var name="wave_m1" field="4101 41" sat="!e1 gs">
+	<long_name>WaveWatch3 first moment of wave height</long_name>
+	<source>WaveWatch3</source>
+	<units>m^2/s</units>
+	<data>wave_m1</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+</var>
+
+<var name="wave_m2" field="4201 42" sat="!e1 gs">
+	<long_name>WaveWatch3 wave velocity variance</long_name>
+	<source>WaveWatch3</source>
+	<units>m^2/s^2</units>
+	<data>wave_m2</data>
+	<format>f8.5</format>
+	<compress>int2 1e-5</compress>
+</var>
+
+<var name="wave_m4" field="4301 43" sat="!e1 gs">
+	<long_name>WaveWatch3 wave slope variance</long_name>
+	<source>WaveWatch3</source>
+	<units>radian^2</units>
+	<data>wave_m4</data>
+	<format>f9.6</format>
+	<compress>int2 1e-6</compress>
+</var>
+
+<var name="wave_shs" field="4401 44" sat="!e1 gs">
+	<long_name>WaveWatch3 wave swell height</long_name>
+	<standard_name>sea_surface_swell_wave_significant_height</standard_name>
+	<source>WaveWatch3</source>
+	<units>m</units>
+	<data>wave_shs</data>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+</var>
+
+<var name="wave_wu" sat="!e1 gs">
+	<long_name>WaveWatch3 zonal wind speed</long_name>
+	<source>WaveWatch3</source>
+	<units>m/s</units>
+	<data>wave_wu</data>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+</var>
+
+<var name="wave_wv" sat="!e1 gs">
+	<long_name>WaveWatch3 meridional wind speed</long_name>
+	<source>WaveWatch3</source>
+	<units>m/s</units>
+	<data>wave_wu</data>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+</var>
+
+<var name="wave_spr" sat="!e1 gs">
+	<long_name>WaveWatch3 wave swell period</long_name>
+	<standard_name>sea_surface_swell_wave_period</standard_name>
+	<source>WaveWatch3</source>
+	<units>s</units>
+	<data>wave_spr</data>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+</var>
+
+<var name="wave_sdr" sat="!e1 gs">
+	<long_name>WaveWatch3 wave swell direction</long_name>
+	<standard_name>sea_surface_swell_wave_to_direction</standard_name>
+	<source>WaveWatch3</source>
+	<units>radian</units>
+	<data>wave_sdr</data>
+	<format>f6.3</format>
+	<compress>int2 1e-3</compress>
+</var>
+
+<var name="mean_wave_period" sat="3a 3b 6a j3 sa">
+	<long_name>t02 mean wave period</long_name>
+	<standard_name>sea_surface_wind_wave_mean_period_from_variance_spectral_density_second_frequency_moment</standard_name>
+	<source>MFWAM/Meteo France</source>
+	<units>s</units>
+	<data>mean_wave_period</data>
+	<format>f6.2</format>
+	<compress>int2 1e-2</compress>
+</var>
+
+<var name="mean_wave_direction" sat="3a 3b 6a j3 sa">
+	<long_name>mean direction of the sea surface wave</long_name>
+	<standard_name>sea_surface_wave_from_direction</standard_name>
+	<source>MFWAM/Meteo France</source>
+	<units>degrees</units>
+	<data>mean_wave_direction</data>
+	<format>f7.2</format>
+	<compress>int2 1e-2</compress>
+</var>
+
+<var name="dist_coast" field="4501 45">
+	<long_name>distance to coast</long_name>
+	<source>GMT/GSHHS</source>
+	<parameters>distance-to-coast/distance-to-coast_1m.nc</parameters>
+	<units>km</units>
+	<data>dist_coast</data>
+	<format>f6.0</format>
+	<compress>int2</compress>
+	<if sat="s6">
+		<format>f7.1</format>
+		<compress>int2 0.1</compress>
+	</if>
+	<comment>Negative numbers are inland, positive numbers are offshore</comment>
+</var>
+
+<var name="rad_dist_coast" sat="6a j3">
+	<long_name>radiometer main beam radial distance to land</long_name>
+	<units>km</units>
+	<data>rad_dist_coast</data>
+	<format>f7.1</format>
+	<compress>int2 1e-1</compress>
+	<comment>Negative numbers are inland, positive numbers are offshore</comment>
+</var>
+
+<var name="prox_coast" field="4502" sat="2a 3a 3b 6a c2 j1 j2 j3 n1 pn sa tx">
+	<long_name>coastal proximity parameter</long_name>
+	<source>NOC Southampton</source>
+	<parameters>CoastalProximity_v2_1.nc</parameters>
+	<data>prox_coast</data>
+	<format>f4.2</format>
+	<compress>int1 1e-2</compress>
+	<comment>Dimensionless measure of the effect of land over altimetric waveforms, where -1 means unaffected by land (open-ocean) and 1 means totally affected by land (inland); can be used for screening purposes in place of distance from coast</comment>
+</var>
+
+<var name="angle_coast" sat="3a 3b 6a j3">
+	<long_name>angle of approach to the coast</long_name>
+	<source>EUMETSAT</source>
+	<data>angle_coast</data>
+	<parameters>distance-to-coast/angle-to-coast_1m_s6.nc -p</parameters>
+	<parameters sat="3a 3b">distance-to-coast/angle-to-coast_1m_s3.nc -p</parameters>
+	<format>f7.2</format>
+	<compress>int2 1e-2</compress>
+	<comment>Angle of approach to the closest coast. 0 is parallel to the coast with the land on the right. Positive values indicate the satellite is approaching the land. Negative values indicate the satellite is leaving the land. Values close to +/-180 degrees have the land on the left.</comment>
+</var>
+
+<var name="seaice_class" field="4601 46" sat="e1 e2 n1">
+	<long_name>sea ice classification</long_name>
+	<standard_name>sea_ice_classification</standard_name>
+	<data>seaice_class</data>
+	<format>f3.0</format>
+	<compress>int1</compress>
+</var>
+
+<var name="seaice_conc" field="4701 47">
+	<long_name>sea ice concentration</long_name>
+	<standard_name>sea_ice_area_fraction</standard_name>
+	<source>NOAA Optimal Interpolation Sea Surface Temperature v2</source>
+	<units>%</units>
+	<data>seaice_conc</data>
+	<format>f3.0</format>
+	<compress>int1</compress>
+</var>
+
+<var name="seaice_conc_osiaf" field="4702">
+	<long_name>sea ice concentration</long_name>
+	<standard_name>sea_ice_area_fraction</standard_name>
+	<source>OSIAF sea ice concentration</source>
+	<units>%</units>
+	<data>seaice_conc_osiaf</data>
+	<format>f3.0</format>
+	<compress>int1</compress>
+</var>
+
+<var name="sst" field="4801 48">
+	<long_name>sea surface temperature</long_name>
+	<standard_name>sea_surface_temperature</standard_name>
+	<source>NOAA Optimal Interpolation Sea Surface Temperature v2</source>
+	<units>degC</units>
+	<data>sst</data>
+	<format>f5.2</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="sst_mean" field="4802">
+	<long_name>local mean sea surface temperature</long_name>
+	<source>NOAA Optimal Interpolation Sea Surface Temperature v2</source>
+	<units>degC</units>
+	<data>sst_mean</data>
+	<format>f5.2</format>
+	<compress>int2 1e-2</compress>
+</var>
+
+<var name="dry_tropo_airtide" field="4901 49">
+	<long_name>air tide correction to the dry tropospheric correction</long_name>
+	<units>m</units>
+	<data>dry_tropo_airtide</data>
+	<format>f7.4</format>
+	<compress>int1 1e-4</compress>
+	<comment>Add to dry tropospheric correction to account for missing S1 and S2 tidal signal</comment>
+</var>
+
+<var name="mss_annual" field="5001 50">
+	<long_name>annual variation of mean sea level</long_name>
+	<source>DTU10</source>
+	<parameters>DTU10/DTU10ANN_cos.nc DTU10/DTU10ANN_sin.nc</parameters>
+	<units>m</units>
+	<data>mss_annual</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Annual variation of sea level with respect to long-term mean sea level</comment>
+</var>
+
+<var name="gia" field="5101 51">
+	<long_name>GIA correction</long_name>
+	<source>ICE5G v1.3 VM2 L90 2012</source>
+	<parameters>ice5g/dGeoid250.1grid.ICE5Gv1.3_VM2_L90_2012.nc -t0.001</parameters>
+	<units>m</units>
+	<data>gia</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Change of land elevation relative to geoid due to GIA since 1 Jan 2000</comment>
+</var>
+
+<var name="surface_slope_cor" field="5101 52">
+	<long_name>Surface slope correction</long_name>
+	<source>Sandwell and Smith (2014)</source>
+	<parameters sat="gs g1">global_VD_1min/DHscaled.nc -p0.708</parameters>
+	<parameters sat="tx j1 j2 j3 pn 6a">global_VD_1min/DHscaled.nc -p1.112</parameters>
+	<parameters sat="e1 e2 n1 sa">global_VD_1min/DHscaled.nc -p0.707</parameters>
+	<parameters sat="3a 3b">global_VD_1min/DHscaled.nc -p0.721</parameters>
+	<parameters sat="c2">global_VD_1min/DHscaled.nc -p0.656</parameters>
+	<units>m</units>
+	<data>surface_slope_cor</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Correction to sea level anomalies based on local geoid slopes</comment>
+</var>
+
+<var name="orbit_type" sat="3a 3b">
+	<long_name>type of orbit solution used</long_name>
+	<standard_name>height_above_reference_ellipsoid status_flag</standard_name>
+	<flag_values>osf fos navatt doris_nav gnss_roe pod_moe salp_moe pod_poe salp_poe</flag_values>
+	<plot_range>0 8</plot_range>
+	<data>orbit_type</data>
+	<format>z1</format>
+	<compress>int1</compress>
+	<comment>Indication about which orbit solution was used for alt_gdre</comment>
+</var>
+
+<var name="cal1_range_ku" sat="6a">
+	<long_name>CAL1 range correction applied to Ku-band range</long_name>
+	<units>dB</units>
+	<data>cal1_range_ku</data>
+	<dimensions>0</dimensions>
+	<format>f7.4</format>
+	<compress>dble</compress>
+</var>
+
+<var name="cal1_range_c" sat="6a">
+	<long_name>CAL1 range correction applied to C-band range</long_name>
+	<units>dB</units>
+	<data>cal1_range_c</data>
+	<dimensions>0</dimensions>
+	<format>f7.4</format>
+	<compress>dble</compress>
+</var>
+
+<var name="cal1_power_ku" sat="6a">
+	<long_name>CAL1 power scaling applied to Ku-band sigma0</long_name>
+	<units>dB</units>
+	<data>cal1_power_ku</data>
+	<dimensions>0</dimensions>
+	<format>f7.2</format>
+	<compress>dble</compress>
+</var>
+
+<var name="cal1_power_c" sat="6a">
+	<long_name>CAL1 power scaling applied to C-band sigma0</long_name>
+	<units>dB</units>
+	<data>cal1_power_c</data>
+	<dimensions>0</dimensions>
+	<format>f7.2</format>
+	<compress>dble</compress>
+</var>
+
+<!-- "Global attributes" -->
+
+<var name="first_meas_time" field="9901 99">
+	<long_name>time of first measurement in pass</long_name>
+	<units>seconds since 1985-01-01</units>
+	<data>:first_meas_time</data>
+	<format>f17.6</format>
+</var>
+
+<var name="last_meas_time" field="9902">
+	<long_name>time of last measurement in pass</long_name>
+	<units>seconds since 1985-01-01</units>
+	<data>:last_meas_time</data>
+	<format>f17.6</format>
+</var>
+
+<var name="eqtime" field="9903">
+	<long_name>time of equator crossing</long_name>
+	<units>seconds since 1985-01-01</units>
+	<data>:equator_time</data>
+	<format>f17.6</format>
+</var>
+
+<var name="eqlon" field="9904">
+	<long_name>longitude of equator crossing</long_name>
+	<units>degrees_east</units>
+	<data>:equator_longitude</data>
+	<format>f11.6</format>
+</var>
+
+<var name="cycle" field="9905">
+	<long_name>cycle number</long_name>
+	<data>:cycle_number</data>
+	<format>f4.0</format>
+	<compress>int2</compress>
+</var>
+
+<var name="pass" field="9906">
+	<long_name>pass number</long_name>
+	<data>:pass_number</data>
+	<format>f5.0</format>
+	<compress>int2</compress>
+</var>
+
+<!-- Mission definitions for various satellites -->
+
+<if sat="2a">
+	<satellite>HY-2A</satellite>
+	<satid>15</satid>
+	<dt1hz>1.000000</dt1hz><!--By design!-->
+	<inclination>99.34</inclination>
+	<frequency>13.58 5.25</frequency>
+	<xover_params>0.05 0.05</xover_params><!--Need to verify-->
+	<phase name="a">
+		<mission>Exact Repeat Mission</mission>
+		<cycles>116 120</cycles><!--Need to change-->
+		<repeat>14 386</repeat><!--Need to change-->
+		<ref_pass>2016-03-01T21:00:11 -41.18 116 105</ref_pass><!--May need to update this value-->
+		<start_time>2013-01-01</start_time><!--Need to change-->
+	</phase>
+</if>
+
+<if sat="3a">
+	<satellite>SNTNL-3A</satellite>
+	<satid>16</satid>
+	<dt1hz>1.000000</dt1hz><!--By design!-->
+	<inclination>98.65</inclination>
+	<frequency>13.575 5.41</frequency>
+	<xover_params>0.05 0.05</xover_params><!--Need to verify-->
+	<phase name="a">
+		<mission>Exact Repeat Mission</mission>
+		<cycles>0 199</cycles>
+		<repeat>27 770</repeat>
+		<ref_pass>2016-06-28T21:57:26 0.627 6 1 1899</ref_pass>
+		<start_time>2016-03-01</start_time>
+	</phase>
+</if>
+
+<if sat="3b">
+	<satellite>SNTNL-3B</satellite>
+	<satid>17</satid>
+	<dt1hz>1.000000</dt1hz><!--By design!-->
+	<inclination>98.65</inclination>
+	<frequency>13.575 5.41</frequency>
+	<xover_params>0.05 0.05</xover_params><!--Need to verify-->
+	<phase name="1">
+		<mission>Initial Drift Phase</mission>
+		<cycles>3 5</cycles>
+		<repeat>30.9996 882</repeat>
+		<ref_pass>2018-05-08T12:22:29 144.35 3 75 182</ref_pass>
+		<start_time>2018-05-08</start_time>
+	</phase>
+	<phase name="1">
+		<mission>Initial Drift Phase</mission>
+		<cycles>6 8</cycles>
+		<repeat>31 884</repeat>
+		<ref_pass>2018-05-30T13:57:33 120.51 7 847 496</ref_pass>
+		<start_time>2018-05-29T04:02:29</start_time>
+	</phase>
+	<phase name="a">
+		<mission>Tandem Phase</mission>
+		<cycles>9 14</cycles>
+		<repeat>27 770</repeat>
+		<ref_pass>2018-05-31T21:57:35 0.627 9 1 515</ref_pass>
+		<start_time>2018-06-06T02:14:50</start_time>
+	</phase>
+	<phase name="2">
+		<mission>Drift Phase</mission>
+		<cycles>15 15</cycles>
+		<repeat>80 2282 0.0933</repeat>
+		<ref_pass>2018-10-16T10:32:35 171.742 15 73 2476</ref_pass>
+		<start_time>2018-10-16T10:07:20</start_time>
+	</phase>
+	<phase name="2">
+		<mission>Drift Phase</mission>
+		<cycles>16 16</cycles>
+		<repeat>400 11418 1.0833</repeat>
+		<ref_pass>2018-10-24T10:22:27 174.266 16 301 2590</ref_pass>
+		<start_time>2018-10-24T09:57:30</start_time>
+	</phase>
+	<phase name="2">
+		<mission>Drift Phase</mission>
+		<cycles>17 17</cycles>
+		<repeat>400 11418 1.0833</repeat>
+		<ref_pass>2018-11-09T21:32:40 6.783 17 1 2825</ref_pass>
+		<start_time>2018-11-09T21:07:40</start_time>
+	</phase>
+	<phase name="2">
+		<mission>Drift Phase</mission>
+		<cycles>18 18</cycles>
+		<repeat>242 6902 0.2017</repeat>
+		<ref_pass>2018-11-20T14:49:28 107.613 18 21 2978</ref_pass>
+		<start_time>2018-11-20T14:24:40</start_time>
+	</phase>
+	<phase name="b">
+		<mission>Exact Repeat Mission</mission>
+		<cycles>19 199</cycles><!--Need to update this value-->
+		<repeat>27 770</repeat>
+		<ref_pass>2018-11-23T10:08:38 177.820 19 101 3018</ref_pass>
+		<start_time>2018-11-23T09:46:00</start_time>
+	</phase>
+</if>
+
+<if sat="6a">
+	<satellite>SNTNL-6A</satellite>
+	<satid>18</satid>
+	<dt1hz>1.000000</dt1hz>
+	<inclination>66.04</inclination>
+	<frequency>13.575 5.3</frequency>
+	<xover_params>0.04 0.035</xover_params>
+	<phase name="1">
+		<mission>Drift Phase</mission>
+		<cycles>0 2</cycles>
+		<repeat>9.872055 254 15.61</repeat>
+		<ref_pass>2020-12-03T21:29:03 338.10 2 59 157</ref_pass>
+		<start_time>2020-11-30T14:00:00</start_time>
+	</phase>
+	<phase name="1">
+		<mission>Drift Phase</mission>
+		<cycles>2 3</cycles>
+		<repeat>9.899811 254 5.69</repeat>
+		<ref_pass>2020-12-10T04:35:47 211.99 2 221 238</ref_pass>
+		<start_time>2020-12-10T05:01:00</start_time>
+	</phase>
+	<phase name="a">
+		<mission>Exact Repeat Mission</mission>
+		<cycles>4 199</cycles>
+		<repeat>9.91564280 254</repeat>
+		<ref_pass>2020-12-27T08:33:32 99.92 5 1 458</ref_pass><!--S6A 30 seconds behind JA3-->
+		<start_time>2020-12-17T21:21:30</start_time>
+	</phase>
+</if>
+
+<if sat="c2">
+	<satellite>CRYOSAT2</satellite>
+	<satid>12</satid>
+	<dt1hz>0.980469</dt1hz>
+	<inclination>92</inclination>
+	<frequency>13.575</frequency>
+	<xover_params>0.04 0.05</xover_params>
+	<phase name="a">
+		<mission>Multi-disciplinary Phase</mission>
+		<cycles>4 199</cycles>
+		<!--This is "real" cycle and pass, i.e. subcycle 14, pass 1-->
+		<ref_pass>2011-04-12T11:40:14 0.731073 2 1 5041</ref_pass>
+		<repeat>368.239641 10688</repeat>
+		<start_time>2010-07-14</start_time>
+		<subcycles>840 840 782 840 840 782 840 840 782 840 840 782 840</subcycles>
+	</phase>
+</if>
+
+<if sat="e1">
+	<satellite>ERS-1</satellite>
+	<satid>4</satid>
+	<dt1hz>0.980469</dt1hz>
+	<inclination>98.54</inclination>
+	<frequency>13.8</frequency>
+	<xover_params>0.05 0.05</xover_params>
+	<phase name="a">
+		<mission>Calibration Phase</mission>
+		<cycles>1 46</cycles>
+		<repeat>3.0 86</repeat>
+		<ref_pass>1991-08-01T21:59:30 7.62 2 1</ref_pass>
+		<start_time>1991-08-01</start_time>
+	</phase>
+	<phase name="b">
+		<mission>Ice Phase 1</mission>
+		<cycles>47 82</cycles>
+		<repeat>3.0 86</repeat>
+		<ref_pass>1991-12-23T22:06:50 5.75 50 1</ref_pass>
+		<start_time>1991-12-14T21:40</start_time>
+	</phase>
+	<phase name="c">
+		<mission>Multi-disciplinary Phase 1</mission>
+		<cycles>83 101</cycles>
+		<repeat>35.0 1002</repeat>
+		<ref_pass>1992-05-01T22:29:30 0.13 84 1</ref_pass>
+		<start_time>1992-04-14</start_time>
+	</phase>
+	<phase name="d">
+		<mission>Ice phase 2</mission>
+		<cycles>102 138</cycles>
+		<repeat>3.0 86</repeat>
+		<ref_pass>1993-12-24T22:06:50 5.75 103 1</ref_pass>
+		<start_time>1993-12-24</start_time>
+	</phase>
+	<phase name="e">
+		<mission>Geodetic Phase 1</mission>
+		<cycles>139 140</cycles>
+		<repeat>168.0 4822</repeat>
+		<ref_pass>1994-05-23T22:29:50 0.02 140 1</ref_pass>
+		<start_time>1994-04-10T18:00</start_time>
+	</phase>
+	<phase name="f">
+		<mission>Geodetic Phase 2</mission>
+		<cycles>141 143</cycles>
+		<repeat>168.0 4822</repeat>
+		<ref_pass>1994-10-01T22:29:40 0.10 142 1</ref_pass>
+		<start_time>1994-09-28T02:00</start_time>
+	</phase>
+	<phase name="g">
+		<mission>Multi-disciplinary Phase 2</mission>
+		<cycles>144 156</cycles>
+		<repeat>35.0 1002</repeat>
+		<ref_pass>1995-04-09T22:29:40 0.13 145 1</ref_pass>
+		<start_time>1995-03-24</start_time>
+		<end_time>1996-06-03</end_time>
+	</phase>
+</if>
+
+<if sat="e2">
+	<satellite>ERS-2</satellite>
+	<satid>7</satid>
+	<dt1hz>0.980469</dt1hz>
+	<inclination>98.54</inclination>
+	<frequency>13.8</frequency>
+	<xover_params>0.05 0.05</xover_params>
+	<phase name="a">
+		<mission>Multi-disciplinary Phase</mission>
+		<cycles>0 169</cycles>
+		<repeat>35.0 1002</repeat>
+		<ref_pass>1995-05-15T22:29:30 0.13 1 1</ref_pass>
+		<start_time>1995-04-29</start_time>
+		<end_time>2011-07-05</end_time>
+	</phase>
+</if>
+
+<if sat="g1">
+	<satellite>GFO-1</satellite>
+	<satid>8</satid>
+	<dt1hz>0.979922</dt1hz>
+	<inclination>108.05</inclination>
+	<frequency>13.495</frequency>
+	<xover_params>0.05 0.15</xover_params>
+	<phase name="a">
+		<mission>Exact Repeat Mission</mission>
+		<cycles>37 223</cycles>
+		<repeat>17.05057808 488</repeat>
+		<ref_pass>2000-01-07T17:53:30 1.00 37 1</ref_pass>
+		<start_time>2000-01-07</start_time>
+		<end_time>2008-09-18</end_time>
+	</phase>
+</if>
+
+<if sat="g3">
+	<satellite>GEOS-3</satellite>
+	<satid>1</satid>
+	<inclination>60</inclination>
+	<xover_params>0.20 0.80</xover_params>
+	<phase name="a">
+		<mission>Geodetic Mission</mission>
+	</phase>
+</if>
+
+<if sat="gs">
+	<satellite>GEOSAT</satellite>
+	<satid>3</satid>
+	<dt1hz>0.979922</dt1hz>
+	<inclination>108.05</inclination>
+	<frequency>13.5</frequency>
+	<xover_params>0.07 0.15</xover_params>
+	<phase name="a">
+		<mission>Geodetic Mission</mission>
+		<cycles>1 25</cycles>
+		<repeat>23.06888431 660 -0.206</repeat>
+		<ref_pass>1985-04-13T07:22:04 0.25 2 1</ref_pass>
+		<start_time>1985-03-31</start_time>
+	</phase>
+	<phase name="b">
+		<mission>Exact Repeat Mission</mission>
+		<cycles>26 93</cycles>
+		<repeat>17.05057808 488</repeat>
+		<ref_pass>1986-11-17T00:42:22 1.00 27 1</ref_pass>
+		<start_time>1986-11-08</start_time>
+		<end_time>1989-12-31</end_time>
+	</phase>
+</if>
+
+<if sat="j1">
+	<satellite>JASON-1</satellite>
+	<satid>9</satid>
+	<dt1hz>1.019577</dt1hz>
+	<inclination>66.04</inclination>
+	<frequency>13.575 5.3</frequency>
+	<xover_params>0.04 0.035</xover_params>
+	<phase name="a">
+		<mission>Exact Repeat Mission</mission>
+		<cycles>1 260</cycles>
+		<repeat>9.91564280 254</repeat>
+		<ref_pass>2002-02-04T01:35:59 99.92 3 1</ref_pass>
+		<start_time>2002-01-15</start_time>
+	</phase>
+	<phase name="b">
+		<mission>Interleaved Mission</mission>
+		<cycles>262 374</cycles>
+		<repeat>9.91564280 254</repeat>
+		<ref_pass>2009-02-20T04:19:04 98.50 263 1</ref_pass>
+		<start_time>2009-02-10</start_time>
+	</phase>
+	<phase name="c">
+		<mission>Geodetic Mission</mission>
+		<cycles>382 425</cycles>
+		<!--This is "real" cycle and pass, i.e. subcycle 382, pass 1-->
+		<repeat>406.528444 10438</repeat>
+		<ref_pass>2012-05-07T14:57:08 308.15 1 1</ref_pass>
+		<start_time>2012-05-07</start_time>
+		<end_time>2013-06-22</end_time>
+		<subcycles start="382">
+			280 280 280 280 102 280 280 280 280 102 280 280 280 280 102 280 280 280 102
+			280 280 280 280 102 280 280 280 280 102 280 280 280 280 102 280 280 280 102
+			280 280 280 280 102
+		</subcycles>
+	</phase>
+</if>
+
+<if sat="j2">
+	<satellite>JASON-2</satellite>
+	<satid>11</satid>
+	<dt1hz>1.020152</dt1hz>
+	<inclination>66.04</inclination>
+	<frequency>13.575 5.3</frequency>
+	<xover_params>0.04 0.035</xover_params>
+	<phase name="a">
+		<mission>Exact Repeat Mission</mission>
+		<cycles>0 303</cycles>
+		<repeat>9.91564280 254</repeat>
+		<ref_pass>2008-07-12T01:48:13 99.92 1 1 102</ref_pass>
+		<start_time>2008-07-04</start_time>
+	</phase>
+	<phase name="b">
+		<mission>Interleaved Mission</mission>
+		<cycles>305 327</cycles>
+		<repeat>9.91564280 254</repeat>
+		<ref_pass>2016-10-17T09:24:22 98.51 306 1 38774</ref_pass>
+		<start_time>2016-10-14</start_time>
+	</phase>
+	<phase name="c">
+		<mission>Geodetic Mission 1</mission>
+		<cycles>332 355</cycles>
+		<!--This is "real" cycle and pass, i.e. subcycle 332, pass 33-->
+		<repeat>367.8446 9472</repeat>
+		<ref_pass>2017-07-11T11:00:37 336.37 1 33</ref_pass>
+		<start_time>2017-07-11</start_time>
+		<subcycles start="332">
+			434 434 434 434 332 434 434 434 332
+			434 434 434 434 332 434 434 434 332
+			434 434 434 434 332
+		</subcycles>
+	</phase>
+	<phase name="d">
+		<mission>Geodetic Mission 2</mission>
+		<cycles>356 369</cycles>
+		<!--This is "real" cycle and pass, i.e. subcycle 356, pass 33-->
+		<repeat>367.8446 9472</repeat>
+		<ref_pass>2018-07-14T07:16:43 336.39 1 33</ref_pass>
+		<start_time>2018-07-25</start_time>
+		<subcycles start="356">
+			434 434 434 434 332 434 434 434 332
+			434 434 434 434 332 434 434 434 332
+			434 434 434 434 332
+		</subcycles>
+	</phase>
+	<phase name="d">
+		<!--This may need to be modified-->
+		<!--After "rewind" by 97 days, we increase the subcycle by 6-->
+		<mission>Geodetic Mission 2</mission>
+		<cycles>375 383</cycles>
+		<!--This is "real" cycle and pass, i.e. subcycle 361, pass 33-->
+		<repeat>367.8446 9472</repeat>
+		<ref_pass>2018-10-02T14:46:08 336.39 1 33</ref_pass>
+		<start_time>2019-05-22</start_time>
+		<subcycles start="361">
+			434 434 434 434 332 434 434 434 332
+			434 434 434 434 332 434 434 434 332
+			434 434 434 434 332
+		</subcycles>
+	</phase>
+</if>
+
+<if sat="j3">
+	<satellite>JASON-3</satellite>
+	<satid>14</satid>
+	<dt1hz>1.018710</dt1hz>
+	<inclination>66.04</inclination>
+	<frequency>13.575 5.3</frequency>
+	<xover_params>0.04 0.035</xover_params>
+	<phase name="a">
+		<mission>Exact Repeat Mission</mission>
+		<cycles>0 227</cycles>
+		<repeat>9.91564280 254</repeat>
+		<ref_pass>2016-02-17T10:56:52 99.92 1 1 385</ref_pass>
+		<start_time>2016-02-12</start_time>
+	</phase>
+	<phase name="b">
+		<mission>Interleaved Mission</mission>
+		<cycles>300 999</cycles>
+		<repeat>9.91564280 254</repeat>
+		<ref_pass>2022-04-29T05:02:49 98.51 301 1 29366</ref_pass>
+		<start_time>2022-04-25</start_time>
+	</phase>
+</if>
+
+<if sat="n1">
+	<satellite>ENVISAT1</satellite>
+	<satid>10</satid>
+	<dt1hz>1.114000</dt1hz>
+	<inclination>98.54</inclination>
+	<frequency>13.575 3.2</frequency>
+	<xover_params>0.05 0.05</xover_params>
+	<phase name="b">
+		<mission>Multi-disciplinary Phase</mission>
+		<cycles>6 94</cycles>
+		<repeat>35.0 1002</repeat>
+		<ref_pass>2002-09-30T21:59:30 0.13 10 1</ref_pass>
+		<start_time>2002-05-14</start_time>
+	</phase>
+	<phase name="c">
+		<mission>Extension Phase</mission>
+		<cycles>95 113</cycles>
+		<repeat>30.0 862</repeat>
+		<ref_pass>2010-10-27T21:57:36 0.55 96 1</ref_pass>
+		<start_time>2010-10-24T07:05:26</start_time>
+		<end_time>2012-04-09</end_time>
+	</phase>
+</if>
+
+<if sat="pn">
+	<satellite>POSEIDON</satellite>
+	<satid>6</satid>
+	<dt1hz>1.001040</dt1hz>
+	<inclination>66.04</inclination>
+	<frequency>13.65</frequency>
+	<xover_params>0.04 0.035</xover_params>
+	<phase name="a">
+		<mission>Exact Repeat Mission</mission>
+		<cycles>1 361</cycles>
+		<repeat>9.91564280 254</repeat>
+		<ref_pass>1992-10-03T02:04:51 99.92 2 1</ref_pass>
+		<start_time>1992-10-01</start_time>
+		<end_time>2002-07-13</end_time>
+	</phase>
+</if>
+
+<if sat="tx">
+	<satellite>TOPEX</satellite>
+	<satid>5</satid>
+	<dt1hz>1.072414</dt1hz>
+	<inclination>66.04</inclination>
+	<frequency>13.6 5.3</frequency>
+	<xover_params>0.02 0.035</xover_params>
+	<phase name="a">
+		<mission>Exact Repeat Mission</mission>
+		<cycles>1 364</cycles>
+		<repeat>9.91564280 254</repeat>
+		<ref_pass>1992-10-03T02:04:51 99.92 2 1</ref_pass>
+		<start_time>1992-09-25</start_time>
+	</phase>
+	<phase name="n">
+		<mission>Drift Phase</mission>
+		<cycles>365 368</cycles>
+		<repeat>9.917089 254 -0.355</repeat>
+		<ref_pass>2002-08-11T11:09:08 99.92 365 1</ref_pass>
+		<start_time>2002-08-11T10:41:00</start_time>
+	</phase>
+	<phase name="b">
+		<mission>Interleaved Mission</mission>
+		<cycles>369 481</cycles>
+		<repeat>9.915642 254</repeat>
+		<ref_pass>2002-09-20T03:08:57 98.50 369 1</ref_pass>
+		<start_time>2002-09-20T02:40:50</start_time>
+		<end_time>2005-10-09</end_time>
+	</phase>
+</if>
+
+<if sat="sa">
+	<satellite>SARAL</satellite>
+	<satid>13</satid>
+	<dt1hz>1.033824</dt1hz>
+	<inclination>98.54</inclination>
+	<frequency>35.75</frequency>
+	<xover_params>0.05 0.05</xover_params>
+	<phase name="a">
+		<mission>Multi-disciplinary Phase</mission>
+		<cycles>0 35</cycles>
+		<repeat>35.0 1002</repeat>
+		<ref_pass>2013-03-14T06:04:39 0.13 1 1 240</ref_pass>
+		<start_time>2013-02-25</start_time>
+	</phase>
+	<phase name="b">
+		<mission>Drifting Phase</mission>
+		<cycles>36 40</cycles>
+		<repeat>35.00654 1002 -2.40</repeat>
+		<ref_pass>2016-07-04T13:18:19 251.07 36 1 17536</ref_pass>
+		<start_time>2016-07-04T12:00:00</start_time>
+	</phase>
+	<phase name="b">
+		<mission>Drifting Phase</mission>
+		<cycles>41 47</cycles>
+		<repeat>35.00610 1002 -2.24</repeat>
+		<ref_pass>2016-12-26T14:05:24 239.08 41 1 20041</ref_pass>
+		<start_time>2016-12-26T13:40:15</start_time>
+	</phase>
+	<phase name="b">
+		<mission>Drifting Phase</mission>
+		<cycles>48 57</cycles>
+		<repeat>35.00578 1002 -2.13</repeat>
+		<ref_pass>2017-08-28T15:06:53 223.42 48 1 23548</ref_pass>
+		<start_time>2017-08-28T14:41:44</start_time>
+	</phase>
+	<phase name="b">
+		<mission>Drifting Phase</mission>
+		<cycles>58 199</cycles>
+		<repeat>35.0054 1002 -1.99</repeat>
+		<ref_pass>2018-08-13T16:30:07 202.15 58 1 28558</ref_pass>
+		<start_time>2018-08-13T16:04:58</start_time>
+	</phase>
+</if>
+
+<if sat="ss">
+	<satellite>SEASAT-A</satellite>
+	<satid>2</satid>
+	<inclination>108.05</inclination>
+	<xover_params>0.07 0.80</xover_params>
+	<phase name="a">
+		<mission>Geodetic Mission</mission>
+	</phase>
+</if>

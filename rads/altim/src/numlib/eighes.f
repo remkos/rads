@@ -1,0 +1,145 @@
+C    ****************************************************************** 
+C                                                       9. EIGHES
+C                                                                       
+C    PURPOSE                                                            
+C    TO CALCULATE THE EIGENVALUES AND EIGENVECTORS OF AN
+C    ARBITRARY REAL MATRIX A
+C                                                                       
+C    USAGE                                                              
+C    CALL EIGHES(N,K,IA,IE,IN,A,EV,EW,D,B,EP,IF)
+C                                                                       
+C    DESCRIPTION OF PARAMETERS                                          
+C    N    I ORDER OF THE MATRIX A
+C    K    I AN INTEGER 1<=K<=N. THE K-TH UNIT VECTOR IS CHOOSEN
+C           AS A STARTING VECTOR, SEE REMARK 1.
+C         O DEGREE OF CHARACTERISTIC EQUATION AND THUS THE
+C           NUMBER OF RESULTANT EIGENVALUES.
+C    IA   I FIRST DIMENSION OF A AND D AS DECLARED IN THE
+C           DIMENSION STATEMENT OF THE CALLING PROGRAM (AT LEAST N)
+C    IE   I FIRST DIMENSION OF EV AND EW AS DECLARED IN THE
+C           DIMENSION STATEMENT OF THE CALLING PROGRAM (AT LEAST N)
+C    IN   I FIRST DIMENSION OF B AS DECLARED IN THE DIMENSION
+C           STATEMENT OF THE CALLING PROGRAM (AT LEAST N+1)
+C    A    I ARRAY A(IA,N) CONTAINS THE MATRIX A (NOT DESTROYED)
+C    EW   O ARRAY EW(IE,IE,2) CONTAINS THE CALCULATED EIGENVECTORS
+C    EV   O ARRAY EV(IE,2) CONTAINS THE CALCULATED EIGENVALUES
+C    D      AUXILIARY WORKING ARRAY OF DIMENSION AT LEAST (N,2N+2)
+C    B      AUXILIARY WORKING ARRAY OF DIMENSION AT LEAST (N+1,13)
+C    EP   I TOLERANCE FOR THE COMPUTATION OF THE CHARACTERISTIC
+C           EQUATION AND ITS ROOTS.
+C    IF   O INTEGER EXIT CODE
+C           IF=0 NORMAL EXIT
+C           IF=1 ABNORMAL EXIT, NO CONVERGENCE IN THE COMPUTATION
+C                OF THE ROOTS OF THE CHARACTERISTIC EQUATION.
+C
+C    REMARKS
+C    1. IF CONVERGENCE IS NOT ESTABLISHED OR IF AFTER THE PROCESS
+C       K<N, ANOTHER ATTEMPT CAN BE MADE WITH A DIFFERENT K.
+C       IF K=0, THE USER PROVIDES HIS OWN STARTING VECTOR D(,1)
+C       WITH A LENGTH OF UNITY.
+C    2. THE USE OF EIGJAC IS SUGGESTED FOR SYMMETRIC MATRICES.
+C    3. THE SUBROUTINE IS NOT VERY SUITABLE FOR LARGE VALUES OF N.
+C    4. SUBROUTINE EINCON CAN BE USED FOR CHECKING THE COMPUTED
+C       EIGENVALUES AND EIGENVACTORS ON PRECISION.
+C    5. THE EIGENVECTORS ARE NORMALIZED, BY SETTING THE MAXIMUM
+C       REAL OR IMAGINARY PART TO THE VALUE 1.
+C    6. EIGHES USES SUBROUTINE ZERPOL
+C    7. FOR EQUAL EIGENVALUES NO DIFFERENT EIGENVECTORS WILL BE FOUND
+C
+C    METHOD
+C    THE METHOD OF LANCZOS, REFER RC-TWA-75003 OF THE
+C    COMPUTER CENTRE OF THE DELFT UNIVERSITY OF TECHNOLOGY
+C
+C    *******************************************************************
+      SUBROUTINE EIGHES(N,K,IA,IE,IN,A,EV,EW,D,B,EP,IF)
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION A(IA,N),EV(IE,IE,2),EW(IE,2),D(IA,*),B(IN,13)
+      DATA ZZ,UU/0.D0,1.D0/
+      N1=N+1
+      IF (K.EQ.0) GOTO 20
+      DO 10 I=1,N
+   10 D(I,1)=ZZ
+      D(K,1)=UU
+   20 DO 100 J=1,N
+      DO 40 I=1,N
+      T=ZZ
+      DO 30 M=1,N
+   30 T=T+A(I,M)*D(M,J)
+   40 B(I,12)=T
+      DO 60 I=1,N
+      T=ZZ
+      DO 50 M=1,N
+   50 T=T+B(M,12)*D(M,I)
+      B(I,13)=T
+   60 D(I,J+1+N1)=T
+      S=ZZ
+      DO 80 I=1,N
+      T=B(I,12)
+      DO 70 M=1,J
+   70 T=T-D(I,M)*B(M,13)
+      D(I,J+1)=T
+   80 S=S+T*T
+      N2=J
+      S=DSQRT(S)
+      B(J,11)=S
+      IF ((J.EQ.N).OR.(S.LT.EP)) GOTO 110
+      S=UU/S
+      DO 90 I=1,N
+   90 D(I,J+1)=D(I,J+1)*S
+  100 CONTINUE
+  110 K=N2
+      N3=N2+1
+      B(1,12)=-UU
+      DO 160 J=1,N2
+      L=J-1
+      DO 120 I=1,J
+  120 B(I,13)=B(I,12)*D(I,J+1+N1)
+      DO 140 I=1,J
+      T=B(I,13)
+      IF (I.GT.1) T=T+D(L,I+N)
+      DO 130 M=I,L
+  130 T=T+B(M+1,13)*D(M,I+N1)
+  140 D(J,I+N1)=T
+      DO 150 I=1,J
+  150 B(I,12)=B(I,12)*B(J,11)
+  160 B(J+1,12)=-UU
+      DO 170 J=1,N2
+      B(J,2)=ZZ
+  170 B(J,1)=D(N2,J+N1)
+      B(N3,1)=UU
+      B(N3,2)=ZZ
+      P=0.8D0
+      Q=0.6D0
+      CALL ZERPOL(N3,N2,IN,IE,B,EW,B(1,3),P,Q,EP,IF)
+      N3=N2+1
+      DO 230 J=1,N2
+      B(N3,12)=UU
+      B(N3,13)=ZZ
+      DO 190 I=N3,3,-1
+      T=EW(J,1)*B(I,12)-EW(J,2)*B(I,13)
+      S=EW(J,1)*B(I,13)+EW(J,2)*B(I,12)
+      DO 180 M=I,N3
+      T=T-D(I-1,M+N1)*B(M,12)
+  180 S=S-D(I-1,M+N1)*B(M,13)
+      R=UU/B(I-2,11)
+      B(I-1,12)=T*R
+  190 B(I-1,13)=S*R
+      EP=ZZ
+      DO 210 I=1,N
+      S=ZZ
+      T=ZZ
+      DO 200 M=1,N2
+      T=T+D(I,M)*B(M+1,12)
+  200 S=S+D(I,M)*B(M+1,13)
+      EV(I,J,1)=T
+      IF (DABS(R).LT.DABS(T)) R=T
+      EV(I,J,2)=S
+      IF (DABS(R).LT.DABS(S)) R=S
+  210 CONTINUE
+      R=UU/R
+      DO 220 I=1,N
+      EV(I,J,1)=EV(I,J,1)*R
+  220 EV(I,J,2)=EV(I,J,2)*R
+  230 CONTINUE
+      RETURN
+      END

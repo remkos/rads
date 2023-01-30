@@ -1,0 +1,29 @@
+#COL
+#
+# This file was created from /home/edwin/colourmaps/sst2.col
+#
+C_BG      0   0   0
+C_FG    255 255 255
+C_LAND    0 100  30
+C_BAD    55  55  55
+C_COAST   6  50   6
+C_CONT  255 220 255
+#
+# Now follows a colour range of  16
+#
+C_RNG   255 220 255
+C_RNG   200 140 230
+C_RNG   110  80 195
+C_RNG     0   0 135
+C_RNG     0  27 255
+C_RNG    20 120 255
+C_RNG    50 190 255
+C_RNG   110 250 255
+C_RNG   108 201  74
+C_RNG   255 255   0
+C_RNG   255 132   4
+C_RNG   234   0   0
+C_RNG   115   0   0
+C_RNG   185 103 103
+C_RNG   245 175 175
+C_RNG   255 228 228

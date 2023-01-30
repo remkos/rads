@@ -1,0 +1,5 @@
+g95 test_perth.f perth3.f 
+
+cat q1.d o1.d p1.d s1.d k1.d n2.d m2.d s2.d k2.d > fort.30
+ 
+a.out

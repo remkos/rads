@@ -1,0 +1,78 @@
+ 48462.870 48618.316 <- period (MJD)
+   48586.000000 <- epoch (MJD)
+ 7157420.000000 <- semi-major axis (m)
+  .001150000000 <- eccentricity (-)
+   98.520000000 <- inclination (deg)
+  -22.547287819 <- node at epoch (deg), wrt Greenwich
+ -360.000000000 <- node rate (deg/day), wrt Greenwich
+   91.100000000 <- perigee at epoch (deg)
+     .000000000 <- perigee rate (deg/day)
+  -47.720743986 <- mean longitude at epoch (deg)
+ 5160.000000000 <- angular motion (deg/day)
+
+
+48618.316 48714.666 <- period (MJD)
+   48656.000000 <- epoch (MJD)
+ 7157450.000000 <- semi-major axis (m)
+  .001170000000 <- eccentricity (-)
+   98.530000000 <- inclination (deg)
+  -22.552098545 <- node at epoch (deg), wrt Greenwich
+ -360.000000000 <- node rate (deg/day), wrt Greenwich
+   90.700000000 <- perigee at epoch (deg)
+     .000000000 <- perigee rate (deg/day)
+   45.940435380 <- mean longitude at epoch (deg)
+ 5160.000000000 <- angular motion (deg/day)
+
+
+48714.666 49344.735 <- period (MJD)
+   49041.000000 <- epoch (MJD)
+ 7163780.000000 <- semi-major axis (m)
+  .001150000000 <- eccentricity (-)
+   98.550000000 <- inclination (deg)
+  -22.482477662 <- node at epoch (deg), wrt Greenwich
+ -360.000000000 <- node rate (deg/day), wrt Greenwich
+   91.300000000 <- perigee at epoch (deg)
+     .000000000 <- perigee rate (deg/day)
+   87.195069678 <- mean longitude at epoch (deg)
+ 5153.142857000 <- angular motion (deg/day)
+
+
+49344.735 49452.735 <- period (MJD)
+   49391.000000 <- epoch (MJD)
+ 7157440.000000 <- semi-major axis (m)
+  .001150000000 <- eccentricity (-)
+   98.520000000 <- inclination (deg)
+  -22.541101651 <- node at epoch (deg), wrt Greenwich
+ -360.000000000 <- node rate (deg/day), wrt Greenwich
+   91.100000000 <- perigee at epoch (deg)
+     .000000000 <- perigee rate (deg/day)
+   45.663690136 <- mean longitude at epoch (deg)
+ 5160.000000000 <- angular motion (deg/day)
+
+
+49452.735 49623.035 <- period (MJD)
+   49531.000000 <- epoch (MJD)
+ 7151500.000000 <- semi-major axis (m)
+  .001160000000 <- eccentricity (-)
+   98.505000000 <- inclination (deg)
+  -22.476831900 <- node at epoch (deg), wrt Greenwich
+ -360.000000000 <- node rate (deg/day), wrt Greenwich
+   91.100000000 <- perigee at epoch (deg)
+     .000000000 <- perigee rate (deg/day)
+   67.867758393 <- mean longitude at epoch (deg)
+ 5166.428571000 <- angular motion (deg/day)
+
+
+49623.000000 99999.999 <- period (MJD)
+   49706.000000 <- epoch (MJD)
+ 7151500.000000 <- semi-major axis (m)
+  .001150000000 <- eccentricity (-)
+   98.505000000 <- inclination (deg)
+  -22.527157130 <- node at epoch (deg), wrt Greenwich
+ -360.000000000 <- node rate (deg/day), wrt Greenwich
+   91.000000000 <- perigee at epoch (deg)
+     .000000000 <- perigee rate (deg/day)
+ -127.551883531 <- mean longitude at epoch (deg)
+ 5166.428571000 <- angular motion (deg/day)
+
+

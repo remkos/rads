@@ -1,0 +1,16 @@
+# CMake generated Testfile for 
+# Source directory: /Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/test
+# Build directory: /Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/build/test
+# 
+# This file includes the relevant testing commands required for 
+# testing this directory and lists subdirectories to be tested as well.
+add_test(t_angle "/Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/build/test/t_angle")
+set_tests_properties(t_angle PROPERTIES  WORKING_DIRECTORY "/Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/test" _BACKTRACE_TRIPLES "/Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/test/CMakeLists.txt;26;add_test;/Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/test/CMakeLists.txt;32;configure_test;/Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/test/CMakeLists.txt;0;")
+add_test(t_grid "/Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/build/test/t_grid")
+set_tests_properties(t_grid PROPERTIES  WORKING_DIRECTORY "/Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/test" _BACKTRACE_TRIPLES "/Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/test/CMakeLists.txt;26;add_test;/Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/test/CMakeLists.txt;33;configure_test;/Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/test/CMakeLists.txt;0;")
+add_test(t_interp "/Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/build/test/t_interp")
+set_tests_properties(t_interp PROPERTIES  WORKING_DIRECTORY "/Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/test" _BACKTRACE_TRIPLES "/Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/test/CMakeLists.txt;26;add_test;/Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/test/CMakeLists.txt;35;configure_test;/Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/test/CMakeLists.txt;0;")
+add_test(t_prediction "/Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/build/test/t_prediction")
+set_tests_properties(t_prediction PROPERTIES  WORKING_DIRECTORY "/Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/test" _BACKTRACE_TRIPLES "/Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/test/CMakeLists.txt;26;add_test;/Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/test/CMakeLists.txt;36;configure_test;/Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/test/CMakeLists.txt;0;")
+add_test(t_fes "/Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/build/test/t_fes")
+set_tests_properties(t_fes PROPERTIES  WORKING_DIRECTORY "/Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/test" _BACKTRACE_TRIPLES "/Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/test/CMakeLists.txt;26;add_test;/Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/test/CMakeLists.txt;38;configure_test;/Users/davidtrossman/Documents/Code/rads/altim/src/tides/fes-2.9.3-Source/test/CMakeLists.txt;0;")

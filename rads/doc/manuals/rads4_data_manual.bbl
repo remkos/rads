@@ -1,0 +1,503 @@
+\begin{thebibliography}{86}
+\providecommand{\natexlab}[1]{#1}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
+  \providecommand{\doi}{doi:\discretionary{}{}{}\begingroup
+  \urlstyle{rm}\Url}\fi
+
+\bibitem[{\textit{Abdalla}(2007)}]{abdalla2007}
+Abdalla, S. (2007), Ku-band radar altimeter surface wind speed algorithm, in
+  \textit{Proc.\ of the 2007 Envisat Symposium, Montreux, Switzerland, 23-27
+  April 2007, Eur.\ Space Agency Spec.\ Publ., ESA SP-636}.
+
+\bibitem[{\textit{Ablain et~al.}(2008)\textit{Ablain, Pujol, Philipps, and
+  Picot}}]{ablain2008}
+Ablain, M., M.-I. Pujol, S.~Philipps, and N.~Picot (2008), Assessment of
+  {Jason-2} and {Jason-1} orbit quality from {SSH} analysis, Ocean Science
+  Topography Science Team Meeting, Nice, France, 10-12 November 2008.
+
+\bibitem[{\textit{Andersen and Knudsen}(2009)}]{andersen2009a}
+Andersen, O.~B., and P.~Knudsen (2009), The {DNSC08BAT} bathymetry developed
+  from satellite altimetry, \textit{Tech. rep.}, Danish National Spacecenter.
+
+\bibitem[{\textit{Andersen and Knudsen}(2010)}]{andersen2010}
+Andersen, O.~B., and P.~Knudsen (2010), The {DTU10} mean sea surface and mean
+  dynamic topography: Improvements in the {Arctic} and coastal zone, Ocean
+  Science Topography Science Team Meeting, Lisbon, Portugal, 19-21 October
+  2010.
+
+\bibitem[{\textit{Andersen et~al.}(2013)\textit{Andersen, Knudsen, and
+  Stenseng}}]{andersen2013a}
+Andersen, O.~B., P.~Knudsen, and L.~Stenseng (2013), The {DTU13} global mean
+  sea surface from 20 years of satellite altimetry, Ocean Science Topography
+  Science Team Meeting, Boulder, Colorado, 8-11 October 2013.
+
+\bibitem[{\textit{Argus and Gross}(2004)}]{argus2004}
+Argus, D.~F., and R.~S. Gross (2004), An estimate of motion between the spin
+  axis and the hotspots over the past century, \textit{Geophys.\ Res.\ Lett.},
+  \textit{31}, L06614, \doi{doi:10.1029/2004GL019657}.
+
+\bibitem[{\textit{Askne and Nordius}(1987)}]{askne1987}
+Askne, J., and H.~Nordius (1987), Estimation of tropospheric delay for
+  microwaves from surface weather data, \textit{Radio Sci.}, \textit{22}(3),
+  379--386, \doi{10.1029/RS022i003p00379}.
+
+\bibitem[{\textit{Berrisford et~al.}(2011)}]{berrisford2011}
+Berrisford, P., et~al. (2011), The {ERA-interim} archive {Version} 2.0,
+  \textit{ERA Report Series~1}, ECMWF, Reading, UK.
+
+\bibitem[{\textit{Bevis et~al.}(1994)\textit{Bevis, Businger, Chriswell,
+  Herring, Anthes, Rocken, and Ware}}]{bevis1994}
+Bevis, M., S.~Businger, S.~Chriswell, T.~A. Herring, R.~A. Anthes, C.~Rocken,
+  and R.~H. Ware (1994), {GPS} meteorology: Mapping zenith wet delays onto
+  precipitable water, \textit{J.\ Appl.\ Meteor.}, \textit{33}(3), 379--386,
+  \doi{10.1175/1520-0450(1994)033$<$0379:GMMZWD$>$2.0.CO;2}.
+
+\bibitem[{\textit{Bilitza and Reinisch}(2008)}]{bilitza2008}
+Bilitza, D., and B.~W. Reinisch (2008), {International Reference Ionosphere
+  2007: Improvements} and new parameters, \textit{Adv.\ Space Res.},
+  \textit{42}(4), 599--609, \doi{10.1016/j.asr.2007.07.048}.
+
+\bibitem[{\textit{Carr{\`e}re and Lyard}(2003)}]{carrere2003}
+Carr{\`e}re, L., and F.~Lyard (2003), Modeling the barotropic response of the
+  global ocean to atmospheric wind and pressure forcing - comparisons with
+  observations, \textit{Geophys.\ Res.\ Lett.}, \textit{30}(6),
+  \doi{10.1029/2002GL016473}.
+
+\bibitem[{\textit{Carr{\`e}re et~al.}(2016)\textit{Carr{\`e}re, Faug{\`e}re,
+  and Ablain}}]{carrere2016}
+Carr{\`e}re, L., Y.~Faug{\`e}re, and M.~Ablain (2016), Major improvement of
+  altimetry sea level estimations using pressure derived corrections based on
+  {ERA-interim} atmospheric reanalysis, \textit{Ocean Sci.\ Discuss.},
+  \textit{12}, 825--842, \doi{10.5194/os-12-825-2016}.
+
+\bibitem[{\textit{Cartwright and Edden}(1973)}]{cartwright1973}
+Cartwright, D.~E., and A.~C. Edden (1973), Corrected tables of tidal harmonics,
+  \textit{Geophys.\ J.\ Roy.\ Astron.\ Soc.}, \textit{33}, 253--264,
+  \doi{10.1111/j.1365-246X.1973.tb03420.x}.
+
+\bibitem[{\textit{Cartwright and Taylor}(1971)}]{cartwright1971}
+Cartwright, D.~E., and R.~J. Taylor (1971), New computations of the
+  tide-generating potential, \textit{Geophys.\ J.\ Roy.\ Astron.\ Soc.},
+  \textit{23}, 45--74, \doi{10.1111/j.1365-246X.1971.tb01803.x}.
+
+\bibitem[{\textit{Chambers et~al.}(2003)\textit{Chambers, Hayes, Ries, and
+  Urban}}]{chambers2003a}
+Chambers, D.~P., S.~A. Hayes, J.~C. Ries, and T.~J. Urban (2003), New {TOPEX}
+  sea state bias models and their effect on global mean sea level, \textit{J.\
+  Geophys.\ Res.}, \textit{108}(C10).
+
+\bibitem[{\textit{Chawla et~al.}(2011)\textit{Chawla, Spindler, and
+  Tolman}}]{chawla2011}
+Chawla, A., D.~Spindler, and H.~L. Tolman (2011), {WAVEWATCH III} hindcasts
+  with re-analysis winds: {Initial} report on model setup, \textit{MMAB
+  Contribution No. 291}, NOAA National Weather Service, Camp Springs, Maryland.
+
+\bibitem[{\textit{Chelton}(1994)}]{chelton1994}
+Chelton, D.~B. (1994), The sea state bias in altimeter estimates of sea lvel
+  from collinear analysis of {TOPEX} data, \textit{J.\ Geophys.\ Res.},
+  \textit{99}(C12), 24,995--25,008.
+
+\bibitem[{\textit{Cipollini}(2011)}]{cipollini2011}
+Cipollini, P. (2011), A new parameter to facilitate screening of coastal
+  altimetry data and corrections, Ocean Science Topography Science Team
+  Meeting, San Diego, 19-21 October 2011.
+
+\bibitem[{\textit{Collard}(2005)}]{collard2005}
+Collard, F. (2005), Algorithmes de vent et periode moyenne des vagues {JASON} a
+  base de reseaux de neurons, \textit{Rapport BO-021-CLS-0407-RF}, Boost
+  Technologies.
+
+\bibitem[{\textit{Cr{\'e}taux and Birkett}(2006)}]{cretaux2006}
+Cr{\'e}taux, J.-F., and C.~M. Birkett (2006), Lake studies from satellite radar
+  altimetry, \textit{C.\ R.\ Geoscience}, \textit{338}, 1098--1112,
+  \doi{10.1016/j.crte.2006.08.002}.
+
+\bibitem[{\textit{Desai et~al.}(2015)\textit{Desai, Wahr, and
+  Beckley}}]{desai2015}
+Desai, S.~D., J.~M. Wahr, and B.~D. Beckley (2015), Revisiting the pole tide
+  for and from satellite altimetry, \textit{J.\ Geod.}, \textit{89}(12),
+  1233--1243, \doi{10.1007/s00190-015-0848-7}.
+
+\bibitem[{\textit{Dumont et~al.}(2001)\textit{Dumont, Sicard, Stum, and
+  Zanif{\'e}}}]{dumont2001}
+Dumont, J.-P., P.~Sicard, J.~Stum, and O.-Z. Zanif{\'e} (2001), Algorithm
+  definition, accuracy and specification volume 4: {CMA} altimeter level 2
+  processing, \textit{Tech. Rep. SMM-ST-M2-EA-11005-CN}, CNES/SSALTO.
+
+\bibitem[{\textit{Feng et~al.}(2010)\textit{Feng, Yao, Li, Tran, Vandemark, and
+  Labroue}}]{feng2010}
+Feng, H., S.~Yao, L.~Li, N.~Tran, D.~Vandemark, and S.~Labroue (2010),
+  Spline-based nonparametric estimation of the altimeter sea state bias
+  correction, \textit{IEEE Geosci.\ Rem.\ Sens.\ Lett.}, \textit{7}(3),
+  577--581.
+
+\bibitem[{\textit{F{\"o}rste et~al.}(2013)}]{foerste2013}
+F{\"o}rste, C., et~al. (2013), {EIGEN-6C3stat} -- the newest high resolution
+  global combined gravity field model based on the 4th release of the {GOCE}
+  direct approach, \textit{Tech. rep.}, ICGEM/GFZ Postdam.
+
+\bibitem[{\textit{Francis}(1990)}]{francis1990a}
+Francis, C.~R. (1990), The {ERS-1} radar altimeter, paper presented at the 2nd
+  {ERS-1} PI meeting, Noordwijk,The Netherlands.
+
+\bibitem[{\textit{Francis et~al.}(1993)}]{francis1993b}
+Francis, C.~R., et~al. (1993), {The Calibration of the {ERS-1} Radar Altimeter
+  -- The Venice Calibration Campaign}, \textit{ESA Report ER-RP-ESA-RA-0257
+  issue 2.0}, ESA/ESTEC, Noordwijk,The Netherlands.
+
+\bibitem[{\textit{Francis et~al.}(1995)}]{francis1995a}
+Francis, C.~R., et~al. (1995), The {ERS-2} spacecraft and its payload,
+  \textit{ESA Bulletin}, \textit{83}, 13--31.
+
+\bibitem[{\textit{Francis et~al.}(1991)}]{francis1991a}
+Francis, C.~R., et~al. (1991), The {ERS-1} spacecraft and its payload,
+  \textit{ESA Bulletin}, \textit{65}, 26--48.
+
+\bibitem[{\textit{Fu et~al.}(1994)\textit{Fu, Christensen, Yamarone, Lefebvre,
+  M{\'e}nard, Dorrer, and Escudier}}]{fu1994}
+Fu, L.-L., E.~J. Christensen, C.~A. Yamarone, M.~Lefebvre, Y.~M{\'e}nard,
+  M.~Dorrer, and P.~Escudier (1994), {TOPEX} mission overview, \textit{J.\
+  Geophys.\ Res.}, \textit{99}(C12), 24,369--24,382.
+
+\bibitem[{\textit{Gaspar and Florens}(1998)}]{gaspar1998b}
+Gaspar, P., and J.-P. Florens (1998), Estimation of the sea state bias in radar
+  altimeter measurements of sea level: Results from a new nonparametric method,
+  \textit{J.\ Geophys.\ Res.}, \textit{103}(C8), 15,803--15,814.
+
+\bibitem[{\textit{Gaspar et~al.}(1994)\textit{Gaspar, Ogor, Le~Traon, and
+  Zanif{\'e}}}]{gaspar1994a}
+Gaspar, P., F.~Ogor, P.-Y. Le~Traon, and O.-Z. Zanif{\'e} (1994), Estimating
+  the sea state bias of the {TOPEX} and {POSEIDON} altimeters from crossover
+  differences, \textit{J.\ Geophys.\ Res.}, \textit{99}(C12), 24,981--24,994.
+
+\bibitem[{\textit{Gaspar et~al.}(2002)\textit{Gaspar, Labroue, Ogor, Lafitte,
+  Marchal, and Rafanel}}]{gaspar2002}
+Gaspar, P., S.~Labroue, F.~Ogor, G.~Lafitte, L.~Marchal, and M.~Rafanel (2002),
+  Improving nonparametric estimates of the sea state bias in radar altimeter
+  measurements of sea level, \textit{J.\ Atmos.\ Oceanic Technol.},
+  \textit{19}(10), 1690--1707.
+
+\bibitem[{\textit{Gourrion et~al.}(2002)\textit{Gourrion, Vandemark, Bailey,
+  Chapron, Gommenginger, Challenor, and Srokosz}}]{gourrion2002}
+Gourrion, J., D.~Vandemark, S.~Bailey, B.~Chapron, C.~P. Gommenginger, P.~G.
+  Challenor, and M.~A. Srokosz (2002), A two-parameter wind speed algorithm for
+  {Ku-band} altimeters, \textit{J.\ Atmos.\ Oceanic Technol.}, \textit{19}(12),
+  2030--2048, \doi{10.1175/1520-0426(2002)019<2030:ATPWSA>2.0.CO;2}.
+
+\bibitem[{\textit{Hayne et~al.}(1994)\textit{Hayne, Hancock, and
+  Purdy}}]{hayne1994}
+Hayne, G.~S., D.~W. Hancock, III, and C.~L. Purdy (1994), {TOPEX} altimeter
+  range stability estimates from calibration mode data, \textit{{TOPEX Research
+  News}}, \textit{3}, 18--22, \doi{10.1029/94JC01777}.
+
+\bibitem[{\textit{Imel}(1994)}]{imel1994}
+Imel, D.~A. (1994), Evaluation of the {TOPEX} dual-frequency ionosphere
+  correction, \textit{J.\ Geophys.\ Res.}, \textit{99}(C12), 24,895--24,906.
+
+\bibitem[{\textit{{International DORIS Service}}(2011)}]{ids2011}
+{International DORIS Service} (2011), New {GDR-D} orbit standards,
+  \url{ftp://ftp.ids-doris.org/pub/ids/data/POD_configuration_GDRD.pdf}
+  (retrieved 25 June 2015).
+
+\bibitem[{\textit{{International DORIS Service}}(2015)}]{ids2015}
+{International DORIS Service} (2015), New {GDR-E} orbit standards,
+  \url{ftp://ftp.ids-doris.org/pub/ids/data/POD_configuration_GDRE.pdf}
+  (retrieved 25 June 2015).
+
+\bibitem[{\textit{Jakobsson et~al.}(2012)}]{jakobsson2012}
+Jakobsson, M., et~al. (2012), The {International Bathymetric Chart of the
+  Arctic Ocean (IBCAO)} version 3.0, \textit{Geophys.\ Res.\ Lett.},
+  \textit{39}, L12609, \doi{10.1029/2012GL052219}.
+
+\bibitem[{\textit{Keihm et~al.}(1995)\textit{Keihm, Janssen, and
+  Ruf}}]{ruf1995c}
+Keihm, S.~J., M.~A. Janssen, and C.~S. Ruf (1995), {TOPEX} microwave radiometer
+  {(TMR): III. Wet} troposphere range correction algorithm and pre-launch error
+  budget, \textit{IEEE Trans.\ Geosci.\ Rem.\ Sens.}, \textit{33}(1), 147--161.
+
+\bibitem[{\textit{Komjathy et~al.}(2000)\textit{Komjathy, Born, and
+  Anderson}}]{komjathy2000}
+Komjathy, A., G.~H. Born, and D.~N. Anderson (2000), An improved high precision
+  ionospheric total electron content modeling using {GPS}, in \textit{Proc.\
+  International Geoscience and Remote Sensing Symposium (IGARSS), Honolulu,
+  Hawaii, 2000}, vol.~7, pp. 2858--2860, \doi{10.1109/IGARSS.2000.86027}.
+
+\bibitem[{\textit{Labroue and Obligis}(2003)}]{labroue2003}
+Labroue, S., and E.~Obligis (2003), Neural network retrieval algorithms for the
+  {Envisat/MWR}, \textit{Tech.\ Rep. CLS/DOS/NT/03.848}, Collect.,
+  Localisation, Satell., Ramonville St.\ Agne, France.
+
+\bibitem[{\textit{Labroue et~al.}(2004)\textit{Labroue, Gaspar, Dorandeu,
+  Zanif{\'e}, Mertz, Vincent, and Choquet}}]{labroue2004}
+Labroue, S., P.~Gaspar, J.~Dorandeu, O.-Z. Zanif{\'e}, F.~Mertz, P.~Vincent,
+  and D.~Choquet (2004), Nonparametric estimates of the sea state bias for the
+  {Jason-1} radar altimeter, \textit{Mar.\ Geod.}, \textit{27}(3-4), 453--481,
+  \doi{10.1080/01490410490902089}.
+
+\bibitem[{\textit{Lambin et~al.}(2010)}]{lambin2010}
+Lambin, J., et~al. (2010), The {OSTM/Jason-2} mission, \textit{Mar.\ Geod.},
+  \textit{33}(S1), 4--25, \doi{10.1080/01490419.2010.491030}.
+
+\bibitem[{\textit{Lemoine et~al.}(2006)\textit{Lemoine, Zelensky, Chinn,
+  Beckley, and Lillibridge}}]{lemoine2006a}
+Lemoine, F.~G., N.~P. Zelensky, D.~S. Chinn, B.~D. Beckley, and J.~L.
+  Lillibridge (2006), Towards the {GEOSAT Follow-On} precise orbit
+  determination goals of high accuracy and near-real-time processing, paper
+  2006-6402, AIAA/AAS Astrodynamics Specialist Conference, August 21--24, 2006,
+  Keystone, Colorado.
+
+\bibitem[{\textit{Lemoine et~al.}(2013)\textit{Lemoine, Zelensky, Melachroinos,
+  Chinn, and Beckley}}]{lemoine2013}
+Lemoine, F.~G., N.~P. Zelensky, S.~A. Melachroinos, D.~S. Chinn, and B.~D.
+  Beckley (2013), Status of the {GSFC} precise orbit ephemerides for {Jason-2},
+  {Jason-1} and {TOPEX/Poseidon}, Ocean Science Topography Science Team
+  Meeting, Boulder, Colorado, 8-11 October 2013.
+
+\bibitem[{\textit{Lillibridge et~al.}(2014)\textit{Lillibridge, Scharroo,
+  Abdalla, and Vandemark}}]{lillibridge2014}
+Lillibridge, J.~L., R.~Scharroo, S.~Abdalla, and D.~C. Vandemark (2014), One-
+  and two-dimensional wind speed models for {Ka}-band altimetry, \textit{J.\
+  Atmos.\ Oceanic Technol.}, \textit{31}(3), 630--638,
+  \doi{10.1175/JTECH-D-13-00167.1}.
+
+\bibitem[{\textit{Llewellyn and Bent}(1973)}]{llewellyn1973}
+Llewellyn, S.~K., and R.~B. Bent (1973), Documentation and description of the
+  {Bent} ionospheric model, \textit{Rep. AFCRL-TR-73-0657}, Air Force Cambridge
+  Research Laboratory, Hanscom Air Force Base, Massachusetts.
+
+\bibitem[{\textit{Lyard et~al.}(2006)\textit{Lyard, Lef{\`e}vre, Letellier, and
+  Francis}}]{lyard2006}
+Lyard, F., F.~Lef{\`e}vre, T.~Letellier, and O.~Francis (2006), Modelling the
+  global ocean tides: modern insights from {FES2004}, \textit{Ocean Dynamics},
+  \textit{56}(5-6), 394--415, \doi{10.1007/s10236-006-0086-x}.
+
+\bibitem[{\textit{Martini and F{\'e}m{\'e}nias}(2000)}]{martini2000}
+Martini, A., and P.~F{\'e}m{\'e}nias (2000), The {ERS SPTR2000} altimeric range
+  correction: Results and validation, \textit{Technical Note
+  ERE-TN-ADQ-GSO-6001}, ESA/ESRIN, Frascati, Italy.
+
+\bibitem[{\textit{M{\'e}nard et~al.}(2003)\textit{M{\'e}nard, Fu, Escudier,
+  Haines, Kunstmann, Parisot, Perbos, Vincent, and Desai}}]{menard2003}
+M{\'e}nard, Y., L.-L. Fu, P.~Escudier, B.~J. Haines, G.~Kunstmann, F.~Parisot,
+  J.~Perbos, P.~Vincent, and S.~D. Desai (2003), The {Jason-1} mission,
+  \textit{J.\ Mar.\ Geod.}, \textit{Jason-1}.
+
+\bibitem[{\textit{Mendes et~al.}(2000)\textit{Mendes, Prates, Santos, and
+  Langley}}]{mendes2000}
+Mendes, V.~B., G.~Prates, L.~Santos, and R.~B. Langley (2000), An evaluation of
+  the accuracy of models for the determination of the weighted mean temperature
+  of the atmosphere, in \textit{Proc.\ of the 2000 National Technical Meeting
+  of The Institute of Navigation, Anaheim, CA, January 2000}, pp. 433--438.
+
+\bibitem[{\textit{Munk and MacDonald}(1960)}]{munk1960}
+Munk, W.~H., and G.~J.~F. MacDonald (1960), \textit{The Rotation of the Earth:
+  A Geophysical Discussion}, Cambridge University Press, New York.
+
+\bibitem[{\textit{Pavlis et~al.}(2012)\textit{Pavlis, Holmes, Kenyon, and
+  Factor}}]{pavlis2012}
+Pavlis, N.~K., S.~A. Holmes, S.~C. Kenyon, and J.~K. Factor (2012), The
+  development and evaluation of the {Earth Gravitational Model} 2008
+  ({EGM2008}), \textit{J.\ Geophys.\ Res.}, \textit{117}, B04406,
+  \doi{10.1029/2011JB008916}.
+
+\bibitem[{\textit{Ponte and Ray}(2002)}]{ponte2002}
+Ponte, R.~M., and R.~D. Ray (2002), Atmospheric pressure corrections in geodesy
+  and oceanography: A strategy for handling air tides, \textit{Geophys.\ Res.\
+  Lett.}, \textit{29}(24), 2153--2156, \doi{10.1029/2002GL016340}.
+
+\bibitem[{\textit{Quartly}(2009)}]{quartly2009a}
+Quartly, G.~D. (2009), Optimizing {$\sigma^0$} information from {Jason-2}
+  altimeter, \textit{IEEE Geosci.\ Rem.\ Sens.\ Lett.}, \textit{6}(3),
+  398--402, \doi{10.1109/LGRS.2009.2013973}.
+
+\bibitem[{\textit{Queffeulou}(2004)}]{queffeulou2004}
+Queffeulou, P. (2004), Long-term validation of wave height measurements from
+  altimeters, \textit{Mar.\ Geod.}, \textit{27}, 495--510,
+  \doi{10.1080/01490410490883478}.
+
+\bibitem[{\textit{Ray}(2013)}]{ray2013}
+Ray, R.~D. (2013), Precise comparisons of bottom-pressure and altimetric ocean
+  tides, \textit{J.\ Geophys.\ Res.}, \textit{118}, 4570--4584,
+  \doi{10.1002/jgrc.20336}.
+
+\bibitem[{\textit{Ray et~al.}(2011)\textit{Ray, Egbert, and
+  Erofeeva}}]{ray2011}
+Ray, R.~D., G.~D. Egbert, and S.~Y. Erofeeva (2011), Tide predictions in shelf
+  and coastal waters: status and prospects, in \textit{Coastal Altimetry},
+  edited by S.~Vignudelli, A.~Kostianoy, P.~Cipollini, and J.~Benveniste,
+  Springer-Verlag.
+
+\bibitem[{\textit{Roblou et~al.}(2008)\textit{Roblou, Lyard, Dorandeu,
+  Lamouroux, and Bouffard}}]{roblou2008a}
+Roblou, L., F.~Lyard, J.~Dorandeu, J.~Lamouroux, and J.~Bouffard (2008),
+  Dealiasing high frequency ocean response to atmospheric forcing, presented at
+  the Coastal Altimetry Workshop, Silver Spring, Maryland, 5-7 Feb 2008.
+
+\bibitem[{\textit{Rudenko et~al.}(2011)\textit{Rudenko, Otten, Visser,
+  Scharroo, and Sch{\"o}ne}}]{rudenko2011}
+Rudenko, S., M.~Otten, P.~N. A.~M. Visser, R.~Scharroo, and T.~Sch{\"o}ne
+  (2011), Improvements in {ERS-1} and {ERS-2} precise orbit determination,
+  Poster presentation at EGU 2011 General Assembly.
+
+\bibitem[{\textit{Rudenko et~al.}(2014)\textit{Rudenko, Dettmering, Esselborn,
+  Sch{\"o}ne, F{\"o}rste, Lemoine, Ablain, Alexandre, and
+  Neumayer}}]{rudenko2014}
+Rudenko, S., D.~Dettmering, S.~Esselborn, T.~Sch{\"o}ne, C.~F{\"o}rste, J.-M.
+  Lemoine, M.~Ablain, D.~Alexandre, and K.-H. Neumayer (2014), Influence of
+  time variable geopotential models on precise orbits of altimetry satellites,
+  global and regional mean sea level trends, \textit{Adv.\ Space Res.},
+  \textit{54}(1), 92--118, \doi{10.106/j.asr.2014.03.010}.
+
+\bibitem[{\textit{Rudenko et~al.}(2015)\textit{Rudenko, Neumayer, Dettmering,
+  Esselborn, Sch{\"o}ne, and Raimondo}}]{rudenko2015}
+Rudenko, S., K.-H. Neumayer, D.~Dettmering, S.~Esselborn, T.~Sch{\"o}ne, and
+  J.~C. Raimondo (2015), New orbits of {ERS-1}, {ERS-2}, {TOPEX/Poseidon},
+  {Envisat}, {Jason-1} and {Jason-2} for altimetry applications and their
+  validation, Ocean Science Topography Science Team Meeting, Reston, Virginia,
+  20-23 October 2015.
+
+\bibitem[{\textit{Rudenko et~al.}(2016)\textit{Rudenko, Neumayer, Dettmering,
+  Esselborn, Sch{\"o}ne, and Raimondo}}]{rudenko2016}
+Rudenko, S., K.-H. Neumayer, D.~Dettmering, S.~Esselborn, T.~Sch{\"o}ne, and
+  J.~C. Raimondo (2016), Improvements in precise orbits of altimetry satellites
+  and their altimetry validation, (under preparation).
+
+\bibitem[{\textit{Ruf et~al.}(1996)\textit{Ruf, Dewan, and
+  Sabramanya}}]{ruf1996}
+Ruf, C.~S., R.~P. Dewan, and B.~Sabramanya (1996), Combined microwave
+  radiometer and altimeter retrieval of wet path delay for {Geosat Follow-On},
+  \textit{IEEE Trans.\ Geosci.\ Rem.\ Sens.}, \textit{34}(4), 991--999.
+
+\bibitem[{\textit{Saastamoinen}(1972)}]{saastamoinen1972}
+Saastamoinen, J. (1972), Atmospheric corrections for the troposphere and
+  stratosphere in radio ranging of satellites, in \textit{The Use of Artificial
+  Satellites for Geodesy}, \textit{Geophys.\ Monogr.\ Ser.}, vol.~15, edited by
+  S.~W. Hendriksen, A.~Mancini, and B.~H. Chovitz, pp. 247--251, American
+  Geophysical Union, Washington, D.C.
+
+\bibitem[{\textit{Sandwell et~al.}(2014)\textit{Sandwell, M{\"u}ller, Smith,
+  Garcia, and Francis}}]{sandwell2014b}
+Sandwell, D.~T., R.~D. M{\"u}ller, W.~H.~F. Smith, E.~S. Garcia, and C.~R.
+  Francis (2014), New global marine gravity model from {CryoSat-2} and
+  {Jason-1} reveals buried tectonic structure, \textit{Science},
+  \textit{346}(6205), 65--67, \doi{10.1126/science.1258213}.
+
+\bibitem[{\textit{Schaeffer et~al.}(2012)\textit{Schaeffer, Faug{\`e}re,
+  Legeais, Ollivier, Guinle, and Picot}}]{schaeffer2012}
+Schaeffer, P., Y.~Faug{\`e}re, J.-F. Legeais, A.~Ollivier, T.~Guinle, and
+  N.~Picot (2012), The {CNES-CLS11} global mean sea surface computed from 16
+  years of satellite altimeter data, \textit{Mar.\ Geod.}, \textit{35}(sup1),
+  3--19, \doi{10.1080/01490419.2012.718231}.
+
+\bibitem[{\textit{Scharroo and Lillibridge}(2005)}]{scharroo2005e}
+Scharroo, R., and J.~L. Lillibridge (2005), Non-parametric sea-state bias
+  models and their relevance to sea level change studies, in
+  \textit{Proceedings of the 2004 Envisat \& ERS Symposium, Eur.\ Space Agency
+  Spec.\ Publ., ESA SP-572}, edited by H.~Lacoste and L.~Ouwehand.
+
+\bibitem[{\textit{Scharroo and Smith}(2010)}]{scharroo2010a}
+Scharroo, R., and W.~H.~F. Smith (2010), A global positioning system-based
+  climatology for the total electron content in the ionosphere, \textit{J.\
+  Geophys.\ Res.}, \textit{115}(A10318), \doi{10.1029/2009JA014719}.
+
+\bibitem[{\textit{Scharroo and Visser}(1998)}]{scharroo1998a}
+Scharroo, R., and P.~N. A.~M. Visser (1998), Precise orbit determination and
+  gravity field improvement for the {ERS} satellites, \textit{J.\ Geophys.\
+  Res.}, \textit{103}(C4), 8113--8127, \doi{10.1029/97JC03179}.
+
+\bibitem[{\textit{Shako et~al.}(2014)\textit{Shako, F{\"o}rste, Abrikosov,
+  Bruinsma, Marty, Lemoine, Flechtner, Neumayer, and Dahle}}]{shako2014}
+Shako, R., C.~F{\"o}rste, O.~Abrikosov, S.~Bruinsma, J.~C. Marty, J.-M.
+  Lemoine, F.~Flechtner, K.-H. Neumayer, and C.~Dahle (2014), {EIGEN-6C}: A
+  high-resolution global gravity combination model including {GOCE} data, in
+  \textit{Observation of the System Earth from Space - CHAMP, GRACE, GOCE and
+  future missions}, edited by F.~Flechtner, N.~Sneeuw, and W.-D. Schuh,
+  Advanced Technologies in Earth Sciences, pp. 155--161, Springer Berlin
+  Heidelberg, \doi{10.1007/978-3-642-32135-1_20}.
+
+\bibitem[{\textit{Smith and Sandwell}(1994)}]{smith1994h}
+Smith, W. H.~F., and D.~T. Sandwell (1994), Bathymetric prediction from dense
+  satellite altimetry and sparse shipboard bathymetry, \textit{J.\ Geophys.\
+  Res.}, \textit{99}(B11), 21,803--21,824.
+
+\bibitem[{\textit{Stammer et~al.}(2014)}]{stammer2014}
+Stammer, D., et~al. (2014), Accuracy assessment of global barotropic ocean tide
+  models, \textit{Rev.\ Geophys.}, \textit{52}(3), 243--282,
+  \doi{10.1002/2014RG000450}.
+
+\bibitem[{\textit{Stenseng et~al.}(2015)\textit{Stenseng, Piccioni, Andersen,
+  and Knudsen}}]{stenseng2015}
+Stenseng, L., G.~Piccioni, O.~B. Andersen, and P.~Knudsen (2015), Sea surface
+  retracking and classification of cryosat-2 altimetry observations in the
+  arctic ocean, presented at AGU 2015 Fall Meeting.
+
+\bibitem[{\textit{Stum et~al.}(1998)\textit{Stum, Ogor, Le~Traon, Dorandeu,
+  Gaspar, and Dumont}}]{stum1998a}
+Stum, J., F.~Ogor, P.-Y. Le~Traon, J.~Dorandeu, P.~Gaspar, and J.-P. Dumont
+  (1998), An intercalibration study of {TOPEX}, {ERS-1} and {ERS-2} altimetric
+  missions: Final report of {IFREMER} contract {No.\ 97/2 426 086/C},
+  \textit{Tech. Rep. CLS/DOS/NT/98.070}, Collect., Localisation, Satell.,
+  Ramonville St.\ Agne, France.
+
+\bibitem[{\textit{Tamura}(1987)}]{tamura1987}
+Tamura, Y. (1987), A harmonic development of the tide-generating potential,
+  \textit{Bull.\ d'Inform.\ Mar{\'e}es Terr.}, \textit{99}, 6813--6855.
+
+\bibitem[{\textit{Tapley et~al.}(1996)\textit{Tapley, Watkins, Ries, Davis,
+  Eanes, Poole, Rim, Schutz, and Shum}}]{tapley1996}
+Tapley, B.~D., M.~M. Watkins, J.~C. Ries, G.~W. Davis, R.~J. Eanes, S.~R.
+  Poole, H.~J. Rim, B.~E. Schutz, and C.-K. Shum (1996), {The Joint Gravity
+  Model 3}, \textit{J.\ Geophys.\ Res.}, \textit{101}(B12), 28,029--28,049.
+
+\bibitem[{\textit{Tolman}(2009)}]{tolman2009}
+Tolman, H.~L. (2009), User manual and system documentation of {WAVEWATCH III}
+  version 3.14, \textit{Tech. rep.}, NOAA National Weather Service.
+
+\bibitem[{\textit{Tran et~al.}(2010)\textit{Tran, Vandemark, Labroue, Feng,
+  Chapron, Tolman, Lambin, and Picot}}]{tran2010}
+Tran, N., D.~Vandemark, S.~Labroue, H.~Feng, B.~Chapron, H.~L. Tolman,
+  J.~Lambin, and N.~Picot (2010), Sea state bias in altimeter sea level
+  estimates determined by combining wave model and satellite data, \textit{J.\
+  Geophys.\ Res.}, \textit{115}, C03020, \doi{10.1029/2009JC005534}.
+
+\bibitem[{\textit{Tran et~al.}(2012)\textit{Tran, Philipps, Poisson, Urien,
+  Bronner, and Picot}}]{tran2012}
+Tran, N., S.~Philipps, J.~C. Poisson, S.~Urien, E.~Bronner, and N.~Picot
+  (2012), Impact of {GDR-D} standards on {SSB} correction, Ocean Science
+  Topography Science Team Meeting, Venice, Italy, 27-29 September 2012.
+
+\bibitem[{\textit{Wahr}(1985)}]{wahr1985}
+Wahr, J.~M. (1985), Deformation of the {Earth} induced by polar motion,
+  \textit{J.\ Geophys.\ Res.}, \textit{90}(B11), 9363--9368,
+  \doi{10.1029/JB090iB11p09363}.
+
+\bibitem[{\textit{Wahr et~al.}(2015)\textit{Wahr, Nerem, and
+  Bettadpur}}]{wahr2015}
+Wahr, J.~M., R.~S. Nerem, and S.~V. Bettadpur (2015), The pole tide and its
+  effect on {GRACE} time-variable gravity measurements: implications for the
+  estimates of surface mass variations, \textit{J.\ Geophys.\ Res.},
+  \textit{120}, 4597--4615, \doi{10.1002/2015JB011986}.
+
+\bibitem[{\textit{Wessel and Smith}(1996)}]{wessel1996}
+Wessel, P., and W.~H.~F. Smith (1996), A global, self-consistent, hierarchical,
+  high-resolution shoreline, \textit{J.\ Geophys.\ Res.}, \textit{101}(B4),
+  8741--8743.
+
+\bibitem[{\textit{Wessel et~al.}(2013)\textit{Wessel, Smith, Scharroo, Luis,
+  and Wobbe}}]{wessel2013}
+Wessel, P., W.~H.~F. Smith, R.~Scharroo, J.~Luis, and F.~Wobbe (2013), {Generic
+  Mapping Tools}: Improved version released, \textit{Eos Trans.\ AGU},
+  \textit{94}(45), 409--410, \doi{10.1002/2013EO450001}.
+
+\bibitem[{\textit{Wingham et~al.}(2006)}]{wingham2006}
+Wingham, D.~J., et~al. (2006), {CryoSat}: A mission to determine the
+  fluctuations in {Earth's} land and marine ice fields, \textit{Adv.\ Space
+  Res.}, \textit{37}(4), 841--871, \doi{10.1016/j.asr.2005.07.027}.
+
+\bibitem[{\textit{Witter and Chelton}(1991)}]{witter1991}
+Witter, D.~L., and D.~B. Chelton (1991), A {Geosat} altimeter wind speed
+  algorithm and a method for altimeter wind speed algorithm development,
+  \textit{J.\ Geophys.\ Res.}, \textit{96}(C5), 8853--8860.
+
+\end{thebibliography}

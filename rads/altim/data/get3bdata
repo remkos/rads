@@ -1,0 +1,5 @@
+set cmd:fail-exit true
+set net:timeout 20
+set net:max-retries 2
+set ftp:sync-mode on
+open ftp://"david.s.trossman@noaa.gov":WGYO8o@ftp-access.aviso.altimetry.fr/geophysical-data-record/3b/
