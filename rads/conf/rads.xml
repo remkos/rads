@@ -544,7 +544,7 @@ Global RADS configuration file
 	<compress>int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_gdre" field="425" sat="3a 3b c2 j1 j2 j3 sw sa">
+<var name="alt_gdre" field="425" sat="3a 3b c2 j1 j2 j3 sa">
 	<long_name>CNES GDR-E orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>CNES, GDR-E standards</source>
@@ -553,7 +553,7 @@ Global RADS configuration file
 	<data>alt_gdre</data>
 	<format>f12.4</format>
 	<compress>int4 1e-4 700e3</compress>
-	<compress sat="j1 j2 j3 sw tx">int4 1e-4 1300e3</compress>
+	<compress sat="j1 j2 j3 tx">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_slcci" field="426" sat="e1 e2 j1 j2 n1 pn tx">
@@ -589,7 +589,8 @@ Global RADS configuration file
 <alias name="alt" field="4" sat="gs">alt_gdrcp</alias>
 <alias name="alt" field="4" sat="j1">alt_gdre</alias>
 <alias name="alt" field="4" sat="j2">alt_gdre alt_gdrd</alias>
-<alias name="alt" field="4" sat="j3 sw">alt_gdrf alt_gdre</alias>
+<alias name="alt" field="4" sat="j3">alt_gdrf alt_gdre</alias>
+<alias name="alt" field="4" sat="sw">alt_gdrf</alias>
 <alias name="alt" field="4" sat="n1">alt_gdrd alt_gdrcp</alias>
 <alias name="alt" field="4" sat="pn tx">alt_gdrcp alt_jgm3</alias>
 <var name="alt_cnes_20hz" sat="c2">
