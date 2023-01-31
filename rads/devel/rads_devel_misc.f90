@@ -54,6 +54,10 @@ case ('JA2')
 	call parseenv ('${RADSROOT}/ext/j2/JA2_ORF.txt', line)
 case ('JA3')
 	call parseenv ('${RADSROOT}/ext/j3/JA3_ORF.txt', line)
+! Added DST: begin
+case ('SWT')
+	call parseenv ('${RADSROOT}/ext/sw/SWT_ORF.txt', line)
+! Added DST:  end
 case ('CS_')
 	call parseenv ('${ALTIM}/data/ODR.CRYOSAT2/orf.txt', line)
 case ('SRL')
