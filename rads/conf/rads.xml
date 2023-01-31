@@ -655,7 +655,7 @@ Global RADS configuration file
 		<compress>int4 1e-4 700e3</compress>
 		<compress sat="2a">int4 1e-4 900e3</compress>
 		<compress sat="sw">int4 1e-4 800e3</compress>
-		<if sat="6a j1 j2 j3 sw pn tx">
+		<if sat="6a j1 j2 j3 pn tx">
 			<format>f12.4</format>
 			<compress>int4 1e-4 1300e3</compress>
 		</if>
@@ -721,10 +721,12 @@ Global RADS configuration file
 	<units>m</units>
 	<limits>1300e3 1400e3</limits>
 	<limits sat="2a 3a 3b">750e3 850e3</limits>
+	<limits sat="sw">800e3 900e3</limits>
 	<data>range_c</data>
 	<format>f12.4</format>
 	<compress>int4 1e-4 1300e3</compress>
 	<compress sat="3a 3b">int4 1e-4 700e3</compress>
+	<compress sat="sw">int4 1e-4 800e3</compress>
 </var>
 <var name="range_s" field="602" sat="n1">
 	<long_name>S-band range corrected for instr. effects</long_name>
