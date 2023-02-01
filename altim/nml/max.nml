@@ -1,9 +1,0 @@
- &nml
- npar=5,
- specif='AQAXT',
- timper=12,
- nskip=0,
- shortl=0,
- usestr='XXXXX',
- angmin=0.5,
- &end

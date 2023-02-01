@@ -1,4 +1,0 @@
- &geospec_nml
- amax=1.0, fmax=3.00, deadband=0.00,
- dev='/xs',
- &end

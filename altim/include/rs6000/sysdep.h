@@ -1,4 +1,0 @@
-#undef SWAP
-#undef CAPITALS
-#undef UNDERSCOREAFTER
-#undef UNDERSCOREBEFORE

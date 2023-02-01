@@ -1,8 +1,0 @@
- &nml
- amin=7150, amax=7165,
- emin=1.13,   emax=1.185,
- imin=98.48,    imax=98.57,
- wmin=89.5,   wmax=91.6,
- ogmin=29.6,   ogmax=30.3,
- dev='elemplot.ps/ps',ch=1.5,
- &end

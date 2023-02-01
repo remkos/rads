@@ -2,6 +2,7 @@
 *.aux
 *.blg
 *.cache
+*.DS_Store
 *.gz
 *.idx
 *.ilg
@@ -11,8 +12,10 @@
 *.o
 *.status
 *.toc
+altim/
 confdefs.h
 config.mk
+data/
 devel/make_orf
 devel/ogdrsplit
 devel/rads_add_dual

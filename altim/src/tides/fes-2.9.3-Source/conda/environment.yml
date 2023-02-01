@@ -1,7 +1,0 @@
-name: FES
-channels:
-  - conda-forge
-  - defaults
-dependencies:
-  - boa
-  - anaconda-client
