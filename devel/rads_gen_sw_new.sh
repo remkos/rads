@@ -45,7 +45,6 @@ rads_gen_swot < "$lst"											>> "$log" 2>&1
 
 # Do the patches to all data
 
-rads_fix_jason    $options --all					>> "$log" 2>&1
 rads_add_common   $options							>> "$log" 2>&1
 rads_add_iono     $options --all					>> "$log" 2>&1
 # Redetermine SSHA
