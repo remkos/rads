@@ -394,7 +394,7 @@ The radar signal is also delayed by ions and electrons in the upper layers of th
 \var{iono_alt_smooth_mle3} & 913 & smoothed d-f iono corr (MLE3) & m & j2 j3 sw & -0.4 0.04 & \ref{item:iono_alt_smooth_mle3} \\
 \hline
 \var{iono} & 9 & \alias{iono_alt_smooth} & &  &&  \\
-& & ~~~ \var{iono_gim} \var{iono_nic09} & & j1 j2 j3 sw n1 tx && \ref{item:iono} \\
+& & ~~~ \var{iono_gim} \var{iono_nic09} & & j1 j2 j3 n1 sw tx && \ref{item:iono} \\
 \var{iono} & 9 & \alias{iono_gim} \var{iono_nic09} & & c2 e2 g1 sa && \ref{item:iono} \\
 \var{iono} & 9 & \alias{iono_nic09} & & e1 gs pn && \ref{item:iono} \\
 \end{vartable}
@@ -523,7 +523,7 @@ In the earlier days of altimetry the sea state bias was generally considered as 
 
 \begin{vartable}
 \var{ssb_bm3} & 1501 & parametric sea state bias & m & e1 e2 g1 gs pn tx & -1 1 & \ref{item:ssb_bm3} \\
-\var{ssb_cls} & 1502 & CLS non-parametric SSB & m & j1 j2 j3 sw n1 tx       & -1 1 & \ref{item:ssb_cls} \\
+\var{ssb_cls} & 1502 & CLS non-parametric SSB & m & j1 j2 j3 n1 sw tx       & -1 1 & \ref{item:ssb_cls} \\
 \var{ssb_csr} & 1503 & CSR BM4 sea state bias & m & tx                & -1 1 & \ref{item:ssb_csr} \\
 \var{ssb_hyb} & 1504 & NOAA hybrid sea state bias & m & g1 gs n1 pn sa & -1 1 & \ref{item:ssb_hyb} \\
 \var{ssb_cls_c} & 1505 & CLS non-parametric SSB (C-band) & m & j1 j2 j3 sw & -1 1 & \ref{item:ssb_cls_c} \\
@@ -531,7 +531,7 @@ In the earlier days of altimetry the sea state bias was generally considered as 
 \var{ssb_tran2012} & 1513 & Tran et al. 2012 non-parametric sea state bias & m & j2 j3 sw & -1 1 & \ref{item:ssb_tran2012} \\
 \hline
 \var{ssb}     &   15 & \alias{ssb_bm3} && e1 e2 pn && \\
-\var{ssb}     &   15 & \alias{ssb_cls} && j1 j2 j3 sw n1 tx && \\
+\var{ssb}     &   15 & \alias{ssb_cls} && j1 j2 j3 n1 sw tx && \\
 \var{ssb}     &   15 & \alias{ssb_hyb} && c2 g1 gs sa && \\
 \end{vartable}
 
@@ -674,9 +674,9 @@ Atmospheric models, like those at ECMWF also provide wind speed and wind directi
 \begin{vartable}
 \var{wind_speed_alt} & 1901 & altimeter wind speed & m/s & all & -1 30 & \ref{item:wind_speed_mcw}-\ref{item:wind_speed_jason} \\
 \var{wind_speed_rad} & 1902 & radiometer wind speed & m/s & j1 j2 j3 sw pn tx & 0 30 & \\
-\var{wind_speed_ecmwf_u} & 1903 & ECMWF model wind speed (U) & m/s & e2 j1 j2 j3 sw n1 sa & & \ref{item:wind_speed_ecmwf} \\
-\var{wind_speed_ecmwf_v} & 1904 & ECMWF model wind speed (V) & m/s & e2 j1 j2 j3 sw n1 sa & & \ref{item:wind_speed_ecmwf} \\
-\var{wind_speed_ecmwf} & & ECMWF model wind speed & m/s & e2 j1 j2 j3 sw n1 sa & & \ref{item:wind_speed_ecmwf} \\
+\var{wind_speed_ecmwf_u} & 1903 & ECMWF model wind speed (U) & m/s & e2 j1 j2 j3 n1 sw sa & & \ref{item:wind_speed_ecmwf} \\
+\var{wind_speed_ecmwf_v} & 1904 & ECMWF model wind speed (V) & m/s & e2 j1 j2 j3 n1 sw sa & & \ref{item:wind_speed_ecmwf} \\
+\var{wind_speed_ecmwf} & & ECMWF model wind speed & m/s & e2 j1 j2 j3 n1 sw sa & & \ref{item:wind_speed_ecmwf} \\
 \var{wind_speed_gfs_u} & 1903 & NOAA/GFS model wind speed (U) & m/s & sa & & \ref{item:wind_speed_gfs} \\
 \var{wind_speed_gfs_v} & 1904 & NOAA/GFS model wind speed (V) & m/s & sa & & \ref{item:wind_speed_gfs} \\
 \var{wind_speed_gfs} & & NOAA/GFS model wind speed & m/s & sa & & \ref{item:wind_speed_gfs} \\
@@ -737,8 +737,8 @@ In a future version of the data base the flag word \var{flags} will be phased ou
             &      &           & & gs & 51176 0 & \\
             &      &           & & n1 & 36712 0 & \\
             &      &           & & pn & 480 0 & \\
+						&      &           & & sw & 65384 0 & \\
             &      &           & & tx & 49640 0 & \\
-            &      &           & & sw & 65384 0 & \\
 \hline
             & 26   & \alias{flags} & & & & \\
 \end{vartable}
@@ -757,20 +757,20 @@ The individual bits of the flag word \var{flags} are described in the following 
 Variable & field & name & values & sat & note \\
 \hline
 \var{flag_alt_oper_mode} & 2516 & bit 0: hardware/software status & 0 = nominal, 1 = bad & pn tx & \\
-                         & 2516 & bit 0: altimeter operating mode & 0 = Side A, 1 = Side B & j1 j2 j3 sw n1 & \\
+                         & 2516 & bit 0: altimeter operating mode & 0 = Side A, 1 = Side B & j1 j2 j3 n1 sw & \\
                          & 2516 & bit 0: altimeter operating mode & 0 = LRM, 1 = SAR & 3a 3b 6a c2 & \\
 \var{qual_sptr}          & 2516 & bit 0: SPTR availability & & e1 & \\
-\var{qual_attitude}      & 2501 & bit 1: quality of attitude & 0 = ok, 1 = bad & 3a 3b 6a e2 j1 j2 j3 sw n1 tx sa & \\
+\var{qual_attitude}      & 2501 & bit 1: quality of attitude & 0 = ok, 1 = bad & 3a 3b 6a e2 j1 j2 j3 n1 sw tx sa & \\
                          &      & bit 1: quality of attitude & 0 = ok, 1 = suspect & g1 gs pn & \\
 \var{qual_dh}            & 2502 & bit 2: dH status & 1 = suspect & gs & \\
 \var{flag_rad_oper_mode} & 2502 & bit 2: TMP 21 GHz Channel status & 0 = A, 1 = B & pn tx & \\
-\var{flag_continental_ice} & 2502 & bit 2: continental ice flag & 0 = no, 1 = yes & 3a 3b 6a c2 j1 j2 j3 sw n1 sa & \\
-\var{qual_iono_alt}      & 2503 & bit 3: quality of dual-frequency iono corr & 0 = ok, 1 = bad & 3a 3b 6a j1 j2 j3 sw n1 tx \\
+\var{flag_continental_ice} & 2502 & bit 2: continental ice flag & 0 = no, 1 = yes & 3a 3b 6a c2 j1 j2 j3 n1 sw sa & \\
+\var{qual_iono_alt}      & 2503 & bit 3: quality of dual-frequency iono corr & 0 = ok, 1 = bad & 3a 3b 6a j1 j2 j3 n1 sw tx \\
 \var{flag_water}         & 2504 & bit 4: water/dry flag & 0 = open ocean or enclosed sea or lake, 1 = land & all & \\
 \var{flag_ocean}         & 2505 & bit 5: ocean/land flag & 0 = open ocean, 1 = land or enclosed sea or lake & all & \\
 \var{surface_type_rad}   & 2506 & bit 6: radiometer land flag & 0 = water, 1 = land & all but c2 gs & \\
-\var{qual_alt_rain_ice}  & 2507 & bit 7: altimeter rain/ice flag & 0 = no rain/ice, 1 = rain/ice & 3a 3b 6a g1 j1 j2 j3 sw n1 pn sa tx & \\
-\var{qual_rad_rain_ice}  & 2508 & bit 8: radiometer rain/ice flag & 0 = no rain/ice, 1 = rain/ice & 3a 3b 6a e1 e2 j1 j2 j3 sw n1 pn tx & \\
+\var{qual_alt_rain_ice}  & 2507 & bit 7: altimeter rain/ice flag & 0 = no rain/ice, 1 = rain/ice & 3a 3b 6a g1 j1 j2 j3 n1 sw pn sa tx & \\
+\var{qual_rad_rain_ice}  & 2508 & bit 8: radiometer rain/ice flag & 0 = no rain/ice, 1 = rain/ice & 3a 3b 6a e1 e2 j1 j2 j3 n1 sw pn tx & \\
 \var{qual_rad_tb}        & 2509 & bit 9/10: radiometer quality flag & 0 = ok, 1 = interp.\ near land, 2 = extrap., 3 = interp.\ failed & pn tx & \\
                          &      & & 0 = ok, 1 = bad tb238, 2 = bad tb365, 3 = both bad & 3a 3b e1 e2 n1 & \\
                          &      & & 0 = ok, 1 = bad tb220, 2 = bad tb370, 3 = both bad & g1 & \\
@@ -820,7 +820,7 @@ Topography is the elevation of the land (and lakes). It is represented generally
 In RADS the bathymetry and topography are combined into a single field. Please use the \var{surface_type} variable to distinguish between ocean, land, and lakes.
 
 \begin{vartable}
-\var{topo_dtm2000}    & 2202 & DTM2000 topography    & m & j1 j2 j3 sw n1 sa          & & \ref{item:topo_dtm2000} \\
+\var{topo_dtm2000}    & 2202 & DTM2000 topography    & m & j1 j2 j3 n1 sw sa          & & \ref{item:topo_dtm2000} \\
 \var{topo_srtm30plus} & 2204 & SRTM30PLUS topography & m & all & & \ref{item:topo_srtm30plus} \\
 \var{topo_dtu10}      & 2205 & DTU10 topography      & m & all & & \ref{item:topo_dtu10} \\
 \hline
