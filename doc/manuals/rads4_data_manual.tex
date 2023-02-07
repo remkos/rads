@@ -155,7 +155,7 @@ If the time tags on the original GDR data include a bias, the orbit has either b
 \var{alt_reaper_gfz}  & 422 & REAPER/GFZ altitude & m & e1 e2 && \ref{item:alt_reaper} \\
 \var{alt_reaper_esoc} & 423 & REAPER/ESOC altitude & m & e1 e2 && \ref{item:alt_reaper} \\
 \var{alt_std1404}  & 424 & GSFC/Std1404 altitude & m & j2 && \ref{item:alt_std1404} \\
-\var{alt_gdre}     & 425 & CNES GDR-E altitude & m & c2 j2 j3 sw sa && \ref{item:alt_gdre} \\
+\var{alt_gdre}     & 425 & CNES GDR-E altitude & m & c2 j2 j3 sa sw && \ref{item:alt_gdre} \\
 \var{alt_slcci}    & 426 & GFZ/SLCCI altitude & m & e1 e2 j1 j2 n1 pn tx && \ref{item:alt_slcci} \\
 \hline
 \var{alt} & 4 & \alias{alt_gdre} \var{alt_cnes} & & c2 && \ref{item:alt}\\
@@ -164,7 +164,7 @@ If the time tags on the original GDR data include a bias, the orbit has either b
 \var{alt} & 4 & \alias{alt_gdrcp} & & gs && \ref{item:alt} \\
 \var{alt} & 4 & \alias{alt_gdre} & & j1 && \ref{item:alt} \\
 \var{alt} & 4 & \alias{alt_gdre} \var{alt_gdrd} & & j2 && \ref{item:alt} \\
-\var{alt} & 4 & \alias{alt_gdre} & & j3 sw sa && \ref{item:alt} \\
+\var{alt} & 4 & \alias{alt_gdre} & & j3 sa sw && \ref{item:alt} \\
 \var{alt} & 4 & \alias{alt_gdrd} \var{alt_gdrcp} & & n1 && \ref{item:alt} \\
 \var{alt} & 4 & \alias{alt_gdrcp} \var{alt_jgm3} & & pn tx && \ref{item:alt} \\
 \end{vartable}
@@ -597,7 +597,7 @@ The 1-Hz standard deviation of SWH is determined from the individual 10-, 20-, o
 \var{swh_s} & 1702 & S-band significant wave height & m & n1 & -0.5 8 & \ref{item:swh_1},\ref{item:swh_3} \\
 \var{swh_ku_mle3} & 1711 & Ku-band significant wave height (MLE3) & m & j2 j3 sw & 0 8 & \ref{item:swh_ku_mle3} \\
 \hline
-\var{swh_ww3} & 1712 & WAVEWATCH3 significant wave height & m & c2 j2 j3 sw sa & & \ref{item:swh_ww3} \\
+\var{swh_ww3} & 1712 & WAVEWATCH3 significant wave height & m & c2 j2 j3 sa sw & & \ref{item:swh_ww3} \\
 \hline
 \var{swh_rms_ka} & 2802 & std dev of Ku-band SWH & m & sa & 0 2.1 & \\
 \var{swh_rms_ku} & 2802 & std dev of Ku-band SWH & m & g1 & 0 0.5 & \\

@@ -568,7 +568,7 @@ Global RADS configuration file
 	<compress sat="j1 j2 pn tx">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_gdrf" field="427" sat="3a 3b 6a c2 j3 sw sa">
+<var name="alt_gdrf" field="427" sat="3a 3b 6a c2 j3 sa sw">
 	<long_name>CNES GDR-F orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>CNES, GDR-F standards</source>
@@ -1747,7 +1747,7 @@ Global RADS configuration file
 <alias name="ssb" field="15" sat="sa">ssb_tran2019</alias>
 <alias name="ssb" field="15" sat="2a 3a 3b 6a c2 j1 j2 j3 sw n1 tx">ssb_cls</alias>
 
-<var name="geoid_egm96" field="1601" sat="3a 3b j2 j3 sw sa">
+<var name="geoid_egm96" field="1601" sat="3a 3b j2 j3 sa sw">
 	<long_name>EGM96 geoid height</long_name>
 	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
 	<source>EGM96</source>
@@ -1960,7 +1960,7 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<compress>int2 1e-3</compress>
 </var>
-<var name="swh_ww3" field="1712" sat="2a 3a 3b 6a c2 j2 j3 sw sa">
+<var name="swh_ww3" field="1712" sat="2a 3a 3b 6a c2 j2 j3 sa sw">
 	<long_name>WaveWatch3 significant wave height</long_name>
 	<standard_name>sea_surface_wave_significant_height</standard_name>
 	<units>m</units>
@@ -3009,7 +3009,7 @@ Global RADS configuration file
 	<comment>Computed from a mask built with MODIS and GlobCover data</comment>
 </var>
 
-<var name="flag_manoeuvre" sat="6a j3 sw sa">
+<var name="flag_manoeuvre" sat="6a j3 sa sw">
 	<long_name>flag indicating whether the satellite is in a manoeuvre</long_name>
 	<standard_name>status_flag</standard_name>
 	<flag_values>no_manoeuvre manoeuvre_ongoing</flag_values>
@@ -3841,7 +3841,7 @@ Global RADS configuration file
 	<compress>int2 1e-2</compress>
 </var>
 
-<var name="water_vapor_rad" field="3302" sat="2a 3a 3b 6a e1 e2 j1 j2 j3 sw sa">
+<var name="water_vapor_rad" field="3302" sat="2a 3a 3b 6a e1 e2 j1 j2 j3 sa sw">
 	<long_name>radiometer water vapor content</long_name>
 	<standard_name>atmosphere_mass_content_of_water_vapor</standard_name>
 	<units>kg/m^2</units>
@@ -4201,7 +4201,7 @@ Global RADS configuration file
 	<compress>int2 1e-3</compress>
 </var>
 
-<var name="mean_wave_period" sat="3a 3b 6a j3 sw sa">
+<var name="mean_wave_period" sat="3a 3b 6a j3 sa sw">
 	<long_name>t02 mean wave period</long_name>
 	<standard_name>sea_surface_wind_wave_mean_period_from_variance_spectral_density_second_frequency_moment</standard_name>
 	<source>MFWAM/Meteo France</source>
@@ -4211,7 +4211,7 @@ Global RADS configuration file
 	<compress>int2 1e-2</compress>
 </var>
 
-<var name="mean_wave_direction" sat="3a 3b 6a j3 sw sa">
+<var name="mean_wave_direction" sat="3a 3b 6a j3 sa sw">
 	<long_name>mean direction of the sea surface wave</long_name>
 	<standard_name>sea_surface_wave_from_direction</standard_name>
 	<source>MFWAM/Meteo France</source>
