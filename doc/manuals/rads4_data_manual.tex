@@ -283,8 +283,8 @@ Hence, technically, \var{range_rms} is not the standard deviation of the altimet
 \var{range_rms_ka} & 2002 & std dev of Ka-band range & m & sa & 0.0 0.17 & \\
 \var{range_rms_ku} & 2002 & std dev of Ku-band range & m & g1 gs & 0.0 0.25 & \\
                    &      &                          &   & j1 & 0.0 0.2 & \\
-                   &      &                          &   & j2 j3 & 0.0 0.17 & \\
-                   &      &                          &   & tx sw & 0.0 0.15 & \\
+                   &      &                          &   & j2 j3 sw & 0.0 0.17 & \\
+                   &      &                          &   & tx & 0.0 0.15 & \\
                    &      &                          &   & other & 0.0 0.4 & \\
 \var{range_rms_c}  & 2004 & std dev of C-band range  & m & j1 j2 j3 sw & 0.0 0.4 & \\
 \var{range_rms_s}  & 2004 & std dev of S-band range  & m & n1 & 0.0 0.4 & \ref{item:range_rms_s} \\
@@ -601,8 +601,8 @@ The 1-Hz standard deviation of SWH is determined from the individual 10-, 20-, o
 \hline
 \var{swh_rms_ka} & 2802 & std dev of Ku-band SWH & m & sa & 0 2.1 & \\
 \var{swh_rms_ku} & 2802 & std dev of Ku-band SWH & m & g1 & 0 0.5 & \\
-& & & & j1 j2 j3 & 0 1.5 & \\
-& & & & tx sw & 0 0.9 & \\
+& & & & j1 j2 j3 sw & 0 1.5 & \\
+& & & & tx & 0 0.9 & \\
 & & & & other & 0 2.1 & \\
 \var{swh_rms_c} & 2804 & std dev of C-band SWH & m & j1 j2 j3 sw tx & 0 2.1 & \\
 \var{swh_rms_s} & 2804 & std dev of S-band SWH & m & n1 & 0 2.1 & \ref{item:swh_3} \\
@@ -673,10 +673,10 @@ Atmospheric models, like those at ECMWF also provide wind speed and wind directi
 
 \begin{vartable}
 \var{wind_speed_alt} & 1901 & altimeter wind speed & m/s & all & -1 30 & \ref{item:wind_speed_mcw}-\ref{item:wind_speed_jason} \\
-\var{wind_speed_rad} & 1902 & radiometer wind speed & m/s & j1 j2 j3 sw pn tx & 0 30 & \\
-\var{wind_speed_ecmwf_u} & 1903 & ECMWF model wind speed (U) & m/s & e2 j1 j2 j3 n1 sw sa & & \ref{item:wind_speed_ecmwf} \\
-\var{wind_speed_ecmwf_v} & 1904 & ECMWF model wind speed (V) & m/s & e2 j1 j2 j3 n1 sw sa & & \ref{item:wind_speed_ecmwf} \\
-\var{wind_speed_ecmwf} & & ECMWF model wind speed & m/s & e2 j1 j2 j3 n1 sw sa & & \ref{item:wind_speed_ecmwf} \\
+\var{wind_speed_rad} & 1902 & radiometer wind speed & m/s & j1 j2 j3 pn sw tx & 0 30 & \\
+\var{wind_speed_ecmwf_u} & 1903 & ECMWF model wind speed (U) & m/s & e2 j1 j2 j3 n1 sa sw & & \ref{item:wind_speed_ecmwf} \\
+\var{wind_speed_ecmwf_v} & 1904 & ECMWF model wind speed (V) & m/s & e2 j1 j2 j3 n1 sa sw & & \ref{item:wind_speed_ecmwf} \\
+\var{wind_speed_ecmwf} & & ECMWF model wind speed & m/s & e2 j1 j2 j3 n1 sa sw & & \ref{item:wind_speed_ecmwf} \\
 \var{wind_speed_gfs_u} & 1903 & NOAA/GFS model wind speed (U) & m/s & sa & & \ref{item:wind_speed_gfs} \\
 \var{wind_speed_gfs_v} & 1904 & NOAA/GFS model wind speed (V) & m/s & sa & & \ref{item:wind_speed_gfs} \\
 \var{wind_speed_gfs} & & NOAA/GFS model wind speed & m/s & sa & & \ref{item:wind_speed_gfs} \\
@@ -737,7 +737,7 @@ In a future version of the data base the flag word \var{flags} will be phased ou
             &      &           & & gs & 51176 0 & \\
             &      &           & & n1 & 36712 0 & \\
             &      &           & & pn & 480 0 & \\
-						&      &           & & sw & 65384 0 & \\
+						&      &           & & sw & 65384 0 & \ref{item:no_rad_land} \\
             &      &           & & tx & 49640 0 & \\
 \hline
             & 26   & \alias{flags} & & & & \\
@@ -769,8 +769,8 @@ Variable & field & name & values & sat & note \\
 \var{flag_water}         & 2504 & bit 4: water/dry flag & 0 = open ocean or enclosed sea or lake, 1 = land & all & \\
 \var{flag_ocean}         & 2505 & bit 5: ocean/land flag & 0 = open ocean, 1 = land or enclosed sea or lake & all & \\
 \var{surface_type_rad}   & 2506 & bit 6: radiometer land flag & 0 = water, 1 = land & all but c2 gs & \\
-\var{qual_alt_rain_ice}  & 2507 & bit 7: altimeter rain/ice flag & 0 = no rain/ice, 1 = rain/ice & 3a 3b 6a g1 j1 j2 j3 n1 sw pn sa tx & \\
-\var{qual_rad_rain_ice}  & 2508 & bit 8: radiometer rain/ice flag & 0 = no rain/ice, 1 = rain/ice & 3a 3b 6a e1 e2 j1 j2 j3 n1 sw pn tx & \\
+\var{qual_alt_rain_ice}  & 2507 & bit 7: altimeter rain/ice flag & 0 = no rain/ice, 1 = rain/ice & 3a 3b 6a g1 j1 j2 j3 n1 pn sa sw tx & \\
+\var{qual_rad_rain_ice}  & 2508 & bit 8: radiometer rain/ice flag & 0 = no rain/ice, 1 = rain/ice & 3a 3b 6a e1 e2 j1 j2 j3 n1 pn sw tx & \\
 \var{qual_rad_tb}        & 2509 & bit 9/10: radiometer quality flag & 0 = ok, 1 = interp.\ near land, 2 = extrap., 3 = interp.\ failed & pn tx & \\
                          &      & & 0 = ok, 1 = bad tb238, 2 = bad tb365, 3 = both bad & 3a 3b e1 e2 n1 & \\
                          &      & & 0 = ok, 1 = bad tb220, 2 = bad tb370, 3 = both bad & g1 & \\
@@ -820,7 +820,7 @@ Topography is the elevation of the land (and lakes). It is represented generally
 In RADS the bathymetry and topography are combined into a single field. Please use the \var{surface_type} variable to distinguish between ocean, land, and lakes.
 
 \begin{vartable}
-\var{topo_dtm2000}    & 2202 & DTM2000 topography    & m & j1 j2 j3 n1 sw sa          & & \ref{item:topo_dtm2000} \\
+\var{topo_dtm2000}    & 2202 & DTM2000 topography    & m & j1 j2 j3 n1 sa sw          & & \ref{item:topo_dtm2000} \\
 \var{topo_srtm30plus} & 2204 & SRTM30PLUS topography & m & all & & \ref{item:topo_srtm30plus} \\
 \var{topo_dtu10}      & 2205 & DTU10 topography      & m & all & & \ref{item:topo_dtu10} \\
 \hline
