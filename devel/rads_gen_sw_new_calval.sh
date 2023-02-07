@@ -83,12 +83,6 @@ case $type in
 		;;
 esac
 
-# Add MOE orbit (for OGDR only)
-case $type in
-	ogdr) rads_add_orbit $options -Valt_cnes --dir=gdr-e-moe --equator --rate	>> "$log" 2>&1
-		;;
-esac
-
 # Add adaptive retracker for NTC
 
 case $type in
