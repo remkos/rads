@@ -155,7 +155,7 @@ If the time tags on the original GDR data include a bias, the orbit has either b
 \var{alt_reaper_gfz}  & 422 & REAPER/GFZ altitude & m & e1 e2 && \ref{item:alt_reaper} \\
 \var{alt_reaper_esoc} & 423 & REAPER/ESOC altitude & m & e1 e2 && \ref{item:alt_reaper} \\
 \var{alt_std1404}  & 424 & GSFC/Std1404 altitude & m & j2 && \ref{item:alt_std1404} \\
-\var{alt_gdre}     & 425 & CNES GDR-E altitude & m & c2 j2 j3 sa && \ref{item:alt_gdre} \\
+\var{alt_gdre}     & 425 & CNES GDR-E altitude & m & c2 j2 j3 sw sa && \ref{item:alt_gdre} \\
 \var{alt_slcci}    & 426 & GFZ/SLCCI altitude & m & e1 e2 j1 j2 n1 pn tx && \ref{item:alt_slcci} \\
 \hline
 \var{alt} & 4 & \alias{alt_gdre} \var{alt_cnes} & & c2 && \ref{item:alt}\\
@@ -164,7 +164,7 @@ If the time tags on the original GDR data include a bias, the orbit has either b
 \var{alt} & 4 & \alias{alt_gdrcp} & & gs && \ref{item:alt} \\
 \var{alt} & 4 & \alias{alt_gdre} & & j1 && \ref{item:alt} \\
 \var{alt} & 4 & \alias{alt_gdre} \var{alt_gdrd} & & j2 && \ref{item:alt} \\
-\var{alt} & 4 & \alias{alt_gdre} & & j3 sa && \ref{item:alt} \\
+\var{alt} & 4 & \alias{alt_gdre} & & j3 sw sa && \ref{item:alt} \\
 \var{alt} & 4 & \alias{alt_gdrd} \var{alt_gdrcp} & & n1 && \ref{item:alt} \\
 \var{alt} & 4 & \alias{alt_gdrcp} \var{alt_jgm3} & & pn tx && \ref{item:alt} \\
 \end{vartable}
@@ -246,8 +246,8 @@ Dual-frequency altimeters measure the range also on a secondary frequency (C- an
 \begin{vartable}
 \var{range_ka} & 601 & altimeter range (Ka) & m & sa & & \\
 \var{range_ku} & 601 & altimeter range (Ku) & m & other & & \\
-\var{range_ku_mle3} & 601 & altimeter range (MLE3) & m & j2 j3 & & \ref{item:range_ku_mle3} \\
-\var{range_c}  & 602 & altimeter range (C) & m & tx j1 j2 j3 & & \\
+\var{range_ku_mle3} & 601 & altimeter range (MLE3) & m & j2 j3 sw & & \ref{item:range_ku_mle3} \\
+\var{range_c}  & 602 & altimeter range (C) & m & tx j1 j2 j3 sw & & \\
 \var{range_s}  & 602 & altimeter range (S) & m & n1 & & \\
 \hline
 \var{range} & 6 & \alias{range_ka} & & sa & & \\
@@ -284,9 +284,9 @@ Hence, technically, \var{range_rms} is not the standard deviation of the altimet
 \var{range_rms_ku} & 2002 & std dev of Ku-band range & m & g1 gs & 0.0 0.25 & \\
                    &      &                          &   & j1 & 0.0 0.2 & \\
                    &      &                          &   & j2 j3 & 0.0 0.17 & \\
-                   &      &                          &   & tx & 0.0 0.15 & \\
+                   &      &                          &   & tx sw & 0.0 0.15 & \\
                    &      &                          &   & other & 0.0 0.4 & \\
-\var{range_rms_c}  & 2004 & std dev of C-band range  & m & j1 j2 j3 & 0.0 0.4 & \\
+\var{range_rms_c}  & 2004 & std dev of C-band range  & m & j1 j2 j3 sw & 0.0 0.4 & \\
 \var{range_rms_s}  & 2004 & std dev of S-band range  & m & n1 & 0.0 0.4 & \ref{item:range_rms_s} \\
 \hline
 \var{range_rms}    &   20 & \alias{range_rms_ka} && sa && \\
@@ -300,9 +300,9 @@ Hence, technically, \var{range_rms} is not the standard deviation of the altimet
 \begin{vartable}
 \var{range_numval_ku} & 2101 & nr of valid Ka-band measurements && sa & 33 40 & \\
 \var{range_numval_ku} & 2101 & nr of valid Ku-band measurements && g1 gs tx & 9 10 & \\
-                      &      &                                      && j1 j2 j3 & 16 20 & \\
+                      &      &                                      && j1 j2 j3 sw & 16 20 & \\
                       &      &                                      && other & 17 20 & \\
-\var{range_numval_c} & 2102 & nr of valid C-band measurements && j1 j2 j3 & 17 20 & \\
+\var{range_numval_c} & 2102 & nr of valid C-band measurements && j1 j2 j3 sw & 17 20 & \\
 \hline
 \var{range_numval} &   21 & \alias{range_numval_ka} && sa && \\
 \var{range_numval} &   21 & \alias{range_numval_ku} && other && \\
@@ -351,7 +351,7 @@ The radiometer wet tropospheric correction for ERS-1, ERS-2, and Envisat is base
 \var{wet_tropo_rad} & 801 & radiometer wet tropo corr & m & n1 & -0.6 0.05 & \ref{item:wet_tropo_rad_n1} \\
                     &     &                           &   & pn tx & -0.6 -0.001 & \ref{item:wet_tropo_rad_tp} \\
                     &     &                           &   & e2 & -0.6 0.0 & \ref{item:wet_tropo_rad_e2} \\
-                    &     &                           &   & e1 g1 j1 j2 j3 & -0.6 0.0 & \\
+                    &     &                           &   & e1 g1 j1 j2 j3 sw & -0.6 0.0 & \\
 \var{wet_tropo_ecmwf} & 802 & ECMWF wet tropo corr    & m & all but g1 gs & -0.6 0.0 & \ref{item:wet_tropo_ecmwf} \\
 \var{wet_tropo_ncep} & 803 & NCEP wet tropo corr      & m & all & -0.6 0.0 & \ref{item:wet_tropo_ncep} \\
 \var{wet_tropo_nvap} & 804 & NASA NVAP wet tropo corr & m & gs & -0.6 0.0 & \ref{item:wet_tropo_nvap} \\
@@ -383,18 +383,18 @@ The radiometer wet tropospheric correction for ERS-1, ERS-2, and Envisat is base
 The radar signal is also delayed by ions and electrons in the upper layers of the atmosphere (the ionosphere). The delay is inversely proportional to the altimeter radar frequency, and otherwise proportional to the vertically integrated electron density, known as total electron content or TEC. This dispersive nature allows dual-frequency altimeters (TOPEX, Envisat, Jason-1 and -2) to directly determine the ionospheric path delay on either frequency. For single frequency altimeters we rely on TEC estimates from models based on other dual-frequency equipment (GPS, DORIS) or climatologies.
 
 \begin{vartable}
-\var{iono_alt} & 901 & dual-frequency iono corr & m & n1 j1 j2 j3 tx & -0.4 0.04 & \ref{item:iono_alt} \\
-\var{iono_alt_smooth} & 903 & smoothed dual-freq iono corr & m & n1 j1 j2 j3 tx & -0.4 0.04 & \ref{item:iono_alt_smooth} \\
+\var{iono_alt} & 901 & dual-frequency iono corr & m & n1 j1 j2 j3 sw tx & -0.4 0.04 & \ref{item:iono_alt} \\
+\var{iono_alt_smooth} & 903 & smoothed dual-freq iono corr & m & n1 j1 j2 j3 sw tx & -0.4 0.04 & \ref{item:iono_alt_smooth} \\
 \var{iono_bent} & 902 & Bent iono corr & m & c2 e1 e2 n1 pn tx & -0.4 0.04 & \ref{item:iono_bent} \\
 \var{iono_doris} & 904 & DORIS iono corr & m & n1 pn tx & -0.4 0.04 & \ref{item:iono_doris} \\
 \var{iono_gim} & 906 & JPL GIM iono corr & m & all but gs e1 pn & -0.4 0.04 & \ref{item:iono_gim} \\
 \var{iono_iri2007} & 907 & IRI2007 iono corr & m & all & -0.4 0.04 & \ref{item:iono_iri2007} \\
 \var{iono_nic09} & 908 & NIC09 iono corr & m & all & -0.4 0.04 & \ref{item:iono_nic09} \\
-\var{iono_alt_mle3} & 911 & dual-freq iono corr (MLE3) & m & j2 j3 & -0.4 0.04 & \ref{item:iono_alt_mle3} \\
-\var{iono_alt_smooth_mle3} & 913 & smoothed d-f iono corr (MLE3) & m & j2 j3 & -0.4 0.04 & \ref{item:iono_alt_smooth_mle3} \\
+\var{iono_alt_mle3} & 911 & dual-freq iono corr (MLE3) & m & j2 j3 sw & -0.4 0.04 & \ref{item:iono_alt_mle3} \\
+\var{iono_alt_smooth_mle3} & 913 & smoothed d-f iono corr (MLE3) & m & j2 j3 sw & -0.4 0.04 & \ref{item:iono_alt_smooth_mle3} \\
 \hline
 \var{iono} & 9 & \alias{iono_alt_smooth} & &  &&  \\
-& & ~~~ \var{iono_gim} \var{iono_nic09} & & j1 j2 j3 n1 tx && \ref{item:iono} \\
+& & ~~~ \var{iono_gim} \var{iono_nic09} & & j1 j2 j3 sw n1 tx && \ref{item:iono} \\
 \var{iono} & 9 & \alias{iono_gim} \var{iono_nic09} & & c2 e2 g1 sa && \ref{item:iono} \\
 \var{iono} & 9 & \alias{iono_nic09} & & e1 gs pn && \ref{item:iono} \\
 \end{vartable}
@@ -523,15 +523,15 @@ In the earlier days of altimetry the sea state bias was generally considered as 
 
 \begin{vartable}
 \var{ssb_bm3} & 1501 & parametric sea state bias & m & e1 e2 g1 gs pn tx & -1 1 & \ref{item:ssb_bm3} \\
-\var{ssb_cls} & 1502 & CLS non-parametric SSB & m & j1 j2 j3 n1 tx       & -1 1 & \ref{item:ssb_cls} \\
+\var{ssb_cls} & 1502 & CLS non-parametric SSB & m & j1 j2 j3 sw n1 tx       & -1 1 & \ref{item:ssb_cls} \\
 \var{ssb_csr} & 1503 & CSR BM4 sea state bias & m & tx                & -1 1 & \ref{item:ssb_csr} \\
 \var{ssb_hyb} & 1504 & NOAA hybrid sea state bias & m & g1 gs n1 pn sa & -1 1 & \ref{item:ssb_hyb} \\
-\var{ssb_cls_c} & 1505 & CLS non-parametric SSB (C-band) & m & j1 j2 j3 & -1 1 & \ref{item:ssb_cls_c} \\
-\var{ssb_cls_mle3} & 1512 & CLS non-parametric SSB (MLE3) & m & j2 j3      & -1 1 & \ref{item:ssb_cls_mle3} \\
-\var{ssb_tran2012} & 1513 & Tran et al. 2012 non-parametric sea state bias & m & j2 j3 & -1 1 & \ref{item:ssb_tran2012} \\
+\var{ssb_cls_c} & 1505 & CLS non-parametric SSB (C-band) & m & j1 j2 j3 sw & -1 1 & \ref{item:ssb_cls_c} \\
+\var{ssb_cls_mle3} & 1512 & CLS non-parametric SSB (MLE3) & m & j2 j3 sw   & -1 1 & \ref{item:ssb_cls_mle3} \\
+\var{ssb_tran2012} & 1513 & Tran et al. 2012 non-parametric sea state bias & m & j2 j3 sw & -1 1 & \ref{item:ssb_tran2012} \\
 \hline
 \var{ssb}     &   15 & \alias{ssb_bm3} && e1 e2 pn && \\
-\var{ssb}     &   15 & \alias{ssb_cls} && j1 j2 j3 n1 tx && \\
+\var{ssb}     &   15 & \alias{ssb_cls} && j1 j2 j3 sw n1 tx && \\
 \var{ssb}     &   15 & \alias{ssb_hyb} && c2 g1 gs sa && \\
 \end{vartable}
 
@@ -593,18 +593,18 @@ The 1-Hz standard deviation of SWH is determined from the individual 10-, 20-, o
 \var{swh_ka} & 1701 & Ka-band significant wave height & m & sa & 0 8 & \\
 \var{swh_ku} & 1701 & Ku-band significant wave height & m & c2 n1 & -0.5 8 & \ref{item:swh_1},\ref{item:swh_2} \\
 & & & & other & 0 8 & \\
-\var{swh_c} & 1702 & C-band significant wave height & m & j1 j2 j3 tx & 0 8 & \\
+\var{swh_c} & 1702 & C-band significant wave height & m & j1 j2 j3 sw tx & 0 8 & \\
 \var{swh_s} & 1702 & S-band significant wave height & m & n1 & -0.5 8 & \ref{item:swh_1},\ref{item:swh_3} \\
-\var{swh_ku_mle3} & 1711 & Ku-band significant wave height (MLE3) & m & j2 j3 & 0 8 & \ref{item:swh_ku_mle3} \\
+\var{swh_ku_mle3} & 1711 & Ku-band significant wave height (MLE3) & m & j2 j3 sw & 0 8 & \ref{item:swh_ku_mle3} \\
 \hline
-\var{swh_ww3} & 1712 & WAVEWATCH3 significant wave height & m & c2 j2 j3 sa & & \ref{item:swh_ww3} \\
+\var{swh_ww3} & 1712 & WAVEWATCH3 significant wave height & m & c2 j2 j3 sw sa & & \ref{item:swh_ww3} \\
 \hline
 \var{swh_rms_ka} & 2802 & std dev of Ku-band SWH & m & sa & 0 2.1 & \\
 \var{swh_rms_ku} & 2802 & std dev of Ku-band SWH & m & g1 & 0 0.5 & \\
 & & & & j1 j2 j3 & 0 1.5 & \\
-& & & & tx & 0 0.9 & \\
+& & & & tx sw & 0 0.9 & \\
 & & & & other & 0 2.1 & \\
-\var{swh_rms_c} & 2804 & std dev of C-band SWH & m & j1 j2 j3 tx & 0 2.1 & \\
+\var{swh_rms_c} & 2804 & std dev of C-band SWH & m & j1 j2 j3 sw tx & 0 2.1 & \\
 \var{swh_rms_s} & 2804 & std dev of S-band SWH & m & n1 & 0 2.1 & \ref{item:swh_3} \\
 \hline
 \var{swh} & 17 & \alias{swh_ka} && sa && \\
@@ -634,13 +634,13 @@ The 1-Hz standard deviation of backscatter coefficient is determined from the in
 \begin{vartable}
 \var{sig0_ka} & 1801 & Ka-band backscatter coefficient & dB & sa & 6 27 & \\
 \var{sig0_ku} & 1801 & Ku-band backscatter coefficient & dB & other & 6 27 & \ref{item:sig0_e1}-\ref{item:sig0_tx} \\
-\var{sig0_c} & 1802 & C-band backscatter coefficient & dB & j1 j2 j3 tx & 6 27 & \ref{item:sig0_j1}-\ref{item:sig0_tx} \\
+\var{sig0_c} & 1802 & C-band backscatter coefficient & dB & j1 j2 j3 sw tx & 6 27 & \ref{item:sig0_j1}-\ref{item:sig0_tx} \\
 \var{sig0_s} & 1802 & S-band backscatter coefficient & dB & n1 & 6 27 & \ref{item:sig0_n1} \\
-\var{sig0_ku_mle3} & 1811 & Ku-band backscatter coefficient (MLE3) & dB & j2 j3 & 6 27 & \ref{item:sig0_ku_mle3} \\
+\var{sig0_ku_mle3} & 1811 & Ku-band backscatter coefficient (MLE3) & dB & j2 j3 sw & 6 27 & \ref{item:sig0_ku_mle3} \\
 \hline
 \var{sig0_rms_ka} & 2902 & std dev of Ka-band SWH & dB & sa & 0 1 & \\
 \var{sig0_rms_ku} & 2902 & std dev of Ku-band SWH & dB & all & 0 1 & \\
-\var{sig0_rms_c} & 2904 & std dev of C-band SWH & dB & j1 j2 j3 tx & & \ref{item:sig0_rms_tx} \\
+\var{sig0_rms_c} & 2904 & std dev of C-band SWH & dB & j1 j2 j3 sw tx & & \ref{item:sig0_rms_tx} \\
 \var{sig0_rms_s} & 2904 & std dev of S-band SWH & dB & n1 & & \ref{item:sig0_n1} \\
 \hline
 \var{sig0} & 18 & \alias{sig0_ka} && sa && \\
@@ -673,10 +673,10 @@ Atmospheric models, like those at ECMWF also provide wind speed and wind directi
 
 \begin{vartable}
 \var{wind_speed_alt} & 1901 & altimeter wind speed & m/s & all & -1 30 & \ref{item:wind_speed_mcw}-\ref{item:wind_speed_jason} \\
-\var{wind_speed_rad} & 1902 & radiometer wind speed & m/s & j1 j2 j3 pn tx & 0 30 & \\
-\var{wind_speed_ecmwf_u} & 1903 & ECMWF model wind speed (U) & m/s & e2 j1 j2 j3 n1 sa & & \ref{item:wind_speed_ecmwf} \\
-\var{wind_speed_ecmwf_v} & 1904 & ECMWF model wind speed (V) & m/s & e2 j1 j2 j3 n1 sa & & \ref{item:wind_speed_ecmwf} \\
-\var{wind_speed_ecmwf} & & ECMWF model wind speed & m/s & e2 j1 j2 j3 n1 sa & & \ref{item:wind_speed_ecmwf} \\
+\var{wind_speed_rad} & 1902 & radiometer wind speed & m/s & j1 j2 j3 sw pn tx & 0 30 & \\
+\var{wind_speed_ecmwf_u} & 1903 & ECMWF model wind speed (U) & m/s & e2 j1 j2 j3 sw n1 sa & & \ref{item:wind_speed_ecmwf} \\
+\var{wind_speed_ecmwf_v} & 1904 & ECMWF model wind speed (V) & m/s & e2 j1 j2 j3 sw n1 sa & & \ref{item:wind_speed_ecmwf} \\
+\var{wind_speed_ecmwf} & & ECMWF model wind speed & m/s & e2 j1 j2 j3 sw n1 sa & & \ref{item:wind_speed_ecmwf} \\
 \var{wind_speed_gfs_u} & 1903 & NOAA/GFS model wind speed (U) & m/s & sa & & \ref{item:wind_speed_gfs} \\
 \var{wind_speed_gfs_v} & 1904 & NOAA/GFS model wind speed (V) & m/s & sa & & \ref{item:wind_speed_gfs} \\
 \var{wind_speed_gfs} & & NOAA/GFS model wind speed & m/s & sa & & \ref{item:wind_speed_gfs} \\
@@ -738,6 +738,7 @@ In a future version of the data base the flag word \var{flags} will be phased ou
             &      &           & & n1 & 36712 0 & \\
             &      &           & & pn & 480 0 & \\
             &      &           & & tx & 49640 0 & \\
+            &      &           & & sw & 65384 0 & \\
 \hline
             & 26   & \alias{flags} & & & & \\
 \end{vartable}
@@ -756,24 +757,24 @@ The individual bits of the flag word \var{flags} are described in the following 
 Variable & field & name & values & sat & note \\
 \hline
 \var{flag_alt_oper_mode} & 2516 & bit 0: hardware/software status & 0 = nominal, 1 = bad & pn tx & \\
-                         & 2516 & bit 0: altimeter operating mode & 0 = Side A, 1 = Side B & j1 j2 j3 n1 & \\
+                         & 2516 & bit 0: altimeter operating mode & 0 = Side A, 1 = Side B & j1 j2 j3 sw n1 & \\
                          & 2516 & bit 0: altimeter operating mode & 0 = LRM, 1 = SAR & 3a 3b 6a c2 & \\
 \var{qual_sptr}          & 2516 & bit 0: SPTR availability & & e1 & \\
-\var{qual_attitude}      & 2501 & bit 1: quality of attitude & 0 = ok, 1 = bad & 3a 3b 6a e2 j1 j2 j3 n1 tx sa & \\
+\var{qual_attitude}      & 2501 & bit 1: quality of attitude & 0 = ok, 1 = bad & 3a 3b 6a e2 j1 j2 j3 sw n1 tx sa & \\
                          &      & bit 1: quality of attitude & 0 = ok, 1 = suspect & g1 gs pn & \\
 \var{qual_dh}            & 2502 & bit 2: dH status & 1 = suspect & gs & \\
 \var{flag_rad_oper_mode} & 2502 & bit 2: TMP 21 GHz Channel status & 0 = A, 1 = B & pn tx & \\
-\var{flag_continental_ice} & 2502 & bit 2: continental ice flag & 0 = no, 1 = yes & 3a 3b 6a c2 j1 j2 j3 n1 sa & \\
-\var{qual_iono_alt}      & 2503 & bit 3: quality of dual-frequency iono corr & 0 = ok, 1 = bad & 3a 3b 6a j1 j2 j3 n1 tx \\
+\var{flag_continental_ice} & 2502 & bit 2: continental ice flag & 0 = no, 1 = yes & 3a 3b 6a c2 j1 j2 j3 sw n1 sa & \\
+\var{qual_iono_alt}      & 2503 & bit 3: quality of dual-frequency iono corr & 0 = ok, 1 = bad & 3a 3b 6a j1 j2 j3 sw n1 tx \\
 \var{flag_water}         & 2504 & bit 4: water/dry flag & 0 = open ocean or enclosed sea or lake, 1 = land & all & \\
 \var{flag_ocean}         & 2505 & bit 5: ocean/land flag & 0 = open ocean, 1 = land or enclosed sea or lake & all & \\
 \var{surface_type_rad}   & 2506 & bit 6: radiometer land flag & 0 = water, 1 = land & all but c2 gs & \\
-\var{qual_alt_rain_ice}  & 2507 & bit 7: altimeter rain/ice flag & 0 = no rain/ice, 1 = rain/ice & 3a 3b 6a g1 j1 j2 j3 n1 pn sa tx & \\
-\var{qual_rad_rain_ice}  & 2508 & bit 8: radiometer rain/ice flag & 0 = no rain/ice, 1 = rain/ice & 3a 3b 6a e1 e2 j1 j2 j3 n1 pn tx & \\
+\var{qual_alt_rain_ice}  & 2507 & bit 7: altimeter rain/ice flag & 0 = no rain/ice, 1 = rain/ice & 3a 3b 6a g1 j1 j2 j3 sw n1 pn sa tx & \\
+\var{qual_rad_rain_ice}  & 2508 & bit 8: radiometer rain/ice flag & 0 = no rain/ice, 1 = rain/ice & 3a 3b 6a e1 e2 j1 j2 j3 sw n1 pn tx & \\
 \var{qual_rad_tb}        & 2509 & bit 9/10: radiometer quality flag & 0 = ok, 1 = interp.\ near land, 2 = extrap., 3 = interp.\ failed & pn tx & \\
                          &      & & 0 = ok, 1 = bad tb238, 2 = bad tb365, 3 = both bad & 3a 3b e1 e2 n1 & \\
                          &      & & 0 = ok, 1 = bad tb220, 2 = bad tb370, 3 = both bad & g1 & \\
-                         &      & & 0 = ok, 1 = bad tb187/tb238, 2 = bad tb340, 3 = both bad & 6a j1 j2 j3 & \\
+                         &      & & 0 = ok, 1 = bad tb187/tb238, 2 = bad tb340, 3 = both bad & 6a j1 j2 j3 sw & \\
                          &      & & 0 = ok, 1 = bad tb238, 2 = bad tb370, 3 = both bad & sa & \\
 \var{qual_range}         & 2511 & bit 11: quality of range & 0 = ok, 1 = some 10Hz invalid & gs & \\
                          &      & & 0 = ok, 1 = suspect & other & \\
@@ -819,7 +820,7 @@ Topography is the elevation of the land (and lakes). It is represented generally
 In RADS the bathymetry and topography are combined into a single field. Please use the \var{surface_type} variable to distinguish between ocean, land, and lakes.
 
 \begin{vartable}
-\var{topo_dtm2000}    & 2202 & DTM2000 topography    & m & j1 j2 j3 n1 sa          & & \ref{item:topo_dtm2000} \\
+\var{topo_dtm2000}    & 2202 & DTM2000 topography    & m & j1 j2 j3 sw n1 sa          & & \ref{item:topo_dtm2000} \\
 \var{topo_srtm30plus} & 2204 & SRTM30PLUS topography & m & all & & \ref{item:topo_srtm30plus} \\
 \var{topo_dtu10}      & 2205 & DTU10 topography      & m & all & & \ref{item:topo_dtu10} \\
 \hline
