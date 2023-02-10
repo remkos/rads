@@ -12,11 +12,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
 #-----------------------------------------------------------------------
-ALTIM=/Users/davidtrossman/Documents/Code/rads/altim
-HOSTTYPE=x86_64
-#HOSTTYPE=i386_gfortran
-#NETCDFHOME=/opt/local
-NETCDFHOME=/opt/local/lib
 
 include ../config.mk
 
