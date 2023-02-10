@@ -24,9 +24,6 @@
 # refresh  : Pull update and install if needed
 #
 #-----------------------------------------------------------------------
-ALTIM=/Users/davidtrossman/Documents/Code/rads/altim
-HOSTTYPE=x86_64
-NETCDFHOME=/opt/local
 
 include config.mk
 
