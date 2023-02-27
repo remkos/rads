@@ -287,19 +287,23 @@ do
 ! Compile flag bits
 
 	flags = 0
-	call nc2f (ncid1, 'alt_state_oper_flag',0)				! bit  0: Altimeter Side A/B
+	!call nc2f (ncid1, 'alt_state_oper_flag',0)				! bit  0: Altimeter Side A/B
+	call nc2f (ncid1, 'alt_state_band_seq_flag',0)				! bit  0: Altimeter Side A/B
 	call nc2f (ncidk, 'off_nadir_angle_wf_ocean_compression_qual', 1)		! bit  1: Quality off-nadir pointing
 	call nc2f (ncid1, 'surface_classification_flag', 2, eq=4)	! bit  2: Continental ice
 	call nc2f (ncidc, 'range_ocean_compression_qual', 3)			! bit  3: Quality dual-frequency iono
 	call nc2f (ncid1, 'surface_classification_flag', 4, eq=1)
 	call nc2f (ncid1, 'surface_classification_flag', 4, ge=3)	! bit  4: Water/land
 	call nc2f (ncid1, 'surface_classification_flag', 5, ge=1)	! bit  5: Ocean/other
-	call nc2f (ncid1, 'rad_surface_type_flag', 6, ge=2)			! bit  6: Radiometer land flag
+	call nc2f (ncid1, 'rad_side_1_surface_type_flag', 6, ge=2)			! bit  6: Radiometer land flag
+	!call nc2f (ncid1, 'rad_surface_type_flag', 6, ge=2)			! bit  6: Radiometer land flag
 	call nc2f (ncid1, 'rain_flag', 7, eq=1)
 	call nc2f (ncid1, 'rain_flag', 7, eq=2)
 	call nc2f (ncid1, 'rain_flag', 7, eq=4)						! bit  7: Altimeter rain or ice flag
-	call nc2f (ncid1, 'rad_rain_flag', 8)
-	call nc2f (ncid1, 'rad_sea_ice_flag', 8)					! bit  8: Radiometer rain or ice flag
+	call nc2f (ncid1, 'rad_side_1_rain_flag', 8)
+	!call nc2f (ncid1, 'rad_rain_flag', 8)
+	call nc2f (ncid1, 'rad_side_1_sea_ice_flag', 8)					! bit  8: Radiometer rain or ice flag
+	!call nc2f (ncid1, 'rad_sea_ice_flag', 8)					! bit  8: Radiometer rain or ice flag
 	call nc2f (ncid1, 'rad_tb_187_qual',  9)
 	call nc2f (ncid1, 'rad_tb_238_qual',  9)					! bit  9: Quality 18.7 or 23.8 GHz channel
 	call nc2f (ncid1, 'rad_tb_340_qual', 10)					! bit 10: Quality 34.0 GHz channel
@@ -421,7 +425,8 @@ do
 ! Rain or ice
 
 	call cpy_var (ncid1, 'rain_flag', 'qual_alt_rain_ice')
-	call cpy_var (ncid1, 'rad_rain_flag rad_sea_ice_flag IOR', 'qual_rad_rain_ice')
+	call cpy_var (ncid1, 'rad_side_1_rain_flag rad_side_1_sea_ice_flag IOR', 'qual_rad_rain_ice')
+	!call cpy_var (ncid1, 'rad_rain_flag rad_sea_ice_flag IOR', 'qual_rad_rain_ice')
 
 ! Off-nadir angle
 
@@ -470,7 +475,7 @@ do
 	call cpy_var (ncid1, 'load_tide_fes', 'tide_load_fes' // tide_fes_ver)
 	call cpy_var (ncid1, 'ocean_tide_eq', 'tide_equil')
 	call cpy_var (ncid1, 'ocean_tide_non_eq', 'tide_non_equil')
-	call cpy_var (ncid1, 'internal_tide', 'tide_internal')
+	call cpy_var (ncid1, 'internal_tide_hret', 'tide_internal')
 	call cpy_var (ncid1, 'solid_earth_tide', 'tide_solid')
 	call cpy_var (ncid1, 'pole_tide', 'tide_pole')
 
@@ -487,12 +492,14 @@ do
 
 	call cpy_var (ncid1, 'depth_or_elevation', 'topo_ace2')
 	call cpy_var (ncid1, 'surface_classification_flag', 'surface_class')
-	call get_var (ncid1, 'rad_surface_type_flag', a)
+	call get_var (ncid1, 'rad_side_1_surface_type_flag', a)
+	!call get_var (ncid1, 'rad_surface_type_flag', a)
 	where (a > 0) a = a + 1
 	call new_var ('surface_type_rad', a)
 	call cpy_var (ncid1, 'distance_to_coast 1e-3 MUL', 'dist_coast') ! Convert m to km
 	call cpy_var (ncid1, 'angle_of_approach_to_coast', 'angle_coast')
-	call cpy_var (ncid1, 'rad_distance_to_land 1e-3 MUL', 'rad_dist_coast') ! Convert m to km
+	call cpy_var (ncid1, 'rad_side_1_distance_to_land 1e-3 MUL', 'rad_dist_coast') ! Convert m to km
+	!call cpy_var (ncid1, 'rad_distance_to_land 1e-3 MUL', 'rad_dist_coast') ! Convert m to km
 
 ! Other flags
 
