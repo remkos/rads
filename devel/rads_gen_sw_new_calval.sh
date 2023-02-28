@@ -54,13 +54,13 @@ omrk=${type}/.bookmark
 TZ=UTC touch -t ${d0}0000 $omrk
 case $type in
 	gdr)
-		find -L ${type}/cycle_??? -name "SWT_*.nc" -a -newer $omrk | sort > "$lst"
+		find -L ${type}/cycle_??? -name "SWOT_*.nc" -a -newer $omrk | sort > "$lst"
 		if [ -s "$lst" ]; then
 			rads_gen_swot $options < "$lst"		>> "$log" 2>&1
 		fi
 		;;
 	*)
-		find -L ${type}/c??? -name "SWT_*.nc" -a -newer $omrk | sort > "$lst"
+		find -L ${type}/c??? -name "SWOT_*.nc" -a -newer $omrk | sort > "$lst"
 		rads_gen_swot --ymd=$d0 $options < "$lst"	>> "$log" 2>&1
 		;;
 esac
@@ -72,13 +72,13 @@ rads_close_sandbox
 rads_open_sandbox sw.${type}
 case $type in
 	gdr)
-		find -L ${type}/cycle_??? -name "SWT_*.nc" -a -newer $omrk | sort > "$lst"
+		find -L ${type}/cycle_??? -name "SWOT_*.nc" -a -newer $omrk | sort > "$lst"
 		if [ -s "$lst" ]; then
 			rads_gen_swot $options < "$lst"								>> "$log" 2>&1
 		fi
 		;;
 	*)
-		find -L ${type}/c??? -name "SWT_*.nc" -a -newer $omrk | sort > "$lst"
+		find -L ${type}/c??? -name "SWOT_*.nc" -a -newer $omrk | sort > "$lst"
 		rads_gen_swot --ymd=$d0 $options < "$lst"							>> "$log" 2>&1
 		;;
 esac

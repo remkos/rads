@@ -33,13 +33,13 @@ date																	>  "$log" 2>&1
 # Process only OGDR data for the last three days (including current)
 d0=`date -u -v -2d +%Y%m%d 2>&1` || d0=`date -u --date="2 days ago" +%Y%m%d`
 TZ=UTC touch -t ${d0}0000 $omrk
-find -L ogdr/c[0-8]?? -name "SWT_*.nc" -a -newer $omrk | sort > "$lst"
+find -L ogdr/c[0-8]?? -name "SWOT_*.nc" -a -newer $omrk | sort > "$lst"
 rads_gen_swot --ymd=$d0 < "$lst"									>> "$log" 2>&1
 
 # Now process all IGDR data that came in during the last four days (including current)
 d0=`date -u -v -3d +%Y%m%d 2>&1` || d0=`date -u --date="3 days ago" +%Y%m%d`
 TZ=UTC touch -t ${d0}0000 $imrk
-find -L igdr/c??? -name "SWT_*.nc" -a -newer $imrk | sort > "$lst"
+find -L igdr/c??? -name "SWOT_*.nc" -a -newer $imrk | sort > "$lst"
 rads_gen_swot < "$lst"											>> "$log" 2>&1
 
 # Do the patches to all data

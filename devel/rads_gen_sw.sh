@@ -40,7 +40,7 @@ for tar in "$@"; do
 		*.tgz) tar -xzf "$tar"; dir=`basename "$tar" .tgz` ;;
 		*) dir="$tar" ;;
 	esac
-	ls "$dir"/SWT_???_2Pf*.nc > "$lst"
+	ls "$dir"/SWOT_???_2Pf*.nc > "$lst"
 	rads_gen_swot	$options < "$lst"			>> "$log" 2>&1
 	case "$tar" in
 		*.t?z) chmod -R u+w "$dir"; rm -rf "$dir" ;;
