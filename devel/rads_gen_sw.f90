@@ -13,9 +13,9 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*rads_gen_swot -- Converts SWOT GDR-F data to RADS
+!*rads_gen_sw -- Converts SWOT GDR-F data to RADS
 !+
-program rads_gen_swot
+program rads_gen_sw
 
 ! This program reads SWOT (O/I)GDR files and converts them to the RADS format,
 ! written into files $RADSDATAROOT/data/swSW/F/swSWpPPPPcCCC.nc.
@@ -24,7 +24,7 @@ program rads_gen_swot
 !  PPPP = relative pass number
 !   CCC = cycle number
 !
-! syntax: rads_gen_swot [options] < list_of_SWOT_file_names
+! syntax: rads_gen_sw [options] < list_of_SWOT_file_names
 !
 ! where [options] include:
 !  --min-rec <min_rec> : Specify minimum number of records per pass to process.
@@ -424,9 +424,8 @@ do
 ! Rain or ice
 
 	call cpy_var (ncid1, 'rain_flag', 'qual_alt_rain_ice')
-    call cpy_var (ncid1, 'rad_side_1_rain_flag rad_side_1_sea_ice_flag IOR', 'qual_rad_rain_ice')
-    call cpy_var (ncid1, 'qual_rads_rain_ice rad_side_2_rain_flag IOR', 'qual_rad_rain_ice')
-	call cpy_var (ncid1, 'qual_rads_rain_ice rad_side_2_sea_ice_flag IOR', 'qual_rad_rain_ice')
+	call cpy_var (ncid1, 'rad_side_1_rain_flag rad_side_1_sea_ice_flag IOR', 'qual_rad1_rain_ice')
+	call cpy_var (ncid1, 'rad_side_2_rain_flag rad_side_2_sea_ice_flag IOR', 'qual_rad2_rain_ice')
 
 ! Off-nadir angle
 
@@ -584,4 +583,4 @@ write (*,1310)
 stop
 end subroutine synopsis
 
-end program rads_gen_swot
+end program rads_gen_sw
