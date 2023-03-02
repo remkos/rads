@@ -2867,7 +2867,7 @@ Global RADS configuration file
 	</if>
 </var>
 
-<var name="qual_rad_rain_ice" field="2508" sat="3a 3b 6a e1 e2 j1 j2 j3 sw n1 pn tx">
+<var name="qual_rad_rain_ice" field="2508" sat="3a 3b 6a e1 e2 j1 j2 j3 n1 pn tx">
 	<long_name>corruption of radiometer measurement (rain or ice)</long_name>
 	<flag_values>ok rain_or_ice</flag_values>
 	<plot_range>0 1</plot_range>
@@ -2875,6 +2875,26 @@ Global RADS configuration file
 	<data sat="6a">qual_rad_rain_ice</data>
 	<format>z1</format>
 	<compress>int1</compress>
+</var>
+
+<var name="qual_rad1_rain_ice" field="2508" sat="sw">
+        <long_name>corruption of radiometer side-1 measurement (rain or ice)</long_name>
+        <flag_values>ok rain_or_ice</flag_values>
+        <plot_range>0 1</plot_range>
+        <data source="flags">8</data>
+        <data sat="6a">qual_rad1_rain_ice</data>
+        <format>z1</format>
+        <compress>int1</compress>
+</var>
+
+<var name="qual_rad2_rain_ice" field="2508" sat="sw">
+        <long_name>corruption of radiometer side-2 measurement (rain or ice)</long_name>
+        <flag_values>ok rain_or_ice</flag_values>
+        <plot_range>0 1</plot_range>
+        <data source="flags">8</data>
+        <data sat="sw">qual_rad2_rain_ice</data>
+        <format>z1</format>
+        <compress>int1</compress>
 </var>
 
 <var name="qual_rad_tb" field="2509" sat="!c2 gs">
