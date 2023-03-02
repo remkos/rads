@@ -494,10 +494,10 @@ do
 	call cpy_var (ncid1, 'surface_classification_flag', 'surface_class')
 	call get_var (ncid1, 'rad_side_1_surface_type_flag', a)
 	where (a > 0) a = a + 1
-	call new_var ('surface1_type_rad', a)
+	call new_var ('surface_type_rad1', a)
 	call get_var (ncid1, 'rad_side_2_surface_type_flag', a)
 	where (a > 0) a = a + 1
-	call new_var ('surface2_type_rad', a)
+	call new_var ('surface_type_rad2', a)
 	call cpy_var (ncid1, 'distance_to_coast 1e-3 MUL', 'dist_coast') ! Convert m to km
 	call cpy_var (ncid1, 'angle_of_approach_to_coast', 'angle_coast')
 	call cpy_var (ncid1, 'rad_side_1_distance_to_land 1e-3 MUL', 'rad1_dist_coast') ! Convert m to km
