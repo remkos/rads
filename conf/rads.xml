@@ -2800,20 +2800,52 @@ Global RADS configuration file
 	<compress>int1</compress>
 </var>
 
-<var name="surface_type_rad" field="2506" sat="!c2 gs">
+<var name="surface_type_rad" field="2506" sat="!c2 gs sw">
 	<long_name>radiometer land flag</long_name>
 	<flag_values>water land</flag_values>
 	<plot_range>0 1</plot_range>
 	<data source="flags">6</data>
 	<format>z1</format>
 	<compress>int1</compress>
-	<if sat="6a j3 sw">
+	<if sat="6a j3">
 		<long_name>radiometer surface type</long_name>
 		<flag_values>open_ocean coastal_ocean coastal_amr land</flag_values>
 		<data>surface_type_rad</data>
 		<plot_range>0 3</plot_range>
 		<comment>The processing of radiometer data depends on this flag: 0 = open ocean, 1 = coastal ocean processing with HRMR and AMR, 2 = coastal ocean processing with AMR only, 3 = invalid due to land contamination</comment>
 	</if>
+</var>
+
+<var name="surface1_type_rad" field="2506" sat="sw">
+        <long_name>radiometer side-1 land flag</long_name>
+        <flag_values>water land</flag_values>
+        <plot_range>0 1</plot_range>
+        <data source="flags">6</data>
+        <format>z1</format>
+        <compress>int1</compress>
+        <if sat="sw">
+                <long_name>radiometer side-1 surface type</long_name>
+                <flag_values>open_ocean coastal_ocean coastal_amr land</flag_values>
+                <data>surface1_type_rad</data>
+                <plot_range>0 3</plot_range>
+                <comment>The processing of radiometer data depends on this flag: 0 = open ocean, 1 = coastal ocean processing with HRMR and AMR, 2 = coastal ocean processing with AMR only, 3 = invalid due to land contamination</comment>
+        </if>
+</var>
+
+<var name="surface2_type_rad" field="2506" sat="sw">
+        <long_name>radiometer side-2 land flag</long_name>
+        <flag_values>water land</flag_values>
+        <plot_range>0 1</plot_range>
+        <data source="flags">6</data>
+        <format>z1</format>
+        <compress>int1</compress>
+        <if sat="sw">
+                <long_name>radiometer side-2 surface type</long_name>
+                <flag_values>open_ocean coastal_ocean coastal_amr land</flag_values>
+                <data>surface2_type_rad</data>
+                <plot_range>0 3</plot_range>
+                <comment>The processing of radiometer data depends on this flag: 0 = open ocean, 1 = coastal ocean processing with HRMR and AMR, 2 = coastal ocean processing with AMR only, 3 = invalid due to land contamination</comment>
+        </if>
 </var>
 
 <var name="qual_alt_rain_ice" field="2507" sat="3a 3b 6a g1 j1 j2 j3 sw n1 pn sa tx">
@@ -4236,10 +4268,28 @@ Global RADS configuration file
 	<comment>Negative numbers are inland, positive numbers are offshore</comment>
 </var>
 
-<var name="rad_dist_coast" sat="6a j3 sw">
+<var name="rad_dist_coast" sat="6a j3">
 	<long_name>radiometer main beam radial distance to land</long_name>
 	<units>km</units>
 	<data>rad_dist_coast</data>
+	<format>f7.1</format>
+	<compress>int2 1e-1</compress>
+	<comment>Negative numbers are inland, positive numbers are offshore</comment>
+</var>
+
+<var name="rad1_dist_coast" sat="sw">
+	<long_name>radiometer side-1 radial distance to land</long_name>
+	<units>km</units>
+	<data>rad1_dist_coast</data>
+	<format>f7.1</format>
+	<compress>int2 1e-1</compress>
+	<comment>Negative numbers are inland, positive numbers are offshore</comment>
+</var>
+
+<var name="rad2_dist_coast" sat="sw">
+	<long_name>radiometer side-2 radial distance to land</long_name>
+	<units>km</units>
+	<data>rad2_dist_coast</data>
 	<format>f7.1</format>
 	<compress>int2 1e-1</compress>
 	<comment>Negative numbers are inland, positive numbers are offshore</comment>
