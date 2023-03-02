@@ -424,8 +424,9 @@ do
 ! Rain or ice
 
 	call cpy_var (ncid1, 'rain_flag', 'qual_alt_rain_ice')
-	call cpy_var (ncid1, 'rad_side_1_rain_flag rad_side_1_sea_ice_flag rad_side_2_rain_flag rad_side_2_sea_ice_flag IOR', 'qual_rad_rain_ice')
-	!call cpy_var (ncid1, 'rad_rain_flag rad_sea_ice_flag IOR', 'qual_rad_rain_ice')
+    call cpy_var (ncid1, 'rad_side_1_rain_flag rad_side_1_sea_ice_flag IOR', 'qual_rad_rain_ice')
+    call cpy_var (ncid1, 'qual_rads_rain_ice rad_side_2_rain_flag IOR', 'qual_rad_rain_ice')
+	call cpy_var (ncid1, 'qual_rads_rain_ice rad_side_2_sea_ice_flag IOR', 'qual_rad_rain_ice')
 
 ! Off-nadir angle
 
