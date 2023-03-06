@@ -138,8 +138,8 @@ end subroutine synopsis
 
 subroutine process_pass (n, mvar)
 integer(fourbyteint), intent(in) :: n, mvar
-real(eightbytereal) :: time(n), lat(n), lon(n), wave(n,mvar), tmp(n), x, y, t, w(2,2,2), z(2,2,2), wsum
-integer(fourbyteint) :: i, j, k, ix, iy, it
+real(eightbytereal) :: time(n), lat(n), lon(n), wave(n,mvar), tmp(n), x, y, t, w(2,2,2), z(2,2,2), wsum, dt, dtmin
+integer(fourbyteint) :: i, j, k, ik, ix, iy, it, idx(n)
 logical :: err
 
 call log_pass (P)
@@ -236,17 +236,34 @@ enddo
 
 ! "Smear" points into areas with NaNs
 
-do k = 1, smear
-	do i = 1+smear, n-smear
-		if (isan_(wave(i,1))) then
-			! skip
-		else if (isan_(wave(i-k,1))) then
-			wave(i,:) = wave (i-k,:)
-		else if (isan_(wave(i+k,1))) then
-			wave(i,:) = wave (i+k,:)
-		endif
+if (smear > 0) then
+	do i = 1,n
+		idx(i) = i
+		if (isan_(wave(i,1))) cycle
+		dtmin = (smear + 0.5d0) * S%dt1hz
+		do k = 1, smear
+			ik = i-k
+			if (ik < 1) exit
+			dt = abs(time(ik)-time(i))
+			if (isan_(wave(ik,1)) .and. dt < dtmin) then
+				dtmin = dt
+				idx(i) = ik
+				exit
+			endif
+		enddo
+		do k = 1, smear
+			ik = i+k
+			if (ik > n) exit
+			dt = abs(time(ik)-time(i))
+			if (isan_(wave(ik,1)) .and. dt < dtmin) then
+				dtmin = dt
+				idx(i) = ik
+				exit
+			endif
+		enddo
 	enddo
-enddo
+	wave(:,:) = wave(idx(:),:)
+endif
 
 ! If requested, check for changes first
 
