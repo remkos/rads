@@ -278,9 +278,10 @@ do
 	call nfs(nf90_get_att(ncid,nf90_global,'source',arg))
 	baseline = arg(21:23)
 
-! TEMPORARY for F08 TDS: configuration version 016 indicates F08
+! TEMPORARY for F08 TDS and F09 TDS: existance of iono_cor_alt_nr indicates new baseline
 
-	if (baseline < 'F08' .and. nf90_inq_varid(ncid1,'iono_cor_alt_nr',varid) == nf90_noerr) baseline = 'F08'
+	if (lr .and. baseline < 'F08' .and. nf90_inq_varid(ncid1,'iono_cor_alt_nr',varid) == nf90_noerr) baseline = 'F08'
+	if (.not.lr .and. baseline < 'F09' .and. nf90_inq_varid(ncid1,'iono_cor_alt_nr',varid) == nf90_noerr) baseline = 'F09'
 
 ! Determine if we have numerical retrackers
 
@@ -431,9 +432,6 @@ do
 		call cpy_var (ncidk, 'swh_ocean_nr_rms', 'swh_rms_ku_nr')
 		call cpy_var (ncidk, 'swh_ocean_nr_qual', 'qual_swh_nr')
 		call cpy_var (ncidk, 'net_instr_cor_swh_ocean_nr', 'dswh_ku_nr')
-		call cpy_var (ncidc, 'swh_ocean', 'swh_c')
-		call cpy_var (ncidc, 'swh_ocean_rms', 'swh_rms_c')
-		call cpy_var (ncidc, 'net_instr_cor_swh_ocean', 'dswh_c')
 	endif
 
 ! Backscatter
@@ -456,10 +454,6 @@ do
 		call cpy_var (ncidk, 'sig0_ocean_nr', 'sig0_ku_nr')
 		call cpy_var (ncidk, 'sig0_ocean_nr_rms', 'sig0_rms_ku_nr')
 		call cpy_var (ncidk, 'net_instr_cor_sig0_ocean_nr', 'dsig0_ku_nr')
-		call cpy_var (ncidc, 'sig0_ocean', 'sig0_c')
-		call cpy_var (ncidc, 'sig0_ocean_rms', 'sig0_rms_c')
-		call cpy_var (ncidc, 'atm_cor_sig0', 'dsig0_atmos_c')
-		call cpy_var (ncidc, 'net_instr_cor_sig0_ocean', 'dsig0_c')
 	endif
 	call cpy_var (ncid1, 'climato_use_flag', 'qual_dsig0_atmos')
 
@@ -521,7 +515,7 @@ do
 	endif
 	if (has_nr) then
 		call cpy_var (ncidk, 'sea_state_bias_nr', 'ssb_cls_nr')
-		call cpy_var (ncidc, 'sea_state_bias_nr', 'ssb_cls_c_nr')
+		if (lr) call cpy_var (ncidc, 'sea_state_bias_nr', 'ssb_cls_c_nr')
 	endif
 
 ! IB

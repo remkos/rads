@@ -1072,7 +1072,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<var name="iono_gim_c" sat="6a j1 j2 j3 sw">
+<var name="iono_gim_c" sat="3a 3b 6a j1 j2 j3 sw">
 	<long_name>JPL GIM ionospheric correction (C-band)</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>JPL GIM 2-hourly maps</source>
@@ -1522,7 +1522,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
-<var name="ssb_cls" field="1502" sat="2a 3a 3b 6a c2 j1 j2 j3 sw n1 tx">
+<var name="ssb_cls" field="1502" sat="2a 3a 3b 6a c2 j1 j2 j3 n1 sw tx">
 	<long_name>CLS non-parametric sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<source>CLS</source>
@@ -2142,7 +2142,7 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<compress>int2 1e-2</compress>
 </var>
-<var name="wind_speed_rad" field="1902" sat="2a 6a j1 j2 j3 sw pn tx">
+<var name="wind_speed_rad" field="1902" sat="2a 6a j1 j2 j3 pn sw tx">
 	<long_name>radiometer wind speed</long_name>
 	<standard_name>wind_speed</standard_name>
 	<source>radiometer</source>
@@ -2467,7 +2467,7 @@ Global RADS configuration file
 	<compress>int1</compress>
 </var>
 
-<var name="topo_dtm2000" field="2202" sat="3a 3b j1 j2 j3 sw n1 sa">
+<var name="topo_dtm2000" field="2202" sat="3a 3b j1 j2 j3 n1 sa sw">
 	<long_name>DTM2000 topography</long_name>
 	<source>DTM2000</source>
 	<units>m</units>
@@ -2593,7 +2593,7 @@ Global RADS configuration file
 	</var>
 	<alias name="tb2" field="23">tb_222</alias>
 </if>
-<if sat="2a 3a 3b 6a e1 e2 j1 j2 j3 sw n1 sa">
+<if sat="2a 3a 3b 6a e1 e2 j1 j2 j3 n1 sa sw">
 	<var name="tb_238" field="2302">
 		<long_name>radiometer brightness temperature (23.8 GHz)</long_name>
 		<standard_name>surface_brightness_temperature</standard_name>
@@ -2691,12 +2691,12 @@ Global RADS configuration file
 	<dimensions>2</dimensions>
 </var>
 
-<var name="flag_alt_oper_mode" field="2516" sat="3a 3b 6a c2.igdr c2 e1 j1 j2 j3 sw n1 pn tx">
+<var name="flag_alt_oper_mode" field="2516" sat="3a 3b 6a c2.igdr c2 e1 j1 j2 j3 n1 pn sw tx">
 	<long_name>altimeter operating mode</long_name>
 	<flag_values>nominal bad</flag_values>
 	<flag_values sat="3a 3b c2.igdr">LRM SAR</flag_values>
 	<flag_values sat="e1">sptr_available sptr_not_available</flag_values>
-	<flag_values sat="j1 j2 j3 sw n1">side_A side_B</flag_values>
+	<flag_values sat="j1 j2 j3 n1 sw">side_A side_B</flag_values>
 	<plot_range>0 1</plot_range>
 	<data source="flags">0</data>
 	<format>z1</format>
@@ -2721,7 +2721,7 @@ Global RADS configuration file
 	<compress>int1</compress>
 </var>
 
-<var name="qual_attitude" field="2501" sat="3a 3b 6a g1 gs j1 j2 j3 sw n1 pn sa tx">
+<var name="qual_attitude" field="2501" sat="3a 3b 6a g1 gs j1 j2 j3 n1 pn sa sw tx">
 	<long_name>quality of attitude</long_name>
 	<flag_values>ok bad</flag_values>
 	<flag_values sat="g1 gs pn">ok suspect</flag_values>
@@ -2761,7 +2761,7 @@ Global RADS configuration file
 		<compress>int1</compress>
 	</var>
 </if>
-<if sat="3a 3b c2 j1 j2 j3 sw n1 sa">
+<if sat="3a 3b c2 j1 j2 j3 n1 sa sw">
 	<var name="flag_continental_ice" field="2502">
 		<long_name>continental ice flag</long_name>
 		<flag_values>no_continental_ice continental_ice</flag_values>
@@ -2772,7 +2772,7 @@ Global RADS configuration file
 	</var>
 </if>
 
-<var name="qual_iono_alt" field="2503" sat="3a 3b 6a j1 j2 j3 sw n1 tx">
+<var name="qual_iono_alt" field="2503" sat="3a 3b 6a j1 j2 j3 n1 sw tx">
 	<long_name>quality of dual-frequency ionospheric correction</long_name>
 	<flag_values>ok bad</flag_values>
 	<plot_range>0 1</plot_range>
@@ -3219,7 +3219,7 @@ Global RADS configuration file
 	</flag_masks>
 </var>
 
-<var name="drange_ku" field="2701" sat="2a 6a c2 e1 e2 gs j3 sw n1 tx">
+<var name="drange_ku" field="2701" sat="2a 6a c2 e1 e2 gs j3 n1 sw tx">
 	<long_name>Ku-band range bias</long_name>
 	<long_name sat="6a">net instrument correction to Ku-band range</long_name>
 	<long_name sat="tx">Cal1 range correction</long_name>
@@ -3584,7 +3584,7 @@ Global RADS configuration file
 	</var>
 	<alias name="attitude_nr" sat="6a">off_nadir_angle2_wf_ku_nr</alias>
 </else>
-<var name="off_nadir_angle_pf" field="3003" sat="2a 3a 3b 6a c2 j2 j3 sw pn">
+<var name="off_nadir_angle_pf" field="3003" sat="2a 3a 3b 6a c2 j2 j3 pn sw">
 	<long_name>off-nadir pointing angle from platform</long_name>
 	<units>degrees</units>
 	<data>off_nadir_angle2_pf SQRT</data>
@@ -3594,7 +3594,7 @@ Global RADS configuration file
 	<format>f5.3</format>
 	<compress>int2 1e-3</compress>
 </var>
-<var name="off_nadir_angle2_pf" field="3004" sat="2a 3a 3b 6a c2 j1 j2 j3 sw pn">
+<var name="off_nadir_angle2_pf" field="3004" sat="2a 3a 3b 6a c2 j1 j2 j3 pn sw">
 	<long_name>off-nadir pointing angle squared from platform</long_name>
 	<units>degrees^2</units>
 	<data>off_nadir_angle2_pf</data>
@@ -3788,7 +3788,7 @@ Global RADS configuration file
 	<compress>int2 1e-3</compress>
 	<comment>Correction already added to backscatter coefficient</comment>
 </var>
-<var name="dsig0_atmos_ku" field="3203" sat="2a 3a 3b 6a c2 e1 e2 j1 j2 j3 sw n1 pn tx">
+<var name="dsig0_atmos_ku" field="3203" sat="2a 3a 3b 6a c2 e1 e2 j1 j2 j3 n1 pn sw tx">
 	<long_name>Ku-band backscatter coefficient correction due to atmosphere/attitude</long_name>
 	<units>dB</units>
 	<plot_range>0 0.5</plot_range>
@@ -3867,9 +3867,9 @@ Global RADS configuration file
 </var>
 <alias name="dsig0" field="32" sat="e1 e2 tx">dsig0_ku</alias>
 <alias name="dsig0_atmos" sat="sa">dsig0_atmos_ka</alias>
-<alias name="dsig0_atmos" sat="3a 3b 6a c2 e1 e2 j1 j2 j3 sw n1 pn tx">dsig0_atmos_ku</alias>
+<alias name="dsig0_atmos" sat="3a 3b 6a c2 e1 e2 j1 j2 j3 n1 pn sw tx">dsig0_atmos_ku</alias>
 
-<var name="liquid_water_rad" field="3301 33" sat="2a 3a 3b 6a e1 e2 j1 j2 j3 sw n1 pn sa tx">
+<var name="liquid_water_rad" field="3301 33" sat="2a 3a 3b 6a e1 e2 j1 j2 j3 n1 pn sa sw tx">
 	<long_name>radiometer liquid water content</long_name>
 	<standard_name>atmosphere_mass_content_of_cloud_liquid_water</standard_name>
 	<units>kg/m^2</units>

@@ -47,7 +47,7 @@ type :: fileinfo
 	real(eightbytereal) :: time0, time1, lat0, lat1, lon0, lon1
 	character(len=rads_cmdl) :: filenm
 end type
-type(fileinfo) :: fin(50)
+type(fileinfo) :: fin(75)
 
 ! Group names
 
@@ -273,7 +273,7 @@ contains
 subroutine fill_fin (i0, i1)
 integer, intent(in) :: i0, i1
 nfile = nfile + 1
-if (nfile > 50) call rads_exit ('Number of granules too large (> 50)')
+if (nfile > 75) call rads_exit ('Number of granules too large (> 75)')
 fin(nfile)%ncid = ncid1
 fin(nfile)%nrec = nrec
 fin(nfile)%filenm = filenm
