@@ -4261,9 +4261,10 @@ Global RADS configuration file
 	<comment>Angle of approach to the closest coast. 0 is parallel to the coast with the land on the right. Positive values indicate the satellite is approaching the land. Negative values indicate the satellite is leaving the land. Values close to +/-180 degrees have the land on the left.</comment>
 </var>
 
-<var name="seaice_class" field="4601 46" sat="e1 e2 n1">
+<var name="seaice_class" field="4601 46" sat="3a 3b e1 e2 n1">
 	<long_name>sea ice classification</long_name>
 	<standard_name>sea_ice_classification</standard_name>
+	<flag_values sat="3a 3b">ocean first_year_sea_ice wet_ice multi_year_sea_ice ambiguous_mixture_of_type not_evaluated</flag_values>
 	<data>seaice_class</data>
 	<format>f3.0</format>
 	<compress>int1</compress>
@@ -4273,6 +4274,7 @@ Global RADS configuration file
 	<long_name>sea ice concentration</long_name>
 	<standard_name>sea_ice_area_fraction</standard_name>
 	<source>NOAA Optimal Interpolation Sea Surface Temperature v2</source>
+	<source sat="3a 3b">MSSL/UCL</source>
 	<units>%</units>
 	<data>seaice_conc</data>
 	<format>f3.0</format>
