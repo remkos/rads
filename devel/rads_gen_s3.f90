@@ -111,7 +111,7 @@ real(eightbytereal) :: equator_time
 integer(twobyteint), allocatable :: flags_plrm(:), flags_save(:)
 character(len=16) :: mss_sol1_var, mss_sol2_var
 integer :: latency = rads_nrt
-logical :: iono_alt_smooth = .false., ipf651 = .false., ipf701 = .false.
+logical :: iono_alt_smooth = .false., ipf651 = .false., ipf701 = .false., ipf703 = .false.
 
 ! Other local variables
 
@@ -288,6 +288,10 @@ do
 		ipf701 = .true.
 	endif
 
+! Include sea ice concentration
+
+	ipf703 = (arg(10:14) >= '07.03')
+
 ! Store input file name
 
 	P%original = trim(product_name) // ' (' // trim(arg) // ')'
@@ -451,6 +455,9 @@ do
 	call cpy_var (ncid, 'atm_cor_sig0_01_c', 'dsig0_atmos_c')
 	call cpy_var (ncid, 'rad_liquid_water_01_ku', 'liquid_water_rad')
 	call cpy_var (ncid, 'rad_water_vapor_01_ku', 'water_vapor_rad')
+
+	if (ipf703) call cpy_var (ncid, 'sea_ice_concentration_01', 'seaice_conc')
+	call cpy_var (ncid, 'open_sea_ice_flag_01_ku', 'seaice_class')
 
 	call cpy_var (ncid, 'ssha_01_ku', 'ssha')
 	call cpy_var (ncid, 'ssha_01_plrm_ku', 'ssha_plrm')
