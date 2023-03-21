@@ -61,7 +61,6 @@ for type in ${types}; do
 	esac
 
 # General geophysical corrections
-    rads_add_grid     $options -Vangle_coast                >> "$log" 2>&1
 	rads_add_common   $options								>> "$log" 2>&1
 	rads_add_mfwam    $options --all						>> "$log" 2>&1
 	rads_add_iono     $options --all						>> "$log" 2>&1
