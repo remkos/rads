@@ -4863,7 +4863,7 @@ Global RADS configuration file
 		<mission>Exact Repeat Mission</mission>
 		<cycles>1 361</cycles>
 		<repeat>9.91564280 254</repeat>
-		<ref_pass>1992-10-03T02:04:51 99.92 2 1</ref_pass>
+		<ref_pass>1992-10-03T02:04:51 99.92 2 1 680</ref_pass>
 		<start_time>1992-10-01</start_time>
 		<end_time>2002-07-13</end_time>
 	</phase>
@@ -4880,21 +4880,21 @@ Global RADS configuration file
 		<mission>Exact Repeat Mission</mission>
 		<cycles>1 364</cycles>
 		<repeat>9.91564280 254</repeat>
-		<ref_pass>1992-10-03T02:04:51 99.92 2 1</ref_pass>
+		<ref_pass>1992-10-03T02:04:51 99.92 2 1 680</ref_pass>
 		<start_time>1992-09-25</start_time>
 	</phase>
 	<phase name="n">
 		<mission>Drift Phase</mission>
 		<cycles>365 368</cycles>
 		<repeat>9.917089 254 -0.355</repeat>
-		<ref_pass>2002-08-11T11:09:08 99.92 365 1</ref_pass>
+		<ref_pass>2002-08-11T11:09:08 99.92 365 1 46781</ref_pass>
 		<start_time>2002-08-11T10:41:00</start_time>
 	</phase>
 	<phase name="b">
 		<mission>Interleaved Mission</mission>
 		<cycles>369 481</cycles>
 		<repeat>9.915642 254</repeat>
-		<ref_pass>2002-09-20T03:08:57 98.50 369 1</ref_pass>
+		<ref_pass>2002-09-20T03:08:57 98.50 369 1 47289</ref_pass>
 		<start_time>2002-09-20T02:40:50</start_time>
 		<end_time>2005-10-09</end_time>
 	</phase>
