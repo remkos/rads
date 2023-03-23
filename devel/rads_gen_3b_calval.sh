@@ -49,7 +49,6 @@ date													>> "$log" 2>&1
 rads_fix_s3		  $options --all						>> "$log" 2>&1
 
 # General geophysical corrections
-rads_add_grid     $options -Vangle_coast                >> "$log" 2>&1
 rads_add_common   $options								>> "$log" 2>&1
 rads_add_mfwam    $options -C21-199 --all				>> "$log" 2>&1
 rads_add_iono     $options --all						>> "$log" 2>&1

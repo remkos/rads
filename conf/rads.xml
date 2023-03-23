@@ -4080,8 +4080,8 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<dimensions>0</dimensions>
 	<parameters>0</parameters>
-	<parameters sat="3a"> -19   0  0  0 0</parameters>
-	<parameters sat="3b"> -16   0  0  0 0</parameters>
+	<parameters sat="3a">  -8.9 0  0  0 0</parameters>
+	<parameters sat="3b"> -12.8 0  0  0 0</parameters>
 	<parameters sat="c2"> -29   0  0  0 0</parameters>
 	<parameters sat="e1">  21   0  0  0 0</parameters>
 	<parameters sat="e2">  62   0  0  0 0</parameters>
@@ -4114,8 +4114,8 @@ Global RADS configuration file
 	<default>0</default>
 	<compress>int2 1e-4</compress>
 	<dimensions>0</dimensions>
-	<parameters sat="3a">  13   0  0  0 0</parameters>
-	<parameters sat="3b">   7   0  0  0 0</parameters>
+	<parameters sat="3a">  -6.9 0  0  0 0</parameters>
+	<parameters sat="3b"> -13.4 0  0  0 0</parameters>
 </var>
 <var name="ref_frame_offset_adaptive" sat="j3 sw">
 	<long_name>reference frame offset (adaptive retracking)</long_name>
@@ -4957,7 +4957,7 @@ Global RADS configuration file
 		<mission>Exact Repeat Mission</mission>
 		<cycles>1 361</cycles>
 		<repeat>9.91564280 254</repeat>
-		<ref_pass>1992-10-03T02:04:51 99.92 2 1</ref_pass>
+		<ref_pass>1992-10-03T02:04:51 99.92 2 1 680</ref_pass>
 		<start_time>1992-10-01</start_time>
 		<end_time>2002-07-13</end_time>
 	</phase>
@@ -4974,21 +4974,21 @@ Global RADS configuration file
 		<mission>Exact Repeat Mission</mission>
 		<cycles>1 364</cycles>
 		<repeat>9.91564280 254</repeat>
-		<ref_pass>1992-10-03T02:04:51 99.92 2 1</ref_pass>
+		<ref_pass>1992-10-03T02:04:51 99.92 2 1 680</ref_pass>
 		<start_time>1992-09-25</start_time>
 	</phase>
 	<phase name="n">
 		<mission>Drift Phase</mission>
 		<cycles>365 368</cycles>
 		<repeat>9.917089 254 -0.355</repeat>
-		<ref_pass>2002-08-11T11:09:08 99.92 365 1</ref_pass>
+		<ref_pass>2002-08-11T11:09:08 99.92 365 1 46781</ref_pass>
 		<start_time>2002-08-11T10:41:00</start_time>
 	</phase>
 	<phase name="b">
 		<mission>Interleaved Mission</mission>
 		<cycles>369 481</cycles>
 		<repeat>9.915642 254</repeat>
-		<ref_pass>2002-09-20T03:08:57 98.50 369 1</ref_pass>
+		<ref_pass>2002-09-20T03:08:57 98.50 369 1 47289</ref_pass>
 		<start_time>2002-09-20T02:40:50</start_time>
 		<end_time>2005-10-09</end_time>
 	</phase>

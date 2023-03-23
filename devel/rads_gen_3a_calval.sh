@@ -47,7 +47,6 @@ rads_reuse_sandbox "3a.${type}1"
 date													>> "$log" 2>&1
 
 # General geophysical corrections
-rads_add_grid     $options -Vangle_coast                >> "$log" 2>&1
 rads_add_common   $options								>> "$log" 2>&1
 rads_add_mfwam    $options -C40-199 --all				>> "$log" 2>&1
 rads_add_iono     $options --all						>> "$log" 2>&1
