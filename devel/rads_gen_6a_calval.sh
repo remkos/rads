@@ -67,7 +67,7 @@ if test -z $type ; then
 		*/NT*|*_NT_*) type=${type}nt ;;
 	esac
 	case $dir in
-		*REP/*|*_REP_*) type=${type:0:2}rep ;;
+		*REP/*|*_REP_*) type=${type:0:2}f08 ;;
 		*OPE/*|*_OPE_*) type=${type}o ;;
 		*VAL/*|*_VAL_*) type=${type}v ;;
 		*DEV/*|*_DEV_*) type=${type}d ;;
