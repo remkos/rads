@@ -103,10 +103,9 @@ case $type in
 	*nt*) rads_add_orbit  $options -Valt_gdrf -C1-45 --dir=poe_cnes	>> "$log" 2>&1 ;;
 esac
 
-# For LR, add mle3
+# For LR, add _mle3 and _nr
 case $type in
-	*lr3*) extra="-x mle3 -x nr" ;;
-	*lr*) extra="-x mle3" ;;
+	*lr*) extra="-x mle3 -x nr" ;;
 	   *) extra= ;;
 esac
 
