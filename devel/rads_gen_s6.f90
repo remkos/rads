@@ -102,22 +102,22 @@ use netcdf
 
 ! Command line arguments
 
-integer(fourbyteint) :: ios, i
+integer(fourbyteint) :: ios
 character(len=rads_cmdl) :: infile, arg
 
 ! Header variables
 
-integer(fourbyteint) :: ncid, ncid1, ncidk, ncidc, ncid20, ncid20k, ncid20c, cycle, pass, varid, nrec20
+integer(fourbyteint) :: ncid, ncid1, ncidk, ncidc, ncid20, ncid20k, cycle, pass, varid, nrec20
 real(eightbytereal) :: first_measurement_time, last_measurement_time, equator_time, equator_lon
 
 ! Data variables
 
 integer(twobyteint), allocatable :: flags_mle3(:), flags_nr(:), flags_save(:)
 character(len=2) :: mss_cnescls_ver = '15', mss_dtu_ver = '18', tide_fes_ver = '14'
-character(len=3) :: tide_got_ver = '410', env, baseline
+character(len=3) :: tide_got_ver = '410', baseline
 character(len=8) :: chd_ver, cha_ver, cnf_ver
 integer :: latency = rads_nrt, nsat
-logical :: lr, has_nr, lcal1 = .false.
+logical :: lr, has_nr
 
 ! Other local variables
 
@@ -127,18 +127,11 @@ real(eightbytereal), allocatable :: b(:), telemetry_type_flag(:)
 ! Initialise
 
 call synopsis
-call rads_gen_getopt ('', ' cal1 min-rec:')
+call rads_gen_getopt ('', ' min-rec:')
 call synopsis ('--head')
-call rads_set_options (' cal1 min-rec:')
+call rads_set_options (' min-rec:')
 if (sat /= '') call rads_init (S, sat)
 call rads_load_options (nsat)
-
-do i = 1,rads_nopt
-	select case (rads_opt(i)%opt)
-	case ('cal1')
-		lcal1 = .true.
-	end select
-enddo
 
 !----------------------------------------------------------------------
 ! Read all file names from standard input
@@ -590,45 +583,9 @@ do
 	a = latency
 	call new_var ('latency', a)
 
-! Get the L1B file name so we can look for the calibration values
+! Close input file
 
-	call nfs(nf90_get_att(ncid,nf90_global,'xref_altimeter_level1b',arg))
 	call nfs(nf90_close(ncid))
-
-! When requested, load the calibration values from the L1B file (Baseline < F04)
-
-	if (lcal1 .and. baseline < 'F04') then
-		call log_string(arg)
-		if (index(infile, 'REP/') > 0) then
-			env = 'REP'
-		else if (index(infile, 'RMC/') > 0) then
-			env = 'RMC'
-		else if (index(infile, 'DEV/') > 0) then
-			env = 'DEV'
-		else
-			env = arg(89:91)
-		endif
-		call parseenv('${RADSROOT}/ext/' // S%sat // '/' // env // '/' // arg(11:12) // '/' // &
-			arg(93:94) // '/L1B/c' // arg(72:74) // '/' // trim(arg) // '/measurement.nc', infile)
-		if (nft(nf90_open(infile,nf90_nowrite,ncid))) then
-			call log_string ('Error: failed to open L1B file')
-		else
-			call nfs(nf90_inq_ncid(ncid, 'data_20', ncid20))
-			call nfs(nf90_inq_ncid(ncid20, 'ku', ncid20k))
-			call get_var (ncid20k, 'range_cor_internal_delay_cal', a(1:1))
-			call new_var ('cal1_range_ku', a(1:1))
-			call get_var (ncid20k, 'cal1_power', a(1:1))
-			call new_var ('cal1_power_ku', a(1:1))
-			if (lr) then
-				call nfs(nf90_inq_ncid(ncid20, 'c', ncid20c))
-				call get_var(ncid20c, 'range_cor_internal_delay_cal', a(1:1))
-				call new_var ('cal1_range_c', a(1:1))
-				call get_var(ncid20c, 'cal1_power', a(1:1))
-				call new_var ('cal1_power_c', a(1:1))
-			endif
-			call nfs(nf90_close(ncid))
-		endif
-	endif
 
 ! Dump the data
 
@@ -653,8 +610,7 @@ call synopsis_devel (' < list_of_Sentinel6_file_names')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
-'  --min-rec=MIN_REC         Specify minimum number of records per pass to process' / &
-'  --cal1                    Read the CAL1 values from the appropriate L1B file (L2 CONF < 011)' // &
+'  --min-rec=MIN_REC         Specify minimum number of records per pass to process' // &
 'This program converts Sentinel-6 NRT/STC/NTC Level 2 products to RADS data' / &
 'files with the name $RADSDATAROOT/data/SS/F/pPPPP/s6pPPPPcCCC.nc.' / &
 'The directory is created automatically and old files are overwritten.')

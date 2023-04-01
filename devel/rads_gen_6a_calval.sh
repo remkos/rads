@@ -84,7 +84,7 @@ date													>  "$log" 2>&1
 mv -f "$tmplst" "$lst"
 
 # Convert only to RADS, nothing else
-rads_gen_s6       $options --cal1 --min-rec=6 < "$lst"	>> "$log" 2>&1
+rads_gen_s6       $options --min-rec=6 < "$lst"			>> "$log" 2>&1
 
 date													>> "$log" 2>&1
 
