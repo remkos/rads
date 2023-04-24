@@ -40,4 +40,4 @@ while read file ; do
 		mkdir -p $(dirname $new)
 		ln -f $file $new
 	fi
-done < <(find $from_dir -type f $*)
+done < <(find $from_dir -type f $*|sort)
