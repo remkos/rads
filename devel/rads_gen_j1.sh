@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2021  Remko Scharroo
+# Copyright (c) 2011-2022  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -40,21 +40,23 @@ done
 
 # Do the patches to all data
 
-rads_fix_j1      $options --all							>> "$log" 2>&1
-rads_add_iono    $options --all							>> "$log" 2>&1
-rads_add_common  $options								>> "$log" 2>&1
-rads_add_dual    $options								>> "$log" 2>&1
-rads_add_ib      $options								>> "$log" 2>&1
-rads_add_ssb     $options --ssb=ssb_tran2012			>> "$log" 2>&1
-rads_add_orbit   $options -Valt_gdrd					>> "$log" 2>&1
-rads_add_orbit   $options -Valt_gdre					>> "$log" 2>&1
-rads_add_orbit   $options -Valt_eig62s  -C1-260			>> "$log" 2>&1
-rads_add_orbit   $options -Valt_gdrcp   -C1-255			>> "$log" 2>&1
-rads_add_orbit   $options -Valt_std1204	-C1-259			>> "$log" 2>&1
-rads_add_orbit   $options -Valt_gps     -C9-161			>> "$log" 2>&1
-rads_add_orbit   $options -Valt_slcci					>> "$log" 2>&1
-rads_add_ww3_314 $options --ww3	-C1-406					>> "$log" 2>&1
-rads_add_sla     $options           					>> "$log" 2>&1
+rads_fix_j1       $options --all						>> "$log" 2>&1
+rads_add_iono     $options --all						>> "$log" 2>&1
+rads_add_common   $options								>> "$log" 2>&1
+rads_add_dual     $options								>> "$log" 2>&1
+rads_add_ib       $options								>> "$log" 2>&1
+rads_add_ssb      $options --ssb=ssb_tran2012			>> "$log" 2>&1
+rads_add_orbit    $options -Valt_gdrd					>> "$log" 2>&1
+rads_add_orbit    $options -Valt_gdre					>> "$log" 2>&1
+rads_add_orbit    $options -Valt_eig62s  -C1-260		>> "$log" 2>&1
+rads_add_orbit    $options -Valt_gdrcp   -C1-255		>> "$log" 2>&1
+rads_add_orbit    $options -Valt_std1204	-C1-259		>> "$log" 2>&1
+rads_add_orbit    $options -Valt_gps     -C9-161		>> "$log" 2>&1
+rads_add_orbit    $options -Valt_slcci					>> "$log" 2>&1
+rads_add_ww3_314  $options --ww3	-C1-406				>> "$log" 2>&1
+# Redetermine SSHA
+rads_add_refframe $options -x -x mle3          			>> "$log" 2>&1
+rads_add_sla      $options -x -x mle3          			>> "$log" 2>&1
 
 date													>> "$log" 2>&1
 

@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2021  Remko Scharroo
+! Copyright (c) 2011-2022  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -49,7 +49,7 @@ use grib_api
 type(rads_sat) :: S
 type(rads_pass) :: P
 integer(fourbyteint) :: cyc, pass
-logical :: lice=.false., lsst=.false., lmean=.false., update=.false.
+logical :: lice=.false., lsst=.false., lmean=.false., update=.false., new=.false.
 
 ! Data variables
 
@@ -66,7 +66,7 @@ real(eightbytereal) :: meangrid(0:nx+1,ny)
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('ismu ice sst mean all update')
+call rads_set_options ('ismun ice sst mean all update new')
 call rads_init (S)
 
 ! Get template for path name
@@ -89,6 +89,8 @@ do j = 1,rads_nopt
 		lice = .true.
 	case ('u', 'update')
 		update = .true.
+	case ('n', 'new')
+		new = .true.
 	end select
 enddo
 if (.not.lsst) update = .false.
@@ -124,7 +126,8 @@ write (*,1310)
 '  -s, --sst                 Add sea surface temperature' / &
 '  -m, --mean                Add local mean sea surface temperature' / &
 '  --all                     All of the above' / &
-'  -u, --update              Update files only when there are changes in SST (requires -s)')
+'  -u, --update              Update files only when there are changes in SST (requires -s)' / &
+'  -n, --new                 Only add sea ice when not yet existing (requires -u)')
 stop
 end subroutine synopsis
 
@@ -134,11 +137,12 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-integer(fourbyteint) :: i, ix, iy
+integer(fourbyteint) :: i, ix, iy, ncid
 real(eightbytereal) :: time(n), lat(n), lon(n), ice(n), sst(n), meansst(n), tmp(n)
 integer(fourbyteint) :: t1, t2
 real(eightbytereal) :: wx, wy, wt, f(2,2,2)
 real(eightbytereal), parameter :: dz=1d-2
+logical :: do_ice
 
 call log_pass (P)
 
@@ -244,17 +248,22 @@ if (update) then
 	endif
 endif
 
+! If "new" option is used, write seaice only when not yet existing
+
+ncid = P%fileinfo(1)%ncid
+do_ice = lice .and. .not.(new .and. nff(nf90_inq_varid(ncid,'seaice_conc',i)))
+
 ! Store all data fields
 
 call rads_put_history (S, P)
 
-if (lice)  call rads_def_var (S, P, 'seaice_conc')
-if (lsst)  call rads_def_var (S, P, 'sst')
-if (lmean) call rads_def_var (S, P, 'sst_mean')
+if (do_ice) call rads_def_var (S, P, 'seaice_conc')
+if (lsst)   call rads_def_var (S, P, 'sst')
+if (lmean)  call rads_def_var (S, P, 'sst_mean')
 
-if (lice)  call rads_put_var (S, P, 'seaice_conc', ice)
-if (lsst)  call rads_put_var (S, P, 'sst', sst*dz)
-if (lmean) call rads_put_var (S, P, 'sst_mean', meansst)
+if (do_ice) call rads_put_var (S, P, 'seaice_conc', ice)
+if (lsst)   call rads_put_var (S, P, 'sst', sst*dz)
+if (lmean)  call rads_put_var (S, P, 'sst_mean', meansst)
 
 call log_records (n)
 end subroutine process_pass

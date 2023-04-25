@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2021  Remko Scharroo
+! Copyright (c) 2011-2022  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -71,7 +71,9 @@ endif
 do cycle = S%cycles(1), S%cycles(2), S%cycles(3)
 	do pass = S%passes(1), S%passes(2), S%passes(3)
 		if (predict) then
-			call rads_predict_equator (S, P, cycle, pass)
+			P%cycle = cycle
+			P%pass = pass
+			call rads_predict_equator (S, P)
 			if (S%error /= rads_noerr) cycle
 			P%ndata = floor((P%end_time - P%start_time)/S%dt1hz + 1)
 		else

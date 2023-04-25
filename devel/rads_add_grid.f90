@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2021  Remko Scharroo
+! Copyright (c) 2011-2022  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -78,8 +78,23 @@ do k = 1,S%nsel
 	i = index(src, ' ')
 	filename = src(:i-1)
 
+	call log_string ('Loading grid '//filename)
+	if (filename(:1) == '/' .or. filename(:2) == './' .or. filename(:3) == '../') then
+		if (grid_load(filename,grd(k)%info) /= 0) call rads_exit ('Error loading grid')
+	else
+		if (grid_load(trim(path)//filename,grd(k)%info) /= 0) call rads_exit ('Error loading grid')
+	endif
+	call log_string ('done', .true.)
+
 	grd(k)%mode = rads_src_grid_lininter
-	if (index(src, ' -s') > 0) grd(k)%mode = rads_src_grid_splinter
+	if (index(src, ' -c') > 0 .or. index(src, ' -s') > 0) grd(k)%mode = rads_src_grid_splinter
+	if (index(src, ' -p') > 0) then
+		grd(k)%mode = rads_src_grid_linphase
+		if (grd(k)%info%zunit == 'degrees') then
+			grd(k)%info%dz = grd(k)%info%dz * rad
+			grd(k)%info%z0 = grd(k)%info%z0 * rad
+		endif
+	endif
 	if (index(src, ' -q') > 0) grd(k)%mode = rads_src_grid_query
 
 	grd(k)%rate = 0d0
@@ -96,14 +111,6 @@ do k = 1,S%nsel
 	i = index(src, ' -y')
 	j = index(src(i+1:), ' ')
 	if (i > 0) grd(k)%yvar = src(i+3:i+j)
-
-	call log_string ('Loading grid '//filename)
-	if (filename(:1) == '/' .or. filename(:2) == './' .or. filename(:3) == '../') then
-		if (grid_load(filename,grd(k)%info) /= 0) call rads_exit ('Error loading grid')
-	else
-		if (grid_load(trim(path)//filename,grd(k)%info) /= 0) call rads_exit ('Error loading grid')
-	endif
-	call log_string ('done', .true.)
 enddo
 
 ! Process all data files
@@ -177,6 +184,11 @@ do k = 1,nmod
 		do i = 1,n
 			z(i,k) = grid_splinter(grd(k)%info,x(i),y(i))
 		enddo
+	case (rads_src_grid_linphase)
+		do i = 1,n
+			z(i,k) = grid_lininter(grd(k)%info,x(i),y(i),.true.)
+		enddo
+		if (grd(k)%info%zunit == 'degrees') z(:,k) = z(:,k) / rad
 	case default
 		do i = 1,n
 			z(i,k) = grid_query(grd(k)%info,x(i),y(i))

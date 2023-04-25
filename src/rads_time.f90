@@ -1,5 +1,5 @@
 !****-------------------------------------------------------------------
-! Copyright (c) 2011-2021  Remko Scharroo
+! Copyright (c) 2011-2022  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -49,11 +49,10 @@ end interface sec85ymdhms
 !****f* rads_time/strf1985f -- Construct date string from seconds since 1985
 !
 ! SYNTAX
-! elemental function strf1985f (sec, sep, frac)
+! elemental function strf1985f (sec, sep)
 ! use typesizes
 ! real(eightbytereal) <or> integer(fourbyteint), intent(in) :: sec
 ! character(len=1), optional, intent(in) :: sep
-! logical, optional, intent(in) :: frac
 ! character(len=26) <or> character(len=19) :: strf1985f
 !
 ! This routine formats relative time in seconds since 1985 into a

@@ -1,5 +1,5 @@
 %-----------------------------------------------------------------------
-% Copyright (c) 2011-2021  Remko Scharroo
+% Copyright (c) 2011-2022  Remko Scharroo
 % See LICENSE.TXT file for copying and redistribution conditions.
 %
 % This program is free software: you can redistribute it and/or modify
@@ -408,7 +408,6 @@ It is also possible to read global or variable attributes, which will then be as
 Operator & Description \\
 \hline
 \input{sub/rads_math.tab}
-\hline
 \end{tabular}
 \caption{Math operators that can be used in the \protect\ctag{data}-tag. Left of the operator (in uppercase) are the input value(s); on the right of the operator the output value(s).}
 \label{tab:math-operators}
@@ -659,7 +658,7 @@ Each of these groups of options are processed left to right. This order is commo
 When processing multiple satellites at the time (for example when creating dual-satellite crossovers with \prog{radsxogen}), it matters whether you put common options before or after mission selector (\sopt{S} or \lopt{sat}). The order then determines whether the option is unique to a single mission, or applies to all. The rule is as follows:
 \begin{itemize}
 \item Common options ahead of the first mission selector apply to all missions.
-\item Common options after the first mission selector apply to the last mission selector to the right of the option.
+\item Common options after the first mission selector apply to the last mission selector to the left of the option.
 \item Program-specific options can be put anywhere.
 \end{itemize}
 This means, for example:
@@ -884,7 +883,7 @@ This is the same as \lopt{diff}, except that the coordinates (time, latitude and
 \item[\lopt{diff1}] ~\\
 This is the same as \lopt{diff-no-coord}, except that in ascii printouts passes are printed chronologically, one cycle at a time, instead of the usual multiple columns for passes. This cannot be used in combination with statistics options (\sopt{a}, \sopt{s}, or \sopt{l})
 \item[\opt{f}{force}] ~\\
-Force collinear track comparison, even when missions are not strictly considered collinear.
+Force collinear track comparison, even when missions are not strictly considered collinear or when the equator times are not considered correct.
 \item[\optc{o}{output}{[FILENAME]}] ~\\
 Create netCDF output files per pass. The default is ASCII output to standard output. Optionally specify a \emph{FILENAME} including the hash character ('\#'), which will be replaced by the pass number. The default netCDF output file name is \verb|radscolin_p#.nc|.
 \end{description}
@@ -944,6 +943,72 @@ $ radspassesindex -S e2 -C 0 -P 901,910 -h -y -p
 \end{verbatim}
 The result will look like the following:
 \script{sub/radspassesindex4.out}
+
+\section{radsstat4}
+\label{sec:radsstat4}
+The program \prog{radsstat4} compiles, for a given satellite mission, statistics of a number of variables (given by the option \sopt{V}).
+These statistics can be per day (\sopt{d}), per pass (\sopt{p}), or per cycle (\sopt{c}). Also a multiple of these intervals can be selected.
+The user can use the regular common options \sopt{C} or \lopt{--ymd} to limit the period over which these statistics are calculated.
+The program then produces for each interval ASCII output with the statistics for each variable.
+
+\subsection{Syntax}
+\script{sub/radsstat4.hlp}
+
+\subsection{Common options}
+For a full explanation of the command line options that are common to most RADS4 programs, see Section~\ref{sec:common_options}.
+
+\subsection{Program specific options}
+The command line options that are specific to \prog{radsstat4} are listed here. Notice that the \sopt{r} option is somewhat different than that of \prog{rads2asc4} (Section~\ref{sec:rads2asc4}) and \prog{rads2nc} (Section~\ref{sec:rads2nc}).
+\begin{description}
+\item[\optc{r}{reject-on-nan}{VAR}] ~\\
+Do not take into account any records on which the value of variable \emph{VAR}, given as an argument to the \sopt{V} or \lopt{VAR} option, is set to NaN. By default records for which the sea level anomaly (if requested) is set to NaN are rejected.
+\item[\optc{r}{reject-on-nan}{NR}] ~\\
+For backward compatibility with RADS3, this will eliminate records where the value of item number \emph{NR} on the \sopt{V} option is NaN.
+\item[\soptb{r}{0}~~~~\soptb{r}{none}~~~~\sopt{r}] ~\\
+When either of these is used, no records are eliminated. However, the statistics are based only on the non-NaN values for each variable individually.
+\item[\soptb{r}{n}~~~~\soptb{r}{any}] ~\\
+Indicates that any record on which any of the selected variables are NaN is rejected and not taken into account in the statistics.
+\item[\soptc{c}{[N]}] Produce statistics per cycle or per N cycles
+\item[\soptc{d}{[N]}] Produce statistics per day (default) or per N days
+\item[\soptc{p}{[N]}] Produce statistics per pass or per N passes
+\item[\soptc{b}{[DX,DY]}] ~\\
+Average measurements by boxes of a given size in degrees (by default box-weighting with a size of 3x1 degrees is used)
+\item[\sopt{m}] Give all measurements equal weight in the statistics
+\item[\sopt{a}] Weight the measurements by the cosine of latitude
+\item[\sopt{s}] Weight the measurements by a weight dependent on latitude and inclination
+\item[\opt{l}{minmax}] ~\\
+Output the minimum and maximum for each variable, in addition to their mean and standard deviation
+\item[\lopt{no-stddev}] Output mean values only
+\item[\loptc{dt}{DT}] ~\\
+Set the minimum bin size in seconds. The default is the maximum 1-Hz sampling rate of the missions selected.
+\item[\lopt{full-year}] Write date as YYYYMMDD instead of the default YYMMDD
+\item[\loptc{min}{MINNR}] Minimum number of measurements per statistics record (default: 2)
+\item[\loptc{res}{[DX,DY]}] Size of averaging boxes in degrees (default: 3,1)
+\item[\lopt{echo-file-paths}] Write to standard output the paths of the files before they are being read
+\item[\lopt{format-cycle}] Output format starts with CYCLE, [YY]YYMMDD (default with \sopt{c})
+\item[\lopt{format-day}] Output format starts with [YY]YYMMDD (default with \sopt{d})
+\item[\lopt{format-pass}] Output format starts with CYCLE, PASS (default with \sopt{p})
+\item[\optc{o}{output}{[FILENAME]}] ~\\
+Create a netCDF output file. The default is ASCII output to standard output. Optionally specify a \emph{FILENAME}. The default netCDF output file name is \verb|radsstat.nc|.
+\end{description}
+
+\subsection{Examples}
+To get daily statistics of sea level anomaly and significant wave height of Jason-3 during Cycle 11, we use:
+\begin{verbatim}
+$ radsstat -d -S j3 -C 11 -V sla,swh
+\end{verbatim}
+resulting in:
+\script{sub/radsstat4.out}
+
+
+The program can also be called with two \sopt{S} options. In that case the statistics will be for the difference between two collinear missions, e.g.
+\begin{verbatim}
+$ radsstat -d -S j3 -C 11 -S j2 -C 291 -V sla,swh
+\end{verbatim}
+with the following result:
+\script{sub/radsstat4-2.out}
+
+By providing two \sopt{S} options, one can also compare, e.g., the data in STC and NTC latency. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{RADS library}

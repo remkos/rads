@@ -1,5 +1,5 @@
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2021  Remko Scharroo
+# Copyright (c) 2011-2022  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -70,7 +70,7 @@ $(CONFIG):	configure $(CONFIG_IN)
 #-----------------------------------------------------------------------
 
 update:
-	git pull -t origin master
+	git pull
 
 refresh:
-	git pull -t origin master | grep -q "Already up-to-date." ; if test $$? -eq 1 ; then $(MAKE) install ; fi
+	git pull | grep -q "Already up-to-date." ; if test $$? -eq 1 ; then $(MAKE) install ; fi

@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2021  Remko Scharroo and Eric Leuliette
+! Copyright (c) 2011-2022  Remko Scharroo and Eric Leuliette
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -99,7 +99,7 @@ use netcdf
 ! Command line arguments
 
 integer(fourbyteint) :: ios, i
-character(len=rads_cmdl) :: infile, arg
+character(len=rads_cmdl) :: infile, arg, product_name
 
 ! Header variables
 
@@ -109,9 +109,9 @@ real(eightbytereal) :: equator_time
 ! Data variables
 
 integer(twobyteint), allocatable :: flags_plrm(:), flags_save(:)
-character(len=2) :: mss_cnescls_ver, mss_dtu_ver, tide_fes_ver
+character(len=16) :: mss_sol1_var, mss_sol2_var
 integer :: latency = rads_nrt
-logical :: iono_alt_smooth = .false.
+logical :: iono_alt_smooth = .false., ipf651 = .false., ipf701 = .false., ipf703 = .false.
 
 ! Other local variables
 
@@ -135,7 +135,7 @@ do
 
 ! Open input file
 
-	call log_string (infile)
+	call log_string (basename(infile))
 	if (nf90_open(infile,nf90_nowrite,ncid) /= nf90_noerr) then
 		call log_string ('Error: failed to open input file', .true.)
 		cycle
@@ -185,12 +185,12 @@ do
 
 ! Determine latency (NRT, STC, NTC)
 
-	call nfs(nf90_get_att(ncid,nf90_global,'product_name',arg))
-	if (index(arg, '_NR_') > 0) then
+	call nfs(nf90_get_att(ncid,nf90_global,'product_name',product_name))
+	if (index(product_name, '_NR_') > 0) then
 		latency = rads_nrt
-	else if (index(arg, '_ST_') > 0) then
+	else if (index(product_name, '_ST_') > 0) then
 		latency = rads_stc
-	else if (index(arg, '_NT_') > 0) then
+	else if (index(product_name, '_NT_') > 0) then
 		latency = rads_ntc
 	else
 		call log_string ('Error: file skipped: unknown latency', .true.)
@@ -199,14 +199,16 @@ do
 
 ! Detect REP_006 (S3A) or REP_007 (S3B) or REP_008
 
-	if (index(arg, '_R_NT_003') > 0) then
+	if (index(product_name, '_R_NT_003') > 0) then
 		if (S%sat == '3a') then
 			latency = rads_ntc + 6 ! REP_006
 		else
 			latency = rads_ntc + 7 ! REP_007
 		endif
-	else if (index(arg, '_R_NT_004') > 0) then
+	else if (index(product_name, '_R_NT_004') > 0) then
 		latency = rads_ntc + 8 ! REP_008
+	else if (index(product_name, '_R_NT_005') > 0) then
+		latency = rads_ntc + 9 ! REP_009
 	endif
 
 ! Read cycle, pass, equator time
@@ -257,23 +259,42 @@ do
 
 	call nfs(nf90_get_att(ncid,nf90_global,'source',arg))
 
-! Default versions for MSS CNES-CLS and FES tides for PB 2.19 (IPF-SM-2 06.08) and later
+! Default settings
 
-	mss_cnescls_ver = '15'
-	mss_dtu_ver = '15'
-	tide_fes_ver = '14'
+	mss_sol1_var = 'mss_cnescls15'
+	mss_sol2_var = 'mss_dtu15'
+	iono_alt_smooth = .false.
+	ipf651 = .false.
+	ipf701 = .false.
 
 ! Update the version of MSS DTU and switch on smoothed iono for PB 2.49 (IPF-SM-2 06.16) and later
 
 	if (arg(10:14) >= '06.16') then
-		mss_dtu_ver = '18'
+		mss_sol2_var = 'mss_dtu18'
 		iono_alt_smooth = .true.
 	endif
 
+! Update the version of MSS CNES/CLS and switch on internal tide IPF-SM-2 06.51 and later
+
+	if (arg(10:14) >= '06.51') then
+		mss_sol1_var = 'mss_comb15'
+		ipf651 = .true.
+	endif
+
+! Update the version of MSS DTU, remove comp_wet_tropo_cor and introduce gpd_wet_tropo_cor
+
+	if (arg(10:14) >= '07.01') then
+		mss_sol2_var = 'mss_dtu21'
+		ipf701 = .true.
+	endif
+
+! Include sea ice concentration
+
+	ipf703 = (arg(10:14) >= '07.03')
+
 ! Store input file name
 
-	i = index(infile, '/', .true.) + 1
-	P%original = trim(infile(i:)) // ' (' // trim(arg) // ')'
+	P%original = trim(product_name) // ' (' // trim(arg) // ')'
 
 ! Allocate variables
 
@@ -334,13 +355,20 @@ do
 	call cpy_var (ncid, 'range_ocean_01_ku','range_ku')
 	call cpy_var (ncid, 'range_ocean_01_plrm_ku','range_ku_plrm')
 	call cpy_var (ncid, 'range_ocean_01_c','range_c')
-! Add zero or meas altitude tropo measurements?
+
 	call cpy_var (ncid, 'mod_dry_tropo_cor_meas_altitude_01', 'dry_tropo_ecmwf')
 	call cpy_var (ncid, 'rad_wet_tropo_cor_01_ku', 'wet_tropo_rad')
 	call cpy_var (ncid, 'rad_wet_tropo_cor_01_plrm_ku', 'wet_tropo_rad_plrm')
 	call cpy_var (ncid, 'rad_wet_tropo_cor_sst_gam_01_ku', 'wet_tropo_rad_sst_gam')
 	call cpy_var (ncid, 'mod_wet_tropo_cor_meas_altitude_01', 'wet_tropo_ecmwf')
-	call cpy_var (ncid, 'comp_wet_tropo_cor_01_ku', 'wet_tropo_comp')
+
+	if (.not.ipf701) then
+		call cpy_var (ncid, 'comp_wet_tropo_cor_01_ku', 'wet_tropo_comp')
+	else if (latency >= rads_ntc) then
+		call cpy_var (ncid, 'gpd_wet_tropo_cor_01', 'gpd_wet_tropo_cor')
+		call cpy_var (ncid, 'gpd_source_flag_01', 'gpd_source_flag')
+	endif
+
 	call cpy_var (ncid, 'iono_cor_alt_01_ku', 'iono_alt')
 	call cpy_var (ncid, 'iono_cor_alt_01_plrm_ku', 'iono_alt_plrm')
 	if (iono_alt_smooth) then
@@ -348,29 +376,39 @@ do
 		call cpy_var (ncid, 'iono_cor_alt_filtered_01_plrm_ku', 'iono_alt_smooth_plrm')
 	endif
 	call cpy_var (ncid, 'iono_cor_gim_01_ku', 'iono_gim')
+
 	call cpy_var (ncid, 'inv_bar_cor_01', 'inv_bar_static')
 	if (latency == rads_nrt) then
 		call cpy_var (ncid, 'inv_bar_cor_01', 'inv_bar_mog2d')
 	else
 		call cpy_var (ncid, 'inv_bar_cor_01 hf_fluct_cor_01 ADD', 'inv_bar_mog2d')
 	endif
+
 	call cpy_var (ncid, 'solid_earth_tide_01', 'tide_solid')
 	call cpy_var (ncid, 'ocean_tide_sol1_01 load_tide_sol1_01 SUB', 'tide_ocean_got410')
-	call cpy_var (ncid, 'ocean_tide_sol2_01 load_tide_sol2_01 SUB ocean_tide_non_eq_01 ADD', 'tide_ocean_fes' // tide_fes_ver)
+	call cpy_var (ncid, 'ocean_tide_sol2_01 load_tide_sol2_01 SUB ocean_tide_non_eq_01 ADD', 'tide_ocean_fes14')
 	call cpy_var (ncid, 'load_tide_sol1_01', 'tide_load_got410')
-	call cpy_var (ncid, 'load_tide_sol2_01', 'tide_load_fes' // tide_fes_ver)
+	call cpy_var (ncid, 'load_tide_sol2_01', 'tide_load_fes14')
 	call cpy_var (ncid, 'ocean_tide_eq_01', 'tide_equil')
 	call cpy_var (ncid, 'ocean_tide_non_eq_01', 'tide_non_equil')
 	call cpy_var (ncid, 'pole_tide_01', 'tide_pole')
+	if (ipf651) then
+		call cpy_var (ncid, 'internal_tide_sol1_01', 'tide_internal')
+		call cpy_var (ncid, 'angle_coast_01', 'angle_coast')
+		call cpy_var (ncid, 'dist_coast_01 1e-3 MUL', 'dist_coast')
+	endif
+
 	call cpy_var (ncid, 'sea_state_bias_01_ku', 'ssb_cls')
 	call cpy_var (ncid, 'sea_state_bias_01_plrm_ku', 'ssb_cls_plrm')
 	call cpy_var (ncid, 'sea_state_bias_01_c', 'ssb_cls_c')
+
 	call get_var (ncid, 'geoid_01', a)
 	call new_var ('geoid_egm2008', a + dh)
 	call get_var (ncid, 'mean_sea_surf_sol1_01', a)
-	call new_var ('mss_cnescls' // mss_cnescls_ver, a + dh)
+	call new_var (mss_sol1_var, a + dh)
 	call get_var (ncid, 'mean_sea_surf_sol2_01', a)
-	call new_var ('mss_dtu' // mss_dtu_ver, a + dh)
+	call new_var (mss_sol2_var, a + dh)
+
 	call cpy_var (ncid, 'swh_ocean_01_ku', 'swh_ku')
 	call cpy_var (ncid, 'swh_ocean_01_plrm_ku', 'swh_ku_plrm')
 	call cpy_var (ncid, 'swh_ocean_01_c', 'swh_c')
@@ -381,35 +419,46 @@ do
 	call cpy_var (ncid, 'wind_speed_alt_01_plrm_ku', 'wind_speed_alt_plrm')
 	call cpy_var (ncid, 'wind_speed_mod_u_01', 'wind_speed_ecmwf_u')
 	call cpy_var (ncid, 'wind_speed_mod_v_01', 'wind_speed_ecmwf_v')
+
 	call cpy_var (ncid, 'range_ocean_rms_01_ku', 'range_rms_ku')
 	call cpy_var (ncid, 'range_ocean_rms_01_plrm_ku', 'range_rms_ku_plrm')
 	call cpy_var (ncid, 'range_ocean_rms_01_c', 'range_rms_c')
 	call cpy_var (ncid, 'range_ocean_numval_01_ku', 'range_numval_ku')
 	call cpy_var (ncid, 'range_ocean_numval_01_plrm_ku', 'range_numval_ku_plrm')
 	call cpy_var (ncid, 'range_ocean_numval_01_c', 'range_numval_c')
+
 	call cpy_var (ncid, 'odle_01', 'topo_ace2')
+
 	call cpy_var (ncid, 'tb_238_01','tb_238')
 	call cpy_var (ncid, 'tb_365_01','tb_365')
+
 	call new_var ('flags', dble(flags))
 	call new_var ('flags_plrm', dble(flags_plrm))
+
 	call cpy_var (ncid, 'swh_ocean_rms_01_ku', 'swh_rms_ku')
 	call cpy_var (ncid, 'swh_ocean_rms_01_plrm_ku', 'swh_rms_ku_plrm')
 	call cpy_var (ncid, 'swh_ocean_rms_01_c', 'swh_rms_c')
 	call cpy_var (ncid, 'sig0_ocean_rms_01_ku', 'sig0_rms_ku')
 	call cpy_var (ncid, 'sig0_ocean_rms_01_plrm_ku', 'sig0_rms_ku_plrm')
 	call cpy_var (ncid, 'sig0_ocean_rms_01_c', 'sig0_rms_c')
-	! In case of SAR, there is no estimated attitude, so we rely on the PLRM values.
-	! It may not be good to use these for editing (?)
+
+! In case of SAR, there is no estimated attitude, so we rely on the PLRM values.
+! It may not be good to use these for editing (?)
 	call cpy_var (ncid, 'corrected_off_nadir_angle_wf_ocean_01_ku corrected_off_nadir_angle_wf_ocean_01_plrm_ku AND', &
 		'off_nadir_angle2_wf_ku')
 	call cpy_var (ncid, 'off_nadir_angle_rms_01_ku off_nadir_angle_rms_01_plrm_ku AND', 'off_nadir_angle2_wf_rms_ku')
 	call cpy_var (ncid, 'off_nadir_pitch_angle_pf_01', 'attitude_pitch')
 	call cpy_var (ncid, 'off_nadir_roll_angle_pf_01', 'attitude_roll')
 	call cpy_var (ncid, 'off_nadir_yaw_angle_pf_01', 'attitude_yaw')
+
 	call cpy_var (ncid, 'atm_cor_sig0_01_ku', 'dsig0_atmos_ku')
 	call cpy_var (ncid, 'atm_cor_sig0_01_c', 'dsig0_atmos_c')
 	call cpy_var (ncid, 'rad_liquid_water_01_ku', 'liquid_water_rad')
 	call cpy_var (ncid, 'rad_water_vapor_01_ku', 'water_vapor_rad')
+
+	if (ipf703) call cpy_var (ncid, 'sea_ice_concentration_01', 'seaice_conc')
+	call cpy_var (ncid, 'open_sea_ice_flag_01_ku', 'seaice_class')
+
 	call cpy_var (ncid, 'ssha_01_ku', 'ssha')
 	call cpy_var (ncid, 'ssha_01_plrm_ku', 'ssha_plrm')
 	if (orbit_type_offset < 0) then	! Straight copy of orbit_type_01

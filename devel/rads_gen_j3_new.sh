@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2021  Remko Scharroo
+# Copyright (c) 2011-2022  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -28,34 +28,29 @@ lst=$SANDBOX/rads_gen_j3_new.lst
 imrk=igdr/.bookmark
 omrk=ogdr/.bookmark
 
-date												>  "$log" 2>&1
+date																	>  "$log" 2>&1
 
 # Process only OGDR data for the last three days (including current)
 d0=`date -u -v -2d +%Y%m%d 2>&1` || d0=`date -u --date="2 days ago" +%Y%m%d`
 TZ=UTC touch -t ${d0}0000 $omrk
-find ogdr/c[0-8]?? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
-rads_gen_jason_gdrf --ymd=$d0 < "$lst"						>> "$log" 2>&1
+find -L ogdr/c[0-8]?? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
+rads_gen_jason_gdrf --ymd=$d0 < "$lst"									>> "$log" 2>&1
+rads_add_orbit   $options -Valt_cnes --dir=gdr-e-moe --equator --rate	>> "$log" 2>&1
 
 # Now process all IGDR data that came in during the last four days (including current)
 d0=`date -u -v -3d +%Y%m%d 2>&1` || d0=`date -u --date="3 days ago" +%Y%m%d`
 TZ=UTC touch -t ${d0}0000 $imrk
-find igdr/c??? -name "JA3_*.nc" -a -newer $imrk | sort > "$lst"
-rads_gen_jason_gdrf < "$lst"								>> "$log" 2>&1
+find -L igdr/c??? -name "JA3_*.nc" -a -newer $imrk | sort > "$lst"
+rads_gen_jason_gdrf < "$lst"											>> "$log" 2>&1
 
 # Do the patches to all data
 
 rads_fix_jason    $options --all					>> "$log" 2>&1
-rads_add_ssb      $options --ssb=ssb_tran2012		>> "$log" 2>&1
-rads_add_orbit    $options -Valt_gdre --dir=gdr-e-moe --equator --loc-7 --rate	>> "$log" 2>&1
-rads_add_iono     $options --all					>> "$log" 2>&1
 rads_add_common   $options							>> "$log" 2>&1
-rads_add_refframe $options --ext=mle3				>> "$log" 2>&1
-rads_add_dual     $options							>> "$log" 2>&1
-rads_add_dual     $options --ext=mle3				>> "$log" 2>&1
-rads_add_ib       $options							>> "$log" 2>&1
-rads_add_ww3_222  $options --all					>> "$log" 2>&1
-rads_add_sla      $options							>> "$log" 2>&1
-rads_add_sla      $options --ext=mle3				>> "$log" 2>&1
+rads_add_iono     $options --all					>> "$log" 2>&1
+# Redetermine SSHA
+rads_add_refframe $options -x -x mle3				>> "$log" 2>&1
+rads_add_sla      $options -x -x mle3				>> "$log" 2>&1
 
 date												>> "$log" 2>&1
 

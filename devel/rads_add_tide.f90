@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2021  Remko Scharroo
+! Copyright (c) 2011-2022  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -184,18 +184,17 @@ integer(fourbyteint), intent(in) :: n
 real(eightbytereal) :: phase, co, si
 real(eightbytereal), parameter :: pi = 4d0 * atan(1d0), t_2000 = 473299200d0, t_year = 365.25d0 * 86400d0
 real(eightbytereal), parameter :: k2 = 0.302, h2 = 0.609, h2k2 = h2 / (1 + k2)
-real(eightbytereal) :: time(n), lon(n), lat(n), surface_type(n), &
+real(eightbytereal) :: time(n), lon(n), lat(n), &
 	otide_sp(n), otide_lp(n), ltide_sp(n), ltide_lp(n), lptide_eq(n), lptide_mf(n), itide(n), itide_comp(6)
 integer(fourbyteint) :: i, j
 
 call log_pass (P)
 
-! Get time, location, and surface_type
+! Get time and location
 
 call rads_get_var (S, P, 'time', time, .true.)
 call rads_get_var (S, P, 'lon', lon, .true.)
 call rads_get_var (S, P, 'lat', lat, .true.)
-call rads_get_var (S, P, 'surface_type', surface_type, .true.)
 
 ! Reset time reference at the start of each pass.
 ! This makes sure that the nodal arguments are always recomputed per pass, so it does not
@@ -254,8 +253,6 @@ if (do_ptide) then
 	do i = 1,n
 		otide_sp(i) = poletide (time(i)/86400d0+46066d0, lat(i), lon(i))
 	enddo
-	! Over land/lake use Love number h2, not 1+k2
-	where (surface_type > 1.5d0) otide_sp = otide_sp * h2k2
 	call rads_put_var (S, P, 'tide_pole', otide_sp)
 endif
 

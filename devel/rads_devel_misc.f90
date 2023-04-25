@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2021  Remko Scharroo
+! Copyright (c) 2011-2022  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -32,8 +32,8 @@ use rads_misc
 character(len=3), intent(in) :: sat
 type(orfinfo), intent(inout) :: orf(:)
 character(len=320) :: line
-integer :: hash, mjd, yy, mm, dd, hh, mn, ios, npass, unit, nr_passes, abs_pass_offset
-real(eightbytereal) :: ss, lat
+integer :: mjd, yy, mm, dd, hh, mn, ios, npass, unit, nr_passes, abs_pass_offset
+real(eightbytereal) :: ss, lat, lon
 !
 ! This routine reads an ORF file for the given 3-letter satellite
 ! abbreviation. Upon return the ORF structure will be filled.
@@ -54,6 +54,8 @@ case ('JA2')
 	call parseenv ('${RADSROOT}/ext/j2/JA2_ORF.txt', line)
 case ('JA3')
 	call parseenv ('${RADSROOT}/ext/j3/JA3_ORF.txt', line)
+case ('CS_')
+	call parseenv ('${ALTIM}/data/ODR.CRYOSAT2/orf.txt', line)
 case ('SRL')
 	call parseenv ('${RADSROOT}/ext/sa/SRL_ORF.txt', line)
 	nr_passes = 1024
@@ -69,7 +71,7 @@ case ('S6A')
 case ('S6B')
 	call parseenv ('${RADSROOT}/ext/6b/S6B_ORF.txt', line)
 case default
-	stop 'Wrong satellite code'
+	stop 'Wrong satellite code: '//sat
 end select
 unit = getlun()
 open (unit, file=line, status='old')
@@ -78,13 +80,12 @@ open (unit, file=line, status='old')
 
 orf = orfinfo (-1, -1, -1, -1, nan, nan, nan)
 
-! Skip until after the lines starting with #
+! Skip all lines before the first line starting with a hash
 
-hash = 0
-do while (hash < 5)
+do
 	read (unit, 550, iostat=ios) line
 	if (ios /= 0) stop 'Premature end of file'
-	if (line(:1) == '#') hash = hash + 1
+	if (line(:1) == '#') exit
 enddo
 
 ! Read the equator crossing table
@@ -97,17 +98,18 @@ do
 	if (line(:1) == '#') cycle
 	read (line(:23),601,iostat=ios) yy,mm,dd,hh,mn,ss
 	if (ios /= 0) exit
-	read (line(24:),*,iostat=ios) orf(npass)%cycle,orf(npass)%pass,orf(npass)%abs_rev,orf(npass)%eqlon,lat
+	read (line(24:),*,iostat=ios) orf(npass)%cycle,orf(npass)%pass,orf(npass)%abs_rev,lon,lat
 	orf(npass)%abs_pass = (orf(npass)%cycle - 1) * nr_passes + orf(npass)%pass + abs_pass_offset
 	if (ios /= 0) exit
 	! Convert date and time to seconds since 1-1-2000
 	call ymd2mjd(yy,mm,dd,mjd)
 	ss = (mjd-51544)*86400d0 + hh*3600d0 + mn*60d0 + ss
-	orf(npass)%eqtime = ss
 	! Distinquish between rollover points (get starttime) and equator crossings (get ready for next pass)
-	if (abs(lat) > 1) then
+	if (abs(lat) > 1d0) then
 		orf(npass)%starttime = ss
 	else
+		orf(npass)%eqtime = ss
+		orf(npass)%eqlon = lon
 		npass=npass + 1
 	endif
 enddo

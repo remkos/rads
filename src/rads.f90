@@ -19,7 +19,7 @@ integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, &
 ! RADS4 data sources
 integer(fourbyteint), parameter :: rads_src_none = 0, rads_src_nc_var = 10, &
 	rads_src_nc_att = 11, rads_src_math = 20, rads_src_grid_lininter = 30, &
-	rads_src_grid_splinter = 31, rads_src_grid_query = 32, &
+	rads_src_grid_splinter = 31, rads_src_grid_query = 32, rads_src_grid_linphase = 33, &
 	rads_src_constant = 40, rads_src_flags = 50, rads_src_tpj = 60
 ! RADS4 warnings
 integer(fourbyteint), parameter :: rads_warn_nc_file = -3
@@ -176,7 +176,7 @@ integer(fourbyteint), save :: rads_nopt = 0          ! Number of command line op
 !	use rads
 !-----------------------------------------------------------------------
 ! COPYRIGHT
-! Copyright (c) 2011-2021  Remko Scharroo
+! Copyright (c) 2011-2022  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -262,7 +262,7 @@ private :: rads_traxxing, rads_free_sat_struct, rads_free_pass_struct, rads_free
 ! xml      : (optional) Array of names of additional XML files to be loaded
 !****-------------------------------------------------------------------
 private :: rads_init_sat_0d, rads_init_sat_1d, &
-	rads_init_cmd_0d, rads_init_cmd_1d, rads_load_options, rads_parse_options
+	rads_init_cmd_0d, rads_init_cmd_1d
 interface rads_init
 	module procedure rads_init_sat_0d
 	module procedure rads_init_sat_1d
@@ -1360,7 +1360,7 @@ if (pass < S%passes(1) .or. pass > S%passes(2) .or. pass > S%phase%passes) then
 endif
 
 ! Predict equator crossing info
-call rads_predict_equator (S, P, cycle, pass)
+call rads_predict_equator (S, P)
 
 ! Do checking of pass ends on the time criteria (only when such are given)
 if (.not.all(isnan_(S%time%info%limits))) then
@@ -1800,7 +1800,7 @@ do i = 1,3 ! This loop is here to allow processing of aliases
 		call rads_get_var_nc_att
 	case (rads_src_math)
 		call rads_get_var_math
-	case (rads_src_grid_lininter, rads_src_grid_splinter, rads_src_grid_query)
+	case (rads_src_grid_lininter, rads_src_grid_splinter, rads_src_grid_query, rads_src_grid_linphase)
 		call rads_get_var_grid
 	case (rads_src_constant)
 		call rads_get_var_constant
@@ -2125,6 +2125,8 @@ else if (info%datasrc == rads_src_grid_lininter) then
 	forall (i = 1:P%ndata) data(i) = grid_lininter (info%grid, x(i), y(i))
 else if (info%datasrc == rads_src_grid_splinter) then
 	forall (i = 1:P%ndata) data(i) = grid_splinter (info%grid, x(i), y(i))
+else if (info%datasrc == rads_src_grid_linphase) then
+	forall (i = 1:P%ndata) data(i) = grid_lininter (info%grid, x(i), y(i), .true.)
 else
 	forall (i = 1:P%ndata) data(i) = grid_query (info%grid, x(i), y(i))
 endif
@@ -2557,6 +2559,8 @@ do
 			info%datasrc = rads_src_grid_lininter
 		case ('grid_s', 'grid_c')
 			info%datasrc = rads_src_grid_splinter
+		case ('grid_p')
+			info%datasrc = rads_src_grid_linphase
 		case ('grid_n', 'grid_q')
 			info%datasrc = rads_src_grid_query
 		case ('math')
@@ -2625,7 +2629,8 @@ do
 			case ('y')
 				info%gridy = attr(2,i)(:rads_varl)
 			case ('inter')
-				if (attr(2,i)(:1) == 'c') info%datasrc = rads_src_grid_splinter
+				if (attr(2,i)(:1) == 'c' .or. attr(2,i)(:1) == 's') info%datasrc = rads_src_grid_splinter
+				if (attr(2,i)(:1) == 'p') info%datasrc = rads_src_grid_linphase
 				if (attr(2,i)(:1) == 'q') info%datasrc = rads_src_grid_query
 			end select
 		enddo
@@ -3017,8 +3022,8 @@ integer(fourbyteint), intent(out), optional :: iostat
 ! ARGUMENTS
 ! S        : Satellite/mission dependent structure
 ! varname  : Variable name
-! lo, hi   : Lower and upper limit
-! string   : String of up to two values, with separating whitespace
+! lo, hi   : (optional) Lower and upper limit
+! string   : (optional) String of up to two values, with separating whitespace
 !            or comma or slash.
 ! iostat   : (optional) iostat code from reading string
 !
@@ -3036,6 +3041,7 @@ contains
 
 subroutine rads_set_limits_info (info)
 type(rads_varinfo), pointer :: info
+real(eightbytereal), parameter :: sec1970 = -473385600d0
 if (.not.associated(info)) return
 if (present(lo)) info%limits(1) = lo
 if (present(hi)) info%limits(2) = hi
@@ -3051,7 +3057,12 @@ if (info%datatype == rads_type_lat .or. info%datatype == rads_type_lon) then
 else if (info%datatype == rads_type_time) then
 	! If time limits are changed, also limit the cycles
 	if (isan_(info%limits(1))) S%cycles(1) = max(S%cycles(1), rads_time_to_cycle (S, info%limits(1)))
-	if (isan_(info%limits(2))) S%cycles(2) = min(S%cycles(2), rads_time_to_cycle (S, info%limits(2)))
+	! If no upper time limit is set, use the current time
+	if (isan_(info%limits(2))) then
+		S%cycles(2) = min(S%cycles(2), rads_time_to_cycle (S, info%limits(2)))
+	else
+		S%cycles(2) = min(S%cycles(2), rads_time_to_cycle (S, time()+sec1970))
+	endif
 else if (var%name == 'flags') then
 	call rads_set_limits_by_flagmask (S, info%limits)
 endif
@@ -3789,14 +3800,14 @@ end subroutine rads_set_phase_by_time
 ! Predict equator crossing time and longitude
 !
 ! SYNOPSIS
-subroutine rads_predict_equator (S, P, cycle, pass)
+subroutine rads_predict_equator (S, P)
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
-integer(fourbyteint), intent(in) :: cycle, pass
 !
 ! PURPOSE
 ! This routine estimates the equator time and longitude, as well
-! as the start and end time of a given <cycle> and <pass>.
+! as the start and end time of given cycle number and pass number
+! stored in the pass struct <P>..
 !
 ! The routine works for exact repeat orbits as well as drifting
 ! orbits.
@@ -3807,8 +3818,6 @@ integer(fourbyteint), intent(in) :: cycle, pass
 ! ARGUMENTS
 ! S        : Satellite/mission dependent structure
 ! P        : Pass structure
-! cycle    : Cycle number
-! pass     : Pass number
 !
 ! ERROR CODE
 ! S%error  : rads_noerr, rads_err_nophase
@@ -3817,18 +3826,18 @@ integer(fourbyteint) :: cc, pp
 real(eightbytereal) :: d, e
 logical :: error
 
+ cc = P%cycle
+ pp = P%pass
+
 ! If the cycle is out of range for the current phase, look for a new phase
-call rads_set_phase (S, cycle, error)
+call rads_set_phase (S, cc, error)
 if (error) return
 
 ! For constructions with subcycles, convert first to "real" cycle/pass number
 if (associated(S%phase%subcycles)) then
-	cc = cycle - S%phase%subcycles%i
-	pp = S%phase%subcycles%list(modulo(cc,S%phase%subcycles%n)+1) + pass
+	cc = cc - S%phase%subcycles%i
+	pp = S%phase%subcycles%list(modulo(cc,S%phase%subcycles%n)+1) + pp
 	cc = cc / S%phase%subcycles%n + 1
-else
-	cc = cycle
-	pp = pass
 endif
 
 ! Now do the estimation process
@@ -3865,11 +3874,11 @@ integer(fourbyteint), intent(out), optional :: abs_orbit
 ! appropriate structure containing the phase information.
 !
 ! ARGUMENTS
-! S        : Satellite/mission dependent structure
-! time     : Time in seconds since 1985
-! cycle    : Cycle number in which <time> falls
-! pass     : Pass number in which <time> falls
-! abs_orbit: Absolute orbit number (optional)
+! S            : Satellite/mission dependent structure
+! time         : Time in seconds since 1985
+! cycle        : Cycle number in which <time> falls
+! pass         : Pass number in which <time> falls
+! abs_orbit    : Absolute orbit number (optional)
 !****-------------------------------------------------------------------
 integer :: i, j, n
 real(eightbytereal) :: d, t0, x
@@ -4548,14 +4557,26 @@ end subroutine rads_def_var_by_name
 subroutine rads_put_var_by_var_0d (S, P, var, data)
 use netcdf
 use rads_netcdf
+use rads_misc
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 type(rads_var), intent(in) :: var
 real(eightbytereal), intent(in) :: data
-integer(fourbyteint) :: varid
+integer(fourbyteint) :: e, ncid, varid
 varid = rads_put_var_helper (S, P, var%name)
 if (varid == 0) return
-if (nft(nf90_put_var (P%fileinfo(1)%ncid, varid, data))) call rads_error (S, rads_err_nc_put, &
+ncid = P%fileinfo(1)%ncid
+select case (var%info%nctype)
+case (nf90_int1)
+	e = nf90_put_var (ncid, varid, nint1((data - var%info%add_offset) / var%info%scale_factor))
+case (nf90_int2)
+	e = nf90_put_var (ncid, varid, nint2((data - var%info%add_offset) / var%info%scale_factor))
+case (nf90_int4)
+	e = nf90_put_var (ncid, varid, nint4((data - var%info%add_offset) / var%info%scale_factor))
+case default
+	e = nf90_put_var (ncid, varid, (data - var%info%add_offset) / var%info%scale_factor)
+end select
+if (e /= 0) call rads_error (S, rads_err_nc_put, &
 	'Error writing data for variable "'//trim(var%name)//'" to file', P)
 end subroutine rads_put_var_by_var_0d
 

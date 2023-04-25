@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2021  Remko Scharroo and Eric Leuliette
+! Copyright (c) 2011-2022  Remko Scharroo and Eric Leuliette
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -79,7 +79,7 @@ use netcdf
 
 ! Command line arguments
 
-integer(fourbyteint) :: ios, i
+integer(fourbyteint) :: ios
 character(len=rads_cmdl) :: infile, arg
 
 ! Header variables
@@ -105,7 +105,7 @@ call rads_init (S, sat)
 do
 	read (*,'(a)',iostat=ios) infile
 	if (ios /= 0) exit
-	call log_string (infile)
+	call log_string (basename(infile))
 
 ! Check if input is a HY-2A IGDR data set
 
@@ -174,8 +174,7 @@ do
 
 ! Store input file name
 
-	i = index(infile, '/', .true.) + 1
-	P%original = trim(infile(i:)) // ' (' // arg // ')'
+	P%original = trim(basename(infile)) // ' (' // arg // ')'
 
 ! Allocate variables
 

@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2021  Remko Scharroo
+! Copyright (c) 2011-2022  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -78,7 +78,7 @@ use netcdf
 
 ! Command line arguments
 
-integer(fourbyteint) :: ios, i, j
+integer(fourbyteint) :: ios, j
 character(len=rads_cmdl) :: infile, arg
 
 ! Header variables
@@ -113,7 +113,7 @@ do
 
 ! Open input file
 
-	call log_string (infile)
+	call log_string (basename(infile))
 	if (nf90_open(infile,nf90_nowrite,ncid) /= nf90_noerr) then
 		call log_string ('Error: failed to open input file', .true.)
 		cycle
@@ -182,9 +182,8 @@ do
 ! Determine L2 processing version
 
 	call nfs(nf90_get_att(ncid,nf90_global,'references',arg))
-	i = index(infile, '/', .true.) + 1
 	j = index(arg, 'L2 library=')
-	P%original = trim(infile(i:)) // ' (' // arg(j+11:)
+	P%original = trim(basename(infile)) // ' (' // arg(j+11:)
 	j = index(P%original, ',')
 	P%original(j:) = ')'
 
@@ -263,8 +262,26 @@ do
 	call cpy_var (ncid, 'wind_speed_model_u', 'wind_speed_ecmwf_u')
 	call cpy_var (ncid, 'wind_speed_model_v', 'wind_speed_ecmwf_v')
 	call cpy_var (ncid, 'wind_speed_alt')
+	call cpy_var (ncid, 'mean_wave_period_t02', 'mean_wave_period')
+	call cpy_var (ncid, 'mean_wave_direction', 'mean_wave_direction')
 	call cpy_var (ncid, 'rad_water_vapor', 'water_vapor_rad')
 	call cpy_var (ncid, 'rad_liquid_water', 'liquid_water_rad')
+	if (latency == rads_nrt) then
+		call get_var (ncid, 'orb_state_flag_diode', a)
+		where (a == 9)
+			a = 1
+		elsewhere
+			a = 0
+		endwhere
+	else
+		call get_var (ncid, 'orb_state_flag_rest', a)
+		where (a == 4)
+			a = 1
+		elsewhere
+			a = 0
+		endwhere
+	endif
+	call new_var ('flag_manoeuvre', a)
 	call get_var (ncid, 'range_used_40hz', d)
 	valid = (d == 0d0)
 	call get_var (ncid, 'peakiness_40hz', d)

@@ -1,5 +1,5 @@
 !****-------------------------------------------------------------------
-! Copyright (c) 2011-2021  Remko Scharroo
+! Copyright (c) 2011-2022  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -466,6 +466,32 @@ do i = 1,len(string)
 	endif
 enddo
 end function strtoupper
+
+!****f* rads_misc/basename
+! SUMMARY
+! Get basename of full pathname
+!
+! SYNOPSIS
+elemental function basename (pathname) result (filename)
+character(len=*), intent(in) :: pathname
+character(len=len(pathname)) :: filename
+!
+! PURPOSE
+! Convert character string of a pathname to its base filename.
+! Example: basename("bar/foo.txt") results in "foo.txt"
+!
+! ARGUMENTS
+! pathname : Full pathname
+! filename : Base filename
+!****-------------------------------------------------------------------
+integer :: i
+i = index(pathname, '/', back=.true.)
+if (i > 0) then
+	filename = pathname(i+1:)
+else
+	filename = pathname
+endif
+end function basename
 
 !****f* rads_misc/getlun
 ! SUMMARY
@@ -939,9 +965,10 @@ end function next_word
 ! Compute mean and rms of multi-Hz array
 !
 ! SYNOPSIS
-pure subroutine mean_1hz (y, mean, rms)
+pure subroutine mean_1hz (y, mean, rms, nr)
 real(eightbytereal), intent(in) :: y(:,:)
 real(eightbytereal), intent(out) :: mean(:), rms(:)
+integer(fourbyteint), intent(out), optional :: nr(:)
 !
 ! PURPOSE
 ! Compute mean and stddev values from multi-Hz array <y(m,n)> where <m> is
@@ -955,6 +982,7 @@ real(eightbytereal), intent(out) :: mean(:), rms(:)
 ! y     : Input array of dimension (m,n)
 ! mean  : Average of y per 1-Hz, dimension n
 ! rms   : Standard deviation of 1-Hz, dimension n
+! nr    : (Optional) number of valid points, dimension n
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: i, j, n
 do j = 1,size(y,2)
@@ -977,6 +1005,7 @@ do j = 1,size(y,2)
 	else
 		rms(j) = sqrt ((rms(j) - n * mean(j)**2) / (n - 1))
 	endif
+	if (present(nr)) nr(j) = n
 enddo
 end subroutine mean_1hz
 
@@ -985,9 +1014,10 @@ end subroutine mean_1hz
 ! Compute mean and rms of multi-Hz array with trend removal
 !
 ! SYNOPSIS
-pure subroutine trend_1hz (x, x0, y, mean, rms)
+pure subroutine trend_1hz (x, x0, y, mean, rms, nr)
 real(eightbytereal), intent(in) :: x(:,:), x0(:), y(:,:)
 real(eightbytereal), intent(out) :: mean(:), rms(:)
+integer(fourbyteint), intent(out), optional :: nr(:)
 !
 ! PURPOSE
 ! Compute mean and stddev values from multi-Hz array <y(m,n)> where <m> is
@@ -1006,6 +1036,7 @@ real(eightbytereal), intent(out) :: mean(:), rms(:)
 ! y     : Input array of dimension (m,n)
 ! mean  : Average of y per 1-Hz, dimension n
 ! rms   : Standard deviation of 1-Hz, dimension n
+! nr    : (Optional) number of valid points, dimension n
 !****-------------------------------------------------------------------
 real(eightbytereal) :: sumx,sumy,sumxx,sumxy,sumyy,uxx,uxy,uyy,a,b,xx
 integer(fourbyteint) :: i, j, n
@@ -1042,6 +1073,7 @@ do j = 1,size(y,2)
 			rms(j) = sqrt ((sumyy - a * sumy - b * sumxy) / (n-2))
 		endif
 	endif
+	if (present(nr)) nr(j) = n
 enddo
 end subroutine trend_1hz
 
@@ -1080,6 +1112,35 @@ else
 	x = sign(10d0*p,x)
 endif
 end subroutine round_up
+
+
+!****f* rads_misc/findloc1
+! SUMMARY
+! Find specified value in array
+!
+! SYNOPSIS
+pure function findloc1 (array, value)
+use typesizes
+real(eightbytereal), intent(in) :: array(:), value
+integer(fourbyteint) :: findloc1
+!
+! PURPOSE
+! Determines the location of the first element in the array <array> with the value given
+! in the <value> argument. If no matching value is found, the function returns 0.
+!
+! This function replaces the Fortran function call FINDLOC (ARRAY, VALUE, 1),
+! since FINDLOC was only implemented in gfortran version 9.
+!
+! ARGUMENTS
+! array    : Array of values
+! value    : Value to be searched for
+! findloc1 : Location of <value> in <array> or 0 if not found
+!****-------------------------------------------------------------------
+do findloc1 = 1, size(array)
+	if (array(findloc1) == value) return
+enddo
+findloc1 = 0
+end function findloc1
 
 !***********************************************************************
 

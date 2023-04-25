@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2021  Remko Scharroo
+! Copyright (c) 2011-2022  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -49,7 +49,7 @@ character(len=rads_cmdl) :: dir = ''
 
 ! Other variables
 
-integer(fourbyteint) :: ios, cycle, pass, abs_orbit, next = 250
+integer(fourbyteint) :: ios, cycle, pass, abs_orbit
 real(eightbytereal) :: min_lat, max_lat, time, time_step = 0d0
 character(len=26) :: date
 
@@ -65,12 +65,10 @@ do i = 1,rads_nopt
 		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	case ('dir')
 		dir = rads_opt(i)%arg
-	case ('ext')
-		read (rads_opt(i)%arg, *, iostat=ios) next
 	end select
 enddo
 
-! If cycles given, adjust time range
+! If cycles given, and no time limits, set the time limits based on the cycles
 
 if (isnan_(S%time%info%limits(1))) S%time%info%limits(1) = max(S%phases(1)%start_time, rads_cycle_to_time (S, S%cycles(1)))
 if (isnan_(S%time%info%limits(2))) S%time%info%limits(2) = rads_cycle_to_time (S, S%cycles(2)+1)
@@ -126,14 +124,14 @@ do
 	endif
 enddo
 
-! Extend the list by <next> orbits
+! Extend the list until the upper time limit
 ! For computing steps into future, start with an equator crossing; it is more accurate
 
 if (abs(orf(norf)%lat) > min_lat) norf = norf - 1
 if (norf >= 5) then
 	diff%time = orf(norf)%time - orf(norf-4)%time
 	diff%lon = orf(norf)%lon - orf(norf-4)%lon
-	do i = 1,4*next
+	do
 		if (orf(norf-3)%time + diff%time > S%time%info%limits(2)) exit
 		norf = norf + 1
 		orf(norf)%time = orf(norf-4)%time + diff%time
@@ -181,8 +179,7 @@ write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:'/ &
 '  --dir STR                 Specify orbit directory path'/ &
-'  --dt DT                   Specify time stepping interval (s), default: 1'/ &
-'  --ext EXT                 Extend ORF by EXT orbits beyond the last orbit file, default: 250')
+'  --dt DT                   Specify time stepping interval (s), default: 1')
 stop
 end subroutine synopsis
 

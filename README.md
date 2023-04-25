@@ -29,6 +29,45 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 This does not include explanations of changes to the code that generates the data base.
 
+### v4.4.0 (27 Apr 2022)
+* `rads.xml`:
+  * prepared for Jason-3 Interleaved Orbit (Phase B)
+  * align lower limit of `range_numval_ku_adaptive` with `range_numval_ku` (for j3)
+  * added `mss_dtu21` (#174)
+  * fix formatting of flag mask of 6a, j2, j3
+  * add `*_adaptive` parameters for j3 (#173)
+  * update `ref_frame_offset` for j3 (#178)
+  * correct `standard_name` for `mean_wave_period`
+  * remove `ssb_tran2012` from S6A (it was never included in the data files)
+  * change limits on sig0 for j3 as result of no longer biasing sig0
+  * add `mss_comb15`
+  * update limits for `range_numval_ku` (6a), `range_numval_ku_plrm` (3a 3b c2)
+  * Update attributes of `ssb_cls`, `ssb_cls_c`, `ssb_mle3` for JA3 and S6A
+  * Removed `ssb_hyb` from configuration of c2
+  * including SARAL GDR-F wave model
+* `radsstat`:
+  * improve matching time stamps
+  * fix problems (#171)
+  * introduced `--no-stddev`
+  * introduce check on collinearity as well as `--force` and `--dt` options
+  * can now also do differences (along collinear tracks)
+  * updated documentation
+* `radscolin`:
+  * added `--eqtime` option
+  * option `--force`: also apply to rogue equator crossing times
+  * use inclination to check if missions are collinear
+* `radsxolist`: activated `--dual-asc` and `--dual-des` options
+* Add MFWAM fields to S3A, S3B, S6A
+* Updated manuals
+* Updated `config.sub` and `config.guess`
+
+### v4.3.7 (10 Mar 2021)
+* Switch CryoSat-2 (c2) data over from NOAA-generated IGDR to NOP/IOP/GOP products
+* Updated `config.sub` and `config.guess`
+* `rads.xml` prepared for Sentinel-6A (6a)
+* Switch SARAL (sa) data over to GDR-F; Change default ssb for SARAL to `ssb_tran2019` (which is what GDR-F does)
+* Switch Jason data production over to GDR-F
+
 ### v4.3.6 (15 Aug 2019)
 * `rads.xml`: Updated `ref_frame_offset` for JA3 (raise by 1 mm)
 * `rads.xml`: Added `ref_frame_offset` for S3A/S3B PLRM

@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2021  Remko Scharroo
+# Copyright (c) 2011-2022  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -19,6 +19,9 @@
 # syntax: rads_gen_saral.sh <directories>
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
+
+# Exit when no directory names are provided
+[[ $# -eq 0 ]] && exit
 
 rads_open_sandbox sa
 lst=$SANDBOX/rads_gen_saral.lst
@@ -45,7 +48,9 @@ rads_add_common  $options								>> "$log" 2>&1
 rads_add_ssb     $options --all							>> "$log" 2>&1
 rads_add_ib      $options								>> "$log" 2>&1
 rads_add_ww3_222 $options --all							>> "$log" 2>&1
-rads_add_sla     $options           					>> "$log" 2>&1
+# Redetermine SSHA
+rads_add_refframe $options								>> "$log" 2>&1
+rads_add_sla      $options								>> "$log" 2>&1
 
 date													>> "$log" 2>&1
 

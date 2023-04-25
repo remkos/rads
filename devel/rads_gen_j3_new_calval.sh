@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2021  Remko Scharroo
+# Copyright (c) 2011-2022  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -50,19 +50,19 @@ for type in ${types}; do
 rads_open_sandbox j3.${type}0
 lst=$SANDBOX/rads_gen_j3_tmp.lst
 
-date												>  "$log" 2>&1
+date													>  "$log" 2>&1
 
 omrk=${type}/.bookmark
 TZ=UTC touch -t ${d0}0000 $omrk
 case $type in
 	gdr)
-		find ${type}/cycle_??? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
+		find -L ${type}/cycle_??? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
 		if [ -s "$lst" ]; then
-			rads_gen_jason $options < "$lst"			>> "$log" 2>&1
+			rads_gen_jason_gdrf $options < "$lst"		>> "$log" 2>&1
 		fi
 		;;
 	*)
-		find ${type}/c??? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
+		find -L ${type}/c??? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
 		rads_gen_jason_gdrf --ymd=$d0 $options < "$lst"	>> "$log" 2>&1
 		;;
 esac
@@ -74,31 +74,38 @@ rads_close_sandbox
 rads_open_sandbox j3.${type}
 case $type in
 	gdr)
-		find ${type}/cycle_??? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
+		find -L ${type}/cycle_??? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
 		if [ -s "$lst" ]; then
-			rads_gen_jason $options < "$lst"			>> "$log" 2>&1
+			rads_gen_jason_gdrf $options < "$lst"								>> "$log" 2>&1
 		fi
 		;;
 	*)
-		find ${type}/c??? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
-		rads_gen_jason --ymd=$d0 $options < "$lst"	>> "$log" 2>&1
-		rads_add_orbit   $options -Valt_cnes --dir=gdr-e-moe --equator --loc-7 --rate	>> "$log" 2>&1
+		find -L ${type}/c??? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
+		rads_gen_jason_gdrf --ymd=$d0 $options < "$lst"							>> "$log" 2>&1
 		;;
+esac
+
+# Add MOE orbit (for OGDR only)
+case $type in
+	ogdr) rads_add_orbit $options -Valt_cnes --dir=gdr-e-moe --equator --rate	>> "$log" 2>&1
+		;;
+esac
+
+# Add adaptive retracker for NTC
+
+case $type in
+	gdr) extra="-x adaptive" ;;
+	  *) extra= ;;
 esac
 
 # Do the patches to all data
 
 rads_fix_jason    $options --all					>> "$log" 2>&1
-rads_add_ssb      $options --ssb=ssb_tran2012		>> "$log" 2>&1
-rads_add_iono     $options --all					>> "$log" 2>&1
 rads_add_common   $options							>> "$log" 2>&1
-rads_add_refframe $options --ext=mle3				>> "$log" 2>&1
-rads_add_dual     $options							>> "$log" 2>&1
-rads_add_dual     $options --ext=mle3				>> "$log" 2>&1
-rads_add_ib       $options							>> "$log" 2>&1
-rads_add_ww3_222  $options --all					>> "$log" 2>&1
-rads_add_sla      $options							>> "$log" 2>&1
-rads_add_sla      $options --ext=mle3				>> "$log" 2>&1
+rads_add_iono     $options --all					>> "$log" 2>&1
+# Redetermine SSHA
+rads_add_refframe $options -x -x mle3 $extra		>> "$log" 2>&1
+rads_add_sla      $options -x -x mle3 $extra		>> "$log" 2>&1
 
 date												>> "$log" 2>&1
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2021  Remko Scharroo
+# Copyright (c) 2011-2022  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -16,11 +16,19 @@
 #
 # Convert Jason-3 O/I/GDR files to RADS
 #
-# syntax: rads_gen_j3.sh <directories>
+# syntax: rads_gen_j3.sh [ .<type> ] <directories>
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
 
-rads_open_sandbox j3
+# Exit when no directory names are provided
+[[ $# -eq 0 ]] && exit
+
+type=
+case $1 in
+	.*) type=$1; shift ;;
+esac
+
+rads_open_sandbox j3${type}
 lst=$SANDBOX/rads_gen_j3.lst
 
 date												>  "$log" 2>&1
@@ -32,8 +40,6 @@ for tar in "$@"; do
 		*.tgz) tar -xzf "$tar"; dir=`basename "$tar" .tgz` ;;
 		*) dir="$tar" ;;
 	esac
-	ls "$dir"/JA3_???_2Pd*.nc > "$lst"
-	rads_gen_jason	$options < "$lst"				>> "$log" 2>&1
 	ls "$dir"/JA3_???_2Pf*.nc > "$lst"
 	rads_gen_jason_gdrf	$options < "$lst"			>> "$log" 2>&1
 	case "$tar" in
@@ -41,19 +47,22 @@ for tar in "$@"; do
 	esac
 done
 
+# Add adaptive retracker for NTC
+
+case $type in
+	ogdr|igdr) extra= ;;
+	        *) extra="-x adaptive" ;;
+esac
+
 # Do the patches to all data
 
 rads_fix_jason    $options --all					>> "$log" 2>&1
-rads_add_ssb      $options --ssb=ssb_tran2012		>> "$log" 2>&1
-rads_add_iono     $options --all					>> "$log" 2>&1
 rads_add_common   $options							>> "$log" 2>&1
-rads_add_refframe $options --ext=mle3				>> "$log" 2>&1
-rads_add_dual     $options							>> "$log" 2>&1
-rads_add_dual     $options --ext=mle3				>> "$log" 2>&1
-rads_add_ib       $options							>> "$log" 2>&1
 rads_add_ww3_222  $options --all					>> "$log" 2>&1
-rads_add_sla      $options							>> "$log" 2>&1
-rads_add_sla      $options --ext=mle3				>> "$log" 2>&1
+rads_add_iono     $options --all					>> "$log" 2>&1
+# Redetermine SSHA
+rads_add_refframe $options -x -x mle3 $extra		>> "$log" 2>&1
+rads_add_sla      $options -x -x mle3 $extra		>> "$log" 2>&1
 
 date												>> "$log" 2>&1
 

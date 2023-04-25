@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2021  Remko Scharroo
+# Copyright (c) 2011-2022  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -45,7 +45,6 @@ rads_fix_jason    $options --all					>> "$log" 2>&1
 rads_add_ssb      $options --ssb=ssb_tran2012		>> "$log" 2>&1
 rads_add_iono     $options --all					>> "$log" 2>&1
 rads_add_common   $options							>> "$log" 2>&1
-rads_add_refframe $options --ext=mle3				>> "$log" 2>&1
 rads_add_dual     $options							>> "$log" 2>&1
 rads_add_dual     $options --ext=mle3				>> "$log" 2>&1
 rads_add_ib       $options							>> "$log" 2>&1
@@ -58,8 +57,9 @@ rads_add_orbit    $options -Valt_std1404			>> "$log" 2>&1
 rads_add_orbit    $options -Valt_slcci   -C0-248	>> "$log" 2>&1
 rads_add_ww3_222  $options --all					>> "$log" 2>&1
 rads_add_ww3_314  $options --ww3 -C0-165			>> "$log" 2>&1
-rads_add_sla      $options           				>> "$log" 2>&1
-rads_add_sla      $options --mle=3					>> "$log" 2>&1
+# Redetermine SSHA
+rads_add_refframe $options -x -x mle3				>> "$log" 2>&1
+rads_add_sla      $options -x -x mle3				>> "$log" 2>&1
 
 date												>> "$log" 2>&1
 

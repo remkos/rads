@@ -179,7 +179,7 @@ Gaspar, P., S.~Labroue, F.~Ogor, G.~Lafitte, L.~Marchal, and M.~Rafanel (2002),
   \textit{19}(10), 1690--1707.
 
 \bibitem[{\textit{Gourrion et~al.}(2002)\textit{Gourrion, Vandemark, Bailey,
-  Chapron, Gommenginger, Challenor, and Srokosz}}]{gourrion2002b}
+  Chapron, Gommenginger, Challenor, and Srokosz}}]{gourrion2002}
 Gourrion, J., D.~Vandemark, S.~Bailey, B.~Chapron, C.~P. Gommenginger, P.~G.
   Challenor, and M.~A. Srokosz (2002), A two-parameter wind speed algorithm for
   {Ku-band} altimeters, \textit{J.\ Atmos.\ Oceanic Technol.}, \textit{19}(12),
@@ -457,7 +457,7 @@ Tolman, H.~L. (2009), User manual and system documentation of {WAVEWATCH III}
 \bibitem[{\textit{Tran et~al.}(2010)\textit{Tran, Vandemark, Labroue, Feng,
   Chapron, Tolman, Lambin, and Picot}}]{tran2010}
 Tran, N., D.~Vandemark, S.~Labroue, H.~Feng, B.~Chapron, H.~L. Tolman,
-  J.~Lambin, and N.~Picot (2010), The sea state bias in altimeter sea level
+  J.~Lambin, and N.~Picot (2010), Sea state bias in altimeter sea level
   estimates determined by combining wave model and satellite data, \textit{J.\
   Geophys.\ Res.}, \textit{115}, C03020, \doi{10.1029/2009JC005534}.
 

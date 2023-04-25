@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2021  Remko Scharroo and Eric Leuliette
+! Copyright (c) 2011-2022  Remko Scharroo and Eric Leuliette
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -45,42 +45,66 @@ program rads_gen_jason_gdrf
 ! range_* - Ocean range (retracked)
 ! range_rms_* - Std dev of range
 ! range_numval_* - Nr of averaged range measurements
+! qual_range - Quality of range measurement
+! swh_* - Significant wave height
+! swh_rms_* - Std dev of SWH
+! qual_swh - Quality of SWH measurement
+! sig0_* - Sigma0
+! sig0_rms_* - Std dev of sigma0
+! qual_sig0 - Quality of sigma0 measurement
+! dsig0_atmos_* - Atmospheric attenuation of sigma0
+! wind_speed_alt - Altimeter wind speed
+! wind_speed_alt_mle3 - Altimeter wind speed (MLE3)
+! wind_speed_rad - Radiometer wind speed
+! wind_speed_ecmwf_u - ECMWF wind speed (U)
+! wind_speed_ecmwf_v - ECMWF wind speed (V)
+! qual_alt_rain_ice - Altimeter rain flag
+! qual_rad_rain_ice - Radiometer rain flag
+! off_nadir_angle2_wf_ku - Mispointing from waveform squared
+! off_nadir_angle2_wf_rms_ku - RMS of mispointing from waveform squared
+! qaul_attitude - Quality of attitude measurement
 ! dry_tropo_ecmwf - ECMWF dry tropospheric correction
 ! wet_tropo_ecmwf - ECMWF wet tropo correction
 ! wet_tropo_rad - Radiometer wet tropo correction
 ! iono_alt - Dual-frequency ionospheric correction
 ! iono_alt_smooth - Filtered dual-frequency ionospheric correction
+! iono_alt_mle3 - Dual-frequency ionospheric correction (MLE3)
+! iono_alt_smooth_mle3 - Filtered dual-frequency ionospheric correction (MLE3)
+! qual_iono_alt - Quality of dual-frequency ionosphere correction
 ! iono_gim - GIM ionosphetic correction
+! ssb_cls_* - SSB
 ! inv_bar_static - Inverse barometer
 ! inv_bar_mog2d - MOG2D
-! ssb_cls_* - SSB
-! swh_* - Significant wave height
-! swh_rms_* - Std dev of SWH
-! sig0_* - Sigma0
-! sig0_rms_* - Std dev of sigma0
-! dsig0_atmos_* - Atmospheric attenuation of sigma0
-! wind_speed_alt - Altimeter wind speed
-! wind_speed_rad - Radiometer wind speed
-! wind_speed_ecmwf_u - ECMWF wind speed (U)
-! wind_speed_ecmwf_v - ECMWF wind speed (V)
 ! tide_ocean/load_got410 - GOT4.10c ocean and load tide
 ! tide_ocean/load_fes14 - FES2014 ocean and load tide
-! tide_pole - Pole tide
+! tide_non_equal - Long-period non-equilibrium tide
 ! tide_solid - Solid earth tide
-! topo_ace2 - ACE2 topography
+! tide_pole - Pole tide
 ! geoid_egm2008 - EGM2008 geoid
 ! cnescls15 - CNES/CLS15 mean sea surface
 ! mss_dtu18 - DTU13 mean sea surface
+! topo_ace2 - ACE2 topography
+! surface_class - Surgace classification
+! surface_type_rad - Radiometer surface type
+! dist_coast - Distance to the coast
+! angle_coast - Angle to the coast
+! rads_dist_coast - Radiometer distance to the coast
+! tb_187 - Brightness temperature (18.7 GHz)
 ! tb_238 - Brightness temperature (23.8 GHz)
 ! tb_365 - Brightness temperature (36.5 GHz)
-! flags - Engineering flags
-! off_nadir_angle2_wf_ku - Mispointing from waveform squared
+! qual_rad_tb - Quality of brightness temperatures
 ! rad_liquid_water - Liquid water content
 ! rad_water_vapor - Water vapor content
+! mean_wave_period - Mean wave period (t02)
+! mean_wave_direction - Mean wave direction
 ! ssha - Sea surface height anomaly
+! ssha_mle3 - Sea surface height anomaly (MLE3)
+! latency - Latency (NRT, STC, NTC)
+! flags - Engineering flags
 !
 ! Extensions _* are:
 ! _ku:      Ku-band
+! _ku_mle3  Ku-band MLE3
 ! _c:       C-band
 !-----------------------------------------------------------------------
 use rads
@@ -106,7 +130,7 @@ real(eightbytereal) :: equator_time
 
 ! Data variables
 
-integer(twobyteint), allocatable :: flags_mle3(:), flags_save(:)
+integer(twobyteint), allocatable :: flags_mle3(:), flags_adaptive(:), flags_save(:)
 character(len=2) :: mss_cnescls_ver = '15', mss_dtu_ver = '18', tide_fes_ver = '14'
 character(len=3) :: tide_got_ver = '410'
 integer :: latency = rads_nrt
@@ -133,7 +157,7 @@ do
 
 ! Open input file
 
-	call log_string (infile)
+	call log_string (basename(infile))
 	if (nft(nf90_open(infile,nf90_nowrite,ncid))) then
 		call log_string ('Error: failed to open input file', .true.)
 		cycle
@@ -225,7 +249,7 @@ do
 
 ! Set mission phase based on equator_time
 
-!	call rads_set_phase (S, equator_time)
+	call rads_set_phase (S, equator_time)
 
 ! Store relevant info
 
@@ -242,14 +266,14 @@ do
 ! Determine L2 processing version (currently not used)
 
 	call nfs(nf90_get_att(ncid,nf90_global,'source',arg))
+
 ! Store input file name
 
-	i = index(infile, '/', .true.) + 1
-	P%original = trim(infile(i:)) // ' (' // trim(arg) // ')'
+	P%original = trim(basename(infile)) // ' (' // trim(arg) // ')'
 
 ! Allocate variables
 
-	allocate (a(nrec),dh(nrec),flags(nrec),flags_mle3(nrec),flags_save(nrec))
+	allocate (a(nrec),dh(nrec),flags(nrec),flags_mle3(nrec),flags_adaptive(nrec),flags_save(nrec))
 	nvar = 0
 
 ! Get NetCDF ID for 20-Hz data (if available)
@@ -283,32 +307,48 @@ do
 	call nc2f (ncid1, 'rad_tb_187_qual',  9)
 	call nc2f (ncid1, 'rad_tb_238_qual',  9)					! bit  9: Quality 18.7 or 23.8 GHz channel
 	call nc2f (ncid1, 'rad_tb_340_qual', 10)					! bit 10: Quality 34.0 GHz channel
+	if (latency == rads_nrt) then
+		call nc2f (ncid1, 'orb_state_diode_flag',15,ge=2)		! bit 15: Quality of DIODE orbit
+	else
+		call nc2f (ncid1, 'orb_state_rest_flag',15,neq=3)		! bit 15: Quality of restituted orbit
+	endif
+
 
 ! Now do specifics for MLE3
 
 	flags_save = flags	! Keep flags for later
-	call nc2f (ncidk, 'range_ocean_mle3_compression_qual', 11)			! bit 11: Quality range
-	call nc2f (ncidk, 'swh_ocean_mle3_compression_qual', 12)			! bit 12: Quality SWH
-	call nc2f (ncidk, 'sig0_ocean_mle3_compression_qual', 13)			! bit 13: Quality Sigma0
+	call nc2f (ncidk, 'range_ocean_mle3_compression_qual', 11)		! bit 11: Quality range
+	call nc2f (ncidk, 'swh_ocean_mle3_compression_qual', 12)		! bit 12: Quality SWH
+	call nc2f (ncidk, 'sig0_ocean_mle3_compression_qual', 13)		! bit 13: Quality Sigma0
 	flags_mle3 = flags	! Copy result for MLE3
-	flags = flags_save	! Continue with nominal ocean retracking flags
+
+! Now do specifics for adaptive retracking
+
+	if (latency == rads_ntc) then
+		flags = flags_save	! Reset to general flags
+		call nc2f (ncidk, 'range_adaptive_compression_qual', 11)	! bit 11: Quality range
+		call nc2f (ncidk, 'swh_adaptive_compression_qual', 12)		! bit 12: Quality SWH
+		call nc2f (ncidk, 'sig0_adaptive_compression_qual', 13)		! bit 13: Quality Sigma0
+		flags_adaptive = flags	! Copy result for adaptive retracking
+	endif
 
 ! Redo the last ones for standard retracker
 
-	call nc2f (ncidk, 'range_ocean_compression_qual', 11)					! bit 11: Quality range
-	call nc2f (ncidk, 'swh_ocean_compression_qual', 12)						! bit 12: Quality SWH
-	call nc2f (ncidk, 'sig0_ocean_compression_qual', 13)					! bit 13: Quality Sigma0
+	flags = flags_save	! Reset to general flags
+	call nc2f (ncidk, 'range_ocean_compression_qual', 11)			! bit 11: Quality range
+	call nc2f (ncidk, 'swh_ocean_compression_qual', 12)				! bit 12: Quality SWH
+	call nc2f (ncidk, 'sig0_ocean_compression_qual', 13)			! bit 13: Quality Sigma0
 
 ! Time and location
 
 	call get_var (ncid1, 'time', a)
 	call new_var ('time', a + sec2000)
 	call cpy_var (ncid1, 'latitude', 'lat')
-	call cpy_var (ncid1, 'longitude','lon')
 	! Compute ellipsoid corrections
 	do i = 1,nrec
 		dh(i) = dhellips(1,a(i))
 	enddo
+	call cpy_var (ncid1, 'longitude','lon')
 	call get_var (ncid1, 'altitude', a)
 	call new_var ('alt_gdrf', a + dh)
 	call cpy_var (ncid1, 'altitude_rate', 'alt_rate')
@@ -325,16 +365,33 @@ do
 	call cpy_var (ncidc, 'range_ocean', 'range_c')
 	call cpy_var (ncidc, 'range_ocean_rms', 'range_rms_c')
 	call cpy_var (ncidc, 'range_ocean_numval', 'range_numval_c')
+	call cpy_var (ncidk, 'range_cor_ocean_net_instr', 'drange_ku')
+	call cpy_var (ncidk, 'range_cor_ocean_mle3_net_instr', 'drange_ku_mle3')
+	call cpy_var (ncidc, 'range_cor_ocean_net_instr', 'drange_c')
+	if (latency == rads_ntc) then
+		call cpy_var (ncidk, 'range_adaptive', 'range_ku_adaptive')
+		call cpy_var (ncidk, 'range_adaptive_rms', 'range_rms_ku_adaptive')
+		call cpy_var (ncidk, 'range_adaptive_numval', 'range_numval_ku_adaptive')
+		call cpy_var (ncidk, 'range_cor_adaptive_net_instr', 'drange_ku_adaptive')
+	endif
 
 ! SWH
 
 	call cpy_var (ncidk, 'swh_ocean', 'swh_ku')
 	call cpy_var (ncidk, 'swh_ocean_rms', 'swh_rms_ku')
 	call cpy_var (ncidk, 'swh_ocean_compression_qual', 'qual_swh')
-	call cpy_var (ncidk, 'swh_ocean_mle3', 'swh_ku')
+	call cpy_var (ncidk, 'swh_ocean_mle3', 'swh_ku_mle3')
 	call cpy_var (ncidk, 'swh_ocean_mle3_rms', 'swh_rms_ku_mle3')
 	call cpy_var (ncidc, 'swh_ocean', 'swh_c')
 	call cpy_var (ncidc, 'swh_ocean_rms', 'swh_rms_c')
+	call cpy_var (ncidk, 'swh_cor_ocean_net_instr', 'dswh_ku')
+	call cpy_var (ncidk, 'swh_cor_ocean_mle3_net_instr', 'dswh_ku_mle3')
+	call cpy_var (ncidc, 'swh_cor_ocean_net_instr', 'dswh_c')
+	if (latency == rads_ntc) then
+		call cpy_var (ncidk, 'swh_adaptive', 'swh_ku_adaptive')
+		call cpy_var (ncidk, 'swh_adaptive_rms', 'swh_rms_ku_adaptive')
+		call cpy_var (ncidk, 'swh_cor_adaptive_net_instr', 'dswh_ku_adaptive')
+	endif
 
 ! Backscatter
 
@@ -347,6 +404,14 @@ do
 	call cpy_var (ncidc, 'sig0_ocean', 'sig0_c')
 	call cpy_var (ncidc, 'sig0_ocean_rms', 'sig0_rms_c')
 	call cpy_var (ncidc, 'sig0_cor_atm', 'dsig0_atmos_c')
+	call cpy_var (ncidk, 'sig0_cor_ocean_net_instr', 'dswh_ku')
+	call cpy_var (ncidk, 'sig0_cor_ocean_mle3_net_instr', 'dsig0_ku_mle3')
+	call cpy_var (ncidc, 'sig0_cor_ocean_net_instr', 'dsig0_c')
+	if (latency == rads_ntc) then
+		call cpy_var (ncidk, 'sig0_adaptive', 'sig0_ku_adaptive')
+		call cpy_var (ncidk, 'sig0_adaptive_rms', 'sig0_rms_ku_adaptive')
+		call cpy_var (ncidk, 'sig0_cor_adaptive_net_instr', 'dsig0_ku_adaptive')
+	endif
 
 ! Wind speed
 
@@ -355,6 +420,7 @@ do
 	call cpy_var (ncid1, 'rad_wind_speed', 'wind_speed_rad')
 	call cpy_var (ncid1, 'wind_speed_mod_u', 'wind_speed_ecmwf_u')
 	call cpy_var (ncid1, 'wind_speed_mod_v', 'wind_speed_ecmwf_v')
+	if (latency == rads_ntc) call cpy_var (ncid1  , 'wind_speed_alt_adaptive', 'wind_speed_alt_adaptive')
 
 ! Rain or ice
 
@@ -378,21 +444,27 @@ do
 	call cpy_var (ncidk, 'iono_cor_alt_filtered_mle3', 'iono_alt_smooth_mle3')
 	call cpy_var (ncidc, 'range_ocean_compression_qual', 'qual_iono_alt')
 	call cpy_var (ncidk, 'iono_cor_gim', 'iono_gim')
+	if (latency == rads_ntc) then
+		call cpy_var (ncidk, 'iono_cor_alt_adaptive', 'iono_alt_adaptive')
+		call cpy_var (ncidk, 'iono_cor_alt_filtered_adaptive', 'iono_alt_smooth_adaptive')
+	endif
 
 ! SSB
 
 	call cpy_var (ncidk, 'sea_state_bias', 'ssb_cls')
 	call cpy_var (ncidk, 'sea_state_bias_mle3', 'ssb_cls_mle3')
+	call cpy_var (ncidk, 'sea_state_bias_3d_mp2', 'ssb_cls_3d')
 	call cpy_var (ncidc, 'sea_state_bias', 'ssb_cls_c')
+	if (latency == rads_ntc) then
+		call cpy_var (ncidk, 'sea_state_bias_adaptive', 'ssb_cls_adaptive')
+		call cpy_var (ncidk, 'sea_state_bias_adaptive_3d_mp2', 'ssb_cls_3d_adaptive')
+		call cpy_var (ncidc, 'sea_state_bias_adaptive', 'ssb_cls_c_adaptive')
+	endif
 
 ! IB
 
 	call cpy_var (ncid1, 'inv_bar_cor', 'inv_bar_static')
-	if (latency == rads_nrt) then
-		call cpy_var (ncid1, 'inv_bar_cor', 'inv_bar_mog2d')
-	else
-		call cpy_var (ncid1, 'dac', 'inv_bar_mog2d')
-	endif
+	call cpy_var (ncid1, 'dac', 'inv_bar_mog2d')
 
 ! Tides
 
@@ -419,15 +491,37 @@ do
 
 	call cpy_var (ncid1, 'depth_or_elevation', 'topo_ace2')
 	call cpy_var (ncid1, 'surface_classification_flag', 'surface_class')
-	call cpy_var (ncid1, 'rad_surface_type_flag', 'surface_type_rad')
+	call get_var (ncid1, 'rad_surface_type_flag', a)
+	where (a > 0) a = a + 1
+	call new_var ('surface_type_rad', a)
 	call cpy_var (ncid1, 'distance_to_coast 1e-3 MUL', 'dist_coast') ! Convert m to km
 	call cpy_var (ncid1, 'angle_of_approach_to_coast', 'angle_coast')
 	call cpy_var (ncid1, 'rad_distance_to_land 1e-3 MUL', 'rad_dist_coast') ! Convert m to km
+
+! Other flags
+
+	if (latency == rads_nrt) then
+		call get_var (ncid1, 'orb_state_diode_flag', a)
+		where (a == 9)
+			a = 1
+		elsewhere
+			a = 0
+		endwhere
+	else
+		call get_var (ncid1, 'orb_state_rest_flag', a)
+		where (a == 4)
+			a = 1
+		elsewhere
+			a = 0
+		endwhere
+	endif
+	call new_var ('flag_manoeuvre', a)
 
 ! Bit flags
 
 	call new_var ('flags', dble(flags))
 	call new_var ('flags_mle3', dble(flags_mle3))
+	if (latency == rads_ntc) call new_var ('flags_adaptive', dble(flags_adaptive))
 
 ! Other radiometer measurements
 ! Selected smoothed TBs
@@ -438,6 +532,12 @@ do
 	call cpy_var (ncid1, 'rad_tb_340_qual 2 MUL rad_tb_238_qual ADD 2 MUL rad_tb_187_qual ADD', 'qual_rad_tb')
 	call cpy_var (ncid1, 'rad_cloud_liquid_water', 'liquid_water_rad')
 	call cpy_var (ncid1, 'rad_water_vapor', 'water_vapor_rad')
+
+! Wave model
+! Convert direction from 0/360 range to -180/180 range
+
+	call cpy_var (ncid1, 'mean_wave_period_t02', 'mean_wave_period')
+	call cpy_var (ncid1, 'mean_wave_direction 180 ADD 360 FMOD 180 SUB', 'mean_wave_direction')
 
 ! SSHA
 
@@ -453,7 +553,7 @@ do
 
 	call nfs(nf90_close(ncid))
 	call put_rads
-	deallocate (a, dh, flags, flags_mle3, flags_save)
+	deallocate (a, dh, flags, flags_mle3, flags_adaptive, flags_save)
 
 enddo
 
