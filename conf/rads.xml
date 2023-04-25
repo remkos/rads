@@ -803,6 +803,18 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A dry tropospheric correction must be added to range to correct for dry troposphere delays</comment>
 </var>
+<var name="dry_tropo_era5">
+	<long_name>ERA5 dry tropospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_dry_troposphere</standard_name>
+	<source>ECMWF ERA5</source>
+	<units>m</units>
+	<limits>-2.4 -2.1</limits>
+	<plot_range>-2.4 -2.2</plot_range>
+	<data>dry_tropo_era5</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A dry tropospheric correction must be added to range to correct for dry troposphere delays</comment>
+</var>
 <alias name="dry_tropo" field="7" sat="!g1 gs">dry_tropo_ecmwf</alias>
 <alias name="dry_tropo" field="7" sat="g1 gs">dry_tropo_era</alias>
 
@@ -916,7 +928,6 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
 </var>
--->
 <var name="wet_tropo_era" field="809">
 	<long_name>ERA wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
@@ -925,6 +936,18 @@ Global RADS configuration file
 	<limits>-0.6 0.0</limits>
 	<plot_range>-0.4 0.0</plot_range>
 	<data>wet_tropo_era</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
+</var>
+<var name="wet_tropo_era5">
+	<long_name>ERA5 wet tropospheric correction</long_name>
+	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
+	<source>ECMWF ERA5</source>
+	<units>m</units>
+	<limits>-0.6 0.0</limits>
+	<plot_range>-0.4 0.0</plot_range>
+	<data>wet_tropo_era5</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
@@ -1277,6 +1300,18 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>Long-term temporal mean of the MOG2D dynamic atmospheric correction at measurement location</comment>
+</var>
+<var name="inv_bar_static_era5">
+	<long_name>ERA5 static inverse barometer correction</long_name>
+	<standard_name>sea_surface_height_correction_due_to_air_pressure_at_low_frequency</standard_name>
+	<source>ECMWF ERA5</source>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.4 0.6</plot_range>
+	<data>inv_bar_static_era5</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Effect of the static atmospheric pressure on sea surface, subtracting global mean</comment>
 </var>
 <alias name="inv_bar">inv_bar_mog2d_era inv_bar_mog2d inv_bar_mok2d</alias>
 <alias name="dac" field="10">inv_bar_mog2d_era inv_bar_mog2d inv_bar_mok2d</alias>
@@ -1972,6 +2007,15 @@ Global RADS configuration file
 	<format>f5.2</format>
 	<compress>int2 1e-2</compress>
 </var>
+<var name="swh_era5">
+	<long_name>ERA5 significant wave height</long_name>
+	<standard_name>sea_surface_wave_significant_height</standard_name>
+	<units>m</units>
+	<source>ECMWF ERA5</source>
+	<data>swh_era5</data>
+	<format>f5.2</format>
+	<compress>int2 1e-2</compress>
+</var>
 <var name="swh_20hz_ku" sat="c2">
 	<long_name>20-Hz Ku-band significant wave height</long_name>
 	<standard_name>sea_surface_wave_significant_height</standard_name>
@@ -2178,6 +2222,39 @@ Global RADS configuration file
 	<limits>0 30</limits>
 	<plot_range>0 16</plot_range>
 	<data>wind_speed_ecmwf_u wind_speed_ecmwf_v HYPOT</data>
+	<format>f7.3</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="wind_speed_era5_u">
+	<long_name>ERA5 model zonal wind speed</long_name>
+	<standard_name>eastward_wind</standard_name>
+	<source>ECMWF ERA5</source>
+	<units>m/s</units>
+	<limits>-30 30</limits>
+	<plot_range>-16 16</plot_range>
+	<data>wind_speed_era5_u</data>
+	<format>f7.3</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="wind_speed_era5_v">
+	<long_name>ERA5 model meridional wind speed</long_name>
+	<standard_name>northward_wind</standard_name>
+	<source>ECMWF ERA5</source>
+	<units>m/s</units>
+	<limits>-30 30</limits>
+	<plot_range>-16 16</plot_range>
+	<data>wind_speed_era5_v</data>
+	<format>f7.3</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="wind_speed_era5">
+	<long_name>ERA5 model wind speed</long_name>
+	<standard_name>wind_speed</standard_name>
+	<source>ECMWF ERA5</source>
+	<units>m/s</units>
+	<limits>0 30</limits>
+	<plot_range>0 16</plot_range>
+	<data>wind_speed_era5_u wind_speed_era5_v HYPOT</data>
 	<format>f7.3</format>
 	<compress>int2 1e-2</compress>
 </var>
@@ -4279,13 +4356,21 @@ Global RADS configuration file
 	<format>f3.0</format>
 	<compress>int1</compress>
 </var>
-
 <var name="seaice_conc_osiaf" field="4702">
-	<long_name>sea ice concentration</long_name>
+	<long_name>OSIAF sea ice concentration</long_name>
 	<standard_name>sea_ice_area_fraction</standard_name>
-	<source>OSIAF sea ice concentration</source>
+	<source>sea ice concentration</source>
 	<units>%</units>
 	<data>seaice_conc_osiaf</data>
+	<format>f3.0</format>
+	<compress>int1</compress>
+</var>
+<var name="seaice_conc_era5">
+	<long_name>ERA5 sea ice concentration</long_name>
+	<standard_name>sea_ice_area_fraction</standard_name>
+	<source>ECMWF ERA5</source>
+	<units>%</units>
+	<data>seaice_conc_era5</data>
 	<format>f3.0</format>
 	<compress>int1</compress>
 </var>

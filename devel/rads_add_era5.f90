@@ -23,7 +23,12 @@
 ! Input grids are found in the directory ${ALTIM}/data/era5.
 !
 ! Interpolation is performed in hourly 0.5x0.5 degree grids;
-! bi-linear in space, linear in time; contained in daily files.
+! bi-linear in space, linear in time; contained in hourly files, with the
+! file format:
+! YYYY/MM/DD/ATIA_ANA_xx_xxx_<T-1H>_<T+1H>_<T>_ECMWF_ERA5.grib
+! where:
+! <T> is the epoch of the model in format YYYYMMDDHH0000Z
+! <T-1H> and <T+1H> are the epoch minus 1 hour and plus 1 hour in the same format
 !
 ! usage: rads_add_era5 [data-selectors] [options]
 !
@@ -56,11 +61,11 @@ program rads_add_era5
 
 use rads
 use rads_misc
+use rads_time
 use rads_netcdf
 use rads_devel
 use netcdf
 use meteo_subs
-use tides
 use grib_api
 
 ! Command line arguments
@@ -72,19 +77,29 @@ integer(fourbyteint) :: j, cyc, pass
 ! Data elements
 
 character(rads_cmdl) :: pathnm
-integer(fourbyteint) :: hour, old_hour=-99999
 real(eightbytereal), parameter :: rad2=2d0*atan(1d0)/45d0
-logical :: dry_on=.false., wet_on=.false., ib_on=.false., new=.false., error
+logical :: new = .false., test = .false., error
 
 ! Model data
 
-integer(fourbyteint), parameter :: np_max=88838, nj_max=259
-type :: model_
-	integer(fourbytereal) :: nj, np, ip, pl(nj_max), ql(nj_max), idx(4)
-	real(eightbytereal) :: glat(np_max), glon(np_max), w(4)
-	real(eightbytereal) :: slp(np_max), wvc(np_max), tmp(np_max)
+integer, parameter :: mvar = 7, mext = mvar + 3
+type :: var_
+	logical requested, available
+	character(len=80) :: shortName, name
 end type
-type(model_) :: m1, m2
+integer, parameter :: j_2t = 1, j_msl = 2, j_tcwv = 3, j_ib = mvar + 1, j_dry = mvar + 2, j_wet = mvar + 3
+
+type(var_) :: var(mext)
+
+integer(fourbyteint), parameter :: nx = 720, ny = 361, np = nx*ny
+real(eightbytereal), parameter :: x0 = 0d0, x1 = 359.5d0, dx = 0.5d0
+real(eightbytereal), parameter :: y0 = 90d0, y1 = -90d0, dy = -0.5d0
+type :: model_
+	integer(fourbyteint) :: hour
+	real(eightbytereal) :: var(np,mvar)
+end type
+type(model_) :: m0, m1
+integer(fourbyteint) :: fileid = -1, gribid = -1
 
 ! Model parameters, see Bevis et al [1994]
 
@@ -93,31 +108,45 @@ real(eightbytereal), parameter :: k2p = 0.221d0, k3 = 3739d0	! Refractivity cons
 
 ! Initialise
 
+var(j_2t)   = var_ (.false., .false., '2t',   '')
+var(j_msl)  = var_ (.false., .false., 'msl',  '')
+var(j_tcwv) = var_ (.false., .false., 'tcwv', '')
+var(4)      = var_ (.false., .false., '10u',  'wind_speed_era5_u')
+var(5)      = var_ (.false., .false., '10v',  'wind_speed_era5_v')
+var(6)		= var_ (.false., .false., 'ci',   'seaice_conc_era5')
+var(7)      = var_ (.false., .false., 'swh',  'swh_era5')
+var(j_ib)   = var_ (.false., .false., '',     'inv_bar_static_era5')
+var(j_dry)  = var_ (.false., .false., '',     'dry_tropo_era5')
+var(j_wet)  = var_ (.false., .false., '',     'wet_tropo_era5')
+
+m0%hour = -99999
+m1%hour = -99999
+
 call synopsis ('--head')
-call rads_set_options ('dwin dry wet ib all new')
+call rads_set_options ('n new all test')
 call rads_init (S)
 
 ! Get template for path name
 
-call parseenv ('${ALTIM}/data/era5/%Y/%m/%d/', pathnm)
+call parseenv ('${ALTIM}/data/era5/', pathnm)
 
 ! Which corrections are to be provided?
 
 do j = 1,rads_nopt
 	select case (rads_opt(j)%opt)
-	case ('d', 'dry')
-		dry_on = .true.
-	case ('w', 'wet')
-		wet_on = .true.
-	case ('i', 'ib')
-		ib_on = .true.
 	case ('n', 'new')
 		new = .true.
+	case ('test')
+		test = .true.
 	case ('all')
-		dry_on = .true.
-		wet_on = .true.
-		ib_on = .true.
+		where (var(:)%name /= '') var(:)%requested = .true.
 	end select
+enddo
+
+! Check requested output variables
+
+do j = 1, S%nsel
+	where (var(:)%name == S%sel(j)%name) var(:)%requested = .true.
 enddo
 
 ! Process all data files
@@ -143,11 +172,10 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
-'  -d, --dry                 Add ERA5 dry tropospheric correction' / &
-'  -w, --wet                 Add ERA5 wet tropospheric correction' / &
-'  -i, --ib                  Add static inverse barometer correction' / &
-'  --all                     All of the above' / &
-'  -n, --new                 Only add variables when not yet existing')
+'  --all                     ' &
+'Same as -Vdry_tropo_era5,wet_tropo_era5,inv_bar_static_era5,swh_era5,wind_speed_era5_u,wind_speed_era5_v' / &
+'  -n, --new                 Only add variables when not yet existing' / &
+'  --test                    Test/debug output')
 stop
 end subroutine synopsis
 
@@ -158,18 +186,20 @@ end subroutine synopsis
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
 integer(fourbyteint) :: i, ncid
-real(eightbytereal) :: time(n), lat(n), lon(n), h(n), surface_type(n), dry(n), wet(n), ib(n), &
-	f1, f2, g1, g2, slp, dslp, slp0, wvc, tmp
+real(eightbytereal) :: time(n), lat(n), lon(n), h(n), surface_type(n), z(n, mext), &
+	f0, f1, g1, g2, slp0, tmp
+real(eightbytereal) :: w(4), x, y, wx, wy
+integer :: ix, iy, idx(4), hour1, hour2, max_hour
 
 ! Formats
 
 call log_pass (P)
 
-! If "new" option is used, write only when fields are not yet available
+! If 'new' option is used, write only when fields are not yet available
 
 ncid = P%fileinfo(1)%ncid
-if (new .and. nff(nf90_inq_varid(ncid,'dry_tropo_era',i)) .and. &
-	nff(nf90_inq_varid(ncid,'wet_tropo_era',i))) then
+if (new .and. nff(nf90_inq_varid(ncid,'dry_tropo_era5',i)) .and. &
+	nff(nf90_inq_varid(ncid,'wet_tropo_era5',i))) then
 	call log_records (0)
 	return
 endif
@@ -198,84 +228,107 @@ call globpres(4,P%equator_time,slp0)
 ! Process data records
 
 do i = 1,n
-	f2 = time(i)/3600d0
-	hour = floor(f2)	! Counter of 6-hourly periods
+	x = time(i)/3600d0
+	hour1 = floor(x)	! Counter of hourly periods
+	hour2 = hour1 + 1
+	max_hour = max(m0%hour, m1%hour)
 
-! Load new grids when entering new 6-hour period
+! Load grid for first hour if both loaded grids are outdated
 
-	if (hour /= old_hour) then
-		if (hour == old_hour + 1) then
-			m1 = m2
-			error = get_gribs (hour+1,m2)
+	if (hour1 > max_hour) error = get_gribs (hour1,m0)
+
+! Load grid for second hour if both loaded grids are outdated
+
+	if (hour2 > max_hour .and. .not.error) then
+		if (hour1 == m0%hour) then
+			error = get_gribs (hour2,m1)
 		else
-			error = get_gribs (hour,m1)
-			if (.not.error) error = get_gribs (hour+1,m2)
+			error = get_gribs (hour2,m0)
 		endif
-		if (error) then
-			write (*,'(a)') 'Model switched off.'
-			dry_on = .false.
-			ib_on = .false.
-			wet_on = .false.
-			exit
-		endif
-		old_hour = hour
+	endif
+
+! If error, escape
+
+	if (error) then
+		write (*,'(a)') 'Model switched off.'
+		var(:)%requested = .false.
+		exit
 	endif
 
 ! Linearly interpolation in time, bi-linear interpolation in space
 
-	if (lon(i) < 0d0) lon(i) = lon(i) + 360d0
-	f2 = f2 - hour
-	f1 = 1d0 - f2
+	f1 = abs(x - m0%hour)
+	f0 = 1d0 - f1
 
 ! Find nearest grid points
 
-	call find_nearest (lat(i), lon(i), m1)
-	call find_nearest (lat(i), lon(i), m2)
+	x = (lon(i)-x0)/dx
+	ix = floor(x)
+	wx = x - ix
 
-! Interpolate surface temperature in space and time
+	y = (lat(i)-y0)/dy
+	iy = floor(y)
+	wy = y - iy
 
-	tmp = f1 * dot_product (m1%w,m1%tmp(m1%idx)) + f2 * dot_product (m2%w,m2%tmp(m2%idx))
+	idx(1) = iy * nx + modulo(ix, nx) + 1
+	idx(2) = iy * nx + modulo(ix+1, nx) + 1
+	idx(3:4) = idx(1:2) + nx
 
-! Correct sea level pressure grids for altitude over land and lakes using Hopfield [1969]
+	w(1) = (1d0-wx) * (1d0-wy)
+	w(2) =      wx  * (1d0-wy)
+	w(3) = (1d0-wx) *      wy
+	w(4) =      wx  *      wy
+
+! Interpolate all input variables
+
+	do j=1,mvar
+		if (var(j)%available) z(i,j) = f0 * dot_product (w,m0%var(idx,j)) + f1 * dot_product (w,m1%var(idx,j))
+	enddo
+
+! Correct sea level pressure (mbar) grids for altitude over land and lakes using Hopfield [1969]
 ! Convert pressure (mbar) to simple IB (m) if requested and over ocean
 ! Convert sea level pressure (mbar) to dry correction (m) using Saastamoinen models as referenced
 ! in IERS Conventions Chap 9
 
 	if (surface_type(i) > 1.5d0) then ! Land and lakes
-		g1 = -22768d-7 / (1d0 - 266d-5*cos(lat(i)*rad2) - 28d-8*h(i)) * pp_hop(h(i),lat(i),tmp)
+		g1 = -22768d-7 / (1d0 - 266d-5*cos(lat(i)*rad2) - 28d-8*h(i)) * pp_hop(h(i),lat(i),z(i,j_2t))
 		g2 = 0d0	! Set IB to zero
 	else    ! Ocean (altitude is zero)
 		g1 = -22768d-7 / (1d0 - 266d-5*cos(lat(i)*rad2))
 		g2 = -9.948d-3
 	endif
 
-! Interpolate sea level pressure in space and time
+! Derive dry tropospheric correction and IB
 
-	if (dry_on .or. ib_on) then
-		slp = f1 * dot_product (m1%w,m1%slp(m1%idx)) + f2 * dot_product (m2%w,m2%slp(m2%idx))
+	if (var(j_dry)%requested .or. var(j_ib)%requested) then
+		z(i,j_msl) = z(i,j_msl) * 1d-2 ! Convert from Pa to mbar
 
 		! Convert sea level pressure to dry tropo correction after Saastamoinen [1972]
-		dry(i) = slp * g1
+		z(i,j_dry) = z(i,j_msl) * g1
 
 		! Convert sea level pressure to static inverse barometer
-		ib(i) = (slp - slp0) * g2
+		z(i,j_ib) = (z(i,j_msl) - slp0) * g2
 	endif
 
 ! Interpolate integrated water vapour and surface temperature in space and time
 
-	if (wet_on) then
-		wvc = f1 * dot_product (m1%w,m1%wvc(m1%idx)) + f2 * dot_product (m2%w,m2%wvc(m2%idx))
+	if (var(j_wet)%requested) then
 		! Convert surface temperature to mean temperature after Mendes et al. [2000]
-		tmp = 50.4d0 + 0.789d0 * tmp
+		tmp = 50.4d0 + 0.789d0 * z(i,j_2t)
 		! Convert integrated water vapour and mean temp to wet tropo correction
 		! Also take into account conversion of wvc from kg/m^3 (= mm) to m.
-		wet(i) = -1d-9 * Rw * (k3 / tmp + k2p) * wvc
+		z(i,j_wet) = -1d-9 * Rw * (k3 / tmp + k2p) * z(i,j_tcwv)
 	endif
+
+	if (test) write (*,'(a26,2f6.3,2f12.6,2i4,6f7.3,4f9.4)') strf1985f(time(i),'T'), f0, f1, &
+		lon(i), lat(i), ix+1, iy+1, wx, wy, w, z(i,j_tcwv), z(i,j_dry), z(i,j_wet), z(i,j_ib)
+	if (test) write (*,'(8f9.4)') m0%var(idx,j_tcwv), m1%var(idx,j_tcwv)
+
 enddo
 
 ! If no more fields are determined, abort.
 
-if (.not.(dry_on .or. ib_on .or. wet_on)) then
+if (.not.any(var(:)%requested)) then
 	call log_records (0)
 	stop
 endif
@@ -284,13 +337,13 @@ endif
 
 call rads_put_history (S, P)
 
-if (dry_on) call rads_def_var (S, P, 'dry_tropo_era')
-if (wet_on) call rads_def_var (S, P, 'wet_tropo_era')
-if (ib_on ) call rads_def_var (S, P, 'inv_bar_static')
+do j = 1,mext
+	if (var(j)%requested) call rads_def_var (S, P, var(j)%name)
+enddo
 
-if (dry_on) call rads_put_var (S, P, 'dry_tropo_era', dry)
-if (wet_on) call rads_put_var (S, P, 'wet_tropo_era', wet)
-if (ib_on ) call rads_put_var (S, P, 'inv_bar_static', ib)
+do j = 1,mext
+	if (var(j)%requested) call rads_put_var (S, P, var(j)%name, z(:,j))
+enddo
 
 call log_records (n)
 end subroutine process_pass
@@ -302,125 +355,90 @@ function get_gribs (hour, model)
 integer(fourbyteint), intent(in) :: hour
 type(model_), intent(inout) :: model
 logical :: get_gribs
-! Input are yearly files with all three required fields of the form:
-! ${ALTIM}/data/era5/2020/01/01/an00to23_0.5x0.5_sfc_CI_SP_TCWV_MSL_10U_10V_2T_2D_SKT_20000101.grib
-! ${ALTIM}/data/era5/2020/01/01/wv00to23_0.5x0.5_sfc_SWH_SWH1_MWD1_MWP1_SWH2_MWD2_MWP2_SWH3_MWD3_MWP3_20000101.grib
 !
+! Input are hourly files with all required fields
+!--
 ! <hour> specifies the number of hours since 1 Jan 1985.
 ! Data is stored in a buffer <model>
 !-----------------------------------------------------------------------
 character(len=rads_cmdl) :: filenm
 character(len=8) :: shortName
-integer(fourbyteint) :: fileid=-1,gribid=-1,i,l,status,strf1985,dataTime,dataDate,old_day=0
+integer(fourbyteint) :: i,j,l,status,strf1985,dataTime,dataDate
 real(eightbytereal) :: sec85
 
-600 format ('(',a,1x,i0,')')
+600 format (a)
 1300 format (a,': ',a)
 
 get_gribs = .true.
 
 ! Load new file and load common variables
 
-if (hour/24 /= old_day) then
-	old_day = hour/24
-	l = strf1985(filenm, "%Y/%m/%d/an00to23_0.5x0.5_sfc_CI_SP_TCWV_MSL_10U_10V_2T_2D_SKT_%Y%m%d.grib", &
-		hour*3600)
+if (test) write (*,*) 'hour = ',hour
 
-	where (gridid(:) /= -1) call grib_release(gribid(:))
-	if (fileid(1) /= -1) call grib_close_file(fileid(1))
-	write (*,600,advance='no') filenm(:l), modulo(hour,24)
+l = strf1985(filenm, '%Y/%m/%d/ATIA_ANA_xx_xxx_00000000000000Z_00000000000000Z_%Y%m%d%H0000Z_ECMWF_ERA5.grib', &
+	hour*3600)
+l = strf1985(filenm(28:37), '%Y%m%d%H', (hour-1)*3600)
+l = strf1985(filenm(44:53), '%Y%m%d%H', (hour+1)*3600)
+l = len_trim(filenm)
 
-	call grib_open_file(fileid,trim(pathnm) // filenm,'r',status)
-	if (status /= grib_success) then
-		write (*,1300) 'Error opening file',trim(pathnm) // filenm(:l)
-		return
-	endif
+write (*,600,advance='no') '(' // filenm(:l)
 
-	call grib_new_from_file(fileid(1),gribid(1),status)
-	if (status /= grib_success) then
-		write (*,1300) 'Error loading first grib in',filenm(:l)
-		return
-	endif
+call grib_open_file(fileid,trim(pathnm) // filenm,'r',status)
+if (status /= grib_success) then
+	write (*,1300) 'Error opening file',trim(pathnm) // filenm(:l)
+	return
 endif
 
-! Loop until we find the right dataDate and dataTime
-do
-	call grib_get(gribid(1),'dataDate',dataDate)
-	call grib_get(gribid(1),'dataTime',dataTime)
-	dataTime = nint(sec85(2,dble(dataDate))/3600d0) + dataTime/600
-	if (dataTime == hour) exit
-	call grib_release(gribid(1))
-	call grib_new_from_file(fileid,gribid(1),status)
-	if (status /= grib_success) then
-		write (*,1300) 'Reached end of',filenm(:l)
-		return
-	endif
-enddo
+call grib_new_from_file(fileid,gribid,status)
+if (status /= grib_success) then
+	write (*,1300) 'Error loading first grib in',filenm(:l)
+	return
+endif
+
+! Check the size
+call grib_get(gribid,'numberOfPoints',i)
+if (i /= np) then
+	write (*,1300) 'numberOfPoints is not correct',filenm(:l)
+	return
+endif
+
+! Check if we have the right dataDate and dataTime
+
+call grib_get(gribid,'dataDate',dataDate)
+call grib_get(gribid,'dataTime',dataTime)
+dataTime = nint(sec85(2,dble(dataDate))/3600d0) + dataTime/100
+if (dataTime /= hour) then
+	write (*,1300) 'Incorrect date of',filenm(:l)
+	return
+endif
+
+! Store the time
+
+model%hour = hour
 
 ! Now read gribs
-call grib_get(gribid,'shortName',shortName)
-if (shortName /= 'tcwv') then
-	write (*,1300) 'Wrong field order ('//trim(shortName)//' != tcwv) in',filenm(:l)
-	return
-endif
-call grib_get(gribid,'values',model%wvc)
+do
+	call grib_get(gribid,'shortName',shortName)
+	do j = 1,mvar
+		if (var(j)%shortName == shortName) then
+			write (*,600,advance='no') ' ' // trim(shortname)
+			call grib_get(gribid,'values',model%var(:,j))
+			var(j)%available = .true.
+		endif
+	enddo
+	call grib_release(gribid)
+	call grib_new_from_file(fileid,gribid,status)
+	if (status /= grib_success) exit
+enddo
+
+! Close file
 call grib_release(gribid)
-call grib_new_from_file(fileid,gribid,status)
-call grib_get(gribid,'shortName',shortName)
-if (shortName /= 'msl') then
-	write (*,1300) 'Wrong field order ('//trim(shortName)//' != msl) in',filenm(:l)
-	return
-endif
-call grib_get(gribid,'values',model%slp)
-call grib_release(gribid)
-call grib_new_from_file(fileid,gribid,status)
-call grib_get(gribid,'shortName',shortName)
-if (shortName /= '2t') then
-	write (*,1300) 'Wrong field order ('//trim(shortName)//' != 2t) in',filenm(:l)
-	return
-endif
-call grib_get(gribid,'values',model%tmp)
+call grib_close_file(fileid)
+write (*,600,advance='no') ')'
+if (test) write (*,600)
 
 ! Successful completion
 get_gribs = .false.
 end function get_gribs
-
-!-----------------------------------------------------------------------
-! find_nearest - Find the four grid points nearest to given point
-!-----------------------------------------------------------------------
-
-subroutine find_nearest (lat, lon, model)
-real(eightbytereal), intent(in) :: lat, lon
-type(model_), intent(inout) :: model
-! Upon return model%idx and model%w are index and weight of closest points (NW, NE, SW, SE)
-integer(fourbyteint) :: i,j,ip
-real(eightbytereal) :: d
-
-! Find highest latitude index for which glat >= lat; ip is north of lat, ip+1 is south of lat
-ip = model%ip
-do while (model%glat(model%ql(ip+1)) >= lat)
-	ip = ip + 1
-enddo
-do while (model%glat(model%ql(ip  )) < lat)
-	ip = ip - 1
-enddo
-model%ip = ip
-
-! Compute longitude indices and weights at northern side (j=0) and southern side (j=1)
-do j = 0,1
-	d = lon / 360d0 * model%pl(ip+j)
-	i = floor(d)
-	d = d - i
-	model%idx(2*j+1) = model%ql(ip+j) + modulo(i  ,model%pl(ip+j))
-	model%idx(2*j+2) = model%ql(ip+j) + modulo(i+1,model%pl(ip+j))
-	model%w(2*j+1) = 1d0 - d
-	model%w(2*j+2) = d
-enddo
-
-! Multiply with weight in latitude direction
-d = (lat - model%glat(model%ql(ip))) / (model%glat(model%ql(ip+1)) - model%glat(model%ql(ip)))
-model%w(1:2) = model%w(1:2) * (1d0 - d)
-model%w(3:4) = model%w(3:4) * d
-end subroutine find_nearest
 
 end program rads_add_era5
