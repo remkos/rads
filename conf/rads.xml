@@ -4357,9 +4357,9 @@ Global RADS configuration file
 	<compress>int1</compress>
 </var>
 <var name="seaice_conc_osiaf" field="4702">
-	<long_name>OSIAF sea ice concentration</long_name>
+	<long_name>sea ice concentration</long_name>
 	<standard_name>sea_ice_area_fraction</standard_name>
-	<source>sea ice concentration</source>
+	<source>OSIAF sea ice concentration</source>
 	<units>%</units>
 	<data>seaice_conc_osiaf</data>
 	<format>f3.0</format>
