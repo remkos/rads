@@ -56,6 +56,8 @@
 !
 ! Petit, G., and B. Luzum (Eds.) (2010), IERS Conventions (2010),
 ! IERS Technical Note 36, Verlag des Bundesamts für Kartographie und Geodäsie.
+!
+! ECMWF (2022), ERA5, https://confluence.ecmwf.int/display/CKB/ERA5
 !-----------------------------------------------------------------------
 program rads_add_era5
 
@@ -173,7 +175,8 @@ write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
 '  --all                     ' &
-'Same as -Vdry_tropo_era5,wet_tropo_era5,inv_bar_static_era5,swh_era5,wind_speed_era5_u,wind_speed_era5_v' / &
+'Same as -Vdry_tropo_era5,wet_tropo_era5,inv_bar_static_era5,swh_era5,sea_ice_conc_era5,', &
+	'wind_speed_era5_u,wind_speed_era5_v' / &
 '  -n, --new                 Only add variables when not yet existing' / &
 '  --test                    Test/debug output')
 stop

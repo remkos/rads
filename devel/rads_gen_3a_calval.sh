@@ -50,6 +50,7 @@ date													>> "$log" 2>&1
 rads_add_common   $options								>> "$log" 2>&1
 rads_add_mfwam    $options -C40-199 --all				>> "$log" 2>&1
 rads_add_iono     $options --all						>> "$log" 2>&1
+rads_add_era5     $options --all						>> "$log" 2>&1
 # Redetermine SSHA
 rads_add_refframe $options -x -x plrm					>> "$log" 2>&1
 rads_add_sla      $options -x -x plrm					>> "$log" 2>&1
