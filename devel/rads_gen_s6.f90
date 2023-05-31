@@ -321,9 +321,9 @@ do
 	call nc2f (ncid1, 'rain_flag', 7, eq=4)						! bit  7: Altimeter rain or ice flag
 	call nc2f (ncid1, 'rad_rain_flag', 8)
 	call nc2f (ncid1, 'rad_sea_ice_flag', 8)					! bit  8: Radiometer rain or ice flag
-	call nc2f (ncid1, 'rad_tmb_187_qual',  9)
-	call nc2f (ncid1, 'rad_tmb_238_qual',  9)					! bit  9: Quality 18.7 or 23.8 GHz channel
-	call nc2f (ncid1, 'rad_tmb_340_qual', 10)					! bit 10: Quality 34.0 GHz channel
+	call nc2f (ncid1, 'rad_tb_187_qual',  9)
+	call nc2f (ncid1, 'rad_tb_238_qual',  9)					! bit  9: Quality 18.7 or 23.8 GHz channel
+	call nc2f (ncid1, 'rad_tb_340_qual', 10)					! bit 10: Quality 34.0 GHz channel
 	call nc2f (ncid1, 'orbit_type_flag', 15, le=2)				! bit 15: Quality of orbit
 
 ! Now do specifics for MLE3
@@ -576,10 +576,10 @@ do
 
 ! Other radiometer measurements
 
-	call cpy_var (ncid1, 'rad_tmb_187', 'tb_187')
-	call cpy_var (ncid1, 'rad_tmb_238', 'tb_238')
-	call cpy_var (ncid1, 'rad_tmb_340', 'tb_340')
-	call cpy_var (ncid1, 'rad_tmb_340_qual 2 MUL rad_tmb_238_qual ADD 2 MUL rad_tmb_187_qual ADD', 'qual_rad_tb')
+	call cpy_var (ncid1, 'rad_tb_187', 'tb_187')
+	call cpy_var (ncid1, 'rad_tb_238', 'tb_238')
+	call cpy_var (ncid1, 'rad_tb_340', 'tb_340')
+	call cpy_var (ncid1, 'rad_tb_340_qual 2 MUL rad_tb_238_qual ADD 2 MUL rad_tb_187_qual ADD', 'qual_rad_tb')
 	call cpy_var (ncid1, 'rad_cloud_liquid_water', 'liquid_water_rad')
 	call cpy_var (ncid1, 'rad_water_vapor', 'water_vapor_rad')
 
