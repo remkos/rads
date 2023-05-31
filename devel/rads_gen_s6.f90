@@ -271,10 +271,9 @@ do
 	call nfs(nf90_get_att(ncid,nf90_global,'source',arg))
 	baseline = arg(21:23)
 
-! TEMPORARY for F08 TDS and F09 TDS: existance of iono_cor_alt_nr indicates new baseline
+! TEMPORARY for F09 TDS: existance of rain_attenuation_nr indicates new baseline
 
-	if (lr .and. baseline < 'F08' .and. nf90_inq_varid(ncid1,'iono_cor_alt_nr',varid) == nf90_noerr) baseline = 'F08'
-	if (.not.lr .and. baseline < 'F09' .and. nf90_inq_varid(ncid1,'iono_cor_alt_nr',varid) == nf90_noerr) baseline = 'F09'
+	if (baseline < 'F09' .and. nf90_inq_varid(ncid1,'rain_attenuation_nr',varid) == nf90_noerr) baseline = 'F09'
 
 ! Determine if we have numerical retrackers
 
@@ -551,7 +550,19 @@ do
 	endif
 	call cpy_var (ncid1, 'distance_to_coast 1e-3 MUL', 'dist_coast') ! Convert m to km
 	call cpy_var (ncid1, 'angle_of_approach_to_coast', 'angle_coast')
-	call cpy_var (ncid1, 'rad_distance_to_land 1e-3 MUL', 'rad_dist_coast') ! Convert m to km
+	if (baseline < 'F09') call cpy_var (ncid1, 'rad_distance_to_land 1e-3 MUL', 'rad_dist_coast') ! Convert m to km
+
+! Wave model data
+! Convert direction from range 0/360 to range -180/180
+
+	if (baseline >= 'F09') then
+		call cpy_var (ncid1, 'significant_wave_height', 'swh_mfwam')
+		call cpy_var (ncid1, 'mean_wave_direction_from 180 ADD 360 FMOD 180 SUB', 'mean_wave_direction')
+		call cpy_var (ncid1, 'mean_wave_period_t02', 'mean_wave_period')
+		call cpy_var (ncid1, 'significant_swell_wave_height', 'significant_swell_wave_height')
+		call cpy_var (ncid1, 'mean_swell_wave_direction_from 180 ADD 360 FMOD 180 SUB', 'mean_swell_wave_direction')
+		call cpy_var (ncid1, 'mean_swell_wave_period', 'mean_swell_wave_period')
+	endif
 
 ! Other flags
 

@@ -2005,7 +2005,7 @@ Global RADS configuration file
 	<source>MFWAM/Meteo France</source>
 	<data>swh_mfwam</data>
 	<format>f5.2</format>
-	<compress>int2 1e-2</compress>
+	<compress>int2 1e-3</compress>
 </var>
 <var name="swh_era5">
 	<long_name>ERA5 significant wave height</long_name>
@@ -4289,6 +4289,36 @@ Global RADS configuration file
 	<source>MFWAM/Meteo France</source>
 	<units>degrees</units>
 	<data>mean_wave_direction</data>
+	<format>f7.2</format>
+	<compress>int2 1e-2</compress>
+</var>
+
+<var name="significant_swell_wave_height" sat="6a">
+	<long_name>modelled spectral significant swell wave height</long_name>
+	<standard_name>sea_surface_wave_significant_height</standard_name>
+	<units>m</units>
+	<source>MFWAM/Meteo France</source>
+	<data>significant_swell_wave_height</data>
+	<format>f5.2</format>
+	<compress>int2 1e-3</compress>
+</var>
+
+<var name="mean_swell_wave_period" sat="6a">
+	<long_name>mean swell wave period</long_name>
+	<standard_name>sea_surface_swell_wave_mean_period</standard_name>
+	<source>MFWAM/Meteo France</source>
+	<units>s</units>
+	<data>mean_swell_wave_period</data>
+	<format>f6.2</format>
+	<compress>int2 1e-2</compress>
+</var>
+
+<var name="mean_swell_wave_direction" sat="6a">
+	<long_name>mean direction of the sea surface swell wave</long_name>
+	<standard_name>sea_surface_swell_wave_from_direction</standard_name>
+	<source>MFWAM/Meteo France</source>
+	<units>degrees</units>
+	<data>mean_swell_wave_direction</data>
 	<format>f7.2</format>
 	<compress>int2 1e-2</compress>
 </var>
