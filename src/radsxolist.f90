@@ -594,6 +594,7 @@ endif
 '                              H|h = higher-lower satellite or vv'/ &
 '                              S|s = higher-lower satellite ID or vv'/ &
 '                              T|t = later-earlier measurement or vv'/ &
+'  -r, --replace OLD=NEW     Replace variable OLD by variable NEW in the construction of SLA'/ &
 '  --dual-asc                Select only ascending passes on first satellite'/ &
 '  --dual-des                Select only descending passes on first satellite'/ &
 '  -e, --edit [VAL]          Edit the data beyond VAL [3.5] times the std dev of the 1st variable')
