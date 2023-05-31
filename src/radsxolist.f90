@@ -290,9 +290,9 @@ if (tbias /= 0 .and. id_alt_rate == 0) &
 ! Exchange any correction if requested
 do i = 1,nvar_replace
 	if (id_sla == 0) call rads_exit ('Cannot replace fields without SLA present')
-	j = index(optarg,'=')
-	id_old = get_varid(optarg(:j-1)) - id_offset
-	id_new = get_varid(optarg(j+1:)) - id_offset
+	j = index(str_replace(i),',')
+	id_old = get_varid(str_replace(i)(:j-1)) - id_offset
+	id_new = get_varid(str_replace(i)(j+1:)) - id_offset
 	if (optarg(:3) == 'alt') then	! Add change to altitude
 		var(:,:,id_sla) = var(:,:,id_sla) + (var(:,:,id_new) - var(:,:,id_old))
 	else	! Subtract change to corrections
@@ -594,7 +594,7 @@ endif
 '                              H|h = higher-lower satellite or vv'/ &
 '                              S|s = higher-lower satellite ID or vv'/ &
 '                              T|t = later-earlier measurement or vv'/ &
-'  -r, --replace OLD=NEW     Replace variable OLD by variable NEW in the construction of SLA'/ &
+'  -r, --replace OLD,NEW     Replace variable OLD by variable NEW in the construction of SLA'/ &
 '  --dual-asc                Select only ascending passes on first satellite'/ &
 '  --dual-des                Select only descending passes on first satellite'/ &
 '  -e, --edit [VAL]          Edit the data beyond VAL [3.5] times the std dev of the 1st variable')
