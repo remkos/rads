@@ -580,6 +580,17 @@ Global RADS configuration file
 	<compress sat="6a j1 j2 j3 sw tx">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
+<var name="alt_cpod" sat="3a 3b">
+	<long_name>CPOD POE orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>CPOD</source>
+	<parameters>poe_cpod</parameters>
+	<units>m</units>
+	<data>alt_cpod</data>
+	<format>f12.4</format>
+	<compress>int4 1e-4 700e3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
 <alias name="alt" field="4" sat="2a">alt_gdrd</alias>
 <alias name="alt" field="4" sat="3a 3b c2 sa">alt_gdrf alt_gdre</alias>
 <alias name="alt" field="4" sat="6a">alt_gdrf</alias>
@@ -2009,7 +2020,7 @@ Global RADS configuration file
 	<units>m</units>
 	<source>MFWAM/Meteo France</source>
 	<data>swh_mfwam</data>
-	<format>f6.3</format>
+	<format>f5.2</format>
 	<compress>int2 1e-3</compress>
 </var>
 <var name="swh_era5">
@@ -4158,7 +4169,7 @@ Global RADS configuration file
 	<dimensions>0</dimensions>
 	<parameters>0</parameters>
 	<parameters sat="3a">  -8.9 0  0  0 0</parameters>
-	<parameters sat="3b"> -12.8 0  0  0 0</parameters>
+	<parameters sat="3b"> -14.6 0  0  0 0</parameters>
 	<parameters sat="c2"> -29   0  0  0 0</parameters>
 	<parameters sat="e1">  21   0  0  0 0</parameters>
 	<parameters sat="e2">  62   0  0  0 0</parameters>
@@ -4342,6 +4353,36 @@ Global RADS configuration file
 	<source>MFWAM/Meteo France</source>
 	<units>degrees</units>
 	<data>mean_wave_direction</data>
+	<format>f7.2</format>
+	<compress>int2 1e-2</compress>
+</var>
+
+<var name="significant_swell_wave_height" sat="6a">
+	<long_name>modelled spectral significant swell wave height</long_name>
+	<standard_name>sea_surface_wave_significant_height</standard_name>
+	<units>m</units>
+	<source>MFWAM/Meteo France</source>
+	<data>significant_swell_wave_height</data>
+	<format>f5.2</format>
+	<compress>int2 1e-3</compress>
+</var>
+
+<var name="mean_swell_wave_period" sat="6a">
+	<long_name>mean swell wave period</long_name>
+	<standard_name>sea_surface_swell_wave_mean_period</standard_name>
+	<source>MFWAM/Meteo France</source>
+	<units>s</units>
+	<data>mean_swell_wave_period</data>
+	<format>f6.2</format>
+	<compress>int2 1e-2</compress>
+</var>
+
+<var name="mean_swell_wave_direction" sat="6a">
+	<long_name>mean direction of the sea surface swell wave</long_name>
+	<standard_name>sea_surface_swell_wave_from_direction</standard_name>
+	<source>MFWAM/Meteo France</source>
+	<units>degrees</units>
+	<data>mean_swell_wave_direction</data>
 	<format>f7.2</format>
 	<compress>int2 1e-2</compress>
 </var>

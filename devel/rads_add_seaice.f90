@@ -214,13 +214,13 @@ do i = 1,n
 ! Interpolate ice concentration (has invalid values)
 
 	if (lat(i) > 31d0) then
-		if (ix > 0d0 .and. iy > 0d0 .and. ix < 761d0 .and. iy < 1121d0) then
+		if (ix > 0 .and. iy > 0 .and. ix < 761 .and. iy < 1121) then
 			ice(i) = mat_product(grids_nh(ix:ix+1,iy:iy+1,:),f) * 1d-2
 		else
 			ice(i) = nan
 		endif
 	else
-		if (ix > 0d0 .and. iy > 0d0 .and. ix < 791d0 .and. iy < 831d0) then
+		if (ix > 0 .and. iy > 0 .and. ix < 791 .and. iy < 831) then
 			ice(i) = mat_product(grids_sh(ix:ix+1,iy:iy+1,:),f) * 1d-2
 		else
 			ice(i) = nan

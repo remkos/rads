@@ -298,28 +298,60 @@ end function nft
 
 !****f* rads_netcdf/nfs
 ! SUMMARY
-! Stop execution upon NetCDF error
+! Stop execution upon NetCDF error with error message
 !
 ! SYNOPSIS
-subroutine nfs(ios)
+subroutine nfs(ios, string)
 use netcdf
 integer, intent(in) :: ios
+character(len=*), intent(in), optional :: string
 !
 ! PURPOSE
 ! This is a wrapper for NetCDF functions. It catches the status return code of the
 ! NetCDF routine and checks if an error occurred. Upon error, an error message
 ! is printed to standard error and execution stops.
 !
+! If <string> is supplied, this is added ahead before the NetCDF error message.
+!
 ! ARGUMENT
-! ios  : NetCDF I/O code
+! ios    : NetCDF I/O code
+! string : Error message to add in addition to the NetCDF error message.
 !
 ! EXAMPLE
 ! call nfs (nf90_open ('file.nc', nf90_write, ncid))
 !****-------------------------------------------------------------------
 if (ios == nf90_noerr) return
-call nf90_message (nf90_strerror(ios))
+if (present(string)) then
+	call nf90_message (trim(string) // ': ' // nf90_strerror(ios))
+else
+	call nf90_message (nf90_strerror(ios))
+endif
 call exit (ios)
 end subroutine nfs
+
+
+!****f* rads_netcdf/nfs
+! SUMMARY
+! Stop execution upon NetCDF error without error message
+!
+! SYNOPSIS
+subroutine nfx(ios)
+use netcdf
+integer, intent(in) :: ios
+!
+! PURPOSE
+! This is a wrapper for NetCDF functions. It catches the status return code of the
+! NetCDF routine and checks if an error occurred. Upon error, it exits the program
+! without error message.
+!
+! ARGUMENT
+! ios    : NetCDF I/O code
+!
+! EXAMPLE
+! call nfx (nf90_open ('file.nc', nf90_write, ncid))
+!****-------------------------------------------------------------------
+if (ios /= nf90_noerr) call exit(ios)
+end subroutine nfx
 
 subroutine get_var_1d (ncid, varnm, array)
 use netcdf

@@ -271,10 +271,9 @@ do
 	call nfs(nf90_get_att(ncid,nf90_global,'source',arg))
 	baseline = arg(21:23)
 
-! TEMPORARY for F08 TDS and F09 TDS: existance of iono_cor_alt_nr indicates new baseline
+! TEMPORARY for F09 TDS: existance of rain_attenuation_nr indicates new baseline
 
-	if (lr .and. baseline < 'F08' .and. nf90_inq_varid(ncid1,'iono_cor_alt_nr',varid) == nf90_noerr) baseline = 'F08'
-	if (.not.lr .and. baseline < 'F09' .and. nf90_inq_varid(ncid1,'iono_cor_alt_nr',varid) == nf90_noerr) baseline = 'F09'
+	if (baseline < 'F09' .and. nf90_inq_varid(ncid1,'rain_attenuation_nr',varid) == nf90_noerr) baseline = 'F09'
 
 ! Determine if we have numerical retrackers
 
@@ -322,9 +321,9 @@ do
 	call nc2f (ncid1, 'rain_flag', 7, eq=4)						! bit  7: Altimeter rain or ice flag
 	call nc2f (ncid1, 'rad_rain_flag', 8)
 	call nc2f (ncid1, 'rad_sea_ice_flag', 8)					! bit  8: Radiometer rain or ice flag
-	call nc2f (ncid1, 'rad_tmb_187_qual',  9)
-	call nc2f (ncid1, 'rad_tmb_238_qual',  9)					! bit  9: Quality 18.7 or 23.8 GHz channel
-	call nc2f (ncid1, 'rad_tmb_340_qual', 10)					! bit 10: Quality 34.0 GHz channel
+	call nc2f (ncid1, 'rad_tb_187_qual',  9)
+	call nc2f (ncid1, 'rad_tb_238_qual',  9)					! bit  9: Quality 18.7 or 23.8 GHz channel
+	call nc2f (ncid1, 'rad_tb_340_qual', 10)					! bit 10: Quality 34.0 GHz channel
 	call nc2f (ncid1, 'orbit_type_flag', 15, le=2)				! bit 15: Quality of orbit
 
 ! Now do specifics for MLE3
@@ -551,7 +550,19 @@ do
 	endif
 	call cpy_var (ncid1, 'distance_to_coast 1e-3 MUL', 'dist_coast') ! Convert m to km
 	call cpy_var (ncid1, 'angle_of_approach_to_coast', 'angle_coast')
-	call cpy_var (ncid1, 'rad_distance_to_land 1e-3 MUL', 'rad_dist_coast') ! Convert m to km
+	if (baseline < 'F09') call cpy_var (ncid1, 'rad_distance_to_land 1e-3 MUL', 'rad_dist_coast') ! Convert m to km
+
+! Wave model data
+! Convert direction from range 0/360 to range -180/180
+
+	if (baseline >= 'F09') then
+		call cpy_var (ncid1, 'significant_wave_height', 'swh_mfwam')
+		call cpy_var (ncid1, 'mean_wave_direction_from 180 ADD 360 FMOD 180 SUB', 'mean_wave_direction')
+		call cpy_var (ncid1, 'mean_wave_period_t02', 'mean_wave_period')
+		call cpy_var (ncid1, 'significant_swell_wave_height', 'significant_swell_wave_height')
+		call cpy_var (ncid1, 'mean_swell_wave_direction_from 180 ADD 360 FMOD 180 SUB', 'mean_swell_wave_direction')
+		call cpy_var (ncid1, 'mean_swell_wave_period', 'mean_swell_wave_period')
+	endif
 
 ! Other flags
 
@@ -565,10 +576,10 @@ do
 
 ! Other radiometer measurements
 
-	call cpy_var (ncid1, 'rad_tmb_187', 'tb_187')
-	call cpy_var (ncid1, 'rad_tmb_238', 'tb_238')
-	call cpy_var (ncid1, 'rad_tmb_340', 'tb_340')
-	call cpy_var (ncid1, 'rad_tmb_340_qual 2 MUL rad_tmb_238_qual ADD 2 MUL rad_tmb_187_qual ADD', 'qual_rad_tb')
+	call cpy_var (ncid1, 'rad_tb_187', 'tb_187')
+	call cpy_var (ncid1, 'rad_tb_238', 'tb_238')
+	call cpy_var (ncid1, 'rad_tb_340', 'tb_340')
+	call cpy_var (ncid1, 'rad_tb_340_qual 2 MUL rad_tb_238_qual ADD 2 MUL rad_tb_187_qual ADD', 'qual_rad_tb')
 	call cpy_var (ncid1, 'rad_cloud_liquid_water', 'liquid_water_rad')
 	call cpy_var (ncid1, 'rad_water_vapor', 'water_vapor_rad')
 

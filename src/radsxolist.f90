@@ -30,7 +30,7 @@ integer(fourbyteint) :: ncid, i, icol, ios, nvar, nxo_in, nxo_out, ntrk, nxml = 
 real(eightbytereal), allocatable :: var(:,:,:), stat(:,:,:), binstat(:,:,:), tbiasstat(:,:)
 integer(fourbyteint), allocatable :: track(:,:), binnr(:,:), bincount(:)
 character(len=rads_naml), allocatable :: long_name(:)
-logical, allocatable :: is_alt(:), boz(:), mask(:), binmask(:)
+logical, allocatable :: is_alt(:), boz(:), mask(:)
 type :: trk_
 	real(eightbytereal) :: equator_lon, equator_time, start_time, end_time
 	integer(twobyteint) :: nr_alt, nr_xover, satid, cycle, pass
@@ -54,7 +54,7 @@ character(len=3*msat) :: satlist = '', use_sats = ''
 type(rads_sat) :: S
 character(len=*), parameter :: optlist = &
 	'S:X:e::b::o:r:dsnltp sat: xml: lon: lat: dt: edit:: bin:: order: replace: dual single nolist both-legs both-times ' // &
-	' time: ymd: doy: sec: check-flag: full-year tbias add-tbias: sub-tbias: pass-info dual-asc dual-des'
+	' time: ymd: doy: sec: check-flag: full-year tbias add-tbias: sub-tbias: pass-info per-loc dual-asc dual-des'
 
 integer(fourbyteint) :: var0 = 0, check_flag = -1
 logical :: diff = .true., stat_only, singles = .true., duals = .true., xostat, fullyear = .false., &
@@ -126,6 +126,8 @@ do
 		bin = 1d0
 		read (optarg, *, iostat=ios) bin
 		if (ios > 0) call rads_opt_error (optopt, optarg)
+	case ('per-loc')
+		bin = -1d0
 	case ('r', 'replace')
 		nvar_replace = nvar_replace + 1
 		if (nvar_replace > 10) call rads_exit ('Too many -r options')
@@ -162,7 +164,7 @@ endif
 600 format ('# ',a,' of RADS crossovers'/'# Created: ',a,' UTC: ',a)
 
 ! Some options exclude or imply others
-if (bin > 0d0) then
+if (bin /= 0d0) then
 	diff = .false.
 	var0 = 1
 	stat_only = .false.
@@ -187,7 +189,7 @@ contains
 
 subroutine process (filename)
 character(len=*), intent(in) :: filename
-integer(fourbyteint) :: i, j, k, k1, k2, yy, mm, dd, trkid(2)
+integer(fourbyteint) :: i, j, k, yy, mm, dd, trkid(2), maxpass(2) = 0, minbin = 0, maxbin = 0
 character(len=rads_naml) :: legs, varnm
 real(eightbytereal) :: mean, sigma
 real(eightbytereal), parameter :: day = 86400d0
@@ -288,9 +290,9 @@ if (tbias /= 0 .and. id_alt_rate == 0) &
 ! Exchange any correction if requested
 do i = 1,nvar_replace
 	if (id_sla == 0) call rads_exit ('Cannot replace fields without SLA present')
-	j = index(optarg,'=')
-	id_old = get_varid(optarg(:j-1)) - id_offset
-	id_new = get_varid(optarg(j+1:)) - id_offset
+	j = index(str_replace(i),',')
+	id_old = get_varid(str_replace(i)(:j-1)) - id_offset
+	id_new = get_varid(str_replace(i)(j+1:)) - id_offset
 	if (optarg(:3) == 'alt') then	! Add change to altitude
 		var(:,:,id_sla) = var(:,:,id_sla) + (var(:,:,id_new) - var(:,:,id_old))
 	else	! Subtract change to corrections
@@ -360,10 +362,21 @@ if (nxo_out == 0) then
 	return
 endif
 
-! If stats are to be binned, assign bins
 if (bin > 0d0) then
-	allocate (binnr(2,nxo_in), binmask(nxo_in))
+	! If stats are to be binned by time, assign bins
+	allocate (binnr(2,nxo_in))
 	binnr = floor(var(:,:,0)/bin/day)
+	minbin = min(minval(binnr(1,:),mask),minval(binnr(2,:),mask))
+	maxbin = max(maxval(binnr(1,:),mask),maxval(binnr(2,:),mask))
+else if (bin < 0d0) then
+	! If stats are to be computed per xover location, assign bins
+	allocate (binnr(2,nxo_in))
+	maxpass(1) = maxval(trk(track(1,:))%pass, mask)
+	maxpass(2) = maxval(trk(track(2,:))%pass, mask)
+	binnr(1,:) = (trk(track(1,:))%pass-1) * maxpass(2) + (trk(track(2,:))%pass-1)
+	binnr(2,:) = binnr(1,:)
+	minbin = minval(binnr(1,:),mask)
+	maxbin = maxval(binnr(1,:),mask)
 endif
 
 ! Write column info
@@ -374,6 +387,12 @@ if (.not.xostat) then
 		write (*,611) 2, 'number of crossovers'
 		icol = 2
 		write (*,613) 'Mean of the following variables:'
+	else if (bin < 0d0) then
+		write (*,611) 1, 'first pass number'
+		write (*,611) 2, 'second pass number'
+		write (*,611) 3, 'number of crossovers'
+		icol = 3
+		write (*,613) 'Mean of the following variables:'
 	endif
 	do i = -2,-1
 		icol = icol + 1
@@ -383,7 +402,7 @@ if (.not.xostat) then
 		icol = icol + 2
 		write (*,612) icol-1,icol,trim(long_name(i))
 	enddo
-	if (bin > 0d0) write (*,613) 'Mean and std dev of the xover differences of variables:'
+	if (bin /= 0d0) write (*,613) 'Mean and std dev of the xover differences of variables:'
 	if (diff) then
 		do i = var0,nvar
 			icol = icol + 1
@@ -445,7 +464,7 @@ end select
 
 ! Specify order of values
 ! Collapse data if needed
-if (diff .or. bin > 0d0) then
+if (diff .or. bin /= 0d0) then
 	write (*,615) 'Difference',trim(legs)
 	var(1,:,var0:nvar) = var(1,:,var0:nvar) - var(2,:,var0:nvar)
 else
@@ -453,7 +472,7 @@ else
 endif
 615 format ('# ',a,'    = ',a)
 
-! Do statistics
+! Compute the overall statistics
 do j = -1,nvar
 	do k = 1,2
 		stat(k,j,1) = minval(var(k,:,j),mask)
@@ -464,23 +483,20 @@ do j = -1,nvar
 	enddo
 enddo
 
-! Print out data (warning, this alters variables with boz format)
+! Print out data per xover (warning, this alters variables with boz format)
 if (.not.stat_only .and. bin == 0d0) then
 	do i = 1,nxo_in
 		if (.not.mask(i)) cycle
 		call print_data (var(:,i,:), .not.pass_info)
 		if (.not.pass_info) cycle
 		trkid = track(:,i)
-		write (*,632) trk(trkid)%satid,trk(trkid)%cycle,trk(trkid)%pass
+		write (*,620) trk(trkid)%satid,trk(trkid)%cycle,trk(trkid)%pass
 	enddo
 endif
 
-! Print statistics
-if (bin > 0d0) then
-	! Statistics per bin
-	k1 = minval(binnr)
-	k2 = maxval(binnr)
-	allocate (bincount(k1:k2), binstat(2,-1:nvar,k1:k2), tbiasstat(2,k1:k2))
+if (bin /= 0d0) then
+	! Compute the statistics per bin
+	allocate (bincount(minbin:maxbin), binstat(2,-1:nvar,minbin:maxbin), tbiasstat(2,minbin:maxbin))
 	bincount = 0
 	binstat = 0d0
 	tbiasstat = 0d0
@@ -489,18 +505,25 @@ if (bin > 0d0) then
 		call update_stat (binnr(1,i),var(:,i,:))
 		if (binnr(1,i) /= binnr(2,i)) call update_stat (binnr(2,i),var(:,i,:))
 	enddo
-	do k = k1,k2
+	! Print the statistics per bin
+	do k = minbin,maxbin
 		if (bincount(k) == 0) cycle
 		binstat(2,var0:nvar,k) = sqrt((binstat(2,var0:nvar,k) - binstat(1,var0:nvar,k)**2/bincount(k))/(bincount(k)-1))
 		binstat(1,:,k) = binstat(1,:,k) / bincount(k)
 		binstat(2,-1:var0-1,k) = binstat(2,-1:var0-1,k) / bincount(k)
-		call mjd2ymd (nint(k*bin)+46066,yy,mm,dd)
-		if (.not.fullyear) yy = modulo(yy,100)
-		write (*,630,advance='no') yy,mm,dd,bincount(k)
+		if (bin > 0d0) then
+			call mjd2ymd (nint(k*bin)+46066,yy,mm,dd)
+			if (.not.fullyear) yy = modulo(yy,100)
+			write (*,630,advance='no') yy, mm, dd, bincount(k)
+		else
+			write (*,631,advance='no') k/maxpass(2)+1, modulo(k,maxpass(2))+1, bincount(k)
+		endif
 		call print_data (binstat(:,:,k), .not.ltbias)
-		if (ltbias) write(*,631) tbiasstat(2,k)/tbiasstat(1,k)*1d3, sqrt(1d0/tbiasstat(1,k))*1d3
+		if (ltbias) write(*,635) tbiasstat(2,k)/tbiasstat(1,k)*1d3, sqrt(1d0/tbiasstat(1,k))*1d3
 	enddo
 	deallocate (bincount, binstat, tbiasstat)
+
+! Print the overall statistics for each variable, either of the xover difference, or of each leg
 else if (xostat) then
 	write (*,640) 'MIN','MAX','MEAN','RMS','STDDEV'
 	write (*,645) trim(long_name(-2)),stat(1,-1,:)
@@ -513,22 +536,26 @@ else if (xostat) then
 		call solve_tbias (pack(var(1,:,id_sla),mask),pack(var(1,:,id_alt_rate),mask),mean,sigma)
 		write (*,646) 'time tag bias [ms]', mean*1d3, sigma*1d3
 	endif
+
+! Print separate lines for min, max, mean, rms, stddev of all variables
 else
 	do i = 1,5
 		write (*,650,advance='no') statname(i)
 		call print_data (stat(:,:,i), .true.)
 	enddo
 endif
+
+620 format (2i3,2i4,2i5)
 630 format (3i0.2,i9,1x)
-631 format (1x,2f8.4)
-632 format (2i3,2i4,2i5)
+631 format (2i5,i4,1x)
+635 format (1x,2f8.4)
 640 format ('# ',t43,5a16)
 645 format ('# ',a,t43,5f16.4)
 646 format ('# ',a,t43,32x,f16.4,16x,f16.4)
 650 format ('# ',a,' : ')
 
 deallocate (track, trk, var, stat, mask, long_name, is_alt, boz)
-if (bin > 0d0) deallocate (binnr, binmask)
+if (bin /= 0d0) deallocate (binnr)
 end subroutine process
 
 !***********************************************************************
@@ -567,13 +594,15 @@ endif
 '                              H|h = higher-lower satellite or vv'/ &
 '                              S|s = higher-lower satellite ID or vv'/ &
 '                              T|t = later-earlier measurement or vv'/ &
+'  -r, --replace OLD,NEW     Replace variable OLD by variable NEW in the construction of SLA'/ &
 '  --dual-asc                Select only ascending passes on first satellite'/ &
 '  --dual-des                Select only descending passes on first satellite'/ &
 '  -e, --edit [VAL]          Edit the data beyond VAL [3.5] times the std dev of the 1st variable')
 1301 format ( &
-'  -b, --bin [DAYS]          Bin data by number of DAYS [1] and print mean and std dev.'/ &
+'  -b, --bin [DAYS]          Bin data in time by number of DAYS [1] and print mean and std dev.'/ &
 '  --full-year               Print data as YYYYMMDD instead of YYMMDD'/ &
 '  -p, --pass-info           Write out satellite ID, cycle and pass number for every record'/ &
+'  --per-loc                 Bin data per crossover location and print mean and std dev.'/ &
 '  -n, --no-list             Do not print listing (print overall statistics only)')
 stop
 end subroutine synopsis

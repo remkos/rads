@@ -35,6 +35,12 @@ find "$@" -name "*.nc" | sort > "$lst"
 rads_gen_s3 	  $options --min-rec=6 < "$lst"			>> "$log" 2>&1
 rads_fix_s3		  $options --all						>> "$log" 2>&1
 
+# Add MOE orbit (for NRT and STC only) and CPOD POE (for NTC/REP only)
+case $type in
+	nr*|st*) rads_add_orbit  $options -Valt_cnes --dir=moe_doris	>> "$log" 2>&1 ;;
+	*)	     rads_add_orbit  $options -Valt_cpod					>> "$log" 2>&1 ;;
+esac
+
 # General geophysical corrections
 rads_add_common   $options								>> "$log" 2>&1
 rads_add_mfwam    $options -C21-199 --all				>> "$log" 2>&1
