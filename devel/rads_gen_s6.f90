@@ -161,6 +161,10 @@ do
 
 	if (index(arg, 'REP_NT_F06') > 0) then
 		latency = rads_ntc + 1
+	else if (index(arg, 'REP_NT_F08') > 0) then
+		latency = rads_ntc + 2
+	else if (index(arg, 'REP_NT_') > 0) then
+		latency = rads_ntc + 3
 	else if (index(arg, '_NT_') > 0) then
 		latency = rads_ntc
 	else if (index(arg, '_ST_') > 0) then
