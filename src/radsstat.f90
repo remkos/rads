@@ -49,23 +49,23 @@ character(len=rads_strl) :: format_string
 character(len=rads_cmdl) :: filename = ''
 integer(fourbyteint), parameter :: period_day=1, period_pass=2, period_cycle=3
 integer(fourbyteint) :: nr, minnr=2, cycle, pass, i, output_format=0, &
-	period=period_day, wmode=0, nx, ny, kx, ky, ios, sizes(2), ncid, varid(2)
+	period=period_day, wmode=0, nx, ny, kx, ky, ios, sizes(2), ncid, varid(2), grpid(4) = 0
 real(eightbytereal), allocatable :: lat_w(:)
 real(eightbytereal) :: sini, step=1d0, x0, y0, res(2)=(/3d0,1d0/), start_time, dt = 0d0
 type :: stat
 	integer(fourbyteint) :: nr
-	real(eightbytereal) :: wgt, mean, sum2, xmin, xmax
+	real(eightbytereal) :: wgt, z(4)
 end type
 type(stat), allocatable :: box(:,:,:), tot(:)
 type(rads_sat) :: S(2)
 type(rads_pass) :: P(2), Pout
 logical :: ascii = .true., fullyear = .false., boz_format = .false., force = .false.
-logical :: echofilepaths = .false. 
+logical :: echofilepaths = .false. , groups = .false., mask(4) = .false.
 
 ! Initialize RADS or issue help
 call synopsis
 call rads_set_options ('ab::c::d::flmo::p::r::s ' // &
-	'dt echo-file-paths force format-cycle format-day format-pass full-year min: mean-only minmax no-stddev ' // &
+	'dt echo-file-paths force format-cycle format-day format-pass groups full-year min: mean-only minmax no-stddev ' // &
 	'output:: reject-on-nan: res:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
@@ -120,6 +120,8 @@ do i = 1,rads_nopt
 		output_format = period_day
 	case ('format-pass')
 		output_format = period_pass
+	case ('groups')
+		groups = .true.
 	case ('full-year')
 		fullyear = .true.
 	case ('echo-file-paths')
@@ -149,6 +151,9 @@ enddo
 ! 2 = mean. srddev
 ! 3 = mean, min, amx
 ! 4 = mean, stddev, min, max
+mask(1) = .true.
+if (lstat == 2 .or. lstat == 4) mask(2) = .true.
+if (lstat >= 3) mask(3:4) = .true.
 
 ! If no filename is given, we have ASCII output
 ascii = (filename == '')
@@ -270,7 +275,7 @@ write (*,1300)
 '  -s                        Use inclination-dependent weight'/ &
 '  -l, --minmax              Output min and max in addition to mean and stddev'/ &
 '  --no-stddev               Output mean values only' / &
-'  --mean-only               Output mean values only in 1-D array' / &
+'  --mean-only               Output mean values only in 1-D array (applies to NetCDF output only)' / &
 '  --dt DT                   Set minimum bin size in seconds (default is determined by satellite)'/ &
 '  --full-year               Write date as YYYYMMDD instead of the default YYMMDD'/ &
 '  --min MINNR               Minimum number of measurements per statistics record (default: 2)'/ &
@@ -279,6 +284,7 @@ write (*,1300)
 '  --format-cycle            Output format starts with CYCLE, [YY]YYMMDD (default with -c)'/ &
 '  --format-day              Output format starts with [YY]YYMMDD (default with -d)'/ &
 '  --format-pass             Output format starts with CYCLE, PASS (default with -p)'/ &
+'  --groups                  Create groups (applies to NetCDF output only)' / &
 '  -f, --force               Force comparison, even when missions are not considered collinear'/ &
 '  -o, --output [OUTNAME]    Create NetCDF output instead of ASCII (default output'/ &
 '                            filename is "radsstat.nc")')
@@ -389,17 +395,17 @@ real(eightbytereal), intent(in) :: z
 if (isnan_(z)) return
 box%nr   = box%nr   + 1
 box%wgt  = box%wgt  + 1d0
-box%mean = box%mean + z
-box%sum2 = box%sum2 + z*z
-box%xmin = min(box%xmin, z)
-box%xmax = max(box%xmax, z)
+box%z(1) = box%z(1) + z
+box%z(2) = box%z(2) + z*z
+box%z(3) = min(box%z(3), z)
+box%z(4) = max(box%z(4), z)
 end subroutine update_stat
 
 !***********************************************************************
 ! Output statistics for one batch of data
 
 subroutine output_stat
-integer(fourbyteint) :: j, yy, mm, dd, start(2) = 1
+integer(fourbyteint) :: j, k, yy, mm, dd, start(2) = 1
 real(eightbytereal) :: w
 type(rads_var), pointer :: var
 
@@ -410,7 +416,7 @@ if (nr < minnr) then
 endif
 
 ! Init global stats
-tot = stat(0, 0d0, 0d0, 0d0, huge(1d0), -huge(1d0))
+tot = stat(0, 0d0, (/ 0d0, 0d0, huge(1d0), -huge(1d0) /))
 
 ! Cycle trough all boxes and determine overall weighted mean
 do ky=1,ny
@@ -427,24 +433,24 @@ do ky=1,ny
 		! Update overall statistics
 		tot(:)%nr   = tot(:)%nr   + box(:,kx,ky)%nr
 		tot(:)%wgt  = tot(:)%wgt  + w * box(:,kx,ky)%wgt
-		tot(:)%mean = tot(:)%mean + w * box(:,kx,ky)%mean
-		tot(:)%sum2 = tot(:)%sum2 + w * box(:,kx,ky)%sum2
-		tot(:)%xmin = min(tot(:)%xmin, box(:,kx,ky)%xmin)
-		tot(:)%xmax = max(tot(:)%xmax, box(:,kx,ky)%xmax)
+		tot(:)%z(1) = tot(:)%z(1) + w * box(:,kx,ky)%z(1)
+		tot(:)%z(2) = tot(:)%z(2) + w * box(:,kx,ky)%z(2)
+		tot(:)%z(3) = min(tot(:)%z(3), box(:,kx,ky)%z(3))
+		tot(:)%z(4) = max(tot(:)%z(4), box(:,kx,ky)%z(4))
 	enddo
 enddo
 
 ! Divide by total weight to compute overall weighted mean and standard deviation
 
-tot%mean = tot%mean / tot%wgt
+tot%z(1) = tot%z(1) / tot%wgt
 where (tot%nr > 1)
-	tot%sum2 = sqrt(max(tot%sum2 / tot%wgt - tot%mean*tot%mean, 0d0) * tot%nr / (tot%nr - 1d0)) ! max() avoids tiny negatives
+	tot%z(2) = sqrt(max(tot%z(2) / tot%wgt - tot%z(1)*tot%z(1), 0d0) * tot%nr / (tot%nr - 1d0)) ! max() avoids tiny negatives
 else where
-	tot%sum2 = nan
+	tot%z(2) = nan
 end where
 where (tot%nr == 0)
-	tot%xmin = nan
-	tot%xmax = nan
+	tot%z(3) = nan
+	tot%z(4) = nan
 end where
 
 ! Write out statistics in ASCII
@@ -462,26 +468,17 @@ if (ascii) then
 	if (boz_format) then
 		do j=1,S(1)%nsel
 			if (.not.S(1)%sel(j)%info%boz_format) cycle
-			call bit_transfer (tot(j)%mean)
-			call bit_transfer (tot(j)%sum2)
-			call bit_transfer (tot(j)%xmin)
-			call bit_transfer (tot(j)%xmax)
+			do k = 1,4
+				call bit_transfer (tot(j)%z(k))
+			enddo
 		enddo
 	endif
-	select case (lstat)
-	case (0, 1)
-		write (*,format_string) nr, tot(0)%mean, (tot(j)%mean,j=1,S(1)%nsel)
-	case (2)
-		write (*,format_string) nr, tot(0)%mean, (tot(j)%mean,tot(j)%sum2,j=1,S(1)%nsel)
-	case (3)
-		write (*,format_string) nr, tot(0)%mean, (tot(j)%mean,tot(j)%xmin,tot(j)%xmax,j=1,S(1)%nsel)
-	case default
-		write (*,format_string) nr, tot(0)%mean, (tot(j)%mean,tot(j)%sum2,tot(j)%xmin,tot(j)%xmax,j=1,S(1)%nsel)
-	end select
+	write (*,format_string) nr, tot(0)%z(1), (pack(tot(j)%z(:),mask),j=1,S(1)%nsel)
 
 ! Write output to NetCDF if requested
 else
 	call nfs (nf90_put_var (ncid, varid(1), nr, start(2:2)))
+	Pout%fileinfo(1) = rads_file (ncid, filename)
 	if (output_format /= period_day) then
 		var => rads_varptr (S(1), 'cycle')
 		call rads_put_var (S(1), Pout, var, (/ dble(cycle) /), start(2:2))
@@ -490,32 +487,21 @@ else
 		var => rads_varptr (S(1), 'pass')
 		call rads_put_var (S(1), Pout, var, (/ dble(pass) /), start(2:2))
 	endif
-	call rads_put_var (S(1), Pout, S(1)%time, (/ tot(0)%mean /), start(2:2))
-	select case (lstat)
-	case (0)
-		do j = 1,S(1)%nsel
-			call rads_put_var (S(1), Pout, S(1)%sel(j), (/ tot(j)%mean /), start(2:2))
+	call rads_put_var (S(1), Pout, S(1)%time, (/ tot(0)%z(1) /), start(2:2))
+	if (groups .or. lstat == 0) then
+		do k = 1,4
+			Pout%fileinfo(1) = rads_file (grpid(k), filename)
+			if (mask(k)) then
+				do j = 1,S(1)%nsel
+					call rads_put_var (S(1), Pout, S(1)%sel(j), (/ tot(j)%z(k) /), start(2:2))
+				enddo
+			endif
 		enddo
-	case (1)
+	else
 		do j = 1,S(1)%nsel
-			call rads_put_var (S(1), Pout, S(1)%sel(j), (/ tot(j)%mean /), start)
+			call rads_put_var (S(1), Pout, S(1)%sel(j), pack(tot(j)%z(:),mask), start)
 		enddo
-	case (2)
-		do j = 1,S(1)%nsel
-			call rads_put_var (S(1), Pout, S(1)%sel(j), &
-				(/ tot(j)%mean, tot(j)%sum2 /), start)
-		enddo
-	case (3)
-		do j = 1,S(1)%nsel
-			call rads_put_var (S(1), Pout, S(1)%sel(j), &
-				(/ tot(j)%mean, tot(j)%xmin, tot(j)%xmax /), start)
-		enddo
-	case default
-		do j = 1,S(1)%nsel
-			call rads_put_var (S(1), Pout, S(1)%sel(j), &
-				(/ tot(j)%mean, tot(j)%sum2, tot(j)%xmin, tot(j)%xmax /), start)
-		enddo
-	end select
+	endif
 	start(2) = start(2) + 1
 endif
 
@@ -531,7 +517,7 @@ end subroutine output_stat
 ! Initialise statistics
 
 subroutine init_stat
-box = stat(0, 0d0, 0d0, 0d0, huge(1d0), -huge(1d0))
+box = stat(0, 0d0, (/ 0d0, 0d0, huge(1d0), -huge(1d0) /))
 nr = 0
 start_time = nan
 end subroutine init_stat
@@ -605,17 +591,18 @@ end subroutine ascii_header
 ! Write out the NetCDF header
 
 subroutine netcdf_header
-integer :: j, dimid(2)
+integer :: j, k, dimid(2)
 integer(onebyteint) :: istat(4) = (/ 1_onebyteint, 2_onebyteint, 3_onebyteint, 4_onebyteint /)
 
 ! Open output NetCDF file
-call nfs (nf90_create (filename, nf90_write, ncid))
+call nfs (nf90_create (filename, nf90_write + nf90_netcdf4, ncid))
 call nfs (nf90_def_dim (ncid, 'time', nf90_unlimited, dimid(1)))
 if (lstat > 0) call nfs (nf90_def_dim (ncid, 'stat', lstat, dimid(2)))
 
 ! To use general NetCDF creation machinary, we trick the library a bit here
 Pout%fileinfo(1) = rads_file (ncid, filename)
 Pout%rw = .true.
+grpid(1) = ncid
 
 ! Define "time" variables
 call nfs (nf90_def_var (ncid, 'nr', nf90_int4, dimid(1:1), varid(1)))
@@ -624,31 +611,64 @@ if (output_format /= period_day) call rads_def_var (S(1), Pout, 'cycle')
 if (output_format == period_pass) call rads_def_var (S(1), Pout, 'pass')
 call rads_def_var (S(1), Pout, S(1)%time)
 
-! Define "stat" variable
-if (lstat > 0) then
-	call nfs (nf90_def_var (ncid, 'stat', nf90_int1, dimid(2:2), varid(2)))
-	call nfs (nf90_put_att (ncid, varid(2), 'long_name', 'statistics type'))
-	call nfs (nf90_put_att (ncid, varid(2), 'flag_values', istat))
-	call nfs (nf90_put_att (ncid, varid(2), 'flag_meanings', 'mean standard_deviation minimum maximum'))
-endif
-select case (lstat)
-case (0)
-	call nfs (nf90_put_att (ncid, nf90_global, 'comment', 'Data variables contain mean values'))
-case (1)
-	call nfs (nf90_put_att (ncid, varid(2), 'comment', 'Data columns are mean values'))
-case (2)
-	call nfs (nf90_put_att (ncid, varid(2), 'comment', 'Data columns are mean and standard deviation'))
-case (3)
-	call nfs (nf90_put_att (ncid, varid(2), 'comment', 'Data columns are mean, minimum, and maximum'))
-case (4)
-	call nfs (nf90_put_att (ncid, varid(2), 'comment', 'Data columns are mean, standard deviation, minimum, and maximum'))
-end select
+! Create groups when requested
 
-! Define selected variables
-do j = 1,S(1)%nsel
-	if (lstat > 0) S(1)%sel(j)%info%ndims = 2
-	call rads_def_var (S(1), Pout, S(1)%sel(j))
-enddo
+if (groups) then
+	call nfs (nf90_def_grp (ncid, 'mean', grpid(1)))
+	call nfs (nf90_put_att (grpid(1), nf90_global, 'comment', 'Data variables in this group contain mean values'))
+	if (mask(2)) then
+		call nfs (nf90_def_grp (ncid, 'stddev', grpid(2)))
+		call nfs (nf90_put_att (grpid(2), nf90_global, 'comment', 'Data variables in this group contain standard deviations'))
+	endif
+	if (mask(3)) then
+		call nfs (nf90_def_grp (ncid, 'min', grpid(3)))
+		call nfs (nf90_put_att (grpid(3), nf90_global, 'comment', 'Data variables in this group contain minimum values'))
+	endif
+	if (mask(4)) then
+		call nfs (nf90_def_grp (ncid, 'max', grpid(4)))
+		call nfs (nf90_put_att (grpid(4), nf90_global, 'comment', 'Data variables in this group contain maximum values'))
+	endif
+
+	! Define selected variables
+	do k = 1,4
+		if (mask(k)) then
+			Pout%fileinfo(1) = rads_file (grpid(k), filename) ! Set to right group
+			do j = 1,S(1)%nsel
+				call rads_def_var (S(1), Pout, S(1)%sel(j))
+			enddo
+		endif
+	enddo
+	Pout%fileinfo(1) = rads_file (ncid, filename)
+
+! When not using groups
+
+else
+	! Define "stat" variable
+	if (lstat > 0) then
+		call nfs (nf90_def_var (ncid, 'stat', nf90_int1, dimid(2:2), varid(2)))
+		call nfs (nf90_put_att (ncid, varid(2), 'long_name', 'statistics type'))
+		call nfs (nf90_put_att (ncid, varid(2), 'flag_values', istat))
+		call nfs (nf90_put_att (ncid, varid(2), 'flag_meanings', 'mean standard_deviation minimum maximum'))
+	endif
+	select case (lstat)
+	case (0)
+		call nfs (nf90_put_att (ncid, nf90_global, 'comment', 'Data variables contain mean values'))
+	case (1)
+		call nfs (nf90_put_att (ncid, varid(2), 'comment', 'Data columns are mean values'))
+	case (2)
+		call nfs (nf90_put_att (ncid, varid(2), 'comment', 'Data columns are mean and standard deviation'))
+	case (3)
+		call nfs (nf90_put_att (ncid, varid(2), 'comment', 'Data columns are mean, minimum, and maximum'))
+	case (4)
+		call nfs (nf90_put_att (ncid, varid(2), 'comment', 'Data columns are mean, standard deviation, minimum, and maximum'))
+	end select
+
+	! Define selected variables
+	do j = 1,S(1)%nsel
+		if (lstat > 0) S(1)%sel(j)%info%ndims = 2
+		call rads_def_var (S(1), Pout, S(1)%sel(j))
+	enddo
+endif
 
 ! Define global attibutes
 call nfs (nf90_put_att (ncid, nf90_global, 'Conventions', 'CF-1.5'))
@@ -661,7 +681,7 @@ call nfs (nf90_put_att (ncid, nf90_global, 'history', timestamp()//' UTC: '//tri
 call nfs (nf90_enddef (ncid))
 
 ! Write "stat" coordinate
-if (lstat > 0) call nfs (nf90_put_var (ncid, varid(2), istat(:lstat)))
+if (.not.groups .and. lstat > 0) call nfs (nf90_put_var (ncid, varid(2), istat(:lstat)))
 
 end subroutine netcdf_header
 
