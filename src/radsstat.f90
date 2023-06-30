@@ -64,7 +64,7 @@ logical :: echofilepaths = .false. , groups = .false., mask(4) = .false.
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('ab::c::d::flmo::p::r::s ' // &
+call rads_set_options ('ab::c::d::flmo::p::q::r::s ' // &
 	'dt echo-file-paths force format-cycle format-day format-pass groups full-year min: mean-only minmax no-stddev ' // &
 	'output:: reject-on-nan: res:')
 call rads_init (S)
@@ -93,7 +93,11 @@ do i = 1,rads_nopt
 		period = period_pass
 		read (rads_opt(i)%arg, *, iostat=ios) step
 		if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
-		step = dble(S(1)%passes(2))/nint(S(1)%passes(2)/step)
+	case ('q') ! When stepping by fraction of cycles, redefine it as a number of passes.
+		period = period_pass
+		read (rads_opt(i)%arg, *, iostat=ios) step
+		if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
+		step = S(1)%passes(2) / step
 	case ('c')
 		period = period_cycle
 		read (rads_opt(i)%arg, *, iostat=ios) step
@@ -203,7 +207,7 @@ do cycle = S(1)%cycles(1), S(1)%cycles(2), S(1)%cycles(3)
 		! Process the pass data
 		if (P(1)%ndata > 0) call process_pass (P(1)%ndata, S(1)%nsel)
 		! Print the statistics at the end of the data pass (if requested)
-		if (period == period_pass .and. nint(modulo(dble(pass),step)) == 0) call output_stat
+		if (period == period_pass .and. floor((pass-1)/step) /= floor(pass/step)) call output_stat
 		! Close the pass file
 		call rads_close_pass (S(1), P(1))
 	enddo
@@ -267,8 +271,9 @@ write (*,1300)
 '  -r n, -r any              Reject measurement records if any value is NaN'/ &
 '                      Note: If no -r option is given, -r sla is assumed'/ &
 '  -c [N]                    Statistics per cycle or N cycles'/ &
-'  -d [N]                    Statistics per day (default) or N days'/ &
+'  -q [N]                    Statistics N times per cycle' / &
 '  -p [N]                    Statistics per pass or N passes'/ &
+'  -d [N]                    Statistics per day (default) or N days'/ &
 '  -b [DX,DY]                Average by boxes with size (default on: 3x1 degrees)'/ &
 '  -m                        Give all measurements equal weight'/ &
 '  -a                        Weight measurements by cosine of latitude'/ &
