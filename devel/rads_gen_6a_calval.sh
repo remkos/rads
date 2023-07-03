@@ -69,7 +69,7 @@ if test -z $type ; then
 	case $dir in
 		*RMC/*)         type=hrrmc ;;
 		*REP/*|*_REP_*) type=${type:0:2}f08 ;;
-		*DEV/*|*_DEV_*) type=${type}d ;;
+		*DEV/*|*_DEV_*|*VER/*|*_VER_*) type=${type}d ;;
 		*VAL/*|*_VAL_*) type=${type}v ;;
 		*)              type=${type}o ;;
 	esac
