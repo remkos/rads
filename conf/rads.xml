@@ -41,13 +41,12 @@ Global RADS configuration file
 	j1 ja1 jason-1 jason1
 	j2 ja2 jason-2 jason2
 	j3 ja3 jason-3 jason3
-	sw swt swot
 	n1 en1 envisat
 	pn pos poseidon
 	tx top topex
 	sa srl saral
 	ss sea seasat-a
-	sw swn swot-nadir
+	sw swt swot
 </satellites>
 
 <var name="sla" field="0">
