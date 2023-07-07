@@ -13,9 +13,9 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*rads_gen_sw -- Converts SWOT GDR-F data to RADS
+!*rads_gen_swot -- Converts SWOT GDR-F data to RADS
 !+
-program rads_gen_sw
+program rads_gen_swot
 
 ! This program reads SWOT (O/I)GDR files and converts them to the RADS format,
 ! written into files $RADSDATAROOT/data/swSW/F/swSWpPPPPcCCC.nc.
@@ -24,7 +24,7 @@ program rads_gen_sw
 !  PPPP = relative pass number
 !   CCC = cycle number
 !
-! syntax: rads_gen_sw [options] < list_of_SWOT_file_names
+! syntax: rads_gen_swot [options] < list_of_SWOT_file_names
 !
 ! where [options] include:
 !  --min-rec <min_rec> : Specify minimum number of records per pass to process.
@@ -583,4 +583,4 @@ write (*,1310)
 stop
 end subroutine synopsis
 
-end program rads_gen_sw
+end program rads_gen_swot
