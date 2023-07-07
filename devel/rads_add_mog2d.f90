@@ -47,8 +47,10 @@ use netcdf
 
 type(rads_sat) :: S
 type(rads_pass) :: P
-integer(fourbyteint) :: cyc, pass, j
-logical :: update = .false., era = .false.
+integer(fourbyteint), parameter :: type_mog2d=0, type_era=1, type_tugo=2
+integer(fourbyteint) :: cyc, pass, j, type = type_mog2d
+logical :: update = .false.
+
 
 ! Data variables
 
@@ -58,12 +60,12 @@ integer(fourbyteint) :: hexold=-99999, first=1
 integer(fourbyteint), parameter :: nx=1441, ny=721
 real(eightbytereal), parameter :: x0=0d0, y0=-90d0, dx=0.25d0, dy=0.25d0
 real(eightbytereal) :: z0, dz
-integer(twobyteint) :: grids(nx,ny,2)
+integer(twobyteint) :: grids(nx,ny,2), tmp(ny,nx-1)
 
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('ue update era all')
+call rads_set_options ('uet update era tugo all')
 call rads_init (S)
 
 ! Check all options
@@ -72,19 +74,25 @@ do j = 1,rads_nopt
 	case ('u', 'update')
 		update = .true.
 	case ('e', 'era')
-		era = .true.
+		type = type_era
+	case ('t', 'tugo')
+		type = type_tugo
 	end select
 enddo
 
 ! Get template for path name and set variable name
 
-if (era) then
+select case (type)
+case (type_tugo)
+	call parseenv ('${ALTIM}/data/tugo/%Y/dac_dif_%Y%m%d_%H.nc', path)
+	varnm = 'inv_bar_tugo'
+case (type_era)
 	call parseenv ('${RADSROOT}/ext/slcci/Products/DAC_ERA_Interim_20161115/%Y/dac_era_interim_', path)
 	varnm = 'inv_bar_mog2d_era'
-else
+case default
 	call parseenv ('${ALTIM}/data/dac/%Y/dac_dif_%Y%m%d_%H.nc', path)
 	varnm = 'inv_bar_mog2d'
-endif
+end select
 
 ! Link variable
 
@@ -114,6 +122,7 @@ write (*,1310)
 'Additional [processing_options] are:'/ &
 '  --all                     (Has no effect)'/ &
 '  -e, --era                 Use the DAC forced by ERA Interim (1991-2015 only)'/ &
+'  -t, --tugo                Use the DAC from TUGO model (test case)'/ &
 '  -u, --update              Update files only when there are changes')
 stop
 end subroutine synopsis
@@ -221,7 +230,7 @@ end subroutine process_pass
 function get_mog2d (hex, grid)
 integer(fourbyteint) :: hex
 logical :: get_mog2d
-integer(twobyteint) :: grid(:,:),tmp(ny,nx-1)
+integer(twobyteint) :: grid(:,:)
 character(len=rads_cmdl) :: filenm
 integer(fourbyteint) ::	ncid,v_id,j,l,strf1985
 real(eightbytereal) :: time
@@ -235,7 +244,7 @@ get_mog2d = .true.
 ! Determine file name
 
 l = strf1985(filenm, path, hex*21600)
-if (era) write (filenm(l+1:),610) hex/4+12784,modulo(hex,4)*6
+if (type == type_era) write (filenm(l+1:),610) hex/4+12784,modulo(hex,4)*6
 
 ! Open input file
 
