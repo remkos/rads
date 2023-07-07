@@ -46,6 +46,7 @@ Global RADS configuration file
 	tx top topex
 	sa srl saral
 	ss sea seasat-a
+	sw swn swot-nadir
 </satellites>
 
 <var name="sla" field="0">
@@ -5088,5 +5089,21 @@ Global RADS configuration file
 	<xover_params>0.07 0.80</xover_params>
 	<phase name="a">
 		<mission>Geodetic Mission</mission>
+	</phase>
+</if>
+
+<if sat="sw">
+	<satellite>SWOT</satellite>
+	<satid>19</satid>
+	<dt1hz>0.993493</dt1hz>
+	<inclination>77.66</inclination>
+	<frequency>13.575 5.3</frequency> <!-- to be checked -->
+	<xover_params>0.04 0.035</xover_params>
+	<phase name="a">
+		<mission>commissioning orbit</mission>
+		<cycles>400 999</cycles>
+		<repeat>1.000 28</repeat>
+		<ref_pass>2023-04-23T18:24:06 22.45 500 1 1390</ref_pass>
+		<start_time>2023-01-15T06:01:50</start_time>
 	</phase>
 </if>
