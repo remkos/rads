@@ -5036,29 +5036,6 @@ Global RADS configuration file
 	</phase>
 </if>
 
-<if sat="sw">
-        <satellite>SWOT Nadir Altimeter</satellite>
-        <satid>19</satid>
-        <dt1hz>1.018710</dt1hz><!--Need to verify-->
-        <inclination>77.60</inclination>
-        <frequency>13.575 5.3</frequency>
-        <xover_params>0.04 0.035</xover_params><!--Need to verify-->
-        <phase name="a">
-                <mission>CalVal Phase</mission>
-                <cycles>0 90</cycles><!--Need to verify-->
-                <repeat>0.99349 28</repeat>
-                <ref_pass>2016-02-17T10:56:52 99.92 1 1 385</ref_pass><!--Need to verify-->
-                <start_time>2022-12-15</start_time><!--Need to verify-->
-        </phase>
-        <phase name="b">
-                <mission>Science Phase</mission>
-                <cycles>91 300</cycles><!--Need to verify-->
-                <repeat>20.86455 584</repeat>
-                <ref_pass>2016-02-17T10:56:52 99.92 1 1 385</ref_pass><!--Need to verify-->
-                <start_time>2022-12-15</start_time><!--Need to verify-->
-        </phase>
-</if>
-
 <if sat="n1">
 	<satellite>ENVISAT1</satellite>
 	<satid>10</satid>
@@ -5188,15 +5165,24 @@ Global RADS configuration file
 <if sat="sw">
 	<satellite>SWOT</satellite>
 	<satid>19</satid>
-	<dt1hz>0.993493</dt1hz>
+	<dt1hz>1.06259894</dt1hz>
 	<inclination>77.66</inclination>
 	<frequency>13.575 5.3</frequency> <!-- to be checked -->
 	<xover_params>0.04 0.035</xover_params>
 	<phase name="a">
-		<mission>commissioning orbit</mission>
-		<cycles>400 999</cycles>
-		<repeat>1.000 28</repeat>
+		<mission>CalVal Phase</mission>
+		<cycles>400 799</cycles>
+		<repeat>0.993493 28</repeat>
 		<ref_pass>2023-04-23T18:24:06 22.45 500 1 1390</ref_pass>
 		<start_time>2023-01-15T06:01:50</start_time>
 	</phase>
+<!-- to be updated
+	<phase name="b">
+		<mission>Science Phase</mission>
+		<cycles>800 999</cycles>
+		<repeat>20.86455 584</repeat>
+		<ref_pass>2016-02-17T10:56:52 99.92 1 1 385</ref_pass>
+		<start_time>2022-12-15</start_time>
+	</phase>
+-->
 </if>
