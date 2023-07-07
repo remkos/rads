@@ -2,6 +2,7 @@
 *.aux
 *.blg
 *.cache
+*.DS_Store
 *.gz
 *.idx
 *.ilg
@@ -11,8 +12,10 @@
 *.o
 *.status
 *.toc
+altim/
 confdefs.h
 config.mk
+data/
 devel/make_orf
 devel/ogdrsplit
 devel/rads_add_dual
@@ -55,6 +58,7 @@ devel/rads_gen_reaper
 devel/rads_gen_s3
 devel/rads_gen_s6
 devel/rads_gen_saral
+devel/rads_gen_swot
 devel/rads_gen_tx_rgdr
 devel/rads_pre_sort_passes
 doc/manuals/sub
