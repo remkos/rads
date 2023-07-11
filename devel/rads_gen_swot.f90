@@ -81,7 +81,7 @@ program rads_gen_swot
 ! tide_solid - Solid earth tide
 ! tide_pole - Pole tide
 ! geoid_egm2008 - EGM2008 geoid
-! cnescls15 - CNES/CLS15 mean sea surface
+! mss_cnescls15 - CNES/CLS15 mean sea surface
 ! mss_dtu18 - DTU13 mean sea surface
 ! topo_ace2 - ACE2 topography
 ! surface_class - Surgace classification
@@ -287,29 +287,30 @@ do
 ! Compile flag bits
 
 	flags = 0
-	call nc2f (ncid1, 'alt_state_band_seq_flag',0)				! bit  0: Altimeter Side A/B
-	call nc2f (ncidk, 'off_nadir_angle_wf_ocean_compression_qual', 1)		! bit  1: Quality off-nadir pointing
-	call nc2f (ncid1, 'surface_classification_flag', 2, eq=4)	! bit  2: Continental ice
-	call nc2f (ncidc, 'range_ocean_compression_qual', 3)			! bit  3: Quality dual-frequency iono
+	call nc2f (ncid1, 'alt_state_band_seq_flag',0)						! bit  0: Altimeter Side A/B
+	call nc2f (ncidk, 'off_nadir_angle_wf_ocean_compression_qual', 1)	! bit  1: Quality off-nadir pointing
+	call nc2f (ncid1, 'surface_classification_flag', 2, eq=4)			! bit  2: Continental ice
+	call nc2f (ncidc, 'range_ocean_compression_qual', 3)				! bit  3: Quality dual-frequency iono
 	call nc2f (ncid1, 'surface_classification_flag', 4, eq=1)
-	call nc2f (ncid1, 'surface_classification_flag', 4, ge=3)	! bit  4: Water/land
-	call nc2f (ncid1, 'surface_classification_flag', 5, ge=1)	! bit  5: Ocean/other
-	call nc2f (ncid1, 'rad_side_1_surface_type_flag', 6, ge=2)			! bit  6: Radiometer land flag
+	call nc2f (ncid1, 'surface_classification_flag', 4, ge=3)			! bit  4: Water/land
+	call nc2f (ncid1, 'surface_classification_flag', 5, ge=1)			! bit  5: Ocean/other
+	call nc2f (ncid1, 'rad_side_1_surface_type_flag', 6, ge=2)
 	call nc2f (ncid1, 'rad_side_2_surface_type_flag', 6, ge=2)			! bit  6: Radiometer land flag
 	call nc2f (ncid1, 'rain_flag', 7, eq=1)
 	call nc2f (ncid1, 'rain_flag', 7, eq=2)
-	call nc2f (ncid1, 'rain_flag', 7, eq=4)						! bit  7: Altimeter rain or ice flag
+	call nc2f (ncid1, 'rain_flag', 7, eq=4)								! bit  7: Altimeter rain or ice flag
 	call nc2f (ncid1, 'rad_side_1_rain_flag', 8)
-	call nc2f (ncid1, 'rad_side_1_sea_ice_flag', 8)					! bit  8: Radiometer rain or ice flag
+	call nc2f (ncid1, 'rad_side_1_sea_ice_flag', 8)						! bit  8: Radiometer rain or ice flag
 	call nc2f (ncid1, 'rad_side_2_rain_flag', 8)
-	call nc2f (ncid1, 'rad_side_2_sea_ice_flag', 8)					! bit  8: Radiometer rain or ice flag
+	call nc2f (ncid1, 'rad_side_2_sea_ice_flag', 8)						! bit  8: Radiometer rain or ice flag
 	call nc2f (ncid1, 'rad_tb_187_qual',  9)
-	call nc2f (ncid1, 'rad_tb_238_qual',  9)					! bit  9: Quality 18.7 or 23.8 GHz channel
-	call nc2f (ncid1, 'rad_tb_340_qual', 10)					! bit 10: Quality 34.0 GHz channel
+	call nc2f (ncid1, 'rad_tb_238_qual',  9)							! bit  9: Quality 18.7 or 23.8 GHz channel
+	call nc2f (ncid1, 'rad_tb_340_qual', 10)							! bit 10: Quality 34.0 GHz channel
 	if (latency == rads_nrt) then
-		call nc2f (ncid1, 'orb_state_diode_flag',15,ge=2)		! bit 15: Quality of DIODE orbit
+		call nc2f (ncid1, 'orb_state_diode_flag',15,ge=2,le=9)			! bit 15: Quality of DIODE orbit
+		! RS 2023-07-11: le=9 was introduced here to avoid the undefined value of 10.
 	else
-		call nc2f (ncid1, 'orb_state_rest_flag',15,neq=3)		! bit 15: Quality of restituted orbit
+		call nc2f (ncid1, 'orb_state_rest_flag',15,neq=3)				! bit 15: Quality of restituted orbit
 	endif
 
 

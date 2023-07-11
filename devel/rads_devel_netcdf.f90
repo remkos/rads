@@ -162,7 +162,7 @@ call rads_close_pass (S, P)
 end subroutine put_rads
 
 !-----------------------------------------------------------------------
-! nc2f: Load flag field, then set corresponding bit in RADS
+! nc2f  : Load flag field, then set corresponding bit in RADS
 ! ncid  : source NetCDF ID
 ! varnm : source variable name
 ! bit   : RADS bit to be set when value == 1
@@ -190,7 +190,11 @@ if (ndims == 2) then	! Reduce 2D flags to 1D array
 else
 	call nfs(nf90_get_var(ncid,varid,flag(1:nrec)))
 endif
-if (present(ge)) then	! Set flag when value >= ge
+if (present(ge) .and. present(le)) then ! Set flag when ge <= value <= le
+	do i = 1,nrec
+		if (flag(i) >= ge .and. flag(i) <= le) flags(i) = ibset(flags(i),bit)
+	enddo
+else if (present(ge)) then	! Set flag when value >= ge
 	do i = 1,nrec
 		if (flag(i) >= ge) flags(i) = ibset(flags(i),bit)
 	enddo
