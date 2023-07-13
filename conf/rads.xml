@@ -2793,19 +2793,21 @@ Global RADS configuration file
 	<flag_values sat="e1">sptr_available sptr_not_available</flag_values>
 	<flag_values sat="j1 j2 j3 n1 sw">side_A side_B</flag_values>
 	<plot_range>0 1</plot_range>
-	<data source="flags">0</data>
-	<format>z1</format>
-	<compress>int1</compress>
 	<if sat="c2">
 		<flag_values>LRM SAR SARIN</flag_values>
 		<data>flag_alt_oper_mode</data>
 		<plot_range>0 2</plot_range>
 	</if>
-	<if sat="6a">
+	<elseif sat="6a">
 		<flag_values>LRM RAW RMC</flag_values>
 		<data>flag_alt_oper_mode</data>
 		<plot_range>0 2</plot_range>
-	</if>
+	</elseif>
+	<else>
+		<data source="flags">0</data>
+	</else>
+	<format>z1</format>
+	<compress>int1</compress>
 </var>
 <var name="qual_sptr" field="2516" sat="e1 e2">
 	<long_name>SPTR availability</long_name>
@@ -2821,7 +2823,7 @@ Global RADS configuration file
 	<flag_values>ok bad</flag_values>
 	<flag_values sat="g1 gs pn">ok suspect</flag_values>
 	<plot_range>0 1</plot_range>
-	<data source="flags">1</data>
+	<data sat="!6a" source="flags">1</data>
 	<data sat="6a">qual_attitude</data>
 	<format>z1</format>
 	<compress>int1</compress>
@@ -2871,7 +2873,7 @@ Global RADS configuration file
 	<long_name>quality of dual-frequency ionospheric correction</long_name>
 	<flag_values>ok bad</flag_values>
 	<plot_range>0 1</plot_range>
-	<data source="flags">3</data>
+	<data sat="!6a" source="flags">3</data>
 	<data sat="6a">qual_iono_alt</data>
 	<format>z1</format>
 	<compress>int1</compress>
@@ -2914,28 +2916,28 @@ Global RADS configuration file
 </var>
 
 <var name="surface_type_rad1" sat="sw">
-        <long_name>radiometer side-1 land flag</long_name>
-        <flag_values>water land</flag_values>
-        <plot_range>0 1</plot_range>
-        <format>z1</format>
-        <compress>int1</compress>
-        <long_name>radiometer side-1 surface type</long_name>
-        <flag_values>open_ocean coastal_ocean coastal_amr land</flag_values>
-        <data>surface_type_rad1</data>
-        <plot_range>0 3</plot_range>
+	<long_name>radiometer side-1 land flag</long_name>
+	<flag_values>water land</flag_values>
+	<plot_range>0 1</plot_range>
+	<format>z1</format>
+	<compress>int1</compress>
+	<long_name>radiometer side-1 surface type</long_name>
+	<flag_values>open_ocean coastal_ocean coastal_amr land</flag_values>
+	<data>surface_type_rad1</data>
+	<plot_range>0 3</plot_range>
 	<comment>The processing of radiometer data depends on this flag: 0 = open ocean, 2 = coastal ocean processing, 3 = invalid due to land contamination</comment>
 </var>
 
 <var name="surface_type_rad2" sat="sw">
-        <long_name>radiometer side-2 land flag</long_name>
-        <flag_values>water land</flag_values>
-        <plot_range>0 1</plot_range>
-        <format>z1</format>
-        <compress>int1</compress>
-        <long_name>radiometer side-2 surface type</long_name>
-        <flag_values>open_ocean coastal_ocean coastal_amr land</flag_values>
+	<long_name>radiometer side-2 land flag</long_name>
+	<flag_values>water land</flag_values>
+	<plot_range>0 1</plot_range>
+	<format>z1</format>
+	<compress>int1</compress>
+	<long_name>radiometer side-2 surface type</long_name>
+	<flag_values>open_ocean coastal_ocean coastal_amr land</flag_values>
 	<data>surface_type_rad2</data>
-        <plot_range>0 3</plot_range>
+	<plot_range>0 3</plot_range>
 	<comment>The processing of radiometer data depends on this flag: 0 = open ocean, 2 = coastal ocean processing, 3 = invalid due to land contamination</comment>
 </var>
 
@@ -2969,30 +2971,28 @@ Global RADS configuration file
 		<data>qual_rad_rain_ice</data>
 	</if>
 	<else>
-	<data source="flags">8</data>
+		<data source="flags">8</data>
 	</else>
 	<format>z1</format>
 	<compress>int1</compress>
 </var>
 
 <var name="qual_rad1_rain_ice" sat="sw">
-        <long_name>corruption of radiometer side-1 measurement (rain or ice)</long_name>
-        <flag_values>ok rain_or_ice</flag_values>
-        <plot_range>0 1</plot_range>
-        <data source="flags">8</data>
-        <data>qual_rad1_rain_ice</data>
-        <format>z1</format>
-        <compress>int1</compress>
+	<long_name>corruption of radiometer side-1 measurement (rain or ice)</long_name>
+	<flag_values>ok rain_or_ice</flag_values>
+	<plot_range>0 1</plot_range>
+	<data>qual_rad1_rain_ice</data>
+	<format>z1</format>
+	<compress>int1</compress>
 </var>
 
 <var name="qual_rad2_rain_ice" sat="sw">
-        <long_name>corruption of radiometer side-2 measurement (rain or ice)</long_name>
-        <flag_values>ok rain_or_ice</flag_values>
-        <plot_range>0 1</plot_range>
-        <data source="flags">8</data>
-        <data>qual_rad2_rain_ice</data>
-        <format>z1</format>
-        <compress>int1</compress>
+	<long_name>corruption of radiometer side-2 measurement (rain or ice)</long_name>
+	<flag_values>ok rain_or_ice</flag_values>
+	<plot_range>0 1</plot_range>
+	<data>qual_rad2_rain_ice</data>
+	<format>z1</format>
+	<compress>int1</compress>
 </var>
 
 <var name="qual_rad_tb" field="2509" sat="!c2 gs">
@@ -3002,15 +3002,17 @@ Global RADS configuration file
 	<flag_masks sat="j1 j2 j3 sw">bad_tb_187_or_238 bad_tb_340</flag_masks>
 	<flag_masks sat="sa">bad_tb_238 bad_tb_370</flag_masks>
 	<flag_values sat="pn tx">ok interpolation_near_land extrapolation interpolation_failed</flag_values>
-	<plot_range>0 3</plot_range>
-	<data source="flags">9 2</data>
-	<format>z1</format>
-	<compress>int1</compress>
 	<if sat="6a">
 		<flag_masks>bad_tb_187 bad_tb_238 bad_tb_340</flag_masks>
 		<data>qual_rad_tb</data>
 		<plot_range>0 7</plot_range>
 	</if>
+	<else>
+		<data source="flags">9 2</data>
+		<plot_range>0 3</plot_range>
+	</else>
+	<format>z1</format>
+	<compress>int1</compress>
 </var>
 
 <var name="qual_range" field="2511">
@@ -3019,8 +3021,12 @@ Global RADS configuration file
 	<flag_values>ok suspect</flag_values>
 	<flag_values sat="gs">ok some_10Hz_measurements_invalid</flag_values>
 	<plot_range>0 1</plot_range>
-	<data source="flags">11</data>
-	<data sat="6a">qual_range</data>
+	<if sat="6a">
+		<data>qual_range</data>
+	</if>
+	<else>
+		<data source="flags">11</data>
+	</else>
 	<format>z1</format>
 	<compress>int1</compress>
 </var>
@@ -3051,8 +3057,12 @@ Global RADS configuration file
 	<long_name sat="gs">quality of sea state bias</long_name>
 	<flag_values>ok suspect</flag_values>
 	<plot_range>0 1</plot_range>
-	<data source="flags">12</data>
-	<data sat="6a">qual_swh</data>
+	<if sat="6a">
+		<data>qual_swh</data>
+	</if>
+	<else>
+		<data source="flags">12</data>
+	</else>
 	<format>z1</format>
 	<compress>int1</compress>
 </var>
@@ -3083,8 +3093,12 @@ Global RADS configuration file
 	<long_name sat="gs">quality of wind speed estimate</long_name>
 	<flag_values>ok suspect</flag_values>
 	<plot_range>0 1</plot_range>
-	<data source="flags">13</data>
-	<data sat="6a">qual_sig0</data>
+	<if sat="6a">
+		<data>qual_sig0</data>
+	</if>
+	<else>
+		<data source="flags">13</data>
+	</else>
 	<format>z1</format>
 	<compress>int1</compress>
 </var>
@@ -3127,14 +3141,16 @@ Global RADS configuration file
 	<standard_name>height_above_reference_ellipsoid status_flag</standard_name>
 	<flag_values>ok degraded</flag_values>
 	<plot_range>0 1</plot_range>
-	<data source="flags">15</data>
-	<format>z1</format>
-	<compress>int1</compress>
 	<if sat="6a">
 		<flag_values>navatt fos_pre fos_res doris_nav roe_gnss moe_doris moe_gnss undefined poe</flag_values>
 		<plot_range>0 8</plot_range>
 		<data>qual_orbit</data>
 	</if>
+	<else>
+		<data source="flags">15</data>
+	</else>
+	<format>z1</format>
+	<compress>int1</compress>
 </var>
 
 <var name="surface_type" field="2517">
