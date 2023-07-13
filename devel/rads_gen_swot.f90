@@ -59,7 +59,7 @@ program rads_gen_swot
 ! wind_speed_ecmwf_u - ECMWF wind speed (U)
 ! wind_speed_ecmwf_v - ECMWF wind speed (V)
 ! qual_alt_rain_ice - Altimeter rain flag
-! qual_rad_rain_ice - Radiometer rain flag
+! qual_rad?_rain_ice - Radiometer rain flag
 ! off_nadir_angle2_wf_ku - Mispointing from waveform squared
 ! off_nadir_angle2_wf_rms_ku - RMS of mispointing from waveform squared
 ! qaul_attitude - Quality of attitude measurement
@@ -85,7 +85,7 @@ program rads_gen_swot
 ! mss_dtu18 - DTU13 mean sea surface
 ! topo_ace2 - ACE2 topography
 ! surface_class - Surgace classification
-! surface_type_rad - Radiometer surface type
+! surface_type_rad? - Radiometer surface type
 ! dist_coast - Distance to the coast
 ! angle_coast - Angle to the coast
 ! rads_dist_coast - Radiometer distance to the coast

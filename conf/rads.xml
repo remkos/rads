@@ -2895,13 +2895,10 @@ Global RADS configuration file
 	<compress>int1</compress>
 </var>
 
-<var name="surface_type_rad" field="2506" sat="!c2 gs sw">
+<var name="surface_type_rad" field="2506" sat="!c2 gs">
 	<long_name>radiometer land flag</long_name>
 	<flag_values>water land</flag_values>
 	<plot_range>0 1</plot_range>
-	<data source="flags">6</data>
-	<format>z1</format>
-	<compress>int1</compress>
 	<if sat="6a j3">
 		<long_name>radiometer surface type</long_name>
 		<flag_values>open_ocean coastal_ocean coastal_amr land</flag_values>
@@ -2909,61 +2906,71 @@ Global RADS configuration file
 		<plot_range>0 3</plot_range>
 		<comment>The processing of radiometer data depends on this flag: 0 = open ocean, 1 = coastal ocean processing with HRMR and AMR, 2 = coastal ocean processing with AMR only, 3 = invalid due to land contamination</comment>
 	</if>
+	<else>
+		<data source="flags">6</data>
+	</else>
+	<format>z1</format>
+	<compress>int1</compress>
 </var>
 
-<var name="surface_type_rad1" field="2506" sat="sw">
+<var name="surface_type_rad1" sat="sw">
         <long_name>radiometer side-1 land flag</long_name>
         <flag_values>water land</flag_values>
         <plot_range>0 1</plot_range>
-        <data source="flags">6</data>
         <format>z1</format>
         <compress>int1</compress>
         <long_name>radiometer side-1 surface type</long_name>
         <flag_values>open_ocean coastal_ocean coastal_amr land</flag_values>
         <data>surface_type_rad1</data>
         <plot_range>0 3</plot_range>
-        <comment>The processing of radiometer data depends on this flag: 0 = open ocean, 1 = coastal ocean processing with HRMR and AMR, 2 = coastal ocean processing with AMR only, 3 = invalid due to land contamination</comment>
+	<comment>The processing of radiometer data depends on this flag: 0 = open ocean, 2 = coastal ocean processing, 3 = invalid due to land contamination</comment>
 </var>
 
-<var name="surface_type_rad2" field="2506" sat="sw">
+<var name="surface_type_rad2" sat="sw">
         <long_name>radiometer side-2 land flag</long_name>
         <flag_values>water land</flag_values>
         <plot_range>0 1</plot_range>
-        <data source="flags">6</data>
         <format>z1</format>
         <compress>int1</compress>
         <long_name>radiometer side-2 surface type</long_name>
         <flag_values>open_ocean coastal_ocean coastal_amr land</flag_values>
-        <data>surface2_type_rad</data>
+	<data>surface_type_rad2</data>
         <plot_range>0 3</plot_range>
-        <comment>The processing of radiometer data depends on this flag: 0 = open ocean, 1 = coastal ocean processing with HRMR and AMR, 2 = coastal ocean processing with AMR only, 3 = invalid due to land contamination</comment>
+	<comment>The processing of radiometer data depends on this flag: 0 = open ocean, 2 = coastal ocean processing, 3 = invalid due to land contamination</comment>
 </var>
 
 <var name="qual_alt_rain_ice" field="2507" sat="3a 3b 6a g1 j1 j2 j3 n1 pn sa tx sw">
 	<long_name>corruption of altimeter measurement (ice)</long_name>
 	<flag_values>no_ice ice</flag_values>
 	<plot_range>0 1</plot_range>
-	<data source="flags">7</data>
 	<format>z1</format>
 	<compress>int1</compress>
 	<if sat="n1">
 		<long_name>corruption of altimeter measurement (rain/ice)</long_name>
 		<flag_values>no_rain_ice rain_ice</flag_values>
+		<data source="flags">7</data>
 	</if>
-	<if sat="6a">
+	<elseif sat="6a">
 		<long_name>altimeter rain flag</long_name>
 		<flag_values>no_rain rain high_rain_probability_from_altimeter high_probability_of_no_rain_from_altimeter ambiguous_situation_possibility_of_ice evaluation_not_possible</flag_values>
 		<plot_range>0 5</plot_range>
 		<data>qual_alt_rain_ice</data>
-	</if>
+	</elseif>
+	<else>
+		<data source="flags">7</data>
+	</else>
 </var>
 
 <var name="qual_rad_rain_ice" field="2508" sat="3a 3b 6a e1 e2 j1 j2 j3 n1 pn tx">
 	<long_name>corruption of radiometer measurement (rain or ice)</long_name>
 	<flag_values>ok rain_or_ice</flag_values>
 	<plot_range>0 1</plot_range>
+	<if sat="6a">
+		<data>qual_rad_rain_ice</data>
+	</if>
+	<else>
 	<data source="flags">8</data>
-	<data sat="6a">qual_rad_rain_ice</data>
+	</else>
 	<format>z1</format>
 	<compress>int1</compress>
 </var>
@@ -3658,8 +3665,9 @@ Global RADS configuration file
 		<long_name>off-nadir pointing angle squared from waveform</long_name>
 		<long_name sat="e2">off-nadir angle squared from waveform (smoothed)</long_name>
 		<units>degrees^2</units>
-		<limits sat="j1 j2 j3 sw">-0.20 0.64</limits> <!--Attitude^2 on Jason is pretty bad-->
+		<limits sat="j1 j2 j3">-0.20 0.64</limits> <!--Attitude^2 on Jason is pretty bad-->
 		<limits sat="e2">-0.05 0.05</limits>
+		<limits sat="sw">-0.1 0.1</limits>
 		<plot_range>-0.04 0.08</plot_range>
 		<data>off_nadir_angle2_wf_ku</data>
 		<data sat="gs pn tx">off_nadir_angle_wf_ku SQR</data> <!--Compute attitude^2 from attitude-->
