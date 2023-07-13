@@ -3106,11 +3106,9 @@ do i = 1,S%nvar
 			S%var(i)%info%limits(1) = 2 ! non-ocean
 		endif
 	else if (S%var(i)%info%datatype == rads_type_flagmasks) then
-		if (all(ibits(mask,bits(1),bits(2)) == 0)) cycle
 		S%var(i)%info%limits(1) = ibits(mask(1),bits(1),bits(2))
 		S%var(i)%info%limits(2) = ibits(mask(2),bits(1),bits(2))
 	else ! rads_type_flagvalues
-		if (all(ibits(mask,bits(1),bits(2)) == 0)) cycle
 		S%var(i)%info%limits(2) = ibits(not(mask(1)),bits(1),bits(2))
 		S%var(i)%info%limits(1) = ibits(mask(2),bits(1),bits(2))
 	endif
