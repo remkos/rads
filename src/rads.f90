@@ -2448,7 +2448,11 @@ do
 		if (associated(var)) then	! Within <var> block, we do not need "name" attribute
 			call rads_set_alias (S, var%name, var%name // ' ' // val(1), field)
 		else if (has_name (field)) then
-			call rads_set_alias (S, name, val(1), field)
+			if (val(1)(1:1) == ',' .or. val(1)(1:1) == '/') then
+				call rads_set_alias (S, name, trim(name) // val(1), field)
+			else
+				call rads_set_alias (S, name, val(1), field)
+			endif
 		endif
 
 	case ('var')
