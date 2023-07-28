@@ -93,15 +93,17 @@ do i = 1,rads_nopt
 		period = period_pass
 		read (rads_opt(i)%arg, *, iostat=ios) step
 		if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
-	case ('q') ! When stepping by fraction of cycles, redefine it as a number of passes.
-		period = period_pass
-		read (rads_opt(i)%arg, *, iostat=ios) step
-		if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
-		step = S(1)%passes(2) / step
 	case ('c')
-		period = period_cycle
-		read (rads_opt(i)%arg, *, iostat=ios) step
-		if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
+		if (rads_opt(i)%arg(1:1) == '/') then ! When stepping by fraction of cycles, redefine it as a number of passes.
+			period = period_pass
+			read (rads_opt(i)%arg(2:), *, iostat=ios) step
+			if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
+			step = S(1)%passes(2) / step
+		else
+			period = period_cycle
+			read (rads_opt(i)%arg, *, iostat=ios) step
+			if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
+		endif
 	case ('b')
 		wmode = 0
 		call read_val (rads_opt(i)%arg, res, '/-+x', iostat=ios)
@@ -270,8 +272,7 @@ write (*,1300)
 '                            In all cases above, all non-NaN values per variable are averaged'/ &
 '  -r n, -r any              Reject measurement records if any value is NaN'/ &
 '                      Note: If no -r option is given, -r sla is assumed'/ &
-'  -c [N]                    Statistics per cycle or N cycles'/ &
-'  -q [N]                    Statistics N times per cycle' / &
+'  -c [N]                    Statistics per cycle or N cycles or use /N to specify a fraction of cycles'/ &
 '  -p [N]                    Statistics per pass or N passes'/ &
 '  -d [N]                    Statistics per day (default) or N days'/ &
 '  -b [DX,DY]                Average by boxes with size (default on: 3x1 degrees)'/ &
