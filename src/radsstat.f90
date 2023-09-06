@@ -640,7 +640,7 @@ if (groups) then
 		if (mask(k)) then
 			Pout%fileinfo(1) = rads_file (grpid(k), filename) ! Set to right group
 			do j = 1,S(1)%nsel
-				call rads_def_var (S(1), Pout, S(1)%sel(j))
+				call rads_def_var (S(1), Pout, S(1)%sel(j), coordinates=.false.)
 			enddo
 		endif
 	enddo
@@ -672,7 +672,7 @@ else
 	! Define selected variables
 	do j = 1,S(1)%nsel
 		if (lstat > 0) S(1)%sel(j)%info%ndims = 2
-		call rads_def_var (S(1), Pout, S(1)%sel(j))
+		call rads_def_var (S(1), Pout, S(1)%sel(j), coordinates=.false.)
 	enddo
 endif
 

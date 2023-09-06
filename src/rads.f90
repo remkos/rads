@@ -344,7 +344,7 @@ end interface rads_get_var
 ! Define variable(s) to be written to RADS data file
 !
 ! SYNTAX
-! subroutine rads_def_var (S, P, var, nctype, scale_factor, add_offset, ndims, varid)
+! subroutine rads_def_var (S, P, var, nctype, scale_factor, add_offset, ndims, coordinates, varid)
 ! type(rads_sat), intent(inout) :: S
 ! type(rads_pass), intent(inout) :: P
 ! type(rads_var), intent(in) :: var <or> var(:)
@@ -362,19 +362,22 @@ end interface rads_get_var
 !
 ! The optional arguments <nctype>, <scale_factor>, <add_offset>, <ndims>  can
 ! be used to overrule those value in the <var%info> struct.
+! The optional argument <coordinates> can be used to switch off the addition of the
+! 'coordinates' attribute. Default is 'on' for most variables.
 !
 ! ARGUMENTS
-! S        : Satellite/mission dependent structure
-! P        : Pass structure
-! var      : Structure(s) of variable(s) of type(rads_var) or name of variable
-! nctype   : (optional) Data type in NetCDF file
+! S            : Satellite/mission dependent structure
+! P            : Pass structure
+! var          : Structure(s) of variable(s) of type(rads_var) or name of variable
+! nctype       : (optional) Data type in NetCDF file
 ! scale_factor : (optional) Value of the scale_factor attribute
-! add_offset : (optional) Value of the add_offset attribute
-! ndims    : (optional) Number of dimensions of the variable
-! varid    : variable ID of created NetCDF variable
+! add_offset   : (optional) Value of the add_offset attribute
+! ndims        : (optional) Number of dimensions of the variable
+! coordinates  : (optional) No not add coordinates attribute if .false. (default is .true.)
+! varid        : variable ID of created NetCDF variable
 !
 ! ERROR CODE
-! S%error  : rads_noerr, rads_err_nc_var
+! S%error      : rads_noerr, rads_err_nc_var
 !****-------------------------------------------------------------------
 private :: rads_def_var_by_var_0d, rads_def_var_by_var_1d, rads_def_var_by_name
 interface rads_def_var
@@ -4404,7 +4407,7 @@ enddo
 e = nf90_put_att (ncid, nf90_global, 'original', P%original)
 end subroutine rads_put_history
 
-subroutine rads_def_var_by_var_0d (S, P, var, nctype, scale_factor, add_offset, ndims, varid)
+subroutine rads_def_var_by_var_0d (S, P, var, nctype, scale_factor, add_offset, ndims, coordinates, varid)
 use netcdf
 use rads_netcdf
 type(rads_sat), intent(inout) :: S
@@ -4412,6 +4415,7 @@ type(rads_pass), intent(inout) :: P
 type(rads_var), intent(in) :: var
 integer(fourbyteint), intent(in), optional :: nctype, ndims
 real(eightbytereal), intent(in), optional :: scale_factor, add_offset
+logical, intent(in), optional :: coordinates
 integer(fourbyteint), intent(out), optional :: varid
 type(rads_varinfo), pointer :: info
 integer(fourbyteint) :: e, n, xtype, ncid, varid_
@@ -4497,7 +4501,8 @@ endif
 if (info%quality_flag /= '') e = e + nf90_put_att (ncid, varid_, 'quality_flag', info%quality_flag)
 if (info%scale_factor /= 1d0) e = e + nf90_put_att (ncid, varid_, 'scale_factor', info%scale_factor)
 if (info%add_offset /= 0d0)  e = e + nf90_put_att (ncid, varid_, 'add_offset', info%add_offset)
-if (info%datatype >= rads_type_time .or. info%dataname(:1) == ':' .or. info%ndims < 1) then
+if (info%datatype >= rads_type_time .or. info%dataname(:1) == ':' .or. info%ndims < 1 .or. &
+	(present(coordinates) .and. .not.coordinates)) then
 	! Do not add coordinate attribute for some data types
 else if (info%ndims > 1 .and. S%n_hz_output .and. P%n_hz > 1) then
 	! For multi-Hz data: use 'lon_#hz lat_#hz'
@@ -4528,31 +4533,33 @@ end function count_spaces
 
 end subroutine rads_def_var_by_var_0d
 
-subroutine rads_def_var_by_var_1d (S, P, var, nctype, scale_factor, add_offset, ndims, varid)
+subroutine rads_def_var_by_var_1d (S, P, var, nctype, scale_factor, add_offset, ndims, coordinates, varid)
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 type(rads_var), intent(in) :: var(:)
 integer(fourbyteint), intent(in), optional :: nctype, ndims
 real(eightbytereal), intent(in), optional :: scale_factor, add_offset
+logical, intent(in), optional :: coordinates
 integer(fourbyteint), intent(out), optional :: varid
 integer :: i
 do i = 1,size(var)
-	call rads_def_var_by_var_0d (S, P, var(i), nctype, scale_factor, add_offset, ndims, varid)
+	call rads_def_var_by_var_0d (S, P, var(i), nctype, scale_factor, add_offset, ndims, coordinates, varid)
 	if (S%error /= rads_noerr) return
 enddo
 end subroutine rads_def_var_by_var_1d
 
-subroutine rads_def_var_by_name (S, P, varname, nctype, scale_factor, add_offset, ndims, varid)
+subroutine rads_def_var_by_name (S, P, varname, nctype, scale_factor, add_offset, ndims, coordinates, varid)
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 character(len=*), intent(in) :: varname
 integer(fourbyteint), intent(in), optional :: nctype, ndims
 real(eightbytereal), intent(in), optional :: scale_factor, add_offset
+logical, intent(in), optional :: coordinates
 integer(fourbyteint), intent(out), optional :: varid
 type(rads_var), pointer :: var
 var => rads_varptr (S, varname)
 if (S%error /= rads_noerr) return
-call rads_def_var_by_var_0d (S, P, var, nctype, scale_factor, add_offset, ndims, varid)
+call rads_def_var_by_var_0d (S, P, var, nctype, scale_factor, add_offset, ndims, coordinates, varid)
 if (S%error /= rads_noerr) return
 end subroutine rads_def_var_by_name
 
