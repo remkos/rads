@@ -2,7 +2,7 @@
 *.aux
 *.blg
 *.cache
-*.DS_Store
+*.dSYM
 *.gz
 *.idx
 *.ilg
@@ -12,6 +12,7 @@
 *.o
 *.status
 *.toc
+.DS_Store
 altim/
 confdefs.h
 config.mk
