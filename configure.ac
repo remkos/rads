@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------
-#  Copyright (c) 2011-2022  Remko Scharroo
+#  Copyright (c) 2011-2023  Remko Scharroo
 #  See LICENSE.TXT file for copying and redistribution conditions.
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -19,7 +19,7 @@
 # -----------------------------------------------------------------
 # Define and show package version
 # -----------------------------------------------------------------
-AC_INIT([RADS],[4.4.0],[remko.scharroo@eumetsat.int])
+AC_INIT([RADS],[4.5.0],[remko.scharroo@eumetsat.int])
 AC_PREREQ([2.71])
 AC_MSG_NOTICE([AC_PACKAGE_NAME, version AC_PACKAGE_VERSION])
 
