@@ -28,7 +28,7 @@ PROGS	= rads_add_dual rads_add_ecmwf rads_add_era rads_add_era5 rads_add_flags r
 		rads_add_tide rads_add_webtide rads_add_mfwam rads_add_ww3_222 rads_add_ww3_314 \
 		rads_fix_c2 rads_fix_eqtime rads_fix_j1 rads_fix_jason rads_fix_reaper rads_fix_s3 rads_fix_s6 rads_fix_tx \
 		rads_gen_c2_op rads_gen_h2 rads_gen_jason rads_gen_jason_gdrf rads_gen_reaper rads_gen_s3 rads_gen_s6 \
-		rads_gen_saral rads_gen_tx_rgdr make_orf ogdrsplit rads_pre_sort_passes rads_copy_var
+		rads_gen_saral rads_gen_swot rads_gen_tx_rgdr make_orf ogdrsplit rads_pre_sort_passes rads_copy_var
 
 # Includes
 INCLUDES = $(MOD_FLAG). $(MOD_FLAG)../src $(MOD_FLAG)$(ALTIM)/include $(NETCDF_INC) $(GRIB_INC)
@@ -46,6 +46,8 @@ SCRIPTS = rads_add_common \
 		rads_gen_j1.sh rads_gen_j2.sh \
 		rads_gen_j3.sh rads_gen_j3_calval.sh rads_gen_j3_new.sh rads_gen_j3_new_calval.sh \
 		rads_gen_tx_rgdr.sh rads_gen_saral.sh rads_gen_saral_new.sh \
+		rads_gen_sw.sh rads_gen_sw_new.sh rads_gen_sw_new_calval.sh rads_gen_sw_calval.sh \
+		rads_purge_older.sh rads_sandbox.sh \
 		rads_purge_older.sh rads_sandbox.sh hardlink.sh \
 		radscyclesindex
 
@@ -67,7 +69,7 @@ man:	$(MAN)
 # Object dependencies
 #-----------------------------------------------------------------------
 
-rads_gen_h2 rads_gen_jason rads_gen_jason_gdrf rads_gen_saral rads_gen_s3 rads_gen_s6 rads_gen_tx_rgdr rads_gen_c2_op:	rads_devel_netcdf.o rads_gen.o
+rads_gen_h2 rads_gen_jason rads_gen_jason_gdrf rads_gen_saral rads_gen_s3 rads_gen_s6 rads_gen_swot rads_gen_tx_rgdr rads_gen_c2_op:	rads_devel_netcdf.o rads_gen.o
 rads_gen_reaper:	rads_gen.o
 rads_fix_s6: rads_devel.o rads_devel_netcdf.o
 rads_add_iono:	$(ALTIM)/lib/iono.a

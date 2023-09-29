@@ -21,7 +21,7 @@
 ! The input file names are read from
 ! standard input. The individual pass files will be named
 ! <destdir>/cCCC/SSS_*_CCC_PPP_*.nc, where SSS is the satellite abbreviation
-! (S3A, S3B, S6A, JA3), CCC is the cycle number and PPP the pass number.
+! (S3A, S3B, S6A, JA3, SWOT), CCC is the cycle number and PPP the pass number.
 ! The directory <destdir>/cCCC will be created if needed.
 !
 ! This program relies on the availability of the satellite's ORF files.
@@ -101,6 +101,9 @@ i = index(filenm,'/',.true.) + 1
 if (filenm(i:i+1) == 'JA' .and. filenm(i+10:i+10) == 'f') then
 	! Jason GDR-F
 	timesep = ' '
+else if (filenm(i:i+3) == 'SWOT' .and. filenm(i+11:i+11) == 'f') then
+	! SWOT GDR-F
+	timesep = ' '
 else if (filenm(i:i+1) == 'S6' .and. filenm(i+4:i+8) == 'P4_2_') then
 	! Sentinel-6 Level-2
 	if (filenm(i+10:i+11) == 'HR') ngrps = 2
@@ -169,7 +172,7 @@ do
 
 ! Read global attributes
 
-	if (sat(:2) /= 'JA') call nfs(nf90_get_att(ncid1(0),nf90_global,'product_name',product_name))
+	if (sat(:2) /= 'JA' .and. sat(:2) /= 'SW') call nfs(nf90_get_att(ncid1(0),nf90_global,'product_name',product_name))
 	if (sat(:2) /= 'CS') then
 		call nfs(nf90_get_att(ncid1(0),nf90_global,'cycle_number',cycle_number))
 		call nfs(nf90_get_att(ncid1(0),nf90_global,'pass_number',pass_number))
@@ -341,7 +344,7 @@ nrec = sum(fin(1:nfile)%rec1 - fin(1:nfile)%rec0 + 1)
 ! Open the output file. Make directory if needed.
 
 605 format (a,'/c',i3.3)
-610 format (a,'P',i3.3,'_',i3.3,'.nc') ! JA? format
+610 format (a,'P',i3.3,'_',i3.3,'.nc') ! JA? and SWOT format
 611 format (a,i3.3,'_',i3.3,a,'.nc') ! S3? format
 612 format (a,'RED_',a,i3.3,'_',i3.3,a,'.nc') ! S6? format
 613 format (a,'_',i3.3,'_',i3.3,'.nc') ! CS format
@@ -351,6 +354,8 @@ inquire (file=dirnm,exist=exist)
 if (.not.exist) call system('mkdir -p '//dirnm)
 if (sat(:2) == 'JA') then
 	write (prdnm,610) product_name(:11),cycle_number,pass_number
+else if (sat(:2) == 'SW') then
+	write (prdnm,610) product_name(:12),cycle_number,pass_number
 else if (sat(:2) == 'S3') then
 	write (prdnm,611) product_name(:15),cycle_number,pass_number,product_name(77:94)
 else if (sat(:2) == 'S6') then
@@ -360,6 +365,7 @@ else if (sat(:2) == 'CS') then
 endif
 outnm = trim(dirnm) // '/' // trim(prdnm)
 inquire (file=outnm,exist=exist)
+if (verbose_level >= 5) write (*,*) "outnm, exist =", trim(outnm), exist
 
 ! If exist, then keep the file if the buffer is smaller or equal in size
 ! If it is larger, delete the existing file
