@@ -47,7 +47,6 @@ SCRIPTS = rads_add_common \
 		rads_gen_j3.sh rads_gen_j3_calval.sh rads_gen_j3_new.sh rads_gen_j3_new_calval.sh \
 		rads_gen_tx_rgdr.sh rads_gen_saral.sh rads_gen_saral_new.sh \
 		rads_gen_sw.sh rads_gen_sw_new.sh rads_gen_sw_new_calval.sh rads_gen_sw_calval.sh \
-		rads_purge_older.sh rads_sandbox.sh \
 		rads_purge_older.sh rads_sandbox.sh hardlink.sh \
 		radscyclesindex
 
