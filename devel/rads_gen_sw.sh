@@ -57,7 +57,7 @@ esac
 # Do the patches to all data
 
 rads_add_common   $options							>> "$log" 2>&1
-rads_add_ww3_222  $options --all					>> "$log" 2>&1
+rads_add_mfwam    $options --all					>> "$log" 2>&1
 rads_add_iono     $options --all					>> "$log" 2>&1
 # Redetermine SSHA
 rads_add_refframe $options -x -x mle3 $extra		>> "$log" 2>&1
