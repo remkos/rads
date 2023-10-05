@@ -84,10 +84,10 @@ sub/%.hlp:	../../src/%
 #-----------------------------------------------------------------------
 
 sub/radsstat-h.out:	Makefile ../../src/radsstat
-	PATH=../../src radsstat4 --help | egrep 'radsstat|are:|is:|-l,|-o,|-v,|-L,|-C,|-S,|^$$' | uniq > $@
+	PATH=../../src radsstat --help | egrep 'radsstat|are:|is:|-l,|-o,|-v,|-L,|-C,|-S,|^$$' | uniq > $@
 
 sub/rads2asc.out:	Makefile ../../src/rads2asc
-	PATH=../../src rads2asc4 -S e2 -C 0 -P 901,1000,2 -V time_ymdhms,lat,lon,sla,swh,wind_speed -R -8,42,28,48 -o $(@F) -v > $(@:.out=.log) 0>&2
+	PATH=../../src rads2asc -S e2 -C 0 -P 901,1000,2 -V time_ymdhms,lat,lon,sla,swh,wind_speed -R -8,42,28,48 -o $(@F) -v > $(@:.out=.log) 0>&2
 	(head -n 19 $(@F); $(SEPARATOR); tail -n 4 $(@F)) > $@
 	rm -f $(@F)
 
@@ -97,38 +97,38 @@ sub/rads2nc.out:	Makefile ../../src/rads2nc
 	rm -f $(@F)
 
 sub/rads2grd.out:	Makefile ../../src/rads2grd
-	PATH=../../src rads2grd4 -S e2 -C 0 -P 901,1000,2 -V wind_speed,swh,sla -c > $(@F)
+	PATH=../../src rads2grd -S e2 -C 0 -P 901,1000,2 -V wind_speed,swh,sla -c > $(@F)
 	(head -n 16 $(@F); $(SEPARATOR); tail -n 4 $(@F)) > $@
 	rm -f $(@F)
 
 sub/rads2grd-o.out:	Makefile ../../src/rads2grd
-	PATH=../../src rads2grd4 -S e2 -C 0 -P 901,1000,2 -V wind_speed,swh,sla -c -o $(@F)
+	PATH=../../src rads2grd -S e2 -C 0 -P 901,1000,2 -V wind_speed,swh,sla -c -o $(@F)
 	(ncdump $(@F) | head -n 42 | sed 's/	/    /g'; $(SEPARATOR); ncdump $(@F) | tail -n 5) > $@
 	rm -f $(@F)
 
 sub/radscolin.out:	Makefile ../../src/radscolin
-	PATH=../../src radscolin4 -S e2 -C 0,2 -P 915,1000,2 -R -8,42,28,48 -V lat,sla,swh > $(@F)
+	PATH=../../src radscolin -S e2 -C 0,2 -P 915,1000,2 -R -8,42,28,48 -V lat,sla,swh > $(@F)
 	(head -n 18 $(@F); $(SEPARATOR); tail -n 4 $(@F)) > $@
 	rm -f $(@F)
 
 sub/radscolin-r.out:	Makefile ../../src/radscolin
-	PATH=../../src radscolin4 -S e2 -C 0,2 -P 915,1000,2 -R -8,42,28,48 -V lat,sla,swh -r > $(@F)
+	PATH=../../src radscolin -S e2 -C 0,2 -P 915,1000,2 -R -8,42,28,48 -V lat,sla,swh -r > $(@F)
 	(head -n 18 $(@F); $(SEPARATOR); tail -n 4 $(@F)) > $@
 	rm -f $(@F)
 
 sub/radsstat.out:	Makefile ../../src/radsstat
-	PATH=../../src radsstat4 -d -S j3 -C 11 -S j2 -C 291 -V sla,swh > $@
+	PATH=../../src radsstat -d -S j3 -C 11 -S j2 -C 291 -V sla,swh > $@
 
 sub/radsstat-2.out:	Makefile ../../src/radsstat
-	PATH=../../src radsstat4 -d -S j3 -C 11 -S j2 -C 291 -V sla,swh > $@
+	PATH=../../src radsstat -d -S j3 -C 11 -S j2 -C 291 -V sla,swh > $@
 
 sub/radspassesindex.out:	Makefile ../../src/radspassesindex
-	PATH=../../src radspassesindex4 -S e2 -C 0 -P 901,910 -h -y -p > $@ 0>&2
+	PATH=../../src radspassesindex -S e2 -C 0 -P 901,910 -h -y -p > $@ 0>&2
 
 inc/max.out:		getraw.nml max.nml $(RADSROOT)/bin/max2
 	rm -f xovers.rxf
 	max2 sat=e2 cycle=0,1 sel=0,1,17 xovers > inc/max_v.out
-	(head -18 xovers.rxf; $(SEPARATOR); tail -4 xovers.rxf) > $@
+	(head -18 xovers.rxf; $(SEPARATOR); tail -n 4 xovers.rxf) > $@
 	rm -f xovers.rxf
 
 #-----------------------------------------------------------------------
