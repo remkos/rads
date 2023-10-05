@@ -29,6 +29,10 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 This does not include explanations of changes to the code that generates the data base.
 
+### v4.5.1 (5 Oct 2023)
+* Documentation
+  * Replaced name of rads2asc4 by rads2asc; same for other *4 executables.
+
 ### v4.5.0 (29 Sep 2023)
 * `rads.xml`:
   * prepared for SWOT Calval and Science Orbits
