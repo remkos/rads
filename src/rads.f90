@@ -3680,7 +3680,7 @@ write (iunit, 1300) trim(progname)
 '                            considered non-option arguments, even if they begin with a hyphen')
 end subroutine rads_synopsis
 
-!****if* rads/rads_get_phase
+!****if* rads/rads_init_phase
 ! SUMMARY
 ! Add new mission phase and get pointer to satellite phase info
 !

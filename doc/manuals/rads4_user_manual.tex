@@ -449,11 +449,11 @@ In the above, date (and time) epochs can be written as \emph{yyyy}-\emph{mm}-\em
 \section{Command line interface}
 The RADS4 commands share a very similar layout of the arguments that can be used on the command line. The common features of the command line interface, are explained in this Section. In later Sections we will explain the syntax and use of each of the RADS4 commands.
 
-To learn the syntax of any of the RADS4 commands, simply use the argument \lopt{help} after the command name. Let us start off with an \textbf{excerpt} of the help of the \prog{radsstat4} program obtained when typing:
+To learn the syntax of any of the RADS4 commands, simply use the argument \lopt{help} after the command name. Let us start off with an \textbf{excerpt} of the help of the \prog{radsstat} program obtained when typing:
 \begin{verbatim}
-$ radsstat4 --help
+$ radsstat --help
 \end{verbatim}
-\script{sub/radsstat4-h.out}
+\script{sub/radsstat-h.out}
 
 The command line for every RADS4 program consists of a few of the following components:
 \begin{description}
@@ -472,7 +472,7 @@ Short options start with a single hyphen and are followed by a single lower case
 
 Short options can have arguments (values attached to them), which can either be required or optional. So there are three posibilities:
 \begin{description}
-\item[no argument:] The option flag just switches something on or off, for example \sopt{l} in \prog{radsstat4} adds the printing of minima and maxima to the output. In some cases, like \sopt{v}, the option can be repeated to increase the verbosity level one step each time.
+\item[no argument:] The option flag just switches something on or off, for example \sopt{l} in \prog{radsstat} adds the printing of minima and maxima to the output. In some cases, like \sopt{v}, the option can be repeated to increase the verbosity level one step each time.
 
 Short options without argument can be combined behind a single hyphen. Thus each of the following are equivalent:
 \begin{verbatim}
@@ -493,13 +493,13 @@ The option flag and the value can be separated by whitespace (one or more spaces
 \end{verbatim}
 In this document, for clarity, we leave a single space between the option and the argument.
 
-\item[optional argument:] The option flag assigns some value, or switches something on with a default value. In the above example for \prog{radsstat4}, the option \sopt{o} can be used with or without an argument, as identified by the argument \url{[outname]} between square brackets. As the help explains, when \sopt{o} is omitted, the output is in ASCII format, when \sopt{o} is used without argument, then a netCDF file \file{radsstat.nc} is created, and when used with an argument (e.g. \soptb{o}{myfile.nc}) then a netCDF file with that name is created.
+\item[optional argument:] The option flag assigns some value, or switches something on with a default value. In the above example for \prog{radsstat}, the option \sopt{o} can be used with or without an argument, as identified by the argument \url{[outname]} between square brackets. As the help explains, when \sopt{o} is omitted, the output is in ASCII format, when \sopt{o} is used without argument, then a netCDF file \file{radsstat.nc} is created, and when used with an argument (e.g. \soptb{o}{myfile.nc}) then a netCDF file with that name is created.
 
 Note that the use of these types of options can be tricky, as any value that does not start with a hyphen that follows can be perceived as an argument of this option, which can lead to some unintended consequences. To avoid this problem, the option list can be ended with \lopt{}. All remaining material will then be seen as verbatim arguments (for example input file names), even when they start with a hyphen.
 \end{description}
 
 \subsection{Long options}
-To make it a bit less hard to understand (or to remember) some of the options, quite often an alternative "long option", starting with two hyphens is provided. As can be seen in the \prog{radsstat4} help, the short option \sopt{v} can also be written as \lopt{verbose}. But any shorter version of the long option, as long at it is unique, can be used. So \url{--verb} is allowed as well.
+To make it a bit less hard to understand (or to remember) some of the options, quite often an alternative "long option", starting with two hyphens is provided. As can be seen in the \prog{radsstat} help, the short option \sopt{v} can also be written as \lopt{verbose}. But any shorter version of the long option, as long at it is unique, can be used. So \url{--verb} is allowed as well.
 
 Just like short options, long options can have no argument, a required argument, or an optional argument. But long options cannot be combined into one, while short options can.
 
@@ -667,26 +667,26 @@ This means, for example:
 $ \prog{radsxogen} [\emph{common options}] \soptb{S}{e1} [\emph{e1 options}] \soptb{S}{e2} [\emph{e2 options}]
 \end{alltt}
 
-\section{rads2asc4}
-\label{sec:rads2asc4}
-The program \prog{rads2asc4} lists a selection of the RADS4 data base in one ASCII file or in several pass-by-pass ASCII files. These files contain a header per pass with a description of the data content followed by one record for each measurement that passes the selection criteria. The records are built up of columns, separated by white space, listing various data fields. Which data fields are listed (and in which order they are listed) is determined by the command line argument \sopt{V} or \lopt{var}.
+\section{rads2asc}
+\label{sec:rads2asc}
+The program \prog{rads2asc} lists a selection of the RADS4 data base in one ASCII file or in several pass-by-pass ASCII files. These files contain a header per pass with a description of the data content followed by one record for each measurement that passes the selection criteria. The records are built up of columns, separated by white space, listing various data fields. Which data fields are listed (and in which order they are listed) is determined by the command line argument \sopt{V} or \lopt{var}.
 
 In the output, the data that has not passed the editing criteria will be represented by "NaN" (Not-a-Number). If the sea level anomaly field suffers that fate, the record will not be listed in the output file, unless the \sopt{r} option is used (or \soptb{r}{0} or \soptb{r}{none}).
 
 If the argument \soptc{o}{OUTNAME} or \loptc{output}{OUTNAME} is used, the output will go into one file (named \file{OUTNAME}). Otherwise, pass files are created with the names \verb|SSpPPPPcCCC.asc|, similar to what is described in Chapter~\ref{ch:intro}.
 
-This program can be called as \prog{rads2asc}, or as \prog{rads2asc4} to avoid conflicts with an already installed RADS3.
+This program can be called as \prog{rads2asc}, or as \prog{rads2asc} to avoid conflicts with an already installed RADS3.
 
 For more details, see the description of the command line options in the next Sections.
 
 \subsection{Syntax}
-\script{sub/rads2asc4.hlp}
+\script{sub/rads2asc.hlp}
 
 \subsection{Common options}
 For a full explanation of the command line options that are common to most RADS4 programs, see Section~\ref{sec:common_options}.
 
 \subsection{Program specific options}
-The command line options that are specific to \prog{rads2asc4} are listed here.
+The command line options that are specific to \prog{rads2asc} are listed here.
 \begin{description}
 \item[\optc{r}{reject-on-nan}{VAR}] ~\\
 Do not output records when the value of variable \emph{VAR}, given as an argument to the \sopt{V} or \lopt{VAR} option, is set to NaN. By default records for which the sea level anomaly (if requested) is set to NaN are rejected.
@@ -712,17 +712,17 @@ By default (without this option) files are created per pass with a name similar 
 \subsection{Example}
 Assuming a default configuration, we issue the following command:
 \begin{verbatim}
-$ rads2asc4 -S e2 -C 0 -P 901,1000,2 -R -8,42,28,48 \
-    -V time_ymdhms,lat,lon,sla,swh,wind_speed -o rads2asc4.asc -v
+$ rads2asc -S e2 -C 0 -P 901,1000,2 -R -8,42,28,48 \
+    -V time_ymdhms,lat,lon,sla,swh,wind_speed -o rads2asc.asc -v
 \end{verbatim}
 The program will print to standard output information on which passes are available and have valid data points in the requested area (Mediterranean Sea), how many records were read and how many remained in the particular area, how many records were rejected based on the selection criteria on the corrections, and finally some statistics on the columns that were requested.
-\script{sub/rads2asc4.log}
-The resulting ASCII output file \file{rads2asc4.asc} will look like this:
-\script{sub/rads2asc4.out}
+\script{sub/rads2asc.log}
+The resulting ASCII output file \file{rads2asc.asc} will look like this:
+\script{sub/rads2asc.out}
 
-\section{rads2grd4}
-\label{sec:rads2grd4}
-The program \prog{rads2grd4} is a quick-and-dirty gridding program for RADS data. No smoothing or interpolation is performed. The data are simply collected in cells of predefined size, after which the mean and standard deviation in each cell is computed.
+\section{rads2grd}
+\label{sec:rads2grd}
+The program \prog{rads2grd} is a quick-and-dirty gridding program for RADS data. No smoothing or interpolation is performed. The data are simply collected in cells of predefined size, after which the mean and standard deviation in each cell is computed.
 
 The boundaries of the grid are specified by the limits set in the RADS4 configuration files, or by the appropriate common command line arguments \lopt{limits}, lopt{lat}, or \lopt{lon}. The cell size is determined by the option \lopt{res}. Alternatively, the options \lopt{x} and \lopt{y} can be used to set both the range and interval along both coordinate axis of the grid. The use of grid-node oriented or cell oriented boundaries is controlled by the \sopt{-c} option. The required minimum number of measurements per cell can be specified with the \lopt{min} option. Cells with a number of points less than the required number will not be part of the output.
 
@@ -739,17 +739,17 @@ There are two ways to produce output:
 The output is a list of ASCII records per cell: $x$ and $y$ of the centre of the cell, mean of $z$, standard deviation of $z$, number
 of points. Cells with a number of points less than the required number are not listed. This output can be used directly in GMT.
 
-This program can be called as \prog{rads2grd}, or as \prog{rads2grd4} to avoid conflicts with an already installed RADS3.
+This program can be called as \prog{rads2grd}, or as \prog{rads2grd} to avoid conflicts with an already installed RADS3.
 
 \subsection{Syntax}
-\script{sub/rads2grd4.hlp}
+\script{sub/rads2grd.hlp}
 
 \subsection{Common options}
 For a full explanation of the command line options that are common to most RADS4 programs, see Section~\ref{sec:common_options}.
 Note that the \sopt{V} and \lopt{var} options have a slightly different meaning in this program (see below) than in most others.
 
 \subsection{Program specific options}
-The command line options that are specific to \prog{rads2grd4} are listed here.
+The command line options that are specific to \prog{rads2grd} are listed here.
 \begin{description}
 \item[\optc{V}{var}{X,Y,Z[,...]}] ~\\
 Specify the variables for the ordinates \emph{X} and \emph{Y}, and the variable to be gridded (\emph{Z}). One can specify one or more variables for \emph{Z}; each will be part of the output.
@@ -772,22 +772,22 @@ Determines that the boundaries of the x-y space are cell-oriented, instead of gr
 \subsection{Examples}
 Assuming a default configuration, we issue the following command:
 \begin{verbatim}
-$ rads2grd4 -S e2 -C 0 -P 901,1000,2 -R -8,42,28,48 -V wind_speed,swh,sla -c
+$ rads2grd -S e2 -C 0 -P 901,1000,2 -R -8,42,28,48 -V wind_speed,swh,sla -c
 \end{verbatim}
 This command creates the following results to print to standard output:
-\script{sub/rads2grd4.out}
+\script{sub/rads2grd.out}
 
 When we want to create a netCDF file as output, we use the \sopt{o} option:
 \begin{verbatim}
-$ rads2grd4 -S e2 -C 0 -P 901,1000,2 -R -8,42,28,48 -V wind_speed,swh,sla -c \\
-    -o rads2grd4.nc
+$ rads2grd -S e2 -C 0 -P 901,1000,2 -R -8,42,28,48 -V wind_speed,swh,sla -c \\
+    -o rads2grd.nc
 \end{verbatim}
 To list its contents, use the \prog{ncdump} command. The result will look like the following:
-\script{sub/rads2grd4-o.out}
+\script{sub/rads2grd-o.out}
 
 \section{rads2nc}
 \label{sec:rads2nc}
-The RADS4 program \prog{rads2nc} works similar to \prog{rads2asc4} (Section~\ref{sec:rads2asc4}). Instead of writing output to one or more ASCII files, it creates one or more netCDF files. This significantly reduces the output size, and can be convenient for reading into third-party programs.
+The RADS4 program \prog{rads2nc} works similar to \prog{rads2asc} (Section~\ref{sec:rads2asc}). Instead of writing output to one or more ASCII files, it creates one or more netCDF files. This significantly reduces the output size, and can be convenient for reading into third-party programs.
 
 By default, \prog{rads2nc} will create pass-by-pass netCDF files, named \verb|SSpPPPPcCCC.nc|, with only the information of the netCDF variables given on the command line using the \sopt{V} or \lopt{var} options. The variables are edited given the selection criteria in the RADS4 configurations files or elsewhere on the command line. Values regarded 'invalid' will be set to the \verb|_FillValue| in the netCDF files (or NaN in case of floating numbers). They will show up as an underscore (\verb|_|) in the output of \prog{ncdump}.
 
@@ -802,7 +802,7 @@ For more details, see the description of the command line options in the next Se
 For a full explanation of the command line options that are common to most RADS4 programs, see Section~\ref{sec:common_options}.
 
 \subsection{Program specific options}
-The command line options that are specific to \prog{rads2nc} are listed here. Notice that they have some in common with \prog{rads2asc4} (Section~\ref{sec:rads2asc4}).
+The command line options that are specific to \prog{rads2nc} are listed here. Notice that they have some in common with \prog{rads2asc} (Section~\ref{sec:rads2asc}).
 \begin{description}
 \item[\optc{r}{reject-on-nan}{VAR}] ~\\
 Do not output records when the value of variable \emph{VAR}, given as an argument to the \sopt{V} or \lopt{VAR} option, is set to NaN. By default records for which the sea level anomaly (if requested) is set to NaN are rejected.
@@ -826,34 +826,34 @@ Assuming a default configuration, we issue the following command:
 $ rads2nc -S e2 -C 0 -P 901,1000,2 -R -8,42,28,48 \
     -V time,lat,lon,sla,swh,wind_speed -o rads2nc.nc -v
 \end{verbatim}
-Just as \prog{rads2asc4} the program \prog{rads2nc} will now print to standard output information on which passes are available and have valid data points in the requested area (Mediterranean Sea), how many records were read and how many remained in the particular area, how many records were rejected based on the selection criteria on the corrections, and finally some statistics on the columns that were requested. At the same time a netCDF file \file{rads2nc.nc} will be created. To list its contents, use the \prog{ncdump} command. The result will look like the following:
+Just as \prog{rads2asc} the program \prog{rads2nc} will now print to standard output information on which passes are available and have valid data points in the requested area (Mediterranean Sea), how many records were read and how many remained in the particular area, how many records were rejected based on the selection criteria on the corrections, and finally some statistics on the columns that were requested. At the same time a netCDF file \file{rads2nc.nc} will be created. To list its contents, use the \prog{ncdump} command. The result will look like the following:
 \script{sub/rads2nc.out}
 
-\section{radscolin4}
-\label{sec:radscolin4}
-The program \prog{radscolin4} creates collinear tracks (in a rather straightforward way). No smoothing or interpolation is performed. The data are ``gridded'' based on their time with respect to the equator passages. The measurements are simply collected in bins of predefined length. By default this is the 1-Hz sampling rate of the specific mission), but it can be altered with the \lopt{dt} option. Then the data falling in those bins for each specified pass are output in a way similar to \prog{rads2asc4} (Section~\ref{sec:rads2asc4}) or \prog{rads2nc} (Section~\ref{sec:rads2nc}). No averaging or differencing is performed.
+\section{radscolin}
+\label{sec:radscolin}
+The program \prog{radscolin} creates collinear tracks (in a rather straightforward way). No smoothing or interpolation is performed. The data are ``gridded'' based on their time with respect to the equator passages. The measurements are simply collected in bins of predefined length. By default this is the 1-Hz sampling rate of the specific mission), but it can be altered with the \lopt{dt} option. Then the data falling in those bins for each specified pass are output in a way similar to \prog{rads2asc} (Section~\ref{sec:rads2asc}) or \prog{rads2nc} (Section~\ref{sec:rads2nc}). No averaging or differencing is performed.
 
 This program can also be used to compute differences between two different altimeter missions (with \lopt{diff}, \lopt{diff-no-coord}, or \lopt{diff1}), as long as they are collinear. Some variance to the strict collinearity is allowed when using the \sopt{f} or \lopt{force} option. See Section~\ref{sec:order_options} for more info on using the command line when multiple missions are involved.
 
-The program will output only those bins in which valid sea level anomalies can be found for all specified repeat cycles, unless the \sopt{r} option is used. This behaviour of \sopt{r} is significantly different from \prog{rads2asc4} and \prog{rads2nc}. See the syntax description below.
+The program will output only those bins in which valid sea level anomalies can be found for all specified repeat cycles, unless the \sopt{r} option is used. This behaviour of \sopt{r} is significantly different from \prog{rads2asc} and \prog{rads2nc}. See the syntax description below.
 
 The output is one record for each bin, containing the variables selected by the \sopt{V} or \lopt{var} option, for each of the specified cycles. The output can be either ASCII (the default) or netCDF (with the \sopt{o} or \lopt{output}) option. In the case of ASCII, normally only the passes with some valid data are output. Using the option \sopt{k} or \lopt{keep} keeps all passes, irrespectively.
 
 This program can be called as \prog{radscolin}, or as \prog{rads2colin4} to avoid conflicts with an already installed RADS3.
 
 \subsection{Syntax}
-\script{sub/radscolin4.hlp}
+\script{sub/radscolin.hlp}
 
 \subsection{Common options}
 For a full explanation of the command line options that are common to most RADS4 programs, see Section~\ref{sec:common_options}.
 
 \subsection{Program specific options}
-The command line options that are specific to \prog{radscolin4} are listed here. Notice that the \sopt{r} option is somewhat different than that of \prog{rads2asc4} (Section~\ref{sec:rads2asc4}) and \prog{rads2nc} (Section~\ref{sec:rads2nc}).
+The command line options that are specific to \prog{radscolin} are listed here. Notice that the \sopt{r} option is somewhat different than that of \prog{rads2asc} (Section~\ref{sec:rads2asc}) and \prog{rads2nc} (Section~\ref{sec:rads2nc}).
 \begin{description}
 \item[\loptc{dt}{DT}] Set the minimum bin size in seconds. The default is the maximum 1-Hz sampling rate of the missions selected.
 \item[\loptc{step}{N}] Write out only one out of N bins along track.
 \item[\optc{r}{reject-on-nan}{VAR}] ~\\
-Base the count of ``valid passes'' on variable whether \emph{VAR} is not NaN. By default \prog{radscolin4} looks for the validity of the variable \var{sla}, if used in the list of variables on the \sopt{V} option. If \var{sla} is not used, the first variable is checked for validity.
+Base the count of ``valid passes'' on variable whether \emph{VAR} is not NaN. By default \prog{radscolin} looks for the validity of the variable \var{sla}, if used in the list of variables on the \sopt{V} option. If \var{sla} is not used, the first variable is checked for validity.
 \item[\optc{r}{reject-on-nan}{all}] ~\\
 Base the count of ``valid passes'' on whether all variables on the \sopt{V} option are not NaN.
 \item[\soptc{r}{NR}] ~\\
@@ -894,13 +894,13 @@ Assuming a default configuration, we issue the following command:
 $ radscolin -S e2 -C 0,2 -P 915,1000,2 -R -8,42,28,48 -V lat,sla,swh
 \end{verbatim}
 This command creates to following results to print to standard output:
-\script{sub/radscolin4.out}
+\script{sub/radscolin.out}
 
 To illustrate the impact of the \sopt{r} option, we also present here the result of the following command:
 \begin{alltt}
 $ radscolin -S e2 -C 0,2 -P 915,1000,2 -R -8,42,28,48 -V lat,sla,swh -r
 \end{alltt}
-\script{sub/radscolin4-r.out}
+\script{sub/radscolin-r.out}
 
 \section{radspassesindex}
 \label{sec:radspassesindex}
@@ -920,7 +920,7 @@ The information printed is:
 For more details, see the description of the command line options in the next Sections.
 
 \subsection{Syntax}
-\script{sub/radspassesindex4.hlp}
+\script{sub/radspassesindex.hlp}
 
 \subsection{Common options}
 For a full explanation of the command line options that are common to most RADS4 programs, see Section~\ref{sec:common_options}.
@@ -942,23 +942,23 @@ Assuming a default configuration, we issue the following command:
 $ radspassesindex -S e2 -C 0 -P 901,910 -h -y -p
 \end{verbatim}
 The result will look like the following:
-\script{sub/radspassesindex4.out}
+\script{sub/radspassesindex.out}
 
-\section{radsstat4}
-\label{sec:radsstat4}
-The program \prog{radsstat4} compiles, for a given satellite mission, statistics of a number of variables (given by the option \sopt{V}).
+\section{radsstat}
+\label{sec:radsstat}
+The program \prog{radsstat} compiles, for a given satellite mission, statistics of a number of variables (given by the option \sopt{V}).
 These statistics can be per day (\sopt{d}), per pass (\sopt{p}), or per cycle (\sopt{c}). Also a multiple of these intervals can be selected.
 The user can use the regular common options \sopt{C} or \lopt{--ymd} to limit the period over which these statistics are calculated.
 The program then produces for each interval ASCII output with the statistics for each variable.
 
 \subsection{Syntax}
-\script{sub/radsstat4.hlp}
+\script{sub/radsstat.hlp}
 
 \subsection{Common options}
 For a full explanation of the command line options that are common to most RADS4 programs, see Section~\ref{sec:common_options}.
 
 \subsection{Program specific options}
-The command line options that are specific to \prog{radsstat4} are listed here. Notice that the \sopt{r} option is somewhat different than that of \prog{rads2asc4} (Section~\ref{sec:rads2asc4}) and \prog{rads2nc} (Section~\ref{sec:rads2nc}).
+The command line options that are specific to \prog{radsstat} are listed here. Notice that the \sopt{r} option is somewhat different than that of \prog{rads2asc} (Section~\ref{sec:rads2asc}) and \prog{rads2nc} (Section~\ref{sec:rads2nc}).
 \begin{description}
 \item[\optc{r}{reject-on-nan}{VAR}] ~\\
 Do not take into account any records on which the value of variable \emph{VAR}, given as an argument to the \sopt{V} or \lopt{VAR} option, is set to NaN. By default records for which the sea level anomaly (if requested) is set to NaN are rejected.
@@ -998,7 +998,7 @@ To get daily statistics of sea level anomaly and significant wave height of Jaso
 $ radsstat -d -S j3 -C 11 -V sla,swh
 \end{verbatim}
 resulting in:
-\script{sub/radsstat4.out}
+\script{sub/radsstat.out}
 
 
 The program can also be called with two \sopt{S} options. In that case the statistics will be for the difference between two collinear missions, e.g.
@@ -1006,7 +1006,7 @@ The program can also be called with two \sopt{S} options. In that case the stati
 $ radsstat -d -S j3 -C 11 -S j2 -C 291 -V sla,swh
 \end{verbatim}
 with the following result:
-\script{sub/radsstat4-2.out}
+\script{sub/radsstat-2.out}
 
 By providing two \sopt{S} options, one can also compare, e.g., the data in STC and NTC latency. 
 
