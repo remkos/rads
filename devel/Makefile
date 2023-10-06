@@ -1,5 +1,5 @@
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2022  Remko Scharroo
+# Copyright (c) 2011-2023  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -35,7 +35,7 @@ INCLUDES = $(MOD_FLAG). $(MOD_FLAG)../src $(MOD_FLAG)$(ALTIM)/include $(NETCDF_I
 
 # RADS library and linked libraries
 LIB     = ../src/librads.a $(ALTIM)/lib/rssubs.a
-LDLIBS  = $(NETCDF_LIB) $(NETCDF_C_LIB) $(GRIB_LIB)
+LDLIBS  = $(NETCDF_LIB) $(GRIB_LIB)
 
 # Shell or perl scripts
 SCRIPTS = rads_add_common \
@@ -47,7 +47,6 @@ SCRIPTS = rads_add_common \
 		rads_gen_j3.sh rads_gen_j3_calval.sh rads_gen_j3_new.sh rads_gen_j3_new_calval.sh \
 		rads_gen_tx_rgdr.sh rads_gen_saral.sh rads_gen_saral_new.sh \
 		rads_gen_sw.sh rads_gen_sw_new.sh rads_gen_sw_new_calval.sh rads_gen_sw_calval.sh \
-		rads_purge_older.sh rads_sandbox.sh \
 		rads_purge_older.sh rads_sandbox.sh hardlink.sh \
 		radscyclesindex
 
@@ -74,6 +73,7 @@ rads_gen_reaper:	rads_gen.o
 rads_fix_s6: rads_devel.o rads_devel_netcdf.o
 rads_add_iono:	$(ALTIM)/lib/iono.a
 rads_add_ecmwf rads_add_era rads_add_ncep rads_add_tide rads_add_webtide:	$(ALTIM)/lib/tides.a
+rads_add_tide:	LDLIBS = $(NETCDF_LIB) $(NETCDF_C_LIB) $(GRIB_LIB)
 rads_add_refframe:	$(PLM)
 rads_pre_sort_passes ogdrsplit:	rads_devel_misc.o
 rads_devel.o:	../src/rads.mod ../src/rads_misc.mod

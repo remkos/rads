@@ -29,6 +29,27 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 This does not include explanations of changes to the code that generates the data base.
 
+### v4.5.1 (5 Oct 2023)
+* Documentation
+  * Replaced name of rads2asc4 by rads2asc; same for other *4 executables.
+
+### v4.5.0 (29 Sep 2023)
+* `rads.xml`:
+  * prepared for SWOT Calval and Science Orbits
+  * added all necessary information for SWOT nadir (sw)
+  * adaptations for S6A baseline F08 and prepared for baseline F09
+  * introduce `flag_manoeuvre` properfly (#177)
+  * update SSB model info for S3A/
+  * increase cycle limit for SRAL
+  * fix wrong scale on `ssb_3d`, `ssb_3d_adaptive`, `ssb_adaptive`
+* `radsstat`:
+  * allow to compute statistics for the difference between two satellites/missions
+  * introduced `-c/N`, `--mean-only`, and `--groups` options
+  * do not add attribute `coordinates` to variables.
+* Increased number of characters allowed per option to 640.
+* Updated manuals
+* Updated `config.sub` and `config.guess`
+
 ### v4.4.0 (27 Apr 2022)
 * `rads.xml`:
   * prepared for Jason-3 Interleaved Orbit (Phase B)

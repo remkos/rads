@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2022  Remko Scharroo
+! Copyright (c) 2011-2023  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -317,7 +317,7 @@ logical function get_mfwam (mjd, istart)
 integer(fourbyteint), intent(in) :: mjd, istart
 integer(fourbyteint) ::	ncid, dimid, varid, l, strf1985, j
 real(eightbytereal), allocatable :: x(:), y(:), t(:)
-character(len=rads_naml) :: filenm
+character(len=rads_cmdl) :: filenm
 
 600 format ('(',a,')')
 1300 format (a,': ',a)
@@ -326,7 +326,7 @@ character(len=rads_naml) :: filenm
 
 get_mfwam = .true.
 
-l = strf1985(filenm, path, mjd*86400)
+l = strf1985(filenm, trim(path), mjd*86400)
 
 ! Open input file
 

@@ -176,7 +176,7 @@ integer(fourbyteint), save :: rads_nopt = 0          ! Number of command line op
 !	use rads
 !-----------------------------------------------------------------------
 ! COPYRIGHT
-! Copyright (c) 2011-2022  Remko Scharroo
+! Copyright (c) 2011-2023  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -3680,7 +3680,7 @@ write (iunit, 1300) trim(progname)
 '                            considered non-option arguments, even if they begin with a hyphen')
 end subroutine rads_synopsis
 
-!****if* rads/rads_get_phase
+!****if* rads/rads_init_phase
 ! SUMMARY
 ! Add new mission phase and get pointer to satellite phase info
 !
