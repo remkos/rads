@@ -371,7 +371,7 @@ if (verbose_level >= 5) write (*,*) "outnm, exist =", trim(outnm), exist
 ! If it is larger, delete the existing file
 
 if (exist) then
-	call nfs(netcdf_open(outnm,nf90_write,ncid2))
+	call nfs(netcdf_open(outnm,nf90_nowrite,ncid2))
 	if (verbose_level >= 5) write (*,*) "ncid2 =", ncid2
 	call nfs(nf90_inquire_dimension(ncid2(timegrp),1,len=nout))
 	if (verbose_level >= 5) write (*,*) "nout =",nout
@@ -385,6 +385,9 @@ if (exist) then
 	call nfs(nf90_get_att(ncid2(0),nf90_global,'equator_time',date(3)))
 	x = strp1985f (date(3))
 	if (abs(x - equator_time) > 0.5d-3) then
+		! Reopen for writing to insert updated equator time
+		call nfs(nf90_close(ncid2(0)))
+		call nfs(netcdf_open(outnm,nf90_write,ncid2))
 		date(3) = strf1985f(equator_time, timesep)
 		call nfs(nf90_put_att(ncid2(0),nf90_global,'equator_time',date(3)))
 		if (verbose_level >= 1) write (*,620) 'Updating', 1, nout, nout, date(1:2), '>', trim(outnm)
@@ -393,7 +396,7 @@ if (exist) then
 	call nfs(nf90_close(ncid2(0)))
 	if (nrec <= nout) then
 		do i = 1, nfile
-			! Release NetCDF file when reaching end
+			! Release input NetCDF file when reaching end
 			if (fin(i)%rec1 == fin(i)%nrec) call nfs(nf90_close(fin(i)%ncid(0)))
 		enddo
 		if (verbose_level >= 2) write (*,620) 'Keeping ', 1, nout, nout, date(1:2), '>', trim(outnm)
