@@ -303,13 +303,13 @@ integer(fourbyteint), intent(in) :: t
 integer(twobyteint), intent(out) :: grid(0:nx+1,ny,2)
 integer(fourbyteint) ::	fileid, gribid, ix, iy, i, k, l, status, strf1985
 real(eightbytereal) :: tmp(nx*ny)
-character(len=rads_naml) :: fn
+character(len=rads_cmdl) :: fn
 
 600 format ('(',a,')')
 
 ! Determine file name
 
-l = strf1985 (fn, path, t)
+l = strf1985 (fn, trim(path), t)
 write (*,600,advance='no') fn(l-17:l)
 
 ! Open input file

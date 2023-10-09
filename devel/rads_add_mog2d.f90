@@ -243,7 +243,7 @@ get_mog2d = .true.
 
 ! Determine file name
 
-l = strf1985(filenm, path, hex*21600)
+l = strf1985(filenm, trim(path), hex*21600)
 if (type == type_era) write (filenm(l+1:),610) hex/4+12784,modulo(hex,4)*6
 
 ! Open input file

@@ -239,7 +239,7 @@ logical :: get_ww3
 integer(fourbyteint), intent(in) :: mjd
 integer(fourbyteint) ::	fileid, gribid, ix, iy, k, l, status, strf1985
 real(eightbytereal), allocatable :: tmp(:)
-character(len=rads_naml) :: fn
+character(len=rads_cmdl) :: fn
 integer :: new(3), old(3)
 
 600 format ('(',a,')')
@@ -248,7 +248,7 @@ integer :: new(3), old(3)
 ! Determine file name
 
 get_ww3 = .true.
-l = strf1985(fn, path, mjd*86400)
+l = strf1985(fn, trim(path), mjd*86400)
 write (*,600,advance='no') fn(l-29:l)
 
 ! Open input file

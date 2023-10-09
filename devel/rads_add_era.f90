@@ -342,7 +342,7 @@ get_gribs = .true.
 
 ! Load new file and load common variables
 
-l = strf1985(filenm, path, hex*21600)
+l = strf1985(filenm, trim(path), hex*21600)
 
 if (filenm /= old_filenm) then
 	if (gribid /= -1) call grib_release(gribid)

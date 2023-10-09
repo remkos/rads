@@ -79,7 +79,7 @@ integer(fourbyteint) :: j, cyc, pass
 
 ! Data elements
 
-character(len=rads_naml) :: path
+character(len=rads_cmdl) :: path
 integer(fourbyteint) :: hex, hexold=-99999
 type(airtideinfo) :: airinfo
 real(eightbytereal), parameter :: rad2=2d0*atan(1d0)/45d0
@@ -491,7 +491,7 @@ get_grid = .true.
 ! Determine file name
 
 hour = hex * 6
-l = strf1985 (fn, filenm, hour*3600)
+l = strf1985 (fn, trim(filenm), hour*3600)
 i = index(fn,'/',.true.)
 write (*,600,advance='no') fn(i+1:l),hex
 
@@ -618,7 +618,7 @@ real(eightbytereal), allocatable :: tmp(:)
 ! Determine file name
 
 get_grib = .true.
-l = strf1985(fn, filenm, hex*21600)
+l = strf1985(fn, trim(filenm), hex*21600)
 i = index(fn, '/', .true.)
 write (*,600,advance='no') fn(i+1:l)
 

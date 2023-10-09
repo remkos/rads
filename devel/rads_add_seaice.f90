@@ -303,7 +303,7 @@ get_osiaf = .true.
 
 ! Determine file name
 
-l = strf1985(filenm, path, day1985*86400)
+l = strf1985(filenm, trim(path), day1985*86400)
 
 ! Open input file
 

@@ -263,7 +263,7 @@ logical :: get_ww3
 integer(fourbyteint), intent(in) :: mjd
 integer(twobyteint), intent(out) :: grid(:,:,:,:)
 integer(fourbyteint) ::	ncid, v_id, l, strf1985, var
-character(len=rads_naml) :: filenm
+character(len=rads_cmdl) :: filenm
 
 600 format ('(',a,')')
 1300 format (a,': ',a)
@@ -272,7 +272,7 @@ character(len=rads_naml) :: filenm
 
 get_ww3 = .true.
 
-l = strf1985(filenm, path, mjd*86400)
+l = strf1985(filenm, trim(path), mjd*86400)
 
 ! Open input file
 
