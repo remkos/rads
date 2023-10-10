@@ -247,6 +247,16 @@ do
 
 	call rads_set_phase (S, equator_time)
 
+! Renumbering the cycles to make them time ordered:
+! Phase A (Validation Phase) : Subtract 300 to run from Cycle 174 to 278
+! Phase B (Science Phase) : Add 300 to start with Cycle 301
+
+	if (S%phase%name(1:1) == 'a') then
+		cyclenr = cyclenr - 300
+	else
+		cyclenr = cyclenr + 300
+	endif
+
 ! Store relevant info
 
 	call rads_init_pass_struct (S, P)

@@ -5193,16 +5193,16 @@ Global RADS configuration file
 	<xover_params>0.04 0.035</xover_params>
 	<phase name="a">
 		<mission>CalVal Phase</mission>
-		<cycles>474 578</cycles>
+		<cycles>174 278</cycles>
 		<repeat>0.993493 28</repeat>
-		<ref_pass>2023-04-23T18:24:06 22.45 500 1 1390</ref_pass>
+		<ref_pass>2023-04-23T18:24:06 22.45 200 1 1390</ref_pass>
 		<start_time>2023-01-15T06:01:50</start_time>
 	</phase>
 	<phase name="b">
 		<mission>Science Phase</mission>
-		<cycles>000 399</cycles>
+		<cycles>300 399</cycles>
 		<repeat>20.86455 584</repeat>
-		<ref_pass>2023-07-21T05:59:31 0.18 1 1 2636</ref_pass>
+		<ref_pass>2023-07-21T05:59:31 0.18 301 1 2636</ref_pass>
 		<start_time>2023-07-20</start_time>
 	</phase>
 </if>
