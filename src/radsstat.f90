@@ -536,7 +536,7 @@ integer :: j0, j, l
 
 600 format ('# Statistics of RADS variables (',a,')'/ &
 '# Created: ',a,' UTC: ',a/ &
-'#'/'# Satellite : ',a,'/',a/'# Cycles    :',i5,' -',i5/ &
+'#'/'# Satellite : ',a/'# Cycles    :',i5,' -',i5/ &
 '# Passes    :',i5,' -',i5/'#'/'# Output columns:')
 610 format ('#    ( 1) date [YYMMDD]')
 611 format ('# ( 1, 2) cycle and pass')
@@ -548,7 +548,7 @@ integer :: j0, j, l
 624 format ('# (',i2,'-',i2,') mean, stddev, min and max of ')
 
 write (*,600) trim(wtype(wmode)), timestamp(), trim(S(1)%command), &
-	trim(S(1)%sat), trim(S(1)%phase%name), S(1)%cycles(1:2), S(1)%passes(1:2)
+	trim(S(1)%branch(1)), S(1)%cycles(1:2), S(1)%passes(1:2)
 select case (output_format)
 case (period_day)
 	write (*,610)
