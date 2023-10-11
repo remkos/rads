@@ -677,10 +677,13 @@ else
 endif
 
 ! Define global attibutes
-call nfs (nf90_put_att (ncid, nf90_global, 'Conventions', 'CF-1.5'))
-call nfs (nf90_put_att (ncid, nf90_global, 'title', 'RADS 4.0 statistics file'))
+call nfs (nf90_put_att (ncid, nf90_global, 'Conventions', 'CF-1.7'))
+call nfs (nf90_put_att (ncid, nf90_global, 'title', 'RADS 4 statistics file'))
 call nfs (nf90_put_att (ncid, nf90_global, 'institution', 'EUMETSAT / NOAA / TU Delft'))
 call nfs (nf90_put_att (ncid, nf90_global, 'references', 'RADS Data Manual, Version ' // trim(rads_version_id)))
+call nfs (nf90_put_att (ncid, nf90_global, 'satellite', trim(S(1)%branch(1))))
+call nfs (nf90_put_att (ncid, nf90_global, 'cycles', S(1)%cycles(1:2)))
+call nfs (nf90_put_att (ncid, nf90_global, 'passes', S(1)%passes(1:2)))
 call nfs (nf90_put_att (ncid, nf90_global, 'weights', trim(wtype(wmode))))
 call nfs (nf90_put_att (ncid, nf90_global, 'box_size', res))
 call nfs (nf90_put_att (ncid, nf90_global, 'history', timestamp()//' UTC: '//trim(S(1)%command)))
