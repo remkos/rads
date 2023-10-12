@@ -34,7 +34,7 @@ character(len=rads_cmdl) :: aux_wind = '', aux_ssbk = '', aux_ssbc = '', aux_rai
 integer(fourbyteint) :: i, cyc, pass, ios, lrain = 0, lwind = 0
 type(grid) :: info_wind, info_ssbk, info_ssbc
 logical :: lcal1 = .false., lsideB_range = .false., lsideB_sig0 = .false., lrange = .false., lsig0 = .false., &
-	lssb = .false., nr_only = .false.
+	lssb = .false., nr_only = .false., lflag = .false.
 integer, parameter :: sig0_nx = 500
 real(eightbytereal) :: exp_ku_sigma0(sig0_nx), rms_exp_ku_sigma0(sig0_nx)
 real(eightbytereal) :: bias_range(2) = 0d0, bias_sig0(2) = 0d0, &
@@ -50,7 +50,8 @@ logical, allocatable :: cal1_mask(:)
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options (' cal1:: sideB-range:: sideB-sig0:: range sig0 wind:: ssb rain:: all bias-range: bias-sig0: nr-only')
+call rads_set_options (' cal1:: sideB-range:: sideB-sig0:: range sig0 wind:: ssb rain:: all bias-range: bias-sig0: nr-only' // &
+	' flag-bit0')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
@@ -92,13 +93,15 @@ do i = 1,rads_nopt
 		read (rads_opt(i)%arg, *, iostat=ios) bias_sig0
 	case ('nr-only')
 		nr_only = .true.
+	case ('flag-bit0')
+		lflag = .true.
 	end select
 enddo
 cal1_interval = cal1_interval * 86400d0
 
 ! If nothing selected, stop here
 
-if (.not.(lcal1 .or. lrange .or. lsig0 .or. lwind > 0 .or. lssb .or.  lrain > 0)) stop
+if (.not.(lcal1 .or. lrange .or. lsig0 .or. lwind > 0 .or. lssb .or. lrain > 0 .or. lflag)) stop
 
 ! Run process for all files
 
@@ -138,7 +141,8 @@ write (*,1310)
 '  --all                     All of the above' / &
 '  --bias-range=KU,C         Add additional bias to range (Ku, C, in m)' / &
 '  --bias-sig0=KU,C          Add additional bias to sig0 (Ku, C, in dB)' / &
-'  --nr-only                 Only update numerical retracker values')
+'  --nr-only                 Only update numerical retracker values' / &
+'  --flag-bit0               Clear (VAL=0) or set (VAL=1) flag bit 0 and update attributes')
 stop
 end subroutine synopsis
 
@@ -151,10 +155,10 @@ integer(fourbyteint), intent(in) :: n
 real(eightbytereal) :: latency(n), range_ku(n), range_ku_mle3(n), range_c(n), &
 	sig0_ku(n), sig0_ku_mle3(n), sig0_c(n), dsig0_atmos_ku(n), dsig0_atmos_c(n), dsig0_atten(n), &
 	swh_ku(n), swh_ku_mle3(n), wind_speed_alt(n), wind_speed_alt_mle3(n), qual_alt_rain_ice(n), flags(n), &
-	ssb_cls(n), ssb_cls_mle3(n), ssb_cls_c(n), dum(n)
+	flags_mle3(n), flags_nr(n), ssb_cls(n), ssb_cls_mle3(n), ssb_cls_c(n), dum(n)
 real(eightbytereal) :: drange(2), dsig0(2), cal1_old(4), cal1_new(4)
 logical :: lr, redundant, val, do_range = .false., do_sig0 = .false., do_wind = .false., &
-	do_ssb = .false., do_rain = .false., do_cal1 = .false.
+	do_ssb = .false., do_rain = .false., do_cal1 = .false., do_flag = .false.
 character(len=3) :: chd_ver, cnf_ver, baseline
 
 ! Initialise
@@ -275,9 +279,13 @@ if (lrain > 0 .and. lr .and. .not.nr_only) then
 	do_rain = (cnf_ver < '008' .or. do_sig0 .or. lrain == 2)
 endif
 
+! flag bit 0: not needed for HR Side B
+
+do_flag = lflag .and. (lr .or. .not.redundant)
+
 ! If nothing to change, skip
 
-if (.not.do_range .and. .not.do_sig0 .and. .not.do_wind .and. .not.do_ssb) then
+if (.not.(do_range .or. do_sig0 .or. do_wind .or. do_ssb .or. do_rain .or. do_flag)) then
 	call log_records(0)
 	return
 endif
@@ -379,10 +387,30 @@ if (do_rain) then
 		dsig0_atten, qual_alt_rain_ice, flags)
 endif
 
+! Set the flag bit 0 appropriately
+
+if (do_flag) then
+	if (.not.do_rain) call rads_get_var (S, P, 'flags', flags, .true.)
+	call set_flag (n, flags, redundant)
+	if (lr) then
+		call rads_get_var (S, P, 'flags_mle3', flags_mle3, .true.)
+		call set_flag (n, flags_mle3, redundant)
+		call rads_get_var (S, P, 'flags_nr', flags_nr, .true.)
+		call set_flag (n, flags_nr, redundant)
+	endif
+endif
+
 ! Update history
 
 call rads_put_passinfo (S, P)
 call rads_put_history (S, P)
+
+! If flag bit is set, also redefine the attributes
+
+if (do_flag .and. lr) then
+	call rads_def_var (S, P, 'flags_mle3')
+	call rads_def_var (S, P, 'flags_nr')
+endif
 
 ! Write out all the data
 
@@ -445,6 +473,13 @@ if (do_rain) then
 	call rads_put_var (S, P, 'qual_alt_rain_ice', qual_alt_rain_ice)
 	call rads_put_var (S, P, 'dsig0_atten', dsig0_atten)
 	call rads_put_var (S, P, 'flags', flags)
+else if (do_flag) then
+	call rads_put_var (S, P, 'flags', flags)
+endif
+
+if (do_flag .and. lr) then
+	call rads_put_var (S, P, 'flags_mle3', flags_mle3)
+	call rads_put_var (S, P, 'flags_nr', flags_nr)
 endif
 
 call log_records (n)
@@ -622,5 +657,25 @@ do i = 1,n
 	flags(i) = j
 enddo
 end subroutine compute_rain_flag
+
+! Set flag bit 0
+
+subroutine set_flag (n, flags, set)
+integer(fourbyteint), intent(in) :: n
+real(eightbytereal), intent(inout) :: flags(:)
+logical, intent(in) :: set
+integer(fourbyteint) :: i, j
+if (set) then
+	do i = 1,n
+		j = nint(flags(i))
+		flags(i) = ibset(j,0)
+	enddo
+else
+	do i = 1,n
+		j = nint(flags(i))
+		flags(i) = ibclr(j,0)
+	enddo
+endif
+end subroutine set_flag
 
 end program rads_fix_s6

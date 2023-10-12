@@ -3295,6 +3295,12 @@ Global RADS configuration file
 		rad_rain_or_ice tb1_bad tb2_bad range_suspect
 		swh_suspect backscatter_suspect tracking_preset orbit_degraded
 	</flag_masks>
+	<flag_masks sat="6a">
+		alt_side_B attitude_bad continental_ice alt_iono_bad
+		alt_land alt_non_ocean rad_land alt_rain_or_ice
+		rad_rain_or_ice tb1_tb2_bad tb2_bad range_suspect
+		swh_suspect backscatter_suspect not_used orbit_degraded
+	</flag_masks>
 </var>
 <var name="flags_plrm" field="2612" sat="3a 3b c2">
 	<long_name>flag word (PLRM)</long_name>
@@ -3334,6 +3340,12 @@ Global RADS configuration file
 		alt_land alt_non_ocean rad_land alt_rain_or_ice
 		rad_rain_or_ice tb1_bad tb2_bad range_suspect
 		swh_suspect backscatter_suspect tracking_preset orbit_degraded
+	</flag_masks>
+	<flag_masks sat="6a">
+		alt_side_B attitude_bad continental_ice alt_iono_bad
+		alt_land alt_non_ocean rad_land alt_rain_or_ice
+		rad_rain_or_ice tb1_tb2_bad tb2_bad range_suspect
+		swh_suspect backscatter_suspect not_used orbit_degraded
 	</flag_masks>
 </var>
 

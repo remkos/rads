@@ -308,7 +308,7 @@ do
 ! Compile flag bits
 
 	flags = 0
-	if (.not.lr) flags = 1										! bit  0: Altimeter mode (LR = 0, HR = 1)
+	if (index(chd_ver,'CHDR') > 0) flags = 1					! bit  0: Altimeter side (A=0, B=1)
 	if (lr) call nc2f (ncidk, 'off_nadir_angle_wf_ocean_qual', 1)		! bit  1: Quality off-nadir pointing
 	call nc2f (ncid1, 'surface_classification_flag', 2, eq=4)	! bit  2: Continental ice
 	if (lr) call nc2f (ncidc, 'range_ocean_qual', 3)			! bit  3: Quality dual-frequency iono
