@@ -84,9 +84,6 @@ do i = 1,rads_nopt
 		lsideB_sig0 = .true.
 		lrange = .true.
 		lsig0 = .true.
-		lwind = 1
-		lssb = .true.
-		lrain = 1
 	case ('bias-range')
 		read (rads_opt(i)%arg, *, iostat=ios) bias_range
 	case ('bias-sig0')
@@ -133,12 +130,12 @@ write (*,1310)
 '  --range                   Fix range biases known for PDAP v3.0 and v3.1' / &
 '                            Also fix result of temporary error in radar data base (RMC only, 34 gates)' / &
 '  --sig0                    Add -5.67 dB to HR sigma0' / &
+'  --all                     All of the above' / &
 '  --rain[=KU,C]             Add biases to sigma0 (KU, C, in dB) before calling rain model' / &
 '                            (for L2 CONF < 008 or with --sig0 use default 1.23,1.64)' / &
 '  --wind[=MLE4,MLE3]        Add biases to sigma0 (MLE4, MLE3, in dB) before calling wind model' / &
 '                            (for L2 CONF < 008 or 009 or with --sig0 use default 1.29,1.37)' / &
 '  --ssb                     Update SSB (with --wind)' / &
-'  --all                     All of the above' / &
 '  --bias-range=KU,C         Add additional bias to range (Ku, C, in m)' / &
 '  --bias-sig0=KU,C          Add additional bias to sig0 (Ku, C, in dB)' / &
 '  --nr-only                 Only update numerical retracker values' / &
