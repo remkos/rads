@@ -4259,7 +4259,7 @@ Global RADS configuration file
 	<parameters>0</parameters>
 	<parameters sat="j3"> -48.0 0  0  0 0</parameters>
 </var>
-<alias name="ref_framge_offset_nr" sat="j3 sw">ref_frame_offset_adaptive</alias>
+<alias name="ref_frame_offset_nr" sat="j3 sw">ref_frame_offset_adaptive</alias>
 <var name="ref_frame_offset_nr" sat="6a">
 	<long_name>reference frame offset (numerical retracking)</long_name>
 	<units>m</units>
