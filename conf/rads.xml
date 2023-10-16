@@ -1959,7 +1959,7 @@ Global RADS configuration file
 	</var>
 	<alias name="swh" field="17">swh_ku</alias>
 </else>
-<var name="swh_ku_adaptive">
+<var name="swh_ku_adaptive" sat="j3 sw">
 	<long_name>retracked Ku-band significant wave height (adaptive retracking)</long_name>
 	<standard_name>sea_surface_wave_significant_height</standard_name>
 	<units>m</units>
@@ -1968,7 +1968,8 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<compress>int2 1e-3</compress>
 </var>
-<var name="swh_ku_nr">
+<alias name="swh_ku_nr" sat="j3 sw">swh_ku_adaptive</alias>
+<var name="swh_ku_nr" sat="6a">
 	<long_name>retracked Ku-band significant wave height (numerical retracking)</long_name>
 	<standard_name>sea_surface_wave_significant_height</standard_name>
 	<units>m</units>
