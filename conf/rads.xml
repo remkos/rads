@@ -128,7 +128,8 @@ Global RADS configuration file
 	<plot_range>-0.4 0.4</plot_range>
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
-	<data>alt range_ku_nr SUB dry_tropo SUB wet_tropo SUB iono_alt_smooth_nr SUB dac SUB tide_solid SUB tide_ocean SUB tide_load SUB tide_pole SUB ssb_cls_nr SUB mss SUB ref_frame_offset_nr SUB</data>
+	<data>alt range_ku_nr SUB dry_tropo SUB wet_tropo SUB iono_alt_smooth_nr SUB dac SUB tide_solid SUB tide_ocean SUB tide_load SUB
+		tide_pole SUB ssb_cls_nr SUB mss SUB ref_frame_offset_nr SUB</data>
 	<quality_flag>swh_ku_nr sig0_ku_nr range_rms_ku_nr range_numval_ku_nr flags_nr swh_rms_ku_nr sig0_rms_ku_nr</quality_flag>
 	<comment>Sea level determined from satellite altitude - range (numerical retracking) - all altimetric corrections (numerical retracking)</comment>
 </var>
@@ -222,7 +223,7 @@ Global RADS configuration file
 	<units>seconds since 1985-01-01 00:00:00 UTC</units>
 	<data>time</data>
 	<comment>UTC time of measurement. Attribute leap_second gives time of leap second if any occurs
-	during the data set</comment>
+		during the data set</comment>
 	<format>f17.6</format>
 </var>
 <var name="time_rel_eq" field="102">
@@ -279,7 +280,7 @@ Global RADS configuration file
 	<units>seconds since 1985-01-01 00:00:00 UTC</units>
 	<data>time_20hz</data>
 	<comment>UTC time of 20-Hz measurement. Attribute leap_second gives time of leap second if any occurs
-	during the data set</comment>
+		during the data set</comment>
 	<format>f17.6</format>
 	<dimensions>2</dimensions>
 </var>
@@ -1016,7 +1017,10 @@ Global RADS configuration file
 	<data>gpd_wet_tropo_cor</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
-	<comment>Computed at the altimeter time-tag through space-time objective analysis using the GPD+ algorithm, by combining all available observations. The correction is calibrated against the SSMIS data set. A wet tropospheric correction must be added (negative value) to the instrument range to correct this range measurement for the wet tropospheric range delay of the radar pulse.</comment>
+	<comment>Computed at the altimeter time-tag through space-time objective analysis using the GPD+ algorithm,
+		by combining all available observations. The correction is calibrated against the SSMIS data set.
+		A wet tropospheric correction must be added (negative value) to the instrument range to correct this range
+		measurement for the wet tropospheric range delay of the radar pulse.</comment>
 </var>
 <alias name="wet_tropo_gpd">gpd_wet_tropo_cor</alias>
 <var name="gpd_reference_height">
@@ -1559,7 +1563,8 @@ Global RADS configuration file
 	<data>tide_internal</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
-	<comment>Only includes the so-called static harmonic components. It is not included as a correction to the sea surface height, but users can use it to remove the internal tide from the sea surface height anomaly</comment>
+	<comment>Only includes the so-called static harmonic components. It is not included as a correction to the sea surface height,
+		but users can use it to remove the internal tide from the sea surface height anomaly</comment>
 </var>
 
 <var name="ssb_bm3" field="1501" sat="c2 e1 e2 g1 gs pn sa tx">
@@ -1678,7 +1683,8 @@ Global RADS configuration file
 	<data>ssb_cls_plrm</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
-	<comment>A sea state bias correction must be added to range to correct for sea state delays. This model is actually based on Jason-2 data and not Sentinel-3, and will be replaced later.</comment>
+	<comment>A sea state bias correction must be added to range to correct for sea state delays. This model is actually based on
+		Jason-2 data and not Sentinel-3, and will be replaced later.</comment>
 </var>
 <var name="ssb_tran2012" field="1513" sat="j1 j2 j3 sw">
 	<long_name>Tran et al. 2012 non-parametric sea state bias</long_name>
@@ -2907,7 +2913,8 @@ Global RADS configuration file
 		<flag_values>open_ocean coastal_ocean coastal_amr land</flag_values>
 		<data>surface_type_rad</data>
 		<plot_range>0 3</plot_range>
-		<comment>The processing of radiometer data depends on this flag: 0 = open ocean, 1 = coastal ocean processing with HRMR and AMR, 2 = coastal ocean processing with AMR only, 3 = invalid due to land contamination</comment>
+		<comment>The processing of radiometer data depends on this flag: 0 = open ocean, 1 = coastal ocean processing with HRMR
+			and AMR, 2 = coastal ocean processing with AMR only, 3 = invalid due to land contamination</comment>
 	</if>
 	<else>
 		<data source="flags">6</data>
@@ -2926,7 +2933,8 @@ Global RADS configuration file
 	<flag_values>open_ocean coastal_ocean coastal_amr land</flag_values>
 	<data>surface_type_rad1</data>
 	<plot_range>0 3</plot_range>
-	<comment>The processing of radiometer data depends on this flag: 0 = open ocean, 2 = coastal ocean processing, 3 = invalid due to land contamination</comment>
+	<comment>The processing of radiometer data depends on this flag: 0 = open ocean, 2 = coastal ocean processing,
+		3 = invalid due to land contamination</comment>
 </var>
 
 <var name="surface_type_rad2" sat="sw">
@@ -2939,7 +2947,8 @@ Global RADS configuration file
 	<flag_values>open_ocean coastal_ocean coastal_amr land</flag_values>
 	<data>surface_type_rad2</data>
 	<plot_range>0 3</plot_range>
-	<comment>The processing of radiometer data depends on this flag: 0 = open ocean, 2 = coastal ocean processing, 3 = invalid due to land contamination</comment>
+	<comment>The processing of radiometer data depends on this flag: 0 = open ocean, 2 = coastal ocean processing,
+		3 = invalid due to land contamination</comment>
 </var>
 
 <var name="qual_alt_rain_ice" field="2507" sat="3a 3b 6a g1 j1 j2 j3 n1 pn sa tx sw">
@@ -2955,7 +2964,8 @@ Global RADS configuration file
 	</if>
 	<elseif sat="6a">
 		<long_name>altimeter rain flag</long_name>
-		<flag_values>no_rain rain high_rain_probability_from_altimeter high_probability_of_no_rain_from_altimeter ambiguous_situation_possibility_of_ice evaluation_not_possible</flag_values>
+		<flag_values>no_rain rain high_rain_probability_from_altimeter high_probability_of_no_rain_from_altimeter
+			ambiguous_situation_possibility_of_ice evaluation_not_possible</flag_values>
 		<plot_range>0 5</plot_range>
 		<data>qual_alt_rain_ice</data>
 	</elseif>
@@ -3957,7 +3967,8 @@ Global RADS configuration file
 	<compress>int1</compress>
 </var>
 <var name="dsig0_atten" sat="6a">
-	<long_name>Difference between the expected Ku-band backscatter coefficient (based on the C-band backscatter coefficient) and the measured Ku-band backscatter coefficient</long_name>
+	<long_name>Difference between the expected Ku-band backscatter coefficient (based on the C-band backscatter coefficient) and
+		the measured Ku-band backscatter coefficient</long_name>
 	<units>dB</units>
 	<plot_range>0 1</plot_range>
 	<data>dsig0_atten</data>
@@ -4288,7 +4299,8 @@ Global RADS configuration file
 	<data>tide_non_equil</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
-	<comment>The long-period non-equilibrium ocean tide results from the corresponding FES tide model and is included in the FES ocean tide value</comment>
+	<comment>The long-period non-equilibrium ocean tide results from the corresponding FES tide model and is included in
+		the FES ocean tide value</comment>
 </var>
 <var name="tide_lunar_nodal">
 	<long_name>nodal lunar ocean tide</long_name>
@@ -4481,7 +4493,8 @@ Global RADS configuration file
 	<data>prox_coast</data>
 	<format>f4.2</format>
 	<compress>int1 1e-2</compress>
-	<comment>Dimensionless measure of the effect of land over altimetric waveforms, where -1 means unaffected by land (open-ocean) and 1 means totally affected by land (inland); can be used for screening purposes in place of distance from coast</comment>
+	<comment>Dimensionless measure of the effect of land over altimetric waveforms, where -1 means unaffected by land (open-ocean)
+		and 1 means totally affected by land (inland); can be used for screening purposes in place of distance from coast</comment>
 </var>
 
 <var name="angle_coast" sat="3a 3b 6a j3 sw">
@@ -4493,7 +4506,9 @@ Global RADS configuration file
 	<parameters sat="sw">distance-to-coast/angle-to-coast_1m_swot01.nc -p</parameters>
 	<format>f7.2</format>
 	<compress>int2 1e-2</compress>
-	<comment>Angle of approach to the closest coast. 0 is parallel to the coast with the land on the right. Positive values indicate the satellite is approaching the land. Negative values indicate the satellite is leaving the land. Values close to +/-180 degrees have the land on the left.</comment>
+	<comment>Angle of approach to the closest coast. 0 is parallel to the coast with the land on the right. Positive values
+		indicate the satellite is approaching the land. Negative values indicate the satellite is leaving the land.
+		Values close to +/-180 degrees have the land on the left.</comment>
 </var>
 
 <var name="seaice_class" field="4601 46" sat="3a 3b e1 e2 n1">
