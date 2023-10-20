@@ -2317,8 +2317,9 @@ do
 	! a) Tag contains attribute "sat="
 	! b) The attribute value contains the satellite abbreviaton, or
 	!    the attribute value starts with "!" and does not contain the satellite abbreviation
-	!    (In both cases "*.r" matches all branches with extension ".r")
-	! c) The satellite abbreviation is not set to "??"
+	! c) "*.r" matches all branches with extension ".r")
+	! d) "6a.hr*" matches all branches that start with "6a.hr"
+	! e) The satellite abbreviation is not set to "??"
 	!
 	! Example 1: for original TOPEX (tx)
 	! sat="tx" => pass
@@ -2350,6 +2351,7 @@ do
 				skip = -1
 			else if ((attr(2,i)(:1) == '!') .eqv. &
 				(index(attr(2,i),S%sat//' ') == 0 .and. index(attr(2,i),trim(S%branch(1))//' ') == 0 &
+					.and. index(attr(2,i),S%branch(1)(:5)//'* ') == 0 &
 					.and. index(attr(2,i),'*'//trim(S%branch(1)(3:))//' ') == 0)) then
 				skip=-1
 			endif
