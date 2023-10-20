@@ -154,7 +154,7 @@ real(eightbytereal) :: latency(n), range_ku(n), range_ku_mle3(n), range_c(n), &
 	swh_ku(n), swh_ku_mle3(n), wind_speed_alt(n), wind_speed_alt_mle3(n), qual_alt_rain_ice(n), flags(n), &
 	flags_mle3(n), flags_nr(n), ssb_cls(n), ssb_cls_mle3(n), ssb_cls_c(n), dum(n)
 real(eightbytereal) :: drange(2), dsig0(2), cal1_old(4), cal1_new(4)
-logical :: lr, redundant, val, do_range = .false., do_sig0 = .false., do_wind = .false., &
+logical :: lr, has_nr, redundant, val, do_range = .false., do_sig0 = .false., do_wind = .false., &
 	do_ssb = .false., do_rain = .false., do_cal1 = .false., do_flag = .false.
 character(len=3) :: chd_ver, cnf_ver, baseline
 
@@ -176,6 +176,7 @@ chd_ver = P%original(i+5:i+7)
 redundant = (P%original(i+3:i+3) == 'R')
 i = index(P%original, 'CONF')
 cnf_ver = P%original(i+5:i+7)
+has_nr = (lr .and. baseline > 'F07') .or. baseline > 'F08'
 
 ! Get latency
 
@@ -392,6 +393,8 @@ if (do_flag) then
 	if (lr) then
 		call rads_get_var (S, P, 'flags_mle3', flags_mle3, .true.)
 		call set_flag (n, flags_mle3, redundant)
+	endif
+	if (has_nr) then
 		call rads_get_var (S, P, 'flags_nr', flags_nr, .true.)
 		call set_flag (n, flags_nr, redundant)
 	endif
@@ -404,9 +407,9 @@ call rads_put_history (S, P)
 
 ! If flag bit is set, also redefine the attributes
 
-if (do_flag .and. lr) then
-	call rads_def_var (S, P, 'flags_mle3')
-	call rads_def_var (S, P, 'flags_nr')
+if (do_flag) then
+	if (lr) call rads_def_var (S, P, 'flags_mle3')
+	if (has_nr) call rads_def_var (S, P, 'flags_nr')
 endif
 
 ! Write out all the data
@@ -474,9 +477,9 @@ else if (do_flag) then
 	call rads_put_var (S, P, 'flags', flags)
 endif
 
-if (do_flag .and. lr) then
-	call rads_put_var (S, P, 'flags_mle3', flags_mle3)
-	call rads_put_var (S, P, 'flags_nr', flags_nr)
+if (do_flag) then
+	if (lr) call rads_put_var (S, P, 'flags_mle3', flags_mle3)
+	if (has_nr) call rads_put_var (S, P, 'flags_nr', flags_nr)
 endif
 
 call log_records (n)
