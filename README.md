@@ -29,26 +29,31 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 This does not include explanations of changes to the code that generates the data base.
 
-### v4.5.1 (5 Oct 2023)
+### v4.5.2 (20 Oct 2023)
 * Documentation
-  * Replaced name of rads2asc4 by rads2asc; same for other *4 executables.
-
-### v4.5.0 (29 Sep 2023)
+  * replaced name of rads2asc4 by rads2asc; same for other *4 executables.
 * `rads.xml`:
-  * prepared for SWOT Calval and Science Orbits
+` * updated `ref_frame_offset*` for JA3 (#180)
+  * introduced `ref_frame_offset*` for S6A (#180)
+  * prepared for SWOT Calval and Science Orbits with cycle numbers shifted -300 and +300 respectively to make them time ordered.
   * added all necessary information for SWOT nadir (sw)
   * adaptations for S6A baseline F08 and prepared for baseline F09
   * introduce `flag_manoeuvre` properfly (#177)
   * update SSB model info for S3A/
   * increase cycle limit for SRAL
   * fix wrong scale on `ssb_3d`, `ssb_3d_adaptive`, `ssb_adaptive`
+  * added `*_nr` variables for 6a
+  * updated
 * `radsstat`:
   * allow to compute statistics for the difference between two satellites/missions
   * introduced `-c/N`, `--mean-only`, and `--groups` options
   * do not add attribute `coordinates` to variables.
+  * do not write out phase in ASCII header (#188)
+  * extend info in global attributes
 * Increased number of characters allowed per option to 640.
 * Updated manuals
 * Updated `config.sub` and `config.guess`
+* Corrected flag bit 0 for S6A (#192)
 
 ### v4.4.0 (27 Apr 2022)
 * `rads.xml`:
@@ -56,7 +61,7 @@ This does not include explanations of changes to the code that generates the dat
   * align lower limit of `range_numval_ku_adaptive` with `range_numval_ku` (for j3)
   * added `mss_dtu21` (#174)
   * fix formatting of flag mask of 6a, j2, j3
-  * add `*_adaptive` parameters for j3 (#173)
+  * add `*_adaptive` variables for j3 (#173)
   * update `ref_frame_offset` for j3 (#178)
   * correct `standard_name` for `mean_wave_period`
   * remove `ssb_tran2012` from S6A (it was never included in the data files)
