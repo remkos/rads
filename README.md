@@ -33,7 +33,7 @@ This does not include explanations of changes to the code that generates the dat
 * Documentation
   * replaced name of rads2asc4 by rads2asc; same for other *4 executables.
 * `rads.xml`:
-` * updated `ref_frame_offset*` for JA3 (#180)
+  * updated `ref_frame_offset*` for JA3 (#180)
   * introduced `ref_frame_offset*` for S6A (#180)
   * prepared for SWOT Calval and Science Orbits with cycle numbers shifted -300 and +300 respectively to make them time ordered.
   * added all necessary information for SWOT nadir (sw)
