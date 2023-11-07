@@ -62,7 +62,7 @@ Global RADS configuration file
 	<quality_flag>swh sig0 range_rms range_numval flags</quality_flag>
 	<quality_flag sat="3a 3b 6a e1 e2 g1 j1 j2 j3 n1 tx sw" action="append">swh_rms</quality_flag>
 	<quality_flag sat="3a 3b 6a j1 j2 j3 sw" action="append">sig0_rms</quality_flag>
-	<quality_flag sat="e2 j1 j2 j3 sw" action="append">attitude</quality_flag><!--attitude not included for Sentinel-3/6 because there is no altimeter value in SAR mode (only PLRM)-->
+	<quality_flag sat="e2 j1 j2 j3 sw tx.gdrf" action="append">attitude</quality_flag><!--attitude not included for Sentinel-3/6 because there is no altimeter value in SAR mode (only PLRM)-->
 	<quality_flag sat="c2 n1 sa" action="append">peakiness</quality_flag>
 	<comment>Sea level determined from satellite altitude - range - all altimetric corrections</comment>
 </var>
@@ -79,7 +79,7 @@ Global RADS configuration file
 	<quality_flag>swh sig0 range_rms range_numval flags peakiness</quality_flag>
 	<comment>Sea level determined from satellite 20-Hz altitude - 20-Hz range - all altimetric corrections</comment>
 </var>
-<var name="sla_mle3" sat="6a j2 j3 sw">
+<var name="sla_mle3" sat="6a j2 j3 sw tx.gdrf">
 	<long_name>sea level anomaly (MLE3)</long_name>
 	<standard_name>sea_surface_height_above_sea_level</standard_name>
 	<units>m</units>
@@ -158,7 +158,7 @@ Global RADS configuration file
 	<comment>Sea level determined from satellite 20-Hz altitude - 20-Hz range - all altimetric corrections.
 		These values were computed when the data set was created, in contrast to the sla_20hz variable.</comment>
 </var>
-<var name="ssha_mle3" sat="6a j2 j3 sw">
+<var name="ssha_mle3" sat="6a j2 j3 sw tx.gdrf">
 	<long_name>sea surface height anomaly (MLE3)</long_name>
 	<standard_name>sea_surface_height_above_sea_level</standard_name>
 	<units>m</units>
@@ -350,7 +350,7 @@ Global RADS configuration file
 	<comment>East longitude relative to Greenwich meridian</comment>
 </var>
 
-<var name="alt_jgm3" field="401" sat="gs pn tx">
+<var name="alt_jgm3" field="401" sat="gs pn.mgdr tx.mgdr">
 	<long_name>JGM-3 orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>GSFC, JGM-3</source>
@@ -382,7 +382,7 @@ Global RADS configuration file
 	<compress>int4 1e-3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_cnes" field="404" sat="2a 3a 3b e1 e2 c2 j2 j3 n1 pn tx sw">
+<var name="alt_cnes" field="404" sat="2a 3a 3b e1 e2 c2 j2 j3 n1 tx.mgdr pn.mgdr sw">
 	<long_name>CNES orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>CNES</source>
@@ -391,7 +391,7 @@ Global RADS configuration file
 	<format>f11.3</format>
 	<compress>int4 1e-3</compress>
 	<compress sat="2a">int4 1e-4 900e3</compress>
-	<compress sat="c2 sw">int4 1e-4 700e3</compress>
+	<compress sat="c2">int4 1e-4 700e3</compress>
 	<compress sat="6a j3">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
@@ -417,7 +417,7 @@ Global RADS configuration file
 	<compress>int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_gdrcp" field="415" sat="gs g1 j1 j2 n1 pn tx">
+<var name="alt_gdrcp" field="415" sat="gs g1 j1 j2 n1 pn.mgdr tx.mgdr">
 	<long_name>GDR-C' orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>GDR-C' standards</source>
@@ -476,10 +476,10 @@ Global RADS configuration file
 	<format>f12.4</format>
 	<compress>int4 1e-4 700e3</compress>
 	<compress sat="2a">int4 1e-4 900e3</compress>
-	<compress sat="j1 j2 tx">int4 1e-4 1300e3</compress>
+	<compress sat="j1 j2">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_std1204" field="419" sat="j1 j2 pn tx">
+<var name="alt_std1204" field="419" sat="j1 j2 pn tx.mgdr">
 	<long_name>GSFC/Std1204 orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>GSFC/Std1204</source>
@@ -545,6 +545,17 @@ Global RADS configuration file
 	<compress>int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
+<var name="alt_std1808" sat="tx.gdrf pn.gdrf">
+	<long_name>GSFC/Std1808 orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>GSFC/Std1808</source>
+	<parameters>gsfc_std1808</parameters>
+	<units>m</units>
+	<data>alt_std1808</data>
+	<format>f12.4</format>
+	<compress>int4 1e-4 1300e3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
 <var name="alt_gdre" field="425" sat="3a 3b c2 j1 j2 j3 sa">
 	<long_name>CNES GDR-E orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
@@ -554,10 +565,10 @@ Global RADS configuration file
 	<data>alt_gdre</data>
 	<format>f12.4</format>
 	<compress>int4 1e-4 700e3</compress>
-	<compress sat="j1 j2 j3 tx">int4 1e-4 1300e3</compress>
+	<compress sat="j1 j2 j3">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_slcci" field="426" sat="e1 e2 j1 j2 n1 pn tx">
+<var name="alt_slcci" field="426" sat="e1 e2 j1 j2 n1 pn.mgdr tx.mgdr">
 	<long_name>GFZ/SLCCI/VER11 orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>ESA SLCCI project</source>
@@ -566,10 +577,10 @@ Global RADS configuration file
 	<data>alt_slcci</data>
 	<format>f12.4</format>
 	<compress>int4 1e-4 700e3</compress>
-	<compress sat="j1 j2 pn tx">int4 1e-4 1300e3</compress>
+	<compress sat="j1 j2 pn.mgdr tx.mgdr">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_gdrf" field="427" sat="3a 3b 6a c2 j3 sa sw">
+<var name="alt_gdrf" field="427" sat="3a 3b 6a c2 j3 sa sw tx.gdrf pn.gdrf">
 	<long_name>CNES GDR-F orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>CNES, GDR-F standards</source>
@@ -578,7 +589,7 @@ Global RADS configuration file
 	<data>alt_gdrf</data>
 	<format>f12.4</format>
 	<compress>int4 1e-4 700e3</compress>
-	<compress sat="6a j1 j2 j3 tx">int4 1e-4 1300e3</compress>
+	<compress sat="6a j1 j2 j3 tx.gdrf pn.gdrf">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_cpod" sat="3a 3b">
@@ -603,8 +614,8 @@ Global RADS configuration file
 <alias name="alt" field="4" sat="j2">alt_gdre alt_gdrd</alias>
 <alias name="alt" field="4" sat="j3">alt_gdrf alt_gdre</alias>
 <alias name="alt" field="4" sat="n1">alt_gdrd alt_gdrcp</alias>
-<alias name="alt" field="4" sat="pn tx">alt_gdrcp alt_jgm3</alias>
-<alias name="alt" field="4" sat="sw">alt_gdrf</alias>
+<alias name="alt" field="4" sat="pn.mgdr tx.mgdr">alt_gdrcp alt_jgm3</alias>
+<alias name="alt" field="4" sat="sw tx.gdrf pn.gdrf">alt_gdrf</alias>
 <var name="alt_cnes_20hz" sat="c2">
 	<long_name>20-Hz CNES orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
@@ -678,7 +689,7 @@ Global RADS configuration file
 	<format>f11.3</format>
 	<compress>int3 1e-3</compress>
 </var>
-<var name="range_ku_mle3" field="611" sat="6a j2 j3 sw">
+<var name="range_ku_mle3" field="611" sat="6a j2 j3 sw tx.gdrf">
 	<long_name>Ku-band range corrected for instr. effects (MLE3)</long_name>
 	<standard_name>altimeter_range</standard_name>
 	<units>m</units>
@@ -839,7 +850,7 @@ Global RADS configuration file
 	<units>m</units>
 	<limits>-0.6 0.0</limits>
 	<limits sat="n1">-0.6 0.05</limits> <!--Due to model bias and noise, allow positive values-->
-	<limits sat="pn tx">-0.6 -0.001</limits> <!--Need to exclude bogus 0 values from TMR measurements-->
+	<limits sat="pn.mgdr tx.mgdr">-0.6 -0.001</limits> <!--Need to exclude bogus 0 values from TMR measurements-->
 	<plot_range>-0.4 0.0</plot_range>
 	<data>wet_tropo_rad</data>
 	<format>f7.4</format>
@@ -1053,7 +1064,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<var name="iono_bent" field="902" sat="c2 e1 e2 pn tx">
+<var name="iono_bent" field="902" sat="c2 e1 e2 tx.mgdr pn.mgdr">
 	<long_name>Bent ionospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>Bent climatology</source>
@@ -1065,7 +1076,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<var name="iono_alt_smooth" field="903" sat="2a 3a 3b 6a j1 j2 j3 n1 tx sw">
+<var name="iono_alt_smooth" field="903" sat="2a 3a 3b 6a j1 j2 j3 n1 tx.mgdr sw">
 	<long_name>smoothed dual-frequency ionospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>dual-frequency altimeter after smoothing</source>
@@ -1077,7 +1088,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<var name="iono_doris" field="904" sat="n1 pn tx">
+<var name="iono_doris" field="904" sat="n1 pn tx.mgdr">
 	<long_name>DORIS ionospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>DORIS</source>
@@ -1148,7 +1159,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<var name="iono_alt_mle3" field="911" sat="6a j2 j3 sw">
+<var name="iono_alt_mle3" field="911" sat="6a j2 j3 sw tx.gdrf">
 	<long_name>dual-frequency ionospheric correction (MLE3)</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>dual-frequency altimeter</source>
@@ -1248,7 +1259,8 @@ Global RADS configuration file
 </var>
 <alias name="iono" field="9" sat="e1 gs pn">iono_nic09</alias>
 <alias name="iono" field="9" sat="c2 e2 g1 sa">iono_gim iono_nic09</alias>
-<alias name="iono" field="9" sat="2a 3a 3b 6a j1 j2 j3 n1 tx sw">iono_alt_smooth iono_gim iono_nic09</alias>
+<alias name="iono" field="9" sat="2a 3a 3b 6a j1 j2 j3 n1 tx.mgdr sw">iono_alt_smooth iono_gim iono_nic09</alias>
+<alias name="iono" field="9" sat="tx.gdrf">iono_alt</alias>
 
 <var name="inv_bar_static" field="1002">
 	<long_name>static inverse barometer correction</long_name>
@@ -1580,7 +1592,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
-<var name="ssb_cls" field="1502" sat="2a 3a 3b 6a c2 j1 j2 j3 n1 tx sw">
+<var name="ssb_cls" field="1502" sat="2a 3a 3b 6a c2 j1 j2 j3 n1 tx.mgdr sw">
 	<long_name>CLS non-parametric sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<source>CLS</source>
@@ -1801,10 +1813,50 @@ Global RADS configuration file
 	<parameters>AUX_SBLC_S6A_002.nc?SSB -xwind_speed_alt -yswh_ku</parameters>
 	<source>SSB_2020_J3_GDRF</source>
 </var>
+<var name="ssb_tx" sat="tx.gdrf">
+	<long_name>TOPEX GDR-F sea state bias (Ku-band)</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<source>Putnam 2021, University of Colorado</source>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
+	<data>ssb_tx</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>This sea state bias correction is added to K-band range when determining ionospheric correction.</comment>
+	<source>SSB_2021_TX_GDRF</source>
+</var>
+<var name="ssb_tx_mle3" sat="tx.gdrf">
+	<long_name>TOPEX GDR-F sea state bias (Ku-band) (MLE3)</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<source>Putnam 2021, University of Colorado</source>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
+	<data>ssb_tx_mle3</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>This sea state bias correction is added to K-band range when determining ionospheric correction.</comment>
+	<source>SSB_2021_TX_GDRF</source>
+</var>
+<var name="ssb_tx_c" sat="tx.gdrf">
+	<long_name>TOPEX GDR-F sea state bias (C-band)</long_name>
+	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
+	<source>Putnam 2021, University of Colorado</source>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.30 0.05</plot_range>
+	<data>ssb_tx_c</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>This sea state bias correction is added to C-band range when determining ionospheric correction.</comment>
+	<source>SSB_2021_TX_GDRF</source>
+</var>
 <alias name="ssb" field="15" sat="e1 e2 pn">ssb_bm3</alias>
 <alias name="ssb" field="15" sat="g1 gs">ssb_hyb</alias>
 <alias name="ssb" field="15" sat="sa">ssb_tran2019</alias>
-<alias name="ssb" field="15" sat="2a 3a 3b 6a c2 j1 j2 j3 n1 tx sw">ssb_cls</alias>
+<alias name="ssb" field="15" sat="2a 3a 3b 6a c2 j1 j2 j3 n1 tx.mgdr sw">ssb_cls</alias>
+<alias name="ssb" field="15" sat="tx.gdrf">ssb_tx</alias>
 
 <var name="geoid_egm96" field="1601" sat="3a 3b j2 j3 sa sw">
 	<long_name>EGM96 geoid height</long_name>
@@ -2002,7 +2054,7 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<compress>int2 1e-3</compress>
 </var>
-<var name="swh_ku_mle3" field="1711" sat="6a j2 j3 sw">
+<var name="swh_ku_mle3" field="1711" sat="6a j2 j3 sw tx.gdrf">
 	<long_name>Ku-band significant wave height (MLE3)</long_name>
 	<standard_name>sea_surface_wave_significant_height</standard_name>
 	<units>m</units>
@@ -2028,7 +2080,7 @@ Global RADS configuration file
 	<format>f5.2</format>
 	<compress>int2 1e-2</compress>
 </var>
-<var name="swh_mfwam" sat="3a 3b 6a j3 sw">
+<var name="swh_mfwam" sat="3a 3b 6a j3 sw tx.gdrf pn.gdrf">
 	<long_name>MFWAM significant wave height</long_name>
 	<standard_name>sea_surface_wave_significant_height</standard_name>
 	<units>m</units>
@@ -2148,7 +2200,7 @@ Global RADS configuration file
 	<comment>AGC setting corrected for individual biases, but not for drift</comment>
 	<dimensions>2</dimensions>
 </var>
-<var name="sig0_ku_mle3" field="1811" sat="6a j2 j3 sw">
+<var name="sig0_ku_mle3" field="1811" sat="6a j2 j3 sw tx.gdrf">
 	<long_name>Ku-band backscatter coefficient (MLE3)</long_name>
 	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 	<units>dB</units>
@@ -2332,7 +2384,7 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<compress>int2 1e-2</compress>
 </var>
-<var name="wind_speed_alt_mle3" field="1911" sat="6a j2 j3 sw">
+<var name="wind_speed_alt_mle3" field="1911" sat="6a j2 j3 sw tx.gdrf">
 	<long_name>altimeter wind speed (MLE3)</long_name>
 	<standard_name>wind_speed</standard_name>
 	<source>altimeter</source>
@@ -2407,9 +2459,9 @@ Global RADS configuration file
 		<units>m</units>
 		<limits>0.0 0.4</limits>
 		<limits sat="g1 gs">0.0 0.25</limits> <!--GFO and Geosat on-board a-b trackers smooth the data-->
-		<limits sat="j1 j2 j3 sw">0.00 0.17</limits> <!--Retracker noise on Jason is lower than others-->
+		<limits sat="6a j1 j2 j3 sw tx.gdrf pn.gdrf">0.00 0.17</limits> <!--Retracker noise on Poseidon altimeters is lower than others-->
 		<limits sat="c2">0.00 0.18</limits> <!--CryoSat-2 needs a little extra to allow PLRM-->
-		<limits sat="tx">0.00 0.15</limits> <!--TOPEX a-b tracker leads to much lower std dev than other satellites-->
+		<limits sat="tx.mgdr">0.00 0.15</limits> <!--TOPEX a-b tracker leads to much lower std dev than other satellites-->
 		<plot_range>0.0 0.2</plot_range>
 		<data>range_rms_ku</data>
 		<format>f6.4</format>
@@ -2419,7 +2471,7 @@ Global RADS configuration file
 	</var>
 	<alias name="range_rms" field="20">range_rms_ku</alias>
 </else>
-<var name="range_rms_ku_mle3" field="2012" sat="6a j2 j3 sw">
+<var name="range_rms_ku_mle3" field="2012" sat="6a j2 j3 sw tx.gdrf">
 	<long_name>std dev of Ku-band range (MLE3)</long_name>
 	<units>m</units>
 	<limits>0.00 0.17</limits> <!--May need adjustment-->
@@ -2465,7 +2517,7 @@ Global RADS configuration file
 	<comment>Based on valid retracked high-rate measurements</comment>
 </var>
 
-<var name="range_rms_c" field="2004" sat="2a 3a 3b 6a j1 j2 j3 sw">
+<var name="range_rms_c" field="2004" sat="2a 3a 3b 6a j1 j2 j3 sw tx.gdrf">
 	<long_name>std dev of C-band range</long_name>
 	<units>m</units>
 	<limits>0.0 0.4</limits>
@@ -2504,11 +2556,11 @@ Global RADS configuration file
 		<standard_name>altimeter_range number_of_observations</standard_name>
 		<units>1</units>
 		<limits>16.5 20.5</limits>
-		<limits sat="6a j1 j2 j3 sw">15.5 20.5</limits>
-		<limits sat="g1 gs tx">8.5 10.5</limits> <!--GFO, Geosat, TOPEX are only 10 Hz-->
+		<limits sat="6a j1 j2 j3 sw tx.gdrf pn.gdrf">15.5 20.5</limits>
+		<limits sat="g1 gs tx.mgdr">8.5 10.5</limits> <!--GFO, Geosat, TOPEX MGDR are only 10 Hz-->
 		<limits sat="3a 3b">16.5 21.5</limits> <!--SAR mode data can have up to 21 in 1 second-->
 		<plot_range>0 21</plot_range>
-		<plot_range sat="g1 gs tx">0 11</plot_range>
+		<plot_range sat="g1 gs tx.mgdr">0 11</plot_range>
 		<data>range_numval_ku</data>
 		<default>20</default>
 		<format>f3.0</format>
@@ -2516,7 +2568,7 @@ Global RADS configuration file
 	</var>
 	<alias name="range_numval" field="21">range_numval_ku</alias>
 </else>
-<var name="range_numval_ku_mle3" field="2111" sat="6a j2 j3 sw">
+<var name="range_numval_ku_mle3" field="2111" sat="6a j2 j3 sw tx.gdrf">
 	<long_name>number of valid Ku-band measurements (MLE3)</long_name>
 	<standard_name>altimeter_range number_of_observations</standard_name>
 	<units>1</units>
@@ -2558,7 +2610,7 @@ Global RADS configuration file
 	<compress>int1</compress>
 </var>
 
-<var name="range_numval_c" field="2102" sat="2a 3a 3b 6a j1 j2 j3 sw">
+<var name="range_numval_c" field="2102" sat="2a 3a 3b 6a j1 j2 j3 sw tx.gdrf">
 	<long_name>number of valid C-band measurements</long_name>
 	<standard_name>altimeter_range number_of_observations</standard_name>
 	<units>1</units>
@@ -2800,14 +2852,17 @@ Global RADS configuration file
 	<flag_values sat="e1">sptr_available sptr_not_available</flag_values>
 	<flag_values sat="j1 j2 j3 n1 sw">side_A side_B</flag_values>
 	<plot_range>0 1</plot_range>
-	<if sat="c2">
-		<flag_values>LRM SAR SARIN</flag_values>
-		<data>flag_alt_oper_mode</data>
+	<data>flag_alt_oper_mode</data>
+	<if sat="6a">
+		<flag_values>LRM RAW RMC</flag_values>
 		<plot_range>0 2</plot_range>
 	</if>
-	<elseif sat="6a">
-		<flag_values>LRM RAW RMC</flag_values>
-		<data>flag_alt_oper_mode</data>
+	<elseif sat="c2">
+		<flag_values>LRM SAR SARIN</flag_values>
+		<plot_range>0 2</plot_range>
+	</elseif>
+	<elseif sat="tx.gdrf pn.gdrf">
+		<flag_values>side_A side_B POS</flag_values>
 		<plot_range>0 2</plot_range>
 	</elseif>
 	<else>
@@ -2962,6 +3017,14 @@ Global RADS configuration file
 		<flag_values>no_rain_ice rain_ice</flag_values>
 		<data source="flags">7</data>
 	</if>
+	<elseif sat="tx.gdrf">
+		<long_name>corruption of altimeter measurement (rain/ice)</long_name>
+		<flag_values>no_rain_ice rain_ice</flag_values>
+		<data>qual_alt_rain_ice</data>
+	</elseif>
+	<elseif sat="pn.gdrf">
+		<data>qual_alt_rain_ice</data>
+	</elseif>
 	<elseif sat="6a">
 		<long_name>altimeter rain flag</long_name>
 		<flag_values>no_rain rain high_rain_probability_from_altimeter high_probability_of_no_rain_from_altimeter
@@ -2978,7 +3041,7 @@ Global RADS configuration file
 	<long_name>corruption of radiometer measurement (rain or ice)</long_name>
 	<flag_values>ok rain_or_ice</flag_values>
 	<plot_range>0 1</plot_range>
-	<if sat="6a">
+	<if sat="6a tx.gdrf">
 		<data>qual_rad_rain_ice</data>
 	</if>
 	<else>
@@ -3010,9 +3073,9 @@ Global RADS configuration file
 	<long_name>quality of radiometer brightness temperatures</long_name>
 	<flag_masks sat="3a 3b e1 e2 n1">bad_tb_238 bad_tb_365</flag_masks>
 	<flag_masks sat="g1">bad_tb_220 bad_tb_370</flag_masks>
-	<flag_masks sat="j1 j2 j3 sw">bad_tb_187_or_238 bad_tb_340</flag_masks>
+	<flag_masks sat="j1 j2 j3 sw pn.gdrf tx.gdrf">bad_tb_187_or_238 bad_tb_340</flag_masks>
 	<flag_masks sat="sa">bad_tb_238 bad_tb_370</flag_masks>
-	<flag_values sat="pn tx">ok interpolation_near_land extrapolation interpolation_failed</flag_values>
+	<flag_values sat="pn.mgdr tx.mgdr">ok interpolation_near_land extrapolation interpolation_failed</flag_values>
 	<if sat="6a">
 		<flag_masks>bad_tb_187 bad_tb_238 bad_tb_340</flag_masks>
 		<data>qual_rad_tb</data>
@@ -3041,8 +3104,8 @@ Global RADS configuration file
 	<format>z1</format>
 	<compress>int1</compress>
 </var>
-<var name="qual_range_mle3" sat="6a">
-	<long_name>quality of the range estimate (NLE3)</long_name>
+<var name="qual_range_mle3" sat="6a tx.gdrf">
+	<long_name>quality of the range estimate (MLE3)</long_name>
 	<standard_name>altimeter_range status_flag</standard_name>
 	<flag_values>ok suspect</flag_values>
 	<flag_values sat="gs">ok some_10Hz_measurements_invalid</flag_values>
@@ -3134,11 +3197,11 @@ Global RADS configuration file
 	<compress>int1</compress>
 </var>
 
-<var name="flag_alt_track_mode" field="2514" sat="e1 e2 gs j1 pn tx">
+<var name="flag_alt_track_mode" field="2514" sat="e1 e2 gs j1 pn tx.mgdr">
 	<long_name>altimeter tracking mode</long_name>
 	<standard_name>altimeter_range status_flag</standard_name>
 	<flag_values>ocean_mode ice_mode</flag_values>
-	<flag_values sat="gs tx">nominal coarse_or_acquisition</flag_values>
+	<flag_values sat="gs tx.mgdr">nominal coarse_or_acquisition</flag_values>
 	<flag_values sat="j1">nominal c_band_coarse</flag_values>
 	<flag_values sat="pn">nominal acquisition</flag_values>
 	<plot_range>0 1</plot_range>
@@ -3207,7 +3270,8 @@ Global RADS configuration file
 	<limits sat="j3 sw">65384 0</limits> <!--Temporary value, deselecting altimeter rain flag-->
 	<limits sat="n1">36712 0</limits>
 	<limits sat="pn">480 0</limits>
-	<limits sat="tx">49640 0</limits>
+	<limits sat="tx.mgdr">49640 0</limits>
+	<limits sat="tx.gdrf">16360 0</limits> <!--Temporary value -->
 	<data>flags</data>
 	<!-- In future releases without NetCDF variable "flags", use this:
 	<data source="flags">flags</data>
@@ -3220,19 +3284,25 @@ Global RADS configuration file
 		rad_rain_or_ice tb1_tb2_bad tb2_bad range_suspect
 		swh_suspect backscatter_suspect not_used orbit_degraded
 	</flag_masks>		<!--This is for 6a, j2, j3, and sw-->
+	<flag_masks sat="pn.gdrf">
+		not_used attitude_bad continental_ice not_used
+		alt_land alt_non_ocean rad_land alt_rain_or_ice
+		rad_rain_or_ice tb1_tb2_bad tb2_bad not_used
+		not_used not_used not_used orbit_degraded
+	</flag_masks>		<!--This is for 6a, j2, j3, and sw-->
 	<flag_masks sat="j1">
 		alt_side_B attitude_bad continental_ice alt_iono_bad
 		alt_land alt_non_ocean rad_land alt_rain_or_ice
 		rad_rain_or_ice tb1_tb2_bad tb2_bad range_suspect
 		swh_suspect backscatter_suspect c_band_coarse orbit_degraded
 	</flag_masks>
-	<flag_masks sat="tx">
+	<flag_masks sat="tx.mgdr">
 		hardware_bad attitude_bad flag_rad_oper_mode alt_iono_bad
 		alt_land alt_non_ocean rad_land alt_rain_or_ice
 		rad_rain_or_ice tb1_tb2_bad tb3_bad range_suspect
 		swh_suspect backscatter_suspect tracking_acquisition orbit_degraded
 	</flag_masks>
-	<flag_masks sat="pn">
+	<flag_masks sat="pn.mgdr">
 		hardware_bad attitude_bad flag_rad_oper_mode not_used
 		alt_land alt_non_ocean rad_land alt_rain_or_ice
 		rad_rain_or_ice tb1_tb2_bad tb3_bad range_suspect
@@ -3294,7 +3364,7 @@ Global RADS configuration file
 	<format>b16.16</format>
 	<compress>int2</compress>
 </var>
-<var name="flags_mle3" field="2611" sat="6a j2 j3 sw">
+<var name="flags_mle3" field="2611" sat="6a j2 j3 sw tx.gdrf">
 	<long_name>flag word (MLE3)</long_name>
 	<limits>65512 0</limits>
 	<data>flags_mle3</data>
@@ -3306,7 +3376,7 @@ Global RADS configuration file
 		rad_rain_or_ice tb1_bad tb2_bad range_suspect
 		swh_suspect backscatter_suspect tracking_preset orbit_degraded
 	</flag_masks>
-	<flag_masks sat="6a">
+	<flag_masks sat="6a tx.gdrf">
 		alt_side_B attitude_bad continental_ice alt_iono_bad
 		alt_land alt_non_ocean rad_land alt_rain_or_ice
 		rad_rain_or_ice tb1_tb2_bad tb2_bad range_suspect
@@ -3360,22 +3430,20 @@ Global RADS configuration file
 	</flag_masks>
 </var>
 
-<var name="drange_ku" field="2701" sat="2a 6a c2 e1 e2 gs j3 n1 tx sw">
+<var name="drange_ku" field="2701" sat="2a 6a c2 e1 e2 gs j3 n1 sw tx pn">
 	<long_name>Ku-band range bias</long_name>
-	<long_name sat="6a">net instrument correction to Ku-band range</long_name>
-	<long_name sat="tx">Cal1 range correction</long_name>
+	<long_name sat="6a j3 sw tx pn">net instrument correction to Ku-band range</long_name>
 	<long_name sat="c2">Ku-band retracker range (relative to window delay)</long_name>
 	<units>m</units>
 	<data>drange_ku</data>
 	<compress>int2 1e-3</compress>
-	<compress sat="tx">int2 1e-4</compress>
-	<compress sat="6a j3 sw">int4 1e-4</compress>
+	<compress sat="6a j3 sw tx pn">int4 1e-4</compress>
 	<format>f6.3</format>
-	<format sat="6a j3 tx sw">f7.4</format>
+	<format sat="6a j3 sw tx pn">f7.4</format>
 	<comment>Range correction already added to range</comment>
-	<comment sat="tx">This correction was added back to the Ku-band range</comment>
+	<comment sat="tx.mgdr">This correction was added back to the Ku-band range</comment>
 </var>
-<var name="drange_ku_mle3" sat="6a j3 sw">
+<var name="drange_ku_mle3" sat="6a j3 sw tx.gdrf">
 	<long_name>net instrument correction to Ku-band range (MLE3)</long_name>
 	<units>m</units>
 	<data>drange_ku_mle3</data>
@@ -3401,14 +3469,14 @@ Global RADS configuration file
 	<comment>Range correction already added to range</comment>
 </var>
 
-<var name="drange_c" sat="2a 6a j3 sw">
+<var name="drange_c" sat="2a 6a j3 sw tx.gdrf">
 	<long_name>net instrument correction to C-band range</long_name>
 	<units>m</units>
 	<data>drange_c</data>
 	<compress>int2 1e-3</compress>
-	<compress sat="6a j3 sw">int4 1e-4</compress>
+	<compress sat="6a j3 sw tx.gdrf">int4 1e-4</compress>
 	<format>f6.3</format>
-	<format sat="6a j3 sw">f7.4</format>
+	<format sat="6a j3 sw tx.gdrf">f7.4</format>
 	<comment>Range correction already added to range</comment>
 </var>
 <var name="drange_cal" field="2702" sat="c2 e1 e2 gs">
@@ -3419,23 +3487,27 @@ Global RADS configuration file
 	<compress>int2 1e-3</compress>
 	<comment>Range correction already added to range</comment>
 </var>
-<var name="drange_uso" field="2703" sat="e1 e2 gs n1">
+<var name="drange_uso" field="2703" sat="e1 e2 gs n1 tx.gdrf">
 	<long_name>USO correction to Ku-band range</long_name>
 	<units>m</units>
 	<data>drange_uso</data>
 	<format>f6.3</format>
+	<format sat="tx.gdrf">f7.4</format>
 	<compress>int2 1e-3</compress>
+	<compress sat="tx.gdrf">int2 1e-4</compress>
 	<comment>Range correction already added to range</comment>
 </var>
-<var name="drange_fm" field="2704" sat="e1 e2 c2">
+<var name="drange_fm" field="2704" sat="e1 e2 c2 tx.gdrf">
 	<long_name>Doppler correction to range</long_name>
 	<units>m</units>
 	<data>drange_fm</data>
 	<format>f6.3</format>
+	<format sat="tx.gdrf">f7.4</format>
 	<compress>int2 1e-3</compress>
+	<compress sat="tx.gdrf">int2 1e-4</compress>
 	<comment>Range correction already added to range</comment>
 </var>
-<var name="drange_swh_att_ku" field="2705" sat="pn tx">
+<var name="drange_swh_att_ku" field="2705" sat="pn.mgdr tx.mgdr">
 	<long_name>Ku-band range correction due to SWH/attitude</long_name>
 	<units>m</units>
 	<data>drange_swh_att_ku</data>
@@ -3443,7 +3515,7 @@ Global RADS configuration file
 	<compress>int2 1e-3</compress>
 	<comment>Range correction already added to range</comment>
 </var>
-<var name="drange_swh_att_c" field="2706" sat="tx">
+<var name="drange_swh_att_c" field="2706" sat="tx.mgdr">
 	<long_name>C-band range correction due to SWH/attitude</long_name>
 	<units>m</units>
 	<data>drange_swh_att_c</data>
@@ -3455,8 +3527,8 @@ Global RADS configuration file
 	<long_name>center-of-gravity correction to range</long_name>
 	<units>m</units>
 	<data>drange_cg</data>
-	<compress>int2 1e-3</compress>
-	<format>f6.3</format>
+	<compress>int2 1e-4</compress>
+	<format>f7.4</format>
 	<comment>Range correction already added to range</comment>
 </var>
 <var name="drange_dat" field="2708" sat="j1">
@@ -3475,7 +3547,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Range correction already added to range</comment>
 </var>
-<alias name="drange" field="27" sat="c2 e1 e2 gs n1">drange_ku</alias>
+<alias name="drange" field="27" sat="2a 6a c2 e1 e2 gs j3 n1 sw tx pn">drange_ku</alias>
 
 <var name="swh_rms_norm" field="2801">
 	<long_name>normalized std dev of significant wave height</long_name>
@@ -3505,8 +3577,8 @@ Global RADS configuration file
 		<units>m</units>
 		<limits>0.0 2.1</limits>
 		<limits sat="g1">0.0 0.5</limits> <!--GFO on-board a-b tracker smoothes the data-->
-		<limits sat="j1 j2 j3 sw">0.0 1.5</limits> <!--Retracker noise on Jason is lower than others-->
-		<limits sat="tx">0.0 0.9</limits> <!--TOPEX a-b tracker leads to much lower std dev than other satellites-->
+		<limits sat="j1 j2 j3 sw tx.gdrf">0.0 1.5</limits> <!--Retracker noise on Jason is lower than others-->
+		<limits sat="tx.mgdr">0.0 0.9</limits> <!--TOPEX a-b tracker leads to much lower std dev than other satellites-->
 		<plot_range>0.2 1.0</plot_range>
 		<data>swh_rms_ku</data>
 		<format>f5.3</format>
@@ -3536,7 +3608,7 @@ Global RADS configuration file
 	<compress>int2 1e-3</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<var name="swh_rms_ku_mle3" field="2812" sat="6a j2 j3 sw">
+<var name="swh_rms_ku_mle3" field="2812" sat="6a j2 j3 sw tx.gdrf">
 	<long_name>std dev of Ku-band significant wave height (MLE3)</long_name>
 	<units>m</units>
 	<limits>0.0 1.5</limits> <!--Might need to be changed-->
@@ -3633,7 +3705,7 @@ Global RADS configuration file
 	<compress>int2 1e-3</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<var name="sig0_rms_ku_mle3" field="2912" sat="6a j2 j3 sw">
+<var name="sig0_rms_ku_mle3" field="2912" sat="6a j2 j3 sw tx.gdrf">
 	<long_name>std dev of Ku-band backscatter coefficient (MLE3)</long_name>
 	<units>dB</units>
 	<limits>0.0 1.0</limits>
@@ -3683,7 +3755,7 @@ Global RADS configuration file
 	<long_name>off-nadir pointing angle from waveform</long_name>
 	<units>degrees</units>
 	<data>off_nadir_angle2_wf_ku SQRT</data>
-	<data sat="gs pn tx">off_nadir_angle_wf_ku</data> <!--Geosat and T/P actually store off-nadir angle, not squared-->
+	<data sat="gs pn.mgdr tx.mgdr">off_nadir_angle_wf_ku</data> <!--Geosat and T/P actually store off-nadir angle, not squared-->
 	<format>f5.3</format>
 	<compress>int2 1e-3</compress>
 </var>
@@ -3702,14 +3774,14 @@ Global RADS configuration file
 <else>
 	<var name="off_nadir_angle2_wf_ku" field="3002">
 		<long_name>off-nadir pointing angle squared from waveform</long_name>
-		<long_name sat="e2">off-nadir angle squared from waveform (smoothed)</long_name>
+		<long_name sat="e2 tx.gdrf">off-nadir angle squared from waveform (smoothed)</long_name>
 		<units>degrees^2</units>
 		<limits sat="j1 j2 j3">-0.20 0.64</limits> <!--Attitude^2 on Jason is pretty bad-->
 		<limits sat="e2">-0.05 0.05</limits>
 		<limits sat="sw">-0.1 0.1</limits>
 		<plot_range>-0.04 0.08</plot_range>
 		<data>off_nadir_angle2_wf_ku</data>
-		<data sat="gs pn tx">off_nadir_angle_wf_ku SQR</data> <!--Compute attitude^2 from attitude-->
+		<data sat="gs pn.mgdr tx.mgdr">off_nadir_angle_wf_ku SQR</data> <!--Compute attitude^2 from attitude-->
 		<format>f7.4</format>
 		<default>0</default>
 		<compress>int2 1e-4</compress>
@@ -3726,27 +3798,27 @@ Global RADS configuration file
 	</var>
 	<alias name="attitude_nr" sat="6a">off_nadir_angle2_wf_ku_nr</alias>
 </else>
-<var name="off_nadir_angle_pf" field="3003" sat="2a 3a 3b 6a c2 j2 j3 pn sw">
+<var name="off_nadir_angle_pf" field="3003" sat="2a 3a 3b 6a c2 j2 j3 pn.mgdr sw">
 	<long_name>off-nadir pointing angle from platform</long_name>
 	<units>degrees</units>
 	<data>off_nadir_angle2_pf SQRT</data>
 	<data sat="3a 3b c2">attitude_pitch attitude_roll HYPOT</data>
-	<data sat="pn tx">off_nadir_angle_pf</data> <!--T/P and CryoSat store off-nadir angle, not squared-->
+	<data sat="pn.mgdr tx.mgdr">off_nadir_angle_pf</data> <!--T/P and CryoSat store off-nadir angle, not squared-->
 	<plot_range>0.00 0.01</plot_range>
 	<format>f5.3</format>
 	<compress>int2 1e-3</compress>
 </var>
-<var name="off_nadir_angle2_pf" field="3004" sat="2a 3a 3b 6a c2 j1 j2 j3 pn sw">
+<var name="off_nadir_angle2_pf" field="3004" sat="2a 3a 3b 6a c2 j1 j2 j3 pn.mgdr sw">
 	<long_name>off-nadir pointing angle squared from platform</long_name>
 	<units>degrees^2</units>
 	<data>off_nadir_angle2_pf</data>
 	<data sat="3a 3b c2">attitude_pitch attitude_roll R2</data>
-	<data sat="pn tx">off_nadir_angle_pf SQR</data> <!--Compute attitude^2 from attitude-->
+	<data sat="pn.mgdr">off_nadir_angle_pf SQR</data> <!--Compute attitude^2 from attitude-->
 	<format>f7.4</format>
 	<default>0</default>
 	<compress>int2 1e-4</compress>
 </var>
-<var name="off_nadir_angle2_wf_rms_ku" field="3005" sat="3a 3b 6a c2 j3 sw">
+<var name="off_nadir_angle2_wf_rms_ku" field="3005" sat="3a 3b 6a c2 j3 sw tx.gdrf">
 	<long_name>std dev of off-nadir pointing angle squared from waveform</long_name>
 	<units>degrees^2</units>
 	<plot_range>0.0 0.04</plot_range>
@@ -3811,7 +3883,7 @@ Global RADS configuration file
 	<dimensions>2</dimensions>
 </var>
 
-<var name="dswh_ku" field="3101" sat="2a 6a j3 tx sw">
+<var name="dswh_ku" field="3101" sat="2a 6a j3 tx.mgdr sw">
 	<long_name>net instrument correction to Ku-band significant wave height</long_name>
 	<units>m</units>
 	<data>dswh_ku</data>
@@ -3848,7 +3920,7 @@ Global RADS configuration file
 	<compress>int2 1e-3</compress>
 	<comment>Correction already added to significant wave height</comment>
 </var>
-<var name="dswh_c" field="3102" sat="2a 6a j3 tx sw">
+<var name="dswh_c" field="3102" sat="2a 6a j3 tx.mgdr sw">
 	<long_name>net instrument correction to C-band significant wave height</long_name>
 	<units>m</units>
 	<data>dswh_c</data>
@@ -3857,7 +3929,7 @@ Global RADS configuration file
 	<compress>int2 1e-3</compress>
 	<comment>Correction already added to significant wave height</comment>
 </var>
-<var name="dswh_swh_att_ku" field="3103" sat="pn tx">
+<var name="dswh_swh_att_ku" field="3103" sat="pn.mgdr tx.mgdr">
 	<long_name>Ku-band significant wave height correction due to SWH/attitude</long_name>
 	<units>m</units>
 	<data>dswh_swh_att_ku</data>
@@ -3865,7 +3937,7 @@ Global RADS configuration file
 	<compress>int2 1e-3</compress>
 	<comment>Correction already added to significant wave height</comment>
 </var>
-<var name="dswh_swh_att_c" field="3104" sat="tx">
+<var name="dswh_swh_att_c" field="3104" sat="tx.mgdr">
 	<long_name>C-band significant wave height correction due to SWH/attitude</long_name>
 	<units>m</units>
 	<data>dswh_swh_att_c</data>
@@ -3873,9 +3945,9 @@ Global RADS configuration file
 	<compress>int2 1e-3</compress>
 	<comment>Correction already added to significant wave height</comment>
 </var>
-<alias name="dswh" field="31" sat="tx">dswh_ku</alias>
+<alias name="dswh" field="31" sat="tx.mgdr">dswh_ku</alias>
 
-<var name="dsig0_ku" field="3201" sat="2a 6a e1 e2 j3 tx sw">
+<var name="dsig0_ku" field="3201" sat="2a 6a e1 e2 j3 sw tx pn">
 	<long_name>net instrument correction to Ku-band backscatter coefficient</long_name>
 	<units>dB</units>
 	<data>dsig0_ku</data>
@@ -3884,7 +3956,7 @@ Global RADS configuration file
 	<compress>int2 1e-2</compress>
 	<comment>Correction already added to backscatter coefficient</comment>
 </var>
-<var name="dsig0_ku_mle3" sat="6a j3 sw">
+<var name="dsig0_ku_mle3" sat="6a j3 sw tx.gdrf">
 	<long_name>net instrument correction to Ku-band backscatter coefficient (MLE3)</long_name>
 	<units>dB</units>
 	<data>dsig0_ku_mle3</data>
@@ -3912,7 +3984,7 @@ Global RADS configuration file
 	<compress>int2 1e-2</compress>
 	<comment>Correction already added to backscatter coefficient</comment>
 </var>
-<var name="dsig0_c" field="3202" sat="2a 6a j3 tx sw">
+<var name="dsig0_c" field="3202" sat="2a 6a j3 sw tx">
 	<long_name>net instrument correction to C-band backscatter coefficient</long_name>
 	<units>dB</units>
 	<data>dsig0_c</data>
@@ -4032,7 +4104,7 @@ Global RADS configuration file
 	<compress>int2 1e-2</compress>
 </var>
 
-<var name="water_vapor_rad" field="3302" sat="2a 3a 3b 6a e1 e2 j1 j2 j3 sa sw">
+<var name="water_vapor_rad" field="3302" sat="2a 3a 3b 6a e1 e2 j1 j2 j3 sa sw tx.gdrf pn.gdrf">
 	<long_name>radiometer water vapor content</long_name>
 	<standard_name>atmosphere_mass_content_of_water_vapor</standard_name>
 	<units>kg/m^2</units>
@@ -4102,13 +4174,13 @@ Global RADS configuration file
 	<format>f6.0</format>
 	<compress>int2</compress>
 </var>
-<var name="gate_index_ku" field="3407" sat="tx">
+<var name="gate_index_ku" field="3407" sat="tx.mgdr">
 	<long_name>Ku-band gate index</long_name>
 	<data>gate_index_ku</data>
 	<format>f6.0</format>
 	<compress>int2</compress>
 </var>
-<var name="gate_index_c" field="3408" sat="tx">
+<var name="gate_index_c" field="3408" sat="tx.mgdr">
 	<long_name>C-band gate index</long_name>
 	<data>gate_index_c</data>
 	<format>f6.0</format>
@@ -4180,7 +4252,7 @@ Global RADS configuration file
 	<compress>int2</compress>
 </var>
 
-<var name="rain_ice_index" field="3501 35" sat="n1 tx">
+<var name="rain_ice_index" field="3501 35" sat="n1 tx.mgdr">
 	<long_name>rain/ice index</long_name>
 	<data>rain_ice_index</data>
 	<format>f4.2</format>
@@ -4397,7 +4469,7 @@ Global RADS configuration file
 	<compress>int2 1e-3</compress>
 </var>
 
-<var name="mean_wave_period" sat="3a 3b 6a j3 sa sw">
+<var name="mean_wave_period" sat="3a 3b 6a j3 sa sw tx.gdrf pn.gdrf">
 	<long_name>t02 mean wave period</long_name>
 	<standard_name>sea_surface_wind_wave_mean_period_from_variance_spectral_density_second_frequency_moment</standard_name>
 	<source>MFWAM/Meteo France</source>
@@ -4462,7 +4534,7 @@ Global RADS configuration file
 	<comment>Negative numbers are inland, positive numbers are offshore</comment>
 </var>
 
-<var name="rad_dist_coast" sat="6a j3">
+<var name="rad_dist_coast" sat="6a j3 tx.gdrf pn.gdrf">
 	<long_name>radiometer main beam radial distance to land</long_name>
 	<units>km</units>
 	<data>rad_dist_coast</data>
