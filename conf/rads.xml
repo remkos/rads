@@ -36,7 +36,6 @@ Global RADS configuration file
 	e1 er1 ers-1 ers1
 	e2 er2 ers-2 ers2
 	g1 gfo gfo-1 gfo1
-	g3 ge3 geos-3 geos3
 	gs geo geosat
 	j1 ja1 jason-1 jason1
 	j2 ja2 jason-2 jason2
@@ -45,7 +44,6 @@ Global RADS configuration file
 	pn pos poseidon
 	tx top topex
 	sa srl saral
-	ss sea seasat-a
 	sw swt swot
 </satellites>
 
@@ -4931,16 +4929,6 @@ Global RADS configuration file
 	</phase>
 </if>
 
-<if sat="g3">
-	<satellite>GEOS-3</satellite>
-	<satid>1</satid>
-	<inclination>60</inclination>
-	<xover_params>0.20 0.80</xover_params>
-	<phase name="a">
-		<mission>Geodetic Mission</mission>
-	</phase>
-</if>
-
 <if sat="gs">
 	<satellite>GEOSAT</satellite>
 	<satid>3</satid>
@@ -5202,16 +5190,6 @@ Global RADS configuration file
 		<repeat>35.0054 1002 -1.99</repeat>
 		<ref_pass>2018-08-13T16:30:07 202.15 58 1 28558</ref_pass>
 		<start_time>2018-08-13T16:04:58</start_time>
-	</phase>
-</if>
-
-<if sat="ss">
-	<satellite>SEASAT-A</satellite>
-	<satid>2</satid>
-	<inclination>108.05</inclination>
-	<xover_params>0.07 0.80</xover_params>
-	<phase name="a">
-		<mission>Geodetic Mission</mission>
 	</phase>
 </if>
 
