@@ -4415,7 +4415,7 @@ Global RADS configuration file
 	<compress>int2 1e-2</compress>
 </var>
 
-<var name="significant_swell_wave_height" sat="6a">
+<var name="significant_swell_wave_height" sat="3a 3b 6a">
 	<long_name>modelled spectral significant swell wave height</long_name>
 	<standard_name>sea_surface_wave_significant_height</standard_name>
 	<units>m</units>
@@ -4425,7 +4425,7 @@ Global RADS configuration file
 	<compress>int2 1e-3</compress>
 </var>
 
-<var name="mean_swell_wave_period" sat="6a">
+<var name="mean_swell_wave_period" sat="3a 3b 6a">
 	<long_name>mean swell wave period</long_name>
 	<standard_name>sea_surface_swell_wave_mean_period</standard_name>
 	<source>MFWAM/Meteo France</source>
@@ -4435,7 +4435,7 @@ Global RADS configuration file
 	<compress>int2 1e-2</compress>
 </var>
 
-<var name="mean_swell_wave_direction" sat="6a">
+<var name="mean_swell_wave_direction" sat="3a 3b 6a">
 	<long_name>mean direction of the sea surface swell wave</long_name>
 	<standard_name>sea_surface_swell_wave_from_direction</standard_name>
 	<source>MFWAM/Meteo France</source>

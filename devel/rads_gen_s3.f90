@@ -111,7 +111,7 @@ real(eightbytereal) :: equator_time
 integer(twobyteint), allocatable :: flags_plrm(:), flags_save(:)
 character(len=16) :: mss_sol1_var, mss_sol2_var
 integer :: latency = rads_nrt
-logical :: iono_alt_smooth = .false., ipf651 = .false., ipf701 = .false., ipf703 = .false.
+logical :: iono_alt_smooth, ipf651, ipf701, ipf703, ipf704
 
 ! Other local variables
 
@@ -266,6 +266,8 @@ do
 	iono_alt_smooth = .false.
 	ipf651 = .false.
 	ipf701 = .false.
+	ipf703 = .false.
+	ipf704 = .false.
 
 ! Update the version of MSS DTU and switch on smoothed iono for PB 2.49 (IPF-SM-2 06.16) and later
 
@@ -291,6 +293,10 @@ do
 ! Include sea ice concentration
 
 	ipf703 = (arg(10:14) >= '07.03')
+
+! Include wave model fields
+
+	ipf704 = (arg(10:14) >= '07.04')
 
 ! Store input file name
 
@@ -458,6 +464,16 @@ do
 
 	if (ipf703) call cpy_var (ncid, 'sea_ice_concentration_01', 'seaice_conc')
 	call cpy_var (ncid, 'open_sea_ice_flag_01_ku', 'seaice_class')
+
+	if (ipf704) then
+		call cpy_var (ncid, 'mod_significant_wave_height_01', 'swh_mfwam')
+		call cpy_var (ncid, 'mod_mean_wave_direction_01 180 ADD 360 FMOD 180 SUB', 'mean_wave_direction')
+		call cpy_var (ncid, 'mod_mean_wave_period_t02_01', 'mean_wave_period')
+
+		call cpy_var (ncid, 'mod_significant_swell_wave_height_01', 'significant_swell_wave_height')
+		call cpy_var (ncid, 'mod_mean_swell_wave_direction_01 180 ADD 360 FMOD 180 SUB', 'mean_swell_wave_direction')
+		call cpy_var (ncid, 'mod_mean_swell_wave_period_01', 'mean_swell_wave_period')
+	endif
 
 	call cpy_var (ncid, 'ssha_01_ku', 'ssha')
 	call cpy_var (ncid, 'ssha_01_plrm_ku', 'ssha_plrm')
