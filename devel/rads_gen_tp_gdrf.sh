@@ -14,14 +14,17 @@
 # GNU Lesser General Public License for more details.
 #-----------------------------------------------------------------------
 #
-# Convert TOPEX Retracked GDR files to RADS
+# Convert TOPEX/Poseidon Retracked GDR-F files to RADS
 #
-# syntax: rads_gen_tx_rgdr.sh <directories>
+# syntax: rads_gen_tp_gdrf.sh <directories>
 #-----------------------------------------------------------------------
+sat=$1
+shift
+
 . rads_sandbox.sh
 
-rads_open_sandbox tx.r50
-lst=$SANDBOX/rads_gen_tx_rgdr.lst
+rads_open_sandbox ${sat}.gdrf
+lst=$SANDBOX/rads_gen_${sat}_gdrf.lst
 
 date													>  "$log" 2>&1
 
@@ -31,8 +34,8 @@ for tar in "$@"; do
 		*.tgz) tar -xzf "$tar"; dir=`basename "$tar" .tgz` ;;
 		*) dir="$tar" ;;
 	esac
-	ls "$dir"/RGDR_*.nc > "$lst"
-	rads_gen_tx_rgdr $options < "$lst"						>> "$log" 2>&1
+	ls "$dir"/TP_GPN_*.nc > "$lst"
+	rads_gen_tp_gdrf $options < "$lst"					>> "$log" 2>&1
 	case "$tar" in
 		*.t?z) chmod -R u+w "$dir"; rm -rf "$dir" ;;
 	esac
@@ -40,17 +43,12 @@ done
 
 # Do the patches to all data
 
-rads_add_iono     $options -C1-220 --iri2007 --nic09	>> "$log" 2>&1
+rads_add_iono     $options -C1-220 --nic09				>> "$log" 2>&1
 rads_add_iono     $options -C221-481 --all				>> "$log" 2>&1
 rads_add_common   $options								>> "$log" 2>&1
-rads_add_dual     $options								>> "$log" 2>&1
-#rads_add_ncep    $options -gdwu --sig0-saral			>> "$log" 2>&1
-#rads_fix_tp      $options								>> "$log" 2>&1
-rads_add_mog2d    $options								>> "$log" 2>&1
-rads_add_ib       $options								>> "$log" 2>&1
-rads_add_orbit    $options -Valt_gdrcp					>> "$log" 2>&1
-rads_add_orbit    $options -Valt_std1204 --equator --loc-7 --rate	>> "$log" 2>&1
-rads_add_ww3_314  $options -C269-481 --all				>> "$log" 2>&1
+case $sat in
+tx) rads_add_dual $options								>> "$log" 2>&1
+esac
 # Redetermine SSHA
 rads_add_refframe $options								>> "$log" 2>&1
 rads_add_sla      $options								>> "$log" 2>&1

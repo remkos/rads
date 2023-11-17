@@ -4306,7 +4306,6 @@ Global RADS configuration file
 	<parameters sat="j2"> -15   0  0  0 0</parameters>
 	<parameters sat="j3"> -22.6 0  0  0 0</parameters>
 	<parameters sat="n1"> 451   0  0  0 0</parameters>
-	<parameters sat="pn"> -15   0  0  0 0</parameters>
 	<parameters sat="sa"> -87   0  0  0 0</parameters>
 </var>
 <var name="ref_frame_offset_mle3" field="3811" sat="6a j2 j3 sw">
