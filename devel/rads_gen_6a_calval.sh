@@ -111,7 +111,7 @@ esac
 
 # General geophysical corrections
 rads_add_common   $options								>> "$log" 2>&1
-rads_add_mfwam    $options --all						>> "$log" 2>&1
+rads_add_mfwam    $options --all --new					>> "$log" 2>&1
 rads_add_iono     $options --all						>> "$log" 2>&1
 rads_add_era5     $options --all						>> "$log" 2>&1
 # Redetermine SSHA

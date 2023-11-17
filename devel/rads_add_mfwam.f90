@@ -47,13 +47,13 @@ use netcdf
 type(rads_sat) :: S
 type(rads_pass) :: P
 integer(fourbyteint) :: cyc, pass
-logical :: update = .false.
+logical :: update = .false., new = .false.
 
 ! Data elements
 
 character(rads_cmdl) :: path
-integer(fourbyteint), parameter :: nvar=3, i2min=-32767
-integer(fourbyteint) :: mjd, mjdold=-99999, j, mvar = 0, nx = 0, ny = 0, nt = 0, ios, smear=0
+integer(fourbyteint), parameter :: mvar=3, i2min=-32767
+integer(fourbyteint) :: mjd, mjdold=-99999, j, nvar = 0, nx = 0, ny = 0, nt = 0, ios, smear=0
 real(eightbytereal) :: xmin, xmax, ymin, ymax, wmin = 0.5d0
 
 type :: var_
@@ -63,12 +63,12 @@ type :: var_
 	integer(twobyteint) :: fillvalue
 	real(eightbytereal) :: add_offset, scale_factor
 endtype
-type(var_) :: var(nvar)
+type(var_) :: var(mvar)
 
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('sdpu swh direction period all wmin: smear: update')
+call rads_set_options ('sdnpu swh direction period all wmin: smear: update new')
 call rads_init (S)
 
 ! Get template for path name
@@ -95,16 +95,18 @@ do j = 1,rads_nopt
 		read (rads_opt(j)%arg, *, iostat=ios) smear
 	case ('u', 'update')
 		update = .true.
+	case ('n', 'new')
+		new = .true.
 	end select
 enddo
-if (mvar == 0) call rads_exit ('No variables selected. Use the appropriate options.')
+if (nvar == 0) call rads_exit ('No variables selected. Use the appropriate options.')
 
 ! Process all data files
 
 do cyc = S%cycles(1), S%cycles(2), S%cycles(3)
 	do pass = S%passes(1), S%passes(2), S%passes(3)
 		call rads_open_pass (S, P, cyc, pass, .true.)
-		if (P%ndata > 0) call process_pass (P%ndata, mvar)
+		if (P%ndata > 0) call process_pass (P%ndata, nvar)
 		call rads_close_pass (S, P)
 	enddo
 enddo
@@ -128,7 +130,8 @@ write (*,1310)
 '  --all                     All of the above' / &
 '  --wmin=WMIN               Minumum total weight for interpolation (default: 0.5)' / &
 '  --smear=SEC               Smear values into NaN areas by up to SEC seconds' / &
-'  -u, --update              Update files only when there are changes')
+'  -u, --update              Update files only when there are changes' / &
+'  -n, --new                 Update files only when variables do not yet exist')
 stop
 end subroutine synopsis
 
@@ -136,13 +139,25 @@ end subroutine synopsis
 ! Process a single pass
 !-----------------------------------------------------------------------
 
-subroutine process_pass (n, mvar)
-integer(fourbyteint), intent(in) :: n, mvar
-real(eightbytereal) :: time(n), lat(n), lon(n), wave(n,mvar), tmp(n), x, y, t, w(2,2,2), z(2,2,2), wsum, dt, dtmin
+subroutine process_pass (n, nvar)
+integer(fourbyteint), intent(in) :: n, nvar
+real(eightbytereal) :: time(n), lat(n), lon(n), wave(n,nvar), tmp(n), x, y, t, w(2,2,2), z(2,2,2), wsum, dt, dtmin
 integer(fourbyteint) :: i, j, k, ik, ix, iy, it, idx(n)
 logical :: err
 
 call log_pass (P)
+
+! If 'new' option is used, write only when not all fields are yet available in the RADS data files
+
+if (new) then
+	do i = 1,nvar
+		if (nft(nf90_inq_varid(P%fileinfo(1)%ncid,var(i)%radsname,j))) exit
+	enddo
+	if (i > nvar) then ! All variables are already there
+		call log_records (0)
+		return
+	endif
+endif
 
 ! Get time and location
 
@@ -164,7 +179,7 @@ do i = 1,n
 	if (mjd /= mjdold) then
 		if (mjd == mjdold+1) then
 			! Replace first grid with last grid and load new set of grids
-			do j = 1,mvar
+			do j = 1,nvar
 				var(j)%grid(:,:,1) = var(j)%grid(:,:,nt+1)
 			enddo
 			err = get_mfwam(mjd, 2)
@@ -223,7 +238,7 @@ do i = 1,n
 
 ! Compute weighted averages;
 
-	do j = 1,mvar
+	do j = 1,nvar
 		z = var(j)%grid(ix:ix+1,iy:iy+1,it:it+1) * var(j)%scale_factor + var(j)%add_offset
 		if (var(j)%ncname == 'VMDR') then ! Treat direction through vector sum
 			z = z * rad
@@ -285,13 +300,13 @@ endif
 ! Define data fields
 
 call rads_put_history (S, P)
-do i = 1,mvar
+do i = 1,nvar
 	call rads_def_var (S, P, var(i)%radsname)
 enddo
 
 ! Store data fields
 
-do i = 1,mvar
+do i = 1,nvar
 	call rads_put_var (S, P, var(i)%radsname, wave(:,i))
 enddo
 
@@ -304,9 +319,9 @@ end subroutine process_pass
 
 subroutine add_var (ncname, radsname)
 character(len=*) :: ncname, radsname
-mvar = mvar + 1
-var(mvar)%ncname = ncname
-var(mvar)%radsname = radsname
+nvar = nvar + 1
+var(nvar)%ncname = ncname
+var(nvar)%radsname = radsname
 end subroutine add_var
 
 !-----------------------------------------------------------------------
@@ -355,7 +370,7 @@ if (nx == 0) then
 	call nfs(nf90_inq_varid(ncid,'time',varid))
 	call nfs(nf90_get_var(ncid,varid,t))
 	deallocate (x,y,t)
-	do j = 1,mvar
+	do j = 1,nvar
 		allocate (var(j)%grid(nx+1,ny,nt+1))
 	enddo
 endif
@@ -365,7 +380,7 @@ endif
 ! If istart = 2, read the whole grid into the second and following slots
 ! Also copy the first column to the last to simplefy interpolation
 
-do j = 1,mvar
+do j = 1,nvar
 	if (nft(nf90_inq_varid(ncid,var(j)%ncname,varid))) call rads_exit ('Error finding variable')
 	if (nft(nf90_get_att(ncid,varid,'scale_factor',var(j)%scale_factor))) var(j)%scale_factor = 1d0
 	if (nft(nf90_get_att(ncid,varid,'add_offset',var(j)%add_offset))) var(j)%add_offset = 0d0
