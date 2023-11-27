@@ -40,70 +40,80 @@ program rads_gen_tp_gdrf
 ! time - Time since 1 Jan 85
 ! lat - Latitude
 ! lon - Longitude
-! alt_gdrf - Orbital altitude
+! flag_alt_oper_mode - Side A/B
+! flags - Engineering flags
+! alt_std1808 - Orbital altitude (NASA)
+! alt_gdrf - Orbital altitude (CNES)
 ! alt_rate - Orbital altitude rate
 ! range_* - Ocean range (retracked)
 ! range_rms_* - Std dev of range
 ! range_numval_* - Nr of averaged range measurements
-! qual_range - Quality of range measurement
+! qual_range - Quality of rKu ange measurement
+! qual_range_mle3 - Quallity of Ku MLE3 range measurement (TOPEX only)
+! qual_iono_alt - Quality of dual-frequency ionosphere correction (TOPEX only)
+! drange_* - Net instrument correction applied to range (TOPEX only)
+! drange_cg - Range correction (to be added) due to fuel consumption and solar panel movement (TOPEX only)
+! drange_uso - USO correction applied to range (TOPEX only)
 ! swh_* - Significant wave height
-! swh_rms_* - Std dev of SWH
-! qual_swh - Quality of SWH measurement
+! swh_rms_* - Std dev of SWH (TOPEX only)
+! qual_swh_* - Quality of SWH measurement
+! swh_mfwam - SWH model
+! mean_wave_period - Mean wave period (t02)
 ! sig0_* - Sigma0
 ! sig0_rms_* - Std dev of sigma0
-! qual_sig0 - Quality of sigma0 measurement
-! dsig0_atmos_* - Atmospheric attenuation of sigma0
-! wind_speed_alt - Altimeter wind speed
-! wind_speed_alt_mle3 - Altimeter wind speed (MLE3)
-! wind_speed_rad - Radiometer wind speed
-! wind_speed_ecmwf_u - ECMWF wind speed (U)
-! wind_speed_ecmwf_v - ECMWF wind speed (V)
-! qual_alt_rain_ice - Altimeter rain flag
-! qual_rad_rain_ice - Radiometer rain flag
+! qual_sig0_* - Quality of sigma0 measurement
+! dsig0_sig0_* - Net instrument correction on backscatter
 ! off_nadir_angle2_wf_ku - Mispointing from waveform squared
-! off_nadir_angle2_wf_rms_ku - RMS of mispointing from waveform squared
-! qaul_attitude - Quality of attitude measurement
-! dry_tropo_ecmwf - ECMWF dry tropospheric correction
-! wet_tropo_ecmwf - ECMWF wet tropo correction
-! wet_tropo_rad - Radiometer wet tropo correction
-! iono_alt - Dual-frequency ionospheric correction
-! iono_alt_mle3 - Dual-frequency ionospheric correction (MLE3)
-! qual_iono_alt - Quality of dual-frequency ionosphere correction
+! off_nadir_angle2_wf_rms_ku - RMS of mispointing from waveform squared (TOPEX only)
+! qual_attitude - Quality of attitude estimate (TOPEX only)
+! qual_alt_rain_ice - Altimeter rain/ice flag
+! iono_alt - Dual-frequency ionospheric correction (TOPEX only)
+! iono_alt_mle3 - Dual-frequency ionospheric correction (MLE3) (TOPEX only)
+! iono_doris - DORIS ionospheric correction (POSEIDON only)
 ! iono_gim - GIM ionosphetic correction
-! ssb_cls_* - SSB
-! inv_bar_static - Inverse barometer
-! inv_bar_mog2d - MOG2D
-! tide_ocean/load_got410 - GOT4.10c ocean and load tide
-! tide_ocean/load_fes14 - FES2014 ocean and load tide
-! tide_non_equal - Long-period non-equilibrium tide
-! tide_solid - Solid earth tide
-! tide_pole - Pole tide
-! geoid_egm2008 - EGM2008 geoid
-! cnescls15 - CNES/CLS15 mean sea surface
-! mss_dtu18 - DTU13 mean sea surface
-! topo_ace2 - ACE2 topography
-! surface_class - Surgace classification
+! wind_speed_alt - Altimeter wind speed
+! wind_speed_alt_mle3 - Altimeter wind speed (MLE3) (TOPEX only)
+! ssb_tx_* - TOPEX SSB model (TOPEX only)
+! ssb_bm3 - BM3 SSB model (POSEIDON only)
+! wet_tropo_rad - Radiometer wet tropo correction
+! water_vapor_rad - Water vapor content
+! liquid_water_rad - Liquid water content
+! wind_speed_rad - Radiometer wind speed
+! dsig0_atmos_* - Atmospheric attenuation of sigma0
 ! surface_type_rad - Radiometer surface type
-! dist_coast - Distance to the coast
-! angle_coast - Angle to the coast
-! rads_dist_coast - Radiometer distance to the coast
+! rad_dist_coast - Radiometer distance to the coast
+! qual_rad_rain_ice - Radiometer rain/ice flag
 ! tb_180 - Brightness temperature (18 GHz)
 ! tb_210 - Brightness temperature (21 GHz)
 ! tb_370 - Brightness temperature (37 GHz)
 ! qual_rad_tb - Quality of brightness temperatures
-! rad_liquid_water - Liquid water content
-! rad_water_vapor - Water vapor content
-! mean_wave_period - Mean wave period (t02)
-! mean_wave_direction - Mean wave direction
+! surface_class - Surgace classification
+! dist_coast - Distance to the coast
+! dry_tropo_era - ECMWF dry tropospheric correction
+! wet_tropo_era - ECMWF wet tropo correction
+! mss_cnescls15 - CNES/CLS15 mean sea surface
+! mss_dtu18 - DTU13 mean sea surface
+! mdt_cnescls18 - CNES/CLS18 mean dynamic topography
+! geoid_egm2008 - EGM2008 geoid
+! topo_ace2 - ACE2 topography
+! inv_bar_static - Inverse barometer
+! inv_bar_mog2d_era - MOG2D from ERA-interim
+! tide_ocean/load_fes14 - FES2014 ocean and load tide
+! tide_ocean/load_got410 - GOT4.10c ocean and load tide
+! tide_equil - Long-period equilibrium tide
+! tide_non_equal - Long-period non-equilibrium tide
+! tide_solid - Solid earth tide
+! tide_pole - Pole tide
+! wind_speed_era_u - ECMWF wind speed (U)
+! wind_speed_era_v - ECMWF wind speed (V)
 ! ssha - Sea surface height anomaly
-! ssha_mle3 - Sea surface height anomaly (MLE3)
-! latency - Latency (NRT, STC, NTC)
-! flags - Engineering flags
+! ssha_mle3 - Sea surface height anomaly (MLE3) (TOPEX only)
+! latency - Latency (NTC+1)
 !
 ! Extensions _* are:
 ! _ku:      Ku-band
-! _ku_mle3  Ku-band MLE3
-! _c:       C-band
+! _ku_mle3  Ku-band MLE3 (TOPEX only)
+! _c:       C-band (TOPEX only)
 !-----------------------------------------------------------------------
 use rads
 use rads_devel
@@ -129,8 +139,6 @@ real(eightbytereal) :: equator_time
 ! Data variables
 
 integer(twobyteint), allocatable :: flags_mle3(:), flags_save(:)
-character(len=2) :: mss_cnescls_ver = '15', mss_dtu_ver = '18', tide_fes_ver = '14'
-character(len=3) :: tide_got_ver = '410'
 
 ! Other local variables
 
@@ -289,6 +297,12 @@ endif
 	call cpy_var (ncid, 'altitude_cnes delta_ellipsoid_tp_wgs84 SUB', 'alt_gdrf')
 	call cpy_var (ncid, 'altitude_rate_mean_sea_surface', 'alt_rate')
 
+! Flags
+
+	call cpy_var (ncid, 'alt_state_flag_oper', 'flag_alt_oper_mode')
+	call new_var ('flags', dble(flags))
+	if (tx) call new_var ('flags_mle3', dble(flags_mle3))
+
 ! Range
 
 	if (tx) then
@@ -296,17 +310,20 @@ endif
 		call cpy_var (ncid, 'range_rms_ku', 'range_rms_ku')
 		call cpy_var (ncid, 'range_numval_ku', 'range_numval')
 		call cpy_var (ncid, 'range_ku_qual', 'qual_range')
+		call cpy_var (ncid, 'net_instr_cor_range_ku', 'drange_ku')
+
 		call cpy_var (ncid, 'range_ku_mle3', 'range_ku_mle3')
 		call cpy_var (ncid, 'range_rms_ku_mle3', 'range_rms_ku_mle3')
 		call cpy_var (ncid, 'range_numval_ku_mle3', 'range_numval_ku_mle3')
 		call cpy_var (ncid, 'range_ku_mle3_qual', 'qual_range_mle3')
+		call cpy_var (ncid, 'net_instr_cor_range_ku_mle3', 'drange_ku_mle3')
+
 		call cpy_var (ncid, 'range_c', 'range_c')
 		call cpy_var (ncid, 'range_rms_c', 'range_rms_c')
 		call cpy_var (ncid, 'range_numval_c', 'range_numval_c')
-!		call cpy_var (ncid, 'range_c_qual', 'qual_range_c')
-		call cpy_var (ncid, 'net_instr_cor_range_ku', 'drange_ku')
-		call cpy_var (ncid, 'net_instr_cor_range_ku_mle3', 'drange_ku_mle3')
+		call cpy_var (ncid, 'range_c_qual', 'qual_iono_alt')
 		call cpy_var (ncid, 'net_instr_cor_range_c', 'drange_c')
+
 		call cpy_var (ncid, 'cg_to_altimeter_timevarying_offset', 'drange_cg')
 		call cpy_var (ncid, 'osc_drift_cor', 'drange_uso')
 		call cpy_var (ncid, 'range_cor_doppler_ku', 'drange_fm')
@@ -323,13 +340,22 @@ endif
 		call cpy_var (ncid, 'swh_ku', 'swh_ku')
 		call cpy_var (ncid, 'swh_rms_ku', 'swh_rms_ku')
 		call cpy_var (ncid, 'swh_ku_qual', 'qual_swh')
+
 		call cpy_var (ncid, 'swh_ku_mle3', 'swh_ku_mle3')
 		call cpy_var (ncid, 'swh_rms_ku_mle3', 'swh_rms_ku_mle3')
+		call cpy_var (ncid, 'swh_ku_mle3_qual', 'qual_swh_mle3')
+
 		call cpy_var (ncid, 'swh_c', 'swh_c')
 		call cpy_var (ncid, 'swh_rms_c', 'swh_rms_c')
+		call cpy_var (ncid, 'swh_c_qual', 'qual_swh_c')
 	else
 		call cpy_var (ncid, 'swh_ku_mgdr', 'swh_ku')
 	endif
+
+! Wave model
+
+	call cpy_var (ncid, 'swh_model', 'swh_mfwam', skip_empty = .true.)
+	call cpy_var (ncid, 'mean_wave_period_t02', 'mean_wave_period', skip_empty = .true.)
 
 ! Backscatter
 
@@ -337,21 +363,50 @@ endif
 		call cpy_var (ncid, 'sig0_ku', 'sig0_ku')
 		call cpy_var (ncid, 'sig0_rms_ku', 'sig0_rms_ku')
 		call cpy_var (ncid, 'sig0_ku_qual', 'qual_sig0')
+		call cpy_var (ncid, 'net_instr_cor_sig0_ku', 'dsig0_ku')
+
 		call cpy_var (ncid, 'sig0_ku_mle3', 'sig0_ku_mle3')
 		call cpy_var (ncid, 'sig0_rms_ku_mle3', 'sig0_rms_ku_mle3')
-		call cpy_var (ncid, 'rad_atm_cor_sig0_ku', 'dsig0_atmos_ku')
-		call cpy_var (ncid, 'net_instr_cor_sig0_ku', 'dsig0_ku')
+		call cpy_var (ncid, 'sig0_ku_mle3_qual', 'qual_sig0_mle3')
 		call cpy_var (ncid, 'net_instr_cor_sig0_ku_mle3', 'dsig0_ku_mle3')
+
 		call cpy_var (ncid, 'sig0_c', 'sig0_c')
 		call cpy_var (ncid, 'sig0_rms_c', 'sig0_rms_c')
-		call cpy_var (ncid, 'rad_atm_cor_sig0_c', 'dsig0_atmos_c')
+		call cpy_var (ncid, 'sig0_c_qual', 'qual_sig0_c')
 		call cpy_var (ncid, 'net_instr_cor_sig0_c', 'dsig0_c')
 	else
 		call cpy_var (ncid, 'sig0_ku_mgdr', 'sig0_ku')
 		call cpy_var (ncid, 'sig0_rms_ku_mgdr', 'sig0_rms_ku')
-		call cpy_var (ncid, 'rad_atm_cor_sig0_ku', 'dsig0_atmos_ku')
 		call cpy_var (ncid, 'net_instr_cor_sig0_ku_mgdr', 'dsig0_ku')
 	endif
+
+! Off-nadir angle
+
+	if (tx) then
+		call cpy_var (ncid, 'off_nadir_angle_wf_ku_smoothed', 'off_nadir_angle2_wf_ku')
+		call cpy_var (ncid, 'off_nadir_angle_wf_rms_ku', 'off_nadir_angle2_wf_rms_ku')
+		call cpy_var (ncid, 'off_nadir_angle_wf_ku_qual', 'qual_attitude')
+	else
+		call cpy_var (ncid, 'off_nadir_angle_wf_ku_mgdr', 'off_nadir_angle2_wf_ku')
+	endif
+
+! Rain or ice
+
+	if (tx) then
+		call cpy_var (ncid, 'rain_flag ice_flag IOR', 'qual_alt_rain_ice')
+	else
+		call cpy_var (ncid, 'ice_flag', 'qual_alt_rain_ice')
+	endif
+
+! Ionospheric correction
+
+	if (tx) then
+		call cpy_var (ncid, 'iono_cor_alt_ku', 'iono_alt')
+		call cpy_var (ncid, 'iono_cor_alt_ku_mle3', 'iono_alt_mle3')
+	else
+		call cpy_var (ncid, 'iono_cor_doris', 'iono_doris')
+	endif
+	call cpy_var (ncid, 'iono_cor_gim_ku', 'iono_gim', skip_empty=.true.)
 
 ! Wind speed
 
@@ -361,44 +416,6 @@ endif
 	else
 		call cpy_var (ncid, 'wind_speed_alt_mgdr', 'wind_speed_alt')
 	endif
-	call cpy_var (ncid, 'rad_wind_speed', 'wind_speed_rad')
-	call cpy_var (ncid, 'wind_speed_mod_u', 'wind_speed_ecmwf_u')
-	call cpy_var (ncid, 'wind_speed_mod_v', 'wind_speed_ecmwf_v')
-
-! Rain or ice
-
-	if (tx) then
-		call cpy_var (ncid, 'rain_flag ice_flag IOR', 'qual_alt_rain_ice')
-	else
-		call cpy_var (ncid, 'ice_flag', 'qual_alt_rain_ice')
-	endif
-	call cpy_var (ncid, 'rad_rain_flag rad_sea_ice_flag IOR', 'qual_rad_rain_ice')
-
-! Off-nadir angle
-
-	if (tx) then
-		call cpy_var (ncid, 'off_nadir_angle_wf_ku_smoothed', 'off_nadir_angle2_wf_ku')
-!		call cpy_var (ncid, 'off_nadir_angle_wf_ku', 'off_nadir_angle2_wf_ku')
-		call cpy_var (ncid, 'off_nadir_angle_wf_rms_ku', 'off_nadir_angle2_wf_rms_ku')
-		call cpy_var (ncid, 'off_nadir_angle_wf_ku_qual', 'qual_attitude')
-	else
-		call cpy_var (ncid, 'off_nadir_angle_wf_ku_mgdr', 'off_nadir_angle2_wf_ku')
-	endif
-
-! Path delay
-
-	call cpy_var (ncid, 'model_dry_tropo_cor_measurement_altitude', 'dry_tropo_ecmwf')
-	call cpy_var (ncid, 'model_wet_tropo_cor_zero_altitude', 'wet_tropo_ecmwf')
-	call cpy_var (ncid, 'rad_wet_tropo_cor', 'wet_tropo_rad')
-	call cpy_var (ncid, 'composite_wet_tropo_gpd', 'gpd_wet_tropo_cor')
-	if (tx) then
-		call cpy_var (ncid, 'iono_cor_alt_ku', 'iono_alt')
-		call cpy_var (ncid, 'iono_cor_alt_ku_mle3', 'iono_alt_mle3')
-		call cpy_var (ncid, 'range_c_qual', 'qual_iono_alt')
-	else
-		call cpy_var (ncid, 'iono_cor_doris', 'iono_doris')
-	endif
-	call cpy_var (ncid, 'iono_cor_gim_ku', 'iono_gim')
 
 ! SSB
 
@@ -410,62 +427,67 @@ endif
 		call cpy_var (ncid, 'sea_state_bias_ku_mgdr', 'ssb_bm3')
 	endif
 
-! IB
+! Radiometer variables
 
-	call cpy_var (ncid, 'inv_bar_cor', 'inv_bar_static')
-	call cpy_var (ncid, 'dac', 'inv_bar_mog2d')
+	call cpy_var (ncid, 'rad_wet_tropo_cor', 'wet_tropo_rad')
+	call cpy_var (ncid, 'rad_water_vapor', 'water_vapor_rad')
+	call cpy_var (ncid, 'rad_cloud_liquid_water', 'liquid_water_rad')
+	call cpy_var (ncid, 'rad_wind_speed', 'wind_speed_rad')
 
-! Tides
+	call cpy_var (ncid, 'rad_atm_cor_sig0_ku', 'dsig0_atmos_ku')
+	if (tx) call cpy_var (ncid, 'rad_atm_cor_sig0_c', 'dsig0_atmos_c')
 
-	call cpy_var (ncid, 'ocean_tide_got load_tide_got SUB', 'tide_ocean_got' // tide_got_ver)
-	call cpy_var (ncid, 'ocean_tide_fes load_tide_fes SUB ocean_tide_non_eq ADD', 'tide_ocean_fes' // tide_fes_ver)
-	call cpy_var (ncid, 'load_tide_got', 'tide_load_got' // tide_got_ver)
-	call cpy_var (ncid, 'load_tide_fes', 'tide_load_fes' // tide_fes_ver)
-	call cpy_var (ncid, 'ocean_tide_eq', 'tide_equil')
-	call cpy_var (ncid, 'ocean_tide_non_eq', 'tide_non_equil')
-	call cpy_var (ncid, 'internal_tide_hret', 'tide_internal')
-	call cpy_var (ncid, 'solid_earth_tide', 'tide_solid')
-	call cpy_var (ncid, 'pole_tide', 'tide_pole')
-
-! Geoid and MSS
-
-	call cpy_var (ncid, 'geoid delta_ellipsoid_tp_wgs84 SUB', 'geoid_egm2008')
-	call cpy_var (ncid, 'mean_sea_surface_cnescls delta_ellipsoid_tp_wgs84 SUB', 'mss_cnescls' // mss_cnescls_ver)
-	call cpy_var (ncid, 'mean_sea_surface_dtu delta_ellipsoid_tp_wgs84 SUB', 'mss_dtu' // mss_dtu_ver)
-
-! Surface type and coastal proximity
-
-	call cpy_var (ncid, 'depth_or_elevation', 'topo_ace2')
-	call cpy_var (ncid, 'surface_classification_flag', 'surface_class')
 	call get_var (ncid, 'rad_surface_type_flag', a)
 	where (a > 0) a = a + 1
 	call new_var ('surface_type_rad', a)
-	call cpy_var (ncid, 'distance_to_coast 1e-3 MUL', 'dist_coast') ! Convert m to km
 	call cpy_var (ncid, 'rad_distance_to_land 1e-3 MUL', 'rad_dist_coast') ! Convert m to km
-
-! Other flags
-
-	call cpy_var (ncid, 'alt_state_flag_oper', 'flag_alt_oper_mode')
-
-! Bit flags
-
-	call new_var ('flags', dble(flags))
-	if (tx) call new_var ('flags_mle3', dble(flags_mle3))
-
-! Other radiometer measurements
-! Selected smoothed TBs
+	call cpy_var (ncid, 'rad_rain_flag rad_sea_ice_flag IOR', 'qual_rad_rain_ice')
 
 	call cpy_var (ncid, 'rad_tb_18', 'tb_180')
 	call cpy_var (ncid, 'rad_tb_21', 'tb_210')
 	call cpy_var (ncid, 'rad_tb_37', 'tb_370')
 	call cpy_var (ncid, 'rad_tb_18_qual 2 MUL rad_tb_21_qual ADD 2 MUL rad_tb_37_qual ADD', 'qual_rad_tb')
-	call cpy_var (ncid, 'rad_cloud_liquid_water', 'liquid_water_rad')
-	call cpy_var (ncid, 'rad_water_vapor', 'water_vapor_rad')
 
-! Wave model
+! Surface type and coastal proximity
 
-	call cpy_var (ncid, 'swh_model', 'swh_mfwam')
-	call cpy_var (ncid, 'mean_wave_period_t02', 'mean_wave_period')
+	call cpy_var (ncid, 'surface_classification_flag', 'surface_class')
+	call cpy_var (ncid, 'distance_to_coast 1e-3 MUL', 'dist_coast') ! Convert m to km
+
+! Path delay
+
+	call cpy_var (ncid, 'model_dry_tropo_cor_measurement_altitude', 'dry_tropo_era')
+	call cpy_var (ncid, 'model_wet_tropo_cor_zero_altitude', 'wet_tropo_era')
+	call cpy_var (ncid, 'composite_wet_tropo_gpd', 'gpd_wet_tropo_cor')
+
+! Surface model grids
+
+	call cpy_var (ncid, 'mean_sea_surface_cnescls delta_ellipsoid_tp_wgs84 SUB', 'mss_cnescls15')
+	call cpy_var (ncid, 'mean_sea_surface_dtu delta_ellipsoid_tp_wgs84 SUB', 'mss_dtu18')
+	call cpy_var (ncid, 'mean_dynamic_topography', 'mdt_cnescls18')
+	call cpy_var (ncid, 'geoid delta_ellipsoid_tp_wgs84 SUB', 'geoid_egm2008')
+	call cpy_var (ncid, 'depth_or_elevation', 'topo_ace2')
+
+! IB
+
+	call cpy_var (ncid, 'inv_bar_cor', 'inv_bar_static')
+	call cpy_var (ncid, 'dac', 'inv_bar_mog2d_era')
+
+! Tides
+
+	call cpy_var (ncid, 'ocean_tide_fes load_tide_fes SUB ocean_tide_non_eq ADD', 'tide_ocean_fes14')
+	call cpy_var (ncid, 'ocean_tide_got load_tide_got SUB', 'tide_ocean_got410')
+	call cpy_var (ncid, 'ocean_tide_eq', 'tide_equil')
+	call cpy_var (ncid, 'ocean_tide_non_eq', 'tide_non_equil')
+	call cpy_var (ncid, 'internal_tide_hret', 'tide_internal')
+	call cpy_var (ncid, 'load_tide_fes', 'tide_load_fes14')
+	call cpy_var (ncid, 'load_tide_got', 'tide_load_got410')
+	call cpy_var (ncid, 'solid_earth_tide', 'tide_solid')
+	call cpy_var (ncid, 'pole_tide', 'tide_pole')
+
+! Wind speed model
+
+	call cpy_var (ncid, 'wind_speed_mod_u', 'wind_speed_era_u')
+	call cpy_var (ncid, 'wind_speed_mod_v', 'wind_speed_era_v')
 
 ! SSHA
 
