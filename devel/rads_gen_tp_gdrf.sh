@@ -43,8 +43,8 @@ done
 
 # Do the patches to all data
 
-rads_add_iono     $options -C1-220 --nic09				>> "$log" 2>&1
-rads_add_iono     $options -C221-481 --all				>> "$log" 2>&1
+rads_add_iono     $options -C1-47 --nic09				>> "$log" 2>&1
+rads_add_iono     $options -C48-481 --all				>> "$log" 2>&1
 rads_add_common   $options								>> "$log" 2>&1
 case $sat in
 tx) rads_add_dual $options								>> "$log" 2>&1
