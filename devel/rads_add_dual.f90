@@ -40,18 +40,18 @@ type(rads_pass) :: P
 
 ! Other local variables
 
-integer(fourbyteint) :: ntot, cyc, pass, i
+integer(fourbyteint) :: ntot, cyc, pass, i, ios
 integer(fourbyteint), parameter :: nmax = 3000000
 integer(twobyteint) :: mask = 2072 ! Bits 3, 4, 11
 character(len=40) :: ext = ''
-real(eightbytereal) :: twin = 35d0, iwin = 8d0, f
+real(eightbytereal) :: twin = 35d0, iwin = 8d0, bias=0d0, f
 real(eightbytereal) :: time(nmax), lat(nmax), flags(nmax), iono1(nmax), iono2(nmax)
 logical :: recompute = .false., new = .false.
 
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options ('nb:i:t:m:x:r new mask: iwin: twin: mle: ext: recompute')
+call rads_set_options ('nb:i:t:m:x:r:: new mask: iwin: twin: mle: ext: recompute::')
 call rads_init (S)
 
 ! Determine conversion factor from TEC units to ionospheric delay in metres
@@ -77,6 +77,7 @@ do i = 1,rads_nopt
 		read (rads_opt(i)%arg,*) twin
 	case ('r', 'recompute')
 		recompute = .true.
+		read (rads_opt(i)%arg, *, iostat=ios) bias
 	end select
 enddo
 
@@ -121,7 +122,8 @@ write (*,1310) mask, iwin, twin
 '  -b, --mask MASK           Exclude data based on bitmap MASK (default:',i5,')' / &
 '  -i, --iwin IWIN           Set editing range for iono data [cm] (default:',f4.0,')' / &
 '  -t, --twin TWIN           Set box car filter length [sec] (default:' f4.0,')' / &
-'  -r, --recompute           (Re)compute ionospheric correction from delta range' / &
+'  -r, --recompute[=BIAS]    (Re)compute ionospheric correction from delta range' / &
+'                            with optional BIAS (m) added' / &
 '  -x, --ext EXT             Use parameters with extension _EXT (e.g. mle3 or plrm)')
 stop
 end subroutine synopsis
@@ -139,13 +141,14 @@ real(eightbytereal) :: range_ku(n), range_c(n), ssb_ku(n), ssb_c(n)
 call rads_get_var (S, P, 'time', time(ntot+1:ntot+n), .true.)
 call rads_get_var (S, P, 'lat', lat(ntot+1:ntot+n), .true.)
 call rads_get_var (S, P, 'flags' // ext, flags(ntot+1:ntot+n), .true.)
-call rads_get_var (S, P, 'iono_alt' // ext, iono1(ntot+1:ntot+n), .true.)
 if (recompute) then
 	call rads_get_var (S, P, 'range_ku' // ext, range_ku, .true.)
 	call rads_get_var (S, P, 'range_c', range_c, .true.)
 	call rads_get_var (S, P, 'ssb' // ext, ssb_ku, .true.)
 	call rads_get_var (S, P, 'ssb_c', ssb_c, .true.)
-	iono1(ntot+1:ntot+n) = f * ((range_c + ssb_c) - (range_ku + ssb_ku))
+	iono1(ntot+1:ntot+n) = f * ((range_c + ssb_c) - (range_ku + ssb_ku)) + bias
+else
+	call rads_get_var (S, P, 'iono_alt' // ext, iono1(ntot+1:ntot+n), .true.)
 endif
 ntot = ntot + n
 end subroutine read_pass
