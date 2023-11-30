@@ -38,7 +38,7 @@ type(giminfo) :: info
 ! Command line arguments
 
 character(rads_cmdl) :: path
-integer(fourbyteint) :: j, cyc, pass
+integer(fourbyteint) :: j, cyc, pass, ios
 real(eightbytereal) :: f, f_scaled
 integer(fourbyteint), parameter :: nmod = 3
 logical :: model(nmod) = .false.
@@ -46,7 +46,7 @@ logical :: model(nmod) = .false.
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('gin gim iri2007 nic09 all')
+call rads_set_options ('gin gim iri2007 nic09 all scale:')
 call rads_init (S)
 
 ! Determine conversion factor from TEC units to ionospheric delay in metres
@@ -55,7 +55,6 @@ call rads_init (S)
 f = -0.4028d0/S%frequency(1)**2	! freq in GHz from rads.xml; f = factor from TEC to meters
 var => rads_varptr (S, 'iono_gim')
 read (var%info%parameters, *) f_scaled ! Get the ionosphere scaling parameter
-f_scaled = f_scaled * f
 
 ! Get ${ALTIM}/data directory
 
@@ -74,8 +73,11 @@ do j = 1,rads_nopt
 	case ('all')
 		model(1) = .true.
 		model(3) = .true.
+	case ('scale')
+		read (rads_opt(j)%arg, *, iostat=ios) f_scaled ! Overrule config file
 	end select
 enddo
+f_scaled = f_scaled * f
 
 if (model(1)) info = giminit(trim(path)//'gim/jplg_',1)
 if (model(3)) call nicinit(trim(path)//'nic09/nic09_clim.nc',trim(path)//'nic09/nic09_gtec.nc')
@@ -106,7 +108,8 @@ write (*,1310)
 '  -g, --gim                 Add JPL GIM model data' / &
 '  -n, --nic09               Add NIC09 ionosphere model' / &
 '  --all                     All of the above' / &
-'  -i  --iri2007             IRI2007 ionosphere model NO LONGER SUPPORTED')
+'  -i  --iri2007             IRI2007 ionosphere model NO LONGER SUPPORTED' / &
+'  --scale=SCALE             Set scale factor (default is from rads.xml)')
 stop
 end subroutine synopsis
 
