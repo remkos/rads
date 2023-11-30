@@ -43,15 +43,21 @@ done
 
 # Do the patches to all data
 
+# GIM iono is only available from 1994-01-01 onward
 rads_add_iono     $options -C1-47 --nic09				>> "$log" 2>&1
 rads_add_iono     $options -C48-481 --all				>> "$log" 2>&1
+
 rads_add_common   $options								>> "$log" 2>&1
 case $sat in
-tx) rads_add_dual $options								>> "$log" 2>&1
+tx) rads_add_dual $options -r							>> "$log" 2>&1
+    rads_add_dual $options -r -x mle3					>> "$log" 2>&1
+    extra="-x mle3" ;;
 esac
-# Redetermine SSHA
-rads_add_refframe $options								>> "$log" 2>&1
-rads_add_sla      $options								>> "$log" 2>&1
+
+# Redetermine SSHA and add ERA5 (temporarily suppressed)
+#rads_add_refframe $options -x $extra					>> "$log" 2>&1
+#rads_add_sla      $options -x $extra					>> "$log" 2>&1
+#rads_add_era5     $options --all						>> "$log" 2>&1
 
 date													>> "$log" 2>&1
 

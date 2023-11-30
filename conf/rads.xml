@@ -86,7 +86,7 @@ Global RADS configuration file
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
 	<data>alt range_ku_mle3 SUB dry_tropo SUB wet_tropo SUB iono_alt_smooth_mle3 SUB dac SUB tide_solid SUB tide_ocean SUB tide_load SUB
-		tide_pole SUB ssb_cls_mle3 SUB mss SUB ref_frame_offset_mle3 SUB</data>
+		tide_pole SUB ssb_mle3 SUB mss SUB ref_frame_offset_mle3 SUB</data>
 	<quality_flag>swh_ku_mle3 sig0_ku_mle3 range_rms_ku_mle3 range_numval_ku_mle3 flags_mle3 swh_rms_ku_mle3 sig0_rms_ku_mle3</quality_flag>
 	<comment>Sea level determined from satellite altitude - MLE3 range - all (MLE3) altimetric corrections</comment>
 </var>
@@ -1074,7 +1074,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<var name="iono_alt_smooth" field="903" sat="2a 3a 3b 6a j1 j2 j3 n1 tx.mgdr sw">
+<var name="iono_alt_smooth" field="903" sat="2a 3a 3b 6a j1 j2 j3 n1 tx sw">
 	<long_name>smoothed dual-frequency ionospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>dual-frequency altimeter after smoothing</source>
@@ -1205,7 +1205,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<var name="iono_alt_smooth_mle3" field="913" sat="6a j2 j3 sw">
+<var name="iono_alt_smooth_mle3" field="913" sat="6a j2 j3 sw tx.gdrf">
 	<long_name>smoothed dual-frequency ionospheric correction (MLE3)</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>dual-frequency altimeter after smoothing</source>
@@ -1855,6 +1855,10 @@ Global RADS configuration file
 <alias name="ssb" field="15" sat="sa">ssb_tran2019</alias>
 <alias name="ssb" field="15" sat="2a 3a 3b 6a c2 j1 j2 j3 n1 tx.mgdr sw">ssb_cls</alias>
 <alias name="ssb" field="15" sat="tx.gdrf">ssb_tx</alias>
+<alias name="ssb_c" sat="2a 3a 3b 6a j1 j2 j3 sw">ssb_cls_c</alias>
+<alias name="ssb_c" sat="tx.gdrf">ssb_tx_c</alias>
+<alias name="ssb_mle3" sat="6a j2 j3 sw">ssb_cls_mle3</alias>
+<alias name="ssb_mle3" sat="tx.gdrf">ssb_tx_mle3</alias>
 
 <var name="geoid_egm96" field="1601" sat="3a 3b j2 j3 sa sw">
 	<long_name>EGM96 geoid height</long_name>
