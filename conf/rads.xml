@@ -1095,7 +1095,7 @@ Global RADS configuration file
 	<parameters sat="2a sw">0.880</parameters>
 	<parameters sat="3a 3b">0.859</parameters>
 	<parameters sat="c2">0.844</parameters>
-	<parameters sat="6a j1 j2 j3 pn tx">0.925</parameters>
+	<parameters sat="6a j1 j2 j3 pn tx">0.881</parameters> <!-- Updated according to Dettmering et al. (2022) -->
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
 	<plot_range>-0.15 0.02</plot_range>
@@ -1137,7 +1137,7 @@ Global RADS configuration file
 	<parameters sat="2a sw">0.880</parameters>
 	<parameters sat="3a 3b">0.859</parameters>
 	<parameters sat="c2">0.844</parameters>
-	<parameters sat="6a j1 j2 j3 pn tx">0.925</parameters>
+	<parameters sat="6a j1 j2 j3 pn tx">0.881</parameters> <!-- Updated according to Dettmering et al. (2022) -->
 	<units>m</units>
 	<limits>-0.4 0.04</limits>
 	<plot_range>-0.15 0.02</plot_range>
