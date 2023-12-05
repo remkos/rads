@@ -1093,7 +1093,7 @@ Global RADS configuration file
 	<source>JPL GIM 2-hourly maps</source>
 	<parameters>0.856</parameters>
 	<parameters sat="2a sw">0.880</parameters>
-	<parameters sat="3a 3b">0.859</parameters>
+	<parameters sat="3a 3b">0.825</parameters> <!-- Value determined 5 Dec 2023 following method of Dettmering -->
 	<parameters sat="c2">0.844</parameters>
 	<parameters sat="6a j1 j2 j3 pn tx">0.881</parameters> <!-- Updated according to Dettmering et al. (2022) -->
 	<units>m</units>
@@ -1135,7 +1135,7 @@ Global RADS configuration file
 	<source>NIC09 climatology</source>
 	<parameters>0.856</parameters>
 	<parameters sat="2a sw">0.880</parameters>
-	<parameters sat="3a 3b">0.859</parameters>
+	<parameters sat="3a 3b">0.825</parameters> <!-- Value determined 5 Dec 2023 following method of Dettmering -->
 	<parameters sat="c2">0.844</parameters>
 	<parameters sat="6a j1 j2 j3 pn tx">0.881</parameters> <!-- Updated according to Dettmering et al. (2022) -->
 	<units>m</units>
