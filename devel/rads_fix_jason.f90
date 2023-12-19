@@ -55,7 +55,7 @@ type(rads_pass) :: P
 
 ! Other local variables
 
-real(eightbytereal) :: dwet = 0d0, dsig0(2) = 0d0, wet_cor(254,0:348) = nan
+real(eightbytereal) :: dwet = 0d0, dsig0(2) = 0d0, wet_cor(254,0:999) = nan
 integer(fourbyteint) :: i, ios, cyc, pass
 logical :: lrad = .false., lsig0 = .false., lwind = .false.
 
@@ -78,7 +78,10 @@ do i = 1,rads_nopt
 	case ('wind')
 		lwind = .true.
 	case ('all')
-		if (S%sat(:2) /= 'j3') then
+		if (S%sat(:2) == 'j3') then
+			wet_cor = 1.8d-3
+			lrad = .true.
+		else
 			dsig0 = (/ -2.40d0, -0.73d0 /) ! Ku- and C-band Sigma0 bias of Jason-1
 			lsig0 = .true.
 		endif
@@ -114,7 +117,7 @@ write (*,1310)
 'Additional [processing_options] are:' / &
 '  --sig0[=BIAS_KU,BIAS_C]   Adjust backscatter coefficient for apparent off-nadir angle, and' / &
 '                            optionally add biases to the Ku and C band values' / &
-'  --all                     JA1/JA2: --sig0=-2.40,-0.73; JA3: none' / &
+'  --all                     JA1/JA2: --sig0=-2.40,-0.73; JA3: --rad=1.8' / &
 '  --rad=OFFSET              Add OFFSET mm to radiometer wet tropo' / &
 '  --rad=FILENAME            Correct radiometer wet tropo according to correction file' / &
 '  --wind                    Recompute wind speed from adjusted sigma0 based on Collard model')
@@ -208,6 +211,7 @@ do cyc = 0,348
 		dwet = wet_cor (pass, cyc)
 	enddo
 enddo
+wet_cor(:,349:999) = dwet
 close (10)
 end function read_wet_cor
 
