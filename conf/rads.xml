@@ -4232,7 +4232,7 @@ Global RADS configuration file
 	<parameters sat="g1">  73   0  0  0 0</parameters>
 	<parameters sat="j1">  85   0  0  0 0</parameters>
 	<parameters sat="j2"> -15   0  0  0 0</parameters>
-	<parameters sat="j3"> -22.6 0  0  0 0</parameters>
+	<parameters sat="j3"> -23.9 0  0  0 0</parameters>
 	<parameters sat="n1"> 451   0  0  0 0</parameters>
 	<parameters sat="pn"> -15   0  0  0 0</parameters>
 	<parameters sat="sa"> -87   0  0  0 0</parameters>
@@ -4248,7 +4248,7 @@ Global RADS configuration file
 	<parameters>0</parameters>
 	<parameters sat="6a"> -15.8 0  0  0 0</parameters>
 	<parameters sat="j2">  13.5 0  0  0 0</parameters>
-	<parameters sat="j3">  -8.9 0  0  0 0</parameters>
+	<parameters sat="j3"> -10.2 0  0  0 0</parameters>
 </var>
 <var name="ref_frame_offset_plrm" field="3812" sat="3a 3b">
 	<long_name>reference frame offset (PLRM)</long_name>
@@ -4270,7 +4270,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<dimensions>0</dimensions>
 	<parameters>0</parameters>
-	<parameters sat="j3"> -47.7 0  0  0 0</parameters>
+	<parameters sat="j3"> -49.0 0  0  0 0</parameters>
 </var>
 <alias name="ref_frame_offset_nr" sat="j3 sw">ref_frame_offset_adaptive</alias>
 <var name="ref_frame_offset_nr" sat="6a">
