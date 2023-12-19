@@ -44,6 +44,7 @@
 program rads_fix_jason
 
 use rads
+use rads_misc
 use rads_devel
 use meteo_subs
 
@@ -54,7 +55,7 @@ type(rads_pass) :: P
 
 ! Other local variables
 
-real(eightbytereal) :: dwet = 0d0, dsig0(2) = 0d0
+real(eightbytereal) :: dwet = 0d0, dsig0(2) = 0d0, wet_cor(254,0:348) = nan
 integer(fourbyteint) :: i, ios, cyc, pass
 logical :: lrad = .false., lsig0 = .false., lwind = .false.
 
@@ -69,8 +70,10 @@ do i = 1,rads_nopt
 		read (rads_opt(i)%arg, *, iostat=ios) dsig0
 		lsig0 = .true.
 	case ('rad')
-		read (rads_opt(i)%arg, *, iostat=ios) dwet
-		dwet = dwet * 1d-3
+		if (read_wet_cor(rads_opt(i)%arg)) then
+			read (rads_opt(i)%arg, *, iostat=ios) dwet
+			wet_cor = dwet * 1d-3
+		endif
 		lrad = .true.
 	case ('wind')
 		lwind = .true.
@@ -113,6 +116,7 @@ write (*,1310)
 '                            optionally add biases to the Ku and C band values' / &
 '  --all                     JA1/JA2: --sig0=-2.40,-0.73; JA3: none' / &
 '  --rad=OFFSET              Add OFFSET mm to radiometer wet tropo' / &
+'  --rad=FILENAME            Correct radiometer wet tropo according to correction file' / &
 '  --wind                    Recompute wind speed from adjusted sigma0 based on Collard model')
 stop
 end subroutine synopsis
@@ -133,7 +137,7 @@ call log_pass (P)
 
 if (lrad) then
 	call rads_get_var (S, P, 'wet_tropo_rad', wet, .true.)
-	wet = wet + dwet
+	wet = wet + wet_cor (pass, cyc)
 endif
 
 ! Adjust backscatter for correlation with off-nadir angle (See Quartly [2009])
@@ -172,5 +176,39 @@ if (lwind) call rads_put_var (S, P, 'wind_speed_alt', u)
 
 call log_records (n)
 end subroutine process_pass
+
+!-----------------------------------------------------------------------
+! Read the radiometer wet tropo correction file
+!-----------------------------------------------------------------------
+
+logical function read_wet_cor (filenm)
+character(len=*), intent(in) :: filenm
+integer :: ios, pass, cyc
+character(len=17) :: date
+character(len=80) :: line
+real(eightbytereal) :: dwet
+
+read_wet_cor = .true.
+open (10, file=filenm, form='formatted', iostat=ios)
+if (ios /= 0) return
+read_wet_cor = .false.
+! Read the data while skipping headers
+do
+	read (10, '(a)', iostat = ios) line
+	if (ios /= 0) exit
+	if (line(:3) == 'HDR') cycle
+	read (line, *) cyc, pass, date, dwet
+	wet_cor (pass, cyc) = dwet * 1d-2
+enddo
+! Fill missing data
+dwet = 0d0
+do cyc = 0,348
+	do pass = 1,254
+		if (isnan_(wet_cor (pass,cyc))) wet_cor (pass,cyc) = dwet
+		dwet = wet_cor (pass, cyc)
+	enddo
+enddo
+close (10)
+end function read_wet_cor
 
 end program rads_fix_jason
