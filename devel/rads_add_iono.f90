@@ -121,7 +121,7 @@ end subroutine synopsis
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
 integer(fourbyteint) :: i, j
-real(eightbytereal) :: time(n), lat(n), lon(n), alt(n), z(n,nmod)
+real(eightbytereal) :: time(n), lat(n), lon(n), z(n,nmod)
 logical :: ok(nmod)
 
 call log_pass (P)
@@ -131,7 +131,6 @@ call log_pass (P)
 call rads_get_var (S, P, 'time', time, .true.)
 call rads_get_var (S, P, 'lat', lat, .true.)
 call rads_get_var (S, P, 'lon', lon, .true.)
-call rads_get_var (S, P, 'alt', alt, .true.)
 
 ! Now do all models
 
