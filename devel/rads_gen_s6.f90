@@ -320,9 +320,6 @@ do
 	else
 		call nc2f (ncid1, 'rad_surface_type_flag', 6, ge=3)		! bit  6: Radiometer land flag
 	endif
-	call nc2f (ncid1, 'rain_flag', 7, eq=1)
-	call nc2f (ncid1, 'rain_flag', 7, eq=2)
-	call nc2f (ncid1, 'rain_flag', 7, eq=4)						! bit  7: Altimeter rain or ice flag
 	call nc2f (ncid1, 'rad_rain_flag', 8)
 	call nc2f (ncid1, 'rad_sea_ice_flag', 8)					! bit  8: Radiometer rain or ice flag
 	call nc2f (ncid1, 'rad_tb_187_qual',  9)
@@ -330,30 +327,43 @@ do
 	call nc2f (ncid1, 'rad_tb_340_qual', 10)					! bit 10: Quality 34.0 GHz channel
 	call nc2f (ncid1, 'orbit_type_flag', 15, le=2)				! bit 15: Quality of orbit
 
+	flags_nr = flags	! Save common flags until now
+	call nc2f (ncid1, 'rain_flag', 7, eq=1)
+	call nc2f (ncid1, 'rain_flag', 7, eq=2)
+	call nc2f (ncid1, 'rain_flag', 7, eq=4)						! bit  7: Altimeter rain or ice flag
+
+	flags_mle3 = flags
+	flags_save = flags	! Save common flags until now
+
 ! Now do specifics for MLE3
 
 	if (lr) then
-		flags_save = flags	! Keep flags for later
 		call nc2f (ncidk, 'range_ocean_mle3_qual', 11)			! bit 11: Quality range
 		call nc2f (ncidk, 'swh_ocean_mle3_qual', 12)			! bit 12: Quality SWH
 		call nc2f (ncidk, 'sig0_ocean_mle3_qual', 13)			! bit 13: Quality Sigma0
 		flags_mle3 = flags	! Copy result for MLE3
-		flags = flags_save	! Continue with nominal ocean retracking flags
 	endif
 
 ! Now do specifics for numerical retracker
 
 	if (has_nr) then
-		flags_save = flags	! Keep flags for later
+		if (baseline < 'F09') then ! Before baseline F09 there was no specific NR rain flag so use the ones from above instead.
+			flags = flags_save
+		else
+			flags = flags_nr	! Restore the NR flags
+			call nc2f (ncid1, 'rain_flag_nr', 7, eq=1)
+			call nc2f (ncid1, 'rain_flag_nr', 7, eq=2)
+			call nc2f (ncid1, 'rain_flag_nr', 7, eq=4)			! bit  7: Altimeter rain or ice flag
+		endif
 		call nc2f (ncidk, 'range_ocean_nr_qual', 11)			! bit 11: Quality range
 		call nc2f (ncidk, 'swh_ocean_nr_qual', 12)				! bit 12: Quality SWH
 		call nc2f (ncidk, 'sig0_ocean_nr_qual', 13)				! bit 13: Quality Sigma0
 		flags_nr = flags	! Copy result for NR
-		flags = flags_save	! Continue with nominal ocean retracking flags
 	endif
 
 ! Redo the last ones for standard retracker
 
+	flags = flags_save
 	call nc2f (ncidk, 'range_ocean_qual', 11)					! bit 11: Quality range
 	call nc2f (ncidk, 'swh_ocean_qual', 12)						! bit 12: Quality SWH
 	call nc2f (ncidk, 'sig0_ocean_qual', 13)					! bit 13: Quality Sigma0
@@ -465,6 +475,7 @@ do
 ! Rain or ice
 
 	call cpy_var (ncid1, 'rain_flag', 'qual_alt_rain_ice')
+	if (baseline >= 'F09') call cpy_var (ncid1, 'rain_flag_nr', 'qual_alt_rain_ice_nr')
 	call cpy_var (ncid1, 'rad_rain_flag rad_sea_ice_flag IOR', 'qual_rad_rain_ice')
 	call cpy_var (ncid1, 'rain_attenuation', 'dsig0_atten')
 
