@@ -2972,6 +2972,14 @@ Global RADS configuration file
 	</else>
 </var>
 
+<var name="qual_alt_rain_ice_nr" sat="6a">
+	<long_name>altimeter rain flag (numerical retracker)</long_name>
+	<flag_values>no_rain rain high_rain_probability_from_altimeter high_probability_of_no_rain_from_altimeter
+			ambiguous_situation_possibility_of_ice evaluation_not_possible</flag_values>
+	<plot_range>0 5</plot_range>
+	<data>qual_alt_rain_ice_nr</data>
+</var>
+
 <var name="qual_rad_rain_ice" field="2508" sat="3a 3b 6a e1 e2 j1 j2 j3 n1 pn tx">
 	<long_name>corruption of radiometer measurement (rain or ice)</long_name>
 	<flag_values>ok rain_or_ice</flag_values>
