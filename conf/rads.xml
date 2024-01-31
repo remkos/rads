@@ -42,7 +42,7 @@ Global RADS configuration file
 	j3 ja3 jason-3 jason3
 	n1 en1 envisat
 	pn pos poseidon
-	tx top topex
+	tx top tpx topex
 	sa srl saral
 	sw swt swot
 </satellites>

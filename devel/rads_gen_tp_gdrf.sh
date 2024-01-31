@@ -42,23 +42,37 @@ for tar in "$@"; do
 done
 
 # Do the patches to all data
+# Moved everything from rads_add_common here, because we need to make some changes
 
-# GIM iono is only available from 1994-01-01 onward
-rads_add_iono     $options -C1-47 --nic09				>> "$log" 2>&1
-rads_add_iono     $options -C48-481 --all				>> "$log" 2>&1
+rads_add_grid     $options -Vtopo_srtm15plus					>> "$log" 2>&1
+rads_add_era5     $options --all								>> "$log" 2>&1
+rads_add_grid     $options -Vdist_coast,gia,basin				>> "$log" 2>&1
+rads_add_grid     $options -Vgeoid_egm2008,mss_cnescls15		>> "$log" 2>&1
+rads_add_grid     $options -Vmss_dtu15,mss_dtu18				>> "$log" 2>&1
+rads_add_grid     $options -Vmss_comb15							>> "$log" 2>&1
+rads_add_grid     $options -Vgeoid_eigen6,mss_dtu21				>> "$log" 2>&1
+rads_add_grid     $options -Vprox_coast							>> "$log" 2>&1
+rads_add_surface  $options										>> "$log" 2>&1
+rads_add_surface  $options -s									>> "$log" 2>&1
+rads_add_tide     $options --models=stide,ptide,got410,annual	>> "$log" 2>&1
+rads_add_tide     $options --models=fes14,lptide				>> "$log" 2>&1
+rads_add_tide     $options --models=hret						>> "$log" 2>&1
+rads_add_webtide  $options										>> "$log" 2>&1
+rads_add_sst      $options --all								>> "$log" 2>&1
+rads_add_seaice   $options										>> "$log" 2>&1
+rads_add_ncep     $options --dry --wet --air					>> "$log" 2>&1
+rads_add_iono     $options --all								>> "$log" 2>&1
 
-rads_add_common   $options								>> "$log" 2>&1
 case $sat in
-tx) rads_add_dual $options -r							>> "$log" 2>&1
-    rads_add_dual $options -r -x mle3					>> "$log" 2>&1
-    extra="-x mle3" ;;
+tx) extra="-x mle3"
+    rads_add_dual $options -r									>> "$log" 2>&1
+    rads_add_dual $options -r $extra							>> "$log" 2>&1
+    ;;
 esac
 
-# Redetermine SSHA and add ERA5 (temporarily suppressed)
-#rads_add_refframe $options -x $extra					>> "$log" 2>&1
-#rads_add_sla      $options -x $extra					>> "$log" 2>&1
-#rads_add_era5     $options --all						>> "$log" 2>&1
+rads_add_refframe $options -x $extra							>> "$log" 2>&1
+rads_add_sla      $options -x $extra							>> "$log" 2>&1
 
-date													>> "$log" 2>&1
+date															>> "$log" 2>&1
 
 rads_close_sandbox
