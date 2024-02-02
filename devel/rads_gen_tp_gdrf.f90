@@ -274,18 +274,18 @@ do
 
 	if (tx) then
 		flags_save = flags	! Keep flags for later
-		call nc2f (ncid, 'range_ku_mle3_qual', 11)					! bit 11: Quality range
-		call nc2f (ncid, 'swh_ku_mle3_qual', 12)					! bit 12: Quality SWH
-		call nc2f (ncid, 'sig0_ku_mle3_qual', 13)			! bit 13: Quality Sigma0
+		call nc2f (ncid, 'range_ku_mle3_qual', 11)				! bit 11: Quality range
+		call nc2f (ncid, 'swh_ku_mle3_qual', 12)				! bit 12: Quality SWH
+		call nc2f (ncid, 'sig0_ku_mle3_qual', 13)				! bit 13: Quality Sigma0
 		flags_mle3 = flags	! Copy result for MLE3
 
 ! Redo the last ones for standard retracker
 
 		flags = flags_save	! Reset to general flags
-		call nc2f (ncid, 'range_ku_qual', 11)						! bit 11: Quality range
-		call nc2f (ncid, 'swh_ku_qual', 12)							! bit 12: Quality SWH
-		call nc2f (ncid, 'sig0_ku_qual', 13)				! bit 13: Quality Sigma0
-endif
+		call nc2f (ncid, 'range_ku_qual', 11)					! bit 11: Quality range
+		call nc2f (ncid, 'swh_ku_qual', 12)						! bit 12: Quality SWH
+		call nc2f (ncid, 'sig0_ku_qual', 13)					! bit 13: Quality Sigma0
+	endif
 
 ! Time and location
 
