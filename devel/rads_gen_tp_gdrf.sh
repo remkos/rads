@@ -65,8 +65,10 @@ rads_add_iono     $options --all								>> "$log" 2>&1
 
 case $sat in
 tx) extra="-x mle3"
-    rads_add_dual $options -r									>> "$log" 2>&1
-    rads_add_dual $options -r $extra							>> "$log" 2>&1
+    rads_add_dual $options -C001-235 -r-0.00886 -l				>> "$log" 2>&1
+    rads_add_dual $options -C236-480 -r-0.01627 -l				>> "$log" 2>&1
+    rads_add_dual $options -C001-235 -r-0.00886 -l $extra		>> "$log" 2>&1
+    rads_add_dual $options -C236-480 -r-0.01627 -l $extra		>> "$log" 2>&1
     ;;
 esac
 
