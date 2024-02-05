@@ -4311,6 +4311,7 @@ Global RADS configuration file
 	<parameters sat="j2"> -15   0  0  0 0</parameters>
 	<parameters sat="j3"> -23.9 0  0  0 0</parameters>
 	<parameters sat="n1"> 451   0  0  0 0</parameters>
+	<parameters sat="pn">  -3.1 0  0  0 0</parameters>
 	<parameters sat="sa"> -87   0  0  0 0</parameters>
 	<parameters sat="tx">  44.2   0  0  0 0</parameters> <!-- Side A -->
 	<parameters sat="tx">  11.3   0  0  0 0</parameters> <!-- Side B -->
