@@ -47,7 +47,7 @@ use netcdf
 
 type(rads_sat) :: S
 type(rads_pass) :: P
-integer(fourbyteint), parameter :: type_mog2d=0, type_era=1, type_tugo=2
+integer(fourbyteint), parameter :: type_mog2d=0, type_era=1
 integer(fourbyteint) :: cyc, pass, j, type = type_mog2d
 logical :: update = .false.
 
@@ -65,7 +65,7 @@ integer(twobyteint) :: grids(nx,ny,2), tmp(ny,nx-1)
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('uet update era tugo all')
+call rads_set_options ('uet update era all')
 call rads_init (S)
 
 ! Check all options
@@ -75,17 +75,12 @@ do j = 1,rads_nopt
 		update = .true.
 	case ('e', 'era')
 		type = type_era
-	case ('t', 'tugo')
-		type = type_tugo
 	end select
 enddo
 
 ! Get template for path name and set variable name
 
 select case (type)
-case (type_tugo)
-	call parseenv ('${ALTIM}/data/tugo/%Y/dac_dif_%Y%m%d_%H.nc', path)
-	varnm = 'inv_bar_tugo'
 case (type_era)
 	call parseenv ('${RADSROOT}/ext/slcci/Products/DAC_ERA_Interim_20161115/%Y/dac_era_interim_', path)
 	varnm = 'inv_bar_mog2d_era'
@@ -122,7 +117,6 @@ write (*,1310)
 'Additional [processing_options] are:'/ &
 '  --all                     (Has no effect)'/ &
 '  -e, --era                 Use the DAC forced by ERA Interim (1991-2015 only)'/ &
-'  -t, --tugo                Use the DAC from TUGO model (test case)'/ &
 '  -u, --update              Update files only when there are changes')
 stop
 end subroutine synopsis
