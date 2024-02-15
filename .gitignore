@@ -50,7 +50,6 @@ devel/rads_fix_jason
 devel/rads_fix_reaper
 devel/rads_fix_s3
 devel/rads_fix_s6
-devel/rads_fix_tx
 devel/rads_gen_c2_op
 devel/rads_gen_h2
 devel/rads_gen_jason
@@ -60,7 +59,7 @@ devel/rads_gen_s3
 devel/rads_gen_s6
 devel/rads_gen_saral
 devel/rads_gen_swot
-devel/rads_gen_tx_rgdr
+devel/rads_gen_tp_gdrf
 devel/rads_pre_sort_passes
 doc/manuals/sub
 rads_config.tex
