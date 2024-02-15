@@ -27,21 +27,12 @@
 %\usepackage{listings}
 %\lstset{language=Fortran}
 \bibliographystyle{agu08}
-\input{rads_config}
-\setlength{\parindent}{0in}
-\setlength{\parskip}{.08in}
 
-\DeclareUrlCommand\cmd{\urlstyle{tt}}
-\renewcommand\deg{\ensuremath{^\circ}}
-\newcommand\prog[1]{\url{#1}\index{programs!#1@\protect\url{#1}}}
-\DeclareUrlCommand\code{\urlstyle{tt}}
-\newcommand\Code[1]{\textbf{\code{#1}}}
-\newcommand\CODE[1]{\Code{\emph{#1}}}
-\newcommand\dir[1]{\url{#1}\index{directories!#1@\protect\url{#1}}}
-\newcommand\file[1]{\url{#1}\index{files!#1@\protect\url{#1}}}
+\input{rads4_defs}
+
+% Special environments and commands for this document.
+
 \newcommand\ctag[1]{\url{#1}\index{configuration!#1@\protect\cmd{#1}}}
-\newcommand\cc[1]{\multicolumn{1}{c}{\em #1}}
-\newcommand\var[1]{\url{#1}\index{variables!#1@\protect\url{#1}}}
 \newcommand\sopt[1]{\url{-#1}\index{options, short!-#1@\protect\url{-#1}}}
 \newcommand\lopt[1]{\url{--#1}\index{options, long!--#1@\protect\url{--#1}}}
 \newcommand\soptb[2]{\sopt{#1}~\url{#2}}
@@ -50,22 +41,7 @@
 \newcommand\loptc[2]{\lopt{#1}~\emph{#2}}
 \newcommand\opt[2]{\sopt{#1}~~~~\lopt{#2}}
 \newcommand\optc[3]{\soptc{#1}{#3}~~~~\loptc{#2}{#3}}
-\newcommand\alias[1]{\emph{alias of} \var{#1}}
 \newcommand{\script}[2][tiny]{\begingroup\verbatimfont{\csname #1\endcsname}\verbatiminput{#2}\endgroup}
-
-\setcounter{topnumber}{3}
-\renewcommand{\topfraction}{.9}
-\setcounter{bottomnumber}{2}
-\renewcommand{\bottomfraction}{.7}
-\setcounter{totalnumber}{4}
-\renewcommand{\textfraction}{.1}
-\renewcommand{\floatpagefraction}{.8}
-
-\makeatletter
-\renewcommand{\tiny}{\@setfontsize\tiny{8.0pt}{8.7}}
-\makeatother
-
-\verbatimfont{\small}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -251,7 +227,7 @@ At the beginning \prog{rsync} will ask you to enter the password for \verb|radsu
 
 \input{rads4_sats}
 
-Apart from the satellite specific directories, there is a directory that contains configuration files, that help RADS to read the data files. These files are also installed in the same place, when installing the software, but you can download them from the rsync server as well. Be sure to keep these files up to date.
+Apart from the satellite specific directories, there is a directory that contains configuration files, that help RADS to read the data files. When installing the software, a version of these configuration files will be installed there. But sometimes these are updated in between software versions, so it is important to rsync this directory as well to keep the configuration files up to date.
 \begin{verbatim}
 $ cd /rads/data
 $ rsync -avz --del radsuser@rads.tudelft.nl::rads/data/conf .
@@ -370,7 +346,7 @@ The following tags can only occur within a \ctag{var}-block (with one exception,
 \item[\ctag{standard_name}, \ctag{source}, \ctag{comment}] specify the \verb|standard_name|, \verb|source|, and \verb|comment| attributes to be written to the netCDF data files.
 \item[\ctag{units}] specifies the units of the variable as used in any output, as well as the \verb|units| attribute in the netCDF data files.
 \item[\ctag{flag_values}] specifies the meanings of a flag, counting up from 0. For example \verb|yes no| means that 0 is to be interpreted as "yes", 1 as "no".
-\item[\ctag{flag_mask}] specifies the meanings of a flag word made up of bits. For example \verb|left front up| means that when the LSB is raised "left" is true, and the next bits indicate if "front" and "up" are true.
+\item[\ctag{flag_mask}] specifies the meanings of a flag word made up of bits. For example \verb|left front up| means that when the LSB is raised "left" is true, and the next bits indicate if "front" or "up" are true.
 \item[\ctag{limits}] specifies the range of "good" values. Any value less than the lower limit or greater than the upper limit result in the variable to be set to NaN. In case the variable is a \ctag{flag_mask}, then the first value indicates the mask of bits that should not be set, the second value the bits that should be set, otherwise the result will yield NaN.
 \item[\ctag{plot_range}] specifies a suggested range for plotting the variable. It is not used for any processing, except for the \prog{radsvar} program.
 \item[\ctag{parameters}] is used for the RADS4 database creation and has no impact on any user programs.
@@ -413,7 +389,7 @@ Operator & Description \\
 \label{tab:math-operators}
 \end{table}
 
-\item[grid:] RADS can interpolate in 2-D netCDF grids \emph{on the fly}. This is practical if you have a static model to be interpolated at a certain location (longitude and latitude, or any other two variables). Depending on the argument of the \verb|source=| option, one can select to do bilinear interpolation (\verb|"grid"| or \verb|"grid_l"|), cubic spline interpolation (\verb|"grid_c"| or \verb|"grid_s"|), or nearest neighbour selection (\verb|"grid_q"| or \verb|"grid_n"|). Without any of these options, a file name ending on ".nc" will automatically be recognised as needing linear interpolation. In addition one can specify the variables to be used as x- and y-coordinated in the interpolation. Default is \verb|x="lon" y="lat"|. Example for interpolating an SSB model:
+\item[grid:] RADS can interpolate in 2-D netCDF grids \emph{on the fly}. This is practical if you have a static model to be interpolated at a certain location (longitude and latitude, or any other two variables). Depending on the argument of the \verb|source=| option, one can select to do bilinear interpolation (\verb|"grid"| or \verb|"grid_l"|), cubic spline interpolation (\verb|"grid_c"| or \verb|"grid_s"|), or nearest neighbour selection (\verb|"grid_q"| or \verb|"grid_n"|). Without any of these options, a file name ending on ".nc" will automatically be recognised as needing linear interpolation. In addition one can specify the variables to be used as x- and y-coordinate in the interpolation. Default is \verb|x="lon" y="lat"|. Example for interpolating an SSB model:
 \begin{verbatim}
     <data source="grid" x="wind_speed_alt" y="swh">my_ssb_model.nc</data>
 \end{verbatim}
@@ -655,7 +631,7 @@ Yet, there is a more complicated order in which the command line options are pro
 \end{enumerate}
 Each of these groups of options are processed left to right. This order is common to all RADS programs discussed later in this Chapter, as they all use the RADS library to scan the command line.
 
-When processing multiple satellites at the time (for example when creating dual-satellite crossovers with \prog{radsxogen}), it matters whether you put common options before or after mission selector (\sopt{S} or \lopt{sat}). The order then determines whether the option is unique to a single mission, or applies to all. The rule is as follows:
+When processing multiple satellites at the time (for example when creating dual-satellite crossovers with \prog{radsxogen} or when doing collinear differences with \prog{radsstat}), it matters whether you put common options before or after mission selector (\sopt{S} or \lopt{sat}). The order then determines whether the option is unique to a single mission, or applies to all. The rule is as follows:
 \begin{itemize}
 \item Common options ahead of the first mission selector apply to all missions.
 \item Common options after the first mission selector apply to the last mission selector to the left of the option.
@@ -993,613 +969,24 @@ Create a netCDF output file. The default is ASCII output to standard output. Opt
 \end{description}
 
 \subsection{Examples}
-To get daily statistics of sea level anomaly and significant wave height of Jason-3 during Cycle 11, we use:
+To get daily statistics of sea level anomaly and significant wave height of Jason-3 during the first 10 days of the year 2021, we use:
 \begin{verbatim}
-$ radsstat -d -S j3 -C 11 -V sla,swh
+$ radsstat -d --ymd=20210101,20210111 -S j3 -V sla,swh
 \end{verbatim}
 resulting in:
 \script{sub/radsstat.out}
 
-
-The program can also be called with two \sopt{S} options. In that case the statistics will be for the difference between two collinear missions, e.g.
+The program can also be called with two \sopt{S} options. In that case the statistics will be for the \emph{difference} between two collinear missions, e.g.
 \begin{verbatim}
-$ radsstat -d -S j3 -C 11 -S j2 -C 291 -V sla,swh
+$ radsstat -d --ymd=20210101,20210111 -S 6a -S j3 -V sla,swh
 \end{verbatim}
-with the following result:
+This command will compare the low-resolution sea level anomaly and significant wave height measurements from Sentinel-6 to Jason-3, subtracting the latter from the former. Note that the order of the optional arguments is relevant. For the \lopt{ymd} to apply to both Sentinel-6 and Jason-3, it needs to precede both \sopt{S} options. The result is:
 \script{sub/radsstat-2.out}
 
-By providing two \sopt{S} options, one can also compare, e.g., the data in STC and NTC latency. 
+By providing two \sopt{S} options, one can also compare, \eg, the data in STC and NTC latency. 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{RADS library}
-\label{app:library}
-\section{Module rads}
-\verbatimfont{\tiny}
-\input{sub/rads}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\bibliography{altim}
-\printindex
-\end{document}
-
-
-\section{Time, latitude and longitude}
-To select a certain period, or region, limits on time, latitude and longitude can be
-specified. Based on these limits, the RADS library will skip passes that do not cross
-this area or do not have data in the specified period. Instead of reading all the data
-points, the software will use the meta data in the netCDF files to decide whether the pass can possibly
-cross the specified area and can possibly contain data within the given time period.
-
-\section{Flags}
-Field number 26 is an integer 16-bit word. These bits are based on the original GDR
-products and/or on external bits maps. An attempt is made to harmonise the meaning of
-each of the bits throughout the different altimeters, however some difference remain.
-See Table~\ref{tab:flags} for a complete description of the data flags and consult
-Table~\ref{tab:datafields} for the bits that are tested by default.
-
-The meaning of the limits for the flag field is different from
-the other limits. In stead of indicating the minimum and maximum value,
-\verb|limits(1,26)| is an integer 16-bit word in which the bits are set that
-\emph{should not} be set in the data field, while \verb|limits(2,26)| is an integer
-16-bit word in which the bits are set that \emph{should} be set in the data field. For
-example, if \verb|limits(1,26)=17| and \verb|limits(2,26)=2|, data will be rejected
-in which bit 0 is set, bit 4 is set, or bit 1 is not set.
-
-Field 25 is a special field. It is a function of the bit field 26. Field 25$nn$ will
-be 1 if bit $nn$ of field 26 is set, otherwise it is 0. Do not use field 25 for data
-editing purposes; the testing of the flag bits can be controlled by setting the
-limits of field 26, as explained in Section~\ref{sec:namelists}.
-
-\chapter{Utilities}
-\label{ch:utilities}
-
-The utilities described in this Chapter are available
-in the directory \verb|bin|. The source code can be found in
-\verb|src/utils| and \verb|src/max2|.
-
-\section{Common command line arguments}
-The RADS utilities share a number of command line arguments for selecting the
-data set and to indicate how the data set is to be sliced and manipulated.
-These arguments, of which only the \Code{sat=} argument is required (the rest are optional)
-are explained in this Section.
-
-When a program adds a different meaning to one of these arguments,
-it is explained in the program description in the next Sections.
-The order in which the arguments appear on the command line is generally irrelevant, and some
-may appear more than once. However,
-later appearances of the same argument may overrule earlier ones.
-
-In the following, the different arguments are listed. When the argument has
-an optional part, it is shown within square brackets. The variable part of the
-arguments is written in \emph{italics}.
-
-\subsection{Data set specifiers}
-\label{sec:required}
-\begin{description}
-\item[\code{sat=\CODE{altimeter}[/\CODE{phase}]} or
-      \code{sat=\CODE{altimeter}[:\CODE{phase}]}] Specifies the altimeter mission
-and (optionally) its mission phase. The \CODE{altimeter} can be indicated by its
-two-character code listed in Table~\ref{tab:rads4_sats}, or by its name. For example,
-\Code{e1}
-and \Code{ERS-1} are both allowed. The \CODE{phase} is a one-character indicator, which
-defaults to \Code{b} for Geosat, \Code{g} for \ers1, \Code{b} for \nvsat1, and
-\Code{a} for all other satellites.
-For example:
-\begin{tabbing}
-\verb|sat=ERS-1/c|~~ \= Selects \ers1 phase C (Multi-disciplinary Phase) \\
-\verb|sat=tx| \> Selects TOPEX (not Poseidon) data \\
-\verb|sat=e1| \> Selects \ers1 Tandem Mission data (Phase G) \\
-\verb|sat=gs/a| \> Selects Geosat Geodetic Phase data
-\end{tabbing}
-Note that both a slash (/) or a colon (:) can be used as a delimeter between the altimeter
-and the mission phase. This is the only argument that should always appear on the
-command line.
-
-
-\subsection{Data selection arguments}
-\label{sec:optional}
-\begin{description}
-\item[\code{nml=\CODE{namelist}}] Loads \CODE{namelist} in additional to
-system-wide and user-defined namelists.
-
-
-\item[\code{lim:\CODE{datatype}=\CODE{low},\CODE{high}}] Sets the editing
-limits for a certain data type. The \CODE{datatype} is a number between 0 and 99,
-explained in Section~\ref{sec:datafields}. The arguments \CODE{low} and \CODE{high}
-overrule the limits set in the namelists by \code{limits(1,\emph{datatype})} and
-\code{limits(2,\emph{datatype})}. Example:
-\begin{tabbing}
-\verb|lim:19=0,20|~~ \= Set the editing limits of wind speed to 0 to 20 m/s
-\end{tabbing}
-
-\item[\code{h=\CODE{low},\CODE{high}}] Sets the editing
-limits for sea level anomaly. It
-overrules the limits set in the namelists by \verb|limits(1,0)| and
-\verb|limits(2,0)|. The following examples have the same effect:
-\begin{tabbing}
-\verb|lim:0=-10,10|~~ \= \kill
-\verb|h=-10,10| \> Set the editing limits of sea level anomaly to -10 to +10 m \\
-\verb|lim:0=-10,10| \> (same as above)
-\end{tabbing}
-
-\item[\code{sel=\CODE{sel1}[,\CODE{sel2}[,...]]}] Selects one or more data fields for
-output. The numbers \CODE{sel1}, \CODE{sel2}, \emph{etc.}, are the data field
-descriptors explained in Section~\ref{sec:datafields}. The numbers can be in the
-range 0-99 or 100-9999. Several \Code{sel=} arguments may appear on the command line.
-Examples:
-\begin{tabbing}
-\verb|sel=12 sel=1207,2|~~ \= \kill
-\verb|sel=0| \> Output sea level anomaly only \\
-\verb|sel=12,1207,2| \> Output default and GOT00.2 ocean tide and latitude \\
-\verb|sel=12 sel=1207,2| \> (same as above)
-\end{tabbing}
-
-\item[\code{opt=\CODE{descriptor}[,...]}] Overrules the option number specified in the
-namelists. For example:
-\begin{tabbing}
-\verb|opt=1207|~~ \= Make GOT00.2 the default ocean tide
-\end{tabbing}
-Each \Code{opt=} argument can contain one or more descriptors. Also, \Code{opt=} arguments
-can be repeated. Hence, the following combinations of \Code{opt=} arguments are equivalent:
-\begin{tabbing}
-\verb|opt=1207,1307 opt=1601|~~ \= \kill
-\verb|opt=1207,1307,1601| \> Make GOT00.2 the default ocean and load tide \\
-\verb|opt=1207,1307 opt=1601| \> and EGM96 the default reference surface
-\end{tabbing}
-
-\item[\code{fact:\CODE{datatype}=\CODE{factor}}] Changes the multiplication
-factor for a certain data type in the construction of the sea level anomaly.
-The \CODE{datatype} is a number between 0 and 99,
-explained in Section~\ref{sec:datafields}. The argument \CODE{factor}
-overrules the value set in the namelists by \code{factors(\emph{datatype})}.
-Example:
-\begin{tabbing}
-\verb|fact:15=0|~~ \= No longer account for sea state bias in the sea level anomaly
-\end{tabbing}
-
-\item[\code{debug=\CODE{level}}] Sets the debugging level. The higher the level
-the more output is provided. Useful levels are:
-\begin{tabbing}
-\verb|debug=0|~~ \= Most silent mode \\
-\verb|debug=1|~~ \> Provide some information on running process \\
-\verb|debug=2|~~ \> Level 2 and higher produces a lot of output
-\end{tabbing}
-
-\item[\code{-v}] Increased the debugging level by 1. Using one \Code{-v}
-is the same as using \Code{debug=1}; \Code{-v -v} is equivalent to \Code{debug=2}.
-
-\end{description}
-
-
-
-
-\section{\prog{radscolin}}
-\label{sec:radscolin}
-The program \prog{radscolin} creates collinear tracks (in a rather straightforward
-way). No smoothing or interpolation is performed. The data are ``gridded'' based on
-their time with respect to the equator passages. The measurements are simply collected in
-bins of predefined length (1 second by default), after which the data falling in those
-bins for each specified pass are listed in a way similar to \prog{rads2asc}
-(Section~\ref{sec:rads2asc}). No averaging or differencing is performed.
-
-The program will output only those bins in which data can be found for all specified
-repeat cycles, unless the \Code{-r} option is used.
-
-The output is a list of ASCII records per bin, containing the data fields selected by
-the \Code{sel=} option, for each of the specified cycles. In the current
-implementation 20 data fields from 400 different cycles can be compared (while the product of the number of data
-fields and the number of tracks can be no more than 2000). In contrast
-to \prog{rads2asc} the time, latitude and longitude are not listed, unless requested
-with the \Code{sel=} option.
-
-\subsubsection{Syntax}
-\Code{radscolin \CODE{data set specifiers} [\CODE{data selection arguments}]}
-
-\subsubsection{Data set specifiers}
-The data set specifiers (\Code{sat=}, \Code{cycle=} and
-\Code{pass=}) have the same meaning as described in Section~\ref{sec:required}.
-\begin{description}
-\item[\code{sat=\CODE{altimeter}[:\CODE{phase}]},
-      [ \code{cycle=\CODE{first}[,\CODE{last}]} ]
-and   [ \code{pass=\CODE{first}[,\CODE{last}]}] ]  \\
-These arguments come in sets for each satellite, except for the \Code{pass=} option, which
-applies to all satellites. If collinear tracks are selected from a single satellite (within the same mission)
-one set of \Code{sat=}, with the optional \Code{cycle=} and/or \Code{pass=} is
-sufficient; for multi-satellite collinear tracks one additional pair of \Code{sat=} and \Code{cycle=}
-specifiers is needed for each satellite.
-Just as in the case of \prog{rads2asc}, if the \Code{pass=} argument is omitted, all passes
-within the cycles will used. If the \Code{cycle=} argument is omitted, all cycles for that satellite
-(and mission) will be process
-Examples:
-\begin{tabbing}
-\verb|sat=e2 pass=57,302|~~ \= \kill
-\verb|sat=e2 cycle=0,15| \> Print all collinear passes in \ers2 cycles 0-15 \\
-\verb|sat=e2 pass=57,302| \> Print collinear passes 57 through 302 in all \ers2 cycles \\
-\verb|sat=e2 cycle=77,79 sat=n1 cycle=10,12| \\
-~~~Print collinears of \ers2 cycles 77-79 and Envisat cycles 10-12
-\end{tabbing}
-\end{description}
-
-\subsubsection{Data selection arguments}
-The optional data selection arguments are described in Section~\ref{sec:optional}. Those that are
-given a slightly different meaning in \prog{radscolin} and additional optional
-parameters are listed below.
-\begin{description}
-\item[\code{dt=\CODE{binsize}}] Specify the minimum bin size (in seconds). Default is
-\Code{dt=0.97}.
-\item[\code{-r}] Normally, only records are printed in which sea level anomalies are
-available for all cycles. With the \Code{-r} option, all records are printed in which
-at least one cycle has the required data.
-\item[\code{-r\#}] Reject the data when there are less than \Code{\#} tracks with sea
-level anomalies.
-By default \Code{\#} is the total number of selected cycles.
-\item[\code{-v}] Has no effect.
-\end{description}
-When you have not included sea level anomalies (\Code{0}) as one of the items after
-\Code{sel=}, \prog{radscolin} will reject data based on the first data item specified.
-
-\subsubsection{Example}
-Assume you have installed a file \verb|getraw.nml| as described in
-Section~\ref{sec:namelists}. Then issue the command
-\small
-\begin{verbatim}
-radscolin sat=e2 cycle=0,2 pass=915,1000,2 sel=2,0,17,19 -r
-\end{verbatim}
-\normalsize
-The program will print to standard output latitude, sea level anomaly, significant wave
-height and wind speed for all odd passes between 915 and 999 and cycles 0, 1 and 2.
-Each record will show these four quantities for each of the three cycles. With the \Code{-r}
-option also records with invalid sea level anomalies are printed, as shown here:
-\script[tiny]{inc/radscolin-r.out}
-When the \Code{-r} is omitted there will be no records with sea level anomalies
-equal to NaN. That means all cycles ought to have data, which is highly restrictive.
-The output will then be:
-\script[tiny]{inc/radscolin.out}
-To get all records in which \emph{at least one} cycle has valid sea level anomalies, use
-the argument \Code{-r1} on the command line.
-
-\section{\prog{max2}}
-\label{sec:max2}
-The program \prog{max2} is a crossover generating program, based on the age-old
-\prog{max} program. Due to this heritage \prog{max2} has some archaic command line
-arguments and produces some historical binary formats.
-However, here only the arguments and options relevant to most RADS users are
-described. This includes the provision of an
-output file that can be easily read and is configurable.
-
-The crossover generator can take a long sequence of cycles and create crossovers for
-all crossing passes. However, it is most efficient when the time period between the
-passes is limited to half the length of the repeat cycle.
-To limit the time interval, create a file \verb|max.nml| as follows:
-\script{max.nml}
-The indices of \verb|dtxo(i,j)| indicate the satellite numbers given in
-Table~\ref{tab:rads4_sats}. This file will overrule any settings in the system-wide
-namelist \verb|$RADSDATAROOT/nml/max.nml|. Other information essential to
-\prog{max2} comes from the namelist \verb|$RADSDATAROOT/nml/satcat.nml|.
-
-The output file will list the
-latitude and longitude of the crossover plus the time of the two crossing passes and
-any additional data field for each of the passes. For single-satellite crossovers
-first the interpolated value of the data field on the ascending pass is listed,
-then the value on the descending pass. For dual-satellite crossovers the values
-are listed for each satellite in the order as the \Code{sat=} options appear.
-When the \Code{-d} option is used,
-not the value for each pass, but the difference is provided as output.
-
-It is important to realise that the difference of, for example, wind speed may suddenly
-be negative, whereas the data field itself normally is positive. This might lead to
-problems in the output, since \prog{max2} uses the output formats specified in the
-general and satellite-specific \verb|getraw.nml| namelists, which may not have allowed
-for negative numbers to appear in such data fields. In the case of the wind speed, using the
-\verb|f7.3| format, a number up to \verb|99.999| can be printed out, but any value beyond
-\verb|-9.999| will be printed as asterisk. You can avoid the problem by increasing the size
-of the format specifier to \verb|f8.3|, as explained in Section~\ref{sec:namelists}.
-
-\subsubsection{Syntax}
-\Code{max2 \CODE{data set specifiers} [\CODE{data selection arguments}]} \CODE{prefix}
-\\[1ex]
-for large jobs (particularly dual-satellite jobs and jobs with a multitude of
-requested data fields) there is a version with more
-memory: \prog{max2\_big}.
-
-\subsubsection{Data set specifiers}
-The data set specifiers (\Code{sat=}, \Code{cycle=} and
-\Code{pass=}) have the same meaning as described in Section~\ref{sec:required},
-except that the \CODE{step} argument of \Code{pass=} is ignored.
-One additional (and required) argument (\CODE{prefix}) serves as the prefix to the output file
-names.
-\begin{description}
-\item[\code{sat=\CODE{altimeter}[:\CODE{phase}]},
-      [ \code{cycle=\CODE{first}[,\CODE{last}]} ]
-and   [ \code{pass=\CODE{first}[,\CODE{last}]}] ]  \\
-These arguments come in sets for each satellite. If only single-satellite
-crossovers (within the same mission)
-are created one set of \Code{sat=}, with the optional \Code{cycle=} and/or \Code{pass=} is
-sufficient; for dual-satellite crossovers two sets of these parameters are
-needed. Just as in the case of \prog{rads2asc}, if the \Code{pass=} argument is omitted, all passes
-within the cycles will used. If the \Code{cycle=} argument is omitted, all cycles for that satellite
-(and mission) will be process
-Examples:
-\begin{tabbing}
-\verb|sat=e2 pass=57,302|~~ \= \kill
-\verb|sat=e2 cycle=1| \> Make crossovers within \ers2 cycle 1 \\
-\verb|sat=e2 cycle=0,15| \> Make crossovers spanning \ers2 cycles 0-15 \\
-\verb|sat=e2 pass=57,302| \> Make crossovers from passes 57 through 302 in all \ers2 cycles \\
-\verb|sat=e2 pass=57 sat=e2 pass=302| \\
-~~~Make crossovers at the crossing of passes 57 and 302 in all \ers2 cycles \\
-\verb|sat=e2 cycle=0,15 sat=tx cycle=96,151| \\
-~~~Make crossovers between \ers2 cycles 0-15 and TOPEX cycles 96-151
-\end{tabbing}
-
-\item[\CODE{prefix}] is the prefix to all output file names. For each of the
-output files, a different extension will be added to the prefix. In the general
-case presented here, the only output file is \code{\emph{prefix}.rxf}.
-\end{description}
-
-\subsubsection{Data selection arguments}
-The optional data selection arguments are described in Section~\ref{sec:optional}.
-Those that are
-given a slightly different meaning in \prog{max2} and additional optional
-parameters are listed below.
-\begin{description}
-\item[\code{-v}] Has no effect.
-\item[\code{sel=\CODE{sel1}[,\CODE{sel2}[,...]]}] Specifies up to 10 data fields that
-will be included in the output files. When omitted, \Code{sel=0} is assumed. For
-more information on the \Code{sel=} argument, see Section~\ref{sec:optional}.
-\item[\code{-x2}] Same as \Code{sel=0,17,19}.
-\item[\code{-x3}] Same as \Code{sel=0,17,10,5}.
-\item[\code{-sA}] Generate both single- and dual-satellite crossovers (default).
-\item[\code{-sS}] Generate only single-satellite crossovers.
-\item[\code{-sD}] Generate only   dual-satellite crossovers.
-\item[\code{-d}] List differences on crossovers, not both values.
-\end{description}
-
-\subsubsection{Example}
-Assume you have installed a file \verb|getraw.nml| as described in
-Section~\ref{sec:namelists} and the \verb|max.nml| file described above.
-Then issue the command
-\small
-\begin{verbatim}
-max2 sat=e2 cycle=0,1 sel=0,1,17 xovers
-\end{verbatim}
-\normalsize
-The program will print to standard output the following information:
-\script[tiny]{inc/max_v.out}
-And the crossover file \verb|xovers.rxf| will contain the following lines.
-\script[tiny]{inc/max.out}
-
-\chapter{Creating your own program to read RADS data}
-\label{ch:programming}
-
-Before other \prog{GETRAW} routines can be used, \verb|GETRAW_INIT|
-must be called to
-specify the satellite. Several alternative satellite names
-(specified in a namelist)
-are possible. The routine also loads default values for several options.
-These default values are specified in a general namelist
-\verb|$RADSDATAROOT/nml/getraw.nml| and in satellite- and/or mission-specific namelists
-\verb|$RADSDATAROOT/nml/getraw_SS.nml|. See Table~\ref{tab:datafields}
-for a full list of these options. The values in
-these namelists can also be overruled or augmented by files
-\verb|getraw.nml| and \verb|getraw_SS.nml| in the working
-directory.
-
-Optionally, one can call \verb|GETRAW_LIMITS| and/or
-\verb|GETRAW_OPTIONS| to change the limits for data editing and the
-preferred flavours of the various data fields.
-
-Finally, \verb|GETRAW| loads a single altimeter pass into memory and
-then returns the data values in SI units.
-Some selection codes do not refer directly to a data stored in the
-data files, but refer to functions of one or more data fields.
-Most notorious, of course, is the sea level anomaly, that is created as a linear
-combination of a satellite altitude, altimeter range and a number of geophysical
-corrections.
-All the requested data (including possible additional data needed to
-construct the data) is
-quality checked using the default limits or those specified by
-\verb|GETRAW_LIMITS|.
-\verb|GETRAW_OPTIONS| and \verb|GETRAW_FACTORS| can be used to modify
-the construction of the sea level anomaly.
-
-As a generic altimeter data user you do not want to do anything else
-than calling \verb|GETRAW|. However, before the first call to this
-subroutine, one should use \verb|GETRAW_INIT| to specify the satellite.
-The user can also enhance the data selection by adding one or more
-calls to \verb|GETRAW_OPTIONS|, \verb|GETRAW_FACTORS| and/or
-\verb|GETRAW_LIMITS|.
-
-Finally, \verb|GETRAW_STAT| can be called to print
-out the statistics of the data reading and editing.
-
-The following example will retrieve time, latitude, longitude, fully
-corrected sea level anomaly, and mean sea surface height from ten passes
-out of the data base. Only data over the Southern hemisphere is returned.
-
-\script{radstest.f}
-
-\appendix
-\chapter{RADS Subroutine Descriptions}
-\label{app:routines}
-
-For a full description of the use of each of the routines, consult the
-subroutine descriptions below.
-
-\section{The implementation of \prog{GETRAW}}
-\scriptsize
-\input{../../src/lib/getraw_init}
-\input{../../src/lib/getraw}
-\input{../../src/lib/getraw_options}
-\input{../../src/lib/getraw_factors}
-\input{../../src/lib/getraw_limits}
-\input{../../src/lib/getraw_stat}
-\normalsize
-
-\section{Supporting routines}
-\label{sec:support}
-\scriptsize
-\input{../../src/lib/radsargs1}
-\input{../../src/lib/radsargs2}
-\normalsize
-
-\chapter{Database Layout}
-\label{app:database}
-This chapter is added for those who have the desire to understand how the data
-base is built. It is of little of no consequence if you do not read it, but
-may give you a better insight when you do.
-
-RADS was first conceived in 1998. The data base had a format similar to most
-GDR products, in which the record length is fixed, and the order and specification
-of the various data fields is likewise unchangeable.
-There were several reasons to change the format of the RADS data base.
-\begin{itemize}
-\item The RADS v1.0 format is rather inflexible.
-\item The record length of 80 characters limits the extension with
-additional fields.
-\item Some satellites do not require all fields, hence disk space is
-used inefficiently.
-\item Testing extra or new geophysical corrections is difficult without
-impact for other users.
-\item Any change to the format requires a complete reproduction of the
-data and has similar impact to the programs that read the data base.
-\end{itemize}
-
-Just changing the format was \textbf{no option}. It also requires the
-coding and use
-of a new \prog{GETRAW} routine. Reading the data
-directly with a C or FORTRAN \verb|read| statement should be avoided.
-The format change was paired with the generation of a \prog{GETRAW}
-routine that not only reads the data, but also converts it to the
-appropriate units, does error checking and data screening.
-
-\section{Advantages of the netCDF format}
-The netCDF format is extremely flexible, and platform independent. Here are some of the key elements that made us chose the netCDF format of the altimeter data.
-\begin{description}
-\item[Pass files:] The idea of pass files is kept. It seems
-the best way to deal with altimeter data.
-The naming convention of the pass files is not much of a concern to
-the \prog{GETRAW} subroutine, the format for this is fed by a namelist
-entry.
-\item[Meta data:] The meta data is part of the data files. This makes the data files
-self-descriptive, so not much additional information is needed. This allows also other programs (outside RADS) to make sense of the data.
-\item[``Rotated'' data file:] The word ``rotated'' refers to the idea that the conventional GDR data is record oriented (one record contains a variety of different fields), while the netCDF files are column, or field oriented (each "record" contains data collected on different times).
-\item[Order:] The order in which the data fields are stored in the product
-has become irrelevant. Information about the field order
-is contained in the meta data.
-\item[Flexibility:] The idea of fixed record lengths is left. Reading is no longer performed by fixed record length Fortran read statements, but by netCDF read statements. Although this requires extra coding, it is much more system-independent, and allows easy augmentation of the data files.
-\item[Byte representation:] The netCDF library takes care of the issue of byte representation that makes it possible even to use single and double floats, not only integers.
-\end{description}
-
-\section{Data structure}
-The RADS netCDF data files are filled field by field, instead of record by
-record. That looks strange at first, but in the end this provides the
-most flexible solution to add or remove fields at will. One may even use
-a similar format for SLA (sea level anomaly) files.
-
-The conventional way to construct an altimeter product is record by
-record. A \textbf{record} is a combination of measurement and model
-information pertaining to a single time tag. These measurement and model
-values are called \textbf{fields}. A conventional altimeter product would have, for example, $n$ data
-records of $m$ fields each.
-
-In the netCDF format the columns and
-rows in the data product are exchanged. The number of ``records'' is now equal to
-the number of different data fields ($m$). Each record contains the $n$
-values pertaining to each of the time tags. Since a data field can be
-either 1, 2, or 4 bytes long, the records are not of equal length.
-The data fields remain, preferably, of integer type. But floats can be used as well.
-
-It is believed that in this way, the format of the data file is flexible
-enough to allow additions of data fields or remove data fields at will,
-without having impact on the user and his/her software.
-
-The rotated way of data storage has an additional unforeseen advantage.
-Synchronising data sets can be sped up significantly using the program
-\prog{rsync} (freeware, binaries available). This program can do
-synchronisation of files across the network while sending only the
-changes, and not the whole file. This means that when a field is added,
-simply the extra record is transferred and pasted into the remote file.
-In case of an update of a column, the old one will be removed and the
-new one is put in place.
-
-To learn more about the netCDF files, see the UCAR netCDF web site.
-
-
-\section{Role of the meta data}
-
-The netCDF meta data contain sufficient information to
-``understand'' the contents of the file. This is \textbf{more} than just
-specifying the number of records and data fields. It also specified the variable name, data unit, scale factor, offset, etc.
-All information that can be used directly by any software to convert the data in a humanly readable form.
-
-\section{A remnant of the past: the RMF file}
-Next to the netCDF data files, RADS still has a remnant of the past: the \verb|getraw.rmf| files. These files were previously used as meta files but now only contain a few extra tricks to replace data fields or compute them on the fly.
-The RMF files are a compilation of \textbf{free-format}
-ASCII lines of mixed text and values. The start of the record (\ie, the
-first word, or \emph{key})
-specifies the meaning of the line. When parsing the lines \prog{GETRAW}
-simply ignores all lines that start with
-an unknown key. The key is recognised by its first
-5 letters. The order of the lines is irrelevant.
-
-Each key is followed by one or more values or character strings (within
-quotes). The values and strings are separated from the key and from
-each other by one or more spaces or tabs.
-
-\begin{description}
-\item[@RADS\_RMF\_V2.2] The first line specifies that this is a RADS RMF
-version 2.2 file
-\item[\# \textrm{or} \%] Lines starting with \verb|#| or \verb|%| can
-be used to enter comments. They are ignored by \prog{GETRAW}.
-\item[CONST] indicates a constant. Obvious candidates of data types that
-are stored as constants are altimeter biases. But also slowly varying
-values that can be assumed constant over one pass can be stored as a
-constant. The key is followed by the data field descriptor
-(an integer number) followed by a string
-denoting the meaning of this field and the unit.
-\item[MATH] specifies a function written as a sequence of operators
-on constants or data columns. The formulation is much like the GMT
-program \prog{gmtmath}. The key (\verb|MATH|) is followed by:
-\begin{itemize}
-\item The data field descriptor.
-\item A character string expressing the mathematical function.
-\item A string describing the function.
-\end{itemize}
-For a description of all mathematical operators see Chapter~\ref{ch:math}.
-\item[ALIAS] points to another field. Its arguments are:
-\begin{itemize}
-\item The data field descriptor.
-\item The data field descriptor the previous argument is pointing to.
-\item A character string that describes the alias.
-\end{itemize}
-\item[UNDEF] removes a previously defined field from memory. It has
-only one argument, the field descriptor of that has to be erased.
-\end{description}
-
-\chapter{Math operators}
-\label{ch:math}
-The mathematical expressions that can be used on \verb|MATH| records are
-very similar to the program \verb|gmtmath| of the GMT plotting package. The
-expressions are parsed from left to right and are to be written in a Reverse
-Polish Notation. This means that, for example, $A+B=$ is written as \verb|A B ADD =|.
-The expression always needs to end in an equal sign (\verb|=|).
-
-The expressions operate on column data, so in the previous example, all elements
-of the vector A is are added to the corresponding elements of vector B. The output is a
-new vector. To use data fields as vectors, use a dollar sign (\verb|$|) followed
-by the field number. If the data is to be tested against the predefined limits, use
-a percent sign (\verb|%|) followed by the field number. Examples: \verb|$1207| and
-\verb|%1207|.
-
-A large number of operaturs can be used, as described in Table~\ref{tab:math}. The functions
-take 0, 1, 2, or 3 columns as input, and return 1, 2, or 3 columns at the top of the
-stack. Table~\ref{tab:math} also indicates the number of input and output columns.
-Constants (like \verb|E| and \verb|PI|) and values (like \verb|2| or \verb|3.14d0|)
-do not take any input.
-
-\input{math}
-
-\chapter{Version History}
+\chapter{RADS Version History}
 \label{ch:history}
 \section{Version 1, November 1998}
 RADS was first conceived in November 1998. RADS Version 1, as it is now referred to, was
@@ -1612,146 +999,32 @@ nor in the way the editing was performed.
 RADS Version 2 was developed in December 2000, and was a mayor improvement over its
 predecessor. It required the regeneration of the data base (which until then only
 included TOPEX/Poseidon, \ers1 and \ers2 data) and the development of new tools for the
-generation and manipulation of the data. This is the version as described in this user
-handbook.
+generation and manipulation of the data.
 
-But also RADS Version 2 has had its improvements over the years,
-of which the most important ones are listed in this and the next Sections.
-\begin{itemize}
-\item Data of Geosat, GFO, Jason-1, and Envisat are added to the data base.
-\item Provide also C- and S-band measurements for dual-frequency altimeters.
-\item TOPEX significant wave heights are patched for the period when the Side-A altimeter
-is deteriorating, such that they maintain, on average, a constant offset with the \ers2
-wave heights.
-\item FES99 and GOT00.2 ocean tides are added to all data sets.
-\item ETOPO2 topography is added to all data sets.
-\item CODE GIM, JPL GIM and IRI95 ionospheric delay corrections are added for all data
-since September 1998.
-\item Adding global mean ocean pressure to the meta files.
-\item Gradual adding of new functionalities, like on the fly application of operators on
-the data.
-\item Data can be created both in big or little endian format.
-\end{itemize}
+Like Version 1, Version 2 still used "flat binary" (RDF) files, but this time included a separate metadata files (RMF) to describe the content.
+This was, clearly, before netCDF had taken a stronghold in the earth observation community.
 
-\section{Version 2.1, June 2003}
-This is a mayor revision of the RADS data set and software. Although the old data base is
-compatible with the new software, and visa versa, we recommend to update both the
-software and the data base. Note that the new namelists do not work with the old
-software.
+Version 2 also saw a adding of new functionalities, like on the fly application of operators on the data, as well as new tools.
 
-What is new in the software?
-\begin{itemize}
-\item Namelists specific to each altimeter mission phase can be used.
-\item User specific namelists (for general, satellite-specific or mission-specific
-settings) can be created in \verb|~/.rads|. Same for \verb|getraw.rmf| files.
-\item The \Code{pass=} and \Code{cycle=} command-line arguments need no longer be
-specified both. RADS now "knows" the number of passes in a cycle, and the number of
-cycles in the mission phase.
-\item The \prog{radsargs1} and \prog{radsargs2} have been better designed. Most
-arguments from \prog{radsargs1} are moved to \prog{radsargs2}. \emph{To use these
-new routines in the programs you created yourself, you need to change your code!}
-\item The arguments of \prog{radscolin} are rearranged, similar to \prog{max2}; \prog{radscolin}
-also allows more tracks to be compared.
-\item On-the-fly interpolation of grids implemented.
-\item New organisation of source directories into utilities, tools, utilities
-under development, and supporting tools.
-\item Namelists are adjusted to reflect the new data holdings.
-\item Source, namelists and scripts are added to CVS tree.
-\end{itemize}
+\section{Version 3, February 2008}
+RADS Version 3 was the first version to use netCDF files for the entire data base, replacing the former RDF and RMF files. It also expanded the easy installation by adding \prog{configure} to configure the compilation and installation of the software and putting the entire software package on GoogleCode.
 
-What is new in the data base?
-\begin{itemize}
-\item The GOT00.1 and CLS01 mean sea surface models have been added to all data sets.
-\item The EGM96 geoid and GOT00.1 and CLS01 mean sea surface models are now
-interpolated using bi-cubic
-splines. This provides much better results, particularly for EGM96.
-\item The OSU MSS95 mean sea surface model (using bi-linear interpolation)
-is still available but will be depreciated in the near future.
-\item The routines for FES2002 and GOT00.2 have been improved to avoid errors at
-the sub-millimetre level.
-\item FES99 has been recomputed after fixing a bug in the FES tide prediction software.
-\item The CSR 3.0 and FES95.2.1 ocean tide models have been removed.
-\item The routines for solid earth tide and Modified Chelton and Wentz (wind) model have
-been improved to avoid errors at the sub-millimetre level.
-\item The drift in the \ers2 microwave radiometer brightness temperature has been
-compensated.
-\item The GFZ and JGM-3 orbits on the \ers2 products have been removed.
-\item Added IRI95 ionospheric delay correction to all data sets.
-\item Added JPL GIM ionospheric delay on all data sets since September 1998; removed the
-CODE GIM ionospheric delay.
-\end{itemize}
+From the start, this version had all the altimeter data since Geosat incorporated.
 
-What is new in the namelists (settings)?
-\begin{itemize}
-\item Special settings per altimeter mission phase can now be used.
-\item Namelists now include pass and cycle ranges.
-\item The following fields have become default:
-\begin{itemize}
-\item Inverse barometer correction referenced to the global mean pressure over oceans
-(1003), instead of the correction that did not include the mean pressure correction
-(1001)
-\item GOT00.2 ocean and load tide (1207, 1307) instead of CSR 3.0 tides (1201, 1301)
-\item CLS01 mean sea surface as reference (1605) instead of OSU MSS95 (1602)
-\end{itemize}
-\item For GFO and Geosat: extended number of averaged 10-Hz measurements from 9-10 to 8-10.
-\end{itemize}
+\section{Version 4, March 2015}
+The next major update of RADS (Version 4) maintained the netCDF files, but the code (until then in Fortran 77) was rewritten from the ground up adhering to Fortran 95 standards, making it significantly faster and better to read. At the same time, the code was moved to GitHub (\url{https://github.com/remkos/rads}), anticipating the demise of GoogleCode.
 
-\section{Version 2.2, December 2004}
-During the year several changes have been made to the data base as well as to the software.
-Because of the implementation of new record types in the meta files, the data base is
-not compatible with older software versions. Both the namelists and software needs to be
-upgraded to work with the latest implementation of the data base.
+Details of the latest releases of the software can be followed on the GitHub site (\url{https://github.com/remkos/rads/blob/master/README.md}).
 
-What is new in the software?
-\begin{itemize}
-\item Several minor bugs have been patched.
-\item Because of problems on SUN platforms with the recursive calling of the subroutine
-\verb|LOAD_ANY|, some reworking of the code had to be undertaken. The redesign was
-trivial, except for \verb|LOAD_FUNC|, which has now been depreciated and replaced by
-the much more flexible \verb|LOAD_MATH|.
-\item The \verb|ALIAS| record was introduced. This makes is easy to assign more than
-one field number to the same data.
-\item The \verb|MATH| record was introduced. See description in this manual.
-\item Invalid data is now set to NaN (Not-A-Number) instead of 1.D+30. Use the function
-\verb|ISNAN| to trap them.
-\end{itemize}
 
-What is new in the data base?
-\begin{itemize}
-\item Many fields have been added, particularly for TOPEX.
-\item GFO has now all PGS7777b orbits.
-\item FES2004 is replacing FES2002.
-\item Envisat data corrected for drifts.
-\item Geosat data undergoing reconstruction.
-\item New microwave radiometer drift corrections for ERS-1, ERS-2, Envisat and T/P.
-\end{itemize}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{RADS library}
+\label{app:library}
+\section{Module rads}
+\verbatimfont{\tiny}
+\input{sub/rads}
 
-\section{Version 3.0, February 2008}
-
-What is new in the software?
-\begin{itemize}
-\item RMF and RDF files replaced by netCDF files.
-\item Provide better interface with GMT.
-\end{itemize}
-
-\section{Version 3.1, June 2008}
-
-What is new in the software?
-\begin{itemize}
-\item Introduced \prog{configure} to configure the software. This removes the \verb|sysdep| directory and the system dependent include directories.
-\item Environment variable \verb|RADSROOT| no longer used/necessary. \verb|RADSDATAROOT| can be used to point to the data base.
-\item \verb|nml| directory moved the \verb|data/nml|.
-\item All scripts are installed from the \verb|src| subdirectories, nothing remains in \verb|bin|.
-\item When upgrading using CVS, please remove the directories \verb|bin|, \verb|lib|, and \verb|src|. Then checkout \verb|src| anew.
-Move drectory \verb|nml| to the data directory.
-\end{itemize}
-
-What is new in the data base?
-\begin{itemize}
-\item GGM02C ITRF2000 and ITRF2005 orbits for TOPEX and Jason-1.
-\item Range bias between TOPEX side A and B fixed.
-\item New tide models GOT 4.7, WebTide Arctic8d, WebTide Hudson.
-\item New surface models EGM2008 MSS, EGM2008 geoid, DNSC08 MSS, DNSC08 bathymetry.
-\end{itemize}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bibliography{altim}
+\printindex
 \end{document}

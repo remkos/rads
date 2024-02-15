@@ -18,7 +18,7 @@ PDFLATEX = pdflatex
 BIBTEX = bibtex
 MAKEINDEX = makeindex
 ROBODOC = robodoc
-CONFIG = rads_config.tex rads4_sats.tex
+CONFIG = rads_config.tex rads4_sats.tex rads4_defs.tex
 MAN = rads4_data_manual.pdf rads4_user_manual.pdf
 SUBS = rads rads_geo rads_grid rads_math rads_misc rads_netcdf rads_time
 SUBS_TEX = $(foreach sub,$(SUBS),sub/$(sub).tex)
@@ -117,10 +117,10 @@ sub/radscolin-r.out:	Makefile ../../src/radscolin
 	rm -f $(@F)
 
 sub/radsstat.out:	Makefile ../../src/radsstat
-	PATH=../../src radsstat -d -S j3 -C 11 -S j2 -C 291 -V sla,swh > $@
+	PATH=../../src radsstat -d --ymd=20210101,20210111 -S j3 -V sla,swh > $@
 
 sub/radsstat-2.out:	Makefile ../../src/radsstat
-	PATH=../../src radsstat -d -S j3 -C 11 -S j2 -C 291 -V sla,swh > $@
+	PATH=../../src radsstat -d --ymd=20210101,20210111 -S 6a -S j3 -V sla,swh > $@
 
 sub/radspassesindex.out:	Makefile ../../src/radspassesindex
 	PATH=../../src radspassesindex -S e2 -C 0 -P 901,910 -h -y -p > $@ 0>&2
