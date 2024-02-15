@@ -31,13 +31,13 @@ type(rads_sat) :: S
 type(rads_pass) :: P
 integer(fourbyteint) :: cycle, pass, i, l, ncid, ios, intervals = 0
 type(rads_var), pointer :: var
-logical :: show_x = .false., round = .false.
+logical :: show_x = .false., round = .false., do_test = .false.
 real(eightbytereal) :: factor = 1d0
 character(len=rads_varl) :: prefix = ''
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('d:i:j:p:x')
+call rads_set_options ('d:i:j:p:xt show-x test')
 call rads_init (S)
 if (S%error /= rads_noerr) call rads_exit ('Fatal error')
 
@@ -61,8 +61,10 @@ do i = 1,rads_nopt
 		round = .true.
 	case ('p')
 		prefix = rads_opt(i)%arg(:rads_varl)
-	case ('x')
+	case ('x', 'show-x')
 		show_x = .true.
+	case ('t', 'test')
+		do_test = .true.
 	end select
 enddo
 
@@ -80,7 +82,7 @@ if (associated(var)) then
 	call list_variable
 else
 	! If no variable is given, list all variables
-	call list_variables
+	call list_variables (P%ndata)
 endif
 
 ! Close the session
@@ -102,7 +104,8 @@ write (*,1300)
 '  -j INTERVALS              Same as -i INTERVAL and round the bin size'/ &
 '  -p PREFIX                 Set prefix for script variables'// &
 'Without the option "-V VAR", program specific [program_options] are:'/ &
-'  -x                        Also list defined but unavailable variables')
+'  -t, --test                Also test whether the values are actually available'/ &
+'  -x, --show-x              Also list defined but unavailable variables')
 stop
 end subroutine synopsis
 
@@ -164,9 +167,12 @@ end subroutine list_variable
 
 !***********************************************************************
 ! List all the variables
-subroutine list_variables
+subroutine list_variables (n)
+integer(fourbyteint), intent(in) :: n
+real(eightbytereal) :: values(n)
 integer :: i, j, varid
 type(rads_varinfo), pointer :: info
+character(len=1) :: type
 
 write (*,600) timestamp(), trim(S%command)
 if (show_x) write (*,610)
@@ -189,37 +195,43 @@ ncid = P%fileinfo(1)%ncid
 do i = 1,S%nvar
 	info => S%var(i)%info
 	if (S%var(i)%name /= info%name) then
-		call list ('A', S%var(i))
+		type = 'A'
 	else if (info%datasrc == rads_src_none) then
-		call list ('U', S%var(i))
+		type = 'U'
 	else if (info%datasrc == rads_src_math) then
-		call list ('M', S%var(i))
+		type = 'M'
 	else if (info%datasrc == rads_src_constant) then
-		call list ('C', S%var(i))
+		type = 'C'
 	else if (info%datasrc == rads_src_nc_att) then
 		j = index(info%dataname,':')
 		if (j == 1) then
 			varid = nf90_global
 		else if (nft(nf90_inq_varid(ncid,info%dataname(:j-1),varid))) then
-			call list ('X',S%var(i))
-			cycle
+			varid = -1
 		endif
-		if (nft(nf90_inquire_attribute(ncid,varid,info%dataname(j+1:),xtype=j))) then
-			call list ('X',S%var(i))
+		if (varid < 0) then
+			type = 'X'
+		else if (nft(nf90_inquire_attribute(ncid,varid,info%dataname(j+1:),xtype=j))) then
+			type = 'X'
 		else
-			call list ('N', S%var(i))
+			type = 'N'
 		endif
 	else if (info%datasrc == rads_src_nc_var) then
 		if (.not.nft(nf90_inq_varid(ncid,info%dataname,varid))) then
-			call list ('N',S%var(i))
+			type = 'N'
 		else if (info%default /= huge(0d0)) then
-			call list ('D', S%var(i))
+			type = 'D'
 		else
-			call list ('X', S%var(i))
+			type = 'X'
 		endif
 	else
-		call list ('G', S%var(i))
+		type = 'G'
 	endif
+	if (do_test) then
+		call rads_get_var (S, P, S%var(i), values, .true.)
+		if (all(isnan_(values))) type = 'X'
+	endif
+	call list (type, S%var(i))
 	if (associated(S%var(i)%inf1)) call list ('1', S%var(i))
 	if (associated(S%var(i)%inf2)) call list ('2', S%var(i))
 enddo
