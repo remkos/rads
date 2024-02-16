@@ -29,6 +29,20 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 This does not include explanations of changes to the code that generates the data base.
 
+### v4.6.0 (15 Feb 2024)
+* Documentation
+  * made a lot of corrections and updates.
+  * removed obsolete variables, indicated deprecated variables slated to be removed.
+  * updates to include tx/pn reprocessed data.
+  * described better the original data sources.
+  * corrected in the tables which data are available for which satellites.
+* `rads.xml`
+  * updates to include tx/pn reprocessed (GDR-F) data and removed old tx/pn RGDR data.
+  * removed obsolete variables.
+  * corrected `sat` options to correctly identify which data are available for which satellites.
+  * added alias `tpx` for TOPEX.
+* Updated `config.sub` and `config.guess`
+
 ### v4.5.2 (20 Oct 2023)
 * Documentation
   * replaced name of rads2asc4 by rads2asc; same for other *4 executables.
