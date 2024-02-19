@@ -185,6 +185,8 @@ endif
 		cycle
 	endif
 
+        call nfs(nf90_get_att(ncid,nf90_global,'xref_mean_surface_sol2',arg))
+        mss_dtu_ver = arg(4:5)        
 	call nfs(nf90_get_att(ncid,nf90_global,'abs_orbit_number',abs_orbit_number))
 	call nfs(nf90_get_att(ncid,nf90_global,'first_record_lat',first_meas_lat))
 	call nfs(nf90_get_att(ncid,nf90_global,'ascending_flag',ascending_flag))
@@ -264,7 +266,6 @@ endif
 !xref_mean_surface_sol2 = "DTU15" ;
 !xref_mtd_sol1 = "CNES-CLS13" ;
 	mss_cnescls_ver = '15'
-	mss_dtu_ver = '13'
 	tide_fes_ver = '14'
 
 ! Store input file name
