@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2023  Remko Scharroo and Eric Leuliette
+# Copyright (c) 2011-2024  Remko Scharroo and Eric Leuliette
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
