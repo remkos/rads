@@ -1316,17 +1316,6 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Scaled version of static IB to match MOG2D</comment>
 </var>
-<var name="inv_bar_mog2d_mean" field="1005">
-	<long_name>local mean MOG2D dynamic atmospheric correction</long_name>
-	<source>MOG2D</source>
-	<parameters>dac/mog2d_combi_1993_2007_int.nc</parameters>
-	<units>m</units>
-	<limits>-1 1</limits>
-	<data>inv_bar_mog2d_mean</data>
-	<format>f7.4</format>
-	<compress>int2 1e-4</compress>
-	<comment>Long-term temporal mean of the MOG2D dynamic atmospheric correction at measurement location</comment>
-</var>
 <var name="inv_bar_static_era5" sat="3a 3b 6a j3 sw tx pn">
 	<long_name>ERA5 static inverse barometer correction</long_name>
 	<standard_name>sea_surface_height_correction_due_to_air_pressure_at_low_frequency</standard_name>
