@@ -1394,6 +1394,7 @@ Global RADS configuration file
 <var name="tide_ocean_got48" field="1219">
 	<long_name>GOT4.8 ocean tide</long_name>
 	<source>GOT4.8</source>
+	<parameters>GOT4.8</parameters>
 	<units>m</units>
 	<limits>-5 5</limits>
 	<plot_range>-2 2</plot_range>
@@ -1418,6 +1419,7 @@ Global RADS configuration file
 <var name="tide_ocean_got410" field="1222">
 	<long_name>GOT4.10c ocean tide (extrapolated)</long_name>
 	<source>GOT4.10c (extrapolated)</source>
+	<parameters>GOT4.10c_extrapolated</parameters>
 	<units>m</units>
 	<limits>-5 5</limits>
 	<plot_range>-2 2</plot_range>
@@ -1425,6 +1427,18 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<compress>int4 1e-4</compress>
 	<comment>Ocean tide variation including long-period equilibrium tides, extrapolated into the coast</comment>
+</var>
+<var name="tide_ocean_got51" field="1219">
+	<long_name>GOT5.1 ocean tide</long_name>
+	<source>GOT5.1</source>
+	<parameters>GOT5.1</parameters>
+	<units>m</units>
+	<limits>-5 5</limits>
+	<plot_range>-2 2</plot_range>
+	<data>tide_ocean_got51</data>
+	<format>f7.4</format>
+	<compress>int4 1e-4</compress>
+	<comment>Ocean tide variation including long-period equilibrium tides</comment>
 </var>
 <!--
 <var name="tide_ocean_fes12" field="1223">
@@ -1447,6 +1461,18 @@ Global RADS configuration file
 	<limits>-5 5</limits>
 	<plot_range>-2 2</plot_range>
 	<data>tide_ocean_fes14</data>
+	<format>f7.4</format>
+	<compress>int4 1e-4</compress>
+	<comment>Ocean tide variation including long-period equilibrium and non-equilibrium tides, extrapolated into the coast</comment>
+</var>
+<var name="tide_ocean_fes22">
+	<long_name>FES2022 ocean tide</long_name>
+	<source>FES2022 (extrapolated)</source>
+	<parameters>FES2022/extrapolated</parameters>
+	<units>m</units>
+	<limits>-5 5</limits>
+	<plot_range>-2 2</plot_range>
+	<data>tide_ocean_fes22</data>
 	<format>f7.4</format>
 	<compress>int4 1e-4</compress>
 	<comment>Ocean tide variation including long-period equilibrium and non-equilibrium tides, extrapolated into the coast</comment>
@@ -1523,6 +1549,16 @@ Global RADS configuration file
 	<units>m</units>
 	<limits>-0.5 0.5</limits>
 	<data>tide_load_fes14</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Load tide variation to be added to ocean tide</comment>
+</var>
+<var name="tide_load_fes22">
+	<long_name>FES2022 load tide</long_name>
+	<source>FES2022</source>
+	<units>m</units>
+	<limits>-0.5 0.5</limits>
+	<data>tide_load_fes22</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>Load tide variation to be added to ocean tide</comment>

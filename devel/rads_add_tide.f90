@@ -36,13 +36,13 @@ use tides
 
 type(rads_sat) :: S
 type(rads_pass) :: P
-integer(fourbyteint), parameter :: mfes = 2, mgot = 3
+integer(fourbyteint), parameter :: mfes = 3, mgot = 3
 type(festideinfo) :: fesinfo0
 type(gottideinfo) :: gotinfo(mgot)
-character(len=6), parameter :: nfes(mfes) = (/'fes04 ', 'fes14 '/)
-character(len=6), parameter :: ngot(mgot) = (/'got48 ','got49 ', 'got410'/)
+character(len=6), parameter :: nfes(mfes) = (/'fes04 ', 'fes14 ', 'fes22 '/)
+character(len=6), parameter :: ngot(mgot) = (/'got48 ', 'got410', 'got51 '/)
 type(grid) :: sininfo, cosinfo
-type(fes) :: fesinfo1(mfes), fesinfo2(mfes)
+type(fes) :: fesinfo1(2:mfes), fesinfo2(2:mfes)
 type(hrettideinfo) :: hretinfo
 type(rads_var), pointer :: var
 
@@ -106,15 +106,23 @@ do
 		var => rads_varptr (S, 'tide_ocean_fes14')
 		jdum = fes_init(fesinfo1(2),fes_tide,fes_mem,var%info%parameters)
 		jdum = fes_init(fesinfo2(2),fes_radial,fes_mem,var%info%parameters)
+	case ('fes22', 'fes2022')
+		do_fes(3) = .true.
+		var => rads_varptr (S, 'tide_ocean_fes22')
+		jdum = fes_init(fesinfo1(3),fes_tide,fes_mem,var%info%parameters)
+		jdum = fes_init(fesinfo2(3),fes_radial,fes_mem,var%info%parameters)
 	case ('got48')
 		do_got(1) = .true.
-		call gottideinit('GOT4.8',.true.,gotinfo(1))
-	case ('got49')
-		do_got(2) = .true.
-		call gottideinit('GOT4.9',.true.,gotinfo(2))
+		var => rads_varptr (S, 'tide_ocean_got48')
+		call gottideinit(var%info%parameters,.true.,gotinfo(1))
 	case ('got410')
+		do_got(2) = .true.
+		var => rads_varptr (S, 'tide_ocean_got410')
+		call gottideinit(var%info%parameters,.true.,gotinfo(2))
+	case ('got51')
 		do_got(3) = .true.
-		call gottideinit('GOT4.10c_extrapolated',.true.,gotinfo(3))
+		var => rads_varptr (S, 'tide_ocean_got51')
+		call gottideinit(var%info%parameters,.true.,gotinfo(3))
 	end select
 enddo
 
@@ -163,9 +171,10 @@ write (*,1310)
 'Currently available MODELs are:'/ &
 '  fes04  : FES2004 ocean and load tide'/ &
 '  fes14  : FES2014 ocean and load tide'/ &
+'  fes22  : FES2022 ocean and load tide'/ &
 '  got48  : GOT4.8 ocean and load tide'/ &
-'  got49  : GOT4.9 ocean and load tide'/ &
 '  got410 : GOT4.10 ocean and load tide'// &
+'  got51  : GOT5.1 ocean and load tide'// &
 'In addition, several of the following MODEL indicators can be used:'/ &
 '  ptide  : Pole tide'/ &
 '  stide  : Solid earth tide'/ &
