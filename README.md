@@ -29,6 +29,9 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 This does not include explanations of changes to the code that generates the data base.
 
+### v4.6.1 (29 Feb 2024)
+* Updated `configure` file using `autoconf` 2.72
+
 ### v4.6.0 (15 Feb 2024)
 * Documentation
   * made a lot of corrections and updates.
