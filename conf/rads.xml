@@ -3497,7 +3497,7 @@ Global RADS configuration file
 	<data>drange_cg</data>
 	<compress>int2 1e-4</compress>
 	<format>f7.4</format>
-	<comment>Range correction already added to range</comment>
+	<comment>Range correction (to be added) due to fuel consumption and solar panel movement</comment>
 </var>
 <var name="drange_dat" field="2708" sat="j1">
 	<long_name>datation correction to range</long_name>
