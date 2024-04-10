@@ -430,11 +430,13 @@ Global RADS configuration file
 	</if>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_gps" field="416" sat="j1 j2">
+<var name="alt_gps" field="416" sat="j1 j2 j3 6a">
 	<long_name>GPS orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source sat="j1">JPL GPS orbits (jas1_gps/rlse11a)</source>
-	<source sat="j2">JPL GPS orbits (jas2_gps/rlse14a)</source>
+	<source sat="j2">JPL GPS orbits (jas2_gps/rlse18a)</source>
+	<source sat="j3">JPL GPS orbits (jas3_gps/rlse22a)</source>
+	<source sat="6a">JPL GPS orbits (s6mf_gps/rlse22a)</source>
 	<parameters>jpl_gps</parameters>
 	<units>m</units>
 	<data>alt_gps</data>
