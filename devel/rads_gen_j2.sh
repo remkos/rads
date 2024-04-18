@@ -51,7 +51,7 @@ rads_add_ib       $options							>> "$log" 2>&1
 rads_add_orbit    $options -Valt_gdre    -C0-253	>> "$log" 2>&1
 rads_add_orbit    $options -Valt_eig6s2  -C0-219	>> "$log" 2>&1
 rads_add_orbit    $options -Valt_gdrcp   -C1-130	>> "$log" 2>&1
-rads_add_orbit    $options -Valt_gps     -C1-225	>> "$log" 2>&1
+rads_add_orbit    $options -Valt_gps     -C1-327	>> "$log" 2>&1
 rads_add_orbit    $options -Valt_std1204 -C0-188	>> "$log" 2>&1
 rads_add_orbit    $options -Valt_std1404			>> "$log" 2>&1
 rads_add_orbit    $options -Valt_slcci   -C0-248	>> "$log" 2>&1
