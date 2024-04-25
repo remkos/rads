@@ -683,7 +683,7 @@ Global RADS configuration file
 	<units>m</units>
 	<data>range_corrected</data>
 	<format>f11.3</format>
-	<compress>int3 1e-3</compress>
+	<compress>int4 1e-3</compress>
 </var>
 <var name="range_ku_mle3" field="611" sat="6a j2 j3 sw tx">
 	<long_name>Ku-band range corrected for instr. effects (MLE3)</long_name>
@@ -692,6 +692,7 @@ Global RADS configuration file
 	<data>range_ku_mle3</data>
 	<format>f12.4</format>
 	<compress>int4 1e-4 1300e3</compress>
+	<compress sat="sw">int4 1e-4 700e3</compress>
 </var>
 <var name="range_ku_plrm" field="612" sat="3a 3b c2">
 	<long_name>Ku-band range corrected for instr. effects (PLRM)</long_name>
@@ -749,8 +750,8 @@ Global RADS configuration file
 	<units>m</units>
 	<limits>750e3 850e3</limits>
 	<data>range_s</data>
-	<format>f11.3</format>
-	<compress>int3 1e-4</compress>
+	<format>f12.4</format>
+	<compress>int4 1e-4 700e3</compress>
 </var>
 
 <var name="range_tracker_20hz_ku" sat="c2">
@@ -3130,7 +3131,6 @@ Global RADS configuration file
 	<long_name>quality of the range estimate (MLE3)</long_name>
 	<standard_name>altimeter_range status_flag</standard_name>
 	<flag_values>ok suspect</flag_values>
-	<flag_values sat="gs">ok some_10Hz_measurements_invalid</flag_values>
 	<plot_range>0 1</plot_range>
 	<data>qual_range_mle3</data>
 	<format>z1</format>
@@ -3140,7 +3140,6 @@ Global RADS configuration file
 	<long_name>quality of the range estimate (numerical retracking)</long_name>
 	<standard_name>altimeter_range status_flag</standard_name>
 	<flag_values>ok suspect</flag_values>
-	<flag_values sat="gs">ok some_10Hz_measurements_invalid</flag_values>
 	<plot_range>0 1</plot_range>
 	<data>qual_range_nr</data>
 	<format>z1</format>
