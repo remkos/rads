@@ -5039,7 +5039,7 @@ Global RADS configuration file
 		<mission>Multi-disciplinary Phase</mission>
 		<cycles>0 169</cycles>
 		<repeat>35.0 1002</repeat>
-		<ref_pass>1995-05-15T22:29:30 0.13 1 1 356</ref_pass>
+		<ref_pass>1995-05-15T22:29:30 0.13 1 1 355</ref_pass>
 		<start_time>1995-04-29</start_time>
 		<end_time>2011-07-05</end_time>
 	</phase>
