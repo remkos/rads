@@ -351,8 +351,10 @@ do
 
 ! MSS, MDT, Geoid, elevation
 
-	call cpy_var (ncid, 'mean_sea_surf_sol1_01', 'mss_cnescls15')
-	call cpy_var (ncid, 'mean_sea_surf_sol2_01', 'mss_dtu15')
+	call get_var (ncid, 'mean_sea_surf_sol1_01', a)
+	call new_var ('mss_cnescls15', a + dh)
+	call get_var (ncid, 'mean_sea_surf_sol2_01', a)
+	call new_var ('mss_dtu15', a + dh)
 	!call cpy_var (ncid, 'mean_dyn_topo_01', 'mdt_cnescls13')
 	call cpy_var (ncid, 'geoid_01', 'geoid_egm2008')
 	call cpy_var (ncid, 'odle_01', 'topo_ace2')
@@ -413,7 +415,7 @@ do
 	call cpy_var (ncid, 'peakiness_01_ku', 'peakiness_ku')
 	if (s_ok) call cpy_var (ncid, 'peakiness_01_s', 'peakiness_s')
 
-	call cpy_var (ncid, 'gpd_wet_tropo_cor_01', 'wet_tropo_gpd')
+	call cpy_var (ncid, 'gpd_wet_tropo_cor_01', 'gpd_wet_tropo_cor')
 
 	a = latency
 	call new_var ('latency', a)

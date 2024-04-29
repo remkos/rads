@@ -612,6 +612,7 @@ Global RADS configuration file
 <alias name="alt" field="4" sat="j1">alt_gdre</alias>
 <alias name="alt" field="4" sat="j2">alt_gdre alt_gdrd</alias>
 <alias name="alt" field="4" sat="n1">alt_gdrd alt_gdrcp</alias>
+<alias name="alt" field="4" sat="n1.gdr">alt_gdrf</alias>
 <var name="alt_cnes_20hz" sat="c2">
 	<long_name>20-Hz CNES orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
@@ -874,7 +875,7 @@ Global RADS configuration file
 	<units>m</units>
 	<limits>-0.6 0.0</limits>
 	<plot_range>-0.4 0.0</plot_range>
-	<data>wet_tropo_rad_plrm</data>
+	<data>wet_tropo_rad_sst_gam</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
