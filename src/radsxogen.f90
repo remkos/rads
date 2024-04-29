@@ -38,6 +38,7 @@ use rads_time
 
 integer(fourbyteint), parameter :: msat = 20, vbase = 13, mtrk = 500000
 real(eightbytereal) :: dt(msat)
+character(len=6) :: dt_unit(msat)
 type(rads_sat) :: S(msat)
 type(rads_pass) :: P
 integer(fourbyteint) :: i, j, nsat = 0, nsel = 0, reject = -1, ios, ncid, dimid(3), start(2), varid(vbase)
@@ -138,6 +139,13 @@ do i = 2,nsat
 	if (isnan_(dt(i))) dt(i) = dt(i-1)
 	satlist = trim(satlist) // ' ' // S(i)%sat
 enddo
+do i = 1,nsat
+	if (dt(i) < 0) then
+		dt_unit(i) = 'cycles'
+	else
+		dt_unit(i) = 'days'
+	endif
+enddo
 
 ! If SLA is among the results, remember which index that is
 do i = 1,nsel
@@ -164,12 +172,12 @@ else
 endif
 write (*,610)
 do i = 1,nsat
-	write (*,620) S(i)%satellite, S(i)%cycles(1:2), S(i)%passes(1:2), dt_secs(S(i),dt(i))/86400d0
+	write (*,620) S(i)%satellite, S(i)%cycles(1:2), S(i)%passes(1:2), abs(dt(i)), dt_unit(i)
 enddo
 550 format (a)
 600 format (/'Created: ',a,' UTC: ',a/'Output file name: ',a)
-610 format (/'Satellite  Cycles    Passes  Delta-time cutoff (days)')
-620 format (a,i5,i4,2i5,f8.3)
+610 format (/'Satellite  Cycles    Passes  Delta-time cutoff')
+620 format (a,i5,i4,2i5,f8.3,1x,a)
 
 ! Do further initialisations
 nr = nr_ (0, 0, 0, 0, 0, 0, 0, 0)
