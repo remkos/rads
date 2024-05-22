@@ -668,7 +668,7 @@ Global RADS configuration file
 		<limits sat="c2">700e3 800e3</limits>
 		<limits sat="2a">950e3 1050e3</limits>
 		<limits sat="6a j1 j2 j3 pn tx">1300e3 1400e3</limits>
-		<limits sat="sw">800e3 900e3</limits>
+		<limits sat="sw">800e3 950e3</limits>
 		<data>range_ku</data>
 		<format>f12.4</format>
 		<compress>int4 1e-4 700e3</compress>
