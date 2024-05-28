@@ -23,6 +23,7 @@ devel/rads_add_dual
 devel/rads_add_ecmwf
 devel/rads_add_era
 devel/rads_add_era5
+devel/rads_add_f4a
 devel/rads_add_flags
 devel/rads_add_gpd
 devel/rads_add_grid

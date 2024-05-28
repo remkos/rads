@@ -40,44 +40,62 @@ program rads_gen_n1_gdr
 ! time - Time since 1 Jan 85
 ! lat - Latitude
 ! lon - Longitude
-! alt_gdre - Orbital altitude
+! alt_gdrf - Orbital altitude
 ! alt_rate - Orbital altitude rate
 ! range_* - Ocean range (retracked)
 ! range_rms_* - Std dev of range
 ! range_numval_* - Nr of averaged range measurements
+! qual_range_* - Quality of range measurement
+! drange_uso - USO correction to range
+! sig0_* - Sigma0
+! sig0_rms_* - Std dev of sigma0
+! qual_sig0_* - Quality of sigma0 measurement
+! dsig0_atmos_ku_* - Atmospheric correction to sigma0
+! swh_* - Significant wave height (signed)
+! swh_rms_* - Std dev of SWH
+! qual_swh_* - Quality of SWH measurement
+! off_nadir_angle2_wf_ku - Mispointing from Ku-band waveform squared
+! off_nadir_angle_pf - Mispointing measured by platform
+! qual_attitude - Quality off attitude measurement
 ! dry_tropo_ecmwf - ECMWF dry tropospheric correction
 ! wet_tropo_ecmwf - ECMWF wet tropo correction
-! wet_tropo_comp - Composite wet tropo correction
-! iono_alt_* - Dual-frequency ionospheric correction (not _c)
+! wet_tropo_rad - Radiometer wet tropo correction
+! wet_tropo_rad_sst_gam - Radiometer wet tropo correction with SST/Gamma correction
+! gpd_wet_tropo_cor - GPD wet tropospheric correction
+! iono_alt - Dual-frequency ionospheric correction
+! iono_alt_smooth - Filtered dual-frequncy ionospheric correction
+! qual_iono_alt - Quality of filtered dual-frequency ionospheric correction
 ! iono_gim - GIM ionosphetic correction
-! inv_bar_static - Inverse barometer
-! inv_bar_mog2d - MOG2D
-! peakiness_ku_* - Peakiness
 ! ssb_cls_* - SSB
-! swh_* - Significant wave height
-! swh_rms_* - Std dev of SWH
-! sig0_* - Sigma0 (not corrected for attenuation ... will be done in rads_fix_s3)
-! sig0_rms_* - Std dev of sigma0
-! wind_speed_alt_* - Altimeter wind speed (not _c)
-! wind_speed_rad - Radiometer wind speed
+! inv_bar_static - Inverse barometer
+! inv_bar_static_era - Inverse barometer (ERA)
+! inv_bar_mog2d - Dynamic atmospheric correction (MOG2D)
+! inv_bar_mog2d_era - Dynamic atmospheric correction (MOG2D with ERA forcing)
+! wind_speed_alt - Altimeter wind speed
 ! wind_speed_ecmwf_u - ECMWF wind speed (U)
 ! wind_speed_ecmwf_v - ECMWF wind speed (V)
+! water_vapor_rad - Water vapour from radiometer
+! liquid_water_rad - Liquid water from radiometer
+! tb_238, tb_365 - Brightness temperatures (23.8 and 36.5 GHz)
+! qual_rad_tb - Quality brightness temperatures
 ! tide_ocean/load_got410 - GOT4.10c ocean and load tide
-! tide_ocean/load_fes04/fes14 - FES2014 ocean and load tide
+! tide_ocean/load_fes14 - FES2014 ocean and load tide
+! tide_equil/tide_non_equil - Long-period equilibrium and non-equilibrium tides
 ! tide_pole - Pole tide
 ! tide_solid - Solid earth tide
 ! topo_ace2 - ACE2 topography
 ! geoid_egm2008 - EGM2008 geoid
-! mss_cnescls11/cnescls15 - CNES/CLS11 or CNES/CLS15 mean sea surface
-! mss_dtu13 - DTU13 mean sea surface
+! mss_cnescls15 - CNES/CLS15 mean sea surface
+! mss_dtu15 - DTU15 mean sea surface
+! qual_alt_rain_ice - Altimeter flag: affected by rain/ice
+! sea_ice_class - Sea ice classification
+! peakiness_* - Peakiness
 ! flags - Engineering flags
-! off_nadir_angle2_wf_* - Mispointing from waveform squared (not _c)
-! ssha_* - Sea surface height anomaly (not _c)
+! ssha - Sea surface height anomaly
 !
 ! Extensions _* are:
-! _ku:      Ku-band retracked from SAR
-! _ku_plrm: Ku-band retracked with PLRM
-! _c:       C-band
+! [_ku]:    Ku-band retracked from SAR
+! _s:       S-band
 !-----------------------------------------------------------------------
 use rads
 use rads_devel
@@ -100,10 +118,6 @@ character(len=rads_cmdl) :: filename, arg
 integer(fourbyteint) :: pass_number, cycle_number, ncid, varid
 real(eightbytereal) :: equator_time
 logical :: s_ok
-
-! Data variables
-
-integer :: latency = rads_ntc + 2
 
 ! Struct for orbit info
 
@@ -232,8 +246,7 @@ do
 	flags = 0
 	call nc2f (ncid, 'off_nadir_angle_wf_ocean_qual_01_ku', 1)	! bit  1: Quality off-nadir pointing
 	call nc2f (ncid, 'surf_class_01', 2, eq=4)					! bit  2: Continental ice
-	call nc2f (ncid, 'range_ocean_qual_01_ku', 3)
-	call nc2f (ncid, 'range_ocean_qual_01_s',  3)				! bit  3: Quality dual-freq iono
+	call nc2f (ncid, 'filtered_iono_cor_alt_qual_01_ku',  3)	! bit  3: Quality dual-freq iono
 	call nc2f (ncid, 'surf_class_01', 4, eq=1)
 	call nc2f (ncid, 'surf_class_01', 4, ge=3)					! bit  4: Water/land
 	call nc2f (ncid, 'surf_class_01', 5, ge=1)					! bit  5: Ocean/other
@@ -269,7 +282,7 @@ do
 
 	call cpy_var (ncid, 'range_ocean_01_ku', 'range_ku')
 	call cpy_var (ncid, 'range_ocean_rms_01_ku', 'range_rms_ku')
-	call cpy_var (ncid, 'range_ocean_numval_01_ku', 'range_numval')
+	call cpy_var (ncid, 'range_ocean_numval_01_ku', 'range_numval_ku')
 	call cpy_var (ncid, 'range_ocean_qual_01_ku', 'qual_range')
 
 	if (s_ok) then
@@ -336,6 +349,7 @@ do
 	if (s_ok) then
 		call cpy_var (ncid, 'iono_cor_alt_01_ku', 'iono_alt')
 		call cpy_var (ncid, 'filtered_iono_cor_alt_01_ku', 'iono_alt_smooth')
+		call cpy_var (ncid, 'filtered_iono_cor_alt_qual_01_ku', 'qual_iono_alt')
 	endif
 	call cpy_var (ncid, 'iono_cor_gim_01_ku', 'iono_gim')
 
@@ -390,17 +404,20 @@ do
 
 ! Radiometer
 
+	call cpy_var (ncid, 'rad_water_vapor_01', 'water_vapor_rad')
 	call cpy_var (ncid, 'rad_liquid_water_01', 'liquid_water_rad')
 
 ! Mispointing
 
 	call cpy_var (ncid, 'off_nadir_angle_wf_ocean_01_ku', 'off_nadir_angle2_wf_ku')
 	call cpy_var (ncid, 'off_nadir_angle_wf_ocean_qual_01_ku', 'qual_attitude')
+	call cpy_var (ncid, 'off_nadir_angle_pf_01', 'off_nadir_angle_pf')
 
 ! Brightness temperatures
 
 	call cpy_var (ncid, 'tb_238_01', 'tb_238')
 	call cpy_var (ncid, 'tb_365_01', 'tb_365')
+	call cpy_var (ncid, 'mcd_flag_tb_365_01 2 MUL mcd_flag_tb_238_01 ADD 2 MUL', 'qual_rad_tb')
 
 ! Flags
 
@@ -416,9 +433,6 @@ do
 	if (s_ok) call cpy_var (ncid, 'peakiness_01_s', 'peakiness_s')
 
 	call cpy_var (ncid, 'gpd_wet_tropo_cor_01', 'gpd_wet_tropo_cor')
-
-	a = latency
-	call new_var ('latency', a)
 
 ! Dump the data
 
