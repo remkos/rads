@@ -2843,9 +2843,9 @@ Global RADS configuration file
 		<flag_values>side_A side_B POS</flag_values>
 		<plot_range>0 2</plot_range>
 	</elseif>
-	<else>
+	<elseif sat="!6a c2 tx pn">
 		<data source="flags">0</data>
-	</else>
+	</elseif>
 	<format>z1</format>
 	<compress>int1</compress>
 </var>
@@ -3010,9 +3010,9 @@ Global RADS configuration file
 		<plot_range>0 5</plot_range>
 		<data>qual_alt_rain_ice</data>
 	</elseif>
-	<else>
+	<elseif sat="!6a n1 tx pn">
 		<data source="flags">7</data>
-	</else>
+	</elseif>
 </var>
 
 <var name="qual_alt_rain_ice_nr" sat="6a">
