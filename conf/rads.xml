@@ -2834,14 +2834,17 @@ Global RADS configuration file
 	<if sat="6a">
 		<flag_values>LRM RAW RMC</flag_values>
 		<plot_range>0 2</plot_range>
+		<limits>0 2</limits>
 	</if>
 	<elseif sat="c2">
 		<flag_values>LRM SAR SARIN</flag_values>
 		<plot_range>0 2</plot_range>
+		<limits>0 2</limits>
 	</elseif>
 	<elseif sat="tx pn">
 		<flag_values>side_A side_B POS</flag_values>
 		<plot_range>0 2</plot_range>
+		<limits>0 2</limits>
 	</elseif>
 	<else>
 		<data source="flags">0</data>

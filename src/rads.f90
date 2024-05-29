@@ -3075,7 +3075,7 @@ else if (info%datatype == rads_type_time) then
 		S%cycles(2) = min(S%cycles(2), rads_time_to_cycle (S, time()+sec1970))
 	endif
 else if (var%name == 'flags') then
-	call rads_set_limits_by_flagmask (S, info%limits)
+	call rads_set_limits_by_flagmask (S, info%limits, .true.)
 endif
 end subroutine rads_set_limits_info
 end subroutine rads_set_limits
@@ -3085,9 +3085,20 @@ end subroutine rads_set_limits
 ! Set limits based on flagmask
 !
 ! SYNOPSIS
-subroutine rads_set_limits_by_flagmask (S, limits)
+subroutine rads_set_limits_by_flagmask (S, limits, force)
+use rads_misc
 type(rads_sat), intent(inout) :: S
 real(eightbytereal), intent(inout) :: limits(2)
+logical, optional :: force
+!
+! PURPOSE
+! Set the limits of individual quality/flag variables based on the traditional flagmask.
+! Do not overrule already set limits, unless the optional input 'forece'
+!
+! ARGUMENTS
+! S        : Satellite/mission dependent structure
+! limits(2): Two components of the flagmask 1=do not allow, 2=require
+! force    : (optional) Force overruling already existing limits
 !****-------------------------------------------------------------------
 integer :: i, ios, mask(2), bits(2)
 mask = 0
@@ -3095,6 +3106,8 @@ where (limits == limits) mask = nint(limits) ! Because it is not guaranteed for 
 ! Loop through all variables to find those with field between 2501 and 2516
 do i = 1,S%nvar
 	if (.not.any(S%var(i)%field >= 2501 .and. S%var(i)%field <= 2516)) cycle
+	! Do not overrule already set limits, unless 'force' is provided
+	if (any(isan_(S%var(i)%info%limits)) .and. .not.(present(force) .and. force)) cycle
 	bits = (/0,1/) ! Default values
 	read (S%var(i)%info%dataname, *, iostat=ios) bits
 	if (S%var(i)%info%dataname == 'surface_type') then
