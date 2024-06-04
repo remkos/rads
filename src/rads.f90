@@ -2250,7 +2250,7 @@ character(len=rads_naml) :: attr(2,max_lvl), val(max_lvl)
 character(len=6) :: src
 integer :: nattr, nval, i, j, ios, skip, skip_level
 integer(twobyteint) :: field(2)
-logical :: endtag, endskip
+logical :: endtag, else_skip(max_lvl)
 real(eightbytereal) :: node_rate
 type(rads_varinfo), pointer :: info, info_block
 type(rads_var), pointer :: var, var_block
@@ -2258,7 +2258,7 @@ type(rads_phase), pointer :: phase
 
 ! Initialise
 S%error = rads_noerr
-endskip = .true.
+else_skip = .false.
 skip_level = 0
 nullify (var_block, info_block, phase)
 
@@ -2282,8 +2282,8 @@ do
 	if (endtag) then
 		if (tag /= tags(X%level+1)) &
 			call xmlparse_error ('Closing tag </'//trim(tag)//'> follows opening tag <'//trim(tags(X%level+1))//'>')
-		endskip = (X%level < skip_level)
-		if (endskip) skip_level = 0  ! Stop skipping when descended back below the starting level
+		if (skip_level == 0 .and. (tag == 'if' .or. tag == 'elseif')) else_skip(X%level+1) = .true. ! Mark that a following elseif or else needs to be skipped
+		if (X%level < skip_level) skip_level = 0  ! Stop skipping when descended back below the starting level
 		if (tag == 'var') nullify (var_block, info_block) ! Stop processing <var> block
 		if (tag == 'phase') nullify (phase)   ! Stop processing <phase> block
 		cycle  ! Ignore all other end tags
@@ -2294,11 +2294,13 @@ do
 	info => info_block
 
 	! Special actions for <else> and <elseif>
-	! These will issue a 'skip' when previous <if> was not skipped
+	! These will issue a 'skip' when a previous <if> or <elseif> was not skipped
 	if (tag == 'else' .or. tag == 'elseif') then
 		if (tags(X%level) /= 'if' .and. tags(X%level) /= 'elseif') &
 			call xmlparse_error ('Opening tag <'//trim(tag)//'> follows closing tag </'//trim(tags(X%level))//'>')
-		if (.not.endskip .and. skip_level == 0) skip_level = X%level
+		if (else_skip(X%level) .and. X%level > skip_level) skip_level = X%level
+	else
+		else_skip(X%level) = .false.
 	endif
 
 	! Process opening tags
@@ -2353,7 +2355,7 @@ do
 				(index(attr(2,i),S%sat//' ') == 0 .and. index(attr(2,i),trim(S%branch(1))//' ') == 0 &
 					.and. index(attr(2,i),S%branch(1)(:5)//'* ') == 0 &
 					.and. index(attr(2,i),'*'//trim(S%branch(1)(3:))//' ') == 0)) then
-				skip=-1
+				skip = -1
 			endif
 		case ('var')
 			var => rads_varptr (S, attr(2,i), null())
@@ -3073,7 +3075,7 @@ else if (info%datatype == rads_type_time) then
 		S%cycles(2) = min(S%cycles(2), rads_time_to_cycle (S, time()+sec1970))
 	endif
 else if (var%name == 'flags') then
-	call rads_set_limits_by_flagmask (S, info%limits)
+	call rads_set_limits_by_flagmask (S, info%limits, .true.)
 endif
 end subroutine rads_set_limits_info
 end subroutine rads_set_limits
@@ -3083,9 +3085,20 @@ end subroutine rads_set_limits
 ! Set limits based on flagmask
 !
 ! SYNOPSIS
-subroutine rads_set_limits_by_flagmask (S, limits)
+subroutine rads_set_limits_by_flagmask (S, limits, force)
+use rads_misc
 type(rads_sat), intent(inout) :: S
 real(eightbytereal), intent(inout) :: limits(2)
+logical, optional :: force
+!
+! PURPOSE
+! Set the limits of individual quality/flag variables based on the traditional flagmask.
+! Do not overrule already set limits, unless the optional input 'forece'
+!
+! ARGUMENTS
+! S        : Satellite/mission dependent structure
+! limits(2): Two components of the flagmask 1=do not allow, 2=require
+! force    : (optional) Force overruling already existing limits
 !****-------------------------------------------------------------------
 integer :: i, ios, mask(2), bits(2)
 mask = 0
@@ -3093,6 +3106,8 @@ where (limits == limits) mask = nint(limits) ! Because it is not guaranteed for 
 ! Loop through all variables to find those with field between 2501 and 2516
 do i = 1,S%nvar
 	if (.not.any(S%var(i)%field >= 2501 .and. S%var(i)%field <= 2516)) cycle
+	! Do not overrule already set limits, unless 'force' is provided
+	if (any(isan_(S%var(i)%info%limits)) .and. .not.(present(force) .and. force)) cycle
 	bits = (/0,1/) ! Default values
 	read (S%var(i)%info%dataname, *, iostat=ios) bits
 	if (S%var(i)%info%dataname == 'surface_type') then

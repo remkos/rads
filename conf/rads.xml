@@ -672,7 +672,7 @@ Global RADS configuration file
 		<limits sat="c2">700e3 800e3</limits>
 		<limits sat="2a">950e3 1050e3</limits>
 		<limits sat="6a j1 j2 j3 pn tx">1300e3 1400e3</limits>
-		<limits sat="sw">800e3 900e3</limits>
+		<limits sat="sw">800e3 950e3</limits>
 		<data>range_ku</data>
 		<format>f12.4</format>
 		<compress>int4 1e-4 700e3</compress>
@@ -742,7 +742,7 @@ Global RADS configuration file
 	<units>m</units>
 	<limits>1300e3 1400e3</limits>
 	<limits sat="2a 3a 3b">750e3 850e3</limits>
-	<limits sat="sw">800e3 900e3</limits>
+	<limits sat="sw">800e3 950e3</limits>
 	<data>range_c</data>
 	<format>f12.4</format>
 	<compress>int4 1e-4 1300e3</compress>
@@ -2925,14 +2925,17 @@ Global RADS configuration file
 	<if sat="6a">
 		<flag_values>LRM RAW RMC</flag_values>
 		<plot_range>0 2</plot_range>
+		<limits>0 2</limits>
 	</if>
 	<elseif sat="c2">
 		<flag_values>LRM SAR SARIN</flag_values>
 		<plot_range>0 2</plot_range>
+		<limits>0 2</limits>
 	</elseif>
 	<elseif sat="tx pn">
 		<flag_values>side_A side_B POS</flag_values>
 		<plot_range>0 2</plot_range>
+		<limits>0 2</limits>
 	</elseif>
 	<else>
 		<data source="flags">0</data>

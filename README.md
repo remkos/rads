@@ -29,6 +29,18 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 This does not include explanations of changes to the code that generates the data base.
 
+### v4.6.3 (20 May 2024)
+* `rads.xml`:
+  * Correct comment for drange_cg
+  * Add/update alt_gps orbits for j2, j3, 6a
+  * Update orbit info for ERS-1/2 and Envisat
+  * Fix add\_offset for all SWOT ranges
+  * Set new ref\_frame\_offset* for SWOT (#195)
+  * Set proper limits for flag\_alt\_oper\_mode (6a c2 tx pn)
+* `radsxogen`:
+  * Correctly report maximum tie interval in xovers (#196)
+* Fix handling of if/elseif/else in xml (#197)
+
 ### v4.6.2 (1 Mar 2024)
 * `rads.xml`
   * Extended SWOT mission back to cycle 102
