@@ -2592,7 +2592,7 @@ Global RADS configuration file
 	<format>f3.0</format>
 	<compress>int1</compress>
 </var>
-<alias name="range_numvar_ku_nr" sat="j3 sw">range_numval_ku_adaptive</alias>
+<alias name="range_numval_ku_nr" sat="j3 sw">range_numval_ku_adaptive</alias>
 <var name="range_numval_ku_nr" sat="6a">
 	<long_name>number of valid retracked Ku-band measurements (numerical retracking)</long_name>
 	<standard_name>altimeter_range number_of_observations</standard_name>
