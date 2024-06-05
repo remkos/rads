@@ -38,7 +38,7 @@ LIB     = ../src/librads.a $(ALTIM)/lib/rssubs.a
 LDLIBS  = $(NETCDF_LIB) $(GRIB_LIB)
 
 # Shell or perl scripts
-SCRIPTS = rads_add_common \
+SCRIPTS = rads_add_common rads_add_era5.sh \
 		rads_gen_3a.sh rads_gen_3a_new.sh rads_gen_3a_new_calval.sh rads_gen_3a_calval.sh \
 		rads_gen_3b.sh rads_gen_3b_new.sh rads_gen_3b_new_calval.sh rads_gen_3b_calval.sh \
 		rads_gen_6a_calval.sh \
