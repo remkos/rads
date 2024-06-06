@@ -13,12 +13,12 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*rads_gen_n1_gdr -- Converts CryoSat Ocean Products data to RADS
+!*rads_gen_n1_gdr -- Converts Envisat GDR v3 data to RADS
 !+
 program rads_gen_n1_gdr
 
-! This program reads CryoSat NOP/IOP/GOP files and converts them to the RADS
-! format, written into files $RADSDATAROOT/data/c2.[nig]op/a/c2pPPPPcCCC.nc.
+! This program reads Envisat GDR v3 files and converts them to the RADS
+! format, written into files $RADSDATAROOT/data/n1.gdr/a/n1pPPPPcCCC.nc.
 !  PPPP = relative pass number
 !   CCC = cycle number
 !
@@ -27,8 +27,8 @@ program rads_gen_n1_gdr
 ! where [options] include:
 !  --min-rec <min_rec> : Specify minimum number of records per pass to process.
 !
-! This program handles CryoSat Ocean Products standard_measurement files in
-! netCDF format. The format is described in:
+! This program handles Envisat GDR version 3 files in netCDF format.
+! The format is described in:
 !
 ! [1] ENVISAT-1 PRODUCTS SPECIFICATIONS
 ! VOLUME 14: RA2 PRODUCTS SPECIFICATIONS LEVEL 2
@@ -159,7 +159,7 @@ do
 		cycle
 	endif
 
-! Check if input is a Cryosat Ocean Products Level 2 data set
+! Check if input is an Envisat GDR v3 data set
 
 	if (nf90_get_att(ncid,nf90_global,'title',arg) /= nf90_noerr .or. &
 		arg(:23) /= 'Envisat RA2/MWR Level 2') then
