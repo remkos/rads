@@ -1904,7 +1904,7 @@ Global RADS configuration file
 <alias name="ssb_mle3" sat="tx">ssb_tx_mle3</alias>
 <alias name="ssb_plrm" sat="3a 3b c2">ssb_cls_plrm</alias>
 <alias name="ssb_adaptive" sat="j3 sw">ssb_cls_adaptive</alias>
-<alias name="ssb_adaptive" sat="n1.gdr n1.f4a">ssb_tran2019_hfa</alias>
+<alias name="ssb_adaptive" sat="n1.f4a">ssb_tran2019_hfa</alias>
 <alias name="ssb_nr" sat="6a">ssb_cls_nr</alias>
 
 <var name="geoid_egm96" field="1601" sat="3a 3b j2 j3 sa sw">
