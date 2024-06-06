@@ -22,55 +22,38 @@ program rads_add_f4a
 !
 ! syntax: rads_add_f4a [options] < list_of_FDR4ALT_file_names
 !
-! This program handles FDR4ALT Level 2 products in NetCDF format.
-! The format and content is described in:
+! This program handles FDR4ALT Level 2 products in NetCDF format, either
+! OC (Ocean and Coastal) or WA (Waves) products.
+! Their format and content is described in:
 !
 ! [1] FDR4ALT Product User Guide
 !     CLS-ENV-MU-23-0237, issue 2.2, 30 Oct 2023
 !
 !-----------------------------------------------------------------------
 !
-! Variables array fields to be filled are:
-! range_* - Ocean range (retracked)
-! range_rms_* - Std dev of range
-! range_numval_* - Nr of averaged range measurements
-! dry_tropo_ecmwf - ECMWF dry tropospheric correction
-! wet_tropo_ecmwf - ECMWF wet tropo correction
+! Variables array fields to be added from the OC products are:
+! range_ku - Ocean Ku-band range (retracked)
+! range_rms_ku - Std dev of Ku-band range
+! range_numval_ku - Nr of averaged range measurements
+! dry_tropo_era5 - ERA5 dry tropospheric correction
 ! wet_tropo_rad - Radiometer wet tropo correction
-! iono_alt - Dual-frequency ionospheric correction
-! iono_alt_smooth - Filtered dual-frequency ionospheric correction
+! iono_nic09 - NIC09 ionospheric correction
 ! iono_gim - GIM ionosphetic correction
-! inv_bar_static - Inverse barometer
-! inv_bar_mog2d - MOG2D
-! ssb_cls_* - SSB
-! swh_* - Significant wave height
-! swh_rms_* - Std dev of SWH
-! sig0_* - Sigma0
-! sig0_rms_* - Std dev of sigma0
-! dsig0_atmos_* - Atmospheric attenuation of sigma0
-! wind_speed_alt - Altimeter wind speed
-! wind_speed_rad - Radiometer wind speed
-! wind_speed_ecmwf_u - ECMWF wind speed (U)
-! wind_speed_ecmwf_v - ECMWF wind speed (V)
-! tide_ocean/load_got410 - GOT4.10c ocean and load tide
-! tide_ocean/load_fes14 - FES2014 ocean and load tide
-! tide_pole - Pole tide
+! ssb_tran2019_hfa - SSB Tran 2019 including high-frequency adjustment
+! ssb_tran2019_3d - SSB Tran 2019 3D
+! inv_bar_mog2d_era - MOG2D dynamic atmospheric correction (ERA driven)
+! tide_internal - Internal tide
 ! tide_solid - Solid earth tide
-! topo_ace2 - ACE2 topography
-! geoid_egm2008 - EGM2008 geoid
-! cnescls15 - CNES/CLS15 mean sea surface
-! mss_dtu18 - DTU18 mean sea surface
-! tb_238 - Brightness temperature (23.8 GHz)
-! tb_365 - Brightness temperature (36.5 GHz)
-! flags - Engineering flags
-! off_nadir_angle2_wf_ku - Mispointing from waveform squared
-! rad_liquid_water - Liquid water content
-! rad_water_vapor - Water vapor content
+! tide_pole - Pole tide
+! mss_comb15 - Combine 2015 mean sea surface
+! mdt_cnescls18 - Mean dynamic topography 2018
+! surface_type - Surface type flag
+! dist_coast - Distance to coast
 ! ssha - Sea surface height anomaly
 !
-! Extensions _* are:
-! _ku:      Ku-band
-! _s:       S-band
+! Variables array fields to be added from the WA products are:
+! swh_ku - Ku-band significant wave height
+! swh_rms_* - Std dev of Ku-band SWH
 !-----------------------------------------------------------------------
 use rads
 use rads_devel
