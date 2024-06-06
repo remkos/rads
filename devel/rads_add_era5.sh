@@ -13,6 +13,7 @@ shift 1
 
 # Get the oldest change within the last $days
 month=$(cd $ALTIM/data/era5 ; find 2???/??/28 -type d -mtime -$days | sort | head -n 1 | cut -c1-4,6-7)
+[[ ${#month} -eq 0 ]] && exit
 
 cd $RADSROOT/data
 
