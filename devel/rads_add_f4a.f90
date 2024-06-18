@@ -72,14 +72,13 @@ character(len=rads_cmdl) :: infile, arg
 ! Header variables
 
 integer(fourbyteint) :: ncid, ncid_m1, ncid_x1, ncid_m20, ncid_x20, varid, &
-	nrec_m1, nrec_x1, nrec_m20, nrec_x20
+	nrec_m1, nrec_x1, nrec_m5, nrec_m20, nrec_x20
 real(eightbytereal) :: first_measurement_time, last_measurement_time
 logical :: oc_product
-character(len=16) :: ext
+character(len=16) :: ext = '_adaptive'
 
 ! Data variables
 
-real(eightbytereal) :: dt
 integer(fourbyteint) :: i
 
 ! Other local variables
@@ -89,9 +88,17 @@ real(eightbytereal), parameter :: sec1990=157766400d0	! UTC seconds from 1 Jan 1
 ! Initialise
 
 call synopsis ('--head')
-!call rads_set_options (' uso all')
+call rads_set_options ('x no-ext')
 call rads_init (S)
-dt = S%dt1hz/2
+
+! Scan options
+
+do i = 1,rads_nopt
+	select case (rads_opt(i)%opt)
+	case ('x', 'no-ext')
+		ext = ''
+	end select
+enddo
 
 !----------------------------------------------------------------------
 ! Read all file names from standard input
@@ -112,7 +119,7 @@ do
 ! Check if input is an FDR4ALT altimeter Level 2 data set
 
 	if (nft(nf90_get_att(ncid,nf90_global,'title',arg)) .or. &
-		index (arg, 'FDR4ALT Thematic Data Product:') == 0) then
+		index (arg, 'FDR4ALT Thematic Data Product') == 0) then
 		call log_string ('Error: this is not an FDR4ALT altimeter Level 2 data set', .true.)
 		cycle
 	endif
@@ -129,15 +136,16 @@ do
 		call log_string ('Error: input file does not match selected satellite', .true.)
 		cycle
 	endif
-	if (S%sat == 'n1') then
-		ext = '_adaptive'
-	else
-		ext = ''
-	endif
+	if (S%sat /= 'n1') ext = '' ! No extensions for ERS, keep _adaptive extension for Envisat, unless --no-ext is used
 
-! Get NetCDF ID for 1-Hz and 20-Hz data (main and expert) in case of ocean/coastal product
+! Which product is on input?
 
 	if (oc_product) then
+!-----------------------------------------------------------------------
+! OCEAN AND COASTAL PRODUCT (TDP_OC)
+!-----------------------------------------------------------------------
+! Get NetCDF ID for 1-Hz and 20-Hz data (main and expert) in case of ocean/coastal product
+
 		call nfs(nf90_inq_grp_full_ncid(ncid, '/main/data_01', ncid_m1))
 		call nfs(nf90_inq_grp_full_ncid(ncid, '/expert/data_01', ncid_x1))
 		call nfs(nf90_inq_grp_full_ncid(ncid, '/main/data_20', ncid_m20))
@@ -153,32 +161,44 @@ do
 		call nfs(nf90_inquire_dimension(ncid_m20, varid, len=nrec_m20))
 		call nfs(nf90_inq_dimid(ncid_x20, 'time', varid))
 		call nfs(nf90_inquire_dimension(ncid_x20, varid, len=nrec_x20))
-		if (nrec_m1 /= nrec_x1) then
+		if (nrec_m1 == 0) then
+			call log_string ('Error: file skipped: no measurements', .true.)
+			cycle
+		else if (nrec_m1 /= nrec_x1) then
 			call log_string ('Error: file skipped: nr of 1-Hz main and expert records not the same', .true.)
 			cycle
 		else if (nrec_m20 /= nrec_x20) then
 			call log_string ('Error: file skipped: nr of 20-Hz main and expert records not the same', .true.)
 			cycle
+		else if (nrec_m1*20 /= nrec_m20) then
+			call log_string ('Error: file skipped: nr of 20-Hz records not match 1-Hz records', .true.)
+			cycle
 		endif
-	else
+		! Read cycle and pass number
+		call nfs(nf90_get_att(ncid,nf90_global,'cycle_number',cycle_number))
+		call nfs(nf90_get_att(ncid,nf90_global,'pass_number',pass_number))
 
+	else
+!-----------------------------------------------------------------------
+! WAVES PRODUCT (TDP_WA)
+!-----------------------------------------------------------------------
 ! Less to check for wave product
 
 		call nfs(nf90_inq_dimid(ncid, 'time', varid))
-		call nfs(nf90_inquire_dimension(ncid, varid, len=nrec_m1))
+		call nfs(nf90_inquire_dimension(ncid, varid, len=nrec_m5))
+		if (nrec_m5 == 0) then
+			call log_string ('Error: file skipped: no measurements', .true.)
+			cycle
+		endif
+		! In WA product, cycle_number and pass_number are strings
+		call nfs(nf90_get_att(ncid,nf90_global,'cycle_number',arg))
+		read (arg, *, iostat=ios) cycle_number
+		call nfs(nf90_get_att(ncid,nf90_global,'pass_number',arg))
+		read (arg, *, iostat=ios) pass_number
 	endif
 
-! Check for empty products (just in case)
+! Read start and stop time
 
-	if (nrec_m1 == 0) then
-		call log_string ('Error: file skipped: no measurements', .true.)
-		cycle
-	endif
-
-! Read cycle and pass number, start and stop time, equator time and longitude
-
-	call nfs(nf90_get_att(ncid,nf90_global,'cycle_number',cycle_number))
-	call nfs(nf90_get_att(ncid,nf90_global,'pass_number',pass_number))
 	call nfs(nf90_get_att(ncid,nf90_global,'first_meas_time',arg))
 	first_measurement_time = strp1985f (arg)
 	call nfs(nf90_get_att(ncid,nf90_global,'last_meas_time',arg))
@@ -201,16 +221,15 @@ do
 
 	call rads_open_pass (S, P, cycle_number, pass_number, .true.)
 	nrec = P%ndata
-	if (nrec_m1 /= nrec) then
-		write (rads_log_unit,*) 'Warning: nrec_m1 does not match nrec: ',nrec_m1,nrec
-	else if (oc_product .and. nrec_m1*20 /= nrec_m20) then
-		write (rads_log_unit,*) 'Warning: nrec_m20 does not match nrec_m1: ',nrec_m20,nrec_m1*20
-	else if (P%ndata <= 0) then
+
+	if (nrec <= 0) then
 		! Skip
 	else if (oc_product) then
+		if (nrec_m1 /= nrec) write (rads_log_unit,*) 'Warning: nrec_m1 does not match nrec: ',nrec_m1,nrec
 		call process_pass_oc (nrec_m1, nrec_m20)
 	else
-		call process_pass_wa (nrec_m1)
+		if (nrec_m5 /= nrec*5) write (rads_log_unit,*) 'Warning: nrec_m5 does not match nrec: ',nrec_m5,nrec*5
+		call process_pass_wa (nrec, nrec_m5)
 	endif
 	call rads_close_pass (S, P)
 	call nfs(nf90_close(ncid))
@@ -221,6 +240,10 @@ call rads_end (S)
 
 contains
 
+!-----------------------------------------------------------------------
+! OCEAN AND COASTAL PRODUCT (TDP_OC)
+!-----------------------------------------------------------------------
+
 subroutine process_pass_oc (n, n20)
 integer(fourbyteint), intent(in) :: n, n20
 integer(fourbyteint) :: nr(n)
@@ -229,6 +252,7 @@ real(eightbytereal) :: b(n), t(n), dh(n), a20(n20), t20(n20)
 ! Allocate data array
 
 allocate (a(n),flags(n))
+nvar = 0
 
 ! Match the FDR times with the already existing times
 
@@ -236,7 +260,8 @@ call get_var (ncid_m1, 'time', a)
 a = a * 86400 + sec1990	! convert from days since 1990 to seconds since 1985
 call rads_get_var (S, P, 'time', t)
 if (any(abs(a - t) > 0.5d-6)) then
-	call log_string('Warning: times do not match')
+	call log_string ('Warning: times do not match', .true.)
+	deallocate (a,flags)
 	return
 endif
 
@@ -257,18 +282,17 @@ call trend_1hz (reshape(t20, (/20,n/)), t, reshape(a20, (/20,n/)), a, b, nr)
 call new_var ('range_rms_ku' // ext, b)
 call new_var ('range_numval_ku' // ext, dble(nr))
 
-
 ! MAYBE NOT SUCH A GOOD IDEA TO ASSIGN THIS TO qual_range!
-call rads_get_var (S, P, 'flags', a)
-flags = nint(a, twobyteint)
-call nc2f (ncid_m1, 'validation_flag', 11)				! bit 11: Quality range
-call new_var ('flags' // ext, dble(flags))
-call cpy_var (ncid_m1, 'validation_flag', 'qual_range' // ext)	! Make special entry in rads.xml
+! call rads_get_var (S, P, 'flags', a)
+! flags = nint(a, twobyteint)
+! call nc2f (ncid_m1, 'validation_flag', 11)				! bit 11: Quality range
+! call new_var ('flags' // ext, dble(flags))
+! call cpy_var (ncid_m1, 'validation_flag', 'qual_range' // ext)
 
 ! Path delay
 
 call cpy_var (ncid_x1, 'dry_tropospheric_correction', 'dry_tropo_era5')
-call cpy_var (ncid_x1, 'wet_tropospheric_correction', 'wet_tropo_rad')
+call cpy_var (ncid_x1, 'wet_tropospheric_correction', 'wet_tropo_rad' // ext)
 if (S%sat == 'e1' .and. cycle_number < 106) then
 	call cpy_var (ncid_x1, 'ionospheric_correction', 'iono_nic09')
 else
@@ -320,28 +344,34 @@ deallocate (a, flags)
 
 end subroutine process_pass_oc
 
-subroutine process_pass_wa (n)
-integer(fourbyteint), intent(in) :: n
-real(eightbytereal) :: t(n)
+!-----------------------------------------------------------------------
+! WAVES PRODUCT (TDP_WA)
+!-----------------------------------------------------------------------
+
+subroutine process_pass_wa (n, n5)
+integer(fourbyteint), intent(in) :: n, n5
+real(eightbytereal) :: a5(n5)
 
 ! Allocate data array
 
 allocate (a(n))
+nvar = 0
 
 ! Match the FDR times with the already existing times
 
-call get_var (ncid_m1, 'time', a)
-a = a * 86400 + sec1990	! convert from days since 1990 to seconds since 1985
-call rads_get_var (S, P, 'time', t)
-if (any(abs(a - t) > 0.5d-6)) then
-	call log_string('Warning: times do not match')
-	return
+call get_var (ncid, 'time', a5)
+a5 = a5 * 86400 + sec1990	! convert from days since 1990 to seconds since 1985
+call rads_get_var (S, P, 'time', a)
+if (any(abs(a5(3:nrec_m5:5) - a) > 5d-2)) then
+	call log_string ('Warning: times do not match')
 endif
 
 ! SWH
 
-call cpy_var (ncid_m1, 'swh_ocean', 'swh_ku' // ext)
-call cpy_var (ncid_m1, 'swh_ocean_rms', 'swh_rms_ku' // ext)
+call get_var (ncid, 'swh_adjusted_filtered', a5)
+call new_var ('swh_ku' // ext, a5(3:nrec_m5:5))
+call get_var (ncid, 'swh_uncertainty', a5)
+call new_var ('swh_rms_ku' // ext, a5(3:nrec_m5:5))
 
 ! Close pass
 
@@ -358,10 +388,11 @@ end subroutine process_pass_wa
 subroutine synopsis (flag)
 character(len=*), optional, intent(in) :: flag
 if (rads_version ('Write FDR4ALT data to RADS', flag=flag)) return
-call synopsis_devel (' < list_of_FDR4ALT_file_names')
+call synopsis_devel (' [processing_options] < list_of_FDR4ALT_file_names')
 write (*,1310)
 1310 format (/ &
-'This program adds FDR4ALT altimeter Level 2 products to existing RADS data files.')
+'Additional [processing_options] are:'/ &
+'  -x, --no-ext              Do not add _adaptive extension for Envisat')
 stop
 end subroutine synopsis
 

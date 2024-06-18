@@ -883,6 +883,18 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
 </var>
+<var name="wet_tropo_rad_adaptive" sat="n1.f4a">
+	<long_name>radiometer wet tropospheric correction (using sigma0 from adaptive retracker)</long_name>
+	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
+	<source>radiometer</source>
+	<units>m</units>
+	<limits>-0.6 0.0</limits>
+	<plot_range>-0.4 0.0</plot_range>
+	<data>wet_tropo_rad_adaptive</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
+</var>
 <var name="wet_tropo_ecmwf" field="802" sat="!g1 gs">
 	<long_name>ECMWF wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
@@ -1775,7 +1787,7 @@ Global RADS configuration file
 	<units>m</units>
 	<limits>-1 1</limits>
 	<plot_range>-0.30 0.05</plot_range>
-	<data>ssb_tran2019</data>
+	<data>ssb_tran2019_hfa</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
@@ -3201,15 +3213,6 @@ Global RADS configuration file
 	<format>z1</format>
 	<compress>int1</compress>
 </var>
-<var name="qual_range_adaptive" sat="n1.f4a">
-	<long_name>quality of the range estimate (adaptive retracking)</long_name>
-	<standard_name>altimeter_range status_flag</standard_name>
-	<flag_values>ok suspect</flag_values>
-	<plot_range>0 1</plot_range>
-	<data>qual_range_adaptive</data>
-	<format>z1</format>
-	<compress>int1</compress>
-</var>
 <var name="qual_range_nr" sat="6a">
 	<long_name>quality of the range estimate (numerical retracking)</long_name>
 	<standard_name>altimeter_range status_flag</standard_name>
@@ -3531,7 +3534,7 @@ Global RADS configuration file
 		swh_suspect backscatter_suspect tracking_preset orbit_degraded
 	</flag_masks>
 </var>
-<var name="flags_adaptive" sat="j3 n1.f4a sw">
+<var name="flags_adaptive" sat="j3 sw">
 	<long_name>flag word (adaptive retracking)</long_name>
 	<limits>65512 0</limits>
 	<data>flags_adaptive</data>
@@ -3544,6 +3547,7 @@ Global RADS configuration file
 		swh_suspect backscatter_suspect tracking_preset orbit_degraded
 	</flag_masks>
 </var>
+<alias name="flags_adaptive" sat="n1.f4a">flags</alias>
 <alias name="flags_nr" sat="j3 n1.f4a sw">flags_adaptive</alias>
 <var name="flags_nr" sat="6a">
 	<long_name>flag word (numerical retracking)</long_name>
