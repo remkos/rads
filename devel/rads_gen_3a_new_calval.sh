@@ -40,19 +40,17 @@ for type in ${types}; do
 	mrk=$type/.bookmark
 	TZ=UTC touch -t ${d0}0000 "$mrk"
 
-	dir=3a.${type}0
-	rads_open_sandbox $dir
-	find $type/c??? -name "*.nc" -a -newer "$mrk" | sort > "$lst"
-	date >  "$log" 2>&1
-	rads_gen_s3		$options --min-rec=6 --ymd=$d0 < "$lst"	>> "$log" 2>&1
-	rads_close_sandbox
+	rads_open_sandbox "3a.${type}0"
 
-# Now process do the same again, and do the post-processing
-	dir=3a.${type}1
-	rads_open_sandbox $dir
+	date													>  "$log" 2>&1
+
 	find $type/c??? -name "*.nc" -a -newer "$mrk" | sort > "$lst"
-	date >  "$log" 2>&1
 	rads_gen_s3		$options --min-rec=6 --ymd=$d0 < "$lst"	>> "$log" 2>&1
+
+# Now continue with the post-processing
+	rads_reuse_sandbox "3a.${type}1"
+
+	date													>> "$log" 2>&1
 
 # Add MOE orbit (for NRT and STC only) and CPOD POE (for NTC/REP only)
 	case $type in
