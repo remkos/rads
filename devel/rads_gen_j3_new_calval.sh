@@ -67,23 +67,10 @@ case $type in
 		;;
 esac
 
-rads_close_sandbox
+date												>> "$log" 2>&1
 
-# Now process do the same again, and do the post-processing
-
-rads_open_sandbox j3.${type}
-case $type in
-	gdr)
-		find -L ${type}/cycle_??? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
-		if [ -s "$lst" ]; then
-			rads_gen_jason_gdrf $options < "$lst"								>> "$log" 2>&1
-		fi
-		;;
-	*)
-		find -L ${type}/c??? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
-		rads_gen_jason_gdrf --ymd=$d0 $options < "$lst"							>> "$log" 2>&1
-		;;
-esac
+# Now continue with the post-processing
+rads_reuse_sandbox "j3.${type}"
 
 # Add MOE orbit (for OGDR only)
 case $type in
