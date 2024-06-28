@@ -46,7 +46,6 @@ for type in ${types}; do
 
 	find $type/c??? -name "*.nc" -a -newer "$mrk" | sort > "$lst"
 	rads_gen_s3		$options --min-rec=6 --ymd=$d0 < "$lst"	>> "$log" 2>&1
-	rads_close_sandbox
 
 # Now continue with the post-processing
 	rads_reuse_sandbox "3b.${type}1"
