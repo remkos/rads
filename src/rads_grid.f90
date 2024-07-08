@@ -57,11 +57,12 @@ contains
 ! Load a grid into memory (NetCDF format)
 !
 ! SYNOPSIS
-function grid_load (filenm, info)
+function grid_load (filenm, info, verbose)
 use netcdf
 integer(fourbyteint) :: grid_load
 character(len=*), intent(in) :: filenm
 type(grid), intent(inout) :: info
+logical, intent(in), optional :: verbose
 !
 ! PURPOSE
 ! This routine allocates memory and loads the contents of a NetCDF
@@ -91,6 +92,8 @@ type(grid), intent(inout) :: info
 !             varname must be read.
 ! info      : Structure containing information about the grid. Needs
 !             to be declared or allocated in calling program.
+! verbose   : (optional) Set to true to get mention of grid being loaded to
+!             stderr.
 !
 ! RETURN VALUE
 ! grid_load : 0 = No error
@@ -102,6 +105,7 @@ type(grid), intent(inout) :: info
 integer(fourbyteint) :: i,ncid,z_id
 character(len=80) :: units
 
+if (present(verbose) .and. verbose) write (0,600) trim(filenm)
 call grid_load_nc
 if (grid_load /= 0) then
 	if (grid_load == -1) call grid_error (3, 'Error loading grid attributes from '//filenm)
@@ -140,6 +144,8 @@ endif
 grid_load = 0
 i = nf90_close (ncid)
 return
+
+600 format ('(loading: ',a,')')
 
 contains
 
