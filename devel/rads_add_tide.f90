@@ -36,13 +36,13 @@ use tides
 
 type(rads_sat) :: S
 type(rads_pass) :: P
-integer(fourbyteint), parameter :: mfes = 3, mgot = 3
+integer(fourbyteint), parameter :: mfes = 2, mgot = 3
 type(festideinfo) :: fesinfo0
 type(gottideinfo) :: gotinfo(mgot)
-character(len=6), parameter :: nfes(mfes) = (/'fes04 ', 'fes14 ', 'fes22 '/)
+character(len=6), parameter :: nfes(mfes) = (/'fes14 ', 'fes22 '/)
 character(len=6), parameter :: ngot(mgot) = (/'got48 ', 'got410', 'got51 '/)
 type(grid) :: sininfo, cosinfo
-type(fes) :: fesinfo1(2:mfes), fesinfo2(2:mfes)
+type(fes) :: fesinfo1(mfes), fesinfo2(mfes)
 type(hrettideinfo) :: hretinfo
 type(rads_var), pointer :: var
 
@@ -98,19 +98,16 @@ do
 		if (grid_load (path,cosinfo) /= 0) call rads_exit ('Error loading grid')
 		call parseenv ('${ALTIM}/data/' // var%info%parameters(jdum+1:), path)
 		if (grid_load (path,sininfo) /= 0) call rads_exit ('Error loading grid')
-	case ('fes04', 'fes2004')
-		do_fes(1) = .true.
-		call festideinit('FES2004',.true.,fesinfo0)
 	case ('fes14', 'fes2014')
-		do_fes(2) = .true.
+		do_fes(1) = .true.
 		var => rads_varptr (S, 'tide_ocean_fes14')
+		jdum = fes_init(fesinfo1(1),fes_tide,fes_mem,var%info%parameters)
+		jdum = fes_init(fesinfo2(1),fes_radial,fes_mem,var%info%parameters)
+	case ('fes22', 'fes2022')
+		do_fes(2) = .true.
+		var => rads_varptr (S, 'tide_ocean_fes22')
 		jdum = fes_init(fesinfo1(2),fes_tide,fes_mem,var%info%parameters)
 		jdum = fes_init(fesinfo2(2),fes_radial,fes_mem,var%info%parameters)
-	case ('fes22', 'fes2022')
-		do_fes(3) = .true.
-		var => rads_varptr (S, 'tide_ocean_fes22')
-		jdum = fes_init(fesinfo1(3),fes_tide,fes_mem,var%info%parameters)
-		jdum = fes_init(fesinfo2(3),fes_radial,fes_mem,var%info%parameters)
 	case ('got48')
 		do_got(1) = .true.
 		var => rads_varptr (S, 'tide_ocean_got48')
@@ -139,11 +136,10 @@ enddo
 ! Free the allocated grids
 
 if (do_ptide) call poletidefree
-if (do_fes(1)) call festidefree(fesinfo0)
-do j = 2,mfes
+do j = 1,mfes
 	if (.not.do_fes(j)) cycle
 	call fes_delete(fesinfo1(j))
-	if (j /= 2) call fes_delete(fesinfo2(j))
+	call fes_delete(fesinfo2(j))
 enddo
 do j = 1,mgot
 	if (do_got(j)) call gottidefree(gotinfo(j))
@@ -169,7 +165,6 @@ write (*,1310)
 'Additional [processing_options] are:'/ &
 '  -m, --models MODEL[,...]  Select tide models' // &
 'Currently available MODELs are:'/ &
-'  fes04  : FES2004 ocean and load tide'/ &
 '  fes14  : FES2014 ocean and load tide'/ &
 '  fes22  : FES2022 ocean and load tide'/ &
 '  got48  : GOT4.8 ocean and load tide'/ &
@@ -192,7 +187,7 @@ subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
 real(eightbytereal) :: phase, co, si
 real(eightbytereal), parameter :: pi = 4d0 * atan(1d0), t_2000 = 473299200d0, t_year = 365.25d0 * 86400d0
-real(eightbytereal), parameter :: k2 = 0.302, h2 = 0.609, h2k2 = h2 / (1 + k2)
+real(eightbytereal), parameter :: k2 = 0.302d0, h2 = 0.609d0, h2k2 = h2 / (1 + k2)
 real(eightbytereal) :: time(n), lon(n), lat(n), &
 	otide_sp(n), otide_lp(n), ltide_sp(n), ltide_lp(n), lptide_eq(n), lptide_mf(n), itide(n), itide_comp(6)
 integer(fourbyteint) :: i, j
@@ -212,7 +207,7 @@ call rads_get_var (S, P, 'lat', lat, .true.)
 fesinfo0%t_nodal = 1d30
 gotinfo(:)%t_nodal = 1d30
 hretinfo%t_nodal = 1d30
-do j = 2,mfes
+do j = 1,mfes
 	if (.not.do_fes(j)) cycle
 	call fes_set_nodal_time (fesinfo1(j), 1d30)
 enddo
@@ -273,23 +268,8 @@ if (do_stide) then
 	call rads_put_var (S, P, 'tide_solid', otide_sp)
 endif
 
-! FES2004 model
-if (do_fes(1)) then
-! In order to allow parallelisation we do one measurement first (which initialises), then do the next n-1 in parallel
-	call festide(fesinfo0, time(1), lat(1), lon(1), otide_sp(1), otide_lp(1), ltide_sp(1), ltide_lp(1))
-!$omp parallel do shared(fesinfo0,time,lat,lon,otide_sp,otide_lp,ltide_sp,ltide_lp,n) private(i)
-	do i = 2,n
-		call festide(fesinfo0, time(i), lat(i), lon(i), otide_sp(i), otide_lp(i), ltide_sp(i), ltide_lp(i))
-	enddo
-!$omp end parallel do
-	! First remove equilibrium part of Mm,Mf,Mtm,MSqm from long-period tides, then add equilibrium part
-	otide_lp = otide_lp - lptide_mf + lptide_eq
-	call rads_put_var (S, P, 'tide_ocean_fes04', otide_sp + otide_lp)
-	call rads_put_var (S, P, 'tide_load_fes04', ltide_sp + ltide_lp)
-endif
-
 ! FES2014 and later models
-do j = 2,mfes
+do j = 1,mfes
 	if (.not.do_fes(j)) cycle
 	! otide_lp already includes both non-equilibrium and equilibrium long-period tides
 !$omp parallel do shared(fesinfo1,time,lat,lon,otide_sp,otide_lp,n) private(i)
