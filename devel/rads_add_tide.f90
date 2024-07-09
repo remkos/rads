@@ -100,14 +100,14 @@ do
 	case ('fes14', 'fes2014')
 		do_fes(1) = .true.
 		var => rads_varptr (S, 'tide_ocean_fes14')
-		jdum = fes_init(fesinfo0(1),fes_tide,fes_mem,'FES2014/short_period_ocean_tide_extrapolated')
-		jdum = fes_init(fesinfo1(1),fes_tide,fes_mem,'FES2014/long_period_ocean_tide_extrapolated')
+		jdum = fes_init(fesinfo0(1),fes_tide,fes_mem,'FES2014/long_period_ocean_tide_extrapolated')
+		jdum = fes_init(fesinfo1(1),fes_tide,fes_mem,'FES2014/short_period_ocean_tide_extrapolated')
 		jdum = fes_init(fesinfo2(1),fes_radial,fes_mem,'FES2014/load_tide')
 	case ('fes22', 'fes2022')
 		do_fes(2) = .true.
 		var => rads_varptr (S, 'tide_ocean_fes22')
-		jdum = fes_init(fesinfo0(2),fes_tide,fes_mem,'FES2022/short_period_ocean_tide_extrapolated')
-		jdum = fes_init(fesinfo1(2),fes_tide,fes_mem,'FES2022/long_period_ocean_tide_extrapolated')
+		jdum = fes_init(fesinfo0(2),fes_tide,fes_mem,'FES2022/long_period_ocean_tide_extrapolated')
+		jdum = fes_init(fesinfo1(2),fes_tide,fes_mem,'FES2022/short_period_ocean_tide_extrapolated')
 		jdum = fes_init(fesinfo2(2),fes_radial,fes_mem,'FES2022/load_tide')
 	case ('got48')
 		do_got(1) = .true.
