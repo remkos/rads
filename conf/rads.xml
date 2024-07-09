@@ -3558,7 +3558,7 @@ Global RADS configuration file
 		<units>m</units>
 		<limits>0.0 2.1</limits>
 		<limits sat="g1">0.0 0.5</limits> <!--GFO on-board a-b tracker smoothes the data-->
-		<limits sat="j1 j2 j3 sw tx">0.0 1.5</limits> <!--Retracker noise on Jason is lower than others-->
+		<limits sat="6a j1 j2 j3 sw tx">0.0 1.5</limits> <!--Retracker noise on Jason is lower than others-->
 		<plot_range>0.2 1.0</plot_range>
 		<data>swh_rms_ku</data>
 		<format>f5.3</format>
