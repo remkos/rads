@@ -113,11 +113,11 @@ real(eightbytereal) :: first_measurement_time, last_measurement_time, equator_ti
 ! Data variables
 
 integer(twobyteint), allocatable :: flags_mle3(:), flags_nr(:), flags_save(:)
-character(len=2) :: mss_cnescls_ver = '15', mss_dtu_ver = '18', tide_fes_ver = '14'
-character(len=3) :: tide_got_ver = '410', baseline
+character(len=16) :: mss_sol1, mss_sol2, tide_sol1, tide_sol2
+character(len=3) :: baseline
 character(len=8) :: chd_ver, cha_ver, cnf_ver
 integer :: latency = rads_nrt, nsat
-logical :: lr, has_nr
+logical :: has_c, has_mle3, has_nr
 
 ! Other local variables
 
@@ -175,7 +175,7 @@ do
 		call log_string ('Error: file skipped: unknown latency', .true.)
 		cycle
 	endif
-	lr = (index(arg, '_LR_') > 0)
+	has_c = (index(arg, '_LR_') > 0)
 
 ! Get the mission name and initialise RADS (if not done before)
 
@@ -199,7 +199,6 @@ do
 
 	call nfs(nf90_inq_ncid(ncid, 'data_01', ncid1))
 	call nfs(nf90_inq_ncid(ncid1, 'ku', ncidk))
-	if (lr) call nfs(nf90_inq_ncid(ncid1, 'c', ncidc))
 
 ! Read global attributes
 
@@ -279,9 +278,25 @@ do
 
 	if (baseline < 'F09' .and. nf90_inq_varid(ncid1,'rain_attenuation_nr',varid) == nf90_noerr) baseline = 'F09'
 
-! Determine if we have numerical retrackers
+! Determine if we have C-band, MLE3, and/or numerical retrackers
 
-	has_nr = (baseline == 'F08' .and. lr) .or. baseline >= 'F09'
+	has_c = (nf90_inq_ncid(ncid1, 'c', ncidc) == nf90_noerr)
+	has_mle3 = (nf90_inq_varid(ncidk,'range_ocean_mle3',varid) == nf90_noerr)
+	has_nr = (nf90_inq_varid(ncidk,'range_ocean_nr',varid) == nf90_noerr)
+
+! Set new model versions
+
+	if (baseline < 'G01') then
+		mss_sol1 = 'cnescls15'
+		mss_sol2 = 'dtu18'
+		tide_sol1 = 'got410'
+		tide_sol2 = 'fes14'
+	else
+		mss_sol1 = 'hybrid23'
+		mss_sol2 = 'dtu21'
+		tide_sol1 = 'got410'
+		tide_sol2 = 'fes22'
+	endif
 
 ! Store input file name
 
@@ -309,9 +324,9 @@ do
 
 	flags = 0
 	if (index(chd_ver,'CHDR') > 0) flags = 1					! bit  0: Altimeter side (A=0, B=1)
-	if (lr) call nc2f (ncidk, 'off_nadir_angle_wf_ocean_qual', 1)		! bit  1: Quality off-nadir pointing
+	if (has_c) call nc2f (ncidk, 'off_nadir_angle_wf_ocean_qual', 1)		! bit  1: Quality off-nadir pointing
 	call nc2f (ncid1, 'surface_classification_flag', 2, eq=4)	! bit  2: Continental ice
-	if (lr) call nc2f (ncidc, 'range_ocean_qual', 3)			! bit  3: Quality dual-frequency iono
+	if (has_c) call nc2f (ncidc, 'range_ocean_qual', 3)			! bit  3: Quality dual-frequency iono
 	call nc2f (ncid1, 'surface_classification_flag', 4, eq=1)
 	call nc2f (ncid1, 'surface_classification_flag', 4, ge=3)	! bit  4: Water/land
 	call nc2f (ncid1, 'surface_classification_flag', 5, ge=1)	! bit  5: Ocean/other
@@ -337,7 +352,7 @@ do
 
 ! Now do specifics for MLE3
 
-	if (lr) then
+	if (has_mle3) then
 		call nc2f (ncidk, 'range_ocean_mle3_qual', 11)			! bit 11: Quality range
 		call nc2f (ncidk, 'swh_ocean_mle3_qual', 12)			! bit 12: Quality SWH
 		call nc2f (ncidk, 'sig0_ocean_mle3_qual', 13)			! bit 13: Quality Sigma0
@@ -399,12 +414,14 @@ do
 	call cpy_var (ncidk, 'range_ocean_numval', 'range_numval_ku')
 	call cpy_var (ncidk, 'range_ocean_qual', 'qual_range')
 	call cpy_var (ncidk, 'net_instr_cor_range_ocean', 'drange_ku')
-	if (lr) then
+	if (has_mle3) then
 		call cpy_var (ncidk, 'range_ocean_mle3', 'range_ku_mle3')
 		call cpy_var (ncidk, 'range_ocean_mle3_rms', 'range_rms_ku_mle3')
 		call cpy_var (ncidk, 'range_ocean_mle3_numval', 'range_numval_ku_mle3')
 		call cpy_var (ncidk, 'range_ocean_mle3_qual', 'qual_range_mle3')
 		call cpy_var (ncidk, 'net_instr_cor_range_ocean_mle3', 'drange_ku_mle3')
+	endif
+	if (has_c) then
 		call cpy_var (ncidc, 'range_ocean', 'range_c')
 		call cpy_var (ncidc, 'range_ocean_rms', 'range_rms_c')
 		call cpy_var (ncidc, 'range_ocean_numval', 'range_numval_c')
@@ -424,11 +441,13 @@ do
 	call cpy_var (ncidk, 'swh_ocean_rms', 'swh_rms_ku')
 	call cpy_var (ncidk, 'swh_ocean_qual', 'qual_swh')
 	call cpy_var (ncidk, 'net_instr_cor_swh_ocean', 'dswh_ku')
-	if (lr) then
+	if (has_mle3) then
 		call cpy_var (ncidk, 'swh_ocean_mle3', 'swh_ku_mle3')
 		call cpy_var (ncidk, 'swh_ocean_mle3_rms', 'swh_rms_ku_mle3')
 		call cpy_var (ncidk, 'swh_ocean_mle3_qual', 'qual_swh_mle3')
 		call cpy_var (ncidk, 'net_instr_cor_swh_ocean_mle3', 'dswh_ku_mle3')
+	endif
+	if (has_c) then
 		call cpy_var (ncidc, 'swh_ocean', 'swh_c')
 		call cpy_var (ncidc, 'swh_ocean_rms', 'swh_rms_c')
 		call cpy_var (ncidc, 'net_instr_cor_swh_ocean', 'dswh_c')
@@ -447,10 +466,12 @@ do
 	call cpy_var (ncidk, 'sig0_ocean_qual', 'qual_sig0')
 	call cpy_var (ncidk, 'net_instr_cor_sig0_ocean', 'dsig0_ku')
 	call cpy_var (ncidk, 'atm_cor_sig0', 'dsig0_atmos_ku')
-	if (lr) then
+	if (has_mle3) then
 		call cpy_var (ncidk, 'sig0_ocean_mle3', 'sig0_ku_mle3')
 		call cpy_var (ncidk, 'sig0_ocean_mle3_rms', 'sig0_rms_ku_mle3')
 		call cpy_var (ncidk, 'net_instr_cor_sig0_ocean_mle3', 'dsig0_ku_mle3')
+	endif
+	if (has_c) then
 		call cpy_var (ncidc, 'sig0_ocean', 'sig0_c')
 		call cpy_var (ncidc, 'sig0_ocean_rms', 'sig0_rms_c')
 		call cpy_var (ncidc, 'atm_cor_sig0', 'dsig0_atmos_c')
@@ -466,7 +487,7 @@ do
 ! Wind speed
 
 	call cpy_var (ncid1, 'wind_speed_alt', 'wind_speed_alt')
-	if (lr) call cpy_var (ncid1, 'wind_speed_alt_mle3', 'wind_speed_alt_mle3')
+	if (has_mle3) call cpy_var (ncid1, 'wind_speed_alt_mle3', 'wind_speed_alt_mle3')
 	if (has_nr) call cpy_var (ncid1, 'wind_speed_alt_nr', 'wind_speed_alt_nr')
 	call cpy_var (ncid1, 'rad_wind_speed', 'wind_speed_rad')
 	call cpy_var (ncid1, 'wind_speed_mod_u', 'wind_speed_ecmwf_u')
@@ -481,12 +502,12 @@ do
 
 ! Off-nadir angle
 
-	if (lr) then
+	if (has_c) then
 		call cpy_var (ncidk, 'off_nadir_angle_wf_ocean', 'off_nadir_angle2_wf_ku')
 		call cpy_var (ncidk, 'off_nadir_angle_wf_ocean_rms', 'off_nadir_angle2_wf_rms_ku')
 		call cpy_var (ncidk, 'off_nadir_angle_wf_ocean_qual', 'qual_attitude')
 	endif
-	if (lr .and. has_nr) then
+	if (has_c .and. has_nr) then
 		call cpy_var (ncidk, 'off_nadir_angle_wf_ocean_nr', 'off_nadir_angle2_wf_ku_nr')
 		call cpy_var (ncidk, 'off_nadir_angle_wf_ocean_nr_rms', 'off_nadir_angle2_wf_rms_ku_nr')
 		call cpy_var (ncidk, 'off_nadir_angle_wf_ocean_nr_qual', 'qual_attitude_nr')
@@ -502,10 +523,9 @@ do
 	call cpy_var (ncid1, 'rad_wet_tropo_cor', 'wet_tropo_rad')
 	call cpy_var (ncid1, 'iono_cor_alt', 'iono_alt')
 	call cpy_var (ncid1, 'iono_cor_alt_filtered', 'iono_alt_smooth')
-	if (lr) then
+	if (has_mle3) then
 		call cpy_var (ncid1, 'iono_cor_alt_mle3', 'iono_alt_mle3')
 		call cpy_var (ncid1, 'iono_cor_alt_filtered_mle3', 'iono_alt_smooth_mle3')
-		call cpy_var (ncidc, 'range_ocean_qual', 'qual_iono_alt')
 	endif
 	if (has_nr) then
 		call cpy_var (ncid1, 'iono_cor_alt_nr', 'iono_alt_nr')
@@ -516,13 +536,11 @@ do
 ! SSB
 
 	call cpy_var (ncidk, 'sea_state_bias', 'ssb_cls')
-	if (lr) then
-		call cpy_var (ncidk, 'sea_state_bias_mle3', 'ssb_cls_mle3')
-		call cpy_var (ncidc, 'sea_state_bias', 'ssb_cls_c')
-	endif
+	if (has_mle3) call cpy_var (ncidk, 'sea_state_bias_mle3', 'ssb_cls_mle3')
+	if (has_c) call cpy_var (ncidc, 'sea_state_bias', 'ssb_cls_c')
 	if (has_nr) then
 		call cpy_var (ncidk, 'sea_state_bias_nr', 'ssb_cls_nr')
-		if (lr) call cpy_var (ncidc, 'sea_state_bias_nr', 'ssb_cls_c_nr')
+		if (has_c) call cpy_var (ncidc, 'sea_state_bias_nr', 'ssb_cls_c_nr')
 	endif
 
 ! IB
@@ -536,10 +554,14 @@ do
 
 ! Tides
 
-	call cpy_var (ncid1, 'ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got' // tide_got_ver)
-	call cpy_var (ncid1, 'ocean_tide_sol2 load_tide_sol2 SUB ocean_tide_non_eq ADD', 'tide_ocean_fes' // tide_fes_ver)
-	call cpy_var (ncid1, 'load_tide_sol1', 'tide_load_got' // tide_got_ver)
-	call cpy_var (ncid1, 'load_tide_sol2', 'tide_load_fes' // tide_fes_ver)
+	call cpy_var (ncid1, 'ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_' // tide_sol1)
+	if (baseline < 'G01') then
+		call cpy_var (ncid1, 'ocean_tide_sol2 load_tide_sol2 SUB ocean_tide_non_eq ADD', 'tide_ocean_' // tide_sol2)
+	else ! ocean_tide_non_eq is already part of ocean_tide_sol2 in baseline G01 and later
+		call cpy_var (ncid1, 'ocean_tide_sol2 load_tide_sol2 SUB', 'tide_ocean_' // tide_sol2)
+	endif
+	call cpy_var (ncid1, 'load_tide_sol1', 'tide_load_' // tide_sol1)
+	call cpy_var (ncid1, 'load_tide_sol2', 'tide_load_' // tide_sol2)
 	call cpy_var (ncid1, 'ocean_tide_eq', 'tide_equil')
 	call cpy_var (ncid1, 'ocean_tide_non_eq', 'tide_non_equil')
 	call cpy_var (ncid1, 'internal_tide', 'tide_internal')
@@ -549,8 +571,8 @@ do
 ! Geoid and MSS
 
 	call cpy_var (ncid1, 'geoid delta_ellipsoid_tp_wgs84 SUB', 'geoid_egm2008')
-	call cpy_var (ncid1, 'mean_sea_surface_sol1 delta_ellipsoid_tp_wgs84 SUB', 'mss_cnescls' // mss_cnescls_ver)
-	call cpy_var (ncid1, 'mean_sea_surface_sol2 delta_ellipsoid_tp_wgs84 SUB', 'mss_dtu' // mss_dtu_ver)
+	call cpy_var (ncid1, 'mean_sea_surface_sol1 delta_ellipsoid_tp_wgs84 SUB', 'mss_' // mss_sol1)
+	call cpy_var (ncid1, 'mean_sea_surface_sol2 delta_ellipsoid_tp_wgs84 SUB', 'mss_' // mss_sol2)
 
 ! Surface type and coastal proximity
 
@@ -586,7 +608,7 @@ do
 ! Bit flags
 
 	call new_var ('flags', dble(flags))
-	if (lr) call new_var ('flags_mle3', dble(flags_mle3))
+	if (has_mle3) call new_var ('flags_mle3', dble(flags_mle3))
 	if (has_nr) call new_var ('flags_nr', dble(flags_nr))
 
 ! Other radiometer measurements
@@ -601,7 +623,7 @@ do
 ! SSHA
 
 	call cpy_var (ncidk, 'ssha', 'ssha')
-	if (lr) call cpy_var (ncidk, 'ssha_mle3', 'ssha_mle3')
+	if (has_mle3) call cpy_var (ncidk, 'ssha_mle3', 'ssha_mle3')
 	if (has_nr) call cpy_var (ncidk, 'ssha_nr', 'ssha_nr')
 
 ! Misc
