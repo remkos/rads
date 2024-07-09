@@ -113,8 +113,8 @@ real(eightbytereal) :: first_measurement_time, last_measurement_time, equator_ti
 ! Data variables
 
 integer(twobyteint), allocatable :: flags_mle3(:), flags_nr(:), flags_save(:)
-character(len=2) :: mss_cnescls_ver = '15', mss_dtu_ver = '18', tide_fes_ver = '14'
-character(len=3) :: tide_got_ver = '410', baseline
+character(len=16) :: mss_sol1, mss_sol2, tide_sol1, tide_sol2
+character(len=3) :: baseline
 character(len=8) :: chd_ver, cha_ver, cnf_ver
 integer :: latency = rads_nrt, nsat
 logical :: has_c, has_mle3, has_nr
@@ -283,6 +283,20 @@ do
 	has_c = (nf90_inq_ncid(ncid1, 'c', ncidc) == nf90_noerr)
 	has_mle3 = (nf90_inq_varid(ncidk,'range_ocean_mle3',varid) == nf90_noerr)
 	has_nr = (nf90_inq_varid(ncidk,'range_ocean_nr',varid) == nf90_noerr)
+
+! Set new model versions
+
+	if (baseline < 'G01') then
+		mss_sol1 = 'cnescls15'
+		mss_sol2 = 'dtu18'
+		tide_sol1 = 'got410'
+		tide_sol2 = 'fes14'
+	else
+		mss_sol1 = 'hybrid23'
+		mss_sol2 = 'dtu21'
+		tide_sol1 = 'got410'
+		tide_sol2 = 'fes22'
+	endif
 
 ! Store input file name
 
@@ -540,10 +554,14 @@ do
 
 ! Tides
 
-	call cpy_var (ncid1, 'ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got' // tide_got_ver)
-	call cpy_var (ncid1, 'ocean_tide_sol2 load_tide_sol2 SUB ocean_tide_non_eq ADD', 'tide_ocean_fes' // tide_fes_ver)
-	call cpy_var (ncid1, 'load_tide_sol1', 'tide_load_got' // tide_got_ver)
-	call cpy_var (ncid1, 'load_tide_sol2', 'tide_load_fes' // tide_fes_ver)
+	call cpy_var (ncid1, 'ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_' // tide_sol1)
+	if (baseline < 'G01') then
+		call cpy_var (ncid1, 'ocean_tide_sol2 load_tide_sol2 SUB ocean_tide_non_eq ADD', 'tide_ocean_' // tide_sol2)
+	else ! ocean_tide_non_eq is already part of ocean_tide_sol2 in baseline G01 and later
+		call cpy_var (ncid1, 'ocean_tide_sol2 load_tide_sol2 SUB', 'tide_ocean_' // tide_sol2)
+	endif
+	call cpy_var (ncid1, 'load_tide_sol1', 'tide_load_' // tide_sol1)
+	call cpy_var (ncid1, 'load_tide_sol2', 'tide_load_' // tide_sol2)
 	call cpy_var (ncid1, 'ocean_tide_eq', 'tide_equil')
 	call cpy_var (ncid1, 'ocean_tide_non_eq', 'tide_non_equil')
 	call cpy_var (ncid1, 'internal_tide', 'tide_internal')
@@ -553,8 +571,8 @@ do
 ! Geoid and MSS
 
 	call cpy_var (ncid1, 'geoid delta_ellipsoid_tp_wgs84 SUB', 'geoid_egm2008')
-	call cpy_var (ncid1, 'mean_sea_surface_sol1 delta_ellipsoid_tp_wgs84 SUB', 'mss_cnescls' // mss_cnescls_ver)
-	call cpy_var (ncid1, 'mean_sea_surface_sol2 delta_ellipsoid_tp_wgs84 SUB', 'mss_dtu' // mss_dtu_ver)
+	call cpy_var (ncid1, 'mean_sea_surface_sol1 delta_ellipsoid_tp_wgs84 SUB', 'mss_' // mss_sol1)
+	call cpy_var (ncid1, 'mean_sea_surface_sol2 delta_ellipsoid_tp_wgs84 SUB', 'mss_' // mss_sol2)
 
 ! Surface type and coastal proximity
 
