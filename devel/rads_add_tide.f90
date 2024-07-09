@@ -37,6 +37,7 @@ use tides
 type(rads_sat) :: S
 type(rads_pass) :: P
 integer(fourbyteint), parameter :: mfes = 2, mgot = 3
+integer(fourbyteint) :: fes_mode = fes_mem
 type(gottideinfo) :: gotinfo(mgot)
 character(len=6), parameter :: nfes(mfes) = (/'fes14 ', 'fes22 '/)
 character(len=6), parameter :: ngot(mgot) = (/'got48 ', 'got410', 'got51 '/)
@@ -59,7 +60,7 @@ integer(fourbyteint) :: j, jdum, i0, i1
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('m: models:')
+call rads_set_options ('m: models: fes-io')
 call rads_init (S)
 
 ! Check for options
@@ -68,6 +69,8 @@ do j = 1,rads_nopt
 	select case (rads_opt(j)%opt)
 	case ('m', 'models')
 		models = rads_opt(j)%arg
+	case ('fes-io')
+		fes_mode = fes_io
 	end select
 enddo
 
@@ -100,15 +103,15 @@ do
 	case ('fes14', 'fes2014')
 		do_fes(1) = .true.
 		var => rads_varptr (S, 'tide_ocean_fes14')
-		jdum = fes_init(fesinfo0(1),fes_tide,fes_mem,'FES2014/long_period_ocean_tide_extrapolated')
-		jdum = fes_init(fesinfo1(1),fes_tide,fes_mem,'FES2014/short_period_ocean_tide_extrapolated')
-		jdum = fes_init(fesinfo2(1),fes_radial,fes_mem,'FES2014/load_tide')
+		jdum = fes_init(fesinfo0(1),fes_tide,  fes_mode,'FES2014/long_period_ocean_tide_extrapolated')
+		jdum = fes_init(fesinfo1(1),fes_tide,  fes_mode,'FES2014/short_period_ocean_tide_extrapolated')
+		jdum = fes_init(fesinfo2(1),fes_radial,fes_mode,'FES2014/load_tide')
 	case ('fes22', 'fes2022')
 		do_fes(2) = .true.
 		var => rads_varptr (S, 'tide_ocean_fes22')
-		jdum = fes_init(fesinfo0(2),fes_tide,fes_mem,'FES2022/long_period_ocean_tide_extrapolated')
-		jdum = fes_init(fesinfo1(2),fes_tide,fes_mem,'FES2022/short_period_ocean_tide_extrapolated')
-		jdum = fes_init(fesinfo2(2),fes_radial,fes_mem,'FES2022/load_tide')
+		jdum = fes_init(fesinfo0(2),fes_tide,  fes_mode,'FES2022/long_period_ocean_tide_extrapolated')
+		jdum = fes_init(fesinfo1(2),fes_tide,  fes_mode,'FES2022/short_period_ocean_tide_extrapolated')
+		jdum = fes_init(fesinfo2(2),fes_radial,fes_mode,'FES2022/load_tide')
 	case ('got48')
 		do_got(1) = .true.
 		var => rads_varptr (S, 'tide_ocean_got48')
@@ -164,6 +167,7 @@ call synopsis_devel ('')
 write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
+'  --fes-io                  Do not load entire FES tide models into memory' / &
 '  -m, --models MODEL[,...]  Select tide models' // &
 'Currently available MODELs are:'/ &
 '  fes14  : FES2014 ocean and load tide'/ &
