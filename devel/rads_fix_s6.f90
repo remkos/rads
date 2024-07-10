@@ -98,7 +98,7 @@ cal1_interval = cal1_interval * 86400d0
 
 ! If nothing selected, stop here
 
-if (.not.(lcal1 .or. lrange .or. lsig0 .or. lwind > 0 .or. lssb .or. lrain > 0 .or. lflag)) stop
+if (.not.(lcal1 .or. lrange .or. lsig0 .or. lwind > 0 .or. lssb .or. lrain > 0 .or. lflag .or. any(bias_sig0 /= 0d0))) stop
 
 ! Run process for all files
 
@@ -129,12 +129,12 @@ write (*,1310)
 '  --sideB-sig0[=KU,C]       Add biases to sig0 (Ku, C, in dB) for Side B and CHDR < 005 (def: -0.07,+0.49)' / &
 '  --range                   Fix range biases known for PDAP v3.0 and v3.1' / &
 '                            Also fix result of temporary error in radar data base (RMC only, 34 gates)' / &
-'  --sig0                    Add -5.67 dB to HR sigma0' / &
+'  --sig0                    Add -5.67 dB (Baseline < F09) or +0.47 dB to HR sigma0' / &
 '  --all                     All of the above' / &
 '  --rain[=KU,C]             Add biases to sigma0 (KU, C, in dB) before calling rain model' / &
-'                            (for L2 CONF < 008 or with --sig0 use default 1.23,1.64)' / &
+'                            (with --sig0 use default 1.23,1.64)' / &
 '  --wind[=MLE4,MLE3]        Add biases to sigma0 (MLE4, MLE3, in dB) before calling wind model' / &
-'                            (for L2 CONF < 008 or 009 or with --sig0 use default 1.29,1.37)' / &
+'                            (with --sig0 use default 1.29,1.37)' / &
 '  --ssb                     Update SSB (with --wind)' / &
 '  --bias-range=KU,C         Add additional bias to range (Ku, C, in m)' / &
 '  --bias-sig0=KU,C          Add additional bias to sig0 (Ku, C, in dB)' / &
@@ -249,21 +249,19 @@ endif
 ! sigma0: alignment of HR with LR
 
 if (lsig0 .and. .not.lr) then
-	if (cnf_ver < '009') then
-		dsig0(1) = dsig0(1) - 7.41d0
+	if (baseline < 'F09') then
+		dsig0(1) = dsig0(1) - 5.67d0
 	else
-		dsig0(1) = dsig0(1) - 5.67d0	! Changed by 1.74 dB since L2 CONF 009
+		dsig0(1) = dsig0(1) + 0.47d0	! Changed by +6.14 dB since Baseline F09
 	endif
 endif
 
 do_sig0 = any(dsig0 /= 0d0)
 
 ! wind: apply biases before calling wind model
-! L2 CONF < 008: did not use proper wind model and/or sig0 bias
-! L2 CONF = 009: did not use proper sig0 bias in HR
 
 if (lwind > 0) then
-	do_wind = (cnf_ver < '008' .or. cnf_ver == '009' .or. dsig0(1) /= 0 .or. lwind == 2)
+	do_wind = (dsig0(1) /= 0 .or. lwind == 2)
 endif
 
 ! ssb: do when requested and wind has changed
@@ -271,10 +269,9 @@ endif
 do_ssb = (lssb .and. do_wind)
 
 ! rain: apply biases before calling rain model
-! L2 CONF < 008: did not use proper sig0 bias
 
 if (lrain > 0 .and. lr .and. .not.nr_only) then
-	do_rain = (cnf_ver < '008' .or. do_sig0 .or. lrain == 2)
+	do_rain = (do_sig0 .or. lrain == 2)
 endif
 
 ! flag bit 0: not needed for HR Side B
