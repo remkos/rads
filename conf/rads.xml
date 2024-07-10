@@ -4317,7 +4317,8 @@ Global RADS configuration file
 	<default>0</default>
 	<compress>int2 1e-4</compress>
 	<dimensions>0</dimensions>
-	<parameters> -17.2 0  0  0 0</parameters>
+	<parameters sat="6a">     -17.2 0  0  0 0</parameters>
+	<parameters sat="6a.hr*"> -11.0 0  0  0 0</parameters>
 </var>
 
 <var name="tide_equil" field="3901 39">

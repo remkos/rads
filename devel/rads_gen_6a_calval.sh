@@ -103,9 +103,9 @@ case $type in
 	*nt*) rads_add_orbit  $options -Valt_gdrf -C1-45 --dir=poe_cnes	>> "$log" 2>&1 ;;
 esac
 
-# For LR, add _mle3 and _nr
+# For LR,  _mle3
 case $type in
-	*lr*) extra="-x mle3 -x nr" ;;
+	*lr*) extra="-x mle3" ;;
 	   *) extra= ;;
 esac
 
@@ -116,8 +116,8 @@ rads_add_iono     $options --all						>> "$log" 2>&1
 rads_add_orbit    $options -Valt_gps     -C5-60			>> "$log" 2>&1
 rads_add_era5     $options --all						>> "$log" 2>&1
 # Redetermine SSHA
-rads_add_refframe $options -x $extra					>> "$log" 2>&1
-rads_add_sla      $options -x $extra					>> "$log" 2>&1
+rads_add_refframe $options -x -x nr $extra				>> "$log" 2>&1
+rads_add_sla      $options -x -x nr $extra				>> "$log" 2>&1
 
 date													>> "$log" 2>&1
 
