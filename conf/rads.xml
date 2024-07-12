@@ -1425,9 +1425,9 @@ Global RADS configuration file
 	<comment>Ocean tide variation including long-period equilibrium and non-equilibrium tides, extrapolated into the coast</comment>
 </var>
 <var name="tide_ocean_fes22">
-	<long_name>FES2022 ocean tide</long_name>
-	<source>FES2022 (extrapolated)</source>
-	<parameters>FES2022/extrapolated</parameters>
+	<long_name>FES2022b ocean tide</long_name>
+	<source>FES2022b (extrapolated)</source>
+	<parameters>FES2022b/extrapolated</parameters>
 	<units>m</units>
 	<limits>-5 5</limits>
 	<plot_range>-2 2</plot_range>
@@ -1489,8 +1489,8 @@ Global RADS configuration file
 	<comment>Load tide variation to be added to ocean tide</comment>
 </var>
 <var name="tide_load_fes22">
-	<long_name>FES2022 load tide</long_name>
-	<source>FES2022</source>
+	<long_name>FES2022b load tide</long_name>
+	<source>FES2022b</source>
 	<units>m</units>
 	<limits>-0.5 0.5</limits>
 	<data>tide_load_fes22</data>
