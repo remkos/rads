@@ -1937,6 +1937,15 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 </var>
+<var name="mdt_cnescls22">
+	<long_name>CNES/CLS 2022 mean dynamic topography</long_name>
+	<source>CNES/CLS 2022</source>
+	<parameters>MDT_CNES-CLS22/mdt_cnes_cls22.nc</parameters>
+	<units>m</units>
+	<data>mdt_cnescls22</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+</var>
 
 <var name="latency">
 	<long_name>source product latency flag</long_name>
