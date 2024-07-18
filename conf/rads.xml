@@ -1390,19 +1390,6 @@ Global RADS configuration file
 	<compress>int4 1e-4</compress>
 	<comment>Ocean tide variation including long-period equilibrium tides</comment>
 </var>
-<!--
-<var name="tide_ocean_got47" field="1217">
-	<long_name>GOT4.7 ocean tide</long_name>
-	<source>GOT4.7</source>
-	<units>m</units>
-	<limits>-5 5</limits>
-	<plot_range>-2 2</plot_range>
-	<data>tide_ocean_got47</data>
-	<format>f7.4</format>
-	<compress>int4 1e-4</compress>
-	<comment>Ocean tide variation including long-period equilibrium and non-equilibrium tides</comment>
-</var>
--->
 <var name="tide_ocean_got48" field="1219">
 	<long_name>GOT4.8 ocean tide</long_name>
 	<source>GOT4.8</source>
@@ -1414,19 +1401,6 @@ Global RADS configuration file
 	<compress>int4 1e-4</compress>
 	<comment>Ocean tide variation including long-period equilibrium tides</comment>
 </var>
-<!--
-<var name="tide_ocean_got49" field="1221">
-	<long_name>GOT4.9 ocean tide</long_name>
-	<source>GOT4.9</source>
-	<units>m</units>
-	<limits>-5 5</limits>
-	<plot_range>-2 2</plot_range>
-	<data>tide_ocean_got49</data>
-	<format>f7.4</format>
-	<compress>int4 1e-4</compress>
-	<comment>Ocean tide variation including long-period equilibrium and non-equilibrium tides</comment>
-</var>
--->
 <var name="tide_ocean_got410" field="1222">
 	<long_name>GOT4.10c ocean tide (extrapolated)</long_name>
 	<source>GOT4.10c (extrapolated)</source>
@@ -1438,19 +1412,6 @@ Global RADS configuration file
 	<compress>int4 1e-4</compress>
 	<comment>Ocean tide variation including long-period equilibrium tides, extrapolated into the coast</comment>
 </var>
-<!--
-<var name="tide_ocean_fes12" field="1223">
-	<long_name>FES2012 ocean tide</long_name>
-	<source>FES2012</source>
-	<units>m</units>
-	<limits>-5 5</limits>
-	<plot_range>-2 2</plot_range>
-	<data>tide_ocean_fes12</data>
-	<format>f7.4</format>
-	<compress>int4 1e-4</compress>
-	<comment>Ocean tide variation including long-period equilibrium and non-equilibrium tides</comment>
-</var>
--->
 <var name="tide_ocean_fes14" field="1224">
 	<long_name>FES2014b ocean tide</long_name>
 	<source>FES2014b (extrapolated)</source>
@@ -1459,6 +1420,18 @@ Global RADS configuration file
 	<limits>-5 5</limits>
 	<plot_range>-2 2</plot_range>
 	<data>tide_ocean_fes14</data>
+	<format>f7.4</format>
+	<compress>int4 1e-4</compress>
+	<comment>Ocean tide variation including long-period equilibrium and non-equilibrium tides, extrapolated into the coast</comment>
+</var>
+<var name="tide_ocean_fes22">
+	<long_name>FES2022b ocean tide</long_name>
+	<source>FES2022b (extrapolated)</source>
+	<parameters>FES2022b/extrapolated</parameters>
+	<units>m</units>
+	<limits>-5 5</limits>
+	<plot_range>-2 2</plot_range>
+	<data>tide_ocean_fes22</data>
 	<format>f7.4</format>
 	<compress>int4 1e-4</compress>
 	<comment>Ocean tide variation including long-period equilibrium and non-equilibrium tides, extrapolated into the coast</comment>
@@ -1485,18 +1458,6 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Load tide variation to be added to ocean tide</comment>
 </var>
-<!--
-<var name="tide_load_got47" field="1317">
-	<long_name>GOT4.7 load tide</long_name>
-	<source>GOT4.7</source>
-	<units>m</units>
-	<limits>-0.5 0.5</limits>
-	<data>tide_load_got47</data>
-	<format>f7.4</format>
-	<compress>int2 1e-4</compress>
-	<comment>Load tide variation to be added to ocean tide</comment>
-</var>
--->
 <var name="tide_load_got48" field="1319">
 	<long_name>GOT4.8 load tide</long_name>
 	<source>GOT4.8</source>
@@ -1507,18 +1468,6 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Load tide variation to be added to ocean tide</comment>
 </var>
-<!--
-<var name="tide_load_got49" field="1321">
-	<long_name>GOT4.9 load tide</long_name>
-	<source>GOT4.9</source>
-	<units>m</units>
-	<limits>-0.5 0.5</limits>
-	<data>tide_load_got49</data>
-	<format>f7.4</format>
-	<compress>int2 1e-4</compress>
-	<comment>Load tide variation to be added to ocean tide</comment>
-</var>
--->
 <var name="tide_load_got410" field="1322">
 	<long_name>GOT4.10 load tide</long_name>
 	<source>GOT4.10</source>
@@ -1535,6 +1484,16 @@ Global RADS configuration file
 	<units>m</units>
 	<limits>-0.5 0.5</limits>
 	<data>tide_load_fes14</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Load tide variation to be added to ocean tide</comment>
+</var>
+<var name="tide_load_fes22">
+	<long_name>FES2022b load tide</long_name>
+	<source>FES2022b</source>
+	<units>m</units>
+	<limits>-0.5 0.5</limits>
+	<data>tide_load_fes22</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>Load tide variation to be added to ocean tide</comment>
@@ -1920,19 +1879,6 @@ Global RADS configuration file
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
 </var>
-<!-- Removed
-<var name="geoid_xgm2016" field="1620">
-	<long_name>XGM2016 geoid height</long_name>
-	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
-	<standard_name>sea_surface_height_above_reference_ellipsoid</standard_name>
-	<source>XGM2016</source>
-	<parameters>XGM2016/XGM2016_Nmax720_MeanTide_global.nc -s</parameters>
-	<units>m</units>
-	<data>geoid_xgm2016</data>
-	<format>f10.4</format>
-	<compress>int4 1e-4</compress>
-</var>
--->
 <var name="mss_dtu18" field="1621" sat="3a 3b 6a c2 j1 j2 j3 sa sw tx pn">
 	<long_name>DTU18 mean sea surface height</long_name>
 	<standard_name>sea_surface_height_above_reference_ellipsoid</standard_name>
@@ -1963,13 +1909,23 @@ Global RADS configuration file
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
 </var>
-<var name="mss_cnescls22" sat="">
+<var name="mss_cnescls22">
 	<long_name>CNES-CLS22 mean sea surface height</long_name>
 	<standard_name>sea_surface_height_above_reference_ellipsoid</standard_name>
 	<source>CNES-CLS22</source>
 	<parameters>MSS_CNES-CLS22/MSS_CNES-CLS22_TP.nc -s</parameters>
 	<units>m</units>
 	<data>mss_cnescls22</data>
+	<format>f10.4</format>
+	<compress>int4 1e-4</compress>
+</var>
+<var name="mss_hybrid23">
+	<long_name>Hybrid SIO/CNES_CLS/DTU 2023 mean sea surface height</long_name>
+	<standard_name>sea_surface_height_above_reference_ellipsoid</standard_name>
+	<source>SIO/CNES_CLS/DTU</source>
+	<parameters>MSS_Hybrid-SIO-CLS-DTU-2023/MSS_Hybrid23_SOI_CNESCLS_DTU_TP.nc -s</parameters>
+	<units>m</units>
+	<data>mss_hybrid23</data>
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
 </var>
@@ -1981,6 +1937,15 @@ Global RADS configuration file
 	<parameters>MDT_CNES-CLS18/mdt_cnes_cls18.nc</parameters>
 	<units>m</units>
 	<data>mdt_cnescls18</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+</var>
+<var name="mdt_cnescls22">
+	<long_name>CNES/CLS 2022 mean dynamic topography</long_name>
+	<source>CNES/CLS 2022</source>
+	<parameters>MDT_CNES-CLS22/mdt_cnes_cls22.nc</parameters>
+	<units>m</units>
+	<data>mdt_cnescls22</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 </var>
@@ -4564,7 +4529,7 @@ Global RADS configuration file
 <var name="seaice_conc" field="4701 47">
 	<long_name>sea ice concentration</long_name>
 	<standard_name>sea_ice_area_fraction</standard_name>
-	<source>NOAA Optimal Interpolation Sea Surface Temperature v2</source>
+	<source>NOAA Optimal Interpolation Sea Surface Temperature v2.1</source>
 	<units>%</units>
 	<data>seaice_conc</data>
 	<format>f3.0</format>
@@ -4597,14 +4562,16 @@ Global RADS configuration file
 	<data>sst</data>
 	<format>f5.2</format>
 	<compress>int2 1e-2</compress>
+	<comment>Interpolated from daily grids of OISST v2.1</comment>
 </var>
 <var name="sst_mean" field="4802">
-	<long_name>local mean sea surface temperature</long_name>
-	<source>NOAA Optimal Interpolation Sea Surface Temperature v2</source>
+	<long_name>local sea surface temperature from climatology</long_name>
+	<source>NOAA Optimal Interpolation Sea Surface Temperature v2.1</source>
 	<units>degC</units>
 	<data>sst_mean</data>
 	<format>f5.2</format>
 	<compress>int2 1e-2</compress>
+	<comment>Climatological value is based on 30 years of OISST v2.1</comment>
 </var>
 
 <var name="dry_tropo_airtide" field="4901 49">
