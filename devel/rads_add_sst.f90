@@ -53,15 +53,11 @@ logical :: lice=.false., lsst=.false., lmean=.false., update=.false., new=.false
 
 ! Data variables
 
-character(len=rads_cmdl) :: path, meanpath
+character(len=rads_cmdl) :: path
 integer(fourbyteint) :: t1old=0, t2old=0, j
-integer(fourbyteint), parameter :: nx=360, ny=180, secweek=7*86400, sec2000=473299200
-integer(fourbyteint), parameter :: sun = 157982400	! Sun 1990-01-03 12:00
-integer(fourbyteint), parameter :: wed = 157723200	! Wed 1989-12-31 12:00
-real(eightbytereal), parameter :: x0=0.5d0, y0=-89.5d0, dx=1d0, dy=1d0, dz=1d-2
-real(eightbytereal), parameter :: tmp0(2) = (/273.15d0,0d0/)
-integer(twobyteint) :: grids(0:nx+1,ny,2,2)
-real(eightbytereal) :: meangrid(0:nx+1,ny)
+integer(fourbyteint), parameter :: nx=1440, ny=720, secday=86400, sec2000=473299200
+real(eightbytereal), parameter :: x0=0.125d0, y0=-89.875d0, dx=0.25d0, dy=0.25d0, dz=1d-2
+integer(twobyteint) :: grids(0:nx+1,ny,2,3)
 
 ! Initialise
 
@@ -71,8 +67,7 @@ call rads_init (S)
 
 ! Get template for path name
 
-call parseenv ('${ALTIM}/data/sst/oisst_v2/GRIB/oisst.%Y%m%d.grb', path)
-call parseenv ('${ALTIM}/data/sst/oisst.mean.nc', meanpath)
+call parseenv ('${ALTIM}/data/sst/oisst_v2.1/%Y%m/oisst-avhrr-v02r01.%Y%m%d.nc', path)
 
 ! Check all options
 do j = 1,rads_nopt
@@ -94,10 +89,6 @@ do j = 1,rads_nopt
 	end select
 enddo
 if (.not.lsst) update = .false.
-
-! Load the mean SST model if requested
-
-if (lmean) call get_mean (meangrid)
 
 ! Process all data files
 
@@ -138,7 +129,7 @@ end subroutine synopsis
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
 integer(fourbyteint) :: i, ix, iy, ncid
-real(eightbytereal) :: time(n), lat(n), lon(n), ice(n), sst(n), meansst(n), tmp(n)
+real(eightbytereal) :: time(n), lat(n), lon(n), ice(n), sst(n), ano(n), tmp(n)
 integer(fourbyteint) :: t1, t2
 real(eightbytereal) :: wx, wy, wt, f(2,2,2)
 real(eightbytereal), parameter :: dz=1d-2
@@ -156,34 +147,26 @@ call rads_get_var (S, P, 'lon', lon, .true.)
 
 do i = 1,n
 
-! What was the last Wednesday or Sunday?
+! What was the start of the day?
 
-	if (time(i) < sun) then  ! Before Sun 1990-01-03 12:00
-		t1 = floor((time(i) - wed)/secweek) * secweek + wed
-	else
-		t1 = floor((time(i) - sun)/secweek) * secweek + sun
-	endif
-
-! What is the next Wednesday or Sunday?
-
-	if (time(i) < wed) then  ! Before Wed 1989-12-31 12:00
-		t2 = floor((time(i) - wed)/secweek + 1) * secweek + wed
-	else
-		t2 = floor((time(i) - sun)/secweek + 1) * secweek + sun
-	endif
+	t1 = floor(time(i)/secday) * secday
+	t2 = t1 + secday
 
 ! Load new grids when needed
 
-	if (t1 /= t1old) then
-		if (get_grib(t1,grids(:,:,1,:)) /= 0) then
+	if (t1 == t2old) then ! Copy grids(t2) to grids(t1)
+		grids(:,:,1,:) = grids(:,:,2,:)
+		t1old = t1
+	else if (t1 /= t1old) then ! Load new grids(t1)
+		if (get_grid(t1,grids(:,:,1,:)) /= 0) then
 			call log_string ('Warning: no SST for current time')
 			call log_records (0)
 			stop
 		endif
 		t1old = t1
 	endif
-	if (t2 /= t2old) then
-		if (get_grib(t2,grids(:,:,2,:)) /= 0) then
+	if (t2 /= t2old) then ! Load new grids(t2)
+		if (get_grid(t2,grids(:,:,2,:)) /= 0) then
 			call log_string ('Warning: no SST for current time')
 			call log_records (0)
 			stop
@@ -194,8 +177,8 @@ do i = 1,n
 ! Set weights for bi-linear interpolation in space
 
 	if (lon(i) < -360d0 .or. lat(i) < -360d0) then
-		meansst(i) = nan
 		sst(i) = nan
+		ano(i) = nan
 		ice(i) = nan
 		cycle
 	endif
@@ -212,23 +195,17 @@ do i = 1,n
 	f(:,1,:) = f(:,1,:) * (1d0-wy)
 	f(:,2,:) = f(:,2,:) * wy
 
-! Interpolate mean SST
-
-	meansst(i) = sum(meangrid(ix:ix+1,iy:iy+1)*f(:,:,1))
-
 ! Set weights for linear interpolation in time
 
 	wt = (time(i) - t1)/(t2 - t1)
 	f(:,:,1) = f(:,:,1) * (1d0-wt)
 	f(:,:,2) = f(:,:,2) * wt
 
-! Interpolate SST
+! Interpolate the global grids
 
-	sst(i) = sum(grids(ix:ix+1,iy:iy+1,:,1)*f)
-
-! Interpolate ice concentration (has invalid values)
-
-	ice(i) = mat_product(grids(ix:ix+1,iy:iy+1,:,2),f)
+	sst(i) = mat_product(grids(ix:ix+1,iy:iy+1,:,1),f)
+	ano(i) = mat_product(grids(ix:ix+1,iy:iy+1,:,2),f)
+	ice(i) = mat_product(grids(ix:ix+1,iy:iy+1,:,3),f)
 enddo
 
 ! If requested, check for changes in sst first
@@ -263,46 +240,19 @@ if (lmean)  call rads_def_var (S, P, 'sst_mean')
 
 if (do_ice) call rads_put_var (S, P, 'seaice_conc', ice)
 if (lsst)   call rads_put_var (S, P, 'sst', sst*dz)
-if (lmean)  call rads_put_var (S, P, 'sst_mean', meansst)
+if (lmean)  call rads_put_var (S, P, 'sst_mean', (sst-ano)*dz)
 
 call log_records (n)
 end subroutine process_pass
 
 !-----------------------------------------------------------------------
-! Get the mean SST
+! Get the SST and ice concentration grids for time t from NetCDF files
 !-----------------------------------------------------------------------
 
-subroutine get_mean (grid)
-integer(fourbyteint) :: ncid, v_id, j
-real(eightbytereal) :: grid(0:nx+1,ny)
-
-! Open grid file and load mean SST
-
-600 format ('(Reading mean SST: ',a,')')
-write (*,600) trim(meanpath)
-if (nft(nf90_open(meanpath,nf90_nowrite,ncid))) call rads_exit ('No mean SST grid file found')
-if (nft(nf90_inq_varid(ncid,'sst',v_id))) call rads_exit ('Could not find mean SST grid')
-if (nft(nf90_get_var(ncid,v_id,grid(1:nx,:)))) call rads_exit ('Error reading mean SST grid')
-
-! Copy left and right boundaries
-
-grid(0,:) = grid(nx,:)
-grid(nx+1,:) = grid(1,:)
-
-! Close grid file
-
-j = nf90_close(ncid)
-end subroutine get_mean
-
-!-----------------------------------------------------------------------
-! Get the SST and ice concentration grids for time t from GRIB files
-!-----------------------------------------------------------------------
-
-integer function get_grib (t, grid)
+integer function get_grid (t, grid)
 integer(fourbyteint), intent(in) :: t
-integer(twobyteint), intent(out) :: grid(0:nx+1,ny,2)
-integer(fourbyteint) ::	fileid, gribid, ix, iy, i, k, l, status, strf1985
-real(eightbytereal) :: tmp(nx*ny)
+integer(twobyteint), intent(out) :: grid(0:nx+1,ny,3)
+integer(fourbyteint) ::	ncid, varid, i, l, strf1985
 character(len=rads_cmdl) :: fn
 
 600 format ('(',a,')')
@@ -310,40 +260,29 @@ character(len=rads_cmdl) :: fn
 ! Determine file name
 
 l = strf1985 (fn, trim(path), t)
-write (*,600,advance='no') fn(l-17:l)
+i = index(fn,'/',.true.)
 
 ! Open input file
 
-call grib_open_file (fileid, fn, 'r', status)
-if (status /= grib_success) then
-	get_grib = 1
-	return
-endif
-
-! Get SST and ice concentration grid
-
-do i = 1,2
-	call grib_new_from_file (fileid, gribid, status)
-	if (status /= grib_success) then
-		get_grib = 2
+if (nff(nf90_open(fn(:l), nf90_nowrite, ncid))) then
+	write (*,600,advance='no') fn(i+1:l)
+else
+	! If not available, try preliminary
+	write (*,600,advance='no') fn(i+1:l-3)//'_preliminary.nc'
+	if (nft(nf90_open(fn(:l-3)//'_preliminary.nc', nf90_nowrite, ncid))) then
+		get_grid = 1
 		return
 	endif
-	call grib_get (gribid, 'values', tmp, status)
-	call grib_release (gribid)
-	if (status /= grib_success) exit
-	! Copy the input data while scaling and putting things upside down
-	k = 0
-	do iy = ny,1,-1
-		do ix = 1,nx
-			k = k + 1
-			grid(ix,iy,i) = nint2((tmp(k)-tmp0(i))/dz)
-		enddo
-	enddo
-	if (i == 1) then ! Skip second field
-		call grib_new_from_file (fileid, gribid, status)
-		call grib_release (gribid)
-	endif
-enddo
+endif
+
+! Get SST, SST anomaly and ice concentration grid
+
+call nfs(nf90_inq_varid(ncid, 'sst', varid))
+call nfs(nf90_get_var(ncid, varid, grid(1:nx,:,1)))
+call nfs(nf90_inq_varid(ncid, 'anom', varid))
+call nfs(nf90_get_var(ncid, varid, grid(1:nx,:,2)))
+call nfs(nf90_inq_varid(ncid, 'ice', varid))
+call nfs(nf90_get_var(ncid, varid, grid(1:nx,:,3)))
 
 ! Copy left and right boundaries
 
@@ -352,10 +291,10 @@ grid(nx+1,:,:) = grid(1,:,:)
 
 ! Close file
 
-call grib_close_file(fileid)
+call nfs(nf90_close(ncid))
 
-get_grib = 0
-end function get_grib
+get_grid = 0
+end function get_grid
 
 !-----------------------------------------------------------------------
 ! Weighted product with value checking on array a
@@ -370,9 +309,9 @@ integer(fourbyteint) :: i
 mat_product = 0d0
 w = 0d0
 do i = 1,8
-	if (a(i) <= 100) then
-	w = w + b(i)
-	mat_product = mat_product + a(i)*b(i)
+	if (a(i) /= -999) then
+		w = w + b(i)
+		mat_product = mat_product + a(i)*b(i)
 	endif
 enddo
 if (w < 0.5d0) then
