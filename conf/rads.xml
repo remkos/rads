@@ -4529,7 +4529,7 @@ Global RADS configuration file
 <var name="seaice_conc" field="4701 47">
 	<long_name>sea ice concentration</long_name>
 	<standard_name>sea_ice_area_fraction</standard_name>
-	<source>NOAA Optimal Interpolation Sea Surface Temperature v2</source>
+	<source>NOAA Optimal Interpolation Sea Surface Temperature v2.1</source>
 	<units>%</units>
 	<data>seaice_conc</data>
 	<format>f3.0</format>
@@ -4562,14 +4562,16 @@ Global RADS configuration file
 	<data>sst</data>
 	<format>f5.2</format>
 	<compress>int2 1e-2</compress>
+	<comment>Interpolated from daily grids of OISST v2.1</comment>
 </var>
 <var name="sst_mean" field="4802">
-	<long_name>local mean sea surface temperature</long_name>
-	<source>NOAA Optimal Interpolation Sea Surface Temperature v2</source>
+	<long_name>local sea surface temperature from climatology</long_name>
+	<source>NOAA Optimal Interpolation Sea Surface Temperature v2.1</source>
 	<units>degC</units>
 	<data>sst_mean</data>
 	<format>f5.2</format>
 	<compress>int2 1e-2</compress>
+	<comment>Climatological value is based on 30 years of OISST v2.1</comment>
 </var>
 
 <var name="dry_tropo_airtide" field="4901 49">
