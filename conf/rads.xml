@@ -100,7 +100,7 @@ Global RADS configuration file
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
 	<data>alt range_ku_plrm SUB dry_tropo SUB wet_tropo_plrm SUB iono_alt_plrm SUB dac SUB tide_solid SUB tide_ocean SUB tide_load SUB
-		tide_pole SUB ssb_cls_plrm SUB mss SUB ref_frame_offset_plrm SUB</data>
+		tide_pole SUB ssb_plrm SUB mss SUB ref_frame_offset_plrm SUB</data>
 	<quality_flag>swh_ku_plrm sig0_ku_plrm range_rms_ku_plrm range_numval_ku_plrm flags swh_rms_ku_plrm sig0_rms_ku_plrm attitude</quality_flag>
 	<comment>Sea level determined from satellite altitude - PLRM range - all (PLRM) altimetric corrections</comment>
 </var>
@@ -113,7 +113,7 @@ Global RADS configuration file
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
 	<data>alt range_ku_adaptive SUB dry_tropo SUB wet_tropo SUB iono_alt_smooth_adaptive SUB dac SUB tide_solid SUB tide_ocean SUB tide_load SUB
-		tide_pole SUB ssb_cls_adaptive SUB mss SUB ref_frame_offset_adaptive SUB</data>
+		tide_pole SUB ssb_adaptive SUB mss SUB ref_frame_offset_adaptive SUB</data>
 	<quality_flag>swh_ku_adaptive sig0_ku_adaptive range_rms_ku_adaptive range_numval_ku_adaptive flags_adaptive swh_rms_ku_adaptive sig0_rms_ku_adaptive</quality_flag>
 	<comment>Sea level determined from satellite altitude - range (adaptive retracking) - all altimetric corrections (adaptive retracking)</comment>
 </var>
@@ -127,7 +127,7 @@ Global RADS configuration file
 	<format>f8.4</format>
 	<compress>int2 1e-4</compress>
 	<data>alt range_ku_nr SUB dry_tropo SUB wet_tropo SUB iono_alt_smooth_nr SUB dac SUB tide_solid SUB tide_ocean SUB tide_load SUB
-		tide_pole SUB ssb_cls_nr SUB mss SUB ref_frame_offset_nr SUB</data>
+		tide_pole SUB ssb_nr SUB mss SUB ref_frame_offset_nr SUB</data>
 	<quality_flag>swh_ku_nr sig0_ku_nr range_rms_ku_nr range_numval_ku_nr flags_nr swh_rms_ku_nr sig0_rms_ku_nr</quality_flag>
 	<comment>Sea level determined from satellite altitude - range (numerical retracking) - all altimetric corrections (numerical retracking)</comment>
 </var>
@@ -1836,6 +1836,9 @@ Global RADS configuration file
 <alias name="ssb_c" sat="tx">ssb_tx_c</alias>
 <alias name="ssb_mle3" sat="6a j2 j3 sw">ssb_cls_mle3</alias>
 <alias name="ssb_mle3" sat="tx">ssb_tx_mle3</alias>
+<alias name="ssb_adaptive" sat="j3 sw">ssb_cls_adaptive</alias>
+<alias name="ssb_nr" sat="6a">ssb_cls_nr</alias>
+<alias name="ssb_plrm" sat="3a 3b c2">ssb_cls_plrm</alias>
 
 <var name="geoid_egm96" field="1601" sat="3a 3b j2 j3 sa sw">
 	<long_name>EGM96 geoid height</long_name>
