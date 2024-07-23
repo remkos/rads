@@ -19,12 +19,14 @@
 # - mss_hybrid23 (#201)
 # - fes22,lptide (#200)
 # and some other needed patches as per the following issues:
+# - fes14 (#206)
 # - srtm15plus (#203)
 # - oisst v2.1 (#187)
 # - ptide (#176)
 # - era5 (#142)
 #
 rads_add_grid     "$@" -Vmss_dtu21,mss_hybrid23
+rads_add_tide     "$@" --models=fes14
 rads_add_tide     "$@" --models=fes22,lptide,ptide
 rads_add_grid     "$@" -Vtopo_srtm15plus
 rads_add_sst      "$@" --all
