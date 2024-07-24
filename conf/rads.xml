@@ -434,8 +434,8 @@ Global RADS configuration file
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source sat="j1">JPL GPS orbits (jas1_gps/rlse11a)</source>
 	<source sat="j2">JPL GPS orbits (jas2_gps/rlse18a)</source>
-	<source sat="j3">JPL GPS orbits (jas3_gps/rlse22a)</source>
-	<source sat="6a">JPL GPS orbits (s6mf_gps/rlse22a)</source>
+	<source sat="j3">JPL GPS orbits</source>
+	<source sat="6a">JPL GPS orbits</source>
 	<parameters>jpl_gps</parameters>
 	<units>m</units>
 	<data>alt_gps</data>
@@ -4818,7 +4818,7 @@ Global RADS configuration file
 	</phase>
 	<phase name="a">
 		<mission>Exact Repeat Mission</mission>
-		<cycles>4 199</cycles>
+		<cycles>4 299</cycles>
 		<repeat>9.91564280 254</repeat>
 		<ref_pass>2020-12-27T08:33:32 99.92 5 1 458</ref_pass><!--S6A 30 seconds behind JA3-->
 		<start_time>2020-12-17T21:21:30</start_time>
