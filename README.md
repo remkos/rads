@@ -29,6 +29,13 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 This does not include explanations of changes to the code that generates the data base.
 
+### v4.7.0 (24 Jul 2024)
+Version with GDR-G variables added, though not yet made standard for computing SLA
+* `rads.xml`
+  * Added GDR-G variables mss\_dtu21, mss\_hybrid23, ocean\_tide\_fes22, load\_tide\_fes22
+  * Updated OI SST from v2 to v2.1
+  * Added JPL GPS orbits (6a and j3)
+
 ### v4.6.3 (20 May 2024)
 * `rads.xml`:
   * Correct comment for drange_cg
