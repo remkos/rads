@@ -1328,7 +1328,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Scaled version of static IB to match MOG2D</comment>
 </var>
-<var name="inv_bar_static_era5" sat="3a 3b 6a j3 sw tx pn">
+<var name="inv_bar_static_era5">
 	<long_name>ERA5 static inverse barometer correction</long_name>
 	<standard_name>sea_surface_height_correction_due_to_air_pressure_at_low_frequency</standard_name>
 	<source>ECMWF ERA5</source>
@@ -2058,7 +2058,7 @@ Global RADS configuration file
 	<format>f5.2</format>
 	<compress>int2 1e-3</compress>
 </var>
-<var name="swh_era5" sat="3a 3b 6a j3 sw tx pn">
+<var name="swh_era5">
 	<long_name>ERA5 significant wave height</long_name>
 	<standard_name>sea_surface_wave_significant_height</standard_name>
 	<units>m</units>
@@ -2276,7 +2276,7 @@ Global RADS configuration file
 	<format>f7.3</format>
 	<compress>int2 1e-2</compress>
 </var>
-<var name="wind_speed_era5_u" sat="3a 3b 6a j3 sw tx pn">
+<var name="wind_speed_era5_u">
 	<long_name>ERA5 model zonal wind speed</long_name>
 	<standard_name>eastward_wind</standard_name>
 	<source>ECMWF ERA5</source>
@@ -2287,7 +2287,7 @@ Global RADS configuration file
 	<format>f7.3</format>
 	<compress>int2 1e-2</compress>
 </var>
-<var name="wind_speed_era5_v" sat="3a 3b 6a j3 sw tx pn">
+<var name="wind_speed_era5_v">
 	<long_name>ERA5 model meridional wind speed</long_name>
 	<standard_name>northward_wind</standard_name>
 	<source>ECMWF ERA5</source>
@@ -2298,7 +2298,7 @@ Global RADS configuration file
 	<format>f7.3</format>
 	<compress>int2 1e-2</compress>
 </var>
-<var name="wind_speed_era5" sat="3a 3b 6a j3 sw tx pn">
+<var name="wind_speed_era5">
 	<long_name>ERA5 model wind speed</long_name>
 	<standard_name>wind_speed</standard_name>
 	<source>ECMWF ERA5</source>
@@ -4544,7 +4544,7 @@ Global RADS configuration file
 	<format>f3.0</format>
 	<compress>int1</compress>
 </var>
-<var name="seaice_conc_era5" sat="3a 3b 6a j3 sw tx pn">
+<var name="seaice_conc_era5">
 	<long_name>ERA5 sea ice concentration</long_name>
 	<standard_name>sea_ice_area_fraction</standard_name>
 	<source>ECMWF ERA5</source>
