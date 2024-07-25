@@ -836,7 +836,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A dry tropospheric correction must be added to range to correct for dry troposphere delays</comment>
 </var>
-<var name="dry_tropo_era5" sat="3a 3b 6a j3 sw tx pn">
+<var name="dry_tropo_era5">
 	<long_name>ERA5 dry tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_dry_troposphere</standard_name>
 	<source>ECMWF ERA5</source>
@@ -974,7 +974,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
 </var>
-<var name="wet_tropo_era5" sat="3a 3b 6a j3 sw tx pn">
+<var name="wet_tropo_era5">
 	<long_name>ERA5 wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
 	<source>ECMWF ERA5</source>
