@@ -94,10 +94,11 @@ end subroutine new_var
 ! Write content of memory to a single pass of RADS data
 !-----------------------------------------------------------------------
 
-subroutine put_rads
+subroutine put_rads (skip_create)
 use rads
 use rads_misc
 use rads_devel
+logical, optional :: skip_create
 integer(fourbyteint) :: i
 
 ! Check which variables are empty or all zero
@@ -106,7 +107,6 @@ do i = 1,nvar
 		var(i)%skip_empty = all(isnan_(var(i)%d(1:nrec)))
 		var(i)%empty = .false.
 	else
-		var(i)%skip_empty = .false.
 		var(i)%empty = all(isnan_(var(i)%d(1:nrec)))
 	endif
 	var(i)%zero = all(var(i)%d(1:nrec) == 0d0)
@@ -141,7 +141,7 @@ if (any(var(1:nvar)%zero)) then
 endif
 
 ! Open output file
-call rads_create_pass (S, P, nrec)
+if (.not.(present(skip_create) .and. skip_create)) call rads_create_pass (S, P, nrec)
 
 ! Define all variables
 do i = 1,nvar

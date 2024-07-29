@@ -114,13 +114,16 @@ do
 		jdum = fes_init(fes_load(2),fes_radial,fes_mode,'FES2022b/load_tide')
 	case ('got48')
 		do_got(1) = .true.
-		call gottideinit('GOT4.8',.true.,gotinfo(1))
+		var => rads_varptr (S, 'tide_ocean_got48')
+		call gottideinit(var%info%parameters,.true.,gotinfo(1))
 	case ('got410')
 		do_got(2) = .true.
-		call gottideinit('GOT4.10c_extrapolated',.true.,gotinfo(2))
+		var => rads_varptr (S, 'tide_ocean_got410')
+		call gottideinit(var%info%parameters,.true.,gotinfo(2))
 	case ('got51')
 		do_got(3) = .true.
-		call gottideinit('GOT5.1',.true.,gotinfo(3))
+		var => rads_varptr (S, 'tide_ocean_got51')
+		call gottideinit(var%info%parameters,.true.,gotinfo(3))
 	end select
 enddo
 
@@ -171,8 +174,8 @@ write (*,1310)
 '  fes14  : FES2014 ocean and load tide'/ &
 '  fes22  : FES2022b ocean and load tide'/ &
 '  got48  : GOT4.8 ocean and load tide'/ &
-'  got49  : GOT4.9 ocean and load tide'/ &
 '  got410 : GOT4.10 ocean and load tide'// &
+'  got51  : GOT5.1 ocean and load tide'// &
 'In addition, several of the following MODEL indicators can be used:'/ &
 '  ptide  : Pole tide'/ &
 '  stide  : Solid earth tide'/ &

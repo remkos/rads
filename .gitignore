@@ -23,6 +23,7 @@ devel/rads_add_dual
 devel/rads_add_ecmwf
 devel/rads_add_era
 devel/rads_add_era5
+devel/rads_add_f4a
 devel/rads_add_flags
 devel/rads_add_gpd
 devel/rads_add_grid
@@ -54,6 +55,7 @@ devel/rads_gen_c2_op
 devel/rads_gen_h2
 devel/rads_gen_jason
 devel/rads_gen_jason_gdrf
+devel/rads_gen_n1_gdr
 devel/rads_gen_reaper
 devel/rads_gen_s3
 devel/rads_gen_s6
