@@ -25,7 +25,6 @@
 # - era5 (#142)
 #
 rads_add_tide     "$@" --models=fes22,lptide,ptide
-rads_add_grid     "$@" -Vmss_dtu21,mss_hybrid23
-rads_add_grid     "$@" -Vtopo_srtm15plus
+rads_add_grid     "$@" -Vmss_dtu21,mss_hybrid23,topo_srtm15plus
 rads_add_sst      "$@" --all
 rads_add_era5     "$@" --all --new
