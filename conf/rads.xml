@@ -116,8 +116,8 @@ Global RADS configuration file
 		tide_pole SUB ssb_adaptive SUB mss SUB ref_frame_offset_adaptive SUB</data>
 	<data sat="n1.f4a" action="delete">iono_alt_smooth_adaptive SUB</data>
 	<data sat="n1.f4a" action="append">iono SUB</data>
-	<quality_flag>swh_ku_adaptive swh_rms_ku_adaptive sig0_ku_adaptive sig0_rms_ku_adaptive range_rms_ku_adaptive range_numval_ku_adaptive flags_adaptive</quality_flag>
 	<quality_flag sat="n1.f4a" action="delete">sig0_ku_adaptive sig0_rms_ku_adaptive</quality_flag>
+	<quality_flag sat="n1.f4a" action="append">swh_rms_ku_adaptive</quality_flag>
 	<comment>Sea level determined from satellite altitude - range (adaptive retracking) - all altimetric corrections (adaptive retracking)</comment>
 </var>
 <alias name="sla_nr" sat="j3 n1.f4a sw">sla_adaptive</alias>
@@ -437,8 +437,8 @@ Global RADS configuration file
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source sat="j1">JPL GPS orbits (jas1_gps/rlse11a)</source>
 	<source sat="j2">JPL GPS orbits (jas2_gps/rlse18a)</source>
-	<source sat="j3">JPL GPS orbits (jas3_gps/rlse22a)</source>
-	<source sat="6a">JPL GPS orbits (s6mf_gps/rlse22a)</source>
+	<source sat="j3">JPL GPS orbits</source>
+	<source sat="6a">JPL GPS orbits</source>
 	<parameters>jpl_gps</parameters>
 	<units>m</units>
 	<data>alt_gps</data>
@@ -842,7 +842,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A dry tropospheric correction must be added to range to correct for dry troposphere delays</comment>
 </var>
-<var name="dry_tropo_era5" sat="3a 3b 6a j3 n1.f4a sw tx pn">
+<var name="dry_tropo_era5">
 	<long_name>ERA5 dry tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_dry_troposphere</standard_name>
 	<source>ECMWF ERA5</source>
@@ -992,7 +992,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
 </var>
-<var name="wet_tropo_era5" sat="3a 3b 6a j3 sw tx pn">
+<var name="wet_tropo_era5">
 	<long_name>ERA5 wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
 	<source>ECMWF ERA5</source>
@@ -1346,19 +1346,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Scaled version of static IB to match MOG2D</comment>
 </var>
-<var name="inv_bar_static_era" sat="n1.gdr n1.f4a">
-	<long_name>ERA Interim static inverse barometer correction</long_name>
-	<standard_name>sea_surface_height_correction_due_to_air_pressure_at_low_frequency</standard_name>
-	<source>ECMWF ERA5</source>
-	<units>m</units>
-	<limits>-1 1</limits>
-	<plot_range>-0.4 0.6</plot_range>
-	<data>inv_bar_static_era5</data>
-	<format>f7.4</format>
-	<compress>int2 1e-4</compress>
-	<comment>Effect of the static atmospheric pressure on sea surface, subtracting global mean</comment>
-</var>
-<var name="inv_bar_static_era5" sat="3a 3b 6a j3 sw tx pn">
+<var name="inv_bar_static_era5">
 	<long_name>ERA5 static inverse barometer correction</long_name>
 	<standard_name>sea_surface_height_correction_due_to_air_pressure_at_low_frequency</standard_name>
 	<source>ECMWF ERA5</source>
@@ -1457,9 +1445,9 @@ Global RADS configuration file
 	<comment>Ocean tide variation including long-period equilibrium and non-equilibrium tides, extrapolated into the coast</comment>
 </var>
 <var name="tide_ocean_fes22">
-	<long_name>FES2022 ocean tide</long_name>
-	<source>FES2022 (extrapolated)</source>
-	<parameters>FES2022/extrapolated</parameters>
+	<long_name>FES2022b ocean tide</long_name>
+	<source>FES2022b (extrapolated)</source>
+	<parameters>FES2022b/extrapolated</parameters>
 	<units>m</units>
 	<limits>-5 5</limits>
 	<plot_range>-2 2</plot_range>
@@ -1521,8 +1509,8 @@ Global RADS configuration file
 	<comment>Load tide variation to be added to ocean tide</comment>
 </var>
 <var name="tide_load_fes22">
-	<long_name>FES2022 load tide</long_name>
-	<source>FES2022</source>
+	<long_name>FES2022b load tide</long_name>
+	<source>FES2022b</source>
 	<units>m</units>
 	<limits>-0.5 0.5</limits>
 	<data>tide_load_fes22</data>
@@ -1850,10 +1838,10 @@ Global RADS configuration file
 <alias name="ssb_c" sat="tx">ssb_tx_c</alias>
 <alias name="ssb_mle3" sat="6a j2 j3 sw">ssb_cls_mle3</alias>
 <alias name="ssb_mle3" sat="tx">ssb_tx_mle3</alias>
-<alias name="ssb_plrm" sat="3a 3b c2">ssb_cls_plrm</alias>
 <alias name="ssb_adaptive" sat="j3 sw">ssb_cls_adaptive</alias>
 <alias name="ssb_adaptive" sat="n1.f4a">ssb_tran2019_hfa</alias>
 <alias name="ssb_nr" sat="6a">ssb_cls_nr</alias>
+<alias name="ssb_plrm" sat="3a 3b c2">ssb_cls_plrm</alias>
 
 <var name="geoid_egm96" field="1601" sat="3a 3b j2 j3 sa sw">
 	<long_name>EGM96 geoid height</long_name>
@@ -1996,6 +1984,15 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 </var>
+<var name="mdt_cnescls22">
+	<long_name>CNES/CLS 2022 mean dynamic topography</long_name>
+	<source>CNES/CLS 2022</source>
+	<parameters>MDT_CNES-CLS22/mdt_cnes_cls22.nc</parameters>
+	<units>m</units>
+	<data>mdt_cnescls22</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+</var>
 
 <var name="latency">
 	<long_name>source product latency flag</long_name>
@@ -2107,7 +2104,7 @@ Global RADS configuration file
 	<format>f5.2</format>
 	<compress>int2 1e-3</compress>
 </var>
-<var name="swh_era5" sat="3a 3b 6a j3 sw tx pn">
+<var name="swh_era5">
 	<long_name>ERA5 significant wave height</long_name>
 	<standard_name>sea_surface_wave_significant_height</standard_name>
 	<units>m</units>
@@ -2325,7 +2322,7 @@ Global RADS configuration file
 	<format>f7.3</format>
 	<compress>int2 1e-2</compress>
 </var>
-<var name="wind_speed_era5_u" sat="3a 3b 6a j3 sw tx pn">
+<var name="wind_speed_era5_u">
 	<long_name>ERA5 model zonal wind speed</long_name>
 	<standard_name>eastward_wind</standard_name>
 	<source>ECMWF ERA5</source>
@@ -2336,7 +2333,7 @@ Global RADS configuration file
 	<format>f7.3</format>
 	<compress>int2 1e-2</compress>
 </var>
-<var name="wind_speed_era5_v" sat="3a 3b 6a j3 sw tx pn">
+<var name="wind_speed_era5_v">
 	<long_name>ERA5 model meridional wind speed</long_name>
 	<standard_name>northward_wind</standard_name>
 	<source>ECMWF ERA5</source>
@@ -2347,7 +2344,7 @@ Global RADS configuration file
 	<format>f7.3</format>
 	<compress>int2 1e-2</compress>
 </var>
-<var name="wind_speed_era5" sat="3a 3b 6a j3 sw tx pn">
+<var name="wind_speed_era5">
 	<long_name>ERA5 model wind speed</long_name>
 	<standard_name>wind_speed</standard_name>
 	<source>ECMWF ERA5</source>
@@ -4636,7 +4633,7 @@ Global RADS configuration file
 <var name="seaice_conc" field="4701 47">
 	<long_name>sea ice concentration</long_name>
 	<standard_name>sea_ice_area_fraction</standard_name>
-	<source>NOAA Optimal Interpolation Sea Surface Temperature v2</source>
+	<source>NOAA Optimal Interpolation Sea Surface Temperature v2.1</source>
 	<units>%</units>
 	<data>seaice_conc</data>
 	<format>f3.0</format>
@@ -4651,7 +4648,7 @@ Global RADS configuration file
 	<format>f3.0</format>
 	<compress>int1</compress>
 </var>
-<var name="seaice_conc_era5" sat="3a 3b 6a j3 sw tx pn">
+<var name="seaice_conc_era5">
 	<long_name>ERA5 sea ice concentration</long_name>
 	<standard_name>sea_ice_area_fraction</standard_name>
 	<source>ECMWF ERA5</source>
@@ -4669,14 +4666,16 @@ Global RADS configuration file
 	<data>sst</data>
 	<format>f5.2</format>
 	<compress>int2 1e-2</compress>
+	<comment>Interpolated from daily grids of OISST v2.1</comment>
 </var>
 <var name="sst_mean" field="4802">
-	<long_name>local mean sea surface temperature</long_name>
-	<source>NOAA Optimal Interpolation Sea Surface Temperature v2</source>
+	<long_name>local sea surface temperature from climatology</long_name>
+	<source>NOAA Optimal Interpolation Sea Surface Temperature v2.1</source>
 	<units>degC</units>
 	<data>sst_mean</data>
 	<format>f5.2</format>
 	<compress>int2 1e-2</compress>
+	<comment>Climatological value is based on 30 years of OISST v2.1</comment>
 </var>
 
 <var name="dry_tropo_airtide" field="4901 49">
@@ -4923,7 +4922,7 @@ Global RADS configuration file
 	</phase>
 	<phase name="a">
 		<mission>Exact Repeat Mission</mission>
-		<cycles>4 199</cycles>
+		<cycles>4 299</cycles>
 		<repeat>9.91564280 254</repeat>
 		<ref_pass>2020-12-27T08:33:32 99.92 5 1 458</ref_pass><!--S6A 30 seconds behind JA3-->
 		<start_time>2020-12-17T21:21:30</start_time>

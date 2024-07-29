@@ -14,20 +14,17 @@
 # GNU Lesser General Public License for more details.
 #-----------------------------------------------------------------------
 #
-# Add/overwrite numerous fields in the RADS data base
+# Add/overwrite numerous fields in the RADS data base related to GDR-G standards (#204):
+# - mss_dtu21 (#201, #174)
+# - mss_hybrid23 (#201)
+# - fes22,lptide (#200)
+# and some other needed patches as per the following issues:
+# - srtm15plus (#203)
+# - oisst v2.1 (#187)
+# - ptide (#176)
+# - era5 (#142)
 #
-rads_add_grid     "$@" -Vdist_coast,gia,basin
-rads_add_grid     "$@" -Vgeoid_egm2008,mss_cnescls15
-rads_add_grid     "$@" -Vmss_dtu15,mss_hybrid23
-rads_add_grid     "$@" -Vgeoid_eigen6,mss_dtu21
-rads_add_grid     "$@" -Vtopo_srtm15plus
-rads_add_grid     "$@" -Vprox_coast
-rads_add_surface  "$@"
-rads_add_surface  "$@" -s
-rads_add_tide     "$@" --models=stide,ptide,got410,annual
-rads_add_tide     "$@" --models=fes22,lptide
-rads_add_tide     "$@" --models=hret
-rads_add_webtide  "$@"
+rads_add_tide     "$@" --models=fes22,lptide,ptide
+rads_add_grid     "$@" -Vmss_dtu21,mss_hybrid23,topo_srtm15plus
 rads_add_sst      "$@" --all
-rads_add_seaice   "$@"
-rads_add_ncep     "$@" --dry --wet --air
+rads_add_era5     "$@" --all --new

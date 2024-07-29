@@ -68,8 +68,8 @@ program rads_gen_c2_op
 ! tide_solid - Solid earth tide
 ! topo_ace2 - ACE2 topography
 ! geoid_egm2008 - EGM2008 geoid
-! mss_cnescls11/cnescls15 - CNES/CLS11 or CNES/CLS15 mean sea surface
-! mss_dtu13 - DTU13 mean sea surface
+! mss_cnescls15 - CNES/CLS15 mean sea surface
+! mss_dtu13/mss_dtu15 - DTU13 or DTU15 mean sea surface
 ! flags, flags_plrm - Engineering flags
 ! off_nadir_angle2_wf_* - Mispointing from waveform squared (not _c)
 ! ssha_* - Sea surface height anomaly (not _c)

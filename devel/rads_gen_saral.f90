@@ -43,9 +43,9 @@ program rads_gen_saral
 ! inv_bar_static - Inverse barometer
 ! inv_bar_mog2d - MOG2D
 ! tide_solid - Solid earth tide
-! tide_ocean_fes04 - FES2008 ocean tide
+! tide_ocean_fes14 - FES2014 ocean tide
 ! tide_ocean_got48 - GOT4.8 ocean tide
-! tide_load_fes04 - FES2008 load tide
+! tide_load_fes14 - FES2014 load tide
 ! tide_load_got48 - GOT4.8 load tide
 ! tide_pole - Pole tide
 ! ssb_bm3 - SSB

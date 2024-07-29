@@ -71,13 +71,13 @@ program rads_gen_s6
 ! wind_speed_ecmwf_u - ECMWF wind speed (U)
 ! wind_speed_ecmwf_v - ECMWF wind speed (V)
 ! tide_ocean/load_got410 - GOT4.10c ocean and load tide
-! tide_ocean/load_fes14 - FES2014 ocean and load tide
+! tide_ocean/load_fes14/fes22 - FES2014 or FES2022 ocean and load tide
 ! tide_pole - Pole tide
 ! tide_solid - Solid earth tide
 ! topo_ace2 - ACE2 topography
 ! geoid_egm2008 - EGM2008 geoid
-! cnescls15 - CNES/CLS15 mean sea surface
-! mss_dtu18 - DTU18 mean sea surface
+! mss_cnescls15/mss_hybrid23 - CNES/CLS15 or Hybrid SIO/DTU/CNES/CLS23 mean sea surface
+! mss_dtu18/mss_dtu21 - DTU18 or DTU21 mean sea surface
 ! tb_238 - Brightness temperature (23.8 GHz)
 ! tb_365 - Brightness temperature (36.5 GHz)
 ! flags - Engineering flags

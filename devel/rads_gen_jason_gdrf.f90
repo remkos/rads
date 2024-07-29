@@ -82,7 +82,7 @@ program rads_gen_jason_gdrf
 ! tide_pole - Pole tide
 ! geoid_egm2008 - EGM2008 geoid
 ! cnescls15 - CNES/CLS15 mean sea surface
-! mss_dtu18 - DTU13 mean sea surface
+! mss_dtu18 - DTU18 mean sea surface
 ! topo_ace2 - ACE2 topography
 ! surface_class - Surgace classification
 ! surface_type_rad - Radiometer surface type

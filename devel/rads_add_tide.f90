@@ -109,9 +109,9 @@ do
 	case ('fes22', 'fes2022')
 		do_fes(2) = .true.
 		var => rads_varptr (S, 'tide_ocean_fes22')
-		jdum = fes_init(fes_long(2),fes_tide,  fes_mode,'FES2022/long_period_ocean_tide_extrapolated')
-		jdum = fes_init(fes_shrt(2),fes_tide,  fes_mode,'FES2022/short_period_ocean_tide_extrapolated')
-		jdum = fes_init(fes_load(2),fes_radial,fes_mode,'FES2022/load_tide')
+		jdum = fes_init(fes_long(2),fes_tide,  fes_mode,'FES2022b/long_period_ocean_tide_extrapolated')
+		jdum = fes_init(fes_shrt(2),fes_tide,  fes_mode,'FES2022b/short_period_ocean_tide_extrapolated')
+		jdum = fes_init(fes_load(2),fes_radial,fes_mode,'FES2022b/load_tide')
 	case ('got48')
 		do_got(1) = .true.
 		var => rads_varptr (S, 'tide_ocean_got48')
@@ -172,7 +172,7 @@ write (*,1310)
 '  -m, --models MODEL[,...]  Select tide models' // &
 'Currently available MODELs are:'/ &
 '  fes14  : FES2014 ocean and load tide'/ &
-'  fes22  : FES2022 ocean and load tide'/ &
+'  fes22  : FES2022b ocean and load tide'/ &
 '  got48  : GOT4.8 ocean and load tide'/ &
 '  got410 : GOT4.10 ocean and load tide'// &
 '  got51  : GOT5.1 ocean and load tide'// &
@@ -193,7 +193,6 @@ subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
 real(eightbytereal) :: phase, co, si
 real(eightbytereal), parameter :: pi = 4d0 * atan(1d0), t_2000 = 473299200d0, t_year = 365.25d0 * 86400d0
-real(eightbytereal), parameter :: k2 = 0.302d0, h2 = 0.609d0, h2k2 = h2 / (1 + k2)
 real(eightbytereal) :: time(n), lon(n), lat(n), &
 	otide_sp(n), otide_lp(n), ltide_sp(n), ltide_lp(n), lptide_eq(n), lptide_mf(n), itide(n), itide_comp(6)
 integer(fourbyteint) :: i, j
@@ -205,6 +204,16 @@ call log_pass (P)
 call rads_get_var (S, P, 'time', time, .true.)
 call rads_get_var (S, P, 'lon', lon, .true.)
 call rads_get_var (S, P, 'lat', lat, .true.)
+
+! Long-period tide for GOT models when there is no FES model
+if (any(do_got) .and. .not.any(do_fes)) then
+	call rads_get_var (S, P, 'tide_equil', lptide_eq, .true.) ! Read existing field
+	if (S%error /= 0) then ! If not existing, compute it with the analytical formula
+		do i = 1,n
+			call lpetide (time(i), lat(i), 1, lptide_eq(i), lptide_mf(i))
+		enddo
+	endif
+endif
 
 ! Reset time reference at the start of each pass.
 ! This makes sure that the nodal arguments are always recomputed per pass, so it does not
@@ -249,16 +258,6 @@ if (do_annual) call rads_def_var (S, P, 'mss_annual')
 
 ! Process data records
 
-! Long-period tide
-if (do_lptide .and. .not.any(do_got)) then
-	do i = 1,n
-		call lpetide (time(i), lat(i), 1, lptide_eq(i), lptide_mf(i))
-	enddo
-else
-	lptide_eq = 0d0
-	lptide_mf = 0d0
-endif
-
 ! Pole tide
 if (do_ptide) then
 	do i = 1,n
@@ -287,10 +286,10 @@ do j = 1,mfes
 	do i = 1,n
 		jdum = fes_eval(fes_shrt(j), time(i), lat(i), lon(i), otide_sp(i), lptide_eq(i))
 	enddo
-	call rads_put_var (S, P, 'tide_ocean_'//nfes(j), otide_sp + otide_lp)
 	do i = 1,n
 		jdum = fes_eval(fes_load(j), time(i), lat(i), lon(i), ltide_sp(i), ltide_lp(i))
 	enddo
+	call rads_put_var (S, P, 'tide_ocean_'//nfes(j), otide_sp + otide_lp)
 	call rads_put_var (S, P, 'tide_load_'//nfes(j), ltide_sp + ltide_lp)
 enddo
 
@@ -303,9 +302,7 @@ endif
 ! GOT models
 do j = 1,mgot
 	if (.not.do_got(j)) cycle
-! In order to allow parallelisation we do one measurement first (which initialises), then do the next n-1 in parallel
-	call gottide(gotinfo(j), time(1), lat(1), lon(1), otide_sp(1), ltide_sp(1))
-	do i = 2,n
+	do i = 1,n
 		call gottide(gotinfo(j), time(i), lat(i), lon(i), otide_sp(i), ltide_sp(i))
 	enddo
 	! Add equilibrium long-period tide to ocean tide

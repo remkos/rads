@@ -92,7 +92,7 @@ program rads_gen_tp_gdrf
 ! dry_tropo_era - ECMWF dry tropospheric correction
 ! wet_tropo_era - ECMWF wet tropo correction
 ! mss_cnescls15 - CNES/CLS15 mean sea surface
-! mss_dtu18 - DTU13 mean sea surface
+! mss_dtu18 - DTU18 mean sea surface
 ! mdt_cnescls18 - CNES/CLS18 mean dynamic topography
 ! geoid_egm2008 - EGM2008 geoid
 ! topo_ace2 - ACE2 topography
