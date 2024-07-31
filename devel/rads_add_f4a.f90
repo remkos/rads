@@ -84,6 +84,7 @@ integer(fourbyteint) :: i
 ! Other local variables
 
 real(eightbytereal), parameter :: sec1990=157766400d0	! UTC seconds from 1 Jan 1985 to 1 Jan 1990
+integer(fourbyteint), allocatable :: idx(:)
 
 ! Initialise
 
@@ -170,9 +171,6 @@ do
 		else if (nrec_m20 /= nrec_x20) then
 			call log_string ('Error: file skipped: nr of 20-Hz main and expert records not the same', .true.)
 			cycle
-		else if (nrec_m1*20 /= nrec_m20) then
-			call log_string ('Error: file skipped: nr of 20-Hz records not match 1-Hz records', .true.)
-			cycle
 		endif
 		! Read cycle and pass number
 		call nfs(nf90_get_att(ncid,nf90_global,'cycle_number',cycle_number))
@@ -225,8 +223,7 @@ do
 	if (nrec <= 0) then
 		! Skip
 	else if (oc_product) then
-		if (nrec_m1 /= nrec) write (rads_log_unit,*) 'Warning: nrec_m1 does not match nrec: ',nrec_m1,nrec
-		call process_pass_oc (nrec_m1, nrec_m20)
+		call process_pass_oc (nrec, nrec_m1, nrec_m20)
 	else
 		if (nrec_m5 /= nrec*5) write (rads_log_unit,*) 'Warning: nrec_m5 does not match nrec: ',nrec_m5,nrec*5
 		call process_pass_wa (nrec, nrec_m5)
@@ -244,14 +241,32 @@ contains
 ! OCEAN AND COASTAL PRODUCT (TDP_OC)
 !-----------------------------------------------------------------------
 
-subroutine process_pass_oc (n, n20)
-integer(fourbyteint), intent(in) :: n, n20
+subroutine process_pass_oc (n, n1, n20)
+integer(fourbyteint), intent(in) :: n, n1, n20
+integer(fourbyteint) :: i, j
+real(eightbytereal) :: a20(n20), t20(n20), b(n), t(n)
 integer(fourbyteint) :: nr(n)
-real(eightbytereal) :: b(n), t(n), dh(n), a20(n20), t20(n20)
 
-! Allocate data array
+! Some TDP_OC products have duplicated 1-Hz times. In that case we need to reduce the number of 1-Hz records.
+! Duplicate records have the altitude set to NaN
 
-allocate (a(n),flags(n))
+allocate (a(n1),idx(n))
+if (n1 == n) then
+	do j = 1,n
+		idx(j) = j
+	enddo
+else
+	call log_string('Warning: compacting 1-Hz arrays from TDP_OC product')
+	call get_var (ncid_x1, 'altitude', a)
+	j = 0
+	do i = 1,n1
+		if (isan_(a(i))) then
+			j = j + 1
+			idx(j) = i
+		endif
+	enddo
+endif
+
 nvar = 0
 
 ! Match the FDR times with the already existing times
@@ -259,26 +274,19 @@ nvar = 0
 call get_var (ncid_m1, 'time', a)
 a = a * 86400 + sec1990	! convert from days since 1990 to seconds since 1985
 call rads_get_var (S, P, 'time', t)
-if (any(abs(a - t) > 0.5d-6)) then
+if (any(abs(a(idx) - t) > 1.5d-6)) then
 	call log_string ('Warning: times do not match', .true.)
-	deallocate (a,flags)
+	deallocate (a,idx)
 	return
 endif
 
-! Compute ellipsoid correction
-
-call get_var (ncid_m1, 'latitude', a)
-do i = 1,n
-	dh(i) = dhellips(1,a(i))	! Convert WGS-84 to TOPEX
-enddo
-
 ! Range
 
-call cpy_var (ncid_x1, 'range', 'range_ku' // ext)
+call cpy_var_i (ncid_x1, 'range', 'range_ku' // ext)
 
 call get_var (ncid_m20, 'time', t20)
 call get_var (ncid_x20, 'range altitude SUB', a20)
-call trend_1hz (reshape(t20, (/20,n/)), t, reshape(a20, (/20,n/)), a, b, nr)
+call trend_1hz (reshape(t20, (/20,n/)), t, reshape(a20, (/20,n/)), a(:n), b, nr)
 call new_var ('range_rms_ku' // ext, b)
 call new_var ('range_numval_ku' // ext, dble(nr))
 
@@ -287,62 +295,68 @@ call new_var ('range_numval_ku' // ext, dble(nr))
 ! flags = nint(a, twobyteint)
 ! call nc2f (ncid_m1, 'validation_flag', 11)				! bit 11: Quality range
 ! call new_var ('flags' // ext, dble(flags))
-! call cpy_var (ncid_m1, 'validation_flag', 'qual_range' // ext)
+! call cpy_var_i (ncid_m1, 'validation_flag', 'qual_range' // ext)
 
 ! Path delay
 
-call cpy_var (ncid_x1, 'dry_tropospheric_correction', 'dry_tropo_era5')
-call cpy_var (ncid_x1, 'wet_tropospheric_correction', 'wet_tropo_rad' // ext)
+call cpy_var_i (ncid_x1, 'dry_tropospheric_correction', 'dry_tropo_era5')
+call cpy_var_i (ncid_x1, 'wet_tropospheric_correction', 'wet_tropo_rad' // ext)
 if (S%sat == 'e1' .and. cycle_number < 106) then
-	call cpy_var (ncid_x1, 'ionospheric_correction', 'iono_nic09')
+	call cpy_var_i (ncid_x1, 'ionospheric_correction', 'iono_nic09')
 else
-	call cpy_var (ncid_x1, 'ionospheric_correction', 'iono_gim')
+	call cpy_var_i (ncid_x1, 'ionospheric_correction', 'iono_gim')
 endif
 
 ! SSB
 
 ! Compute the combined sea state bias plus high-frequency correction
-if (S%sat == 'n1') call cpy_var (ncid_x1, 'range_ssb_hfa range SUB', 'ssb_tran2019_hfa')
-call cpy_var (ncid_x1, 'sea_state_bias', 'ssb_tran2019_3d')
+if (S%sat == 'n1') call cpy_var_i (ncid_x1, 'range_ssb_hfa range SUB', 'ssb_tran2019_hfa')
+call cpy_var_i (ncid_x1, 'sea_state_bias', 'ssb_tran2019_3d')
 
 ! IB
 
-call cpy_var (ncid_x1, 'dynamic_atmospheric_correction', 'inv_bar_mog2d_era')
+call cpy_var_i (ncid_x1, 'dynamic_atmospheric_correction', 'inv_bar_mog2d_era')
 
 ! Tides
 
-! Load tide is not available, so we cannot split
-!call cpy_var (ncid_x1, 'ocean_tide_height load_tide SUB', 'tide_ocean_fes14')
-!call cpy_var (ncid_x1, 'load_tide', 'tide_load_fes14')
-call cpy_var (ncid_x1, 'internal_tide', 'tide_internal')
-call cpy_var (ncid_x1, 'solid_earth_tide', 'tide_solid')
-call cpy_var (ncid_x1, 'pole_tide', 'tide_pole')
+call cpy_var_i (ncid_x1, 'internal_tide', 'tide_internal')
+call cpy_var_i (ncid_x1, 'solid_earth_tide', 'tide_solid')
+call cpy_var_i (ncid_x1, 'pole_tide', 'tide_pole')
+! Not including ocean and load tides because load tide is not available
 
 ! MSS and MDT
 
-call get_var (ncid_x1, 'mean_sea_surface', a)
-call new_var ('mss_comb15', a + dh)
-call cpy_var (ncid_x1, 'mean_dynamic_topography', 'mdt_cnescls18')
+call cpy_var_i (ncid_x1, 'mean_dynamic_topography', 'mdt_cnescls18')
+! Skipping MSS because it is outdated
 
 ! Surface type and coastal proximity
 
 call get_var (ncid_x1, 'surface_type', a)
 where (a == 1) a = 3
 where (a == 4) a = 2
-call new_var ('surface_type', a)
-call cpy_var (ncid_m1, 'distance_to_coast 1e-3 MUL', 'dist_coast') ! Convert m to km
+call new_var ('surface_type', a(idx))
+call cpy_var_i (ncid_m1, 'distance_to_coast 1e-3 MUL', 'dist_coast') ! Convert m to km
 
 ! SSHA
 
-call cpy_var (ncid_m1, 'sea_level_anomaly', 'ssha' // ext)
+call cpy_var_i (ncid_m1, 'sea_level_anomaly', 'ssha' // ext)
 
 ! Close pass
 
 call put_rads (skip_create = .true.)
 
-deallocate (a, flags)
+deallocate (a,idx)
 
 end subroutine process_pass_oc
+
+! Version of cpy_var with index
+
+subroutine cpy_var_i (ncid, varin, varout)
+integer(fourbyteint), intent(in) :: ncid
+character(len=*), intent(in) :: varin, varout
+call get_var (ncid, varin, a)
+call new_var (varout, a(idx))
+end subroutine cpy_var_i
 
 !-----------------------------------------------------------------------
 ! WAVES PRODUCT (TDP_WA)
