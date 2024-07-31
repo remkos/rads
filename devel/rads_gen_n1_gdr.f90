@@ -369,7 +369,7 @@ do
 	call new_var ('mss_cnescls15', a + dh)
 	call get_var (ncid, 'mean_sea_surf_sol2_01', a)
 	call new_var ('mss_dtu15', a + dh)
-	!call cpy_var (ncid, 'mean_dyn_topo_01', 'mdt_cnescls13')
+!	call cpy_var (ncid, 'mean_dyn_topo_01', 'mdt_cnescls13') ! Long outdated, so not adding this to RADS
 	call cpy_var (ncid, 'geoid_01', 'geoid_egm2008')
 	call cpy_var (ncid, 'odle_01', 'topo_ace2')
 
@@ -396,8 +396,9 @@ do
 ! Wind speed
 
 	call cpy_var (ncid, 'wind_speed_mod_u_01', 'wind_speed_ecmwf_u')
-!	call cpy_var (ncid, 'wind_speed_mod_u_reanalysis_01', 'wind_speed_era_u')
 	call cpy_var (ncid, 'wind_speed_mod_v_01', 'wind_speed_ecmwf_v')
+! Not adding the ERA fields, since we will be doing ERA5
+!	call cpy_var (ncid, 'wind_speed_mod_u_reanalysis_01', 'wind_speed_era_u')
 !	call cpy_var (ncid, 'wind_speed_mod_v_reanalysis_01', 'wind_speed_era_v')
 
 	call cpy_var (ncid, 'wind_speed_alt_01_ku', 'wind_speed_alt')
