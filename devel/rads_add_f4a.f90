@@ -223,10 +223,17 @@ do
 	if (nrec <= 0) then
 		! Skip
 	else if (oc_product) then
-		call process_pass_oc (nrec, nrec_m1, nrec_m20)
+		if (nrec_m20 /= nrec*20) then
+			write (rads_log_unit,*) 'Skipped: nrec_m20 does not match nrec: ', nrec_m20,nrec*20
+		else
+			call process_pass_oc (nrec, nrec_m1, nrec_m20)
+		endif
 	else
-		if (nrec_m5 /= nrec*5) write (rads_log_unit,*) 'Warning: nrec_m5 does not match nrec: ',nrec_m5,nrec*5
-		call process_pass_wa (nrec, nrec_m5)
+		if (nrec_m5 /= nrec*5) then
+			write (rads_log_unit,*) 'Skipped: nrec_m5 does not match nrec: ',nrec_m5,nrec*5
+		else
+			call process_pass_wa (nrec, nrec_m5)
+		endif
 	endif
 	call rads_close_pass (S, P)
 	call nfs(nf90_close(ncid))
