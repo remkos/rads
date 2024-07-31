@@ -1346,6 +1346,18 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Scaled version of static IB to match MOG2D</comment>
 </var>
+<var name="inv_bar_static_era">
+	<long_name>ERA-interim static inverse barometer correction</long_name>
+	<standard_name>sea_surface_height_correction_due_to_air_pressure_at_low_frequency</standard_name>
+	<source>ECMWF ERA-interim</source>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.4 0.6</plot_range>
+	<data>inv_bar_static_era</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Effect of the static atmospheric pressure on sea surface, subtracting global mean</comment>
+</var>
 <var name="inv_bar_static_era5">
 	<long_name>ERA5 static inverse barometer correction</long_name>
 	<standard_name>sea_surface_height_correction_due_to_air_pressure_at_low_frequency</standard_name>
