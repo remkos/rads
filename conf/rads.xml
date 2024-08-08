@@ -1899,7 +1899,7 @@ Global RADS configuration file
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
 </var>
-<var name="mss_dtu21" sat="3a 3b 6a c2 j1 j2 j3 n1 sa sw tx pn">
+<var name="mss_dtu21">
 	<long_name>DTU21 mean sea surface height</long_name>
 	<standard_name>sea_surface_height_above_reference_ellipsoid</standard_name>
 	<source>DTU21</source>
