@@ -1945,7 +1945,7 @@ Global RADS configuration file
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
 </var>
-<var name="mss_comb15" sat="3a 3b 6a c2 j1 j2 j3 n1.f4a sa sw tx pn">
+<var name="mss_comb15" sat="3a 3b 6a c2 j1 j2 j3 sa sw tx pn">
 	<long_name>Combined SIO/CNES_CLS15/DTU15 mean sea surface height</long_name>
 	<standard_name>sea_surface_height_above_reference_ellipsoid</standard_name>
 	<source>SIO/CNES_CLS15/DTU15</source>

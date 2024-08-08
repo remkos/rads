@@ -45,7 +45,6 @@ program rads_add_f4a
 ! tide_internal - Internal tide
 ! tide_solid - Solid earth tide
 ! tide_pole - Pole tide
-! mss_comb15 - Combine 2015 mean sea surface
 ! mdt_cnescls18 - Mean dynamic topography 2018
 ! surface_type - Surface type flag
 ! dist_coast - Distance to coast
