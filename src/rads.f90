@@ -10,7 +10,7 @@ use rads_grid, only: grid
 ! * Parameters
 ! Dimensions
 integer(fourbyteint), parameter :: rads_var_chunk = 100, rads_varl = 40, &
-	rads_naml = 160, rads_cmdl = 640, rads_strl = 1600, rads_hstl = 3200, &
+	rads_naml = 160, rads_cmdl = 640, rads_strl = 1600, rads_hstl = 4800, &
 	rads_cyclistl = 50, rads_optl = 50, rads_max_branches = 5
 ! RADS4 data types
 integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, &
