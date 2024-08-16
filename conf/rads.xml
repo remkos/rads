@@ -3361,7 +3361,7 @@ Global RADS configuration file
 	<limits sat="g1">65384 0</limits>
 	<limits sat="gs">51176 0</limits>
 	<limits sat="j3 sw">65384 0</limits> <!--Temporary value, deselecting altimeter rain flag-->
-	<limits sat="n1">36712 0</limits>
+	<limits sat="n1">36713 0</limits>
 	<limits sat="pn">480 0</limits>
 	<limits sat="tx">16360 0</limits> <!--Temporary value -->
 	<data>flags</data>
