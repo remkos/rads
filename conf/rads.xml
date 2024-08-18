@@ -4347,6 +4347,7 @@ Global RADS configuration file
 	<parameters sat="j2"> -15   0  0  0 0</parameters>
 	<parameters sat="j3"> -23.9 0  0  0 0</parameters>
 	<parameters sat="n1"> 451   0  0  0 0</parameters>
+	<parameters sat="n1.f4a"> 460.3 0  0  0 0</parameters>
 	<parameters sat="pn">  -3.1 0  0  0 0</parameters>
 	<parameters sat="sa"> -87   0  0  0 0</parameters>
 	<parameters sat="tx">  44.2 0  0  0 0</parameters> <!-- Side A -->
@@ -4389,6 +4390,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<dimensions>0</dimensions>
 	<parameters>0</parameters>
+	<parameters sat="n1"> 481.4 0  0  0 0</parameters>
 	<parameters sat="j3"> -49.0 0  0  0 0</parameters>
 	<parameters sat="sw"> -36.0 0  0  0 0</parameters>
 </var>
