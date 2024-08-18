@@ -37,35 +37,38 @@ type(rads_pass) :: P
 
 ! Other local variables
 
-logical :: l_sideB = .false., l_biasS = .false.
+logical :: l_biasKu = .false., l_biasS = .false., l_sideB = .false.
 integer(fourbyteint) :: cyc, pass, i
 
 ! Biases. All need to be ADDED to the measurements
 ! range_s_bias:    S-band range bias for BOTH sides
 
-real(eightbytereal), parameter :: range_s_bias = 0.1734d0
+real(eightbytereal), parameter :: range_s_bias = 0.1734d0, range_ku_bias = -7.32d-3 ! one FAI
 real(eightbytereal) :: f
 
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options (' sideB biasS all')
+call rads_set_options (' biasKu biasS sideB all')
 call rads_init (S)
 if (S%sat /= "n1") stop
 
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
-	case ('sideB')
-		l_sideB = .true.
+	case ('biasKu')
+		l_biasKu = .true.
 	case ('biasS')
 		l_biasS = .true.
-	case ('all')
+	case ('sideB')
 		l_sideB = .true.
+	case ('all')
+		l_biasKu = .true.
 		l_biasS = .true.
+		l_sideB = .true.
 	end select
 enddo
 
-if (.not.l_sideB .and. .not.l_biasS) stop
+if (.not.(l_biasKu .or. l_biasS .or. l_sideB)) stop
 
 ! Determine conversion factor from range difference to ionospheric correction
 
@@ -94,8 +97,9 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
-'  --sideB                   Set side B flag' // &
+'  --biasKu                  Apply Ku-band range bias to cycles 79 and 80' // &
 '  --biasS                   Apply S-band range bias' // &
+'  --sideB                   Set side B flag' // &
 '  --all                     All the above')
 stop
 end subroutine synopsis
@@ -107,16 +111,17 @@ end subroutine synopsis
 subroutine process_pass (n)
 use rads_time
 integer(fourbyteint), intent(in) :: n
-real(eightbytereal) :: flags(n), range_s(n), iono_alt(n), iono_alt_smooth(n)
+real(eightbytereal) :: flags(n), range_ku(n), range_ku_adaptive(n), range_s(n), iono_alt(n), iono_alt_smooth(n)
 integer(fourbyteint) :: i
-logical :: do_biasS, do_sideB
+logical :: do_biasKu, do_biasS, do_sideB
 
 call log_pass (P)
 
 ! Switch S-band off for the whole Side-B period
 
-do_sideB = .false.
+do_biasKu = (l_biasKu .and. cyc >= 79 .and. cyc <= 80)
 do_biasS = l_biasS
+do_sideB = .false.
 
 i = cyc*10000 + pass
 if (i >= 470794 .and. i <= 480847) then
@@ -130,18 +135,22 @@ endif
 
 ! Do this routine only for Baseline < 005
 
-if (.not.do_sideB .and. .not.do_biasS) then
+if (.not.(do_biasKu .or. do_biasS .or. do_sideB)) then
 	call log_records(0)
 	return
 endif
 
 ! For Side B: set flag and Update Ku-band range
 
+if (do_biasKu) then
+	call rads_get_var (S, P, 'range_ku', range_ku, .true.)
+	call rads_get_var (S, P, 'range_ku_adaptive', range_ku_adaptive, .true.)
+endif
 if (do_sideB) then
 	call rads_get_var (S, P, 'flags', flags, .true.)
-	do i = 1,n
-		flags(i) = ibset(nint(flags(i)),0)
-	enddo
+	forall (i = 1:n)
+		flags(i) = ibset(nint(flags(i),twobyteint),0)
+	end forall
 endif
 if (do_biasS) then
 	call rads_get_var (S, P, 'range_s', range_s, .true.)
@@ -156,12 +165,16 @@ call rads_put_history (S, P)
 
 ! Write out all the data
 
-if (do_sideB) call rads_put_var (S, P, 'flags', flags)
+if (do_biasKu) then
+	call rads_put_var (S, P, 'range_ku', range_ku + range_ku_bias)
+	call rads_put_var (S, P, 'range_ku_adaptive', range_ku_adaptive + range_ku_bias)
+endif
 if (do_biasS) then
 	call rads_put_var (S, P, 'range_s', range_s + range_s_bias)
 	call rads_put_var (S, P, 'iono_alt', iono_alt + f * range_s_bias)
 	call rads_put_var (S, P, 'iono_alt_smooth', iono_alt_smooth + f * range_s_bias)
 endif
+if (do_sideB) call rads_put_var (S, P, 'flags', flags)
 
 call log_records (n)
 end subroutine process_pass
