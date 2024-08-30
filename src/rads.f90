@@ -1067,18 +1067,21 @@ contains
 
 subroutine rads_parse_option (opt)
 type(rads_option), intent(in) :: opt
-integer :: j, k0, k1, ios
+integer :: j, k0, k1, ios, ival(3)
 real(eightbytereal) :: val(2)
 ! Scan a single command line argument (option)
 val = nan
 j = index(opt%arg, '=')
 select case (opt%opt)
 case ('C', 'cycle')
-	S%cycles(2) = -1
-	S%cycles(3) = 1
-	call read_val (opt%arg, S%cycles, '/-', iostat=ios)
+	ival(2) = -1
+	ival(3) = 1
+	call read_val (opt%arg, ival, '/-', iostat=ios)
 	if (ios > 0) call rads_opt_error (opt%opt, opt%arg)
-	if (S%cycles(2) < 0) S%cycles(2) = S%cycles(1)
+	if (ival(2) < 0) ival(2) = ival(1)
+	S%cycles(1) = max(S%cycles(1),ival(1))
+	S%cycles(2) = min(S%cycles(2),ival(2))
+	S%cycles(3) = ival(3)
 case ('P', 'pass')
 	if (opt%arg(:1) == 'a') then ! Only ascending passes
 		S%passes(1) = S%passes(1)/2*2+1
