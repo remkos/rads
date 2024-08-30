@@ -2751,18 +2751,8 @@ integer :: i, j, l
 ! Start with S%spec given on command line.
 ! It will be replaced by the mission phase, if any.
 !
-! If three characters, this may be like "e2g".
-! Check if the first two characters match the list.
-l = len_trim(S%spec)
-if (l == 3) then
-	do i = 1,nval
-		if (S%spec(1:2) /= val(i)(1:2)) cycle
-		S%sat = val(i)(1:2)		! 2-charecter abbreviation
-		S%spec = S%spec(3:3)	! Phase part
-		return
-	enddo
-endif
 ! If we have a '/' or ':' or '.', then separate specification
+l = len_trim(S%spec)
 j = scan(S%spec,'/:.')
 if (j > 0) l = j - 1
 ! Now scan for matching strings (beginning of string only)
@@ -2781,6 +2771,20 @@ do i = 1,nval
 	endif
 	return
 enddo
+!
+! If three characters, this may be like "e2g".
+! Check if the first two characters match the list.
+l = len_trim(S%spec)
+if (l == 3) then
+	do i = 1,nval
+		if (S%spec(1:2) /= val(i)(1:2)) cycle
+		S%sat = val(i)(1:2)		! 2-character abbreviation
+		S%sat3 = val(i)(4:6)	! 3-charecter abbreviation
+		S%branch(1) = S%sat//'/'//S%spec(3:3)
+		S%spec = S%spec(3:3)	! Phase part
+		return
+	enddo
+endif
 call rads_exit ('No satellite found based on specification "'//trim(S%spec)//'"')
 end subroutine sat_translate
 
