@@ -123,6 +123,7 @@ type :: rads_sat                                     ! Information on altimeter 
 	integer(fourbyteint) :: nvar, nsel               ! Nr of available and selected vars and aliases
 	logical :: n_hz_output                           ! Produce multi-Hz output
 	character(len=2) :: sat                          ! 2-Letter satellite abbreviation
+	character(len=3) :: sat3                         ! 3-Letter satellite abbreviation
 	integer(twobyteint) :: satid                     ! Numerical satellite identifier
 	type(rads_cyclist), pointer :: excl_cycles       ! Excluded cycles (if requested)
 	type(rads_var), pointer :: var(:)                ! List of available variables and aliases
@@ -740,7 +741,7 @@ type(rads_sat), intent(inout) :: S
 ! gfortran 4.3.4 to 4.4.1 segfault on the next line if this routine is made pure or elemental,
 ! so please leave it as a normal routine.
 S = rads_sat ('', '', '', '', '', null(), '', 1d0, (/13.8d0, nan/), 90d0, nan, nan, nan, 1, 1, rads_noerr, &
-	0, 0, 0, 0, 0, .false., '', 0, null(), null(), null(), null(), null(), null(), null(), null())
+	0, 0, 0, 0, 0, .false., '', '', 0, null(), null(), null(), null(), null(), null(), null(), null())
 end subroutine rads_init_sat_struct
 
 !****if* rads/rads_free_sat_struct
@@ -2756,7 +2757,7 @@ l = len_trim(S%spec)
 if (l == 3) then
 	do i = 1,nval
 		if (S%spec(1:2) /= val(i)(1:2)) cycle
-		S%sat = val(i)(1:2)
+		S%sat = val(i)(1:2)		! 2-charecter abbreviation
 		S%spec = S%spec(3:3)	! Phase part
 		return
 	enddo
@@ -2767,7 +2768,8 @@ if (j > 0) l = j - 1
 ! Now scan for matching strings (beginning of string only)
 do i = 1,nval
 	if (index(' '//val(i), ' '//strtolower(S%spec(:l))) == 0) cycle
-	S%sat = val(i)(1:2)
+	S%sat = val(i)(1:2)		! 2-character abbreviation
+	S%sat3 = val(i)(4:6)	! 3-character abbreviation
 	S%spec = S%spec(l+1:)	! Everything after <sat>
 	j = scan(S%spec,'/:')
 	if (j == 0) then	! No phase indication
