@@ -31,3 +31,4 @@ rads_add_webtide  "$@"
 rads_add_sst      "$@" --all
 rads_add_seaice   "$@"
 rads_add_ncep     "$@" --dry --wet --air
+rads_add_era5     "$@" --all --new
