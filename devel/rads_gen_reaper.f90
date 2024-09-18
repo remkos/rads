@@ -46,12 +46,9 @@ program rads_gen_reaper
 ! inv_bar_mog2d - MOG2D
 ! tide_solid - Solid earth tide
 ! tide_ocean_fes04 - FES2008 ocean tide
-! tide_ocean_got47 - GOT4.7 ocean tide
 ! tide_load_fes04 - FES2008 load tide
-! tide_load_got47 - GOT4.7 load tide
 ! tide_pole - Pole tide
-! ssb_bm3 - SSB
-! mss_cls01 - CLS01 MSS
+! ssb_hyb - Hybrid SSB solution for REAPER
 ! geoid_egm2008 - EGM2008 geoid
 ! mss_ucl04 - UCL04 MSS
 ! swh_ku - Significant wave height
@@ -60,7 +57,6 @@ program rads_gen_reaper
 ! wind_speed_ecmwf_v - ECMWF wind speed (V)
 ! range_rms_ku - Std dev of range
 ! range_numval_ku - Nr of averaged range measurements
-! topo_macess - MACESS topography
 ! tb_238 - Brightness temperature (23.8 GHz)
 ! tb_365 - Brightness temperature (36.5 GHz)
 ! peakiness_ku - Peakiness
@@ -82,6 +78,7 @@ program rads_gen_reaper
 !-----------------------------------------------------------------------
 use rads
 use rads_devel
+use rads_devel_misc
 use rads_gen
 use rads_netcdf
 use rads_misc
@@ -96,12 +93,11 @@ character(len=rads_cmdl) :: infile, filenm, old_filenm = ''
 
 ! Header variables
 
-character(len=1) :: phasenm(2)
+character(len=2) :: mission
 character(len=rads_varl) :: l2_proc_time, l2_version
 character(len=4) :: mle
 logical :: alt_2m
-real(eightbytereal) :: tnode(2), lnode(2)
-integer(fourbyteint) :: orbitnr(2), cyclenr(2), passnr(2), varid
+integer(fourbyteint) :: varid
 
 ! Data variables
 
@@ -118,13 +114,19 @@ type :: var_
 endtype
 type(var_) :: var(mvar)
 
+! Struct for orbit info
+
+integer(fourbyteint) :: ipass
+integer(fourbyteint), parameter :: mpass = 120000 ! Enough for 12 years
+type(orfinfo) :: orf(mpass)
+
 ! Other local variables
 
+real(eightbytereal), parameter :: sec2000=473299200d0	! UTC seconds from 1 Jan 1985 to 1 Jan 2000
 real(eightbytereal), parameter :: sec1990=157766400d0	! UTC seconds from 1 Jan 1985 to 1 Jan 1990
 real(eightbytereal), parameter :: sec_to_m=0.5d0*299792458d0	! seconds of 2-way range to meters 1-way
 real(eightbytereal), parameter :: uso_wap=15000000.05d0	! Nominal USO frequency used in WAP products
 integer :: i
-logical :: new
 
 ! Initialise
 
@@ -143,21 +145,31 @@ if (ios /= 0) then
 else
 	call synopsis ('--head')
 endif
+call rads_init(S, sat)
 call get_reaper
+
+! Load the ORF file and change time to sec1985
+
+call read_orf ('ER' // mission(2:2), orf)
+orf(:)%starttime = orf(:)%starttime + sec2000
+orf(:)%eqtime = orf(:)%eqtime + sec2000
+ipass = 1
 
 do
 	! Read the next file as long as buffer is empty or less than one orbit in memory
 
 	do while (ndata == 0 .or. var(1)%d(ndata) - var(1)%d(1) < 6100d0)
-		read (rads_log_unit,'(a)',iostat=ios) infile
+		read (*,'(a)',iostat=ios) infile
 		if (ios /= 0) exit
 		call get_reaper
 	enddo
 
+	! To which passes do the data belong?
+	call which_pass (var(1)%d(1))
+
 	! Look where to split this chunk of data
-	new = erspass (ers, var(1)%d(1), orbitnr(1), phasenm(1), cyclenr(1), passnr(1), tnode(1), lnode(1))
 	do i = 2,ndata
-		if (erspass (ers, var(1)%d(i), orbitnr(2), phasenm(2), cyclenr(2), passnr(2), tnode(2), lnode(2))) exit
+		if (var(1)%d(i) >= orf(ipass+1)%starttime) exit
 	enddo
 	! It is OK to exit this loop with i = ndata + 1. This means we dump all of the memory.
 
@@ -170,14 +182,29 @@ do
 	if (ios /= 0 .and. ndata == 0) exit ! We are out of data
 
 	! Move the data to be beginning
-	do i = 1,nvar
+	forall (i = 1:nvar)
 		var(i)%d(1:ndata) = var(i)%d(nout+1:nout+ndata)
-	enddo
+	end forall
 enddo
 
 call rads_end (S)
 
 contains
+
+!***********************************************************************
+! Determine the corresponding record from ORF
+
+subroutine which_pass (time)
+real(eightbytereal), intent(in) :: time
+do while (time < orf(ipass)%starttime)
+	ipass = ipass - 1
+	if (ipass < 1) call rads_exit ('Time is before the start of the ORF file')
+enddo
+do while (time > orf(ipass+1)%starttime)
+	ipass = ipass + 1
+	if (orf(ipass)%cycle < 0) call rads_exit ('Time is after the end of the ORF file')
+enddo
+end subroutine which_pass
 
 !-----------------------------------------------------------------------
 ! Print synopsis
@@ -201,7 +228,6 @@ end subroutine synopsis
 
 subroutine get_reaper
 integer(fourbyteint) :: i
-character(len=2) :: mission
 
 552 format (i4,' records ...')
 
@@ -222,13 +248,11 @@ alt_2m = (filenm(18:18) == 'M')
 
 mission = filenm(1:2)
 if (mission == 'E1') then
-	if (ers == 0) call rads_init (S, 'e1.' // strtolower(filenm(52:55)), (/'reaper'/))
 	ers = 1
 else if (mission == 'E2') then
-	if (ers == 0) call rads_init (S, 'e2.' // strtolower(filenm(52:55)), (/'reaper'/))
 	ers = 2
 else
-	call log_string ('Error: Unknown file type: '//mission, .true.)
+	call log_string ('Error: Wrong file type: '//mission, .true.)
 	return
 endif
 
@@ -384,23 +408,20 @@ call cpy_var (ncid, 'iono_corr_model', 'iono_nic09')
 if (start_time >= 430880400d0) then	! After 1998-08-28 01:00:00 get GIM iono
 	call cpy_var (ncid, 'iono_corr_gps', 'iono_gim')
 endif
-call get_var (ncid, 'mean_sea_surface_1', a)
-call new_var ('mss_cls01', a+dh)
+
 call get_var (ncid, 'mean_sea_surface_2', a)
 call new_var ('mss_ucl04', a+dh)
 call get_var (ncid, 'geoid', a)
 call new_var ('geoid_egm2008', a+dh)
+
 ! Need to recombine to OT+LPT
-call cpy_var (ncid, 'ocean_tide_sol1 ocean_tide_equil ADD tide_non_equil ADD', 'tide_ocean_got47')
-call cpy_var (ncid, 'load_tide_sol1', 'tide_load_got47')
-call cpy_var (ncid, 'ocean_tide_sol2 ocean_tide_equil ADD tide_non_equil ADD', 'tide_ocean_fes04')
+call cpy_var (ncid, 'ocean_tide_sol2 ocean_tide_equil ADD ocean_tide_non_equil ADD', 'tide_ocean_fes04')
 call cpy_var (ncid, 'load_tide_sol2', 'tide_load_fes04')
 call cpy_var (ncid, 'ocean_tide_equil', 'tide_equil')
 call cpy_var (ncid, 'ocean_tide_non_equil', 'tide_non_equil')
 call cpy_var (ncid, 'solid_earth_tide', 'tide_solid')
 call cpy_var (ncid, 'pole_tide', 'tide_pole')
 
-call cpy_var (ncid, 'bathymetry', 'topo_macess')
 call cpy_var (ncid, 'sea_state_bias', 'ssb_hyb')
 
 ! Atmospheric correction is a factor 100 too small (wrong scale_factor)
@@ -483,21 +504,17 @@ integer :: i
 character(len=rads_cmdl) :: original
 
 if (nout == 0) return	! Skip empty data sets
-if (cyclenr(1) < cycles(1) .or. cyclenr(1) > cycles(2)) return	! Skip chunks that are not of the selected cycle
-if (tnode(1) < times(1) .or. tnode(1) > times(2)) return	! Skip equator times that are not of selected range
-
-! Update phase name if required
-phasenm(1) = strtolower(phasenm(1))
-call rads_set_phase (S, phasenm(1))
+if (orf(ipass)%cycle < cycles(1) .or. orf(ipass)%cycle > cycles(2)) return	! Skip chunks that are not of the selected cycle
+if (orf(ipass)%eqtime < times(1) .or. orf(ipass)%eqtime > times(2)) return	! Skip equator times that are not of selected range
 
 ! Store relevant info
 call rads_init_pass_struct (S, P)
-P%cycle = cyclenr(1)
-P%pass = passnr(1)
+P%cycle = orf(ipass)%cycle
+P%pass = orf(ipass)%pass
 P%start_time = var(1)%d(1)
 P%end_time = var(1)%d(nout)
-P%equator_time = tnode(1)
-P%equator_lon = lnode(1)
+P%equator_time = orf(ipass)%eqtime
+P%equator_lon = orf(ipass)%eqlon
 
 ! Check which input files pertain
 if (P%start_time >= start_time) then
@@ -505,9 +522,9 @@ if (P%start_time >= start_time) then
 else if (P%end_time < start_time) then
 	original = old_filenm
 else
-	original = trim(old_filenm)//rads_linefeed//filenm
+	original = trim(old_filenm)//' '//filenm
 endif
-P%original = trim(l2_version)//' data of '//l2_proc_time(:11)//rads_linefeed//trim(original)
+P%original = trim(l2_version)//' data of '//l2_proc_time(:11)//': '//trim(original)
 
 ! Check which variables are empty
 do i = 1,nvar

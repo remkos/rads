@@ -49,9 +49,9 @@ nr_passes = 254
 abs_pass_offset = 0
 select case (sat)
 case ('ER1')
-	call parseenv ('${ALTIM}/data/ODR.ERS1/orf.txt', line)
+	call parseenv ('${ALTIM}/data/ODR.ERS-1/orf.txt', line)
 case ('ER2')
-	call parseenv ('${ALTIM}/data/ODR.ERS2/orf.txt', line)
+	call parseenv ('${ALTIM}/data/ODR.ERS-2/orf.txt', line)
 case ('EN1')
 	call parseenv ('${ALTIM}/data/ODR.ENVISAT1/orf.txt', line)
 case ('JA1')

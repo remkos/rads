@@ -1592,7 +1592,7 @@ Global RADS configuration file
 		<comment sat="6a" edit="append">This model is actually based on Jason-3 data and not Sentinel-6, and will be replaced later.</comment>
 	</if>
 </var>
-<var name="ssb_hyb" field="1504" sat="g1 gs n1 sa">
+<var name="ssb_hyb" field="1504" sat="e1 e2 g1 gs n1 sa">
 	<long_name>hybrid sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<source>NOAA/EUMETSAT hybrid model</source>
