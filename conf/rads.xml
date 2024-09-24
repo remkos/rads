@@ -32,6 +32,7 @@ Global RADS configuration file
 	3a s3a sentinel-3a sentinel3a sntnl-3a
 	3b s3b sentinel-3b sentinel3b sntnl-3b
 	6a s6a s6mf sentinel-6a sentinel-6mf sentinel6a sntnl-6a
+	6b s6b sentinel-6b sentinel6b sntnl-6b
 	c2 cs2 cryosat-2 cryosat2
 	e1 er1 ers-1 ers1
 	e2 er2 ers-2 ers2
@@ -4820,7 +4821,24 @@ Global RADS configuration file
 		<mission>Exact Repeat Mission</mission>
 		<cycles>4 299</cycles>
 		<repeat>9.91564280 254</repeat>
-		<ref_pass>2020-12-27T08:33:32 99.92 5 1 458</ref_pass><!--S6A 30 seconds behind JA3-->
+		<ref_pass>2020-12-27T08:33:32 99.92 5 1 458</ref_pass>
+		<start_time>2020-12-17T21:21:30</start_time>
+	</phase>
+</if>
+
+<!-- Sentinel-6B definition for test purposes only -->
+<if sat="6b">
+	<satellite>SNTNL-6B</satellite>
+	<satid>19</satid>
+	<dt1hz>1.000000</dt1hz>
+	<inclination>66.04</inclination>
+	<frequency>13.575 5.3</frequency>
+	<xover_params>0.04 0.035</xover_params>
+	<phase name="a">
+		<mission>Exact Repeat Mission</mission>
+		<cycles>4 299</cycles>
+		<repeat>9.91564280 254</repeat>
+		<ref_pass>2020-12-27T08:33:32 99.92 5 1 458</ref_pass>
 		<start_time>2020-12-17T21:21:30</start_time>
 	</phase>
 </if>
