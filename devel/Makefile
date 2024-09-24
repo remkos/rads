@@ -41,7 +41,7 @@ LDLIBS  = $(NETCDF_LIB) $(GRIB_LIB)
 SCRIPTS = rads_add_common rads_add_common_gdrg.sh rads_add_era5.sh \
 		rads_gen_3a.sh rads_gen_3a_new.sh rads_gen_3a_new_calval.sh rads_gen_3a_calval.sh \
 		rads_gen_3b.sh rads_gen_3b_new.sh rads_gen_3b_new_calval.sh rads_gen_3b_calval.sh \
-		rads_gen_6a_calval.sh \
+		rads_gen_6a_calval.sh rads_gen_6b_calval.sh \
 		rads_gen_c2_op.sh rads_gen_h2.sh \
 		rads_gen_j1.sh rads_gen_j2.sh \
 		rads_gen_j3.sh rads_gen_j3_calval.sh rads_gen_j3_new.sh rads_gen_j3_new_calval.sh \
