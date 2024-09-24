@@ -151,15 +151,21 @@ do
 		call nfs(nf90_inq_grp_full_ncid(ncid, '/main/data_20', ncid_m20))
 		call nfs(nf90_inq_grp_full_ncid(ncid, '/expert/data_20', ncid_x20))
 
-! Read global attributes
+! Note that the time variables in expert groups of the ERS-1 and ERS-2 products are incorrecly named
 
 		call nfs(nf90_inq_dimid(ncid_m1, 'time', varid))
 		call nfs(nf90_inquire_dimension(ncid_m1, varid, len=nrec_m1))
-		call nfs(nf90_inq_dimid(ncid_x1, 'time', varid))
-		call nfs(nf90_inquire_dimension(ncid_x1, varid, len=nrec_x1))
 		call nfs(nf90_inq_dimid(ncid_m20, 'time', varid))
 		call nfs(nf90_inquire_dimension(ncid_m20, varid, len=nrec_m20))
-		call nfs(nf90_inq_dimid(ncid_x20, 'time', varid))
+		if (S%sat == 'n1') then
+			call nfs(nf90_inq_dimid(ncid_x1, 'time', varid))
+			call nfs(nf90_inquire_dimension(ncid_x1, varid, len=nrec_x1))
+			call nfs(nf90_inq_dimid(ncid_x20, 'time', varid))
+		else
+			call nfs(nf90_inq_dimid(ncid_x1, 'time_01', varid))
+			call nfs(nf90_inquire_dimension(ncid_x1, varid, len=nrec_x1))
+			call nfs(nf90_inq_dimid(ncid_x20, 'time_20', varid))
+		endif
 		call nfs(nf90_inquire_dimension(ncid_x20, varid, len=nrec_x20))
 		if (nrec_m1 == 0) then
 			call log_string ('Error: file skipped: no measurements', .true.)
@@ -219,6 +225,8 @@ do
 	call rads_open_pass (S, P, cycle_number, pass_number, .true.)
 	nrec = P%ndata
 
+	write (*,*) "nrec, nrec_m1, nrec_m20 = ", nrec, nrec_m1, nrec_m20
+
 	if (nrec <= 0) then
 		! Skip
 	else if (oc_product) then
@@ -262,7 +270,7 @@ if (n1 == n) then
 		idx(j) = j
 	enddo
 else
-	call log_string('Warning: compacting 1-Hz arrays from TDP_OC product')
+	call log_string ('Warning: compacting 1-Hz arrays from TDP_OC product')
 	call get_var (ncid_x1, 'altitude', a)
 	j = 0
 	do i = 1,n1
@@ -284,6 +292,18 @@ if (any(abs(a(idx) - t) > 1.5d-6)) then
 	call log_string ('Warning: times do not match', .true.)
 	deallocate (a,idx)
 	return
+endif
+
+! Location (ERS only)
+
+if (S%sat == 'e1' .or. S%sat == 'e2') then
+	call cpy_var_i (ncid_m1, 'latitude', 'lat')
+	do i = 1,n
+		b(i) = dhellips(1,a(idx(i)))
+	enddo
+	call cpy_var_i (ncid_m1, 'longitude', 'lon')
+	call get_var (ncid_x1, 'altitude', a)
+	call new_var ('alt_reaper_deos', a(idx)+b)
 endif
 
 ! Range
