@@ -278,6 +278,10 @@ do
 
 	if (baseline < 'F09' .and. nf90_inq_varid(ncid1,'rain_attenuation_nr',varid) == nf90_noerr) baseline = 'F09'
 
+! TEMPORARY for S6B TDS: if CONF version = 21, then it is F09
+
+	if (baseline == 'TST' .and. cnf_ver == 'CONF 021') baseline = 'F09'
+
 ! Determine if we have C-band, MLE3, and/or numerical retrackers
 
 	has_c = (nf90_inq_ncid(ncid1, 'c', ncidc) == nf90_noerr)
@@ -300,7 +304,8 @@ do
 
 ! Store input file name
 
-	P%original = trim(basename(infile)) // ' (' // trim(arg) // ', ' // chd_ver // ', ' // cha_ver // ', ' // cnf_ver // ')'
+	P%original = trim(basename(infile)) // ' (Processing Baseline ' // trim(baseline) // ', ' // &
+		chd_ver // ', ' // cha_ver // ', ' // cnf_ver // ')'
 
 ! Allocate variables
 
