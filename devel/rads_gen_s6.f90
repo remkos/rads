@@ -278,9 +278,12 @@ do
 
 	if (baseline < 'F09' .and. nf90_inq_varid(ncid1,'rain_attenuation_nr',varid) == nf90_noerr) baseline = 'F09'
 
-! TEMPORARY for S6B TDS: if CONF version = 21, then it is F09
+! TEMPORARY for S6B TST: if CONF version = 21, then it is F09, otherwise G01
 
-	if (baseline == 'TST' .and. cnf_ver == 'CONF 021') baseline = 'F09'
+	if (S%sat == '6b' .and. baseline == 'TST') then
+		baseline = 'G01'
+		if (cnf_ver == 'CONF 021') baseline = 'F09'
+	endif
 
 ! Determine if we have C-band, MLE3, and/or numerical retrackers
 
