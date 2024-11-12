@@ -52,13 +52,13 @@ logical :: update = .false., new = .false.
 ! Data elements
 
 character(rads_cmdl) :: path
-integer(fourbyteint), parameter :: mvar=3, i2min=-32767
-integer(fourbyteint) :: mjd, mjdold=-99999, j, nvar = 0, nx = 0, ny = 0, nt = 0, ios, smear=0
+integer(fourbyteint), parameter :: mvar=6, i2min=-32767
+integer(fourbyteint) :: hh_ref, hh_old=-99999, j, nvar = 0, nx = 0, ny = 0, nt = 0, ios, smear=0
 real(eightbytereal) :: xmin, xmax, ymin, ymax, wmin = 0.5d0
 
 type :: var_
-	character(len=5) :: ncname
-	character(len=20) :: radsname
+	character(len=8) :: ncname
+	character(len=32) :: radsname
 	integer(twobyteint), allocatable :: grid(:,:,:)
 	integer(twobyteint) :: fillvalue
 	real(eightbytereal) :: add_offset, scale_factor
@@ -68,27 +68,32 @@ type(var_) :: var(mvar)
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('sdnpu swh direction period all wmin: smear: update new')
+call rads_set_options ('nu wind swell all wmin: smear: update new')
 call rads_init (S)
 
 ! Get template for path name
 
-call parseenv ('${ALTIM}/data/mfwam/%Y/%m/mfwamglocep_%Y%m%d.nc', path)
+call parseenv ('${ALTIM}/data/mfwam/%Y/%m/W_fr-meteofrance,EUMETSAT,MFWAM-V1-ANA_C_LFPW_%Y%m%d%H0000.bin', path)
 
 ! Check all options
 
 do j = 1,rads_nopt
 	select case (rads_opt(j)%opt)
-	case ('s', 'swh')
+	case ('wind')
 		call add_var ('VHM0', 'swh_mfwam')
-	case ('d', 'direction')
 		call add_var ('VMDR', 'mean_wave_direction')
-	case ('p', 'period')
 		call add_var ('VTM02', 'mean_wave_period')
+	case ('swell')
+		call add_var ('VHM0_SW', 'significant_swell_wave_height')
+		call add_var ('VMDR_SW', 'mean_swell_wave_direction')
+		call add_var ('VTM10_SW', 'mean_swell_wave_period')
 	case ('all')
 		call add_var ('VHM0', 'swh_mfwam')
 		call add_var ('VMDR', 'mean_wave_direction')
 		call add_var ('VTM02', 'mean_wave_period')
+		call add_var ('VHM0_SW', 'significant_swell_wave_height')
+		call add_var ('VMDR_SW', 'mean_swell_wave_direction')
+		call add_var ('VTM10_SW', 'mean_swell_wave_period')
 	case ('wmin')
 		read (rads_opt(j)%arg, *, iostat=ios) wmin
 	case ('smear')
@@ -124,9 +129,9 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
-'  -s, --swh                 Add SWH (swh_mfwam)' / &
-'  -d, --direction           Add mean wave direction (mean_wave_direction)' / &
-'  -p, --period              Add mean wave peiod (mean_wave_period)' / &
+'  --wind                    Add wind wave parameters (swh_mfwam, mean_wave_direction, mean_wave_period)' / &
+'  --swell                   Add swell wave parameters (significant_swell_wave_height, mean_swell_wave_direction,' / &
+'                                mean_swell_wave_period)' / &
 '  --all                     All of the above' / &
 '  --wmin=WMIN               Minumum total weight for interpolation (default: 0.5)' / &
 '  --smear=SEC               Smear values into NaN areas by up to SEC seconds' / &
@@ -169,37 +174,31 @@ call rads_get_var (S, P, 'lon', lon, .true.)
 
 do i = 1,n
 
-! Determine the current day
+! Determine the start time of the first MFWAM file to be stored in memory.
+! Grids start at 3:00 or 15:00 UTC and are spaced 12 hours apart.
+! Their file names include the time of the last grid in the file, i.e. 12:00 and 00:00, resp.
 
-	t = time(i)/86400
-	mjd = int(t)
+	hh_ref = int(time(i)/3600/12)*12
 
-! Load new grids when entering new day
+! Load new grids when entering new half day
 
-	if (mjd /= mjdold) then
-		if (mjd == mjdold+1) then
+	if (hh_ref /= hh_old) then
+		if (hh_ref == hh_old + 12) then
 			! Replace first grid with last grid and load new set of grids
 			do j = 1,nvar
 				var(j)%grid(:,:,1) = var(j)%grid(:,:,nt+1)
 			enddo
-			err = get_mfwam(mjd, 2)
+			err = get_mfwam(hh_ref + 12, 2)
 		else
 			! Replace both sets of grids
-			err = get_mfwam(mjd-1, 1) .or. get_mfwam(mjd, 2)
+			err = get_mfwam(hh_ref, 1) .or. get_mfwam(hh_ref + 12, 2)
 		endif
 		if (err) then
 			call log_string ('Warning: no MFWAM data for current time')
 			call log_records (0)
 			stop
 		endif
-		mjdold = mjd
-	endif
-
-! Skip data beyond latitude limits
-
-	if (lat(i) < ymin .or. lat(i) > ymax) then
-		wave(i,:) = nan
-		cycle
+		hh_old = hh_ref
 	endif
 
 ! Linearly interpolate in space and time
@@ -207,7 +206,7 @@ do i = 1,n
 
 	x = modulo(lon(i) - xmin, 360d0) / 360d0 * nx + 1
 	y = (lat(i) - ymin) / (ymax - ymin) * (ny - 1) + 1
-	t = (t - mjd) * nt + 1
+	t = (time(i)/3600d0 - hh_ref) / 12d0 * nt + 1
 	ix = int(x)
 	iy = int(y)
 	it = int(t)
@@ -240,7 +239,7 @@ do i = 1,n
 
 	do j = 1,nvar
 		z = var(j)%grid(ix:ix+1,iy:iy+1,it:it+1) * var(j)%scale_factor + var(j)%add_offset
-		if (var(j)%ncname == 'VMDR') then ! Treat direction through vector sum
+		if (var(j)%ncname(:4) == 'VMDR') then ! Treat direction through vector sum
 			z = z * rad
 			wave(i,j) = atan2 (sum(sin(z) * w), sum(cos(z) * w)) / rad
 		else
@@ -328,8 +327,8 @@ end subroutine add_var
 ! Get WaveWatch3 data
 !-----------------------------------------------------------------------
 
-logical function get_mfwam (mjd, istart)
-integer(fourbyteint), intent(in) :: mjd, istart
+logical function get_mfwam (hour, istart)
+integer(fourbyteint), intent(in) :: hour, istart
 integer(fourbyteint) ::	ncid, dimid, varid, l, strf1985, j
 real(eightbytereal), allocatable :: x(:), y(:), t(:)
 character(len=rads_cmdl) :: filenm
@@ -337,11 +336,12 @@ character(len=rads_cmdl) :: filenm
 600 format ('(',a,')')
 1300 format (a,': ',a)
 
-! Determine file name
-
 get_mfwam = .true.
 
-l = strf1985(filenm, trim(path), mjd*86400)
+! Determine file name:
+! Input is hours since 1985 refering to the last grid in the file
+
+l = strf1985(filenm, trim(path), hour*3600)
 
 ! Open input file
 
@@ -360,20 +360,27 @@ if (nx == 0) then
 	call nfs(nf90_inquire_dimension(ncid,dimid,len=ny))
 	call nfs(nf90_inq_dimid(ncid,'time',dimid))
 	call nfs(nf90_inquire_dimension(ncid,dimid,len=nt))
-	allocate (x(nx),y(ny),t(nt))
+	allocate (x(nx),y(ny))
 	call nfs(nf90_inq_varid(ncid,'longitude',varid))
 	call nfs(nf90_get_var(ncid,varid,x))
 	xmin = x(1) ; xmax = x(nx)
 	call nfs(nf90_inq_varid(ncid,'latitude',varid))
 	call nfs(nf90_get_var(ncid,varid,y))
 	ymin = y(1) ; ymax = y(ny)
-	call nfs(nf90_inq_varid(ncid,'time',varid))
-	call nfs(nf90_get_var(ncid,varid,t))
-	deallocate (x,y,t)
+	deallocate (x,y)
 	do j = 1,nvar
 		allocate (var(j)%grid(nx+1,ny,nt+1))
 	enddo
 endif
+
+! Check the time variable against the file time
+
+allocate (t(nt))
+call nfs(nf90_inq_varid(ncid,'time',varid))
+call nfs(nf90_get_var(ncid,varid,t))
+
+if (t(nt) - 306816 /= hour) write (*,1300,advance='no') 'warning','time variable does not match filename'
+deallocate (t)
 
 ! Load from NetCDF file all selected variables, with scale_factor, add_offset and fillvalue
 ! If istart = 1, read the last temporal grid into the first slot
@@ -381,7 +388,7 @@ endif
 ! Also copy the first column to the last to simplefy interpolation
 
 do j = 1,nvar
-	if (nft(nf90_inq_varid(ncid,var(j)%ncname,varid))) call rads_exit ('Error finding variable')
+	if (nft(nf90_inq_varid(ncid,var(j)%ncname,varid))) call rads_exit ('Error finding variable '//trim(var(j)%ncname))
 	if (nft(nf90_get_att(ncid,varid,'scale_factor',var(j)%scale_factor))) var(j)%scale_factor = 1d0
 	if (nft(nf90_get_att(ncid,varid,'add_offset',var(j)%add_offset))) var(j)%add_offset = 0d0
 	if (nft(nf90_get_att(ncid,varid,'_FillValue',var(j)%fillvalue))) var(j)%fillvalue = 32767
