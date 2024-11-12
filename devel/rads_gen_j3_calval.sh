@@ -87,7 +87,7 @@ esac
 
 rads_fix_jason    $options --all					>> "$log" 2>&1
 rads_add_common   $options							>> "$log" 2>&1
-rads_add_mfwam    $options -C107-999 --all			>> "$log" 2>&1
+rads_add_mfwam    $options -C107-999 --wind			>> "$log" 2>&1
 rads_add_iono     $options --all					>> "$log" 2>&1
 rads_add_orbit    $options -Valt_gps --dir=jplgpspoe -C0-360	>> "$log" 2>&1
 rads_add_orbit    $options -Valt_gps --dir=jplgpsmoe -C360-999	>> "$log" 2>&1
