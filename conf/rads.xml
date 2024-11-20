@@ -1882,7 +1882,7 @@ Global RADS configuration file
 	<standard_name>sea_surface_height_above_reference_ellipsoid</standard_name>
 	<source>UCL</source>
 	<units>m</units>
-	<data>mss_ucl04 -s</data>
+	<data>mss_ucl04</data>
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
 </var>
