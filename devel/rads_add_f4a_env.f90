@@ -13,14 +13,14 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*rads_add_f4a -- Converts FDR4ALT altimeter data to RADS
+!*rads_add_f4a_env -- Converts Envisat FDR4ALT altimeter data to RADS
 !+
-program rads_add_f4a
+program rads_add_f4a_env
 
-! This program reads FDR4ALT altimeters files and adds them to existing
+! This program reads Envisat FDR4ALT altimeters files and adds them to existing
 ! RADS data files
 !
-! syntax: rads_add_f4a [options] < list_of_FDR4ALT_file_names
+! syntax: rads_add_f4a_env [options] < list_of_FDR4ALT_file_names
 !
 ! This program handles FDR4ALT Level 2 products in NetCDF format, either
 ! OC (Ocean and Coastal) or WA (Waves) products.
@@ -128,15 +128,12 @@ do
 ! Get the mission name and compare with opened RADS session
 
 	call nfs(nf90_get_att(ncid,nf90_global,'mission_name',arg))
-	if ((arg == 'ERS-1' .and. S%sat == 'e1') .or. &
-		(arg == 'ERS-2' .and. S%sat == 'e2') .or. &
-		(arg == 'ENVISAT' .and. S%sat== 'n1')) then
+	if (arg == 'ENVISAT' .and. S%sat== 'n1') then
 		! All good options
 	else
 		call log_string ('Error: input file does not match selected satellite', .true.)
 		cycle
 	endif
-	if (S%sat /= 'n1') ext = '' ! No extensions for ERS, keep _adaptive extension for Envisat, unless --no-ext is used
 
 ! Which product is on input?
 
@@ -157,15 +154,9 @@ do
 		call nfs(nf90_inquire_dimension(ncid_m1, varid, len=nrec_m1))
 		call nfs(nf90_inq_dimid(ncid_m20, 'time', varid))
 		call nfs(nf90_inquire_dimension(ncid_m20, varid, len=nrec_m20))
-		if (S%sat == 'n1') then
-			call nfs(nf90_inq_dimid(ncid_x1, 'time', varid))
-			call nfs(nf90_inquire_dimension(ncid_x1, varid, len=nrec_x1))
-			call nfs(nf90_inq_dimid(ncid_x20, 'time', varid))
-		else
-			call nfs(nf90_inq_dimid(ncid_x1, 'time_01', varid))
-			call nfs(nf90_inquire_dimension(ncid_x1, varid, len=nrec_x1))
-			call nfs(nf90_inq_dimid(ncid_x20, 'time_20', varid))
-		endif
+		call nfs(nf90_inq_dimid(ncid_x1, 'time', varid))
+		call nfs(nf90_inquire_dimension(ncid_x1, varid, len=nrec_x1))
+		call nfs(nf90_inq_dimid(ncid_x20, 'time', varid))
 		call nfs(nf90_inquire_dimension(ncid_x20, varid, len=nrec_x20))
 		if (nrec_m1 == 0) then
 			call log_string ('Error: file skipped: no measurements', .true.)
@@ -294,18 +285,6 @@ if (any(abs(a(idx) - t) > 1.5d-6)) then
 	return
 endif
 
-! Location (ERS only)
-
-if (S%sat == 'e1' .or. S%sat == 'e2') then
-	call cpy_var_i (ncid_m1, 'latitude', 'lat')
-	do i = 1,n
-		b(i) = dhellips(1,a(idx(i)))
-	enddo
-	call cpy_var_i (ncid_m1, 'longitude', 'lon')
-	call get_var (ncid_x1, 'altitude', a)
-	call new_var ('alt_reaper_deos', a(idx)+b)
-endif
-
 ! Range
 
 call cpy_var_i (ncid_x1, 'range', 'range_ku' // ext)
@@ -327,16 +306,12 @@ call new_var ('range_numval_ku' // ext, dble(nr))
 
 call cpy_var_i (ncid_x1, 'dry_tropospheric_correction', 'dry_tropo_era5')
 call cpy_var_i (ncid_x1, 'wet_tropospheric_correction', 'wet_tropo_rad' // ext)
-if (S%sat == 'e1' .and. cycle_number < 106) then
-	call cpy_var_i (ncid_x1, 'ionospheric_correction', 'iono_nic09')
-else
-	call cpy_var_i (ncid_x1, 'ionospheric_correction', 'iono_gim')
-endif
+call cpy_var_i (ncid_x1, 'ionospheric_correction', 'iono_gim')
 
 ! SSB
 
 ! Compute the combined sea state bias plus high-frequency correction
-if (S%sat == 'n1') call cpy_var_i (ncid_x1, 'range_ssb_hfa range SUB', 'ssb_tran2019_hfa')
+call cpy_var_i (ncid_x1, 'range_ssb_hfa range SUB', 'ssb_tran2019_hfa')
 call cpy_var_i (ncid_x1, 'sea_state_bias', 'ssb_tran2019_3d')
 
 ! IB
@@ -436,4 +411,4 @@ write (*,1310)
 stop
 end subroutine synopsis
 
-end program rads_add_f4a
+end program rads_add_f4a_env
