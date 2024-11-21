@@ -832,9 +832,9 @@ Global RADS configuration file
 </var>
 -->
 <var name="dry_tropo_era" field="709">
-	<long_name>ERA dry tropospheric correction</long_name>
+	<long_name>ERA-interim dry tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_dry_troposphere</standard_name>
-	<source>ECMWF interim reanalysis</source>
+	<source>ECMWF ERA-interim</source>
 	<units>m</units>
 	<limits>-2.4 -2.1</limits>
 	<plot_range>-2.4 -2.2</plot_range>
@@ -982,9 +982,9 @@ Global RADS configuration file
 </var>
 -->
 <var name="wet_tropo_era" field="809">
-	<long_name>ERA wet tropospheric correction</long_name>
+	<long_name>ERA-interim wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
-	<source>ECMWF interim reanalysis</source>
+	<source>ECMWF ERA-interim</source>
 	<units>m</units>
 	<limits>-0.6 0.0</limits>
 	<plot_range>-0.4 0.0</plot_range>
@@ -1325,7 +1325,7 @@ Global RADS configuration file
 	<comment>Combined low and high frequency effect of atmospheric pressure and wind on sea surface height</comment>
 </var>
 <var name="inv_bar_mog2d_era" field="1006">
-	<long_name>MOG2D dynamic atmospheric correction (ERA Interim forcing)</long_name>
+	<long_name>MOG2D dynamic atmospheric correction (ERA-Interim forcing)</long_name>
 	<source>CNES/CNRS-LEGOS/CLS MOG2D-G HR barotropic model with ERA-Interim forcing, ESA SLCCI project</source>
 	<units>m</units>
 	<limits>-1 1</limits>
@@ -2332,6 +2332,39 @@ Global RADS configuration file
 	<limits>0 30</limits>
 	<plot_range>0 16</plot_range>
 	<data>wind_speed_ecmwf_u wind_speed_ecmwf_v HYPOT</data>
+	<format>f7.3</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="wind_speed_era_u" sat="tx pn e1.f4a e2.f4a">
+	<long_name>ERA-interim model zonal wind speed</long_name>
+	<standard_name>eastward_wind</standard_name>
+	<source>ECMWF ERA-interim</source>
+	<units>m/s</units>
+	<limits>-30 30</limits>
+	<plot_range>-16 16</plot_range>
+	<data>wind_speed_era_u</data>
+	<format>f7.3</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="wind_speed_era_v" sat="tx pn e1.f4a e2.f4a">
+	<long_name>ERA-interim model meridional wind speed</long_name>
+	<standard_name>northward_wind</standard_name>
+	<source>ECMWF ERA-interim</source>
+	<units>m/s</units>
+	<limits>-30 30</limits>
+	<plot_range>-16 16</plot_range>
+	<data>wind_speed_era_v</data>
+	<format>f7.3</format>
+	<compress>int2 1e-2</compress>
+</var>
+<var name="wind_speed_era" sat="tx pn e1.f4a e2.f4a">
+	<long_name>ERA-interim model wind speed</long_name>
+	<standard_name>wind_speed</standard_name>
+	<source>ECMWF ERA-interim</source>
+	<units>m/s</units>
+	<limits>0 30</limits>
+	<plot_range>0 16</plot_range>
+	<data>wind_speed_era_u wind_speed_era_v HYPOT</data>
 	<format>f7.3</format>
 	<compress>int2 1e-2</compress>
 </var>

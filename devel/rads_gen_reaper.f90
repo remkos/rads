@@ -27,6 +27,9 @@ program rads_gen_reaper
 !
 ! syntax: rads_gen_reaper [options] < list_of_REAPER_file_names
 !
+! where [options] include:
+!  --min-rec <min_rec> : Specify minimum number of records per pass to process.
+!
 ! This program handles only the REAPER ERS_ALT_2 files in NetCDF format.
 !-----------------------------------------------------------------------
 !
@@ -110,7 +113,7 @@ type(rads_pass) :: P
 type :: var_
 	type(rads_var), pointer :: v ! Pointer to rads_var struct
 	real(eightbytereal) :: d(mrec) ! Data array
-	logical :: empty ! .true. if all NaN
+	logical :: empty, zero ! .true. if all NaN or all zero
 endtype
 type(var_) :: var(mvar)
 
@@ -131,7 +134,7 @@ integer :: i
 ! Initialise
 
 call synopsis
-call rads_gen_getopt ('')
+call rads_gen_getopt ('', ' min-rec:')
 
 !----------------------------------------------------------------------
 ! Read all file names from standard input
@@ -216,6 +219,8 @@ if (rads_version ('Write REAPER data to RADS', flag=flag)) return
 call synopsis_devel (' < list_of_REAPER_file_names')
 write (*,1310)
 1310 format (/ &
+'Additional [processing_options] are:' / &
+'  --min-rec=MIN_REC         Specify minimum number of records per pass to process' // &
 'This program converts REAPER ERS_ALT_2 files to RADS data' / &
 'files with the name $RADSDATAROOT/data/eE.VVVV/F/pPPPP/eEpPPPPcCCC.nc.' / &
 'The directory is created automatically and old files are overwritten.')
@@ -321,7 +326,7 @@ t(3) = end_time
 ! There are significant overlaps between files
 ! Here we remove all new files that fall entirely before the end of the previous file, and
 if (end_time < last_time + 1) then
-	write (rads_log_unit,553) 'file because of time reversal    ', nrec
+	write (rads_log_unit,553) 'file because of time reversal     ', nrec
 	return
 endif
 
@@ -402,8 +407,8 @@ call cpy_var (ncid, 'model_wet_tropo_corr', 'wet_tropo_era')
 call cpy_var (ncid, 'rad_wet_tropo_corr', 'wet_tropo_rad')
 call cpy_var (ncid, 'rad_water_vapor', 'water_vapor_rad')
 call cpy_var (ncid, 'rad_liquid_water', 'liquid_water_rad')
-call cpy_var (ncid, 'wind_speed_model_u', 'wind_speed_ecmwf_u')
-call cpy_var (ncid, 'wind_speed_model_v', 'wind_speed_ecmwf_v')
+call cpy_var (ncid, 'wind_speed_model_u', 'wind_speed_era_u')
+call cpy_var (ncid, 'wind_speed_model_v', 'wind_speed_era_v')
 call cpy_var (ncid, 'iono_corr_model', 'iono_nic09')
 if (start_time >= 430880400d0) then	! After 1998-08-28 01:00:00 get GIM iono
 	call cpy_var (ncid, 'iono_corr_gps', 'iono_gim')
@@ -503,7 +508,7 @@ subroutine put_rads
 integer :: i
 character(len=rads_cmdl) :: original
 
-if (nout == 0) return	! Skip empty data sets
+if (nout < min_rec) return	! Skip empty data sets
 if (orf(ipass)%cycle < cycles(1) .or. orf(ipass)%cycle > cycles(2)) return	! Skip chunks that are not of the selected cycle
 if (orf(ipass)%eqtime < times(1) .or. orf(ipass)%eqtime > times(2)) return	! Skip equator times that are not of selected range
 
@@ -526,16 +531,29 @@ else
 endif
 P%original = trim(l2_version)//' data of '//l2_proc_time(:11)//': '//trim(original)
 
-! Check which variables are empty
+! Check which variables are empty or all zero
 do i = 1,nvar
 	var(i)%empty = all(isnan_(var(i)%d(1:nout)))
+	var(i)%zero = all(var(i)%d(1:nout) == 0d0)
 enddo
+
+! Write out the empty variables to be kept
 if (any(var(1:nvar)%empty)) then
-	write (rads_log_unit,551,advance='no') '... No'
+	write (rads_log_unit,551,advance='no') 'Empty:'
 	do i = 1,nvar
 		if (var(i)%empty) write (rads_log_unit,551,advance='no') trim(var(i)%v%name)
 	enddo
 	write (rads_log_unit,551,advance='no') ' ...'
+endif
+551 format (a,1x)
+
+! Do the same for records that are all zero
+if (any(var(1:nvar)%zero)) then
+	write (rads_log_unit,551,advance='no') 'All zero:'
+	do i = 1,nvar
+		if (var(i)%zero) write (rads_log_unit,551,advance='no') trim(var(i)%v%name)
+	enddo
+	write (rads_log_unit,551,advance='no') '...'
 endif
 
 ! Open output file
@@ -554,9 +572,6 @@ enddo
 ! Close the data file
 call log_records (nout, P)
 call rads_close_pass (S, P)
-
-! Formats
-551 format (a,1x)
 
 end subroutine put_rads
 
