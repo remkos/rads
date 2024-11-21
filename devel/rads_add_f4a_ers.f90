@@ -13,11 +13,11 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*rads_add_f4a -- Converts FDR4ALT altimeter data to RADS
+!*rads_add_f4a_ers -- Converts ERS FDR4ALT altimeter data to RADS
 !+
-program rads_add_f4a
+program rads_add_f4a_ers
 
-! This program reads FDR4ALT altimeters files and adds them to existing
+! This program reads ERS FDR4ALT altimeters files and adds them to existing
 ! RADS data files
 !
 ! syntax: rads_add_f4a [options] < list_of_FDR4ALT_file_names
@@ -39,7 +39,6 @@ program rads_add_f4a
 ! wet_tropo_rad - Radiometer wet tropo correction
 ! iono_nic09 - NIC09 ionospheric correction
 ! iono_gim - GIM ionosphetic correction
-! ssb_tran2019_hfa - SSB Tran 2019 including high-frequency adjustment
 ! ssb_tran2019_3d - SSB Tran 2019 3D
 ! inv_bar_mog2d_era - MOG2D dynamic atmospheric correction (ERA driven)
 ! tide_internal - Internal tide
@@ -74,11 +73,6 @@ integer(fourbyteint) :: ncid, ncid_m1, ncid_x1, ncid_m20, ncid_x20, varid, &
 	nrec_m1, nrec_x1, nrec_m5, nrec_m20, nrec_x20
 real(eightbytereal) :: first_measurement_time, last_measurement_time
 logical :: oc_product
-character(len=16) :: ext = '_adaptive'
-
-! Data variables
-
-integer(fourbyteint) :: i
 
 ! Other local variables
 
@@ -88,17 +82,7 @@ integer(fourbyteint), allocatable :: idx(:)
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('x no-ext')
 call rads_init (S)
-
-! Scan options
-
-do i = 1,rads_nopt
-	select case (rads_opt(i)%opt)
-	case ('x', 'no-ext')
-		ext = ''
-	end select
-enddo
 
 !----------------------------------------------------------------------
 ! Read all file names from standard input
@@ -129,14 +113,12 @@ do
 
 	call nfs(nf90_get_att(ncid,nf90_global,'mission_name',arg))
 	if ((arg == 'ERS-1' .and. S%sat == 'e1') .or. &
-		(arg == 'ERS-2' .and. S%sat == 'e2') .or. &
-		(arg == 'ENVISAT' .and. S%sat== 'n1')) then
+		(arg == 'ERS-2' .and. S%sat == 'e2')) then
 		! All good options
 	else
 		call log_string ('Error: input file does not match selected satellite', .true.)
 		cycle
 	endif
-	if (S%sat /= 'n1') ext = '' ! No extensions for ERS, keep _adaptive extension for Envisat, unless --no-ext is used
 
 ! Which product is on input?
 
@@ -157,15 +139,9 @@ do
 		call nfs(nf90_inquire_dimension(ncid_m1, varid, len=nrec_m1))
 		call nfs(nf90_inq_dimid(ncid_m20, 'time', varid))
 		call nfs(nf90_inquire_dimension(ncid_m20, varid, len=nrec_m20))
-		if (S%sat == 'n1') then
-			call nfs(nf90_inq_dimid(ncid_x1, 'time', varid))
-			call nfs(nf90_inquire_dimension(ncid_x1, varid, len=nrec_x1))
-			call nfs(nf90_inq_dimid(ncid_x20, 'time', varid))
-		else
-			call nfs(nf90_inq_dimid(ncid_x1, 'time_01', varid))
-			call nfs(nf90_inquire_dimension(ncid_x1, varid, len=nrec_x1))
-			call nfs(nf90_inq_dimid(ncid_x20, 'time_20', varid))
-		endif
+		call nfs(nf90_inq_dimid(ncid_x1, 'time_01', varid))
+		call nfs(nf90_inquire_dimension(ncid_x1, varid, len=nrec_x1))
+		call nfs(nf90_inq_dimid(ncid_x20, 'time_20', varid))
 		call nfs(nf90_inquire_dimension(ncid_x20, varid, len=nrec_x20))
 		if (nrec_m1 == 0) then
 			call log_string ('Error: file skipped: no measurements', .true.)
@@ -294,39 +270,37 @@ if (any(abs(a(idx) - t) > 1.5d-6)) then
 	return
 endif
 
-! Location (ERS only)
+! Location
 
-if (S%sat == 'e1' .or. S%sat == 'e2') then
-	call cpy_var_i (ncid_m1, 'latitude', 'lat')
-	do i = 1,n
-		b(i) = dhellips(1,a(idx(i)))
-	enddo
-	call cpy_var_i (ncid_m1, 'longitude', 'lon')
-	call get_var (ncid_x1, 'altitude', a)
-	call new_var ('alt_reaper_deos', a(idx)+b)
-endif
+call cpy_var_i (ncid_m1, 'latitude', 'lat')
+do i = 1,n
+	b(i) = dhellips(1,a(idx(i)))
+enddo
+call cpy_var_i (ncid_m1, 'longitude', 'lon')
+call get_var (ncid_x1, 'altitude', a)
+call new_var ('alt_reaper_deos', a(idx)+b)
 
 ! Range
 
-call cpy_var_i (ncid_x1, 'range', 'range_ku' // ext)
+call cpy_var_i (ncid_x1, 'range', 'range_ku')
 
 call get_var (ncid_m20, 'time', t20)
 call get_var (ncid_x20, 'range altitude SUB', a20)
 call trend_1hz (reshape(t20, (/20,n/)), t, reshape(a20, (/20,n/)), a(:n), b, nr)
-call new_var ('range_rms_ku' // ext, b)
-call new_var ('range_numval_ku' // ext, dble(nr))
+call new_var ('range_rms_ku', b)
+call new_var ('range_numval_ku', dble(nr))
 
 ! MAYBE NOT SUCH A GOOD IDEA TO ASSIGN THIS TO qual_range!
 ! call rads_get_var (S, P, 'flags', a)
 ! flags = nint(a, twobyteint)
 ! call nc2f (ncid_m1, 'validation_flag', 11)				! bit 11: Quality range
-! call new_var ('flags' // ext, dble(flags))
-! call cpy_var_i (ncid_m1, 'validation_flag', 'qual_range' // ext)
+! call new_var ('flags', dble(flags))
+! call cpy_var_i (ncid_m1, 'validation_flag', 'qual_range')
 
 ! Path delay
 
 call cpy_var_i (ncid_x1, 'dry_tropospheric_correction', 'dry_tropo_era5')
-call cpy_var_i (ncid_x1, 'wet_tropospheric_correction', 'wet_tropo_rad' // ext)
+call cpy_var_i (ncid_x1, 'wet_tropospheric_correction', 'wet_tropo_rad')
 if (S%sat == 'e1' .and. cycle_number < 106) then
 	call cpy_var_i (ncid_x1, 'ionospheric_correction', 'iono_nic09')
 else
@@ -336,7 +310,6 @@ endif
 ! SSB
 
 ! Compute the combined sea state bias plus high-frequency correction
-if (S%sat == 'n1') call cpy_var_i (ncid_x1, 'range_ssb_hfa range SUB', 'ssb_tran2019_hfa')
 call cpy_var_i (ncid_x1, 'sea_state_bias', 'ssb_tran2019_3d')
 
 ! IB
@@ -365,7 +338,7 @@ call cpy_var_i (ncid_m1, 'distance_to_coast 1e-3 MUL', 'dist_coast') ! Convert m
 
 ! SSHA
 
-call cpy_var_i (ncid_m1, 'sea_level_anomaly', 'ssha' // ext)
+call cpy_var_i (ncid_m1, 'sea_level_anomaly', 'ssha')
 
 ! Close pass
 
@@ -409,9 +382,9 @@ endif
 ! SWH
 
 call get_var (ncid, 'swh_adjusted_filtered', a5)
-call new_var ('swh_ku' // ext, a5(3:nrec_m5:5))
+call new_var ('swh_ku', a5(3:nrec_m5:5))
 call get_var (ncid, 'swh_uncertainty', a5)
-call new_var ('swh_rms_ku' // ext, a5(3:nrec_m5:5))
+call new_var ('swh_rms_ku', a5(3:nrec_m5:5))
 
 ! Close pass
 
@@ -436,4 +409,4 @@ write (*,1310)
 stop
 end subroutine synopsis
 
-end program rads_add_f4a
+end program rads_add_f4a_ers
