@@ -73,7 +73,7 @@ character(len=rads_cmdl) :: infile, arg
 integer(fourbyteint) :: ncid, ncid_m1, ncid_x1, ncid_m20, ncid_x20, varid, &
 	nrec_m1, nrec_x1, nrec_m5, nrec_m20, nrec_x20
 real(eightbytereal) :: first_measurement_time, last_measurement_time
-logical :: oc_product
+logical :: oc_product, range_only = .false.
 character(len=16) :: ext = '_adaptive'
 
 ! Data variables
@@ -88,7 +88,7 @@ integer(fourbyteint), allocatable :: idx(:)
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('x no-ext')
+call rads_set_options ('x no-ext range-only')
 call rads_init (S)
 
 ! Scan options
@@ -97,6 +97,8 @@ do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
 	case ('x', 'no-ext')
 		ext = ''
+	case ('range-only')
+		range_only = .true.
 	end select
 enddo
 
@@ -216,8 +218,6 @@ do
 	call rads_open_pass (S, P, cycle_number, pass_number, .true.)
 	nrec = P%ndata
 
-	write (*,*) "nrec, nrec_m1, nrec_m20 = ", nrec, nrec_m1, nrec_m20
-
 	if (nrec <= 0) then
 		! Skip
 	else if (oc_product) then
@@ -290,10 +290,13 @@ endif
 call cpy_var_i (ncid_x1, 'range', 'range_ku' // ext)
 
 call get_var (ncid_m20, 'time', t20)
+t20 = t20 * 86400 + sec1990	! convert from days since 1990 to seconds since 1985
 call get_var (ncid_x20, 'range altitude SUB', a20)
 call trend_1hz (reshape(t20, (/20,n/)), t, reshape(a20, (/20,n/)), a(:n), b, nr)
 call new_var ('range_rms_ku' // ext, b)
 call new_var ('range_numval_ku' // ext, dble(nr))
+
+if (.not.range_only) then
 
 ! MAYBE NOT SUCH A GOOD IDEA TO ASSIGN THIS TO qual_range!
 ! call rads_get_var (S, P, 'flags', a)
@@ -342,8 +345,11 @@ call cpy_var_i (ncid_m1, 'distance_to_coast 1e-3 MUL', 'dist_coast') ! Convert m
 
 call cpy_var_i (ncid_m1, 'sea_level_anomaly', 'ssha' // ext)
 
+endif ! .not.range_only
+
 ! Close pass
 
+call rads_put_history (S, P)
 call put_rads (skip_create = .true.)
 
 deallocate (a,idx)
@@ -390,6 +396,7 @@ call new_var ('swh_rms_ku' // ext, a5(3:nrec_m5:5))
 
 ! Close pass
 
+call rads_put_history (S, P)
 call put_rads (skip_create = .true.)
 
 deallocate (a)
@@ -407,7 +414,8 @@ call synopsis_devel (' [processing_options] < list_of_FDR4ALT_file_names')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:'/ &
-'  -x, --no-ext              Do not add _adaptive extension for Envisat')
+'  -x, --no-ext              Do not add _adaptive extension'/ &
+'  --range-only              Only add range and range stddev')
 stop
 end subroutine synopsis
 

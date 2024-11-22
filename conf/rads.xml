@@ -2560,6 +2560,7 @@ Global RADS configuration file
 	<long_name>std dev of retracked Ku-band range (adaptive retracking)</long_name>
 	<units>m</units>
 	<limits>0.0 0.17</limits>
+	<limits sat="n1">0.0 0.25</limits>
 	<plot_range>0.0 0.2</plot_range>
 	<data>range_rms_ku_adaptive</data>
 	<format>f6.4</format>
