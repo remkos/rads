@@ -103,23 +103,25 @@ case $type in
 	*nt*) rads_add_orbit  $options -Valt_gdrf -C1-45 --dir=poe_cnes	>> "$log" 2>&1 ;;
 esac
 
-# For LR,  _mle3
+# For LR, do also _mle3, but only for F09 or earlier
+extra=
 case $type in
-	*lr*) extra="-x mle3" ;;
-	   *) extra= ;;
+	*lr*) grep -q _F0 $lst && extra="-x mle3" ;;
 esac
 
 # General geophysical corrections
-rads_add_common   $options								>> "$log" 2>&1
-rads_add_mfwam    $options --all --new					>> "$log" 2>&1
-rads_add_iono     $options --all						>> "$log" 2>&1
+rads_add_common   $options										>> "$log" 2>&1
+rads_add_mfwam    $options --all --new							>> "$log" 2>&1
+rads_add_iono     $options --all								>> "$log" 2>&1
 rads_add_orbit    $options -Valt_gps --dir=jplgpspoe -C5-112	>> "$log" 2>&1
 rads_add_orbit    $options -Valt_gps --dir=jplgpsmoe -C113-299	>> "$log" 2>&1
-rads_add_era5     $options --all						>> "$log" 2>&1
+rads_add_era5     $options --all								>> "$log" 2>&1
+# To support GDR-G with backward compatibility
+grep -q _F0 $lst || rads_add_tide $options --models=fes14		>> "$log" 2>&1
 # Redetermine SSHA
-rads_add_refframe $options -x -x nr $extra				>> "$log" 2>&1
-rads_add_sla      $options -x -x nr $extra				>> "$log" 2>&1
+rads_add_refframe $options -x -x nr $extra						>> "$log" 2>&1
+rads_add_sla      $options -x -x nr $extra						>> "$log" 2>&1
 
-date													>> "$log" 2>&1
+date															>> "$log" 2>&1
 
 rads_close_sandbox
