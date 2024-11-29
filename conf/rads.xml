@@ -855,8 +855,8 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A dry tropospheric correction must be added to range to correct for dry troposphere delays</comment>
 </var>
-<alias name="dry_tropo" field="7" sat="!g1 gs tx pn">dry_tropo_ecmwf</alias>
-<alias name="dry_tropo" field="7" sat="g1 gs tx pn">dry_tropo_era</alias>
+<alias name="dry_tropo" field="7" sat="!e1.f4a e2.f4a g1 gs tx pn">dry_tropo_ecmwf</alias>
+<alias name="dry_tropo" field="7" sat="e1.f4a e2.f4a g1 gs tx pn">dry_tropo_era</alias>
 
 <var name="wet_tropo_rad" field="801" sat="!c2 gs">
 	<long_name>radiometer wet tropospheric correction</long_name>
@@ -1707,7 +1707,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
-<var name="ssb_tran2019_3d" field="1515" sat="n1.f4a sa">
+<var name="ssb_tran2019_3d" field="1515" sat="e1.f4a e2.f4a n1.f4a sa">
 	<long_name>Tran et al. 2019 3D non-parametric sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<units>m</units>
@@ -1843,7 +1843,7 @@ Global RADS configuration file
 	<source>SSB_2021_TX_GDRF</source>
 </var>
 <alias name="ssb" field="15" sat="e1 e2 pn">ssb_bm3</alias>
-<alias name="ssb" field="15" sat="g1 gs">ssb_hyb</alias>
+<alias name="ssb" field="15" sat="e1.f4a e2.f4a g1 gs">ssb_hyb</alias>
 <alias name="ssb" field="15" sat="sa">ssb_tran2019</alias>
 <alias name="ssb" field="15" sat="2a 3a 3b 6a 6b c2 j1 j2 j3 n1 sw">ssb_cls</alias>
 <alias name="ssb" field="15" sat="tx">ssb_tx</alias>
