@@ -248,8 +248,8 @@ contains
 
 subroutine process_pass_oc (n, n1, n20)
 integer(fourbyteint), intent(in) :: n, n1, n20
-integer(fourbyteint) :: i, j
-real(eightbytereal) :: a20(n20), t20(n20), b(n), t(n)
+integer(fourbyteint) :: i, j, i0, i1
+real(eightbytereal) :: a20(n20), t20(n20), b(n), t(n), par_a, par_b, par_r
 integer(fourbyteint) :: nr(n)
 
 ! Some TDP_OC products have duplicated 1-Hz times. In that case we need to reduce the number of 1-Hz records.
@@ -292,18 +292,15 @@ call cpy_var_i (ncid_x1, 'range', 'range_ku' // ext)
 call get_var (ncid_m20, 'time', t20)
 t20 = t20 * 86400 + sec1990	! convert from days since 1990 to seconds since 1985
 call get_var (ncid_x20, 'range altitude SUB', a20)
-call trend_1hz (reshape(t20, (/20,n/)), t, reshape(a20, (/20,n/)), a(:n), b, nr)
-call new_var ('range_rms_ku' // ext, b)
+do i = 1,n
+	i1 = i * 20
+	i0 = i1 - 19
+	call regression (t20(i0:i1)-t(i), a20(i0:i1), par_a, par_b, par_r, b(i), nr(i))
+enddo
+call new_var ('range_rms_ku' // ext, sqrt(b))
 call new_var ('range_numval_ku' // ext, dble(nr))
 
 if (.not.range_only) then
-
-! MAYBE NOT SUCH A GOOD IDEA TO ASSIGN THIS TO qual_range!
-! call rads_get_var (S, P, 'flags', a)
-! flags = nint(a, twobyteint)
-! call nc2f (ncid_m1, 'validation_flag', 11)				! bit 11: Quality range
-! call new_var ('flags' // ext, dble(flags))
-! call cpy_var_i (ncid_m1, 'validation_flag', 'qual_range' // ext)
 
 ! Path delay
 
