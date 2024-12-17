@@ -68,23 +68,23 @@ use netcdf
 integer(fourbyteint) :: ios, cycle_number, pass_number
 character(len=rads_cmdl) :: infile, arg
 
-! Header variables
+! Input product variables
 
 integer(fourbyteint) :: ncid, ncid_m1, ncid_x1, ncid_m20, ncid_x20, varid, &
-	nrec_m1, nrec_x1, nrec_m5, nrec_m20, nrec_x20
-real(eightbytereal) :: first_measurement_time, last_measurement_time
+	nrec_m1, nrec_x1, nrec_m5, nrec_m20, nrec_x20, nrec_in
+real(eightbytereal) :: first_measurement_time, last_measurement_time, time_slop
 logical :: oc_product
 
 ! Data variables
 
-integer(fourbyteint), parameter :: mrec=20000, mvar=50
-integer(fourbyteint) :: nvar=0, ndata=0, nout=0
+integer(fourbyteint), parameter :: mrec=40000, mvar=50
+integer(fourbyteint) :: nvar=0, nrec_buf=0, nrec_out=0
 real(eightbytereal), allocatable :: tmp(:)
 type(rads_sat) :: S
 type(rads_pass) :: P
 type :: var_
 	type(rads_var), pointer :: v ! Pointer to rads_var struct
-	real(eightbytereal) :: d(mrec) ! Data array
+	real(eightbytereal) :: d(0:mrec) ! Data array
 	logical :: empty, zero ! .true. if all NaN or all zero
 endtype
 type(var_) :: var(mvar)
@@ -111,7 +111,7 @@ call rads_init (S)
 call read_orf ('ER' // S%sat(2:2), orf)
 orf(:)%starttime = orf(:)%starttime + sec2000
 orf(:)%eqtime = orf(:)%eqtime + sec2000
-ipass = 1
+ipass = 0
 
 !----------------------------------------------------------------------
 ! Read all file names from standard input
@@ -186,6 +186,8 @@ do
 		! Read cycle and pass number
 		call nfs(nf90_get_att(ncid,nf90_global,'cycle_number',cycle_number))
 		call nfs(nf90_get_att(ncid,nf90_global,'pass_number',pass_number))
+		nrec_in = nrec_m1
+		time_slop = 2d-6
 
 	else
 !-----------------------------------------------------------------------
@@ -204,6 +206,9 @@ do
 		read (arg, *, iostat=ios) cycle_number
 		call nfs(nf90_get_att(ncid,nf90_global,'pass_number',arg))
 		read (arg, *, iostat=ios) pass_number
+		nrec_in = nrec_m5
+		time_slop = S%dt1hz / 10
+
 	endif
 
 ! Read start and stop time
@@ -226,58 +231,53 @@ do
 
 	call nfs(nf90_get_att(ncid,nf90_global,'FDR_input',arg))
 
-! Initialize
+! Stop when input is too large
 
-	nvar = 0
-	allocate (tmp(nrec_m1))
-
-	if (ndata+nrec_m1 > mrec) then
+	if (nrec_buf+nrec_in > mrec) then
 		call log_string ('Error: too many input measurements', .true.)
 		stop
 	endif
 
+! Initialize
+
+	nvar = 0
+	allocate (tmp(nrec_in))
+	var(:)%d(0) = nan
+
 ! Open the existing pass and patch it
 
 	if (oc_product) then
-!		if (nrec_m20 /= nrec_m1*20) then
-!			write (rads_log_unit,*) 'Skipped: nrec_m20 does not match nrec_m1: ', nrec_m20, nrec_m1*20
-!		else
-			call process_pass_oc (nrec_m1, nrec_m20)
-!		endif
+		call process_pass_oc (nrec_m1)
 	else
-!		if (nrec_m5 /= nrec_m1*5) then
-!			write (rads_log_unit,*) 'Skipped: nrec_m5 does not match nrec_m1: ', nrec_m5, nrec_m1*5
-!		else
-			call process_pass_wa (nrec_m1, nrec_m5)
-!		endif
+		call process_pass_wa (nrec_m5)
 	endif
 
 	deallocate (tmp)
 	call nfs(nf90_close(ncid))
-	ndata = ndata + nrec_m1
+	nrec_buf = nrec_buf + nrec_in
 
 	! To which passes do the data belong?
 	call which_pass (var(1)%d(1))
 
 	! Look where to split this chunk of data
-	do i = 2,ndata
+	do i = 2,nrec_buf
 		if (var(1)%d(i) >= orf(ipass+1)%starttime) exit
 	enddo
-	! It is OK to exit this loop with i = ndata + 1. This means we dump all of the memory.
+	! It is OK to exit this loop with i = nrec_buf + 1. This means we dump all of the memory.
 
 	! Write out the data
-	nout = i - 1 ! Number of measurements to be written out
+	nrec_out = i - 1 ! Number of measurements to be written out
 
 ! Write out the pending data
 
-	call put_rads (nout)
+	call put_rads (nrec_out)
 
 ! Number of measurements remaining
-	ndata = ndata - nout
+	nrec_buf = nrec_buf - nrec_out
 
 ! Move the data to be beginning
 	forall (i = 1:nvar)
-		var(i)%d(1:ndata) = var(i)%d(nout+1:nout+ndata)
+		var(i)%d(1:nrec_buf) = var(i)%d(nrec_out+1:nrec_out+nrec_buf)
 	end forall
 enddo
 
@@ -286,14 +286,13 @@ call rads_end (S)
 contains
 
 !***********************************************************************
-! Determine the corresponding record from ORF
+! Determine the corresponding record from ORF.
+! This version only allows to go forward to avoid using a pass twice when there
+! are duplicate times at the end of one product and the start of the next.
 
 subroutine which_pass (time)
 real(eightbytereal), intent(in) :: time
-do while (time < orf(ipass)%starttime)
-	ipass = ipass - 1
-	if (ipass < 1) call rads_exit ('Time is before the start of the ORF file')
-enddo
+ipass = ipass + 1
 do while (time > orf(ipass+1)%starttime)
 	ipass = ipass + 1
 	if (orf(ipass)%cycle < 0) call rads_exit ('Time is after the end of the ORF file')
@@ -304,11 +303,10 @@ end subroutine which_pass
 ! OCEAN AND COASTAL PRODUCT (TDP_OC)
 !-----------------------------------------------------------------------
 
-subroutine process_pass_oc (n1, n20)
-integer(fourbyteint), intent(in) :: n1, n20
-integer(fourbyteint) :: i, j, n
-real(eightbytereal) :: a20(n20), t20(n20), a(n1), b(n1), t(n1), par_a, par_b, par_r
-integer(fourbyteint) :: nr(n1)
+subroutine process_pass_oc (n1)
+integer(fourbyteint), intent(in) :: n1
+integer(fourbyteint) :: i
+real(eightbytereal) :: a(n1), b(n1), t(n1)
 
 ! Store the FDR times
 
@@ -329,33 +327,6 @@ call new_var ('alt_reaper_deos', a+b)
 
 call cpy_var (ncid_x1, 'range', 'range_ku')
 
-call get_var (ncid_m20, 'time', t20)
-t20 = t20 * 86400 + sec1990	! convert from days since 1990 to seconds since 1985
-call get_var (ncid_x20, 'range altitude SUB', a20)
-
-! Find matching 1-Hz and 20-Hz times and do regression
-j = 1
-n = 0
-nr = 0
-b = nan
-do i = 1,n1
-	do
-	if (j > n20 .or. t20(j) > t(i)+S%dt1hz/2) then
-		call regression (t20(j-n:j-1)-t(i), a20(j-n:j-1), par_a, par_b, par_r, b(i), nr(i))
-		n = 0
-		exit
-	else if (t20(j) < t(i)-S%dt1hz/2) then
-		j = j + 1
-	else
-		n = n + 1
-		j = j + 1
-	endif
-	enddo
-enddo
-
-call new_var ('range_rms_ku', sqrt(b))
-call new_var ('range_numval_ku', dble(nr))
-
 ! Path delay
 
 call cpy_var (ncid_x1, 'dry_tropospheric_correction', 'dry_tropo_era5')
@@ -368,8 +339,8 @@ endif
 
 ! SSB
 
-! Compute the combined sea state bias plus high-frequency correction
-call cpy_var (ncid_x1, 'sea_state_bias', 'ssb_tran2019_3d')
+! Sea state bias copied from REAPER?
+call cpy_var (ncid_x1, 'sea_state_bias', 'ssb_hyb')
 
 ! IB
 
@@ -389,10 +360,10 @@ call cpy_var (ncid_x1, 'mean_dynamic_topography', 'mdt_cnescls18')
 
 ! Surface type and coastal proximity
 
-call get_var (ncid_x1, 'surface_type', tmp)
-where (tmp == 1) tmp = 3
-where (tmp == 4) tmp = 2
-call new_var ('surface_type', tmp)
+call get_var (ncid_x1, 'surface_type', a)
+where (a == 1) a = 3
+where (a == 4) a = 2
+call new_var ('surface_type', a)
 call cpy_var (ncid_m1, 'distance_to_coast 1e-3 MUL', 'dist_coast') ! Convert m to km
 
 ! SSHA
@@ -405,25 +376,20 @@ end subroutine process_pass_oc
 ! WAVES PRODUCT (TDP_WA)
 !-----------------------------------------------------------------------
 
-subroutine process_pass_wa (n1, n5)
-integer(fourbyteint), intent(in) :: n1, n5
-real(eightbytereal) :: a5(n5)
+subroutine process_pass_wa (n5)
+integer(fourbyteint), intent(in) :: n5
+real(eightbytereal) :: t(n5)
 
-! Match the FDR times with the already existing times
+! Store the FDR times
 
-call get_var (ncid, 'time', a5)
-a5 = a5 * 86400 + sec1990	! convert from days since 1990 to seconds since 1985
-call rads_get_var (S, P, 'time', tmp)
-if (any(abs(a5(3:nrec_m5:5) - tmp) > 5d-2)) then
-	call log_string ('Warning: times do not match')
-endif
+call get_var (ncid, 'time', t)
+t = t * 86400 + sec1990	! convert from days since 1990 to seconds since 1985
+call new_var ('time', t)
 
 ! SWH
 
-call get_var (ncid, 'swh_adjusted_filtered', a5)
-call new_var ('swh_ku', a5(3:nrec_m5:5))
-call get_var (ncid, 'swh_uncertainty', a5)
-call new_var ('swh_rms_ku', a5(3:nrec_m5:5))
+call cpy_var (ncid, 'swh_adjusted_filtered', 'swh_ku')
+call cpy_var (ncid, 'swh_uncertainty', 'swh_rms_ku')
 
 end subroutine process_pass_wa
 
@@ -431,61 +397,60 @@ end subroutine process_pass_wa
 ! Write content of memory to a single pass of RADS data
 !-----------------------------------------------------------------------
 
-subroutine put_rads (nout)
-integer(fourbyteint), intent(in) :: nout
+subroutine put_rads (nrec_out)
+integer(fourbyteint), intent(in) :: nrec_out
 real(eightbytereal), allocatable :: t(:)
 integer(fourbyteint), allocatable :: idx(:)
 character(len=80) :: message
 integer :: i, j
 
-if (nout == 0) return	! Skip empty data sets
+if (nrec_out == 0) return	! Skip empty data sets
 
 ! Open output file
 call rads_open_pass (S, P, orf(ipass)%cycle, orf(ipass)%pass, .true.)
 if (P%ndata == 0) then
-	call log_string ('Error: RADS product does not exist', .true.)
-	call log_records (0)
-	return
-else if (P%ndata < nout) then
-	call log_string ('Error: RADS product is smaller than FDR4ALT', .true.)
+	call log_string ('Error: RADS product does not exist', .false.)
 	call log_records (0)
 	return
 endif
 
 ! Work out time consistency since some measurements are missing in the FDR4ALT products
-! There seems to be no apparent reason why they are missing in FDR4ALT products, but they appear to match
-! REAPER data with just NaN measurement
+! There seems to be no apparent reason why they are missing in FDR4ALT products,
+! but they appear to match REAPER data with just NaN measurements
 
-allocate (t(0:P%ndata),idx(P%ndata))
-call rads_get_var (S, P, 'time', t(1:))
+allocate (t(P%ndata),idx(P%ndata))
+call rads_get_var (S, P, 'time', t)
 idx = 0
-j = 0
-do i = 1,P%ndata
+j = 1
+loop: do i = 1,P%ndata
 	do
-		if (var(1)%d(j) < t(i) - 2d-6) then
+		if (var(1)%d(j) < t(i) - time_slop) then
 			j = j + 1
-		else if (var(1)%d(j) > t(i) + 2d-6) then
+		else if (var(1)%d(j) > t(i) + time_slop) then
 			exit
 		else
 			idx(i) = j
+			j = j + 1
 			exit
 		endif
+		if (j > nrec_out) exit loop
 	enddo
-enddo
+enddo loop
 
 if (any(idx == 0)) then
-	write (message, "('Warning:',i4,' FDRALT times do not match RADS')") count(idx == 0)
+	write (message, "('Warning:',i4,' RADS times have no matching FDRALT')") count(idx == 0)
 	call log_string (trim(message), .false.)
 endif
 
 ! Check which variables are empty or all zero
 do i = 1,nvar
-	var(i)%empty = all(isnan_(var(i)%d(1:nout)))
-	var(i)%zero = all(var(i)%d(1:nout) == 0d0)
+	var(i)%empty = all(isnan_(var(i)%d(idx)))
+	var(i)%zero = all(var(i)%d(idx) == 0d0)
 enddo
 
 ! Write out the empty variables to be kept
 if (any(var(1:nvar)%empty)) then
+	write (rads_log_unit,551,advance='no') 'Empty:'
 	do i = 1,nvar
 		if (var(i)%empty) write (rads_log_unit,551,advance='no') trim(var(i)%v%name)
 	enddo
@@ -511,15 +476,13 @@ do i = 2,nvar
 enddo
 
 ! Fill all the data fields
-t(0) = nan
 do i = 2,nvar
-	t(1:nout) = var(i)%d(1:nout)
-	call rads_put_var (S, P, var(i)%v, t(idx))
+	call rads_put_var (S, P, var(i)%v, var(i)%d(idx))
 enddo
 deallocate (t,idx)
 
 ! Close the data file
-call log_records (nout, P)
+call log_records (P%ndata, P)
 call rads_close_pass (S, P)
 
 end subroutine put_rads
@@ -549,7 +512,7 @@ integer, optional, intent(in) :: ndims
 nvar = nvar + 1
 if (nvar > mvar) stop 'Too many variables'
 var(nvar)%v => rads_varptr (S, varnm)
-var(nvar)%d(ndata+1:ndata+nrec_m1) = data
+var(nvar)%d(nrec_buf+1:nrec_buf+nrec_in) = data
 if (present(ndims)) var(nvar)%v%info%ndims = ndims
 end subroutine new_var
 
