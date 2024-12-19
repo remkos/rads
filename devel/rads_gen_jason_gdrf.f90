@@ -617,13 +617,13 @@ contains
 
 subroutine synopsis (flag)
 character(len=*), optional :: flag
-if (rads_version ('Write Jason-1/2/3 GDR-F data to RADS', flag=flag)) return
+if (rads_version ('Write Jason-1/2/3 GDR-F/G data to RADS', flag=flag)) return
 call synopsis_devel (' < list_of_jason_file_names')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
 '  --min-rec=MIN_REC         Specify minimum number of records per pass to process' // &
-'This program converts Jason-1/2/3 OGDR/IGDR/GDR GDR-F Level 2 products to RADS data' / &
+'This program converts Jason-1/2/3 OGDR/IGDR/GDR GDR-F/G Level 2 products to RADS data' / &
 'files with the name $RADSDATAROOT/data/jJ/F/pPPPP/jJpPPPPcCCC.nc.' / &
 'The directory is created automatically and old files are overwritten.')
 stop
