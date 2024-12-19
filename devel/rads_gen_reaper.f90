@@ -105,7 +105,7 @@ integer(fourbyteint) :: varid
 ! Data variables
 
 integer(fourbyteint), parameter :: mrec=20000, mvar=50
-integer(fourbyteint) :: nvar, ndata=0, nrec=0, nout=0, ncid, ers=0
+integer(fourbyteint) :: nvar, nrec_buf=0, nrec_in=0, nrec_out=0, ncid, ers=0
 real(eightbytereal) :: start_time, end_time, last_time = 0d0
 real(eightbytereal), allocatable :: tmp(:)
 type(rads_sat) :: S
@@ -161,7 +161,7 @@ ipass = 1
 do
 	! Read the next file as long as buffer is empty or less than one orbit in memory
 
-	do while (ndata == 0 .or. var(1)%d(ndata) - var(1)%d(1) < 6100d0)
+	do while (nrec_buf == 0 .or. var(1)%d(nrec_buf) - var(1)%d(1) < 6100d0)
 		read (*,'(a)',iostat=ios) infile
 		if (ios /= 0) exit
 		call get_reaper
@@ -171,22 +171,22 @@ do
 	call which_pass (var(1)%d(1))
 
 	! Look where to split this chunk of data
-	do i = 2,ndata
+	do i = 2,nrec_buf
 		if (var(1)%d(i) >= orf(ipass+1)%starttime) exit
 	enddo
-	! It is OK to exit this loop with i = ndata + 1. This means we dump all of the memory.
+	! It is OK to exit this loop with i = nrec_buf + 1. This means we dump all of the memory.
 
 	! Write out the data
-	nout = i - 1 ! Number of measurements to be written out
+	nrec_out = i - 1 ! Number of measurements to be written out
 	call put_rads
 
 	! Number of measurements remaining
-	ndata = ndata - nout
-	if (ios /= 0 .and. ndata == 0) exit ! We are out of data
+	nrec_buf = nrec_buf - nrec_out
+	if (ios /= 0 .and. nrec_buf == 0) exit ! We are out of data
 
 	! Move the data to be beginning
 	forall (i = 1:nvar)
-		var(i)%d(1:ndata) = var(i)%d(nout+1:nout+ndata)
+		var(i)%d(1:nrec_buf) = var(i)%d(nrec_out+1:nrec_out+nrec_buf)
 	end forall
 enddo
 
@@ -279,12 +279,12 @@ endif
 ! Read header records
 
 call nfs(nf90_inq_dimid(ncid,'time',varid))
-call nfs(nf90_inquire_dimension(ncid,varid,len=nrec))
-write (rads_log_unit,552) nrec
-if (nrec == 0) then	! Skip empty input files
+call nfs(nf90_inquire_dimension(ncid,varid,len=nrec_in))
+write (rads_log_unit,552) nrec_in
+if (nrec_in == 0) then	! Skip empty input files
 	call nfs(nf90_close(ncid))
 	return
-else if (ndata+nrec > mrec) then
+else if (nrec_buf+nrec_in > mrec) then
 	call log_string ('Error: too many input measurements', .true.)
 	stop
 endif
@@ -293,7 +293,7 @@ call nfs(nf90_get_att(ncid,nf90_global,'l2_software_ver',l2_version))
 call nfs(nf90_get_att(ncid,nf90_global,'ocean_retracker_version_for_ocean',mle))
 !call nfs(nf90_get_att(ncid,nf90_global,'mission',mission)) ! Actually still is not correct -> bypass
 
-call get_reaper_data (nrec)
+call get_reaper_data (nrec_in)
 call nfs(nf90_close(ncid))
 end subroutine get_reaper
 
@@ -466,9 +466,9 @@ kerr = 0
 valid(1,:) = .false.
 do i = 1,nrec
 	if (i > 1 .and. i < nrec) then
-		t = var(1)%d(ndata+i-1:ndata+i+1)
+		t = var(1)%d(nrec_buf+i-1:nrec_buf+i+1)
 	else
-		t(2) = var(1)%d(ndata+i)
+		t(2) = var(1)%d(nrec_buf+i)
 	endif
 	if (t(2) < start_time .or. t(2) > end_time) then
 		kerr(1) = kerr(1) + 1
@@ -491,12 +491,12 @@ if (k == 0) then
 	nrec = 0
 else if (k < nrec) then
 	do i = 1,nvar
-		var(i)%d(ndata+1:ndata+k) = pack(var(i)%d(ndata+1:ndata+nrec),valid(1,:))
+		var(i)%d(nrec_buf+1:nrec_buf+k) = pack(var(i)%d(nrec_buf+1:nrec_buf+nrec),valid(1,:))
 	enddo
 	nrec = k
 endif
 
-ndata = ndata + nrec
+nrec_buf = nrec_buf + nrec
 
 end subroutine get_reaper_data
 
@@ -508,16 +508,20 @@ subroutine put_rads
 integer :: i
 character(len=rads_cmdl) :: original
 
-if (nout < min_rec) return	! Skip empty data sets
+if (nrec_out < min_rec) return	! Skip empty data sets
 if (orf(ipass)%cycle < cycles(1) .or. orf(ipass)%cycle > cycles(2)) return	! Skip chunks that are not of the selected cycle
 if (orf(ipass)%eqtime < times(1) .or. orf(ipass)%eqtime > times(2)) return	! Skip equator times that are not of selected range
+
+! Set mission phase based on equator_time
+
+call rads_set_phase (S, orf(ipass)%eqtime)
 
 ! Store relevant info
 call rads_init_pass_struct (S, P)
 P%cycle = orf(ipass)%cycle
 P%pass = orf(ipass)%pass
 P%start_time = var(1)%d(1)
-P%end_time = var(1)%d(nout)
+P%end_time = var(1)%d(nrec_out)
 P%equator_time = orf(ipass)%eqtime
 P%equator_lon = orf(ipass)%eqlon
 
@@ -533,8 +537,8 @@ P%original = trim(l2_version)//' data of '//l2_proc_time(:11)//': '//trim(origin
 
 ! Check which variables are empty or all zero
 do i = 1,nvar
-	var(i)%empty = all(isnan_(var(i)%d(1:nout)))
-	var(i)%zero = all(var(i)%d(1:nout) == 0d0)
+	var(i)%empty = all(isnan_(var(i)%d(1:nrec_out)))
+	var(i)%zero = all(var(i)%d(1:nrec_out) == 0d0)
 enddo
 
 ! Write out the empty variables to be kept
@@ -557,7 +561,7 @@ if (any(var(1:nvar)%zero)) then
 endif
 
 ! Open output file
-call rads_create_pass (S, P, nout)
+call rads_create_pass (S, P, nrec_out)
 
 ! Define all variables
 do i = 1,nvar
@@ -566,11 +570,11 @@ enddo
 
 ! Fill all the data fields
 do i = 1,nvar
-	call rads_put_var (S, P, var(i)%v, var(i)%d(1:nout))
+	call rads_put_var (S, P, var(i)%v, var(i)%d(1:nrec_out))
 enddo
 
 ! Close the data file
-call log_records (nout, P)
+call log_records (nrec_out, P)
 call rads_close_pass (S, P)
 
 end subroutine put_rads
@@ -600,7 +604,7 @@ integer, optional, intent(in) :: ndims
 nvar = nvar + 1
 if (nvar > mvar) stop 'Too many variables'
 var(nvar)%v => rads_varptr (S, varnm)
-var(nvar)%d(ndata+1:ndata+nrec) = data
+var(nvar)%d(nrec_buf+1:nrec_buf+nrec_in) = data
 if (present(ndims)) var(nvar)%v%info%ndims = ndims
 end subroutine new_var
 
