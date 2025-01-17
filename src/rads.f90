@@ -2322,26 +2322,23 @@ do
 	! a) Tag contains attribute "sat="
 	! b) The attribute value contains the satellite abbreviaton, or
 	!    the attribute value starts with "!" and does not contain the satellite abbreviation
-	! c) "*.r" matches all branches with extension ".r")
-	! d) "6a.hr*" matches all branches that start with "6a.hr"
-	! e) The satellite abbreviation is not set to "??"
+	! c) "6a.hr*" matches all branches that start with "6a.hr"
+	! d) The satellite abbreviation is not set to "??"
 	!
-	! Example 1: for original TOPEX (tx)
-	! sat="tx" => pass
-	! sat="tx.r" => skip
-	! sat="*.r" => skip
-	! sat="j1" => skip
-	! sat="j1 tx" => pass
-	! sat="!j1" => pass
-	! sat="!j1 tx" => skip
+	! Example 1: for Sentinel-6 (LR) data (6a)
+	! sat="6a" => pass
+	! sat="6a.hr" => skip
+	! sat="j3" => skip
+	! sat="j3 6a" => pass
+	! sat="!j3" => pass
+	! sat="!j3 6a" => skip
 	!
-	! Example 2: for TOPEX Retracked (tx.r)
-	! sat="tx" => pass
-	! sat="tx.r" => pass
-	! sat="*.r" => pass
-	! sat="!j1" => pass
-	! sat="!tx" => skip
-	! sat="!tx.r" => skip
+	! Example 2: for Sentinel-6 HR (6a.hr)
+	! sat="6a" => pass
+	! sat="6a.hr" => pass
+	! sat="!j3" => pass
+	! sat="!6a" => skip
+	! sat="!6a.hr" => skip
 	!
 	! Additionally: check for var="name" option. This will temporarily overrule var and info.
 	! They are reset to var_block and info_block on the next cycle of the loop.
@@ -2356,8 +2353,7 @@ do
 				skip = -1
 			else if ((attr(2,i)(:1) == '!') .eqv. &
 				(index(attr(2,i),S%sat//' ') == 0 .and. index(attr(2,i),trim(S%branch(1))//' ') == 0 &
-					.and. index(attr(2,i),S%branch(1)(:5)//'* ') == 0 &
-					.and. index(attr(2,i),'*'//trim(S%branch(1)(3:))//' ') == 0)) then
+					.and. index(attr(2,i),S%branch(1)(:5)//'* ') == 0)) then
 				skip = -1
 			endif
 		case ('var')
