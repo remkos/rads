@@ -129,7 +129,7 @@ write (*,1310)
 '  --sideB-sig0[=KU,C]       Add biases to sig0 (Ku, C, in dB) for Side B and CHDR < 005 (def: -0.07,+0.49)' / &
 '  --range                   Fix range biases known for PDAP v3.0 and v3.1' / &
 '                            Also fix result of temporary error in radar data base (RMC only, 34 gates)' / &
-'  --sig0                    Add -5.67 dB (Baseline < F09) or +0.47 dB to HR sigma0' / &
+'  --sig0                    Add -5.67 dB (Baseline < F09) or +0.47 dB (Baseline F09) to HR sigma0' / &
 '  --all                     All of the above' / &
 '  --rain[=KU,C]             Add biases to sigma0 (KU, C, in dB) before calling rain model' / &
 '                            (with --sig0 use default 1.23,1.64)' / &
@@ -154,7 +154,7 @@ real(eightbytereal) :: latency(n), range_ku(n), range_ku_mle3(n), range_c(n), &
 	swh_ku(n), swh_ku_mle3(n), wind_speed_alt(n), wind_speed_alt_mle3(n), qual_alt_rain_ice(n), flags(n), &
 	flags_mle3(n), flags_nr(n), ssb_cls(n), ssb_cls_mle3(n), ssb_cls_c(n), dum(n)
 real(eightbytereal) :: drange(2), dsig0(2), cal1_old(4), cal1_new(4)
-logical :: lr, has_nr, redundant, val, do_range = .false., do_sig0 = .false., do_wind = .false., &
+logical :: lr, has_nr, has_mle3, has_c, redundant, val, do_range = .false., do_sig0 = .false., do_wind = .false., &
 	do_ssb = .false., do_rain = .false., do_cal1 = .false., do_flag = .false.
 character(len=3) :: chd_ver, cnf_ver, baseline
 
@@ -177,6 +177,8 @@ redundant = (P%original(i+3:i+3) == 'R')
 i = index(P%original, 'CONF')
 cnf_ver = P%original(i+5:i+7)
 has_nr = (lr .and. baseline > 'F07') .or. baseline > 'F08'
+has_c = (lr .and. .not.nr_only)
+has_mle3 = (lr .and. .not.nr_only .and. baseline < 'G01')
 
 ! Get latency
 
@@ -196,7 +198,7 @@ if (do_cal1) then
 	cal1_old(1:1) = dum(1)
 	call rads_get_var (S, P, 'cal1_power_ku', dum)
 	cal1_old(2:2) = dum(1)
-	if (lr) then
+	if (has_c) then
 		call rads_get_var (S, P, 'cal1_range_c',  dum)
 		cal1_old(3:3) = dum(1)
 		call rads_get_var (S, P, 'cal1_power_c',  dum)
@@ -251,8 +253,8 @@ endif
 if (lsig0 .and. .not.lr) then
 	if (baseline < 'F09') then
 		dsig0(1) = dsig0(1) - 5.67d0
-	else
-		dsig0(1) = dsig0(1) + 0.47d0	! Changed by +6.14 dB since Baseline F09
+	else if (baseline < 'G01') then
+		dsig0(1) = dsig0(1) + 0.47d0	! Changed by +6.14 dB in Baseline F09, removed in G01
 	endif
 endif
 
@@ -292,9 +294,11 @@ if (do_range) then
 		call rads_get_var (S, P, 'range_ku_nr', range_ku, .true.)
 	else
 		call rads_get_var (S, P, 'range_ku', range_ku, .true.)
-		if (lr) then
+		if (has_mle3) then
 			call rads_get_var (S, P, 'range_ku_mle3', range_ku_mle3, .true.)
 			range_ku_mle3 = range_ku_mle3 + drange(1)
+		endif
+		if (has_c) then
 			call rads_get_var (S, P, 'range_c', range_c, .true.)
 			range_c = range_c + drange(2)
 		endif
@@ -309,9 +313,11 @@ if (do_sig0) then
 		call rads_get_var (S, P, 'sig0_ku_nr', sig0_ku, .true.)
 	else
 		call rads_get_var (S, P, 'sig0_ku', sig0_ku, .true.)
-		if (lr) then
+		if (has_mle3) then
 			call rads_get_var (S, P, 'sig0_ku_mle3', sig0_ku_mle3, .true.)
 			sig0_ku_mle3 = sig0_ku_mle3 + dsig0(1)
+		endif
+		if (has_c) then
 			call rads_get_var (S, P, 'sig0_c', sig0_c, .true.)
 			sig0_c = sig0_c + dsig0(2)
 		endif
@@ -327,7 +333,7 @@ if (do_wind) then
 		if (need_file('AUX_WNDL_S6A_002.nc', aux_wind)) then
 			if (grid_load(aux_wind,info_wind) /= 0) call rads_exit ('Error loading '//trim(aux_wind))
 		endif
-		if (.not.nr_only) then
+		if (has_mle3) then
 			call rads_get_var (S, P, 'swh_ku_mle3', swh_ku_mle3, .true.)
 			if (.not.do_sig0) call rads_get_var (S, P, 'sig0_ku_mle3', sig0_ku_mle3, .true.)
 			call grid_inter (info_wind, n, sig0_ku_mle3 + dwind(2), swh_ku_mle3, wind_speed_alt_mle3)
@@ -362,10 +368,8 @@ if (do_ssb) then
 		endif
 	endif
 	call grid_inter (info_ssbk, n, wind_speed_alt, swh_ku, ssb_cls)
-	if (lr .and. .not.nr_only) then
-		call grid_inter (info_ssbk, n, wind_speed_alt_mle3, swh_ku_mle3, ssb_cls_mle3)
-		call grid_inter (info_ssbc, n, wind_speed_alt, swh_ku, ssb_cls_c)
-	endif
+	if (has_mle3) call grid_inter (info_ssbk, n, wind_speed_alt_mle3, swh_ku_mle3, ssb_cls_mle3)
+	if (has_c) call grid_inter (info_ssbc, n, wind_speed_alt, swh_ku, ssb_cls_c)
 endif
 
 ! Determine rain flag after adding biases
@@ -387,7 +391,7 @@ endif
 if (do_flag) then
 	if (.not.do_rain) call rads_get_var (S, P, 'flags', flags, .true.)
 	call set_flag (n, flags, redundant)
-	if (lr) then
+	if (has_mle3) then
 		call rads_get_var (S, P, 'flags_mle3', flags_mle3, .true.)
 		call set_flag (n, flags_mle3, redundant)
 	endif
@@ -405,7 +409,7 @@ call rads_put_history (S, P)
 ! If flag bit is set, also redefine the attributes
 
 if (do_flag) then
-	if (lr) call rads_def_var (S, P, 'flags_mle3')
+	if (has_mle3) call rads_def_var (S, P, 'flags_mle3')
 	if (has_nr) call rads_def_var (S, P, 'flags_nr')
 endif
 
@@ -414,7 +418,7 @@ endif
 if (do_cal1) then
 	call rads_put_var (S, P, 'cal1_range_ku', cal1_new(1))
 	call rads_put_var (S, P, 'cal1_power_ku', cal1_new(2))
-	if (lr) then
+	if (has_c) then
 		call rads_put_var (S, P, 'cal1_range_c', cal1_new(3))
 		call rads_put_var (S, P, 'cal1_power_c', cal1_new(4))
 	endif
@@ -425,10 +429,8 @@ if (do_range) then
 		call rads_put_var (S, P, 'range_ku_nr', range_ku)
 	else
 		call rads_put_var (S, P, 'range_ku', range_ku)
-		if (lr) then
-			call rads_put_var (S, P, 'range_ku_mle3', range_ku_mle3)
-			call rads_put_var (S, P, 'range_c', range_c)
-		endif
+		if (has_mle3) call rads_put_var (S, P, 'range_ku_mle3', range_ku_mle3)
+		if (has_c) call rads_put_var (S, P, 'range_c', range_c)
 	endif
 endif
 
@@ -437,10 +439,8 @@ if (do_sig0) then
 		call rads_put_var (S, P, 'sig0_ku_nr', sig0_ku)
 	else
 		call rads_put_var (S, P, 'sig0_ku', sig0_ku)
-		if (lr) then
-			call rads_put_var (S, P, 'sig0_ku_mle3', sig0_ku_mle3)
-			call rads_put_var (S, P, 'sig0_c', sig0_c)
-		endif
+		if (has_mle3) call rads_put_var (S, P, 'sig0_ku_mle3', sig0_ku_mle3)
+		if (has_c) call rads_put_var (S, P, 'sig0_c', sig0_c)
 	endif
 endif
 
@@ -449,7 +449,7 @@ if (do_wind) then
 		call rads_put_var (S, P, 'wind_speed_alt_nr', wind_speed_alt)
 	else
 		call rads_put_var (S, P, 'wind_speed_alt', wind_speed_alt)
-		if (lr) call rads_put_var (S, P, 'wind_speed_alt_mle3', wind_speed_alt_mle3)
+		if (has_mle3) call rads_put_var (S, P, 'wind_speed_alt_mle3', wind_speed_alt_mle3)
 	endif
 endif
 
@@ -459,10 +459,8 @@ if (do_ssb) then
 		if (lr) call rads_put_var (S, P, 'ssb_cls_c_nr', ssb_cls_c)
 	else
 		call rads_put_var (S, P, 'ssb_cls', ssb_cls)
-		if (lr) then
-			call rads_put_var (S, P, 'ssb_cls_mle3', ssb_cls_mle3)
-			call rads_put_var (S, P, 'ssb_cls_c', ssb_cls_c)
-		endif
+		if (has_mle3) call rads_put_var (S, P, 'ssb_cls_mle3', ssb_cls_mle3)
+		if (has_c) call rads_put_var (S, P, 'ssb_cls_c', ssb_cls_c)
 	endif
 endif
 
@@ -475,7 +473,7 @@ else if (do_flag) then
 endif
 
 if (do_flag) then
-	if (lr) call rads_put_var (S, P, 'flags_mle3', flags_mle3)
+	if (has_mle3) call rads_put_var (S, P, 'flags_mle3', flags_mle3)
 	if (has_nr) call rads_put_var (S, P, 'flags_nr', flags_nr)
 endif
 
