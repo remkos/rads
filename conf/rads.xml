@@ -5101,17 +5101,17 @@ Global RADS configuration file
 	</phase>
 	<phase name="b">
 		<mission>Interleaved Mission</mission>
-		<cycles>300 401</cycles> <!-- To be updated -->
+		<cycles>300 401</cycles>
 		<repeat>9.91564280 254</repeat>
 		<ref_pass>2022-04-29T05:02:49 98.51 301 1 29366</ref_pass>
-		<start_time>2022-04-25</start_time>
+		<start_time>2022-04-25</s0tart_time>
 	</phase>
 	<phase name="c">
 		<mission>Second Tandem Mission</mission>
-		<cycles>500 999</cycles>
+		<cycles>500 599</cycles> <!-- To be updated at end of phase -->
 		<repeat>9.91564280 254</repeat>
-		<ref_pass>2025-01-22T16:53:28 99.92 500 1 42168</ref_pass> <!-- To be updated -->
-		<start_time>2025-01-27</start_time>
+		<ref_pass>2025-02-01T14:52:10 99.92 501 1 42294</ref_pass> <!-- To be updated? -->
+		<start_time>2025-01-30</start_time> <!-- To be updated -->
 	</phase>
 </if>
 
