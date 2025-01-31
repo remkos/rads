@@ -70,11 +70,13 @@ character(len=rads_cmdl) :: infile, arg
 
 ! Header variables
 
-integer(fourbyteint) :: ncid, ncid_m1, ncid_x1, ncid_m20, ncid_x20, varid, &
-	nrec_m1, nrec_x1, nrec_m5, nrec_m20, nrec_x20
+integer(fourbyteint) :: ncid, ncid_m1, ncid_x1, ncid_m7, ncid_m20, ncid_x20, varid, &
+	nrec_m1, nrec_x1, nrec_m5, nrec_m7, nrec_m20, nrec_x20
 real(eightbytereal) :: first_measurement_time, last_measurement_time
-logical :: oc_product, range_only = .false.
+logical :: range_only = .false.
 character(len=16) :: ext = '_adaptive'
+integer(fourbyteint) :: product_type
+integer(fourbyteint), parameter :: tdp_oc = 0, tdp_wa = 1, tdpatm = 2
 
 ! Data variables
 
@@ -125,7 +127,16 @@ do
 		call log_string ('Error: this is not an FDR4ALT altimeter Level 2 data set', .true.)
 		cycle
 	endif
-	oc_product = index(arg, 'Ocean and Coastal') > 0
+	if (index(arg, 'Ocean and Coastal') > 0) then
+		product_type = tdp_oc
+	else if (index(arg, 'Waves') > 0) then
+		product_type = tdp_wa
+	else if (index(arg, 'Atmosphere') > 0) then
+		product_type = tdpatm
+	else
+		call log_string ('Error: this is an unknown FDR4ALT altimeter Level 2 product type', .true.)
+		cycle
+	endif
 
 ! Get the mission name and compare with opened RADS session
 
@@ -139,7 +150,7 @@ do
 
 ! Which product is on input?
 
-	if (oc_product) then
+	if (product_type == tdp_oc) then
 !-----------------------------------------------------------------------
 ! OCEAN AND COASTAL PRODUCT (TDP_OC)
 !-----------------------------------------------------------------------
@@ -174,7 +185,7 @@ do
 		call nfs(nf90_get_att(ncid,nf90_global,'cycle_number',cycle_number))
 		call nfs(nf90_get_att(ncid,nf90_global,'pass_number',pass_number))
 
-	else
+	else if (product_type == tdp_wa) then
 !-----------------------------------------------------------------------
 ! WAVES PRODUCT (TDP_WA)
 !-----------------------------------------------------------------------
@@ -191,6 +202,22 @@ do
 		read (arg, *, iostat=ios) cycle_number
 		call nfs(nf90_get_att(ncid,nf90_global,'pass_number',arg))
 		read (arg, *, iostat=ios) pass_number
+
+	else
+!-----------------------------------------------------------------------
+! ATMOSPHERIC PRODUCT (TDPATM)
+!-----------------------------------------------------------------------
+
+		call nfs(nf90_inq_grp_full_ncid(ncid, '/main', ncid_m7))
+		call nfs(nf90_inq_dimid(ncid_m7, 'time', varid))
+		call nfs(nf90_inquire_dimension(ncid_m7, varid, len=nrec_m7))
+		if (nrec_m7 == 0) then
+			call log_string ('Error: file skipped: no measurements', .true.)
+			cycle
+		endif
+		! Read cycle and pass number
+		call nfs(nf90_get_att(ncid,nf90_global,'cycle_number',cycle_number))
+		call nfs(nf90_get_att(ncid,nf90_global,'pass_number',pass_number))
 	endif
 
 ! Read start and stop time
@@ -220,17 +247,23 @@ do
 
 	if (nrec <= 0) then
 		! Skip
-	else if (oc_product) then
+	else if (product_type == tdp_oc) then
 		if (nrec_m20 /= nrec*20) then
 			write (rads_log_unit,*) 'Skipped: nrec_m20 does not match nrec: ', nrec_m20,nrec*20
 		else
 			call process_pass_oc (nrec, nrec_m1, nrec_m20)
 		endif
-	else
+	else if (product_type == tdp_wa) then
 		if (nrec_m5 /= nrec*5) then
 			write (rads_log_unit,*) 'Skipped: nrec_m5 does not match nrec: ',nrec_m5,nrec*5
 		else
 			call process_pass_wa (nrec, nrec_m5)
+		endif
+	else
+		if (nrec_m7 /= nrec*7) then
+			write (rads_log_unit,*) 'Skipped: nrec_m7 does not match nrec: ',nrec_m7,nrec*7
+		else
+			call process_pass_atm (nrec, nrec_m7)
 		endif
 	endif
 	call rads_close_pass (S, P)
@@ -399,6 +432,52 @@ call put_rads (skip_create = .true.)
 deallocate (a)
 
 end subroutine process_pass_wa
+
+!-----------------------------------------------------------------------
+! ATMOSPHERE PRODUCT (TDPATM)
+!-----------------------------------------------------------------------
+
+subroutine process_pass_atm (n, n7)
+integer(fourbyteint), intent(in) :: n, n7
+real(eightbytereal) :: a7(n7)
+
+! Allocate data array
+
+allocate (a(n))
+nvar = 0
+
+! Match the FDR times with the already existing times
+
+call get_var (ncid, 'time', a7)
+a7 = a7 * 86400 + sec1990	! convert from days since 1990 to seconds since 1985
+call rads_get_var (S, P, 'time', a)
+if (any(abs(a7(4:nrec_m5:7) - a) > 5d-2)) then
+	call log_string ('Warning: times do not match')
+endif
+
+! Get the surface type
+call get_var (ncid_m7, 'surface_type_flag', a)
+call new_var ('surface_type_rad', a7(4:nrec_m7:7))
+
+! Get the wet tropospheric variables; they will sampled to 1-Hz
+! We are not picking up the wet tropospheric correction, because that comes from the TDP_OC products
+call get_var (ncid_m7, 'rad_water_vapor', a7)
+call new_var ('water_vapor_rad', a7(4:nrec_m7:7))
+
+call get_var (ncid_m7, 'rad_liquid_water', a7)
+call new_var ('liquid_water_rad', a7(4:nrec_m7:7))
+
+call get_var (ncid_m7, 'rad_attenuation_ku', a7)
+call new_var ('dsig0_atmos_ku', a7(4:nrec_m7:7))
+
+! Close pass
+
+call rads_put_history (S, P)
+call put_rads (skip_create = .true.)
+
+deallocate (a)
+
+end subroutine process_pass_atm
 
 !-----------------------------------------------------------------------
 ! Print synopsis
