@@ -40,7 +40,7 @@ Version fully supported the ingestion of Jason-3 and Sentinel-6 GDR-G products, 
 * Added `gdr_g.xml`:
   * Confuguration file that forces the GDR-G, i.e. mss\_hybrid23, ocean\_tide\_fes22, and load\_tide\_fes22;
     use `-Xgdr_g` on the command line to activate this. In the next version this will become the default.
-* `rads_fix_s6`
+* `rads_fix_s6`:
   * Removed applying a bias to HR sigma0 starting from GDR-G, so this will become affective when that data becomes available.
 
 ### v4.7.0 (24 Jul 2024)
