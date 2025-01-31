@@ -13,11 +13,11 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*rads_pre_sort_passes -- Sort (combine and split) Sentinel-6, -3 or Jason GDR-F into pass files
+!*rads_pre_sort_passes -- Sort (combine and split) Sentinel-3, -6, SWOT or Jason GDR-F/G into pass files
 !
 ! Read Sentinel-3/6 standard or reduced granules or orbits and
 ! combine them (and split them) into pass files.
-! This works also for Jason-3 GDR-F OGDR files in GDR-F format.
+! This works also for Jason-3 and SWOT OGDR files in GDR-F or GDR-G format.
 ! The input file names are read from
 ! standard input. The individual pass files will be named
 ! <destdir>/cCCC/SSS_*_CCC_PPP_*.nc, where SSS is the satellite abbreviation
@@ -98,10 +98,10 @@ read (*,'(a)',iostat=ios) filenm
 if (ios /= 0) stop
 
 i = index(filenm,'/',.true.) + 1
-if (filenm(i:i+1) == 'JA' .and. filenm(i+10:i+10) == 'f') then
+if (filenm(i:i+1) == 'JA' .and. filenm(i+10:i+10) >= 'f') then
 	! Jason GDR-F
 	timesep = ' '
-else if (filenm(i:i+3) == 'SWOT' .and. filenm(i+11:i+11) == 'f') then
+else if (filenm(i:i+3) == 'SWOT' .and. filenm(i+11:i+11) >= 'f') then
 	! SWOT GDR-F
 	timesep = ' '
 else if (filenm(i:i+1) == 'S6' .and. filenm(i+4:i+8) == 'P4_2_') then
