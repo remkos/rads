@@ -29,6 +29,20 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 This does not include explanations of changes to the code that generates the data base.
 
+### v4.7.1 (31 Jan 2025)
+Version fully supported the ingestion of Jason-3 and Sentinel-6 GDR-G products, though GDR-G is not yet made standard for computing SLA
+* `rads.xml`:
+  * Added support for the Jason-3 Second Tandem (Phase j3/c)
+  * Added variables for Sentinel-6B.
+* Added `gdr_f.xml`:
+  * Confuguration file that forces the standards currently used in RADS, i.e. mss\_dtu15, ocean\_tide\_fes14, and load\_tide\_fes14;
+    with the current `rads.xml` there is no effect.
+* Added `gdr_g.xml`:
+  * Confuguration file that forces the GDR-G, i.e. mss\_hybrid23, ocean\_tide\_fes22, and load\_tide\_fes22;
+    use `-Xgdr_g` on the command line to activate this. In the next version this will become the default.
+* `rads_fix_s6`:
+  * Removed applying a bias to HR sigma0 starting from GDR-G, so this will become affective when that data becomes available.
+
 ### v4.7.0 (24 Jul 2024)
 Version with GDR-G variables added, though not yet made standard for computing SLA
 * `rads.xml`
