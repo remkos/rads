@@ -13,9 +13,9 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Lesser General Public License for more details.
 
 ** Description **
-CryoSat-2: Use conventional pulse-limited data only
+Use GDR-G standards for tides and MSS
 -->
 
-<var name="flags" sat="c2">
-	<limits>49 0</limits>
-</var>
+<alias name="tide_ocean">tide_ocean_fes22</alias>
+<alias name="tide_load">tide_load_fes22</alias>
+<alias name="mss">mss_hybrid23</alias>
