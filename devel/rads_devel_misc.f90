@@ -29,7 +29,7 @@ contains
 !+
 subroutine read_orf (sat, orf)
 use rads_misc
-character(len=3), intent(in) :: sat
+character(len=*), intent(in) :: sat
 type(orfinfo), intent(inout) :: orf(:)
 character(len=320) :: line
 integer :: mjd, yy, mm, dd, hh, mn, ios, npass, unit, nr_passes, abs_pass_offset
@@ -39,7 +39,7 @@ real(eightbytereal) :: ss, lat, lon
 ! abbreviation. Upon return the ORF structure will be filled.
 !
 ! Argument:
-!   sat  : 3-letter satellite abbreviation
+!   sat  : 2- or 3-letter satellite abbreviation
 !   orf  : structure containing the information from the ORF file
 !-----------------------------------------------------------------------
 
@@ -48,35 +48,38 @@ real(eightbytereal) :: ss, lat, lon
 nr_passes = 254
 abs_pass_offset = 0
 select case (sat)
-case ('ER1')
+case ('ER1', 'er1', 'e1')
 	call parseenv ('${ALTIM}/data/ODR.ERS-1/orf.txt', line)
-case ('ER2')
+case ('ER2', 'er2', 'e2')
 	call parseenv ('${ALTIM}/data/ODR.ERS-2/orf.txt', line)
-case ('EN1')
+case ('EN1', 'en1', 'n1')
 	call parseenv ('${ALTIM}/data/ODR.ENVISAT1/orf.txt', line)
-case ('JA1')
+case ('JA1', 'ja1', 'j1')
 	call parseenv ('${RADSROOT}/ext/j1/JA1_ORF.txt', line)
-case ('JA2')
+case ('JA2', 'ja2', 'j2')
 	call parseenv ('${RADSROOT}/ext/j2/JA2_ORF.txt', line)
-case ('JA3')
+case ('JA3', 'ja3', 'j3')
 	call parseenv ('${RADSROOT}/ext/j3/JA3_ORF.txt', line)
-case ('SWT')
+case ('SWT', 'swt', 'sw')
 	call parseenv ('${RADSROOT}/ext/sw/SWT_ORF.txt', line)
-case ('CS_', 'CS2')
+case ('CS_', 'CS2', 'cs2', 'c2')
 	call parseenv ('${ALTIM}/data/ODR.CRYOSAT2/orf.txt', line)
-case ('SRL')
+case ('SRL', 'srl', 'sa')
 	call parseenv ('${RADSROOT}/ext/sa/SRL_ORF.txt', line)
 	nr_passes = 1024
-case ('S3A')
+case ('S3A', 's3a', '3a')
 	call parseenv ('${ALTIM}/data/ODR.SNTNL-3A/orf.txt', line)
 	nr_passes = 770
 	abs_pass_offset = -54
-case ('S3B')
+case ('S3B', 's3b', '3b')
 	call parseenv ('${ALTIM}/data/ODR.SNTNL-3B/orf.txt', line)
 	nr_passes = 770
-case ('S6A')
+case ('S3C', 's3c', '3c')
+	call parseenv ('${ALTIM}/data/ODR.SNTNL-3C/orf.txt', line)
+	nr_passes = 770
+case ('S6A', 's6a', '6a')
 	call parseenv ('${ALTIM}/data/ODR.SNTNL-6A/orf.txt', line)
-case ('S6B')
+case ('S6B', 's6b', '6b')
 	call parseenv ('${ALTIM}/data/ODR.SNTNL-6B/orf.txt', line)
 case ('SWO')
 	call parseenv ('${ALTIM}/data/ODR.SWOT/orf.txt', line)
