@@ -5256,8 +5256,8 @@ Global RADS configuration file
 		<mission>Second Tandem Mission</mission>
 		<cycles>500 599</cycles> <!-- To be updated at end of phase -->
 		<repeat>9.91564280 254</repeat>
-		<ref_pass>2025-02-01T14:52:10 99.92 501 1 42294</ref_pass> <!-- To be updated? -->
-		<start_time>2025-01-30</start_time> <!-- To be updated -->
+		<ref_pass>2025-02-01T14:52:11 99.92 501 1 42294</ref_pass>
+		<start_time>2025-01-30</start_time>
 	</phase>
 </if>
 
