@@ -62,7 +62,7 @@ rads_add_ww3_222  $options --all					>> "$log" 2>&1
 rads_add_iono     $options --all					>> "$log" 2>&1
 rads_add_orbit    $options -Valt_gps     -C1-226	>> "$log" 2>&1
 # To support GDR-G with backward compatibility
-grep -q _G...SEN6 $lst && rads_add_tide $options --models=fes14		>> "$log" 2>&1
+grep -q _2Pg $lst && rads_add_tide $options --models=fes14		>> "$log" 2>&1
 
 # Redetermine SSHA
 rads_add_refframe $options -x -x mle3 $extra		>> "$log" 2>&1
