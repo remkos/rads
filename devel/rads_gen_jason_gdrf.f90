@@ -300,9 +300,9 @@ do
 		tide_sol2 = 'fes22'
 	endif
 
-! Determine if we have MLE3 retracker
+! Determine if we have MLE3-derived variables (from GDR-G onward). If not, then we suppress all MLE3 variables.
 
-	has_mle3 = (nf90_inq_varid(ncidk,'range_ocean_mle3',varid) == nf90_noerr)
+	has_mle3 = (nf90_inq_varid(ncidk,'wind_speed_alt_mle3',varid) == nf90_noerr)
 
 ! Compile flag bits
 
