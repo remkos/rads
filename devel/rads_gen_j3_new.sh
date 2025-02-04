@@ -25,8 +25,9 @@
 
 types="ogdr igdr"
 
+date												>  "$log" 2>&1
+
 for type in ${types}; do
-    date												>> "$log" 2>&1
     mrk=${type}/.bookmark
     rads_open_sandbox j3.${type}
     lst=$SANDBOX/rads_gen_j3_tmp_${type}.lst
@@ -70,8 +71,6 @@ for type in ${types}; do
     fi
     
     rads_close_sandbox
-
+    date												>> "$log" 2>&1
 done
-
-date												>> "$log" 2>&1
 
