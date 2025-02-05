@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2024  Remko Scharroo
+! Copyright (c) 2011-2025  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -23,8 +23,10 @@ program rads_add_f4a_env
 ! syntax: rads_add_f4a_env [options] < list_of_FDR4ALT_file_names
 !
 ! This program handles FDR4ALT Level 2 products in NetCDF format, either
-! OC (Ocean and Coastal) or WA (Waves) products.
-! Their format and content is described in:
+! OC (Ocean and Coastal) or WA (Waves) products. Use rads_add_f4a_ers to
+! handle ATM (Atmosphere) products
+!
+! The format and content of the FDR4ALT products is described in:
 !
 ! [1] FDR4ALT Product User Guide
 !     CLS-ENV-MU-23-0237, issue 2.2, 30 Oct 2023

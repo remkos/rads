@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2024  Remko Scharroo
+! Copyright (c) 2011-2025  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -20,11 +20,13 @@ program rads_add_f4a_ers
 ! This program reads ERS FDR4ALT altimeters files and adds them to existing
 ! RADS data files
 !
-! syntax: rads_add_f4a [options] < list_of_FDR4ALT_file_names
+! syntax: rads_add_f4a_ers [options] < list_of_FDR4ALT_file_names
 !
 ! This program handles FDR4ALT Level 2 products in NetCDF format, either
-! OC (Ocean and Coastal) or WA (Waves) products.
-! Their format and content is described in:
+! OC (Ocean and Coastal), WA (Waves) or ATM (atmosphere) products.
+! In case of ATM, this program can also be used for Envisat.
+!
+! The format and content of the FDR4ALT products is described in:
 !
 ! [1] FDR4ALT Product User Guide
 !     CLS-ENV-MU-23-0237, issue 2.2, 30 Oct 2023
@@ -52,6 +54,13 @@ program rads_add_f4a_ers
 ! Variables array fields to be added from the WA products are:
 ! swh_ku - Ku-band significant wave height
 ! swh_rms_* - Std dev of Ku-band SWH
+!
+! Variables array fields to be added from the ATM products are:
+! surface_type_rad - Radiometer syrface type
+! water_vapor_rad - Radiometer water vapour
+! liquid_water_rad - Radiometer liquid water content
+! dsig0_atmos_ku - Atmospheric attenuation at Ku-band
+!
 !-----------------------------------------------------------------------
 use rads
 use rads_devel
@@ -109,7 +118,7 @@ call rads_init (S)
 
 ! Load the ORF file and change time to sec1985
 
-call read_orf ('ER' // S%sat(2:2), orf)
+call read_orf (S%sat, orf)
 orf(:)%starttime = orf(:)%starttime + sec2000
 orf(:)%eqtime = orf(:)%eqtime + sec2000
 ipass = 0
@@ -153,7 +162,8 @@ do
 
 	call nfs(nf90_get_att(ncid,nf90_global,'mission_name',arg))
 	if ((arg == 'ERS-1' .and. S%sat == 'e1') .or. &
-		(arg == 'ERS-2' .and. S%sat == 'e2')) then
+		(arg == 'ERS-2' .and. S%sat == 'e2') .or. &
+		(arg == 'ENVISAT' .and. S%sat == 'n1')) then
 		! All good options
 	else
 		call log_string ('Error: input file does not match selected satellite', .true.)
@@ -232,7 +242,7 @@ do
 		! Read cycle and pass number
 		call nfs(nf90_get_att(ncid,nf90_global,'cycle_number',cycle_number))
 		call nfs(nf90_get_att(ncid,nf90_global,'pass_number',pass_number))
-		time_slop = S%dt1hz / 10
+		time_slop = 0.6d0 * S%dt1hz
 
 	endif
 
@@ -297,7 +307,7 @@ do
 
 ! Write out the pending data
 
-	call put_rads (nrec_out)
+	call put_rads (nrec_out, time_slop)
 
 ! Number of measurements remaining
 	nrec_buf = nrec_buf - nrec_out
@@ -421,8 +431,8 @@ end subroutine process_pass_wa
 
 subroutine process_pass_atm (n7)
 integer(fourbyteint), intent(in) :: n7
-integer :: i, j, k, n
-real(eightbytereal) :: t(n7), a(n7), b(n7,3), c(n7,3), sumx
+integer :: i, j, k, sumn(3)
+real(eightbytereal) :: t(n7), surf(n7), qual(n7), x(n7,3), sumx(n7,3)
 
 ! Store the FDR times
 
@@ -431,34 +441,45 @@ t = t * 86400 + sec1990	! convert from days since 1990 to seconds since 1985
 call new_var ('time', t)
 
 ! Get the surface type
-call get_var (ncid_m7, 'surface_type_flag', a)
-call new_var ('surface_type_rad', a)
+call get_var (ncid_m7, 'surface_type_flag', surf)
+call new_var ('surface_type_rad', surf)
 
-! Get the wet tropospheric variables; they will averaged to 1-Hz
+! Get the wet tropospheric variables; they will be averaged to 1-Hz
 ! We are not picking up the wet tropospheric correction, because that comes from the TDP_OC products
-call get_var (ncid_m7, 'rad_water_vapor', b(:,1))
-call get_var (ncid_m7, 'rad_liquid_water', b(:,2))
-call get_var (ncid_m7, 'rad_attenuation_ku', b(:,3))
+call get_var (ncid_m7, 'rad_water_vapor', x(:,1))
+call get_var (ncid_m7, 'rad_liquid_water', x(:,2))
+call get_var (ncid_m7, 'rad_attenuation_ku', x(:,3))
 
-do k = 1,3 ! Four variables
-	do i = 1,n7
-		n = 0
-		sumx = 0
-		do j = max(1,i-3),min(n7,i+3)
-			if (abs(t(j)-t(i)) < S%dt1hz/2 .and. a(j) == a(i) .and. isan_(b(j,k))) then
-				n = n + 1
-				sumx = sumx + b(j,k)
-			endif
-		enddo
-		c(i,k) = sumx / n
+! Get quality flag
+call get_var (ncid_m7, 'rad_retrieval_quality_flag', qual)
+
+!write (*,*)
+! Make running average over 7 points, within a second interval, of the same surface type, and of good quality
+sumx = 0d0
+do i = 1,n7
+	sumn = 0
+	do j = max(1,i-3),min(n7,i+3)
+		if (abs(t(j)-t(i)) < S%dt1hz/2 .and. surf(j) == surf(i) .and. qual(j) == 0) then
+			do k = 1,3 ! Three variables
+				if (isan_(x(j,k))) then
+					sumn(k) = sumn(k) + 1
+					sumx(i,k) = sumx(i,k) + x(j,k)
+				endif
+			enddo
+		endif
 	enddo
+	sumx(i,:) = sumx(i,:)/sumn(:)
 enddo
+
+!do i = 1,n7
+!	write (*,'(i5,i3,i3,2(f8.2,f8.4,f6.2))') i,nint(surf(i)),nint(qual(i)),x(i,:),sumx(i,:)
+!enddo
 
 ! Wet tropospheric variables
 
-call new_var ('water_vapor_rad', c(:,1))
-call new_var ('liquid_water_rad', c(:,2))
-call new_var ('dsig0_atmos_ku', c(:,3))
+call new_var ('water_vapor_rad', sumx(:,1))
+call new_var ('liquid_water_rad', sumx(:,2))
+call new_var ('dsig0_atmos_ku', sumx(:,3))
 
 end subroutine process_pass_atm
 
@@ -466,8 +487,9 @@ end subroutine process_pass_atm
 ! Write content of memory to a single pass of RADS data
 !-----------------------------------------------------------------------
 
-subroutine put_rads (nrec_out)
+subroutine put_rads (nrec_out, time_slop)
 integer(fourbyteint), intent(in) :: nrec_out
+real(eightbytereal) :: time_slop
 real(eightbytereal), allocatable :: t(:)
 integer(fourbyteint), allocatable :: idx(:)
 character(len=80) :: message
@@ -491,20 +513,18 @@ allocate (t(P%ndata),idx(P%ndata))
 call rads_get_var (S, P, 'time', t)
 idx = 0
 j = 1
-loop: do i = 1,P%ndata
+do i = 1,P%ndata
 	do
-		if (var(1)%d(j) < t(i) - time_slop) then
-			j = j + 1
-		else if (var(1)%d(j) > t(i) + time_slop) then
+		if (j >= nrec_out) then
 			exit
-		else
-			idx(i) = j
+		else if (abs(var(1)%d(j+1)-t(i)) < abs(var(1)%d(j)-t(i))) then
 			j = j + 1
+		else
 			exit
 		endif
-		if (j > nrec_out) exit loop
 	enddo
-enddo loop
+	if (abs(var(1)%d(j)-t(i)) < time_slop) idx(i) = j
+enddo
 
 ! Check for the number of matching points
 
