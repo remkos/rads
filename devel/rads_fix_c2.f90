@@ -223,6 +223,19 @@ P%end_time = time(n)
 call rads_put_passinfo (S, P)
 call rads_put_history (S, P)
 
+! Redefine variables
+
+if (cmeteo) then
+	call rads_def_var (S, P, 'dry_tropo')
+	call rads_def_var (S, P, 'wet_tropo')
+	call rads_def_var (S, P, 'inv_bar_static')
+endif
+if (ciono) call rads_def_var (S, P, 'iono_gim')
+if (lsig0 .or. cdrift) then
+	call rads_def_var (S, P, 'sig0_ku')
+	if (P%n_hz > 0) call rads_def_var (S, P, 'sig0_20hz_ku')
+endif
+
 ! Write out all the data
 
 if (cmeteo) then

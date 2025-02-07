@@ -197,6 +197,24 @@ endif
 call rads_put_passinfo (S, P)
 call rads_put_history (S, P)
 
+! Redefine the variables
+
+if (ldry .and. P%equator_time > 665280000d0) &
+	call rads_def_var (S, P, 'dry_tropo_ecmwf')
+if (lsig0) then
+	call rads_def_var (S, P, 'sig0_ku')
+	call rads_def_var (S, P, 'sig0_c' )
+endif
+if (lwind) call rads_def_var (S, P, 'wind_speed_alt')
+if (lrange) then
+	call rads_def_var (S, P, 'range_c')
+	call rads_def_var (S, P, 'iono_alt')
+endif
+if (cjmre) then
+	call rads_def_var (S, P, 'flags')
+	call rads_def_var (S, P, 'wet_tropo_rad')
+endif
+
 ! Write out all the data
 
 if (ldry .and. P%equator_time > 665280000d0) &
@@ -208,7 +226,7 @@ endif
 if (lwind) call rads_put_var (S, P, 'wind_speed_alt', u)
 if (lrange) then
 	call rads_put_var (S, P, 'range_c', range_c)
-	call rads_put_var (S, P, 'iono_alt' , iono_alt)
+	call rads_put_var (S, P, 'iono_alt', iono_alt)
 endif
 if (cjmre) then
 	call rads_put_var (S, P, 'flags', flags)

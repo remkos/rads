@@ -163,6 +163,19 @@ endif
 call rads_put_passinfo (S, P)
 call rads_put_history (S, P)
 
+! Redefine the variable
+
+if (do_biasKu) then
+	call rads_def_var (S, P, 'range_ku')
+	call rads_def_var (S, P, 'range_ku_adaptive')
+endif
+if (do_biasS) then
+	call rads_def_var (S, P, 'range_s')
+	call rads_def_var (S, P, 'iono_alt')
+	call rads_def_var (S, P, 'iono_alt_smooth')
+endif
+if (do_sideB) call rads_def_var (S, P, 'flags')
+
 ! Write out all the data
 
 if (do_biasKu) then
