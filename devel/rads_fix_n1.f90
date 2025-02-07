@@ -18,11 +18,12 @@
 ! This program makes numerous patches to the Envisat RADS data processed
 ! by rads_gen_n1_gdr. These patches include:
 !
-!  --sideB                   Set side B flag
+!  --biasKu                  Apply Ku-band range bias to cycles 79 and 80
 !  --biasS                   Apply S-band range bias
+!  --sideB                   Set side B flag
 !  --all                     All the above
 !
-! usage: rads_fix_s3 [data-selectors] [options]
+! usage: rads_fix_n1 [data-selectors] [options]
 !-----------------------------------------------------------------------
 program rads_fix_n1
 
