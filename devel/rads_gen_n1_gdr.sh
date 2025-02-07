@@ -23,7 +23,7 @@
 # Exit when no directory names are provided
 [[ $# -eq 0 ]] && exit
 
-rads_open_sandbox n1.gdr
+rads_open_sandbox n1.f4a
 
 find "$@" -name "*.nc"| sort > "$lst"
 date													>  "$log" 2>&1
@@ -33,13 +33,12 @@ rads_gen_n1_gdr  $options < "$lst"						>> "$log" 2>&1
 
 find $RADSROOT/ext/FDR4ALT/TDP_??/en1/c??? -name "*.nc" | sort -t_ -k7,8 > "$lst"
 date
-rads_add_f4a     $options < "$lst"						>> "$log" 2>&1
+rads_add_f4a_env $options < "$lst"						>> "$log" 2>&1
 
 # Do the patches to all data
 
 rads_add_iono    $options --all							>> "$log" 2>&1
 rads_add_common  $options								>> "$log" 2>&1
-rads_add_era5    $options --all							>> "$log" 2>&1
 rads_fix_n1      $options --all							>> "$log" 2>&1
 
 # Redetermine SSHA
