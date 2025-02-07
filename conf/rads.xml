@@ -5069,7 +5069,6 @@ Global RADS configuration file
 		</subcycles>
 	</phase>
 	<phase name="d">
-		<!--This may need to be modified-->
 		<!--After "rewind" by 97 days, we increase the subcycle by 6-->
 		<mission>Geodetic Mission 2</mission>
 		<cycles>375 383</cycles>
