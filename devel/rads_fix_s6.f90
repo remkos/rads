@@ -406,7 +406,64 @@ endif
 call rads_put_passinfo (S, P)
 call rads_put_history (S, P)
 
-! If flag bit is set, also redefine the attributes
+! (Re)define the variables
+
+if (do_cal1) then
+	call rads_def_var (S, P, 'cal1_range_ku')
+	call rads_def_var (S, P, 'cal1_power_ku')
+	if (has_c) then
+		call rads_def_var (S, P, 'cal1_range_c')
+		call rads_def_var (S, P, 'cal1_power_c')
+	endif
+endif
+
+if (do_range) then
+	if (nr_only) then
+		call rads_def_var (S, P, 'range_ku_nr')
+	else
+		call rads_def_var (S, P, 'range_ku')
+		if (has_mle3) call rads_def_var (S, P, 'range_ku_mle3')
+		if (has_c) call rads_def_var (S, P, 'range_c')
+	endif
+endif
+
+if (do_sig0) then
+	if (nr_only) then
+		call rads_def_var (S, P, 'sig0_ku_nr')
+	else
+		call rads_def_var (S, P, 'sig0_ku')
+		if (has_mle3) call rads_def_var (S, P, 'sig0_ku_mle3')
+		if (has_c) call rads_def_var (S, P, 'sig0_c')
+	endif
+endif
+
+if (do_wind) then
+	if (nr_only) then
+		call rads_def_var (S, P, 'wind_speed_alt_nr')
+	else
+		call rads_def_var (S, P, 'wind_speed_alt')
+		if (has_mle3) call rads_def_var (S, P, 'wind_speed_alt_mle3')
+	endif
+endif
+
+if (do_ssb) then
+	if (nr_only) then
+		call rads_def_var (S, P, 'ssb_cls_nr')
+		if (lr) call rads_def_var (S, P, 'ssb_cls_c_nr')
+	else
+		call rads_def_var (S, P, 'ssb_cls')
+		if (has_mle3) call rads_def_var (S, P, 'ssb_cls_mle3')
+		if (has_c) call rads_def_var (S, P, 'ssb_cls_c')
+	endif
+endif
+
+if (do_rain) then
+	call rads_def_var (S, P, 'qual_alt_rain_ice')
+	call rads_def_var (S, P, 'dsig0_atten')
+	call rads_def_var (S, P, 'flags')
+else if (do_flag) then
+	call rads_def_var (S, P, 'flags')
+endif
 
 if (do_flag) then
 	if (has_mle3) call rads_def_var (S, P, 'flags_mle3')

@@ -147,6 +147,12 @@ call rads_get_var (S, P, 'range_c', range_c, .true.)
 call rads_put_passinfo (S, P)
 call rads_put_history (S, P)
 
+! Redefine the variables
+
+call rads_def_var (S, P, 'range_ku')
+call rads_def_var (S, P, 'range_ku_plrm')
+call rads_def_var (S, P, 'range_c')
+
 ! Write out all the data
 
 call rads_put_var (S, P, 'range_ku', range_ku * uso_scale)

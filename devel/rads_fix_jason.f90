@@ -168,6 +168,15 @@ endif
 call rads_put_passinfo (S, P)
 call rads_put_history (S, P)
 
+! Redefine the variables
+
+if (lrad) call rads_def_var (S, P, 'wet_tropo_rad')
+if (lsig0) then
+	call rads_def_var (S, P, 'sig0_ku')
+	call rads_def_var (S, P, 'sig0_c' )
+endif
+if (lwind) call rads_def_var (S, P, 'wind_speed_alt')
+
 ! Write out all the data
 
 if (lrad) call rads_put_var (S, P, 'wet_tropo_rad', wet)

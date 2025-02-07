@@ -221,10 +221,23 @@ if (n_changed == 0) then
 	call log_records (0)
 	return
 endif
+call rads_put_history (S, P)
+
+! Redefine the variables
+
+if (luso .or. lptr) call rads_def_var (S, P, 'range_ku')
+if (ltide) then
+	call rads_def_var (S, P, 'tide_ocean_got47')
+	call rads_def_var (S, P, 'tide_ocean_fes04')
+endif
+if (ltbias) then
+	call rads_def_var (S, P, 'time')
+	call rads_def_var (S, P, 'alt_reaper')
+endif
+if (lwet) call rads_def_var (S, P, 'wet_tropo_rad')
 
 ! Write out all the data
 
-call rads_put_history (S, P)
 if (luso .or. lptr) call rads_put_var (S, P, 'range_ku', range_ku)
 if (ltide) then
 	call rads_put_var (S, P, 'tide_ocean_got47', got47)
