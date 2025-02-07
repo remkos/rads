@@ -4538,6 +4538,7 @@ if (var%field(1) /= rads_nofield) e = e + nf90_put_att (ncid, varid_, 'field', v
 if (info%comment /= '') e = e + nf90_put_att (ncid, varid_, 'comment', info%comment)
 if (e /= 0) call rads_error (S, rads_err_nc_var, &
 	'Error writing attributes for variable "'//trim(var%name)//'" in file', P)
+e = e + nf90_put_att (ncid, varid_, 'created_by', trim(S%command))
 info%cycle = P%cycle
 info%pass = P%pass
 if (present(varid)) varid = varid_
