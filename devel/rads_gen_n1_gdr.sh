@@ -43,7 +43,7 @@ rads_fix_n1      $options --all							>> "$log" 2>&1
 
 # Redetermine SSHA
 rads_add_refframe $options -x -x adaptive				>> "$log" 2>&1
-rads_add_sla      $options -x -x adaptive				>> "$log" 2>&1
+rads_add_sla      $options -Xgdr_g -x -x adaptive		>> "$log" 2>&1
 
 date													>> "$log" 2>&1
 
