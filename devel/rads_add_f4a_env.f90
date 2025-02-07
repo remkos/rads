@@ -250,22 +250,25 @@ do
 	if (nrec <= 0) then
 		! Skip
 	else if (product_type == tdp_oc) then
-		if (nrec_m20 /= nrec*20) then
-			write (rads_log_unit,*) 'Skipped: nrec_m20 does not match nrec: ', nrec_m20,nrec*20
+		if (nrec_m20 == nrec*20) then
+			call process_pass_oc (nrec, nrec_m1, nrec_m20, 0)
+		else if (nrec_m20 == nrec*20 - 20) then	! This sometimes happens, in which case the 20-Hz data is shifted by 10 points
+			call log_string ('Warning: 20-Hz TDP_OC records shifted by 10 points')
+			call process_pass_oc (nrec, nrec_m1, nrec_m20, -10)
 		else
-			call process_pass_oc (nrec, nrec_m1, nrec_m20)
+			write (rads_log_unit,*) 'Skipped: nrec_m20 does not match nrec: ', nrec_m20,nrec*20
 		endif
 	else if (product_type == tdp_wa) then
-		if (nrec_m5 /= nrec*5) then
-			write (rads_log_unit,*) 'Skipped: nrec_m5 does not match nrec: ',nrec_m5,nrec*5
-		else
+		if (nrec_m5 == nrec*5) then
 			call process_pass_wa (nrec, nrec_m5)
+		else
+			write (rads_log_unit,*) 'Skipped: nrec_m5 does not match nrec: ',nrec_m5,nrec*5
 		endif
 	else
-		if (nrec_m7 /= nrec*7) then
-			write (rads_log_unit,*) 'Skipped: nrec_m7 does not match nrec: ',nrec_m7,nrec*7
-		else
+		if (nrec_m7 == nrec*7) then
 			call process_pass_atm (nrec, nrec_m7)
+		else
+			write (rads_log_unit,*) 'Skipped: nrec_m7 does not match nrec: ',nrec_m7,nrec*7
 		endif
 	endif
 	call rads_close_pass (S, P)
@@ -281,8 +284,8 @@ contains
 ! OCEAN AND COASTAL PRODUCT (TDP_OC)
 !-----------------------------------------------------------------------
 
-subroutine process_pass_oc (n, n1, n20)
-integer(fourbyteint), intent(in) :: n, n1, n20
+subroutine process_pass_oc (n, n1, n20, offset)
+integer(fourbyteint), intent(in) :: n, n1, n20, offset
 integer(fourbyteint) :: i, j, i0, i1
 real(eightbytereal) :: a20(n20), t20(n20), b(n), t(n), par_a, par_b, par_r
 integer(fourbyteint) :: nr(n)
@@ -328,8 +331,8 @@ call get_var (ncid_m20, 'time', t20)
 t20 = t20 * 86400 + sec1990	! convert from days since 1990 to seconds since 1985
 call get_var (ncid_x20, 'range altitude SUB', a20)
 do i = 1,n
-	i1 = i * 20
-	i0 = i1 - 19
+	i0 = max(  1, i * 20 - 19 + offset)
+	i1 = min(n20, i * 20      + offset)
 	call regression (t20(i0:i1)-t(i), a20(i0:i1), par_a, par_b, par_r, b(i), nr(i))
 enddo
 call new_var ('range_rms_ku' // ext, sqrt(b))
