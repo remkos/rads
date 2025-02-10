@@ -13,7 +13,7 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*rads_fix_n1 -- Patch RADS altimeter files of Sentinel-3 for various anomalies
+!*rads_fix_n1 -- Patch RADS altimeter files of Envisat for various anomalies
 !
 ! This program makes numerous patches to the Envisat RADS data processed
 ! by rads_gen_n1_gdr. These patches include:
