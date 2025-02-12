@@ -256,19 +256,22 @@ do
 			call log_string ('Warning: 20-Hz TDP_OC records shifted by 10 points')
 			call process_pass_oc (nrec, nrec_m1, nrec_m20, -10)
 		else
-			write (rads_log_unit,*) 'Skipped: nrec_m20 does not match nrec: ', nrec_m20,nrec*20
+			write (rads_log_unit,'(a)') 'Skipped: nrec_m20 does not match nrec: ',nrec_m20,nrec*20
 		endif
 	else if (product_type == tdp_wa) then
 		if (nrec_m5 == nrec*5) then
-			call process_pass_wa (nrec, nrec_m5)
+			call process_pass_wa (nrec, nrec_m5, 3)
+		else if (nrec_m5 == nrec*5 - 5) then
+			call process_pass_wa (nrec, nrec_m5, 1)
+			call log_string ('Warning: 5-Hz TDP_WA records shifted by 2 points')
 		else
-			write (rads_log_unit,*) 'Skipped: nrec_m5 does not match nrec: ',nrec_m5,nrec*5
+			write (rads_log_unit,'(a)') 'Skipped: nrec_m5 does not match nrec: ',nrec_m5,nrec*5
 		endif
 	else
 		if (nrec_m7 == nrec*7) then
 			call process_pass_atm (nrec, nrec_m7)
 		else
-			write (rads_log_unit,*) 'Skipped: nrec_m7 does not match nrec: ',nrec_m7,nrec*7
+			write (rads_log_unit,'(a)') 'Skipped: nrec_m7 does not match nrec: ',nrec_m7,nrec*7
 		endif
 	endif
 	call rads_close_pass (S, P)
@@ -404,9 +407,9 @@ end subroutine cpy_var_i
 ! WAVES PRODUCT (TDP_WA)
 !-----------------------------------------------------------------------
 
-subroutine process_pass_wa (n, n5)
-integer(fourbyteint), intent(in) :: n, n5
-real(eightbytereal) :: a5(n5)
+subroutine process_pass_wa (n, n5, offset)
+integer(fourbyteint), intent(in) :: n, n5, offset
+real(eightbytereal) :: a5(n5), b(n)
 
 ! Allocate data array
 
@@ -418,16 +421,23 @@ nvar = 0
 call get_var (ncid, 'time', a5)
 a5 = a5 * 86400 + sec1990	! convert from days since 1990 to seconds since 1985
 call rads_get_var (S, P, 'time', a)
-if (any(abs(a5(3:nrec_m5:5) - a) > 5d-2)) then
+b = a5(offset:nrec_m5:5)
+if (offset == 1) b(n) = a(n)
+if (any(abs(b - a) > 10d-2)) then
 	call log_string ('Warning: times do not match')
 endif
 
 ! SWH
 
 call get_var (ncid, 'swh_adjusted_filtered', a5)
-call new_var ('swh_ku' // ext, a5(3:nrec_m5:5))
+b = a5(offset:nrec_m5:5)
+if (offset == 1) b(n) = a5(nrec_m5)
+call new_var ('swh_ku' // ext, b)
+
 call get_var (ncid, 'swh_uncertainty', a5)
-call new_var ('swh_rms_ku' // ext, a5(3:nrec_m5:5))
+b = a5(offset:nrec_m5:5)
+if (offset == 1) b(n) = a5(nrec_m5)
+call new_var ('swh_rms_ku' // ext, b)
 
 ! Close pass
 
