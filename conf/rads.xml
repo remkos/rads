@@ -596,6 +596,17 @@ Global RADS configuration file
 	<compress sat="sw">int4 1e-4 800e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
+<var name="alt_std2400" sat="6a j1 j2 j3 tx pn">
+	<long_name>GSFC/Std2400 orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>GSFC/Std2400</source>
+	<parameters>gsfc_std2400</parameters>
+	<units>m</units>
+	<data>alt_std2400</data>
+	<format>f12.4</format>
+	<compress>int4 1e-4 1300e3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
 <var name="alt_cpod" sat="3a 3b">
 	<long_name>CPOD POE orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
