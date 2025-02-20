@@ -223,7 +223,7 @@ P%end_time = time(n)
 call rads_put_passinfo (S, P)
 call rads_put_history (S, P)
 
-! Redefine variables
+! Redefine the variables
 
 if (cmeteo) then
 	call rads_def_var (S, P, 'dry_tropo')

@@ -168,7 +168,7 @@ endif
 call rads_put_passinfo (S, P)
 call rads_put_history (S, P)
 
-! Redefine thevariables
+! Redefine the variables
 
 if (lrad) call rads_def_var (S, P, 'wet_tropo_rad')
 if (lsig0) then
