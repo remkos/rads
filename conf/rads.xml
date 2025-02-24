@@ -4760,13 +4760,13 @@ Global RADS configuration file
 
 <var name="gia" field="5101 51">
 	<long_name>GIA correction</long_name>
-	<source>ICE5G v1.3 VM2 L90 2012</source>
-	<parameters>ice5g/dGeoid250.1grid.ICE5Gv1.3_VM2_L90_2012.nc -t0.001</parameters>
+	<source>ICE-6G_C (VM5a)</source>
+	<parameters>ice6g/dGeoid.12mgrid_512.nc -t0.001</parameters>
 	<units>m</units>
 	<data>gia</data>
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
-	<comment>Change of land elevation relative to geoid due to GIA since 1 Jan 2000</comment>
+	<comment>Solid-Earth deformation due to GIA since 1 Jan 2000</comment>
 </var>
 
 <var name="orbit_type" sat="3a 3b">
