@@ -4244,9 +4244,9 @@ Global RADS configuration file
 	<parameters sat="e1">  21   0  0  0 0</parameters>
 	<parameters sat="e2">  62   0  0  0 0</parameters>
 	<parameters sat="gs">   0 -65  0  0 5</parameters>
-	<parameters sat="g1">  73   0  0  0 0</parameters>
+	<parameters sat="g1">  69   0  0  0 0</parameters>
 	<parameters sat="j1">  85   0  0  0 0</parameters>
-	<parameters sat="j2"> -15   0  0  0 0</parameters>
+	<parameters sat="j2"> -15.9 0  0  0 0</parameters>
 	<parameters sat="j3"> -23.9 0  0  0 0</parameters>
 	<parameters sat="n1"> 451   0  0  0 0</parameters>
 	<parameters sat="pn">  -3.1 0  0  0 0</parameters>
