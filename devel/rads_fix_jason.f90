@@ -82,7 +82,6 @@ do i = 1,rads_nopt
 			wet_cor = 1.8d-3
 			lrad = .true.
 		else
-			dsig0 = (/ -2.40d0, -0.73d0 /) ! Ku- and C-band Sigma0 bias of Jason-1
 			lsig0 = .true.
 		endif
 	end select
@@ -117,7 +116,7 @@ write (*,1310)
 'Additional [processing_options] are:' / &
 '  --sig0[=BIAS_KU,BIAS_C]   Adjust backscatter coefficient for apparent off-nadir angle, and' / &
 '                            optionally add biases to the Ku and C band values' / &
-'  --all                     JA1/JA2: --sig0=-2.40,-0.73; JA3: --rad=1.8' / &
+'  --all                     JA1/JA2: --sig0; JA3: --rad=1.8' / &
 '  --rad=OFFSET              Add OFFSET mm to radiometer wet tropo' / &
 '  --rad=FILENAME            Correct radiometer wet tropo according to correction file' / &
 '  --wind                    Recompute wind speed from adjusted sigma0 based on Collard model')
