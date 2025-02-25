@@ -68,7 +68,9 @@ if test -z $type ; then
 	esac
 	case $dir in
 		*RMC/*)         type=hrrmc ;;
-		*REP/*|*_REP_*) type=${type:0:2}g01 ;;
+		*_REP_NT_G01.*) type=${type:0:2}g01 ;;
+		*_REP_NT_F09.*) type=${type:0:2}f09 ;;
+		*REP/*|*_REP_*) type=${type:0:2}rep ;;
 		*DEV/*|*_DEV_*|*VER/*|*_VER_*) type=${type}d ;;
 		*VAL/*|*_VAL_*) type=${type}v ;;
 		*)              type=${type}o ;;
