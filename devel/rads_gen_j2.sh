@@ -41,23 +41,22 @@ done
 
 # Do the patches to all data
 
-rads_fix_jason    $options --all					>> "$log" 2>&1
-rads_add_ssb      $options --ssb=ssb_tran2012		>> "$log" 2>&1
-rads_add_iono     $options --all					>> "$log" 2>&1
-rads_add_common   $options							>> "$log" 2>&1
-rads_add_tide     $options --models=fes14           >> "$log" 2>&1
-rads_add_dual     $options -l						>> "$log" 2>&1
-rads_add_dual     $options -l --ext=mle3			>> "$log" 2>&1
-rads_add_ib       $options							>> "$log" 2>&1
-rads_add_orbit    $options -Valt_gdre    -C0-253	>> "$log" 2>&1
-rads_add_orbit    $options -Valt_eig6s2  -C0-219	>> "$log" 2>&1
-rads_add_orbit    $options -Valt_gps     -C1-327	>> "$log" 2>&1
-rads_add_orbit    $options -Valt_std2400 -C1-303	>> "$log" 2>&1
-rads_add_orbit    $options -Valt_slcci   -C0-248	>> "$log" 2>&1
+rads_fix_jason    $options --all						>> "$log" 2>&1
+rads_add_orbit    $options -Valt_gdre --dir=gdr-e-poe	>> "$log" 2>&1
+rads_add_orbit    $options -Valt_gdrf --dir=gdr-f-poe	>> "$log" 2>&1
+rads_add_orbit    $options -Valt_gps     -C1-327		>> "$log" 2>&1
+rads_add_orbit    $options -Valt_slcci   -C0-248		>> "$log" 2>&1
+rads_add_orbit    $options -Valt_std2400 -C1-303		>> "$log" 2>&1
+rads_add_ssb      $options --ssb=ssb_tran2012			>> "$log" 2>&1
+rads_add_iono     $options --all						>> "$log" 2>&1
+rads_add_common   $options								>> "$log" 2>&1
+rads_add_tide     $options --models=fes14				>> "$log" 2>&1
+rads_add_dual     $options -l							>> "$log" 2>&1
+rads_add_dual     $options -l --ext=mle3				>> "$log" 2>&1
 # Redetermine SSHA
-rads_add_refframe $options -x -x mle3				>> "$log" 2>&1
-rads_add_sla      $options -x -x mle3				>> "$log" 2>&1
+rads_add_refframe $options -x -x mle3					>> "$log" 2>&1
+rads_add_sla      $options -x -x mle3					>> "$log" 2>&1
 
-date												>> "$log" 2>&1
+date													>> "$log" 2>&1
 
 rads_close_sandbox
