@@ -455,6 +455,7 @@ Global RADS configuration file
 	<format>f11.3</format>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
+<!--
 <var name="alt_eig6s2" field="417" sat="j1 j2">
 	<long_name>ESOC EIGEN-6S2 orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
@@ -466,6 +467,7 @@ Global RADS configuration file
 	<compress>int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
+-->
 <var name="alt_gdrd" field="418" sat="2a c2 j1 j2 n1 sa">
 	<long_name>CNES GDR-D orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
