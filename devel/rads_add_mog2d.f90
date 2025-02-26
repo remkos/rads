@@ -82,7 +82,7 @@ enddo
 
 select case (type)
 case (type_era)
-	call parseenv ('${RADSROOT}/ext/slcci/Products/DAC_ERA_Interim_20161115/%Y/dac_era_interim_', path)
+	call parseenv ('${RADSROOT}/ext/slcci/Products/DAC_ERA_Interim_20161115/%Y/dac_era_interim_%Y%m%d_%H', path)
 	varnm = 'inv_bar_mog2d_era'
 case default
 	call parseenv ('${ALTIM}/data/dac/%Y/dac_dif_%Y%m%d_%H.nc', path)
@@ -230,7 +230,6 @@ integer(fourbyteint) ::	ncid,v_id,j,l,strf1985
 real(eightbytereal) :: time
 
 600 format ('(',a,')')
-610 format (i5.5,'_',i2.2,'.nc')
 1300 format (a,': ',a)
 
 get_mog2d = .true.
@@ -238,7 +237,6 @@ get_mog2d = .true.
 ! Determine file name
 
 l = strf1985(filenm, trim(path), hex*21600)
-if (type == type_era) write (filenm(l+1:),610) hex/4+12784,modulo(hex,4)*6
 
 ! Open input file
 
