@@ -270,6 +270,8 @@ endif
 
 ! Process data records
 
+call log_pass (P)
+
 do i = 1,n
 
 ! Convert raw SSH to range using the orbit at the original time tag.
@@ -389,11 +391,13 @@ if (rads_verbose >= 1) write (*,*) 'eq:', P%equator_time, P%equator_lon
 
 rms = sqrt(rms/n)
 if (rads_verbose >= 1) write (*,*) 'rms:', cyc, pass, rms
-if (newer .and. rms < 1d-4) return
+if (newer .and. rms < 1d-4) then
+	call log_records (0)
+	return
+endif
 
 ! Update history and (re)define variables that may be new and will be written
 
-call log_pass (P)
 call rads_put_passinfo (S, P)
 call rads_put_history (S, P)
 if (loc /= 0d0) then
