@@ -13,9 +13,9 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*rads_fix_jason -- Patch RADS altimeter files of Jason-2/3 for various anomalies
+!*rads_fix_jason -- Patch RADS altimeter files of Jason for various anomalies
 !
-! This program makes numerous patches to the RADS data for Jason-2/3
+! This program makes numerous patches to the RADS data for Jason-1/2/3
 ! processed by rads_gen_jason, and originating from (O/I)GDR versions D
 ! or E. These patches include:
 !
@@ -24,8 +24,8 @@
 ! - Add optional bias to Ku and C sigma0
 !
 ! rad:
-! - Add offset to radiometer wet tropo (only used to patch non-calibration
-!   of radiometer data on OGDR and IGDR)
+! - Add offset to radiometer wet tropo or read biases to the wet tropo
+!   from a file
 !
 ! wind:
 ! - Recompute wind speed from adjusted sigma0 based on Collard model
@@ -79,7 +79,10 @@ do i = 1,rads_nopt
 		lwind = .true.
 	case ('all')
 		if (S%sat(:2) == 'j3') then
-			wet_cor = 1.8d-3
+			call parseenv ("${RADSROOT}/ext/j3/JASON_3_PD_CORRECTION_20230925.txt", rads_opt(i)%arg)
+			if (read_wet_cor(rads_opt(i)%arg)) call rads_message ('Error loading radiometer correction file')
+			wet_cor(:,349:364) = 1.8d-3
+			wet_cor(:,365:999) = 0.8d-3
 			lrad = .true.
 		else
 			lsig0 = .true.
@@ -109,16 +112,19 @@ contains
 
 subroutine synopsis (flag)
 character(len=*), optional :: flag
-if (rads_version ('Patch Jason-2/3 data for several anomalies', flag=flag)) return
+if (rads_version ('Patch Jason data for several anomalies', flag=flag)) return
 call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
 '  --sig0[=BIAS_KU,BIAS_C]   Adjust backscatter coefficient for apparent off-nadir angle, and' / &
 '                            optionally add biases to the Ku and C band values' / &
-'  --all                     JA1/JA2: --sig0; JA3: --rad=1.8' / &
 '  --rad=OFFSET              Add OFFSET mm to radiometer wet tropo' / &
 '  --rad=FILENAME            Correct radiometer wet tropo according to correction file' / &
+'  --all                     JA1/JA2: --sig0 (without applying a bias)' / &
+'                            JA3 cycle   0-348: --rad=${RADSROOT}/ext/j3/JASON_3_PD_CORRECTION_20230925.txt' / &
+'                                cycle 349-364: --rad=1.8' / &
+'                                cycle 365-   : --rad=0.8' / &
 '  --wind                    Recompute wind speed from adjusted sigma0 based on Collard model')
 stop
 end subroutine synopsis
@@ -200,7 +206,7 @@ character(len=80) :: line
 real(eightbytereal) :: dwet
 
 read_wet_cor = .true.
-open (10, file=filenm, form='formatted', iostat=ios)
+open (10, file=filenm, form='formatted', status='old', iostat=ios)
 if (ios /= 0) return
 read_wet_cor = .false.
 ! Read the data while skipping headers
@@ -219,7 +225,7 @@ do cyc = 0,348
 		dwet = wet_cor (pass, cyc)
 	enddo
 enddo
-wet_cor(:,349:999) = dwet
+wet_cor(:,349:999) = 0d0
 close (10)
 end function read_wet_cor
 
