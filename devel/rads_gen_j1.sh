@@ -40,7 +40,7 @@ done
 
 # Do the patches to all data
 
-rads_fix_j1       $options --all						>> "$log" 2>&1
+rads_fix_jason    $options --all						>> "$log" 2>&1
 rads_add_orbit    $options -Valt_gdre --dir=gdr-e-poe	>> "$log" 2>&1
 rads_add_orbit    $options -Valt_gps     -C9-161		>> "$log" 2>&1
 rads_add_orbit    $options -Valt_slcci					>> "$log" 2>&1
