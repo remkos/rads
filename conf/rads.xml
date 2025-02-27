@@ -955,18 +955,6 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
 </var>
-<var name="wet_tropo_rad_enh" field="810" sat="j1">
-	<long_name>original radiometer wet tropospheric correction</long_name>
-	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
-	<source>radiometer with coastal correction</source>
-	<units>m</units>
-	<limits>-0.6 0.0</limits>
-	<plot_range>-0.4 0.0</plot_range>
-	<data>wet_tropo_rad_enh</data>
-	<format>f7.4</format>
-	<compress>int2 1e-4</compress>
-	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
-</var>
 <var name="wet_tropo_comp" field="811" sat="3a 3b c2">
 	<long_name>composite wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
@@ -1728,7 +1716,7 @@ Global RADS configuration file
 <alias name="ssb_nr" sat="6a 6b">ssb_cls_nr</alias>
 <alias name="ssb_plrm" sat="3a 3b c2">ssb_cls_plrm</alias>
 
-<var name="geoid_egm96" field="1601" sat="3a 3b j2 j3 sa sw">
+<var name="geoid_egm96" field="1601" sat="sa">
 	<long_name>EGM96 geoid height</long_name>
 	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
 	<source>EGM96</source>
@@ -1808,6 +1796,7 @@ Global RADS configuration file
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
 </var>
+<!-- Likely obsolete
 <var name="mss_cnescls22">
 	<long_name>CNES-CLS22 mean sea surface height</long_name>
 	<standard_name>sea_surface_height_above_reference_ellipsoid</standard_name>
@@ -1818,6 +1807,7 @@ Global RADS configuration file
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
 </var>
+-->
 <var name="mss_hybrid23">
 	<long_name>Hybrid SIO/CNES_CLS/DTU 2023 mean sea surface height</long_name>
 	<standard_name>sea_surface_height_above_reference_ellipsoid</standard_name>
@@ -1839,6 +1829,7 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 </var>
+<!-- Possible future implementation?
 <var name="mdt_cnescls22">
 	<long_name>CNES/CLS 2022 mean dynamic topography</long_name>
 	<source>CNES/CLS 2022</source>
@@ -1848,6 +1839,7 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 </var>
+-->
 
 <var name="latency">
 	<long_name>source product latency flag</long_name>
@@ -1941,14 +1933,6 @@ Global RADS configuration file
 	<data>swh_ku_plrm</data>
 	<format>f6.3</format>
 	<compress>int2 1e-3</compress>
-</var>
-<var name="swh_ww3" field="1712" sat="j2 j3 sa">
-	<long_name>WaveWatch3 significant wave height</long_name>
-	<standard_name>sea_surface_wave_significant_height</standard_name>
-	<units>m</units>
-	<data>swh_ww3</data>
-	<format>f5.2</format>
-	<compress>int2 1e-2</compress>
 </var>
 <var name="swh_mfwam" sat="3a 3b 6a 6b j3 sw tx pn">
 	<long_name>MFWAM significant wave height</long_name>
@@ -2502,14 +2486,6 @@ Global RADS configuration file
 	<compress>int1</compress>
 </var>
 
-<var name="topo_dtm2000" field="2202" sat="3a 3b j1 j2 j3 n1 sa sw">
-	<long_name>DTM2000 topography</long_name>
-	<source>DTM2000</source>
-	<units>m</units>
-	<data>topo_dtm2000</data>
-	<format>f7.0</format>
-	<compress>int2</compress>
-</var>
 <var name="topo_ace2" field="2207">
 	<long_name>ACE2 topography</long_name>
 	<source>ACE2</source>
