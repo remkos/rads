@@ -458,19 +458,6 @@ Global RADS configuration file
 	<format>f11.3</format>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<!--
-<var name="alt_eig6s2" field="417" sat="j1 j2">
-	<long_name>ESOC EIGEN-6S2 orbital altitude</long_name>
-	<standard_name>height_above_reference_ellipsoid</standard_name>
-	<source>ESOC, EIGEN-6S2</source>
-	<parameters>eigen-6s2-esoc</parameters>
-	<units>m</units>
-	<data>alt_eig6s2</data>
-	<format>f12.4</format>
-	<compress>int4 1e-4 1300e3</compress>
-	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
-</var>
--->
 <var name="alt_gdrd" field="418" sat="2a c2 j1 j2 n1 sa">
 	<long_name>CNES GDR-D orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
@@ -808,20 +795,6 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A dry tropospheric correction must be added to range to correct for dry troposphere delays</comment>
 </var>
-<!-- GFS variables no longer added
-<var name="dry_tropo_gfs" field="708">
-	<long_name>NOAA GFS dry tropospheric correction</long_name>
-	<standard_name>altimeter_range_correction_due_to_dry_troposphere</standard_name>
-	<source>NOAA Global Forecast System</source>
-	<units>m</units>
-	<limits>-2.4 -2.1</limits>
-	<plot_range>-2.4 -2.2</plot_range>
-	<data>dry_tropo_gfs</data>
-	<format>f7.4</format>
-	<compress>int2 1e-4</compress>
-	<comment>A dry tropospheric correction must be added to range to correct for dry troposphere delays</comment>
-</var>
--->
 <var name="dry_tropo_era" field="709">
 	<long_name>ERA-interim dry tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_dry_troposphere</standard_name>
@@ -958,20 +931,6 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
 </var>
-<!-- GFS variables no longer added
-<var name="wet_tropo_gfs" field="808">
-	<long_name>NOAA/GFS wet tropospheric correction</long_name>
-	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
-	<source>NOAA Global Forecast System</source>
-	<units>m</units>
-	<limits>-0.6 0.0</limits>
-	<plot_range>-0.4 0.0</plot_range>
-	<data>wet_tropo_gfs</data>
-	<format>f7.4</format>
-	<compress>int2 1e-4</compress>
-	<comment>A wet tropospheric correction must be added to range to correct for wet troposphere delays</comment>
-</var>
--->
 <var name="wet_tropo_era" field="809">
 	<long_name>ERA-interim wet tropospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_wet_troposphere</standard_name>
@@ -1149,20 +1108,6 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<!-- Discontinued
-<var name="iono_iri2007" field="907">
-	<long_name>IRI2007 ionospheric correction</long_name>
-	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
-	<source>IRI2007 climatology</source>
-	<units>m</units>
-	<limits>-0.4 0.04</limits>
-	<plot_range>-0.15 0.02</plot_range>
-	<data>iono_iri2007</data>
-	<format>f7.4</format>
-	<compress>int2 1e-4</compress>
-	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
-</var>
--->
 <var name="iono_nic09" field="908">
 	<long_name>NIC09 ionospheric correction</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
@@ -2298,41 +2243,6 @@ Global RADS configuration file
 	<format>f7.3</format>
 	<compress>int2 1e-2</compress>
 </var>
-<!-- GFS variables no longer added
-<var name="wind_speed_gfs_u" sat="sa">
-	<long_name>NOAA/GFS model zonal wind speed</long_name>
-	<standard_name>eastward_wind</standard_name>
-	<source>NOAA Global Forecast System</source>
-	<units>m/s</units>
-	<limits>-30 30</limits>
-	<plot_range>-16 16</plot_range>
-	<data>wind_speed_gfs_u</data>
-	<format>f7.3</format>
-	<compress>int2 1e-2</compress>
-</var>
-<var name="wind_speed_gfs_v" sat="sa">
-	<long_name>NOAA/GFS model meridional wind speed</long_name>
-	<standard_name>northward_wind</standard_name>
-	<source>NOAA Global Forecast System</source>
-	<units>m/s</units>
-	<limits>-30 30</limits>
-	<plot_range>-16 16</plot_range>
-	<data>wind_speed_gfs_v</data>
-	<format>f7.3</format>
-	<compress>int2 1e-2</compress>
-</var>
-<var name="wind_speed_gfs" sat="sa">
-	<long_name>NOAA/GFS model wind speed</long_name>
-	<standard_name>wind_speed</standard_name>
-	<source>NOAA Global Forecast System</source>
-	<units>m/s</units>
-	<limits>0 30</limits>
-	<plot_range>0 16</plot_range>
-	<data>wind_speed_gfs_u wind_speed_gfs_v HYPOT</data>
-	<format>f7.3</format>
-	<compress>int2 1e-2</compress>
-</var>
--->
 <var name="wind_speed_cls" field="1905" sat="n1">
 	<long_name>altimeter wind speed (CLS algo)</long_name>
 	<standard_name>wind_speed</standard_name>
@@ -2600,17 +2510,6 @@ Global RADS configuration file
 	<format>f7.0</format>
 	<compress>int2</compress>
 </var>
-<!--
-<var name="topo_dnsc08" field="2203">
-	<long_name>DNSC08 topography</long_name>
-	<source>DNSC08</source>
-	<parameters>DNSC08/DNSC08BAT_1min.nc</parameters>
-	<units>m</units>
-	<data>topo_dnsc08</data>
-	<format>f7.0</format>
-	<compress>int2</compress>
-</var>
--->
 <var name="topo_ace2" field="2207">
 	<long_name>ACE2 topography</long_name>
 	<source>ACE2</source>
@@ -4030,17 +3929,6 @@ Global RADS configuration file
 	<compress>int1 1e-2</compress>
 	<comment>Correction already added to backscatter coefficient</comment>
 </var>
-<!-- GFS variables no longer added
-<var name="dsig0_atmos_gfs_ka" field="3208" sat="sa">
-	<long_name>Ka-band backscatter coefficient correction due to atmosphere/attitude (GFS)</long_name>
-	<units>dB</units>
-	<data>dsig0_atmos_gfs_ka</data>
-	<default>1.01</default>
-	<format>f6.3</format>
-	<compress>int2 1e-3</compress>
-	<comment>Alternative to dsig0_atmos_ka which is already applied</comment>
-</var>
--->
 <alias name="dsig0" field="32" sat="e1 e2 tx">dsig0_ku</alias>
 <alias name="dsig0_atmos" sat="sa">dsig0_atmos_ka</alias>
 <alias name="dsig0_atmos" sat="3a 3b 6a 6b c2 e1 e2 j1 j2 j3 n1 pn tx sw">dsig0_atmos_ku</alias>
@@ -4054,18 +3942,6 @@ Global RADS configuration file
 	<format>f6.2</format>
 	<compress>int2 1e-2</compress>
 </var>
-<!-- GFS variables no longer added
-<var name="liquid_water_gfs" sat="c2 sa">
-	<long_name>NOAA/GFS liquid water content</long_name>
-	<standard_name>atmosphere_mass_content_of_cloud_liquid_water</standard_name>
-	<source>NOAA Global Forecast System</source>
-	<units>kg/m^2</units>
-	<data>liquid_water_gfs</data>
-	<default>0</default>
-	<format>f6.2</format>
-	<compress>int2 1e-2</compress>
-</var>
--->
 
 <var name="water_vapor_rad" field="3302" sat="2a 3a 3b 6a 6b e1 e2 j1 j2 j3 n1.f4a sa sw tx pn">
 	<long_name>radiometer water vapor content</long_name>
@@ -4083,28 +3959,6 @@ Global RADS configuration file
 		<compress>int2 1e-1</compress>
 	</else>
 </var>
-<!-- GFS variables no longer added
-<var name="water_vapor_content_gfs" sat="c2 sa">
-	<long_name>NOAA/GFS water vapor content</long_name>
-	<standard_name>atmosphere_mass_content_of_water_vapor</standard_name>
-	<source>NOAA Global Forecast System</source>
-	<units>kg/m^2</units>
-	<plot_range>0 70</plot_range>
-	<data>water_vapor_content_gfs</data>
-	<default>0</default>
-	<format>f6.2</format>
-	<compress>int2 1e-2</compress>
-</var>
--->
-
-<!--
-<var name="frame_count" field="3401">
-	<long_name>frame count</long_name>
-	<data>frame_count</data>
-	<format>f6.0</format>
-	<compress>int2</compress>
-</var>
--->
 <var name="flags_sdr_status" field="3402" sat="gs">
 	<long_name>SDR status flags</long_name>
 	<data>flags_sdr_status</data>
@@ -4117,22 +3971,6 @@ Global RADS configuration file
 	<format>f6.0</format>
 	<compress>int2</compress>
 </var>
-<!--
-<var name="temp_rcvr" field="3404">
-	<long_name>receiver temperature</long_name>
-	<units>celsius</units>
-	<data>temp_rcvr</data>
-	<format>f6.2</format>
-	<compress>int2 1e-2</compress>
-</var>
-<var name="vatt_t" field="3405" sat="gs">
-	<long_name>Vatt_t</long_name>
-	<units>volt</units>
-	<data>vatt_t</data>
-	<format>f6.3</format>
-	<compress>int2 1e-3</compress>
-</var>
--->
 <var name="flags_retrack" field="3406" sat="c2">
 	<long_name>retracking flags</long_name>
 	<data>flags_retrack</data>
