@@ -484,17 +484,6 @@ Global RADS configuration file
 	<compress sat="j1 j2">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_std1204" field="419" sat="j1 j2">
-	<long_name>GSFC/Std1204 orbital altitude</long_name>
-	<standard_name>height_above_reference_ellipsoid</standard_name>
-	<source>GSFC/Std1204</source>
-	<parameters>gsfc_std1204</parameters>
-	<units>m</units>
-	<data>alt_std1204</data>
-	<format>f12.4</format>
-	<compress>int4 1e-4 1300e3</compress>
-	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
-</var>
 <var name="alt_reaper" field="420" sat="e1 e2">
 	<long_name>REAPER/COMBI orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
@@ -537,17 +526,6 @@ Global RADS configuration file
 	<data>alt_reaper_esoc</data>
 	<format>f11.3</format>
 	<compress>int4 1e-4 700e3</compress>
-	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
-</var>
-<var name="alt_std1404" field="424" sat="j2">
-	<long_name>GSFC/Std1404 orbital altitude</long_name>
-	<standard_name>height_above_reference_ellipsoid</standard_name>
-	<source>GSFC/Std1404</source>
-	<parameters>gsfc_std1404</parameters>
-	<units>m</units>
-	<data>alt_std1404</data>
-	<format>f12.4</format>
-	<compress>int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_std1808" sat="tx pn">
@@ -1399,28 +1377,6 @@ Global RADS configuration file
 	<comment>Calculated using second and third degree constituents, excluding permanent tide</comment>
 </var>
 
-<var name="tide_ocean_got00" field="1207" sat="2a c2">
-	<long_name>GOT00.2 ocean tide</long_name>
-	<source>GOT00.2</source>
-	<units>m</units>
-	<limits>-5 5</limits>
-	<plot_range>-2 2</plot_range>
-	<data>tide_ocean_got00</data>
-	<format>f7.4</format>
-	<compress>int4 1e-4</compress>
-	<comment>Ocean tide variation including long-period equilibrium tides</comment>
-</var>
-<var name="tide_ocean_fes04" field="1213">
-	<long_name>FES2004 ocean tide</long_name>
-	<source>FES2004</source>
-	<units>m</units>
-	<limits>-5 5</limits>
-	<plot_range>-2 2</plot_range>
-	<data>tide_ocean_fes04</data>
-	<format>f7.4</format>
-	<compress>int4 1e-4</compress>
-	<comment>Ocean tide variation including long-period equilibrium and non-equilibrium tides</comment>
-</var>
 <var name="tide_ocean_webtide" field="1215">
 	<long_name>WebTide ocean tide</long_name>
 	<source>WebTide</source>
@@ -1430,18 +1386,6 @@ Global RADS configuration file
 	<plot_range>-2 2</plot_range>
 	<data>tide_ocean_webtide</data>
 	<default>nan</default>
-	<format>f7.4</format>
-	<compress>int4 1e-4</compress>
-	<comment>Ocean tide variation including long-period equilibrium tides</comment>
-</var>
-<var name="tide_ocean_got48" field="1219">
-	<long_name>GOT4.8 ocean tide</long_name>
-	<source>GOT4.8</source>
-	<parameters>GOT4.8</parameters>
-	<units>m</units>
-	<limits>-5 5</limits>
-	<plot_range>-2 2</plot_range>
-	<data>tide_ocean_got48</data>
 	<format>f7.4</format>
 	<compress>int4 1e-4</compress>
 	<comment>Ocean tide variation including long-period equilibrium tides</comment>
@@ -1484,36 +1428,6 @@ Global RADS configuration file
 </var>
 <alias name="tide_ocean" field="12">tide_ocean_fes14</alias>
 
-<var name="tide_load_got00" field="1307" sat="2a c2">
-	<long_name>GOT00.2 load tide</long_name>
-	<source>GOT00.2</source>
-	<units>m</units>
-	<limits>-0.5 0.5</limits>
-	<data>tide_load_got00</data>
-	<format>f7.4</format>
-	<compress>int2 1e-4</compress>
-	<comment>Load tide variation to be added to ocean tide</comment>
-</var>
-<var name="tide_load_fes04" field="1313">
-	<long_name>FES2004 load tide</long_name>
-	<source>FES2004</source>
-	<units>m</units>
-	<limits>-0.5 0.5</limits>
-	<data>tide_load_fes04</data>
-	<format>f7.4</format>
-	<compress>int2 1e-4</compress>
-	<comment>Load tide variation to be added to ocean tide</comment>
-</var>
-<var name="tide_load_got48" field="1319">
-	<long_name>GOT4.8 load tide</long_name>
-	<source>GOT4.8</source>
-	<units>m</units>
-	<limits>-0.5 0.5</limits>
-	<data>tide_load_got48</data>
-	<format>f7.4</format>
-	<compress>int2 1e-4</compress>
-	<comment>Load tide variation to be added to ocean tide</comment>
-</var>
 <var name="tide_load_got410" field="1322">
 	<long_name>GOT4.10 load tide</long_name>
 	<source>GOT4.10</source>
@@ -1899,26 +1813,6 @@ Global RADS configuration file
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
 </var>
-<var name="mss_cnescls11" field="1615" sat="e1 e2 g1 gs n1">
-	<long_name>CNES-CLS11 mean sea surface height</long_name>
-	<standard_name>sea_surface_height_above_reference_ellipsoid</standard_name>
-	<source>CNES-CLS11</source>
-	<parameters>MSS_CNES-CLS11/MSS_CNES-CLS11.nc -s</parameters>
-	<units>m</units>
-	<data>mss_cnescls11</data>
-	<format>f10.4</format>
-	<compress>int4 1e-4</compress>
-</var>
-<var name="mss_dtu13" field="1616" sat="e1 e2 g1 gs n1">
-	<long_name>DTU13 mean sea surface height</long_name>
-	<standard_name>sea_surface_height_above_reference_ellipsoid</standard_name>
-	<source>DTU13</source>
-	<parameters>DTU13/DTU13MSS_1min.nc -s</parameters>
-	<units>m</units>
-	<data>mss_dtu13</data>
-	<format>f10.4</format>
-	<compress>int4 1e-4</compress>
-</var>
 <var name="geoid_eigen6" field="1617">
 	<long_name>EIGEN6 geoid height</long_name>
 	<standard_name>geoid_height_above_reference_ellipsoid</standard_name>
@@ -1956,16 +1850,6 @@ Global RADS configuration file
 	<parameters>DTU18/DTU18MSS_1min.nc -s</parameters>
 	<units>m</units>
 	<data>mss_dtu18</data>
-	<format>f10.4</format>
-	<compress>int4 1e-4</compress>
-</var>
-<var name="mss_comb15" sat="3a 3b 6a 6b c2 j1 j2 j3 sa sw tx pn">
-	<long_name>Combined SIO/CNES_CLS15/DTU15 mean sea surface height</long_name>
-	<standard_name>sea_surface_height_above_reference_ellipsoid</standard_name>
-	<source>SIO/CNES_CLS15/DTU15</source>
-	<parameters>DT21/MSS_Combine_SIO_CNES15_DTU15.nc -s</parameters>
-	<units>m</units>
-	<data>mss_comb15</data>
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
 </var>
@@ -2727,24 +2611,6 @@ Global RADS configuration file
 	<compress>int2</compress>
 </var>
 -->
-<var name="topo_srtm30plus" field="2204">
-	<long_name>SRTM30_PLUS topography</long_name>
-	<source>SRTM30_PLUS V10</source>
-	<parameters>SRTM30/srtmplus_v10_topo30.nc</parameters>
-	<units>m</units>
-	<data>topo_srtm30plus</data>
-	<format>f7.0</format>
-	<compress>int2</compress>
-</var>
-<var name="topo_dtu10" field="2205">
-	<long_name>DTU10 topography</long_name>
-	<source>DTU10</source>
-	<parameters>DTU10/DTU10BAT_1min.nc</parameters>
-	<units>m</units>
-	<data>topo_dtu10</data>
-	<format>f7.0</format>
-	<compress>int2</compress>
-</var>
 <var name="topo_ace2" field="2207">
 	<long_name>ACE2 topography</long_name>
 	<source>ACE2</source>
@@ -4481,89 +4347,6 @@ Global RADS configuration file
 		0.01220911657 MUL</data>
 	<format>f7.4</format>
 	<compress>int1 1e-4</compress>
-</var>
-
-<var name="wave_m0" field="4001 40" sat="!e1 gs">
-	<long_name>WaveWatch3 wave height variance</long_name>
-	<source>WaveWatch3</source>
-	<units>m^2</units>
-	<data>wave_m0</data>
-	<compress>int2 1e-3</compress>
-</var>
-
-<var name="wave_m1" field="4101 41" sat="!e1 gs">
-	<long_name>WaveWatch3 first moment of wave height</long_name>
-	<source>WaveWatch3</source>
-	<units>m^2/s</units>
-	<data>wave_m1</data>
-	<format>f7.4</format>
-	<compress>int2 1e-4</compress>
-</var>
-
-<var name="wave_m2" field="4201 42" sat="!e1 gs">
-	<long_name>WaveWatch3 wave velocity variance</long_name>
-	<source>WaveWatch3</source>
-	<units>m^2/s^2</units>
-	<data>wave_m2</data>
-	<format>f8.5</format>
-	<compress>int2 1e-5</compress>
-</var>
-
-<var name="wave_m4" field="4301 43" sat="!e1 gs">
-	<long_name>WaveWatch3 wave slope variance</long_name>
-	<source>WaveWatch3</source>
-	<units>radian^2</units>
-	<data>wave_m4</data>
-	<format>f9.6</format>
-	<compress>int2 1e-6</compress>
-</var>
-
-<var name="wave_shs" field="4401 44" sat="!e1 gs">
-	<long_name>WaveWatch3 wave swell height</long_name>
-	<standard_name>sea_surface_swell_wave_significant_height</standard_name>
-	<source>WaveWatch3</source>
-	<units>m</units>
-	<data>wave_shs</data>
-	<format>f6.3</format>
-	<compress>int2 1e-3</compress>
-</var>
-
-<var name="wave_wu" sat="!e1 gs">
-	<long_name>WaveWatch3 zonal wind speed</long_name>
-	<source>WaveWatch3</source>
-	<units>m/s</units>
-	<data>wave_wu</data>
-	<format>f6.3</format>
-	<compress>int2 1e-3</compress>
-</var>
-
-<var name="wave_wv" sat="!e1 gs">
-	<long_name>WaveWatch3 meridional wind speed</long_name>
-	<source>WaveWatch3</source>
-	<units>m/s</units>
-	<data>wave_wu</data>
-	<format>f6.3</format>
-	<compress>int2 1e-3</compress>
-</var>
-
-<var name="wave_spr" sat="!e1 gs">
-	<long_name>WaveWatch3 wave swell period</long_name>
-	<standard_name>sea_surface_swell_wave_period</standard_name>
-	<source>WaveWatch3</source>
-	<units>s</units>
-	<data>wave_spr</data>
-	<format>f6.3</format>
-	<compress>int2 1e-3</compress>
-</var>
-
-<var name="wave_sdr" sat="!e1 gs">
-	<long_name>WaveWatch3 wave swell direction</long_name>
-	<standard_name>sea_surface_swell_wave_to_direction</standard_name>
-	<source>WaveWatch3</source>
-	<units>radian</units>
-	<data>wave_sdr</data>
-	<format>f6.3</format>
-	<compress>int2 1e-3</compress>
 </var>
 
 <var name="mean_wave_period" sat="3a 3b 6a 6b j3 sa sw tx pn">
