@@ -16,6 +16,9 @@
 #
 # Add/overwrite numerous fields in the RADS data base
 #
+rads_add_tide     "$@" --models=fes22,lptide
+rads_add_tide     "$@" --models=stide,ptide,got410,annual
+rads_add_tide     "$@" --models=hret
 rads_add_grid     "$@" -Vdist_coast,gia,basin
 rads_add_grid     "$@" -Vgeoid_egm2008,mss_cnescls15
 rads_add_grid     "$@" -Vmss_dtu15,mss_hybrid23
@@ -24,9 +27,6 @@ rads_add_grid     "$@" -Vtopo_srtm15plus
 rads_add_grid     "$@" -Vprox_coast
 rads_add_surface  "$@"
 rads_add_surface  "$@" -s
-rads_add_tide     "$@" --models=stide,ptide,got410,annual
-rads_add_tide     "$@" --models=fes22,lptide
-rads_add_tide     "$@" --models=hret
 rads_add_webtide  "$@"
 rads_add_sst      "$@" --all
 rads_add_seaice   "$@"
