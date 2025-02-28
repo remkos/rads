@@ -407,23 +407,23 @@ call cpy_var (ncid, 'model_wet_tropo_corr', 'wet_tropo_era')
 call cpy_var (ncid, 'rad_wet_tropo_corr', 'wet_tropo_rad')
 call cpy_var (ncid, 'rad_water_vapor', 'water_vapor_rad')
 call cpy_var (ncid, 'rad_liquid_water', 'liquid_water_rad')
-!call cpy_var (ncid, 'wind_speed_model_u', 'wind_speed_era_u')
-!call cpy_var (ncid, 'wind_speed_model_v', 'wind_speed_era_v')
+call cpy_var (ncid, 'wind_speed_model_u', 'wind_speed_era_u')
+call cpy_var (ncid, 'wind_speed_model_v', 'wind_speed_era_v')
 call cpy_var (ncid, 'iono_corr_model', 'iono_nic09')
 if (start_time >= 430880400d0) then	! After 1998-08-28 01:00:00 get GIM iono
 	call cpy_var (ncid, 'iono_corr_gps', 'iono_gim')
 endif
 
-!call get_var (ncid, 'mean_sea_surface_2', a)
-!call new_var ('mss_ucl04', a+dh)
+call get_var (ncid, 'mean_sea_surface_2', a)
+call new_var ('mss_ucl04', a+dh)
 call get_var (ncid, 'geoid', a)
 call new_var ('geoid_egm2008', a+dh)
 
 ! Need to recombine to OT+LPT
-!call cpy_var (ncid, 'ocean_tide_sol2 ocean_tide_equil ADD ocean_tide_non_equil ADD', 'tide_ocean_fes04')
-!call cpy_var (ncid, 'load_tide_sol2', 'tide_load_fes04')
-!call cpy_var (ncid, 'ocean_tide_equil', 'tide_equil')
-!call cpy_var (ncid, 'ocean_tide_non_equil', 'tide_non_equil')
+call cpy_var (ncid, 'ocean_tide_sol2 ocean_tide_equil ADD ocean_tide_non_equil ADD', 'tide_ocean_fes04')
+call cpy_var (ncid, 'load_tide_sol2', 'tide_load_fes04')
+call cpy_var (ncid, 'ocean_tide_equil', 'tide_equil')
+call cpy_var (ncid, 'ocean_tide_non_equil', 'tide_non_equil')
 call cpy_var (ncid, 'solid_earth_tide', 'tide_solid')
 call cpy_var (ncid, 'pole_tide', 'tide_pole')
 
