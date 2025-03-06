@@ -592,7 +592,7 @@ Global RADS configuration file
 <alias name="alt" field="4" sat="g1">alt_pgs7777</alias>
 <alias name="alt" field="4" sat="gs">alt_gdrcp</alias>
 <alias name="alt" field="4" sat="j1">alt_gdrf alt_gdre</alias>
-<alias name="alt" field="4" sat="j2">alt_gdrf alt_gdrd</alias>
+<alias name="alt" field="4" sat="j2">alt_gdrf alt_gdre alt_gdrd</alias>
 <alias name="alt" field="4" sat="n1">alt_gdrd alt_gdrcp</alias>
 <alias name="alt" field="4" sat="n1.f4a">alt_gdrf</alias>
 <var name="alt_cnes_20hz" sat="c2">
