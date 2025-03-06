@@ -4071,8 +4071,8 @@ Global RADS configuration file
 	<parameters sat="e2">  62   0  0  0 0</parameters>
 	<parameters sat="gs">   0 -65  0  0 5</parameters>
 	<parameters sat="g1">  69   0  0  0 0</parameters>
-	<parameters sat="j1">  85   0  0  0 0</parameters>
-	<parameters sat="j2"> -15.9 0  0  0 0</parameters>
+	<parameters sat="j1">   7.5 0  0  0 0</parameters>
+	<parameters sat="j2"> -16.5 0  0  0 0</parameters>
 	<parameters sat="j3"> -23.9 0  0  0 0</parameters>
 	<parameters sat="n1"> 451   0  0  0 0</parameters>
 	<parameters sat="n1.f4a"> 460.3 0  0  0 0</parameters>
@@ -4092,7 +4092,7 @@ Global RADS configuration file
 	<dimensions>0</dimensions>
 	<parameters>0</parameters>
 	<parameters sat="6a 6b"> -15.8 0  0  0 0</parameters>
-	<parameters sat="j2">  13.5 0  0  0 0</parameters>
+	<parameters sat="j2">  11.5 0  0  0 0</parameters>
 	<parameters sat="j3"> -10.2 0  0  0 0</parameters>
 	<parameters sat="tx">  43.9 0  0  0 0</parameters> <!-- Side A -->
 	<parameters sat="tx">  10.4 0  0  0 0</parameters> <!-- Side B -->
