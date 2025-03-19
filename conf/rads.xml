@@ -4614,7 +4614,7 @@ Global RADS configuration file
 	<xover_params>0.04 0.05</xover_params>
 	<phase name="a">
 		<mission>Multi-disciplinary Phase</mission>
-		<cycles>4 134</cycles>
+		<cycles>4 133</cycles>
 		<!--This is "real" cycle and pass, i.e. subcycle 14, pass 1-->
 		<ref_pass>2011-04-12T11:40:14 0.731 2 1 5354</ref_pass>
 		<repeat>368.239641 10688</repeat>
@@ -4623,11 +4623,11 @@ Global RADS configuration file
 	</phase>
 	<phase name="b">
 		<mission>Cryo2ICE Phase</mission>
-		<cycles>135 299</cycles>
+		<cycles>134 299</cycles>
 		<!--This is "real" cycle and pass, i.e. subcycle 136, pass 1-->
 		<ref_pass>2020-09-18T08:46:43 0.845 28 1 55376</ref_pass>
 		<repeat>122.746245 3562</repeat>
-		<start_time>2020-08-24T09:35:18</start_time>
+		<start_time>2020-08-01T10:46:40</start_time>
 		<subcycles>724 724 724 666 724</subcycles>
 	</phase>
 </if>
