@@ -301,7 +301,7 @@ do
 
 ! Update MSS CNES/CLS again for IPF-SM-2 07.11
 
-	if (arg(10:14) >= '07.11') mss_sol1_var='mss_hydrid23'
+	if (arg(10:14) >= '07.11') mss_sol1_var='mss_hybrid23'
 
 ! Store input file name
 
