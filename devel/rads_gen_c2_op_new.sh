@@ -68,7 +68,7 @@ date										>> "$log" 2>&1
 files_iop=`grep IOP $log | grep written | awk '{print $NF}' | awk -F/ '{printf "%s/%s\n",$3,$4}' | sort | uniq`
 files_nop=`grep NOP $log | grep written | awk '{print $NF}' | awk -F/ '{printf "%s/%s\n",$3,$4}' | sort | uniq`
 
-pushd $SANDBOX/c2/a
+pushd $SANDBOX/c2/b
 for file in ${files_iop[*]} ; do
 	bfile=`basename $file`
 	cp $file $RADSROOT/ext/c2/to_navy/igdr/$bfile
