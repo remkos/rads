@@ -17,8 +17,9 @@
 !+
 program rads_gen_c2_op
 
-! This program reads CryoSat NOP/IOP/GOP files and converts them to the RADS
-! format, written into files $RADSDATAROOT/data/c2.[nig]op/a/c2pPPPPcCCC.nc.
+! This program reads CryoSat NOP/IOP/GOP files from Baselines C and D
+! and converts them to the RADS format, written into files
+! $RADSDATAROOT/data/c2.[nig]op/a/c2pPPPPcCCC.nc.
 !  PPPP = relative pass number
 !   CCC = cycle number
 !
@@ -30,9 +31,12 @@ program rads_gen_c2_op
 ! This program handles CryoSat Ocean Products standard_measurement files in
 ! netCDF format. The format is described in:
 !
-! [1] CRYOSAT Ground Segment
-! CryoSat Ocean NetCDF Product Format Specification (L1b&L2) [PFS-OCE]
-! C2-RS-ACS-ESL-5266 Issue: 3.0 02 August 2017
+!
+! [1] Baseline-C CryoSat Ocean Processor: Ocean Product Handbook
+! Version 4.1, ESA/ESRIN, 5 Dec 2019
+!
+! [2] Baseline-D CryoSat Ocean Processor: Ocean Product Handbook
+! Version 5.3, ESA/ESRIN, 26 Sep 2024
 !
 !-----------------------------------------------------------------------
 !
@@ -63,13 +67,13 @@ program rads_gen_c2_op
 ! wind_speed_ecmwf_u - ECMWF wind speed (U)
 ! wind_speed_ecmwf_v - ECMWF wind speed (V)
 ! tide_ocean/load_got410 - GOT4.10c ocean and load tide
-! tide_ocean/load_fes04/fes14 - FES2014 ocean and load tide
+! tide_ocean/load_fes14 - FES2014 ocean and load tide
 ! tide_pole - Pole tide
 ! tide_solid - Solid earth tide
 ! topo_ace2 - ACE2 topography
 ! geoid_egm2008 - EGM2008 geoid
-! mss_cnescls15 - CNES/CLS15 mean sea surface
-! mss_dtu13/mss_dtu15 - DTU13 or DTU15 mean sea surface
+! mss_cnescls15/mss_cnescls22 - CNES/CLS15 or CNES/CLS22 mean sea surface
+! mss_dtu15/mss_dtu21 - DTU15 or DTU21 mean sea surface
 ! flags, flags_plrm - Engineering flags
 ! off_nadir_angle2_wf_* - Mispointing from waveform squared (not _c)
 ! ssha_* - Sea surface height anomaly (not _c)
@@ -77,7 +81,6 @@ program rads_gen_c2_op
 ! Extensions _* are:
 ! _ku:      Ku-band retracked from SAR
 ! _ku_plrm: Ku-band retracked with PLRM
-! _c:       C-band
 !-----------------------------------------------------------------------
 use rads
 use rads_devel
@@ -91,24 +94,20 @@ use netcdf
 
 ! Command line arguments
 
-integer(fourbyteint) :: ios, i, ip, iq, ir
+integer(fourbyteint) :: ios, i
 character(len=rads_cmdl) :: filename, arg
 
 ! Header variables
 
-integer(fourbyteint) :: passnr(2), cycnr(2), recnr(2), ncid, varid
-integer(fourbyteint) :: abs_orbit_number, first_meas_lat=0
+integer(fourbyteint) :: cycle_number, pass_number, ncid, varid
+integer(fourbyteint) :: first_meas_lat=0
 real(eightbytereal) :: equator_time, tai_utc_difference
 
 ! Data variables
 
-integer(fourbyteint), allocatable :: lat(:), dlat(:)
 integer(twobyteint), allocatable :: flags_plrm(:), flags_save(:)
-character(len=2) :: mss_cnescls_ver, mss_dtu_ver, tide_fes_ver
+character(len=4) :: software_version
 integer :: latency = rads_nrt
-
-character(len=1) :: ascending_flag
-!integer(twobyteint), allocatable :: flags(:)
 
 ! Other local variables
 
@@ -141,11 +140,11 @@ do
 
 ! Check if input is a Cryosat Ocean Products Level 2 data set
 
-if (nf90_get_att(ncid,nf90_global,'mission',arg) /= nf90_noerr .or. &
-	arg /= 'Cryosat') then
-	call log_string ('Error: this is not a Cryosat Ocean Products Level 2 data set', .true.)
-	cycle
-endif
+	if (nf90_get_att(ncid,nf90_global,'mission',arg) /= nf90_noerr .or. &
+		arg /= 'Cryosat') then
+		call log_string ('Error: this is not a Cryosat Ocean Products Level 2 data set', .true.)
+		cycle
+	endif
 
 ! Read global attributes
 
@@ -153,8 +152,6 @@ endif
 	call nfs(nf90_inquire_dimension(ncid,varid,len=nrec))
 	call nfs(nf90_inq_varid(ncid, 'time_01',varid))
 	call nfs(nf90_get_att(ncid,varid,'tai_utc_difference',tai_utc_difference))
-	recnr(1)=nrec
-	recnr(2)=0
 	if (nrec == 0) then
 		call log_string ('Error: file skipped: no measurements', .true.)
 		cycle
@@ -171,7 +168,7 @@ endif
 		cycle
 	endif
 
-	! Determine latency (NOP, IOP, GOP)
+	! Determine latency (NOP, IOP, GOP) and software version
 
 	call nfs(nf90_get_att(ncid,nf90_global,'product_name',arg))
 	if (index(arg, '_NOP') > 0) then
@@ -184,89 +181,69 @@ endif
 		call log_string ('Error: file skipped: unknown latency', .true.)
 		cycle
 	endif
+	call nfs(nf90_get_att(ncid,nf90_global,'software_version',arg))
+	software_version = arg(11:14)
 
-        call nfs(nf90_get_att(ncid,nf90_global,'xref_mean_surface_sol2',arg))
-        mss_dtu_ver = arg(4:5)        
-	call nfs(nf90_get_att(ncid,nf90_global,'abs_orbit_number',abs_orbit_number))
 	call nfs(nf90_get_att(ncid,nf90_global,'first_record_lat',first_meas_lat))
-	call nfs(nf90_get_att(ncid,nf90_global,'ascending_flag',ascending_flag))
-	ip = abs_orbit_number*2 - 1
-	!if (ascending_flag == 'A') then
-	if (first_meas_lat < 0) then
-		ip = ip + 2
-	else
-		ip = ip + 1
-	endif
-	ip = ip - 19
-	iq = modulo(ip,10688)
-	ir = modulo(iq,2462)
-	cycnr(1) = (ip / 10688) * 13 + (iq / 2462) * 3 + ir / 840 + 1
-	passnr(1) = modulo(ir,840) + 1
-	cycnr(2) = cycnr(1)
-	passnr(2) = passnr(1)
 
-	allocate(lat(nrec),dlat(nrec))
-	call nfs(nf90_inq_varid(ncid, 'lat_01',varid))
-	call nfs(nf90_get_var(ncid,varid,lat))
-	dlat = lat(2:)-lat
-	if (ANY(dlat .gt. 0) .and. ANY(dlat .lt. 0)) then
-	    if (minloc(lat,1) .eq. 1) then
-			recnr(2) = maxloc(lat,1)
+! Try to read the equator crossing time set by rads_pre_sort_passes.
+! If not, use the original ESA ones, even though that information is very unreliable.
+
+	if (nff(nf90_get_att(ncid,nf90_global,'equator_time',arg))) then
+		equator_time = strp1985f(arg)
+	else
+		call nfs(nf90_get_att(ncid,nf90_global,'equator_cross_time',arg))
+		equator_time = strp1985f (arg(5:))
+
+		! Fix incorrect equator crossing times in ESA OP Products
+		if (first_meas_lat < 0) then
+			equator_time = equator_time + 5954.75
 		else
-			recnr(2) = minloc(lat,1)
+			equator_time = equator_time + 5954.75/2
 		endif
-		ip = ip + 1
-		iq = modulo(ip,10688)
-		ir = modulo(iq,2462)
-		cycnr(2) = (ip / 10688) * 13 + (iq / 2462) * 3 + ir / 840 + 1
-		passnr(2) = modulo(ir,840) + 1
 	endif
-	deallocate(lat,dlat)
 
-	call nfs(nf90_get_att(ncid,nf90_global,'equator_cross_time',arg))
-	equator_time = strp1985f (arg(5:))
+! Set mission phase based on equator_time. This derives from the mission information in the rads.xml
 
-! Fix incorrect equator crossing times in ESA OP Products
-	if (first_meas_lat < 0) then
-		equator_time = equator_time + 5954.75
-	else
-		equator_time = equator_time + 5954.75/2
-	endif
+	call rads_time_to_cycle_pass (S, equator_time, cycle_number, pass_number)
 
 ! Skip passes of which the cycle number or equator crossing time is outside the specified interval
 
-	if (equator_time < times(1) .or. equator_time > times(2) .or. cycnr(1) < cycles(1) .or. cycnr(1) > cycles(2)) then
+	if (equator_time < times(1) .or. equator_time > times(2) .or. cycle_number < cycles(1) .or. cycle_number > cycles(2)) then
 		call nfs(nf90_close(ncid))
 		call log_string ('Skipped', .true.)
 		cycle
 	endif
 
-! Set mission phase based on equator_time
-
-	call rads_set_phase (S, equator_time)
-
-! Store relevant info
+! Initialise pass struct and store pass info
 
 	call rads_init_pass_struct (S, P)
-	P%cycle = cycnr(1)
-	P%pass = passnr(1)
+	P%cycle = cycle_number
+	P%pass = pass_number
 	P%equator_time = equator_time
-! The OP files have the incorrect equator_lon; needs to be fixed
-	call nfs(nf90_get_att(ncid,nf90_global,'equator_cross_long',P%equator_lon))
-! start time and end time are in TAI; need to be converted to UTC
-	call nfs(nf90_get_att(ncid,nf90_global,'first_record_time',arg))
-	P%start_time = strp1985f(arg(5:)) + tai_utc_difference
-	call nfs(nf90_get_att(ncid,nf90_global,'last_record_time',arg))
-	P%end_time = strp1985f(arg(5:)) + tai_utc_difference
 
-! Determine L2 processing version
-!
-!xref_geoid = "EGM2008" ;
-!xref_mean_surface_sol1 = "CNES_CLS-2015" ;
-!xref_mean_surface_sol2 = "DTU15" ;
-!xref_mtd_sol1 = "CNES-CLS13" ;
-	mss_cnescls_ver = '15'
-	tide_fes_ver = '14'
+! Try to read the equator crossing longitude set by rads_pre_sort_passes.
+! If not, use the original ESA ones, even though that information is very unreliable.
+
+	if (nft(nf90_get_att(ncid,nf90_global,'equator_longitude',P%equator_lon))) then
+		! The OP files have the incorrect equator_lon; needs to be fixed
+		call nfs(nf90_get_att(ncid,nf90_global,'equator_cross_long',P%equator_lon))
+		P%equator_lon = P%equator_lon * 1d-6
+	endif
+
+! Read start and end times. First try the format set by pre_sort_passes.
+
+	if (nff(nf90_get_att(ncid,nf90_global,'first_meas_time',arg))) then
+		P%start_time = strp1985f(arg)
+		call nfs(nf90_get_att(ncid,nf90_global,'last_meas_time',arg))
+		P%end_time = strp1985f(arg)
+	else
+		! Start time and end time in the ESA files are in TAI; need to be converted to UTC.
+		call nfs(nf90_get_att(ncid,nf90_global,'first_record_time',arg))
+		P%start_time = strp1985f(arg(5:)) + tai_utc_difference
+		call nfs(nf90_get_att(ncid,nf90_global,'last_record_time',arg))
+		P%end_time = strp1985f(arg(5:)) + tai_utc_difference
+	endif
 
 ! Store input file name
 
@@ -306,6 +283,7 @@ endif
 ! Convert all the necessary fields to RADS
 	call get_var (ncid, 'time_01', a)
 	pair%order = (/(i, i=1, nrec)/)
+
 ! Check for time reversal
 	if (ANY(a(2:nrec) - a(1:nrec-1) .lt. 0)) then
 		call log_string ('Error: Time reversal detected', .true.)
@@ -316,10 +294,12 @@ endif
 	endif
 	call new_var ('time', a(pair%order) + sec2000)
 	call cpy_var (ncid, 'lat_01', 'lat')
+
 ! Compute ellipsoid corrections
 	do i = 1,nrec
 		dh(i) = dhellips(1,a(pair(i)%order))
 	enddo
+
 	call get_var (ncid, 'lon_01', a)
 	call new_var ('lon' , a(pair%order))
 	call get_var (ncid, 'alt_01', a)
@@ -336,7 +316,9 @@ endif
 	call get_var (ncid, 'mod_wet_tropo_cor_01', a)
 	call new_var ('wet_tropo_ecmwf' , a(pair%order))
 	call get_var (ncid, 'gpd_wet_tropo_cor_01', a)
-	call new_var ('wet_tropo_comp' , a(pair%order))
+	call new_var ('gpd_wet_tropo_cor' , a(pair%order))
+	call get_var (ncid, 'gpd_wet_tropo_cor_qual_01', a)
+	call new_var ('gpd_source_flag' , a(pair%order))
 	call get_var (ncid, 'iono_cor_gim_01', a)
 	call new_var ('iono_gim' , a(pair%order))
 	call get_var (ncid, 'inv_bar_cor_01', a)
@@ -354,11 +336,11 @@ endif
 	call get_var (ncid, 'ocean_tide_sol1_01 load_tide_sol1_01 SUB', a)
 	call new_var ('tide_ocean_got410' , a(pair%order))
 	call get_var (ncid, 'ocean_tide_sol2_01 load_tide_sol2_01 SUB ocean_tide_non_eq_01 ADD', a)
-	call new_var ('tide_ocean_fes' // tide_fes_ver , a(pair%order))
+	call new_var ('tide_ocean_fes14', a(pair%order))
 	call get_var (ncid, 'load_tide_sol1_01', a)
 	call new_var ('tide_load_got410' , a(pair%order))
 	call get_var (ncid, 'load_tide_sol2_01', a)
-	call new_var ('tide_load_fes' // tide_fes_ver , a(pair%order))
+	call new_var ('tide_load_fes14', a(pair%order))
 	call get_var (ncid, 'ocean_tide_eq_01', a)
 	call new_var ('tide_equil' , a(pair%order))
 	call get_var (ncid, 'ocean_tide_non_eq_01', a)
@@ -371,10 +353,17 @@ endif
 	call new_var ('ssb_cls_plrm' , a(pair%order))
 	call get_var (ncid, 'geoid_01', a)
 	call new_var ('geoid_egm2008', a(pair%order) + dh)
-	call get_var (ncid, 'mean_sea_surf_sol1_01', a)
-	call new_var ('mss_cnescls' // mss_cnescls_ver, a(pair%order) + dh)
-	call get_var (ncid, 'mean_sea_surf_sol2_01', a)
-	call new_var ('mss_dtu' // mss_dtu_ver, a(pair%order) + dh)
+
+	if (software_version < '4.00') then
+		call get_var (ncid, 'mean_sea_surf_sol1_01', a)
+		call new_var ('mss_cnescls15', a(pair%order) + dh)
+		call get_var (ncid, 'mean_sea_surf_sol2_01', a)
+		call new_var ('mss_dtu15', a(pair%order) + dh)
+	else
+		! We do not copy the MSS CNES-CLS22, marked as obsolete
+		call get_var (ncid, 'mean_sea_surf_sol2_01', a)
+		call new_var ('mss_dtu21', a(pair%order) + dh)
+	endif
 	call get_var (ncid, 'swh_ocean_01_ku', a)
 	call new_var ('swh_ku', a(pair%order))
 	call get_var (ncid, 'swh_ocean_01_plrm_ku', a)
@@ -405,7 +394,6 @@ endif
 	call new_var ('range_numval_ku_plrm', a(pair%order))
 	call get_var (ncid, 'peakiness_01_ku', a)
 	call new_var ('peakiness_ku' , a(pair%order)/10.0)
-!	call cpy_var (ncid, 'peakiness_01_plrm_ku', 'peakiness_ku_plrm')
 	call get_var (ncid, 'odle_01', a)
 	call new_var ('topo_ace2' , a(pair%order))
 	call new_var ('flags', dble(flags(pair%order)))
