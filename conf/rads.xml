@@ -1324,6 +1324,18 @@ Global RADS configuration file
 	<compress>int4 1e-4</compress>
 	<comment>Ocean tide variation including long-period equilibrium tides</comment>
 </var>
+<var name="tide_ocean_got48" sat="c2" field="1219">
+	<long_name>GOT4.8 ocean tide</long_name>
+	<source>GOT4.8</source>
+	<parameters>GOT4.8</parameters>
+	<units>m</units>
+	<limits>-5 5</limits>
+	<plot_range>-2 2</plot_range>
+	<data>tide_ocean_got48</data>
+	<format>f7.4</format>
+	<compress>int4 1e-4</compress>
+	<comment>Ocean tide variation including long-period equilibrium tides</comment>
+</var>
 <var name="tide_ocean_got410" field="1222">
 	<long_name>GOT4.10c ocean tide (extrapolated)</long_name>
 	<source>GOT4.10c (extrapolated)</source>
@@ -1362,6 +1374,16 @@ Global RADS configuration file
 </var>
 <alias name="tide_ocean" field="12">tide_ocean_fes14</alias>
 
+<var name="tide_load_got48" sat="c2" field="1319">
+	<long_name>GOT4.8 load tide</long_name>
+	<source>GOT4.8</source>
+	<units>m</units>
+	<limits>-0.5 0.5</limits>
+	<data>tide_load_got48</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Load tide variation to be added to ocean tide</comment>
+</var>
 <var name="tide_load_got410" field="1322">
 	<long_name>GOT4.10 load tide</long_name>
 	<source>GOT4.10</source>
