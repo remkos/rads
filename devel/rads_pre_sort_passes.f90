@@ -64,11 +64,9 @@ character(len=9) :: tll(3) = (/'time     ', 'latitude ', 'longitude'/)
 character(len=1) :: timesep = 'T'
 real(eightbytereal), parameter :: sec2000 = 473299200d0
 integer(fourbyteint) :: i0, i, j, ngrps = 3, timegrp = 1, ncid1(0:3), nrec, ios, varid, in_max = huge(fourbyteint), &
-	nfile = 0, ipass = 1, ipass0 = 0, verbose_level = 3, cycle_number, pass_number, abs_orbit_number
-integer(fourbyteint) :: p, q, r, dpass
+	nfile = 0, ipass = 1, ipass0 = 0, verbose_level = 3, cycle_number, pass_number
 real(eightbytereal), allocatable :: time(:), lat(:), lon(:)
 real(eightbytereal) :: last_time = 0d0
-character(len=1) :: ascending_flag = 'A'
 logical :: first = .true., check_pass = .false.
 
 ! Print description, if requested
@@ -173,20 +171,6 @@ do
 ! Read global attributes
 
 	if (sat(:2) /= 'JA' .and. sat(:2) /= 'SW') call nfs(nf90_get_att(ncid1(0),nf90_global,'product_name',product_name))
-	if (sat(:2) /= 'CS') then
-		call nfs(nf90_get_att(ncid1(0),nf90_global,'cycle_number',cycle_number))
-		call nfs(nf90_get_att(ncid1(0),nf90_global,'pass_number',pass_number))
-	else
-		call nfs(nf90_get_att(ncid1(0),nf90_global,'abs_orbit_number',abs_orbit_number))
- 		call nfs(nf90_get_att(ncid1(0),nf90_global,'ascending_flag',ascending_flag))
-		dpass = 1
-		if (ascending_flag(1:1) == 'A') dpass = 2
-		p = 2*abs_orbit_number - 1 + dpass - 19
-		q = modulo (p, 10688)
-		r = modulo (q, 2462)
-		cycle_number = (p / 10688) * 13 + (q / 2462) * 3 + r / 840 + 1
-		pass_number = modulo (r, 840) + 1
-	endif
 
 ! Read the time dimension
 
