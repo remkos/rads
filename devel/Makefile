@@ -75,7 +75,7 @@ rads_add_iono:	$(ALTIM)/lib/iono.a
 rads_add_ecmwf rads_add_era rads_add_ncep rads_add_tide rads_add_webtide:	$(ALTIM)/lib/tides.a
 rads_add_tide:	LDLIBS = $(NETCDF_LIB) $(NETCDF_C_LIB) $(GRIB_LIB)
 rads_add_refframe:	$(PLM)
-rads_pre_sort_passes ogdrsplit:	rads_devel_misc.o
+rads_pre_sort_passes ogdrsplit rads_gen_c2_op:	rads_devel_misc.o
 rads_devel.o:	../src/rads.mod ../src/rads_misc.mod
 rads_devel_misc.o:	../src/rads_misc.mod
 rads_devel_netcdf.o:	rads_devel.mod ../src/rads.mod ../src/rads_misc.mod ../src/rads_netcdf.mod
