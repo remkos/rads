@@ -85,6 +85,7 @@ program rads_gen_c2_op
 use rads
 use rads_devel
 use rads_devel_netcdf
+use rads_devel_misc
 use rads_gen
 use rads_misc
 use rads_netcdf
@@ -92,15 +93,20 @@ use rads_time
 use rads_geo
 use netcdf
 
+! Struct for orbit info
+
+integer(fourbyteint), parameter :: mpass = 300000 ! Enough for 30 years
+type(orfinfo) :: orf(mpass)
+integer :: ipass = 1
+
 ! Command line arguments
 
 integer(fourbyteint) :: ios, i
-character(len=rads_cmdl) :: filename, arg
+character(len=rads_cmdl) :: filename, arg, product_name
 
 ! Header variables
 
-integer(fourbyteint) :: cycle_number, pass_number, ncid, varid
-integer(fourbyteint) :: first_meas_lat=0
+integer(fourbyteint) :: cycle_number, ncid, varid
 real(eightbytereal) :: equator_time, tai_utc_difference
 
 ! Data variables
@@ -121,6 +127,8 @@ call synopsis
 call rads_gen_getopt ('', ' min-rec:')
 call synopsis ('--head')
 call rads_init (S, sat)
+
+call read_orf ('CS2', orf)
 
 !----------------------------------------------------------------------
 ! Read all file names from standard input
@@ -170,12 +178,12 @@ do
 
 	! Determine latency (NOP, IOP, GOP) and software version
 
-	call nfs(nf90_get_att(ncid,nf90_global,'product_name',arg))
-	if (index(arg, '_NOP') > 0) then
+	call nfs(nf90_get_att(ncid,nf90_global,'product_name',product_name))
+	if (index(product_name, '_NOP') > 0) then
 		latency = rads_nrt
-	else if (index(arg, '_IOP') > 0) then
+	else if (index(product_name, '_IOP') > 0) then
 		latency = rads_stc
-	else if (index(arg, '_GOP') > 0) then
+	else if (index(product_name, '_GOP') > 0) then
 		latency = rads_ntc
 	else
 		call log_string ('Error: file skipped: unknown latency', .true.)
@@ -184,28 +192,20 @@ do
 	call nfs(nf90_get_att(ncid,nf90_global,'software_version',arg))
 	software_version = arg(11:14)
 
-	call nfs(nf90_get_att(ncid,nf90_global,'first_record_lat',first_meas_lat))
-
 ! Try to read the equator crossing time set by rads_pre_sort_passes.
-! If not, use the original ESA ones, even though that information is very unreliable.
+! If not, take the middle of the sensing start and stop times from the ESA products
 
 	if (nff(nf90_get_att(ncid,nf90_global,'equator_time',arg))) then
 		equator_time = strp1985f(arg)
 	else
-		call nfs(nf90_get_att(ncid,nf90_global,'equator_cross_time',arg))
-		equator_time = strp1985f (arg(5:))
-
-		! Fix incorrect equator crossing times in ESA OP Products
-		if (first_meas_lat < 0) then
-			equator_time = equator_time + 5954.75
-		else
-			equator_time = equator_time + 5954.75/2
-		endif
+		equator_time = (strp1985f(product_name(20:34)) + strp1985f(product_name(36:50))) / 2
 	endif
 
-! Set mission phase based on equator_time. This derives from the mission information in the rads.xml
+! Get the proper cycle and pass numbers and equator crossing information from the ORF file.
 
-	call rads_time_to_cycle_pass (S, equator_time, cycle_number, pass_number)
+	call which_pass (equator_time - sec2000)
+	cycle_number = orf(ipass)%cycle
+	equator_time = orf(ipass)%eqtime + sec2000
 
 ! Skip passes of which the cycle number or equator crossing time is outside the specified interval
 
@@ -217,19 +217,12 @@ do
 
 ! Initialise pass struct and store pass info
 
+	call rads_set_phase (S, equator_time)
 	call rads_init_pass_struct (S, P)
 	P%cycle = cycle_number
-	P%pass = pass_number
+	P%pass = orf(ipass)%pass
 	P%equator_time = equator_time
-
-! Try to read the equator crossing longitude set by rads_pre_sort_passes.
-! If not, use the original ESA ones, even though that information is very unreliable.
-
-	if (nft(nf90_get_att(ncid,nf90_global,'equator_longitude',P%equator_lon))) then
-		! The OP files have the incorrect equator_lon; needs to be fixed
-		call nfs(nf90_get_att(ncid,nf90_global,'equator_cross_long',P%equator_lon))
-		P%equator_lon = P%equator_lon * 1d-6
-	endif
+	P%equator_lon = orf(ipass)%eqlon
 
 ! Read start and end times. First try the format set by pre_sort_passes.
 
@@ -428,6 +421,21 @@ enddo
 call rads_end (S)
 
 contains
+
+!***********************************************************************
+! Determine the corresponding record from ORF
+
+subroutine which_pass (time)
+real(eightbytereal), intent(in) :: time
+do while (time < orf(ipass)%starttime)
+	ipass = ipass - 1
+	if (ipass < 1) call rads_exit ('Time is before the start of the ORF file')
+enddo
+do while (time > orf(ipass+1)%starttime)
+	ipass = ipass + 1
+	if (orf(ipass)%cycle < 0) call rads_exit ('Time is after the end of the ORF file')
+enddo
+end subroutine which_pass
 
 !-----------------------------------------------------------------------
 ! Print synopsis
