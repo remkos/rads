@@ -65,8 +65,8 @@ install:	all
 	$(INSTALL_PROGRAM) $(PROGS) $(bindir)
 	$(INSTALL_SCRIPT) $(SCRIPTS) $(bindir)
 	$(INSTALL_DATA) *.xml $(datadir)/conf
-	for p in $(PROGS_S3); do ( cd $(bindir) ; $(LN_S) $${p/rads_gen_3b/rads_gen_3a} $$p ) ; done
-	for p in $(PROGS_S6); do ( cd $(bindir) ; $(LN_S) $${p/rads_gen_6b/rads_gen_6a} $$p ) ; done
+	cd $(bindir) ; for p in $(PROGS_S3); do $(LN_S) rads_gen_3a$${p#rads_gen_3b} $$p ; done
+	cd $(bindir) ; for p in $(PROGS_S6); do $(LN_S) rads_gen_6a$${p#rads_gen_6b} $$p ; done
 
 man:	$(MAN)
 
