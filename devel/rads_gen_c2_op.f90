@@ -189,8 +189,6 @@ do
 		call log_string ('Error: file skipped: unknown latency', .true.)
 		cycle
 	endif
-	call nfs(nf90_get_att(ncid,nf90_global,'software_version',arg))
-	software_version = arg(11:14)
 
 ! Try to read the equator crossing time set by rads_pre_sort_passes.
 ! If not, take the middle of the sensing start and stop times from the ESA products
@@ -238,6 +236,12 @@ do
 		P%end_time = strp1985f(arg(5:)) + tai_utc_difference
 	endif
 
+! Get sortware version
+
+	call nfs(nf90_get_att(ncid,nf90_global,'software_version',arg))
+	i = index(arg,'/')
+	software_version = arg(i+1:i+4)
+
 ! Store input file name
 
 	P%original = trim(basename(filename)) // ' (' // trim(arg) // ')'
@@ -278,7 +282,7 @@ do
 	pair%order = (/(i, i=1, nrec)/)
 
 ! Check for time reversal
-	if (ANY(a(2:nrec) - a(1:nrec-1) .lt. 0)) then
+	if (any(a(2:nrec) - a(1:nrec-1) < 0)) then
 		call log_string ('Error: Time reversal detected', .true.)
 		forall (i = 1:nrec)
 			pair(i) = quicksort_pair (i, a(i))
