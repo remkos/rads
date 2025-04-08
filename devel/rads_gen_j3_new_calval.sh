@@ -40,7 +40,7 @@ done
 
 # Process only OGDR/IGDR data for the last ($days+1) days (including current)
 
-d0=`date -u -v -${days}d +%Y%m%d 2>&1` || d0=`date -u --date="${days} days ago" +%Y%m%d`
+d0=$(date -u -v -${days}d +%Y%m%d 2>/dev/null || date -u --date="${days} days ago" +%Y%m%d)
 
 # Run this for ogdr, igdr, or gdr depending on the arguments on the command line.
 # Default is doing all three!
@@ -52,17 +52,17 @@ lst=$SANDBOX/rads_gen_j3_tmp.lst
 
 date													>  "$log" 2>&1
 
-omrk=${type}/.bookmark
-TZ=UTC touch -t ${d0}0000 $omrk
+mrk=$RADSDATAROOT/.bookmark
+TZ=UTC touch -t ${d0}0000 $mrk
 case $type in
 	gdr)
-		find -L ${type}/cycle_??? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
+		find -L ${type}/cycle_??? -name "JA3_*.nc" -a -newer $mrk | sort > "$lst"
 		if [ -s "$lst" ]; then
 			rads_gen_jason_gdrf $options < "$lst"		>> "$log" 2>&1
 		fi
 		;;
 	*)
-		find -L ${type}/c??? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
+		find -L ${type}/c??? -name "JA3_*.nc" -a -newer $mrk | sort > "$lst"
 		rads_gen_jason_gdrf --ymd=$d0 $options < "$lst"	>> "$log" 2>&1
 		;;
 esac
