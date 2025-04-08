@@ -37,7 +37,7 @@ rads_open_sandbox c2
 
 mrk=$RADSDATAROOT/.bookmark
 TZ=UTC touch -t ${d0}0000 "$mrk"
-find "$@" -name "*.nc" -a -newer $mrk | sort > "$lst"
+find "$@" -name "*.nc" -a -newer $mrk | sort -r > "$lst"
 date >  "$log" 2>&1
 
 rads_gen_c2_op		$options < "$lst"	>> "$log" 2>&1
