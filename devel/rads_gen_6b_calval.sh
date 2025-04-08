@@ -1,1 +1,0 @@
-rads_gen_6a_calval.sh
