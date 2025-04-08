@@ -35,13 +35,12 @@ while getopts "nigd:" arg; do
 	esac
 done
 
-d0=`date -u -v -${days}d +%Y%m%d 2>&1` || d0=`date -u --date="${days} days ago" +%Y%m%d`
+d0=$(date -u -v -${days}d +%Y%m%d 2>/dev/null || date -u --date="${days} days ago" +%Y%m%d)
 
-dir=c2
-rads_open_sandbox $dir
+rads_open_sandbox c2
 
 for type in ${types}; do
-	mrk=$type/.bookmark
+	mrk=$RADSDATAROOT/.bookmark
 	TZ=UTC touch -t ${d0}0000 "$mrk"
 	find $type/ -name "*.nc" -a -newer "$mrk" | sort > "$lst"
 	date >>  "$log" 2>&1

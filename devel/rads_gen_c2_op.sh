@@ -23,13 +23,22 @@
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
 
+# Do only latest files when using -d<days>
+d0=20000101
+case $1 in
+	-d*)	days=${1:2}; shift
+		d0=$(date -u -v -${days}d +%Y%m%d 2>/dev/null || date -u --date="${days} days ago" +%Y%m%d) ;;
+esac
+
 # Exit when no directory names are provided
 [[ $# -eq 0 ]] && exit
 
 rads_open_sandbox c2
 
-find "$@" -name "*.nc"| sort > "$lst"
+mrk=$RADSDATAROOT/.bookmark
+find "$@" -name "*.nc" -a -newer $mrk | sort > "$lst"
 date >  "$log" 2>&1
+
 rads_gen_c2_op		$options < "$lst"	>> "$log" 2>&1
 
 # General geophysical corrections
