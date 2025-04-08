@@ -14,17 +14,24 @@
 # GNU Lesser General Public License for more details.
 #-----------------------------------------------------------------------
 #
-# Convert Sentinel-3A files to RADS
+# Convert Sentinel-3 files to RADS
 #
 # The data from <directory>/<type>/<cycle(s)> will be processed and put
 # into RADS.
 # Files will be created in
-# $RADSDATAROOT/3a.<type>0 - Unadultered files
-# $RADSDATAROOT/3a.<type>1 - RADSified files
+# $RADSDATAROOT/3?.<type>0 - Unadultered files
+# $RADSDATAROOT/3?.<type>1 - RADSified files
 #
-# syntax: rads_gen_3a_calval.sh <directory>/<type>/<cycles(s)>
+# syntax: rads_gen_3?_calval.sh <directory>/<type>/<cycles(s)>
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
+
+# Which satellite?
+case $0 in
+	*rads_gen_3a*) sat=3a ;;
+	*rads_gen_3b*) sat=3b ;;
+	*) echo "$0: unknown script" ; exit ;;
+esac
 
 # Exit when no directory names are provided
 [[ $# -eq 0 ]] && exit
@@ -34,17 +41,21 @@ type=$(dirname $1)
 type=$(basename $type)
 
 # Process "unadultered" files
-rads_open_sandbox "3a.${type}0"
+rads_open_sandbox "${sat}.${type}0"
 
 date													>  "$log" 2>&1
 
-find "$@" -name "S3A_*.nc" -o -name "standard_measurement.nc" | sort	> "$lst"
+find "$@" -name "S3*.nc" -o -name "standard_measurement.nc" | sort	> "$lst"
 rads_gen_s3 	$options --min-rec=6 < "$lst"			>> "$log" 2>&1
 
 # Now continue with the post-processing
-rads_reuse_sandbox "3a.${type}1"
+rads_reuse_sandbox "${sat}.${type}1"
 
 date													>> "$log" 2>&1
+
+case ${sat} in
+	3b) rads_fix_s3 $options --all						>> "$log" 2>&1 ;;
+esac
 
 # Add MOE orbit (for NRT and STC only) and CPOD POE (for NTC/REP only)
 case $type in
@@ -54,7 +65,10 @@ esac
 
 # General geophysical corrections
 rads_add_common   $options								>> "$log" 2>&1
-rads_add_mfwam    $options -C40-199 --all --new			>> "$log" 2>&1
+case ${sat} in
+	3a) rads_add_mfwam $options -C40-199 --all --new	>> "$log" 2>&1 ;;
+	3b) rads_add_mfwam $options -C21-199 --all --new	>> "$log" 2>&1 ;;
+esac
 rads_add_iono     $options --all						>> "$log" 2>&1
 # Redetermine SSHA
 rads_add_refframe $options -x -x plrm					>> "$log" 2>&1
