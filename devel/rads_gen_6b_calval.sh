@@ -114,7 +114,7 @@ rads_add_orbit    $options -Valt_gps --dir=jplgpspoe -C5-112	>> "$log" 2>&1
 rads_add_orbit    $options -Valt_gps --dir=jplgpsmoe -C113-299	>> "$log" 2>&1
 rads_add_orbit    $options -Valt_std2400 -C4-152                >> "$log" 2>&1
 # To support GDR-G with backward compatibility
-grep -q _G...SEN6 $lst && rads_add_tide $options --models=fes14		>> "$log" 2>&1
+grep -q .*S6._.*_G $lst && rads_add_tide $options --models=fes14		>> "$log" 2>&1
 # Redetermine SSHA
 rads_add_refframe $options -x -x nr $extra						>> "$log" 2>&1
 rads_add_sla      $options -x -x nr $extra						>> "$log" 2>&1
