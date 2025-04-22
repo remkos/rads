@@ -42,9 +42,12 @@ for type in ${types}; do
 
 	rads_open_sandbox 3a
 	lst=$SANDBOX/rads_gen_3a_new.lst
-	find $type/c??? -name "*.nc" -a -newer "$mrk" | sort > "$lst"
-	date												>  "$log" 2>&1
-	rads_gen_s3 $options --min-rec=6 --ymd=$d0 < "$lst"	>> "$log" 2>&1
+	date													>  "$log" 2>&1
+	find $type/c??? -name "*.nc" -a -newer "$mrk" | sort	> "$lst"
+# Exit when no file names are provided
+	[[ ! -s "$lst" ]] && rm -rf "$SANDBOX" && exit
+# Process "unadultered" files
+	rads_gen_s3 $options --min-rec=6 --ymd=$d0 < "$lst"		>> "$log" 2>&1
 
 # Add MOE orbit (for NRT and STC only) and CPOD POE (for NTC/REP only)
 	case $type in
@@ -53,13 +56,13 @@ for type in ${types}; do
 	esac
 
 # General geophysical corrections
-rads_add_common   $options								>> "$log" 2>&1
-rads_add_mfwam    $options --all --new					>> "$log" 2>&1
-rads_add_iono     $options --all						>> "$log" 2>&1
+rads_add_common   $options									>> "$log" 2>&1
+rads_add_mfwam    $options --all --new						>> "$log" 2>&1
+rads_add_iono     $options --all							>> "$log" 2>&1
 # Redetermine SSHA
-rads_add_refframe $options -x -x plrm					>> "$log" 2>&1
-rads_add_sla      $options -x -x plrm					>> "$log" 2>&1
+rads_add_refframe $options -x -x plrm						>> "$log" 2>&1
+rads_add_sla      $options -x -x plrm						>> "$log" 2>&1
 
-date													>> "$log" 2>&1
+date														>> "$log" 2>&1
 
 rads_close_sandbox

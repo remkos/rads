@@ -45,6 +45,9 @@ for type in ${types}; do
 	date													>  "$log" 2>&1
 
 	find $type/c??? -name "*.nc" -a -newer "$mrk" | sort > "$lst"
+# Exit when no file names are provided
+	[[ ! -s "$lst" ]] && rm -rf "$SANDBOX" && exit
+# Process "unadultered" files
 	rads_gen_s3		$options --min-rec=6 --ymd=$d0 < "$lst"	>> "$log" 2>&1
 
 # Now continue with the post-processing
