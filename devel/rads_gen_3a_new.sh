@@ -45,12 +45,14 @@ d0=$(date -u -v -${days}d +%Y%m%d 2>/dev/null || date -u --date="${days} days ag
 
 for type in ${types}; do
 	rads_open_sandbox ${sat}
+	lst=$SANDBOX/rads_gen_${sat}_new.lst
 
-	date												>  "$log" 2>&1
-	mrk=$RADSDATAROOT/.bookmark
-	TZ=UTC touch -t ${d0}0000 "$mrk"
-	find $type/c??? -name "*.nc" -a -newer "$mrk" | sort > "$lst"
-	rads_gen_s3 $options --min-rec=6 --ymd=$d0 < "$lst"	>> "$log" 2>&1
+	date													>  "$log" 2>&1
+	find $type/c??? -name "*.nc" -a -newer "$mrk" | sort	> "$lst"
+# Exit when no file names are provided
+	[[ ! -s "$lst" ]] && rm -rf "$SANDBOX" && exit
+# Process "unadultered" files
+	rads_gen_s3 $options --min-rec=6 --ymd=$d0 < "$lst"		>> "$log" 2>&1
 
 # Add MOE orbit (for NRT and STC only) and CPOD POE (for NTC/REP only)
 	case $type in
@@ -60,13 +62,13 @@ for type in ${types}; do
 done
 
 # General geophysical corrections
-rads_add_common   $options								>> "$log" 2>&1
-rads_add_mfwam    $options --all --new					>> "$log" 2>&1
-rads_add_iono     $options --all						>> "$log" 2>&1
+rads_add_common   $options									>> "$log" 2>&1
+rads_add_mfwam    $options --all --new						>> "$log" 2>&1
+rads_add_iono     $options --all							>> "$log" 2>&1
 # Redetermine SSHA
-rads_add_refframe $options -x -x plrm					>> "$log" 2>&1
-rads_add_sla      $options -x -x plrm					>> "$log" 2>&1
+rads_add_refframe $options -x -x plrm						>> "$log" 2>&1
+rads_add_sla      $options -x -x plrm						>> "$log" 2>&1
 
-date													>> "$log" 2>&1
+date														>> "$log" 2>&1
 
 rads_close_sandbox
