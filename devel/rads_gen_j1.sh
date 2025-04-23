@@ -21,7 +21,6 @@
 . rads_sandbox.sh
 
 rads_open_sandbox j1
-lst=$SANDBOX/rads_gen_j1.lst
 
 date													>  "$log" 2>&1
 
