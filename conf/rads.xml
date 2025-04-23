@@ -107,7 +107,7 @@ Global RADS configuration file
 	<quality_flag>swh_ku_plrm sig0_ku_plrm range_rms_ku_plrm range_numval_ku_plrm flags_plrm swh_rms_ku_plrm sig0_rms_ku_plrm attitude</quality_flag>
 	<comment>Sea level determined from satellite altitude - PLRM range - all (PLRM) altimetric corrections</comment>
 </var>
-<var name="sla_adaptive" sat="j3 sw">
+<var name="sla_adaptive" sat="j2 j3 sw">
 	<long_name>sea level anomaly (adaptive retracking)</long_name>
 	<standard_name>sea_surface_height_above_sea_level</standard_name>
 	<units>m</units>
@@ -120,7 +120,7 @@ Global RADS configuration file
 	<quality_flag>swh_ku_adaptive sig0_ku_adaptive range_rms_ku_adaptive range_numval_ku_adaptive flags_adaptive swh_rms_ku_adaptive sig0_rms_ku_adaptive</quality_flag>
 	<comment>Sea level determined from satellite altitude - range (adaptive retracking) - all altimetric corrections (adaptive retracking)</comment>
 </var>
-<alias name="sla_nr" sat="j3 sw">sla_adaptive</alias>
+<alias name="sla_nr" sat="j2 j3 sw">sla_adaptive</alias>
 <var name="sla_nr" sat="6a 6b">
 	<long_name>sea level anomaly (numerical retracking)</long_name>
 	<standard_name>sea_surface_height_above_sea_level</standard_name>
@@ -183,7 +183,7 @@ Global RADS configuration file
 	<comment>Sea level determined from satellite altitude - PLRM range - all (PLRM) altimetric corrections.
 		These values were computed when the data set was created, in contrast to the sla_plrm variable.</comment>
 </var>
-<var name="ssha_adaptive" sat="j3 sw">
+<var name="ssha_adaptive" sat="j2 j3 sw">
 	<long_name>sea surface height anomaly (adaptive retracking)</long_name>
 	<standard_name>sea_surface_height_above_sea_level</standard_name>
 	<units>m</units>
@@ -195,7 +195,7 @@ Global RADS configuration file
 	<comment>Sea level determined from satellite altitude - range (adaptive retracking) - all altimetric corrections (adaptive retracking).
 		These values were computed when the data set was created, in contrast to the sla_adaptive variable.</comment>
 </var>
-<alias name="ssha_nr" sat="j3 sw">ssha_adaptive</alias>
+<alias name="ssha_nr" sat="j2 j3 sw">ssha_adaptive</alias>
 <var name="ssha_nr" sat="6a 6b">
 	<long_name>sea surface height anomaly (numerical retracking)</long_name>
 	<standard_name>sea_surface_height_above_sea_level</standard_name>
@@ -417,7 +417,7 @@ Global RADS configuration file
 	<compress>int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_gdrcp" field="415" sat="gs g1 j1 j2 n1">
+<var name="alt_gdrcp" field="415" sat="gs g1 j1 n1">
 	<long_name>GDR-C' orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>GDR-C' standards</source>
@@ -470,7 +470,7 @@ Global RADS configuration file
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 -->
-<var name="alt_gdrd" field="418" sat="2a c2 j1 j2 n1 sa">
+<var name="alt_gdrd" field="418" sat="2a c2 j1 n1 sa">
 	<long_name>CNES GDR-D orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>CNES, GDR-D standards</source>
@@ -483,7 +483,7 @@ Global RADS configuration file
 	<compress sat="j1 j2">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_std1204" field="419" sat="j1 j2">
+<var name="alt_std1204" field="419" sat="j1">
 	<long_name>GSFC/Std1204 orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>GSFC/Std1204</source>
@@ -538,17 +538,6 @@ Global RADS configuration file
 	<compress>int4 1e-4 700e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_std1404" field="424" sat="j2">
-	<long_name>GSFC/Std1404 orbital altitude</long_name>
-	<standard_name>height_above_reference_ellipsoid</standard_name>
-	<source>GSFC/Std1404</source>
-	<parameters>gsfc_std1404</parameters>
-	<units>m</units>
-	<data>alt_std1404</data>
-	<format>f12.4</format>
-	<compress>int4 1e-4 1300e3</compress>
-	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
-</var>
 <var name="alt_std1808" sat="tx pn">
 	<long_name>GSFC/Std1808 orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
@@ -560,7 +549,7 @@ Global RADS configuration file
 	<compress>int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_gdre" field="425" sat="3a 3b c2 j1 j2 j3 sa">
+<var name="alt_gdre" field="425" sat="3a 3b c2 j1 j3 sa">
 	<long_name>CNES GDR-E orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>CNES, GDR-E standards</source>
@@ -572,7 +561,7 @@ Global RADS configuration file
 	<compress sat="j1 j2 j3">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_slcci" field="426" sat="e1 e2 j1 j2 n1">
+<var name="alt_slcci" field="426" sat="e1 e2 j1 n1">
 	<long_name>GFZ/SLCCI/VER11 orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>ESA SLCCI project</source>
@@ -620,13 +609,12 @@ Global RADS configuration file
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <alias name="alt" field="4" sat="2a">alt_gdrd</alias>
-<alias name="alt" field="4" sat="6a 6b 3a 3b j3 sa sw tx pn">alt_gdrf</alias>
+<alias name="alt" field="4" sat="6a 6b 3a 3b j2 j3 sa sw tx pn">alt_gdrf</alias>
 <alias name="alt" field="4" sat="c2">alt_gdre alt_cnes</alias>
 <alias name="alt" field="4" sat="e1 e2">alt_reaper alt_gfz</alias>
 <alias name="alt" field="4" sat="g1">alt_pgs7777</alias>
 <alias name="alt" field="4" sat="gs">alt_gdrcp</alias>
 <alias name="alt" field="4" sat="j1">alt_gdre</alias>
-<alias name="alt" field="4" sat="j2">alt_gdre alt_gdrd</alias>
 <alias name="alt" field="4" sat="n1">alt_gdrd alt_gdrcp</alias>
 <var name="alt_cnes_20hz" sat="c2">
 	<long_name>20-Hz CNES orbital altitude</long_name>
@@ -723,7 +711,7 @@ Global RADS configuration file
 	<format>f12.4</format>
 	<compress>int4 1e-4 700e3</compress>
 </var>
-<var name="range_ku_adaptive" field="612" sat="j3 sw">
+<var name="range_ku_adaptive" field="612" sat="j2 j3 sw">
 	<long_name>Ku-band range corrected for instr. effects (adaptive retracking)</long_name>
 	<standard_name>altimeter_range</standard_name>
 	<units>m</units>
@@ -734,7 +722,7 @@ Global RADS configuration file
 	<compress>int4 1e-4 1300e3</compress>
 	<compress sat="sw">int4 1e-4 800e3</compress>
 </var>
-<alias name="range_ku_nr" sat="j3 sw">range_ku_adaptive</alias>
+<alias name="range_ku_nr" sat="j2 j3 sw">range_ku_adaptive</alias>
 <var name="range_ku_nr" field="612" sat="6a 6b">
 	<long_name>Ku-band range corrected for instr. effects (numerical retracking)</long_name>
 	<standard_name>altimeter_range</standard_name>
@@ -1210,7 +1198,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<var name="iono_alt_adaptive" sat="j3 sw">
+<var name="iono_alt_adaptive" sat="j2 j3 sw">
 	<long_name>dual-frequency ionospheric correction (adaptive retracking)</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>dual-frequency altimeter</source>
@@ -1222,7 +1210,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<alias name="iono_alt_nr" sat="j3 sw">iono_alt_adaptive</alias>
+<alias name="iono_alt_nr" sat="j2 j3 sw">iono_alt_adaptive</alias>
 <var name="iono_alt_nr" sat="6a 6b">
 	<long_name>dual-frequency ionospheric correction (numerical retracking)</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
@@ -1259,7 +1247,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<var name="iono_alt_smooth_adaptive" sat="j3 sw">
+<var name="iono_alt_smooth_adaptive" sat="j2 j3 sw">
 	<long_name>smoothed dual-frequency ionospheric correction (adaptive retracking)</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
 	<source>dual-frequency altimeter after smoothing</source>
@@ -1271,7 +1259,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>An ionospheric correction must be added to range to correct for ionosphere delays</comment>
 </var>
-<alias name="iono_alt_smooth_nr" sat="j3 sw">iono_alt_smooth_adaptive</alias>
+<alias name="iono_alt_smooth_nr" sat="j2 j3 sw">iono_alt_smooth_adaptive</alias>
 <var name="iono_alt_smooth_nr" sat="6a 6b">
 	<long_name>smoothed dual-frequency ionospheric correction (numerical retracking)</long_name>
 	<standard_name>altimeter_range_correction_due_to_ionosphere</standard_name>
@@ -1689,7 +1677,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
-<var name="ssb_cls_3d" sat="j3 sw">
+<var name="ssb_cls_3d" sat="j2 j3 sw">
 	<long_name>Tran et al. 2020 3D sea state bias for retracked range</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<units>m</units>
@@ -1700,7 +1688,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
-<var name="ssb_cls_adaptive" sat="j3 sw">
+<var name="ssb_cls_adaptive" sat="j2 j3 sw">
 	<long_name>Tran et al. 2020 sea state bias for retracked range (adaptive retracking)</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<units>m</units>
@@ -1711,7 +1699,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
-<alias name="ssb_cls_nr" sat="j3 sw">ssb_cls_adaptive</alias>
+<alias name="ssb_cls_nr" sat="j2 j3 sw">ssb_cls_adaptive</alias>
 <var name="ssb_cls_nr" sat="6a 6b">
 	<long_name>Tran et al. 2020 sea state bias for retracked range (numerical retracking)</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
@@ -1723,7 +1711,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
-<var name="ssb_cls_3d_adaptive" sat="j3 sw">
+<var name="ssb_cls_3d_adaptive" sat="j2 j3 sw">
 	<long_name>Tran et al. 2020 3D sea state bias for retracked range (adaptive retracking)</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<units>m</units>
@@ -1734,7 +1722,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
-<var name="ssb_cls_c_adaptive" sat="j3 sw">
+<var name="ssb_cls_c_adaptive" sat="j2 j3 sw">
 	<long_name>Tran et al. 2020 non-parametric sea state bias (C-band) (adaptive retracking)</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<source>CLS</source>
@@ -1748,7 +1736,7 @@ Global RADS configuration file
 	<parameters>AUX_SBLC_S6A_002.nc?SSB -xwind_speed_alt -yswh_ku</parameters>
 	<source>SSB_2020_J3_GDRF</source>
 </var>
-<alias name="ssb_cls_c_nr" sat="j3 sw">ssb_cls_c_adaptive</alias>
+<alias name="ssb_cls_c_nr" sat="j2 j3 sw">ssb_cls_c_adaptive</alias>
 <var name="ssb_cls_c_nr" sat="6a 6b">
 	<long_name>Tran et al. 2020 non-parametric sea state bias (C-band) (numerical retracking)</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
@@ -1811,7 +1799,7 @@ Global RADS configuration file
 <alias name="ssb_c" sat="tx">ssb_tx_c</alias>
 <alias name="ssb_mle3" sat="6a 6b j2 j3 sw">ssb_cls_mle3</alias>
 <alias name="ssb_mle3" sat="tx">ssb_tx_mle3</alias>
-<alias name="ssb_adaptive" sat="j3 sw">ssb_cls_adaptive</alias>
+<alias name="ssb_adaptive" sat="j2 j3 sw">ssb_cls_adaptive</alias>
 <alias name="ssb_nr" sat="6a 6b">ssb_cls_nr</alias>
 <alias name="ssb_plrm" sat="3a 3b c2">ssb_cls_plrm</alias>
 
@@ -2002,7 +1990,7 @@ Global RADS configuration file
 	</var>
 	<alias name="swh" field="17">swh_ku</alias>
 </else>
-<var name="swh_ku_adaptive" sat="j3 sw">
+<var name="swh_ku_adaptive" sat="j2 j3 sw">
 	<long_name>Ku-band significant wave height (adaptive retracking)</long_name>
 	<standard_name>sea_surface_wave_significant_height</standard_name>
 	<units>m</units>
@@ -2011,8 +1999,8 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<compress>int2 1e-3</compress>
 </var>
-<alias name="swh_adaptive" sat="j3 sw">swh_ku_adaptive</alias>
-<alias name="swh_ku_nr" sat="j3 sw">swh_ku_adaptive</alias>
+<alias name="swh_adaptive" sat="j2 j3 sw">swh_ku_adaptive</alias>
+<alias name="swh_ku_nr" sat="j2 j3 sw">swh_ku_adaptive</alias>
 <var name="swh_ku_nr" sat="6a 6b">
 	<long_name>Ku-band significant wave height (numerical retracking)</long_name>
 	<standard_name>sea_surface_wave_significant_height</standard_name>
@@ -2116,7 +2104,7 @@ Global RADS configuration file
 		<units>dB</units>
 		<limits>6 27</limits>
 		<plot_range>7 17</plot_range>
-		<if sat="j3 sw">
+		<if sat="j2 j3 sw">
 			<limits>8 29</limits>
 			<plot_range>9 19</plot_range>
 		</if>
@@ -2136,7 +2124,7 @@ Global RADS configuration file
 	<units>dB</units>
 	<limits>6 27</limits>
 	<plot_range>10 20</plot_range>
-	<if sat="j3 sw">
+	<if sat="j2 j3 sw">
 		<limits>7 28</limits>
 		<plot_range>11 21</plot_range>
 	</if>
@@ -2207,7 +2195,7 @@ Global RADS configuration file
 	<format>f6.2</format>
 	<compress>int2 1e-2</compress>
 </var>
-<var name="sig0_ku_adaptive" sat="j3 sw">
+<var name="sig0_ku_adaptive" sat="j2 j3 sw">
 	<long_name>Ku-band backscatter coefficient (adaptive retracking)</long_name>
 	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
 	<units>dB</units>
@@ -2217,7 +2205,7 @@ Global RADS configuration file
 	<format>f6.2</format>
 	<compress>int2 1e-2</compress>
 </var>
-<alias name="sig0_ku_nr" sat="j3 sw">sig0_ku_adaptive</alias>
+<alias name="sig0_ku_nr" sat="j2 j3 sw">sig0_ku_adaptive</alias>
 <var name="sig0_ku_nr" sat="6a 6b">
 	<long_name>Ku-band backscatter coefficient (numerical retracking)</long_name>
 	<standard_name>surface_backwards_scattering_coefficient_of_radar_wave</standard_name>
@@ -2395,7 +2383,7 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<compress>int2 1e-2</compress>
 </var>
-<var name="wind_speed_alt_adaptive" sat="j3 sw">
+<var name="wind_speed_alt_adaptive" sat="j2 j3 sw">
 	<long_name>altimeter wind speed (adaptive retracking)</long_name>
 	<standard_name>wind_speed</standard_name>
 	<source>altimeter</source>
@@ -2406,7 +2394,7 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<compress>int2 1e-2</compress>
 </var>
-<alias name="wind_speed_alt_nr" sat="j3 sw">wind_speed_alt_adaptive</alias>
+<alias name="wind_speed_alt_nr" sat="j2 j3 sw">wind_speed_alt_adaptive</alias>
 <var name="wind_speed_alt_nr" sat="6a 6b">
 	<long_name>altimeter wind speed (numerical retracking)</long_name>
 	<standard_name>wind_speed</standard_name>
@@ -2482,7 +2470,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<var name="range_rms_ku_adaptive" sat="j3 sw">
+<var name="range_rms_ku_adaptive" sat="j2 j3 sw">
 	<long_name>std dev of retracked Ku-band range (adaptive retracking)</long_name>
 	<units>m</units>
 	<limits>0.0 0.17</limits>
@@ -2493,7 +2481,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Based on valid retracked high-rate measurements</comment>
 </var>
-<alias name="range_rms_ku_nr" sat="j3 sw">range_rms_ku_adaptive</alias>
+<alias name="range_rms_ku_nr" sat="j2 j3 sw">range_rms_ku_adaptive</alias>
 <var name="range_rms_ku_nr" sat="6a 6b">
 	<long_name>std dev of retracked Ku-band range (numerical retracking)</long_name>
 	<units>m</units>
@@ -2577,7 +2565,7 @@ Global RADS configuration file
 	<format>f3.0</format>
 	<compress>int1</compress>
 </var>
-<var name="range_numval_ku_adaptive" sat="j3 sw">
+<var name="range_numval_ku_adaptive" sat="j2 j3 sw">
 	<long_name>number of valid retracked Ku-band measurements (adaptive retracking)</long_name>
 	<standard_name>altimeter_range number_of_observations</standard_name>
 	<units>1</units>
@@ -2587,7 +2575,7 @@ Global RADS configuration file
 	<format>f3.0</format>
 	<compress>int1</compress>
 </var>
-<alias name="range_numval_ku_nr" sat="j3 sw">range_numval_ku_adaptive</alias>
+<alias name="range_numval_ku_nr" sat="j2 j3 sw">range_numval_ku_adaptive</alias>
 <var name="range_numval_ku_nr" sat="6a 6b">
 	<long_name>number of valid retracked Ku-band measurements (numerical retracking)</long_name>
 	<standard_name>altimeter_range number_of_observations</standard_name>
@@ -3268,7 +3256,7 @@ Global RADS configuration file
 	<limits sat="c2">32 0</limits>
 	<limits sat="g1">65384 0</limits>
 	<limits sat="gs">51176 0</limits>
-	<limits sat="j3 sw">65384 0</limits> <!--Temporary value, deselecting altimeter rain flag-->
+	<limits sat="j2 j3 sw">65384 0</limits> <!--Temporary value, deselecting altimeter rain flag-->
 	<limits sat="n1">36712 0</limits>
 	<limits sat="pn">480 0</limits>
 	<limits sat="tx">16360 0</limits> <!--Temporary value -->
@@ -3384,7 +3372,7 @@ Global RADS configuration file
 		swh_suspect backscatter_suspect tracking_preset orbit_degraded
 	</flag_masks>
 </var>
-<var name="flags_adaptive" sat="j3 sw">
+<var name="flags_adaptive" sat="j2 j3 sw">
 	<long_name>flag word (adaptive retracking)</long_name>
 	<limits>65512 0</limits>
 	<data>flags_adaptive</data>
@@ -3397,7 +3385,7 @@ Global RADS configuration file
 		swh_suspect backscatter_suspect tracking_preset orbit_degraded
 	</flag_masks>
 </var>
-<alias name="flags_nr" sat="j3 sw">flags_adaptive</alias>
+<alias name="flags_nr" sat="j2 j3 sw">flags_adaptive</alias>
 <var name="flags_nr" sat="6a 6b">
 	<long_name>flag word (numerical retracking)</long_name>
 	<limits>65512 0</limits>
@@ -3438,7 +3426,7 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<comment>Range correction already added to range</comment>
 </var>
-<var name="drange_ku_adaptive" sat="j3 sw">
+<var name="drange_ku_adaptive" sat="j2 j3 sw">
 	<long_name>net instrument correction to retracked Ku-band range (adaptive retracking)</long_name>
 	<units>m</units>
 	<data>drange_ku_adaptive</data>
@@ -3446,7 +3434,7 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<comment>Range correction already added to range</comment>
 </var>
-<alias name="drange_ku_nr" sat="j3 sw">drange_ku_adaptive</alias>
+<alias name="drange_ku_nr" sat="j2 j3 sw">drange_ku_adaptive</alias>
 <var name="drange_ku_nr" sat="6a 6b">
 	<long_name>net instrument correction to retracked Ku-band range (numerical retracking)</long_name>
 	<units>m</units>
@@ -3600,7 +3588,7 @@ Global RADS configuration file
 	<compress>int2 1e-3</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<var name="swh_rms_ku_adaptive" sat="j3 sw">
+<var name="swh_rms_ku_adaptive" sat="j2 j3 sw">
 	<long_name>std dev of Ku-band significant wave height (adaptive retracking)</long_name>
 	<units>m</units>
 	<limits>0.0 1.5</limits> <!--Might need to be changed-->
@@ -3611,7 +3599,7 @@ Global RADS configuration file
 	<compress>int2 1e-3</compress>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<alias name="swh_rms_ku_nr" sat="j3 sw">swh_rms_ku_adaptive</alias>
+<alias name="swh_rms_ku_nr" sat="j2 j3 sw">swh_rms_ku_adaptive</alias>
 <var name="swh_rms_ku_nr" sat="6a 6b">
 	<long_name>std dev of Ku-band significant wave height (numerical retracking)</long_name>
 	<units>m</units>
@@ -3697,7 +3685,7 @@ Global RADS configuration file
 	<default>0</default>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<var name="sig0_rms_ku_adaptive" sat="j3 sw">
+<var name="sig0_rms_ku_adaptive" sat="j2 j3 sw">
 	<long_name>std dev of Ku-band backscatter coefficient (adaptive retracking)</long_name>
 	<units>dB</units>
 	<limits>0.0 1.0</limits>
@@ -3708,7 +3696,7 @@ Global RADS configuration file
 	<default>0</default>
 	<comment>Based on valid high-rate measurements</comment>
 </var>
-<alias name="sig0_rms_ku_nr" sat="j3 sw">sig0_rms_ku_adaptive</alias>
+<alias name="sig0_rms_ku_nr" sat="j2 j3 sw">sig0_rms_ku_adaptive</alias>
 <var name="sig0_rms_ku_nr" sat="6a 6b">
 	<long_name>std dev of Ku-band backscatter coefficient (numerical retracking)</long_name>
 	<units>dB</units>
@@ -3869,7 +3857,7 @@ Global RADS configuration file
 	<compress>int2 1e-3</compress>
 	<comment>Correction already added to significant wave height</comment>
 </var>
-<var name="dswh_ku_adaptive" sat="j3 sw">
+<var name="dswh_ku_adaptive" sat="j2 j3 sw">
 	<long_name>net instrument correction to Ku-band significant wave height (adaptive retracking)</long_name>
 	<units>m</units>
 	<data>dswh_ku_adaptive</data>
@@ -3878,7 +3866,7 @@ Global RADS configuration file
 	<compress>int2 1e-3</compress>
 	<comment>Correction already added to significant wave height</comment>
 </var>
-<alias name="dswh_ku_nr" sat="j3 sw">dswh_ku_adaptive</alias>
+<alias name="dswh_ku_nr" sat="j2 j3 sw">dswh_ku_adaptive</alias>
 <var name="dswh_ku_nr" sat="6a 6b">
 	<long_name>net instrument correction to Ku-band significant wave height (numerical retracking)</long_name>
 	<units>m</units>
@@ -3916,7 +3904,7 @@ Global RADS configuration file
 	<compress>int2 1e-2</compress>
 	<comment>Correction already added to backscatter coefficient</comment>
 </var>
-<var name="dsig0_ku_adaptive" sat="j3 sw">
+<var name="dsig0_ku_adaptive" sat="j2 j3 sw">
 	<long_name>net instrument correction to Ku-band backscatter coefficient (adaptive retracking)</long_name>
 	<units>dB</units>
 	<data>dsig0_ku_adaptive</data>
@@ -3925,7 +3913,7 @@ Global RADS configuration file
 	<compress>int2 1e-2</compress>
 	<comment>Correction already added to backscatter coefficient</comment>
 </var>
-<alias name="dsig0_ku_nr" sat="j3 sw">dsig0_ku_adaptive</alias>
+<alias name="dsig0_ku_nr" sat="j2 j3 sw">dsig0_ku_adaptive</alias>
 <var name="dsig0_ku_nr" sat="6a 6b">
 	<long_name>net instrument correction to Ku-band backscatter coefficient (numerical retracking)</long_name>
 	<units>dB</units>
@@ -4286,7 +4274,7 @@ Global RADS configuration file
 	<parameters sat="3a">  -6.9 0  0  0 0</parameters>
 	<parameters sat="3b"> -13.4 0  0  0 0</parameters>
 </var>
-<var name="ref_frame_offset_adaptive" sat="j3 sw">
+<var name="ref_frame_offset_adaptive" sat="j2 j3 sw">
 	<long_name>reference frame offset (adaptive retracking)</long_name>
 	<units>m</units>
 	<data>ref_frame_offset_adaptive</data>
@@ -4295,10 +4283,11 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<dimensions>0</dimensions>
 	<parameters>0</parameters>
+	<parameters sat="j2"> -41.0 0  0  0 0</parameters>
 	<parameters sat="j3"> -49.0 0  0  0 0</parameters>
 	<parameters sat="sw"> -36.0 0  0  0 0</parameters>
 </var>
-<alias name="ref_frame_offset_nr" sat="j3 sw">ref_frame_offset_adaptive</alias>
+<alias name="ref_frame_offset_nr" sat="j2 j3 sw">ref_frame_offset_adaptive</alias>
 <var name="ref_frame_offset_nr" sat="6a 6b">
 	<long_name>reference frame offset (numerical retracking)</long_name>
 	<units>m</units>
