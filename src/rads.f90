@@ -19,7 +19,8 @@ integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, &
 ! RADS4 data sources
 integer(fourbyteint), parameter :: rads_src_none = 0, rads_src_nc_var = 10, &
 	rads_src_nc_att = 11, rads_src_math = 20, rads_src_grid_lininter = 30, &
-	rads_src_grid_splinter = 31, rads_src_grid_query = 32, rads_src_grid_linphase = 33, &
+	rads_src_grid_splinter = 31, rads_src_grid_query = 32, &
+	rads_src_grid_linphase = 33, rads_src_grid_season = 34, &
 	rads_src_constant = 40, rads_src_flags = 50, rads_src_tpj = 60
 ! RADS4 warnings
 integer(fourbyteint), parameter :: rads_warn_nc_file = -3
@@ -1807,7 +1808,7 @@ do i = 1,3 ! This loop is here to allow processing of aliases
 		call rads_get_var_nc_att
 	case (rads_src_math)
 		call rads_get_var_math
-	case (rads_src_grid_lininter, rads_src_grid_splinter, rads_src_grid_query, rads_src_grid_linphase)
+	case (rads_src_grid_lininter, rads_src_grid_splinter, rads_src_grid_query, rads_src_grid_linphase, rads_src_grid_season)
 		call rads_get_var_grid
 	case (rads_src_constant)
 		call rads_get_var_constant
@@ -2111,8 +2112,9 @@ end subroutine rads_get_var_math
 
 subroutine rads_get_var_grid ! Get data by interpolating a grid
 use rads_grid
-real (eightbytereal) :: x(P%ndata), y(P%ndata)
+real (eightbytereal) :: x(P%ndata), y(P%ndata), phase, weight(4)
 integer(fourbyteint) :: i
+real(eightbytereal), parameter :: sec2000 = 473299200d0, sec_to_phase = 2d0 * pi / 365.25d0 / 86400d0
 
 ! Load grid if not yet done
 if (info%grid%ntype /= 0) then	! Already loaded
@@ -2133,7 +2135,15 @@ else if (info%datasrc == rads_src_grid_lininter) then
 else if (info%datasrc == rads_src_grid_splinter) then
 	forall (i = 1:P%ndata) data(i) = grid_splinter (info%grid, x(i), y(i))
 else if (info%datasrc == rads_src_grid_linphase) then
-	forall (i = 1:P%ndata) data(i) = grid_lininter (info%grid, x(i), y(i), .true.)
+	forall (i = 1:P%ndata) data(i) = grid_lininter (info%grid, x(i), y(i), phase=.true.)
+else if (info%datasrc == rads_src_grid_season) then
+	phase = (P%equator_time - sec2000) * sec_to_phase
+	weight(1) = cos(phase)
+	weight(2) = sin(phase)
+	phase = phase * 2d0
+	weight(3) = cos(phase)
+	weight(4) = sin(phase)
+	forall (i = 1:P%ndata) data(i) = grid_lininter (info%grid, x(i), y(i), weight)
 else
 	forall (i = 1:P%ndata) data(i) = grid_query (info%grid, x(i), y(i))
 endif
@@ -2574,6 +2584,8 @@ do
 			info%datasrc = rads_src_grid_linphase
 		case ('grid_n', 'grid_q')
 			info%datasrc = rads_src_grid_query
+		case ('grid_t')
+			info%datasrc = rads_src_grid_season
 		case ('math')
 			info%datasrc = rads_src_math
 		case ('netcdf', 'nc_var', 'nc_att', 'nc')
@@ -2643,6 +2655,7 @@ do
 				if (attr(2,i)(:1) == 'c' .or. attr(2,i)(:1) == 's') info%datasrc = rads_src_grid_splinter
 				if (attr(2,i)(:1) == 'p') info%datasrc = rads_src_grid_linphase
 				if (attr(2,i)(:1) == 'q') info%datasrc = rads_src_grid_query
+				if (attr(2,i)(:1) == 't') info%datasrc = rads_src_grid_season
 			end select
 		enddo
 		allocate (info%grid)

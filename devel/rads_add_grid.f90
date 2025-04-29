@@ -186,7 +186,7 @@ do k = 1,nmod
 		enddo
 	case (rads_src_grid_linphase)
 		do i = 1,n
-			z(i,k) = grid_lininter(grd(k)%info,x(i),y(i),.true.)
+			z(i,k) = grid_lininter(grd(k)%info,x(i),y(i),phase=.true.)
 		enddo
 		if (grd(k)%info%zunit == 'degrees') z(:,k) = z(:,k) / rad
 	case default
