@@ -115,19 +115,20 @@ real(eightbytereal), parameter :: sec2000=473299200d0	! UTC seconds from 1 Jan 1
 
 call synopsis ('--head')
 call rads_init (S)
+var(:)%d(0) = nan ! To link non-matching records to
 
 ! Load the ORF file and change time to sec1985
 
 call read_orf (S%sat, orf)
 orf(:)%starttime = orf(:)%starttime + sec2000
 orf(:)%eqtime = orf(:)%eqtime + sec2000
-ipass = 0
+ipass = 1
 
 !----------------------------------------------------------------------
 ! Read all file names from standard input
 !----------------------------------------------------------------------
 
-do
+input_loop: do
 	read (*,'(a)',iostat=ios) infile
 	if (ios /= 0) exit
 	ios = nf90_close(ncid)
@@ -277,7 +278,6 @@ do
 
 	nvar = 0
 	allocate (tmp(nrec_in))
-	var(:)%d(0) = nan
 
 ! Open the existing pass and patch it
 
@@ -293,30 +293,40 @@ do
 	call nfs(nf90_close(ncid))
 	nrec_buf = nrec_buf + nrec_in
 
-	! To which passes do the data belong?
-	call which_pass (var(1)%d(1))
+! Now cycle to write out part of the buffer
 
-	! Look where to split this chunk of data
-	do i = 2,nrec_buf
-		if (var(1)%d(i) >= orf(ipass+1)%starttime) exit
-	enddo
-	! It is OK to exit this loop with i = nrec_buf + 1. This means we dump all of the memory.
+	do
+		! To which passes do the data belong?
+		call which_pass (var(1)%d(1))
 
-	! Write out the data
-	nrec_out = i - 1 ! Number of measurements to be written out
+		! Look where to split this chunk of data
+		do i = 2,nrec_buf
+			if (var(1)%d(i) >= orf(ipass+1)%starttime) exit
+		enddo
+		! It is OK to exit this loop with i = nrec_buf + 1. This means we do not dump the data yet.
+		if (i > nrec_buf) cycle input_loop
+
+		! Write out the data
+		nrec_out = i - 1 ! Number of measurements to be written out
 
 ! Write out the pending data
 
-	call put_rads (nrec_out, time_slop)
+		call put_rads (nrec_out, time_slop)
 
-! Number of measurements remaining
-	nrec_buf = nrec_buf - nrec_out
+	! Number of measurements remaining
+		nrec_buf = nrec_buf - nrec_out
 
-! Move the data to be beginning
-	forall (i = 1:nvar)
-		var(i)%d(1:nrec_buf) = var(i)%d(nrec_out+1:nrec_out+nrec_buf)
-	end forall
-enddo
+	! Move the data to be beginning
+		forall (i = 1:nvar)
+			var(i)%d(1:nrec_buf) = var(i)%d(nrec_out+1:nrec_out+nrec_buf)
+		end forall
+	enddo
+enddo input_loop
+
+! Write out optional remaining data
+
+call which_pass (var(1)%d(1))
+call put_rads (nrec_out, time_slop)
 
 call rads_end (S)
 
@@ -324,12 +334,9 @@ contains
 
 !***********************************************************************
 ! Determine the corresponding record from ORF.
-! This version only allows to go forward to avoid using a pass twice when there
-! are duplicate times at the end of one product and the start of the next.
 
 subroutine which_pass (time)
 real(eightbytereal), intent(in) :: time
-ipass = ipass + 1
 do while (time > orf(ipass+1)%starttime)
 	ipass = ipass + 1
 	if (orf(ipass)%cycle < 0) call rads_exit ('Time is after the end of the ORF file')
@@ -453,7 +460,6 @@ call get_var (ncid_m7, 'rad_attenuation_ku', x(:,3))
 ! Get quality flag
 call get_var (ncid_m7, 'rad_retrieval_quality_flag', qual)
 
-!write (*,*)
 ! Make running average over 7 points, within a second interval, of the same surface type, and of good quality
 sumx = 0d0
 do i = 1,n7
@@ -471,10 +477,6 @@ do i = 1,n7
 	sumx(i,:) = sumx(i,:)/sumn(:)
 enddo
 
-!do i = 1,n7
-!	write (*,'(i5,i3,i3,2(f8.2,f8.4,f6.2))') i,nint(surf(i)),nint(qual(i)),x(i,:),sumx(i,:)
-!enddo
-
 ! Wet tropospheric variables
 
 call new_var ('water_vapor_rad', sumx(:,1))
@@ -490,14 +492,15 @@ end subroutine process_pass_atm
 subroutine put_rads (nrec_out, time_slop)
 integer(fourbyteint), intent(in) :: nrec_out
 real(eightbytereal) :: time_slop
-real(eightbytereal), allocatable :: t(:)
+real(eightbytereal), allocatable :: t(:), val(:)
 integer(fourbyteint), allocatable :: idx(:)
 character(len=80) :: message
 integer :: i, j
 
 if (nrec_out == 0) return	! Skip empty data sets
 
-! Open output file
+! Open the corresponding RADS data file
+
 call rads_open_pass (S, P, orf(ipass)%cycle, orf(ipass)%pass, .true.)
 if (P%ndata == 0) then
 	call log_string ('Error: RADS product does not exist', .false.)
@@ -505,37 +508,35 @@ if (P%ndata == 0) then
 	return
 endif
 
-! Work out time consistency since some measurements are missing in the FDR4ALT products
-! There seems to be no apparent reason why they are missing in FDR4ALT products,
-! but they appear to match REAPER data with just NaN measurements
+! Work out time consistency since some measurements are missing in the FDR4ALT products.
+! There seems to be no apparent reason why they are missing in FDR4ALT products.
 
-allocate (t(P%ndata),idx(P%ndata))
+allocate (t(P%ndata), val(P%ndata), idx(P%ndata))
 call rads_get_var (S, P, 'time', t)
+call rads_get_var (S, P, 'range_ku', val)
 idx = 0
-j = 1
-do i = 1,P%ndata
+j = 1 ! FDR4ALT data record counter
+do i = 1,P%ndata ! RADS data records counter
 	do
-		if (j >= nrec_out) then
-			exit
-		else if (abs(var(1)%d(j+1)-t(i)) < abs(var(1)%d(j)-t(i))) then
-			j = j + 1
-		else
-			exit
-		endif
+		if (j >= nrec_out) exit ! No more input records
+		if (abs(var(1)%d(j+1)-t(i)) > abs(var(1)%d(j)-t(i))) exit ! Next time match is worse
+		j = j + 1 ! Try next record
 	enddo
-	if (abs(var(1)%d(j)-t(i)) < time_slop) idx(i) = j
+	if (abs(var(1)%d(j)-t(i)) <= time_slop) idx(i) = j ! Closest match is within time slop
 enddo
 
 ! Check for the number of matching points
 
-j = count(idx == 0)
-if (j == P%ndata) then
-	deallocate (t,idx)
+j = count(idx == 0) ! Count the number of non-matching records
+if (j == P%ndata) then ! No matches at all, so skip writing
+	deallocate (t, val, idx)
 	call log_records (0)
 	call rads_close_pass (S, P)
 	return
-else if (j > 0) then
-	write (message, "('Warning:',i4,' RADS times have no match in FDRALT product')") j
+endif
+j = count(idx == 0 .and. isan_(val)) ! Count the non-matching records that have valid range
+if (j > 0) then ! Some missing matches
+	write (message, "('Warning:',i4,' Valid RADS data have no match in FDRALT product')") j
 	call log_string (trim(message), .false.)
 endif
 
@@ -576,7 +577,7 @@ enddo
 do i = 2,nvar
 	call rads_put_var (S, P, var(i)%v, var(i)%d(idx))
 enddo
-deallocate (t,idx)
+deallocate (t, val, idx)
 
 ! Close the data file
 call log_records (P%ndata, P)
