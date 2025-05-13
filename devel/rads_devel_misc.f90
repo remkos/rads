@@ -32,7 +32,7 @@ use rads_misc
 character(len=*), intent(in) :: sat
 type(orfinfo), intent(inout) :: orf(:)
 character(len=320) :: line
-integer :: mjd, yy, mm, dd, hh, mn, ios, npass, unit, nr_passes, abs_pass_offset
+integer :: mjd, yy, mm, dd, hh, mn, ios, npass, mpass, unit, nr_passes, abs_pass_offset
 real(eightbytereal) :: ss, lat, lon
 !
 ! This routine reads an ORF file for the given 3-letter satellite
@@ -45,8 +45,10 @@ real(eightbytereal) :: ss, lat, lon
 
 ! Open the equator crossing table
 
+mpass = size(orf)
 nr_passes = 254
 abs_pass_offset = 0
+
 select case (sat)
 case ('ER1', 'er1', 'e1')
 	call parseenv ('${ALTIM}/data/ODR.ERS-1/orf.txt', line)
@@ -84,7 +86,7 @@ case ('S6B', 's6b', '6b')
 case ('SWO')
 	call parseenv ('${ALTIM}/data/ODR.SWOT/orf.txt', line)
 case default
-	stop 'Wrong satellite code: '//sat
+	stop 'read_orf: wrong satellite code: '//sat
 end select
 unit = getlun()
 open (unit, file=line, status='old')
@@ -97,7 +99,7 @@ orf = orfinfo (-1, -1, -1, -1, nan, nan, nan)
 
 do
 	read (unit, 550, iostat=ios) line
-	if (ios /= 0) stop 'Premature end of file'
+	if (ios /= 0) stop 'read_orf: premature end of file'
 	if (line(:1) == '#') exit
 enddo
 
@@ -111,6 +113,7 @@ do
 	if (line(:1) == '#') cycle
 	read (line(:23),601,iostat=ios) yy,mm,dd,hh,mn,ss
 	if (ios /= 0) exit
+	if (npass > mpass) stop 'read_orf: too many input records'
 	read (line(24:),*,iostat=ios) orf(npass)%cycle,orf(npass)%pass,orf(npass)%abs_rev,lon,lat
 	orf(npass)%abs_pass = (orf(npass)%cycle - 1) * nr_passes + orf(npass)%pass + abs_pass_offset
 	if (ios /= 0) exit
