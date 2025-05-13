@@ -120,7 +120,7 @@ type(var_) :: var(mvar)
 ! Struct for orbit info
 
 integer(fourbyteint) :: ipass
-integer(fourbyteint), parameter :: mpass = 120000 ! Enough for 12 years
+integer(fourbyteint), parameter :: mpass = 170000 ! Enough for 17 years
 type(orfinfo) :: orf(mpass)
 
 ! Other local variables
@@ -618,7 +618,7 @@ integer(twobyteint), intent(inout) :: flags(:)
 integer(fourbyteint), intent(in) :: bit
 integer(fourbyteint) :: i
 integer(twobyteint) :: j
-if (size(a) /= size(flags)) stop "Error in flag_set"
+if (size(a) /= size(flags)) stop 'Error in flag_set'
 j = int(bit,twobyteint)
 do i = 1,size(a)
 	if (a(i)) flags(i) = ibset(flags(i),j)
