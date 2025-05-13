@@ -45,6 +45,9 @@ rads_fix_n1      $options --all							>> "$log" 2>&1
 rads_add_refframe $options -x -x adaptive				>> "$log" 2>&1
 rads_add_sla      $options -Xgdr_g -x -x adaptive		>> "$log" 2>&1
 
+find $RADSROOT/ext/FDR4ALT/TDPATM/en1/c??? -name "*.nc" | sort > "$lst"
+rads_add_f4a_ers $options < "$lst"						>> "$log" 2>&1
+
 date													>> "$log" 2>&1
 
 rads_close_sandbox
