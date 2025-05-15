@@ -13,7 +13,7 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*rads_gen_swot -- Converts SWOT GDR-F data to RADS
+!*rads_gen_swot -- Converts SWOT GDR-F and GDR-G data to RADS
 !+
 program rads_gen_swot
 
@@ -76,13 +76,13 @@ program rads_gen_swot
 ! inv_bar_static - Inverse barometer
 ! inv_bar_mog2d - MOG2D
 ! tide_ocean/load_got410 - GOT4.10c ocean and load tide
-! tide_ocean/load_fes14 - FES2014 ocean and load tide
+! tide_ocean/load_fes14, tide_ocean/load_fes22 - FES2014/FES2022 ocean and load tide
 ! tide_non_equal - Long-period non-equilibrium tide
 ! tide_solid - Solid earth tide
 ! tide_pole - Pole tide
 ! geoid_egm2008 - EGM2008 geoid
-! mss_cnescls15 - CNES/CLS15 mean sea surface
-! mss_dtu18 - DTU18 mean sea surface
+! mss_cnescls15/mss_hybrid23 - CNES/CLS15 or Hybrid 2023 mean sea surface
+! mss_dtu18/mss_dtu21 - DTU18/DTU21 mean sea surface
 ! topo_ace2 - ACE2 topography
 ! surface_class - Surgace classification
 ! surface_type_rad? - Radiometer surface type
@@ -131,8 +131,8 @@ real(eightbytereal) :: equator_time
 ! Data variables
 
 integer(twobyteint), allocatable :: flags_mle3(:), flags_adaptive(:), flags_save(:)
-character(len=2) :: mss_cnescls_ver = '15', mss_dtu_ver = '18', tide_fes_ver = '14'
-character(len=3) :: tide_got_ver = '410'
+character(len=16) :: mss_sol1, mss_sol2, tide_sol1, tide_sol2
+character(len=1) :: baseline = 'F'
 integer :: latency = rads_nrt
 
 ! Other local variables
@@ -160,13 +160,6 @@ do
 	call log_string (basename(infile))
 	if (nft(nf90_open(infile,nf90_nowrite,ncid))) then
 		call log_string ('Error: failed to open input file', .true.)
-		cycle
-	endif
-
-! Check if input is a SWOT GDR-F Level 2 data set
-
-	if (index(infile,'_2Pf') .eq. 0) then
-		call log_string ('Error: this is not GDR-F', .true.)
 		cycle
 	endif
 
@@ -199,6 +192,25 @@ do
 	else if (S%sat /= arg(:2)) then
 		call log_string ('Error: wrong mission_name found in header', .true.)
 		cycle
+	endif
+
+! Get the baseline
+
+	call nfs(nf90_get_att(ncid, nf90_global,'source',arg))
+	baseline = arg(21:21)
+
+! Set new model versions
+
+	if (baseline < 'G') then
+		mss_sol1 = 'cnescls15'
+		mss_sol2 = 'dtu18'
+		tide_sol1 = 'got410'
+		tide_sol2 = 'fes14'
+	else
+		mss_sol1 = 'hybrid23'
+		mss_sol2 = 'dtu21'
+		tide_sol1 = 'got410'
+		tide_sol2 = 'fes22'
 	endif
 
 ! Get NetCDF ID for 1-Hz data
@@ -479,10 +491,10 @@ do
 
 ! Tides
 
-	call cpy_var (ncid1, 'ocean_tide_got load_tide_got SUB', 'tide_ocean_got' // tide_got_ver)
-	call cpy_var (ncid1, 'ocean_tide_fes load_tide_fes SUB ocean_tide_non_eq ADD', 'tide_ocean_fes' // tide_fes_ver)
-	call cpy_var (ncid1, 'load_tide_got', 'tide_load_got' // tide_got_ver)
-	call cpy_var (ncid1, 'load_tide_fes', 'tide_load_fes' // tide_fes_ver)
+	call cpy_var (ncid1, 'ocean_tide_got load_tide_got SUB', 'tide_ocean_' // tide_sol1)
+	call cpy_var (ncid1, 'ocean_tide_fes load_tide_fes SUB ocean_tide_non_eq ADD', 'tide_ocean_' // tide_sol2)
+	call cpy_var (ncid1, 'load_tide_got', 'tide_load_' // tide_sol1)
+	call cpy_var (ncid1, 'load_tide_fes', 'tide_load_' // tide_sol2)
 	call cpy_var (ncid1, 'ocean_tide_eq', 'tide_equil')
 	call cpy_var (ncid1, 'ocean_tide_non_eq', 'tide_non_equil')
 	call cpy_var (ncid1, 'internal_tide_hret', 'tide_internal')
@@ -494,9 +506,9 @@ do
 	call get_var (ncid1, 'geoid', a)
 	call new_var ('geoid_egm2008', a + dh)
 	call get_var (ncid1, 'mean_sea_surface_cnescls', a)
-	call new_var ('mss_cnescls' // mss_cnescls_ver, a + dh)
+	call new_var ('mss_' // mss_sol1, a + dh)
 	call get_var (ncid1, 'mean_sea_surface_dtu', a)
-	call new_var ('mss_dtu' // mss_dtu_ver, a + dh)
+	call new_var ('mss_' // mss_sol2, a + dh)
 
 ! Surface type and coastal proximity
 
