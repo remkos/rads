@@ -81,7 +81,7 @@ character(len=rads_cmdl) :: infile, arg
 
 integer(fourbyteint) :: ncid, ncid_m1, ncid_x1, ncid_m7, ncid_m20, ncid_x20, varid, &
 	nrec_m1, nrec_x1, nrec_m20, nrec_x20, nrec_in
-real(eightbytereal) :: first_measurement_time, last_measurement_time, time_slop
+real(eightbytereal) :: first_measurement_time, last_measurement_time, time_slop, slop = nan
 integer(fourbyteint) :: product_type
 integer(fourbyteint), parameter :: tdp_oc = 0, tdp_wa = 1, tdpatm = 2
 
@@ -98,11 +98,12 @@ type :: var_
 	logical :: empty, zero ! .true. if all NaN or all zero
 endtype
 type(var_) :: var(mvar)
+character(len=rads_varl) :: refvar = ' '
 
 ! Struct for orbit info
 
 integer(fourbyteint) :: ipass
-integer(fourbyteint), parameter :: mpass = 120000 ! Enough for 12 years
+integer(fourbyteint), parameter :: mpass = 170000 ! Enough for 17 years
 type(orfinfo) :: orf(mpass)
 
 ! Other local variables
@@ -114,8 +115,18 @@ real(eightbytereal), parameter :: sec2000=473299200d0	! UTC seconds from 1 Jan 1
 ! Initialise
 
 call synopsis ('--head')
+call rads_set_options (' slop: time-slop:')
 call rads_init (S)
 var(:)%d(0) = nan ! To link non-matching records to
+
+! Scan options
+
+do i = 1,rads_nopt
+	select case (rads_opt(i)%opt)
+	case ('slop', 'time-slop')
+		read (rads_opt(i)%arg, *, iostat=ios) slop
+	end select
+enddo
 
 ! Load the ORF file and change time to sec1985
 
@@ -208,7 +219,12 @@ input_loop: do
 		call nfs(nf90_get_att(ncid,nf90_global,'cycle_number',cycle_number))
 		call nfs(nf90_get_att(ncid,nf90_global,'pass_number',pass_number))
 		nrec_in = nrec_m1
-		time_slop = 2d-6
+		if (isan_(slop)) then
+			time_slop = slop
+		else
+			time_slop = 2d-6
+		endif
+		refvar = 'range_ku'
 
 	else if (product_type == tdp_wa) then
 !-----------------------------------------------------------------------
@@ -226,7 +242,12 @@ input_loop: do
 		read (arg, *, iostat=ios) cycle_number
 		call nfs(nf90_get_att(ncid,nf90_global,'pass_number',arg))
 		read (arg, *, iostat=ios) pass_number
-		time_slop = S%dt1hz / 10
+				if (isan_(slop)) then
+			time_slop = slop
+		else
+			time_slop = 0.1d0 * S%dt1hz
+		endif
+		refvar = 'swh_ku'
 
 	else
 !-----------------------------------------------------------------------
@@ -243,7 +264,12 @@ input_loop: do
 		! Read cycle and pass number
 		call nfs(nf90_get_att(ncid,nf90_global,'cycle_number',cycle_number))
 		call nfs(nf90_get_att(ncid,nf90_global,'pass_number',pass_number))
-		time_slop = 0.6d0 * S%dt1hz
+				if (isan_(slop)) then
+			time_slop = slop
+		else
+			time_slop = 0.6d0 * S%dt1hz
+		endif
+		refvar = 'water_vapor_rad'
 
 	endif
 
@@ -311,7 +337,7 @@ input_loop: do
 
 ! Write out the pending data
 
-		call put_rads (nrec_out, time_slop)
+		call put_rads (nrec_out, time_slop, refvar)
 
 	! Number of measurements remaining
 		nrec_buf = nrec_buf - nrec_out
@@ -326,7 +352,7 @@ enddo input_loop
 ! Write out optional remaining data
 
 call which_pass (var(1)%d(1))
-call put_rads (nrec_out, time_slop)
+call put_rads (nrec_out, time_slop, refvar)
 
 call rads_end (S)
 
@@ -459,6 +485,8 @@ call get_var (ncid_m7, 'rad_attenuation_ku', x(:,3))
 
 ! Get quality flag
 call get_var (ncid_m7, 'rad_retrieval_quality_flag', qual)
+! For ERS-1 and ERS-2 the quality flag appears always empty, so we set it all to 0
+if (all(isnan_(qual))) qual = 0
 
 ! Make running average over 7 points, within a second interval, of the same surface type, and of good quality
 sumx = 0d0
@@ -489,9 +517,10 @@ end subroutine process_pass_atm
 ! Write content of memory to a single pass of RADS data
 !-----------------------------------------------------------------------
 
-subroutine put_rads (nrec_out, time_slop)
+subroutine put_rads (nrec_out, time_slop, refvar)
 integer(fourbyteint), intent(in) :: nrec_out
-real(eightbytereal) :: time_slop
+real(eightbytereal), intent(in) :: time_slop
+character(len=*), intent(in) :: refvar
 real(eightbytereal), allocatable :: t(:), val(:)
 integer(fourbyteint), allocatable :: idx(:)
 character(len=80) :: message
@@ -513,7 +542,7 @@ endif
 
 allocate (t(P%ndata), val(P%ndata), idx(P%ndata))
 call rads_get_var (S, P, 'time', t)
-call rads_get_var (S, P, 'range_ku', val)
+call rads_get_var (S, P, refvar, val)
 idx = 0
 j = 1 ! FDR4ALT data record counter
 do i = 1,P%ndata ! RADS data records counter
@@ -536,15 +565,15 @@ if (j == P%ndata) then ! No matches at all, so skip writing
 endif
 j = count(idx == 0 .and. isan_(val)) ! Count the non-matching records that have valid range
 if (j > 0) then ! Some missing matches
-	write (message, "('Warning:',i4,' Valid RADS data have no match in FDRALT product')") j
+	write (message, "('Warning:',i5,' Valid RADS data have no match in FDRALT product')") j
 	call log_string (trim(message), .false.)
 endif
 
 ! Check which variables are empty or all zero
-do i = 1,nvar
+forall (i = 1:nvar)
 	var(i)%empty = all(isnan_(var(i)%d(idx)))
 	var(i)%zero = all(var(i)%d(idx) == 0d0)
-enddo
+end forall
 
 ! Write out the empty variables to be kept
 if (any(var(1:nvar)%empty)) then
@@ -622,6 +651,11 @@ subroutine synopsis (flag)
 character(len=*), optional, intent(in) :: flag
 if (rads_version ('Write FDR4ALT data to RADS', flag=flag)) return
 call synopsis_devel (' [processing_options] < list_of_FDR4ALT_file_names')
+write (*,1310)
+1310 format (/ &
+'Additional [processing_options] are:'/ &
+'  --slop, --time-slop SEC   Set maximum allowed time discrepancy (in seconds) between FDR4ALT and RADS records' / &
+'                            (default: 2 ms for TDP_OC, 0.1 dt1hz for TDP_WA, 0.6 dt1hz for TDPATM')
 stop
 end subroutine synopsis
 
