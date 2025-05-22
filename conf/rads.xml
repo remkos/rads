@@ -1791,7 +1791,7 @@ Global RADS configuration file
 	<format>f10.4</format>
 	<compress>int4 1e-4</compress>
 </var>
-<var name="mss_cnescls15" field="1619" sat="3a 3b 6a 6b c2 j1 j2 j3 n1.f4a sa sw tx pn">
+<var name="mss_cnescls15" field="1619">
 	<long_name>CNES-CLS15 mean sea surface height</long_name>
 	<standard_name>sea_surface_height_above_reference_ellipsoid</standard_name>
 	<source>CNES-CLS15</source>
