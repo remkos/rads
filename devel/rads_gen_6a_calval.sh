@@ -117,7 +117,6 @@ esac
 # General geophysical corrections
 rads_add_common   $options										>> "$log" 2>&1
 rads_add_mfwam    $options --all --new							>> "$log" 2>&1
-rads_add_iono     $options --all								>> "$log" 2>&1
 rads_add_orbit    $options -Valt_gps --dir=jplgpspoe -C5-112	>> "$log" 2>&1
 rads_add_orbit    $options -Valt_gps --dir=jplgpsmoe -C113-299	>> "$log" 2>&1
 rads_add_orbit    $options -Valt_std2400 -C4-152                >> "$log" 2>&1

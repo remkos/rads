@@ -48,7 +48,6 @@ rads_add_orbit    $options -Valt_gps     -C1-327		>> "$log" 2>&1
 rads_add_orbit    $options -Valt_slcci   -C0-248		>> "$log" 2>&1
 rads_add_orbit    $options -Valt_std2400 -C1-303		>> "$log" 2>&1
 rads_add_ssb      $options --ssb=ssb_tran2012			>> "$log" 2>&1
-rads_add_iono     $options --all						>> "$log" 2>&1
 rads_add_common   $options								>> "$log" 2>&1
 rads_add_tide     $options --models=fes14				>> "$log" 2>&1
 rads_add_mog2d    $options --ymd=19910101,20160101 -ue  >> "$log" 2>&1

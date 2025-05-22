@@ -81,7 +81,6 @@ esac
 
 rads_add_common   $options							>> "$log" 2>&1
 rads_add_mfwam    $options --wind					>> "$log" 2>&1
-rads_add_iono     $options --all					>> "$log" 2>&1
 # To support GDR-G with backward compatibility
 grep -q _2Pf $lst || rads_add_tide $options --models=fes14		>> "$log" 2>&1
 

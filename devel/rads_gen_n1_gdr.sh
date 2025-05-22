@@ -32,12 +32,10 @@ rads_gen_n1_gdr  $options < "$lst"						>> "$log" 2>&1
 # Add the FDR4ALT data
 
 find $RADSROOT/ext/FDR4ALT/TDP_??/en1/c??? -name "*.nc" | sort -t_ -k7,8 > "$lst"
-date
 rads_add_f4a_env $options < "$lst"						>> "$log" 2>&1
 
 # Do the patches to all data
 
-rads_add_iono    $options --all							>> "$log" 2>&1
 rads_add_common  $options								>> "$log" 2>&1
 rads_fix_n1      $options --all							>> "$log" 2>&1
 

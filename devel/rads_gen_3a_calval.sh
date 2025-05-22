@@ -69,7 +69,6 @@ case ${sat} in
 	3a) rads_add_mfwam $options -C40-199 --all --new	>> "$log" 2>&1 ;;
 	3b) rads_add_mfwam $options -C21-199 --all --new	>> "$log" 2>&1 ;;
 esac
-rads_add_iono     $options --all						>> "$log" 2>&1
 # Redetermine SSHA
 rads_add_refframe $options -x -x plrm					>> "$log" 2>&1
 rads_add_sla      $options -x -x plrm					>> "$log" 2>&1
