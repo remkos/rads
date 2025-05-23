@@ -41,7 +41,6 @@ program rads_add_f4a_ers
 ! wet_tropo_rad - Radiometer wet tropo correction
 ! iono_nic09 - NIC09 ionospheric correction
 ! iono_gim - GIM ionosphetic correction
-! ssb_tran2019_3d - SSB Tran 2019 3D
 ! inv_bar_mog2d_era - MOG2D dynamic atmospheric correction (ERA driven)
 ! tide_internal - Internal tide
 ! tide_solid - Solid earth tide
@@ -563,7 +562,7 @@ if (j == P%ndata) then ! No matches at all, so skip writing
 	call rads_close_pass (S, P)
 	return
 endif
-j = count(idx == 0 .and. isan_(val)) ! Count the non-matching records that have valid range
+j = count(idx == 0 .and. isan_(val)) ! Count the non-matching records for which "refvar" is valid
 if (j > 0) then ! Some missing matches
 	write (message, "('Warning:',i5,' Valid RADS data have no match in FDRALT product')") j
 	call log_string (trim(message), .false.)
