@@ -46,6 +46,7 @@ type(orbit) :: info(-1:1), orf(morf), diff
 integer(fourbyteint) :: i
 real(eightbytereal) :: dt = 1d0
 character(len=rads_cmdl) :: dir = ''
+logical :: extend = .true.
 
 ! Other variables
 
@@ -56,7 +57,7 @@ character(len=26) :: date
 ! Scan command line for options
 
 call synopsis
-call rads_set_options (' dir: dt: ext:')
+call rads_set_options (' dir: dt: no-ext')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
@@ -65,6 +66,8 @@ do i = 1,rads_nopt
 		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	case ('dir')
 		dir = rads_opt(i)%arg
+	case ('no-ext')
+		extend = .false.
 	end select
 enddo
 
@@ -127,17 +130,19 @@ enddo
 ! Extend the list until the upper time limit
 ! For computing steps into future, start with an equator crossing; it is more accurate
 
-if (abs(orf(norf)%lat) > min_lat) norf = norf - 1
-if (norf >= 5) then
-	diff%time = orf(norf)%time - orf(norf-4)%time
-	diff%lon = orf(norf)%lon - orf(norf-4)%lon
-	do
-		if (orf(norf-3)%time + diff%time > S%time%info%limits(2)) exit
-		norf = norf + 1
-		orf(norf)%time = orf(norf-4)%time + diff%time
-		orf(norf)%lon = orf(norf-4)%lon + diff%lon
-		orf(norf)%lat = orf(norf-4)%lat
-	enddo
+if (extend) then
+	if (abs(orf(norf)%lat) > min_lat) norf = norf - 1
+	if (norf >= 5) then
+		diff%time = orf(norf)%time - orf(norf-4)%time
+		diff%lon = orf(norf)%lon - orf(norf-4)%lon
+		do
+			if (orf(norf-3)%time + diff%time > S%time%info%limits(2)) exit
+			norf = norf + 1
+			orf(norf)%time = orf(norf-4)%time + diff%time
+			orf(norf)%lon = orf(norf-4)%lon + diff%lon
+			orf(norf)%lat = orf(norf-4)%lat
+		enddo
+	endif
 endif
 
 ! Print file header
@@ -179,7 +184,8 @@ write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:'/ &
 '  --dir STR                 Specify orbit directory path'/ &
-'  --dt DT                   Specify time stepping interval (s), default: 1')
+'  --dt DT                   Specify time stepping interval (s), default: 1'/ &
+'  --no-ext                  Do not automatically extend beyond end of orbit solution')
 stop
 end subroutine synopsis
 
