@@ -1593,7 +1593,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
 </var>
-<var name="ssb_tran2019_3d" field="1515" sat="e1.f4* e2.f4* n1.f4a sa">
+<var name="ssb_tran2019_3d" field="1515" sat="n1.f4a sa">
 	<long_name>Tran et al. 2019 3D non-parametric sea state bias</long_name>
 	<standard_name>sea_surface_height_bias_due_to_sea_surface_roughness</standard_name>
 	<units>m</units>
