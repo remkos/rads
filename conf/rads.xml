@@ -460,19 +460,6 @@ Global RADS configuration file
 	<format>f11.3</format>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<!--
-<var name="alt_eig6s2" field="417" sat="j1 j2">
-	<long_name>ESOC EIGEN-6S2 orbital altitude</long_name>
-	<standard_name>height_above_reference_ellipsoid</standard_name>
-	<source>ESOC, EIGEN-6S2</source>
-	<parameters>eigen-6s2-esoc</parameters>
-	<units>m</units>
-	<data>alt_eig6s2</data>
-	<format>f12.4</format>
-	<compress>int4 1e-4 1300e3</compress>
-	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
-</var>
--->
 <var name="alt_gdrd" field="418" sat="2a c2 j1 n1 sa">
 	<long_name>CNES GDR-D orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
@@ -484,17 +471,6 @@ Global RADS configuration file
 	<compress>int4 1e-4 700e3</compress>
 	<compress sat="2a">int4 1e-4 900e3</compress>
 	<compress sat="j1 j2">int4 1e-4 1300e3</compress>
-	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
-</var>
-<var name="alt_std1204" field="419" sat="j1">
-	<long_name>GSFC/Std1204 orbital altitude</long_name>
-	<standard_name>height_above_reference_ellipsoid</standard_name>
-	<source>GSFC/Std1204</source>
-	<parameters>gsfc_std1204</parameters>
-	<units>m</units>
-	<data>alt_std1204</data>
-	<format>f12.4</format>
-	<compress>int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
 <var name="alt_reaper" field="420" sat="e1 e2">
@@ -618,7 +594,7 @@ Global RADS configuration file
 <alias name="alt" field="4" sat="e1.f4* e2.f4*">alt_reaper_deos</alias>
 <alias name="alt" field="4" sat="g1">alt_pgs7777</alias>
 <alias name="alt" field="4" sat="gs">alt_gdrcp</alias>
-<alias name="alt" field="4" sat="j1">alt_gdre</alias>
+<alias name="alt" field="4" sat="j1">alt_gdrf alt_gdre</alias>
 <alias name="alt" field="4" sat="n1">alt_gdrd alt_gdrcp</alias>
 <alias name="alt" field="4" sat="n1.f4a">alt_gdrf</alias>
 <var name="alt_cnes_20hz" sat="c2">
@@ -4210,90 +4186,6 @@ Global RADS configuration file
 		0.01220911657 MUL</data>
 	<format>f7.4</format>
 	<compress>int1 1e-4</compress>
-</var>
-
-<var name="mean_wave_period" sat="3a 3b 6a 6b j2 j3 sa sw tx pn">
-<var name="wave_m0" field="4001 40" sat="!e1 gs">
-	<long_name>WaveWatch3 wave height variance</long_name>
-	<source>WaveWatch3</source>
-	<units>m^2</units>
-	<data>wave_m0</data>
-	<compress>int2 1e-3</compress>
-</var>
-
-<var name="wave_m1" field="4101 41" sat="!e1 gs">
-	<long_name>WaveWatch3 first moment of wave height</long_name>
-	<source>WaveWatch3</source>
-	<units>m^2/s</units>
-	<data>wave_m1</data>
-	<format>f7.4</format>
-	<compress>int2 1e-4</compress>
-</var>
-
-<var name="wave_m2" field="4201 42" sat="!e1 gs">
-	<long_name>WaveWatch3 wave velocity variance</long_name>
-	<source>WaveWatch3</source>
-	<units>m^2/s^2</units>
-	<data>wave_m2</data>
-	<format>f8.5</format>
-	<compress>int2 1e-5</compress>
-</var>
-
-<var name="wave_m4" field="4301 43" sat="!e1 gs">
-	<long_name>WaveWatch3 wave slope variance</long_name>
-	<source>WaveWatch3</source>
-	<units>radian^2</units>
-	<data>wave_m4</data>
-	<format>f9.6</format>
-	<compress>int2 1e-6</compress>
-</var>
-
-<var name="wave_shs" field="4401 44" sat="!e1 gs">
-	<long_name>WaveWatch3 wave swell height</long_name>
-	<standard_name>sea_surface_swell_wave_significant_height</standard_name>
-	<source>WaveWatch3</source>
-	<units>m</units>
-	<data>wave_shs</data>
-	<format>f6.3</format>
-	<compress>int2 1e-3</compress>
-</var>
-
-<var name="wave_wu" sat="!e1 gs">
-	<long_name>WaveWatch3 zonal wind speed</long_name>
-	<source>WaveWatch3</source>
-	<units>m/s</units>
-	<data>wave_wu</data>
-	<format>f6.3</format>
-	<compress>int2 1e-3</compress>
-</var>
-
-<var name="wave_wv" sat="!e1 gs">
-	<long_name>WaveWatch3 meridional wind speed</long_name>
-	<source>WaveWatch3</source>
-	<units>m/s</units>
-	<data>wave_wu</data>
-	<format>f6.3</format>
-	<compress>int2 1e-3</compress>
-</var>
-
-<var name="wave_spr" sat="!e1 gs">
-	<long_name>WaveWatch3 wave swell period</long_name>
-	<standard_name>sea_surface_swell_wave_period</standard_name>
-	<source>WaveWatch3</source>
-	<units>s</units>
-	<data>wave_spr</data>
-	<format>f6.3</format>
-	<compress>int2 1e-3</compress>
-</var>
-
-<var name="wave_sdr" sat="!e1 gs">
-	<long_name>WaveWatch3 wave swell direction</long_name>
-	<standard_name>sea_surface_swell_wave_to_direction</standard_name>
-	<source>WaveWatch3</source>
-	<units>radian</units>
-	<data>wave_sdr</data>
-	<format>f6.3</format>
-	<compress>int2 1e-3</compress>
 </var>
 
 <var name="mean_wave_period" sat="3a 3b 6a 6b j2 j3 sa sw tx pn">
