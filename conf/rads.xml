@@ -1557,7 +1557,7 @@ Global RADS configuration file
 		<long_name>Tran et al. 2021 non-parametric sea state bias</long_name>
 		<source>Tran et al., 2021</source>
 	</if>
-	<if sat="6a 6b j3 sw">
+	<if sat="6a 6b j2 j3 sw">
 		<long_name>Tran et al. 2020 non-parametric sea state bias</long_name>
 		<parameters>AUX_SBLK_S6A_002.nc?SSB -xwind_speed_alt -yswh_ku</parameters>
 		<source>SSB_2020_J3_GDRF</source>
@@ -1597,7 +1597,7 @@ Global RADS configuration file
 		<source>Tran et al., 2012</source>
 		<comment edit="append">This model is actually based on Jason-2 data and not Sentinel-3, and will be replaced later.</comment>
 	</if>
-	<if sat="6a 6b j3 sw">
+	<if sat="6a 6b j2 j3 sw">
 		<long_name>Tran et al. 2020 non-parametric sea state bias (C-band)</long_name>
 		<parameters>AUX_SBLC_S6A_002.nc?SSB -xwind_speed_alt -yswh_ku</parameters>
 		<source>SSB_2020_J3_GDRF</source>
@@ -1615,7 +1615,7 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>A sea state bias correction must be added to range to correct for sea state delays</comment>
-	<if sat="6a 6b j3 sw">
+	<if sat="6a 6b j2 j3 sw">
 		<long_name>Tran et al. 2020 non-parametric sea state bias (MLE3)</long_name>
 		<parameters>AUX_SBLK_S6A_002.nc?SSB -xwind_speed_alt_mle3 -yswh_ku_mle3</parameters>
 		<source>SSB_2020_J3_GDRF</source>
@@ -2010,7 +2010,7 @@ Global RADS configuration file
 	<format>f6.3</format>
 	<compress>int2 1e-3</compress>
 </var>
-<alias name="swh_nr" sat="6a 6b j3 sw">swh_ku_nr</alias>
+<alias name="swh_nr" sat="6a 6b j2 j3 sw">swh_ku_nr</alias>
 <var name="swh_c" field="1702" sat="2a 3a 3b 6a 6b j1 j2 j3 tx sw">
 	<long_name>C-band significant wave height</long_name>
 	<standard_name>sea_surface_wave_significant_height</standard_name>
@@ -2931,7 +2931,7 @@ Global RADS configuration file
 	<long_name>radiometer land flag</long_name>
 	<flag_values>water land</flag_values>
 	<plot_range>0 1</plot_range>
-	<if sat="6a 6b j3">
+	<if sat="6a 6b j2 j3">
 		<long_name>radiometer surface type</long_name>
 		<flag_values>open_ocean coastal_ocean coastal_amr land</flag_values>
 		<data>surface_type_rad</data>
@@ -3238,7 +3238,7 @@ Global RADS configuration file
 	<comment>Computed from a mask built with MODIS and GlobCover data</comment>
 </var>
 
-<var name="flag_manoeuvre" sat="6a 6b j3 sa sw">
+<var name="flag_manoeuvre" sat="6a 6b j2 j3 sa sw">
 	<long_name>flag indicating whether the satellite is in a manoeuvre</long_name>
 	<standard_name>status_flag</standard_name>
 	<flag_values>no_manoeuvre manoeuvre_ongoing</flag_values>
@@ -3406,19 +3406,19 @@ Global RADS configuration file
 	</flag_masks>
 </var>
 
-<var name="drange_ku" field="2701" sat="2a 6a 6b c2 e1 e2 gs j3 n1 sw tx pn">
+<var name="drange_ku" field="2701" sat="2a 6a 6b c2 e1 e2 gs j2 j3 n1 sw tx pn">
 	<long_name>Ku-band range bias</long_name>
-	<long_name sat="6a 6b j3 sw tx pn">net instrument correction to Ku-band range</long_name>
+	<long_name sat="6a 6b j2 j3 sw tx pn">net instrument correction to Ku-band range</long_name>
 	<long_name sat="c2">Ku-band retracker range (relative to window delay)</long_name>
 	<units>m</units>
 	<data>drange_ku</data>
 	<compress>int2 1e-3</compress>
-	<compress sat="6a 6b j3 sw tx pn">int4 1e-4</compress>
+	<compress sat="6a 6b j2 j3 sw tx pn">int4 1e-4</compress>
 	<format>f6.3</format>
-	<format sat="6a 6b j3 sw tx pn">f7.4</format>
+	<format sat="6a 6b j2 j3 sw tx pn">f7.4</format>
 	<comment>Range correction already added to range</comment>
 </var>
-<var name="drange_ku_mle3" sat="6a 6b j3 sw tx">
+<var name="drange_ku_mle3" sat="6a 6b j2 j3 sw tx">
 	<long_name>net instrument correction to Ku-band range (MLE3)</long_name>
 	<units>m</units>
 	<data>drange_ku_mle3</data>
@@ -3444,14 +3444,14 @@ Global RADS configuration file
 	<comment>Range correction already added to range</comment>
 </var>
 
-<var name="drange_c" sat="2a 6a 6b j3 sw tx">
+<var name="drange_c" sat="2a 6a 6b j2 j3 sw tx">
 	<long_name>net instrument correction to C-band range</long_name>
 	<units>m</units>
 	<data>drange_c</data>
 	<compress>int2 1e-3</compress>
-	<compress sat="6a 6b j3 sw tx">int4 1e-4</compress>
+	<compress sat="6a 6b j2 j3 sw tx">int4 1e-4</compress>
 	<format>f6.3</format>
-	<format sat="6a 6b j3 sw tx">f7.4</format>
+	<format sat="6a 6b j2 j3 sw tx">f7.4</format>
 	<comment>Range correction already added to range</comment>
 </var>
 <var name="drange_cal" field="2702" sat="c2 e1 e2 gs">
@@ -3506,7 +3506,7 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Range correction already added to range</comment>
 </var>
-<alias name="drange" field="27" sat="2a 6a 6b c2 e1 e2 gs j3 n1 sw tx pn">drange_ku</alias>
+<alias name="drange" field="27" sat="2a 6a 6b c2 e1 e2 gs j2 j3 n1 sw tx pn">drange_ku</alias>
 
 <var name="swh_rms_norm" field="2801">
 	<long_name>normalized std dev of significant wave height</long_name>
@@ -3774,7 +3774,7 @@ Global RADS configuration file
 	<default>0</default>
 	<compress>int2 1e-4</compress>
 </var>
-<var name="off_nadir_angle2_wf_rms_ku" field="3005" sat="3a 3b 6a 6b c2 j3 sw tx">
+<var name="off_nadir_angle2_wf_rms_ku" field="3005" sat="3a 3b 6a 6b c2 j2 j3 sw tx">
 	<long_name>std dev of off-nadir pointing angle squared from waveform</long_name>
 	<units>degrees^2</units>
 	<plot_range>0.0 0.04</plot_range>
@@ -3839,7 +3839,7 @@ Global RADS configuration file
 	<dimensions>2</dimensions>
 </var>
 
-<var name="dswh_ku" field="3101" sat="2a 6a 6b j3 sw">
+<var name="dswh_ku" field="3101" sat="2a 6a 6b j2 j3 sw">
 	<long_name>net instrument correction to Ku-band significant wave height</long_name>
 	<units>m</units>
 	<data>dswh_ku</data>
@@ -3848,7 +3848,7 @@ Global RADS configuration file
 	<compress>int2 1e-3</compress>
 	<comment>Correction already added to significant wave height</comment>
 </var>
-<var name="dswh_ku_mle3" sat="6a 6b j3 sw">
+<var name="dswh_ku_mle3" sat="6a 6b j2 j3 sw">
 	<long_name>net instrument correction to Ku-band significant wave height (MLE3)</long_name>
 	<units>m</units>
 	<data>dswh_ku_mle3</data>
@@ -3876,7 +3876,7 @@ Global RADS configuration file
 	<compress>int2 1e-3</compress>
 	<comment>Correction already added to significant wave height</comment>
 </var>
-<var name="dswh_c" field="3102" sat="2a 6a 6b j3 sw">
+<var name="dswh_c" field="3102" sat="2a 6a 6b j2 j3 sw">
 	<long_name>net instrument correction to C-band significant wave height</long_name>
 	<units>m</units>
 	<data>dswh_c</data>
@@ -3886,7 +3886,7 @@ Global RADS configuration file
 	<comment>Correction already added to significant wave height</comment>
 </var>
 
-<var name="dsig0_ku" field="3201" sat="2a 6a 6b e1 e2 j3 sw tx pn">
+<var name="dsig0_ku" field="3201" sat="2a 6a 6b e1 e2 j2 j3 sw tx pn">
 	<long_name>net instrument correction to Ku-band backscatter coefficient</long_name>
 	<units>dB</units>
 	<data>dsig0_ku</data>
@@ -3895,7 +3895,7 @@ Global RADS configuration file
 	<compress>int2 1e-2</compress>
 	<comment>Correction already added to backscatter coefficient</comment>
 </var>
-<var name="dsig0_ku_mle3" sat="6a 6b j3 sw tx">
+<var name="dsig0_ku_mle3" sat="6a 6b j2 j3 sw tx">
 	<long_name>net instrument correction to Ku-band backscatter coefficient (MLE3)</long_name>
 	<units>dB</units>
 	<data>dsig0_ku_mle3</data>
@@ -3923,7 +3923,7 @@ Global RADS configuration file
 	<compress>int2 1e-2</compress>
 	<comment>Correction already added to backscatter coefficient</comment>
 </var>
-<var name="dsig0_c" field="3202" sat="2a 6a 6b j3 sw tx">
+<var name="dsig0_c" field="3202" sat="2a 6a 6b j2 j3 sw tx">
 	<long_name>net instrument correction to C-band backscatter coefficient</long_name>
 	<units>dB</units>
 	<data>dsig0_c</data>
@@ -4411,7 +4411,7 @@ Global RADS configuration file
 	<compress>int2 1e-3</compress>
 </var>
 
-<var name="mean_wave_period" sat="3a 3b 6a 6b j3 sa sw tx pn">
+<var name="mean_wave_period" sat="3a 3b 6a 6b j2 j3 sa sw tx pn">
 	<long_name>t02 mean wave period</long_name>
 	<standard_name>sea_surface_wind_wave_mean_period_from_variance_spectral_density_second_frequency_moment</standard_name>
 	<source>MFWAM/Meteo France</source>
@@ -4421,7 +4421,7 @@ Global RADS configuration file
 	<compress>int2 1e-2</compress>
 </var>
 
-<var name="mean_wave_direction" sat="3a 3b 6a 6b j3 sa sw">
+<var name="mean_wave_direction" sat="3a 3b 6a 6b j2 j3 sa sw">
 	<long_name>mean direction of the sea surface wave</long_name>
 	<standard_name>sea_surface_wave_from_direction</standard_name>
 	<source>MFWAM/Meteo France</source>
@@ -4476,7 +4476,7 @@ Global RADS configuration file
 	<comment>Negative numbers are inland, positive numbers are offshore</comment>
 </var>
 
-<var name="rad_dist_coast" sat="6a 6b j3 tx pn">
+<var name="rad_dist_coast" sat="6a 6b j2 j3 tx pn">
 	<long_name>radiometer main beam radial distance to land</long_name>
 	<units>km</units>
 	<data>rad_dist_coast</data>
@@ -4514,7 +4514,7 @@ Global RADS configuration file
 		and 1 means totally affected by land (inland); can be used for screening purposes in place of distance from coast</comment>
 </var>
 
-<var name="angle_coast" sat="3a 3b 6a 6b j3 sw">
+<var name="angle_coast" sat="3a 3b 6a 6b j2 j3 sw">
 	<long_name>angle of approach to the coast</long_name>
 	<source>EUMETSAT</source>
 	<data>angle_coast</data>
