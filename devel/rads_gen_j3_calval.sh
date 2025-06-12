@@ -91,12 +91,18 @@ rads_add_mfwam    $options -C107-999 --wind			>> "$log" 2>&1
 rads_add_orbit    $options -Valt_gps --dir=jplgpspoe -C0-360	>> "$log" 2>&1
 rads_add_orbit    $options -Valt_gps --dir=jplgpsmoe -C360-999	>> "$log" 2>&1
 rads_add_orbit    $options -Valt_std2400 -C1-390    >> "$log" 2>&1
-# To support GDR-G with backward compatibility
-grep -q _2Pg $lst && rads_add_tide $options --models=fes14		>> "$log" 2>&1
+
+if grep -q _2Pg $lst ; then
+	# For GDR-G we add the FES2014 model
+	rads_add_tide $options --models=fes14			>> "$log" 2>&1
+else
+	# For GDR-F we add MLE3 support
+	extra="-x mle3 $extra"
+fi
 
 # Redetermine SSHA
-rads_add_refframe $options -x -x mle3 $extra		>> "$log" 2>&1
-rads_add_sla      $options -x -x mle3 $extra		>> "$log" 2>&1
+rads_add_refframe $options -x $extra				>> "$log" 2>&1
+rads_add_sla      $options -x $extra				>> "$log" 2>&1
 
 date												>> "$log" 2>&1
 

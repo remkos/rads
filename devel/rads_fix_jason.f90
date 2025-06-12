@@ -140,8 +140,7 @@ integer(fourbyteint) :: i
 
 call log_pass (P)
 
-! Adjust radiometer wet tropo by 2 mm because of uncorrected drift.
-! This should be only used for OGDRs or IGDRs.
+! Adjust radiometer wet tropo because of uncorrected drift.
 
 if (lrad) then
 	call rads_get_var (S, P, 'wet_tropo_rad', wet, .true.)
