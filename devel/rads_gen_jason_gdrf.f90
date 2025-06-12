@@ -302,7 +302,7 @@ do
 
 ! Determine if we have MLE3-derived variables (from GDR-G onward). If not, then we suppress all MLE3 variables.
 
-	has_mle3 = (nf90_inq_varid(ncidk,'wind_speed_alt_mle3',varid) == nf90_noerr)
+	has_mle3 = (nf90_inq_varid(ncid1,'wind_speed_alt_mle3',varid) == nf90_noerr)
 
 ! Compile flag bits
 
