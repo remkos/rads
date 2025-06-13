@@ -82,7 +82,7 @@ enddo
 
 select case (type)
 case (type_era)
-	call parseenv ('${RADSROOT}/ext/slcci/Products/DAC_ERA_Interim_20161115/%Y/dac_era_interim_%Y%m%d_%H', path)
+	call parseenv ('${RADSROOT}/ext/slcci/Products/DAC_ERA_Interim_20161115/%Y/dac_era_interim_%Y%m%d_%H.nc', path)
 	varnm = 'inv_bar_mog2d_era'
 case default
 	call parseenv ('${ALTIM}/data/dac/%Y/dac_dif_%Y%m%d_%H.nc', path)
