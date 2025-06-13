@@ -51,9 +51,9 @@ rads_add_mfwam    $options --wind					>> "$log" 2>&1
 rads_add_iono     $options --all					>> "$log" 2>&1
 
 # If not GDR-F, add the FES2014 model
-if grep -q _2Pf $lst || rads_add_tide $options --models=fes14	>> "$log" 2>&1
+grep -q _2Pf $lst || rads_add_tide $options --models=fes14	>> "$log" 2>&1
 # If not GDR-G, add MLE3 support
-if grep -q _2Pg $lst || extra="-x mle3 $extra"
+grep -q _2Pg $lst || extra="-x mle3 $extra"
 
 # Redetermine SSHA
 rads_add_refframe $options -x $extra				>> "$log" 2>&1
