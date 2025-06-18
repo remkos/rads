@@ -5055,7 +5055,7 @@ Global RADS configuration file
 		<cycles>305 327</cycles>
 		<repeat>9.91564280 254</repeat>
 		<ref_pass>2016-10-17T09:24:22 98.51 306 1 38774</ref_pass>
-		<start_time>2016-10-14</start_time>
+		<start_time>2016-10-13</start_time>
 	</phase>
 	<phase name="c">
 		<mission>Geodetic Mission 1</mission>
