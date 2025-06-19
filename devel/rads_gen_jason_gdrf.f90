@@ -241,6 +241,12 @@ do
 		read (infile(i+17:i+23),'(i3,1x,i3)') cyclenr, passnr
 	endif
 
+! Set mission phase based on equator_time
+
+	call rads_set_phase (S, equator_time)
+	! For Geodetic missions we compute the cycle and pass number
+	if (index(S%phase%mission,'Geodetic') > 0) call rads_time_to_cycle_pass (S, equator_time, cyclenr, passnr)
+
 ! Skip passes of which the cycle number or equator crossing time is outside the specified interval
 
 	if (equator_time < times(1) .or. equator_time > times(2) .or. cyclenr < cycles(1) .or. cyclenr > cycles(2)) then
@@ -248,10 +254,6 @@ do
 		call log_string ('Skipped', .true.)
 		cycle
 	endif
-
-! Set mission phase based on equator_time
-
-	call rads_set_phase (S, equator_time)
 
 ! Store relevant info
 
