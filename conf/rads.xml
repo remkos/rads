@@ -4897,10 +4897,23 @@ Global RADS configuration file
 	</phase>
 	<phase name="c">
 		<mission>Second Tandem Mission</mission>
-		<cycles>500 599</cycles> <!-- To be updated at end of phase -->
+		<cycles>500 513</cycles>
 		<repeat>9.91564280 254</repeat>
 		<ref_pass>2025-02-01T14:52:11 99.92 501 1 42294</ref_pass>
 		<start_time>2025-01-30</start_time>
+	</phase>
+	<phase name="d">
+		<mission>Geodetic Mission 1</mission>
+		<cycles>600 699</cycles> <!-- To be updated at end of phase -->
+		<!--This is "real" cycle and pass, i.e. subcycle 601, pass 33-->
+		<repeat>367.8446 9472</repeat>
+		<ref_pass>2025-06-21T18:28:17 336.37 1 33 44090</ref_pass> <!-- To be updated? -->
+		<start_time>2025-06-18</start_time>
+		<subcycles start="601">
+			434 434 434 434 332 434 434 434 332
+			434 434 434 434 332 434 434 434 332
+			434 434 434 434 332
+		</subcycles>
 	</phase>
 </if>
 
