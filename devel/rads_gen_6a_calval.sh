@@ -124,7 +124,7 @@ rads_add_orbit    $options -Valt_std2400 -C4-152                >> "$log" 2>&1
 grep -q .*S6._.*_G $lst && rads_add_tide $options --models=fes14		>> "$log" 2>&1
 # Redetermine SSHA
 rads_add_refframe $options -x -x nr $extra						>> "$log" 2>&1
-rads_add_sla      $options -x -x nr $extra						>> "$log" 2>&1
+rads_add_sla      $options -x -x nr $extra -Xgdr_g				>> "$log" 2>&1
 
 date															>> "$log" 2>&1
 
