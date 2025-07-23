@@ -50,7 +50,7 @@ case $ers in
 2) rads_add_iono  $options -C0-34 --nic09			>> "$log" 2>&1
    rads_add_iono  $options -C35-85 --nic09 --gim 	>> "$log" 2>&1 ;;
 esac
-rads_add_mog2d    $options							>> "$log" 2>&1
+rads_add_dac      $options							>> "$log" 2>&1
 rads_add_common   $options							>> "$log" 2>&1
 # Redetermine SSHA
 rads_add_refframe $options							>> "$log" 2>&1

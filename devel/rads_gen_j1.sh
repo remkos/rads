@@ -49,7 +49,7 @@ rads_add_ssb      $options --ssb=ssb_tran2012			>> "$log" 2>&1
 rads_add_iono     $options --all						>> "$log" 2>&1
 rads_add_common   $options								>> "$log" 2>&1
 rads_add_tide     $options --models=fes14				>> "$log" 2>&1
-rads_add_mog2d    $options --ymd=19910101,20160101 -ue  >> "$log" 2>&1
+rads_add_dac      $options --ymd=19910101,20160101 -ue  >> "$log" 2>&1
 rads_add_dual     $options -l							>> "$log" 2>&1
 # Redetermine SSHA
 rads_add_refframe $options -x -x mle3          			>> "$log" 2>&1

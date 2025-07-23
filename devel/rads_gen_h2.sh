@@ -48,7 +48,7 @@ rads_add_dual     $options							>> "$log" 2>&1
 rads_add_ib       $options							>> "$log" 2>&1
 rads_add_ecmwf    $options --all --wind				>> "$log" 2>&1
 #rads_add_orbit   $options -Valt_gdre    -C0-253	>> "$log" 2>&1
-rads_add_mog2d    $options							>> "$log" 2>&1
+rads_add_dac      $options							>> "$log" 2>&1
 rads_add_ww3_222  $options --all					>> "$log" 2>&1
 # Redetermine SSHA
 rads_add_refframe $options           				>> "$log" 2>&1
