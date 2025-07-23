@@ -1262,6 +1262,17 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Combined low and high frequency effect of atmospheric pressure and wind on sea surface height</comment>
 </var>
+<var name="dac_era5">
+	<long_name>TUGO dynamic atmospheric correction (ERA5 forcing)</long_name>
+	<source>CNES/CNRS-LEGOS/CLS TUGO HR barotropic model with ERA5 forcing</source>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.4 0.6</plot_range>
+	<data>dac_era5</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Combined low and high frequency effect of atmospheric pressure and wind on sea surface height</comment>
+</var>
 <var name="inv_bar_mok2d">
 	<long_name>MOK2D inverse barometer correction</long_name>
 	<units>m</units>
@@ -1298,6 +1309,8 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Effect of the static atmospheric pressure on sea surface, subtracting global mean</comment>
 </var>
+<alias name="dac_oper">inv_bar_mog2d</alias>
+<alias name="dac_era">inv_bar_mog2d_era</alias>
 <alias name="inv_bar">inv_bar_mog2d_era inv_bar_mog2d inv_bar_mok2d</alias>
 <alias name="dac" field="10">inv_bar_mog2d_era inv_bar_mog2d inv_bar_mok2d</alias>
 

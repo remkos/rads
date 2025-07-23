@@ -19,6 +19,7 @@ config.mk
 data/
 devel/make_orf
 devel/ogdrsplit
+devel/rads_add_dac
 devel/rads_add_dual
 devel/rads_add_ecmwf
 devel/rads_add_era
@@ -31,7 +32,6 @@ devel/rads_add_grid
 devel/rads_add_ib
 devel/rads_add_iono
 devel/rads_add_mfwam
-devel/rads_add_mog2d
 devel/rads_add_ncep
 devel/rads_add_orbit
 devel/rads_add_refframe
