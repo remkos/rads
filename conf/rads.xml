@@ -691,6 +691,7 @@ Global RADS configuration file
 		<compress sat="2a">int4 1e-4 900e3</compress>
 		<compress sat="6a 6b j1 j2 j3 pn tx">int4 1e-4 1300e3</compress>
 		<compress sat="sw">int4 1e-4 800e3</compress>
+		<comment sat="j1 j2 j3">Latitudinal empirical correction has been added to the range</comment>
 	</var>
 	<alias name="range" field="6">range_ku</alias>
 </else>
@@ -712,6 +713,7 @@ Global RADS configuration file
 	<format>f12.4</format>
 	<compress>int4 1e-4 1300e3</compress>
 	<compress sat="sw">int4 1e-4 800e3</compress>
+	<comment sat="j2 j3">Latitudinal empirical correction has been added to the range</comment>
 </var>
 <var name="range_ku_plrm" field="612" sat="3a 3b c2">
 	<long_name>Ku-band range corrected for instr. effects (PLRM)</long_name>
@@ -733,6 +735,7 @@ Global RADS configuration file
 	<format>f12.4</format>
 	<compress>int4 1e-4 1300e3</compress>
 	<compress sat="sw">int4 1e-4 800e3</compress>
+	<comment sat="j2 j3">Latitudinal empirical correction has been added to the range</comment>
 </var>
 <alias name="range_ku_nr" sat="j3 sw">range_ku_adaptive</alias>
 <var name="range_ku_nr" field="612" sat="6a 6b">
@@ -768,6 +771,7 @@ Global RADS configuration file
 	<compress>int4 1e-4 1300e3</compress>
 	<compress sat="3a 3b">int4 1e-4 700e3</compress>
 	<compress sat="sw">int4 1e-4 800e3</compress>
+	<comment sat="j1 j2 j3">Latitudinal empirical correction has been added to the range</comment>
 </var>
 <var name="range_s" field="602" sat="n1">
 	<long_name>S-band range corrected for instr. effects</long_name>
