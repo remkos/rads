@@ -295,16 +295,14 @@ do
 		mss_sol2 = 'dtu18'
 		tide_sol1 = 'got410'
 		tide_sol2 = 'fes14'
+		has_mle3 = .true.
 	else
 		mss_sol1 = 'hybrid23'
 		mss_sol2 = 'dtu21'
 		tide_sol1 = 'got410'
 		tide_sol2 = 'fes22'
+		has_mle3 = .false.
 	endif
-
-! Determine if we have MLE3-derived variables (from GDR-G onward). If not, then we suppress all MLE3 variables.
-
-	has_mle3 = (nf90_inq_varid(ncid1,'wind_speed_alt_mle3',varid) == nf90_noerr)
 
 ! Compile flag bits
 
