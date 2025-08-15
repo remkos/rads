@@ -4257,24 +4257,25 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<dimensions>0</dimensions>
 	<parameters>0</parameters>
-	<parameters sat="3a">  -8.9 0  0  0 0</parameters>
-	<parameters sat="3b"> -14.6 0  0  0 0</parameters>
-	<parameters sat="6a 6b"> -11.9 0  0  0 0</parameters>
-	<parameters sat="6a.hr* 6b.hr*">-21.5 0 0 0 0</parameters>
-	<parameters sat="c2"> -29   0  0  0 0</parameters>
-	<parameters sat="e1">  21   0  0  0 0</parameters>
-	<parameters sat="e2">  62   0  0  0 0</parameters>
-	<parameters sat="gs">   0 -65  0  0 5</parameters>
-	<parameters sat="g1">  69   0  0  0 0</parameters>
-	<parameters sat="j1">  85   0  0  0 0</parameters>
-	<parameters sat="j2"> -15.9 0  0  0 0</parameters>
-	<parameters sat="j3"> -23.9 0  0  0 0</parameters>
-	<parameters sat="n1"> 451   0  0  0 0</parameters>
-	<parameters sat="pn">  -3.1 0  0  0 0</parameters>
-	<parameters sat="sa"> -87   0  0  0 0</parameters>
-	<parameters sat="tx">  44.2 0  0  0 0</parameters> <!-- Side A -->
-	<parameters sat="tx">  11.3 0  0  0 0</parameters> <!-- Side B -->
-	<parameters sat="sw">  -6.0 0  0  0 0</parameters>
+	<parameters sat="3a">             -8.9 0  0  0 0</parameters>
+	<parameters sat="3b">            -14.6 0  0  0 0</parameters>
+	<parameters sat="6a 6b">         -20.0 0  0  0 0</parameters>
+	<parameters sat="6a.hr* 6b.hr*"> -33.0 0  0  0 0</parameters>
+	<parameters sat="c2">            -29   0  0  0 0</parameters>
+	<parameters sat="e1">             21   0  0  0 0</parameters>
+	<parameters sat="e2">             62   0  0  0 0</parameters>
+	<parameters sat="gs">              0 -65  0  0 5</parameters>
+	<parameters sat="g1">             69   0  0  0 0</parameters>
+	<parameters sat="j1">              9.5 0  0  0 0</parameters>
+	<parameters sat="j2">             10.8 0  0  0 0</parameters>
+	<parameters sat="j3">            -20.5 0  0  0 0</parameters>
+	<parameters sat="n1">            451   0  0  0 0</parameters>
+	<parameters sat="n1.f4a">        460.3 0  0  0 0</parameters>
+	<parameters sat="pn">             -3.1 0  0  0 0</parameters>
+	<parameters sat="sa">            -87   0  0  0 0</parameters>
+	<parameters sat="tx">             44.2 0  0  0 0</parameters> <!-- Side A -->
+	<parameters sat="tx">             11.3 0  0  0 0</parameters> <!-- Side B -->
+	<parameters sat="sw">             -6.0 0  0  0 0</parameters>
 </var>
 <var name="ref_frame_offset_mle3" field="3811" sat="6a 6b j2 j3 tx sw">
 	<long_name>reference frame offset (MLE3)</long_name>
@@ -4286,8 +4287,8 @@ Global RADS configuration file
 	<dimensions>0</dimensions>
 	<parameters>0</parameters>
 	<parameters sat="6a 6b"> -15.8 0  0  0 0</parameters>
-	<parameters sat="j2">  13.5 0  0  0 0</parameters>
-	<parameters sat="j3"> -10.2 0  0  0 0</parameters>
+	<parameters sat="j2">  22.1 0  0  0 0</parameters>
+	<parameters sat="j3">  -6.8 0  0  0 0</parameters>
 	<parameters sat="tx">  43.9 0  0  0 0</parameters> <!-- Side A -->
 	<parameters sat="tx">  10.4 0  0  0 0</parameters> <!-- Side B -->
 	<parameters sat="sw">   1.5 0  0  0 0</parameters>
@@ -4312,7 +4313,9 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<dimensions>0</dimensions>
 	<parameters>0</parameters>
-	<parameters sat="j3"> -49.0 0  0  0 0</parameters>
+	<parameters sat="j2"> -14.9 0  0  0 0</parameters>
+	<parameters sat="j3"> -45.6 0  0  0 0</parameters>
+	<parameters sat="n1"> 481.4 0  0  0 0</parameters>
 	<parameters sat="sw"> -36.0 0  0  0 0</parameters>
 </var>
 <alias name="ref_frame_offset_nr" sat="j3 sw">ref_frame_offset_adaptive</alias>
