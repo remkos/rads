@@ -55,14 +55,16 @@ type(rads_pass) :: P
 
 ! Other local variables
 
-real(eightbytereal) :: dwet = 0d0, dsig0(2) = 0d0, wet_cor(254,0:999) = nan
+real(eightbytereal), parameter :: lat0 = -66.875d0, dlat = 0.250d0
+integer(fourbyteint), parameter :: nlat = 536
+real(eightbytereal) :: dwet = 0d0, dsig0(2) = 0d0, wet_cor(254,0:999) = nan, range_cor(nlat,0:1)
 integer(fourbyteint) :: i, ios, cyc, pass
-logical :: lrad = .false., lsig0 = .false., lwind = .false.
+logical :: lrad = .false., lrange = .false., lsig0 = .false., lwind = .false.
 
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options (' sig0:: rad: wind all')
+call rads_set_options (' sig0:: rad: range wind all')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
@@ -75,6 +77,10 @@ do i = 1,rads_nopt
 			wet_cor = dwet * 1d-3
 		endif
 		lrad = .true.
+	case ('range')
+		lrange = .true.
+		call parseenv ("${ALTIM}/data/models/J1J2J3_range_correction_abacus.nc", rads_opt(i)%arg)
+		if (read_range_cor(rads_opt(i)%arg)) call rads_message ('Error loading range correction file')
 	case ('wind')
 		lwind = .true.
 	case ('all')
@@ -92,7 +98,7 @@ enddo
 
 ! If nothing selected, stop here
 
-if (.not.(lsig0 .or. lwind .or. lrad)) stop
+if (.not.(lsig0 .or. lwind .or. lrad .or. lrange)) stop
 
 ! Run process for all files
 
@@ -125,6 +131,7 @@ write (*,1310)
 '                            JA3 cycle   0-348: --rad=${RADSROOT}/ext/j3/JASON_3_PD_CORRECTION_20230925.txt' / &
 '                                cycle 349-364: --rad=1.8' / &
 '                                cycle 365-   : --rad=0.8' / &
+'  --range                   Add latitude-dependent range correction' / &
 '  --wind                    Recompute wind speed from adjusted sigma0 based on Collard model')
 stop
 end subroutine synopsis
@@ -135,16 +142,49 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-real(eightbytereal) :: sig0_ku(n), sig0_c(n), psi2(n), swh_ku(n), u(n), wet(n)
-integer(fourbyteint) :: i
+real(eightbytereal) :: sig0_ku(n), sig0_c(n), psi2(n), swh_ku(n), u(n), wet(n), lat(n), &
+	range_ku(n), range_ku_mle3(n), range_ku_adaptive(n), range_c(n), y
+integer(fourbyteint) :: i, iy, asc
 
 call log_pass (P)
+asc = modulo(P%pass,2)
 
 ! Adjust radiometer wet tropo because of uncorrected drift.
 
 if (lrad) then
 	call rads_get_var (S, P, 'wet_tropo_rad', wet, .true.)
 	wet = wet + wet_cor (pass, cyc)
+endif
+
+! Interpolate range correction as function of latitude.
+! The first and last three elements are set to NaN, so we want to avoid interpolating with those.
+
+if (lrange) then
+	call rads_get_var (S, P, 'lat', lat, .true.)
+	do i = 1,n
+		y = (lat(i)-lat0)/dlat + 1
+		iy = int(y)
+		! The next two lines are to avoid using NaNs from the abacus
+		if (iy < 4) iy = 4
+		if (iy > nlat-4) iy = nlat-4
+		y = y - iy
+		if (range_cor(iy,asc) == range_cor(iy+1,asc)) then
+			u(i) = range_cor(iy,asc) ! This line added to avoid rounding errors
+		else
+			u(i) = range_cor(iy,asc) * (1-y) + range_cor(iy+1,asc) * y
+		endif
+!		write (*,'(i3.3,i2,i5,f12.6,i5,f10.6,3f9.4)') P%pass, asc, i, lat(i), iy, y, range_cor(iy,asc), range_cor(iy+1,asc), u(i)
+	enddo
+	call rads_get_var (S, P, 'range_c', range_c, .true.)
+	range_c = range_c + u
+	call rads_get_var (S, P, 'range_ku', range_ku, .true.)
+	range_ku = range_ku + u
+	if (S%sat(:2) /= 'j1') then
+		call rads_get_var (S, P, 'range_ku_mle3', range_ku_mle3, .true.)
+		range_ku_mle3 = range_ku_mle3 + u
+		call rads_get_var (S, P, 'range_ku_adaptive', range_ku_adaptive, .true.)
+		range_ku_adaptive = range_ku_adaptive + u
+	endif
 endif
 
 ! Adjust backscatter for correlation with off-nadir angle (See Quartly [2009])
@@ -180,6 +220,14 @@ if (lsig0) then
 	call rads_def_var (S, P, 'sig0_c' )
 endif
 if (lwind) call rads_def_var (S, P, 'wind_speed_alt')
+if (lrange) then
+	call rads_def_var (S, P, 'range_c')
+	call rads_def_var (S, P, 'range_ku')
+	if (S%sat(:2) /= 'j1') then
+		call rads_def_var (S, P, 'range_ku_mle3')
+		call rads_def_var (S, P, 'range_ku_adaptive')
+	endif
+endif
 
 ! Write out all the data
 
@@ -189,6 +237,14 @@ if (lsig0) then
 	call rads_put_var (S, P, 'sig0_c' , sig0_c)
 endif
 if (lwind) call rads_put_var (S, P, 'wind_speed_alt', u)
+if (lrange) then
+	call rads_put_var (S, P, 'range_c', range_c)
+	call rads_put_var (S, P, 'range_ku', range_ku)
+	if (S%sat(:2) /= 'j1') then
+		call rads_put_var (S, P, 'range_ku_mle3', range_ku_mle3)
+		call rads_put_var (S, P, 'range_ku_adaptive', range_ku_adaptive)
+	endif
+endif
 
 call log_records (n)
 end subroutine process_pass
@@ -227,5 +283,24 @@ enddo
 wet_cor(:,349:999) = 0d0
 close (10)
 end function read_wet_cor
+
+!-----------------------------------------------------------------------
+! Read the radiometer wet tropo correction file
+!-----------------------------------------------------------------------
+
+logical function read_range_cor (filenm)
+use netcdf
+use rads_netcdf
+character(len=*), intent(in) :: filenm
+integer :: ncid, varid
+
+read_range_cor = .true.
+call nfs(nf90_open(filenm,nf90_nowrite,ncid))
+call nfs(nf90_inq_varid(ncid,'correction_dsc',varid))
+call nfs(nf90_get_var(ncid,varid,range_cor(:,0)))
+call nfs(nf90_inq_varid(ncid,'correction_asc',varid))
+call nfs(nf90_get_var(ncid,varid,range_cor(:,1)))
+read_range_cor = .false.
+end function read_range_cor
 
 end program rads_fix_jason

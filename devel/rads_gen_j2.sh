@@ -39,7 +39,8 @@ done
 
 # Do the patches to all data
 
-rads_fix_jason    $options --all						>> "$log" 2>&1
+# rads_fix_jason --range only as long as the correction is not in the product
+rads_fix_jason    $options --all --range				>> "$log" 2>&1
 rads_add_common   $options								>> "$log" 2>&1
 rads_add_orbit    $options -Valt_gps     -C1-327		>> "$log" 2>&1
 rads_add_orbit    $options -Valt_std2400 -C1-303		>> "$log" 2>&1
