@@ -277,10 +277,11 @@ do
 		iono_alt_smooth = .true.
 	endif
 
-! Update the version of MSS CNES/CLS and switch on internal tide IPF-SM-2 06.51 and later
+! Update the version of MSS CNES/CLS and switch on internal tide IPF-SM-2 06.51 and later.
+! Since the Combined MSS 2015 is now obsolete, it is here simply switched off.
 
 	if (arg(10:14) >= '06.51') then
-		mss_sol1_var = 'mss_comb15'
+		mss_sol1_var = ''
 		ipf651 = .true.
 	endif
 
@@ -299,9 +300,12 @@ do
 
 	ipf704 = (arg(10:14) >= '07.04')
 
-! POE-G orbit standard
+! Update MSS CNES/CLS again for IPF-SM-2 07.11 and switch to POE-G orbit standard
 
-	if (arg(10:14) >= '07.11') alt = 'alt_poeg'
+	if (arg(10:14) >= '07.11') then
+		mss_sol1_var='mss_hybrid23'
+		alt = 'alt_poeg'
+	endif
 
 ! Store input file name
 
@@ -416,8 +420,10 @@ do
 	call get_var (ncid, 'geoid_01', a)
 	call new_var ('geoid_egm2008', a + dh)
 	call get_var (ncid, 'mean_sea_surf_sol1_01', a)
-	call new_var (mss_sol1_var, a + dh)
-	call get_var (ncid, 'mean_sea_surf_sol2_01', a)
+	if (mss_sol1_var /= '') then
+		call new_var (mss_sol1_var, a + dh)
+		call get_var (ncid, 'mean_sea_surf_sol2_01', a)
+	endif
 	call new_var (mss_sol2_var, a + dh)
 
 	call cpy_var (ncid, 'swh_ocean_01_ku', 'swh_ku')
