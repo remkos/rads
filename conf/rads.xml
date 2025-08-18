@@ -619,8 +619,22 @@ Global RADS configuration file
 	<compress>int4 1e-4 700e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
+<var name="alt_poeg" sat="3a 3b 6a 6b j3">
+	<long_name>CNES POE-G orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>CNES, POE-G standards</source>
+	<parameters>gdr-g-poe</parameters>
+	<units>m</units>
+	<data>alt_poeg</data>
+	<format>f12.4</format>
+	<compress>int4 1e-4 700e3</compress>
+	<compress sat="6a 6b j1 j2 j3 tx pn">int4 1e-4 1300e3</compress>
+	<compress sat="sw">int4 1e-4 800e3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
 <alias name="alt" field="4" sat="2a">alt_gdrd</alias>
-<alias name="alt" field="4" sat="6a 6b 3a 3b j3 sa sw tx pn">alt_gdrf</alias>
+<alias name="alt" field="4" sat="6a 6b 3a 3b j3">alt_poeg alt_gdrf</alias>
+<alias name="alt" field="4" sat="sa sw tx pn">alt_gdrf</alias>
 <alias name="alt" field="4" sat="c2">alt_gdre alt_cnes</alias>
 <alias name="alt" field="4" sat="e1 e2">alt_reaper alt_gfz</alias>
 <alias name="alt" field="4" sat="g1">alt_pgs7777</alias>
