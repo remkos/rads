@@ -43,7 +43,7 @@ program rads_gen_s3
 ! time - Time since 1 Jan 85
 ! lat - Latitude
 ! lon - Longitude
-! alt_gdrf - Orbital altitude
+! alt_gdrf/alt_poeg - Orbital altitude
 ! alt_rate - Orbital altitude rate
 ! range_* - Ocean range (retracked)
 ! range_rms_* - Std dev of range
@@ -109,7 +109,7 @@ real(eightbytereal) :: equator_time
 ! Data variables
 
 integer(twobyteint), allocatable :: flags_plrm(:), flags_save(:)
-character(len=16) :: mss_sol1_var, mss_sol2_var
+character(len=16) :: mss_sol1_var, mss_sol2_var, alt
 integer :: latency = rads_nrt
 logical :: iono_alt_smooth, ipf651, ipf701, ipf703, ipf704
 
@@ -261,6 +261,7 @@ do
 
 ! Default settings
 
+	alt = 'alt_gdrf'
 	mss_sol1_var = 'mss_cnescls15'
 	mss_sol2_var = 'mss_dtu15'
 	iono_alt_smooth = .false.
@@ -299,9 +300,12 @@ do
 
 	ipf704 = (arg(10:14) >= '07.04')
 
-! Update MSS CNES/CLS again for IPF-SM-2 07.11
+! Update MSS CNES/CLS again for IPF-SM-2 07.11 and switch to POE-G orbit standard
 
-	if (arg(10:14) >= '07.11') mss_sol1_var='mss_hybrid23'
+	if (arg(10:14) >= '07.11') then
+		mss_sol1_var='mss_hybrid23'
+		alt = 'alt_poeg'
+	endif
 
 ! Store input file name
 
@@ -359,7 +363,7 @@ do
 	enddo
 	call cpy_var (ncid, 'lon_01','lon')
 	call get_var (ncid, 'alt_01', a)
-	call new_var ('alt_gdrf', a + dh)
+	call new_var (alt, a + dh)
 	! Note that GDR-E orbit standards were used for the earlier part of the mission until reprocessing.
 	! However this field is updated by rads_add_orbit hereafter.
 	call cpy_var (ncid, 'orb_alt_rate_01', 'alt_rate')

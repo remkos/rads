@@ -40,7 +40,7 @@ program rads_gen_jason_gdrf
 ! time - Time since 1 Jan 85
 ! lat - Latitude
 ! lon - Longitude
-! alt_gdrf - Orbital altitude
+! alt_gdrf/alt_poeg - Orbital altitude
 ! alt_rate - Orbital altitude rate
 ! range_* - Ocean range (retracked)
 ! range_rms_* - Std dev of range
@@ -131,7 +131,7 @@ real(eightbytereal) :: equator_time
 ! Data variables
 
 integer(twobyteint), allocatable :: flags_mle3(:), flags_adaptive(:), flags_save(:)
-character(len=16) :: mss_sol1, mss_sol2, tide_sol1, tide_sol2
+character(len=16) :: mss_sol1, mss_sol2, tide_sol1, tide_sol2, alt
 character(len=1) :: baseline = 'F'
 integer :: latency = rads_nrt
 
@@ -291,12 +291,14 @@ do
 ! Set new model versions
 
 	if (baseline < 'G') then
+		alt = 'alt_gdrf'
 		mss_sol1 = 'cnescls15'
 		mss_sol2 = 'dtu18'
 		tide_sol1 = 'got410'
 		tide_sol2 = 'fes14'
 		has_mle3 = .true.
 	else
+		alt = 'alt_poeg'
 		mss_sol1 = 'hybrid23'
 		mss_sol2 = 'dtu21'
 		tide_sol1 = 'got410'
@@ -367,7 +369,7 @@ do
 	enddo
 	call cpy_var (ncid1, 'longitude','lon')
 	call get_var (ncid1, 'altitude', a)
-	call new_var ('alt_gdrf', a + dh)
+	call new_var (alt, a + dh)
 	call cpy_var (ncid1, 'altitude_rate', 'alt_rate')
 
 ! Range
