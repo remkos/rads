@@ -964,8 +964,16 @@ Set the minimum bin size in seconds. The default is the maximum 1-Hz sampling ra
 \item[\lopt{format-cycle}] Output format starts with CYCLE, [YY]YYMMDD (default with \sopt{c})
 \item[\lopt{format-day}] Output format starts with [YY]YYMMDD (default with \sopt{d})
 \item[\lopt{format-pass}] Output format starts with CYCLE, PASS (default with \sopt{p})
+\item[\lopt{groups}] Create groups (applies to NetCDF output only)
 \item[\optc{o}{output}{[FILENAME]}] ~\\
 Create a netCDF output file. The default is ASCII output to standard output. Optionally specify a \emph{FILENAME}. The default netCDF output file name is \verb|radsstat.nc|.
+\end{description}
+
+Normally, the program \prog{radsstat} will be call with one \sopt{S} option. When two are provided, it will compute the difference between collinear missions. For this purpose there are three more command line options:
+\begin{description}
+\item[\opt{f}{force}] Force comparison, even when missions are not considered collinear
+\item[\lopt{first}] Of collinears only provide the first satellite (second editing only)
+\item[\lopt{second}] Of collinears only provide the second satellite (first for editing only)
 \end{description}
 
 \subsection{Examples}
