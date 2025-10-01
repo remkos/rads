@@ -91,7 +91,7 @@ rads_add_mfwam    $options -C107-999 --wind			>> "$log" 2>&1
 rads_add_iono     $options --all					>> "$log" 2>&1
 rads_add_orbit    $options -Valt_gps --dir=jplgpspoe -C0-360	>> "$log" 2>&1
 rads_add_orbit    $options -Valt_gps --dir=jplgpsmoe -C360-999	>> "$log" 2>&1
-rads_add_orbit    $options -Valt_std2400 -C1-390    >> "$log" 2>&1
+rads_add_orbit    $options -Valt_std2400 -C1-513    >> "$log" 2>&1
 
 if grep -q _2Pg $lst ; then
 	# For GDR-G we add the FES2014 model
