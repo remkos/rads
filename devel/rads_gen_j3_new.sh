@@ -23,13 +23,15 @@
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
 
+rads_open_sandbox j3
+
 types="ogdr igdr"
 
 date												>  "$log" 2>&1
 
 for type in ${types}; do
-    rads_open_sandbox j3.${type}
-    mrk=$RADSDATAROOT/.bookmark
+    mrk=${type}/.bookmark
+    lst=$SANDBOX/rads_gen_j3_tmp_${type}.lst
 
     case $type in
 	    ogdr)
@@ -74,7 +76,7 @@ for type in ${types}; do
         rads_add_sla      $options -x $extra                >> "$log" 2>&1
     fi
     
-    rads_close_sandbox
     date												>> "$log" 2>&1
 done
 
+rads_close_sandbox

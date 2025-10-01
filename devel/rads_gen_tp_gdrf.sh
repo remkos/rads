@@ -62,6 +62,7 @@ rads_add_sst      $options --all								>> "$log" 2>&1
 rads_add_seaice   $options										>> "$log" 2>&1
 rads_add_ncep     $options --dry --wet --air					>> "$log" 2>&1
 rads_add_iono     $options --all								>> "$log" 2>&1
+rads_add_orbit    $options -Valt_std2400					    >> "$log" 2>&1
 
 case $sat in
 tx) extra="-x mle3"
