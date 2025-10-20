@@ -252,12 +252,21 @@ Global RADS configuration file
 	<format>f19.6</format>
 </var>
 <var name="time_mjd" field="105">
-	<long_name>Modified Julian Days</long_name>
+	<long_name>time in Modified Julian Days</long_name>
 	<standard_name>time</standard_name>
 	<units>days since 1858-11-17 00:00:00 UTC</units>
 	<data>time 86400 DIV 46066 ADD</data>
 	<comment>UTC time of measurement expressed in Modified Julian Days</comment>
 	<format>f12.6</format>
+</var>
+<var name="time_mjd_floor">
+	<long_name>time in Modified Julian Days</long_name>
+	<standard_name>time</standard_name>
+	<units>days since 1858-11-17 00:00:00 UTC</units>
+	<data>time 86400 DIV FLOOR 46066 ADD</data>
+	<comment>UTC time of measurement expressed in Modified Julian Days, rounded down</comment>
+	<compress>int4</compress>
+	<format>i6</format>
 </var>
 <var name="time_2000" field="106">
 	<long_name>time</long_name>

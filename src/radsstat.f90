@@ -287,10 +287,13 @@ write (*,1300)
 '  --min MINNR               Minimum number of measurements per statistics record (default: 2)'/ &
 '  --res DX,DY               Size of averaging boxes in degrees (default: 3,1)'/ &
 '  --echo-file-paths         Write to STDOUT the paths of the files before being read'/ &
-'  --format-cycle            Output format starts with CYCLE, [YY]YYMMDD (default with -c)'/ &
-'  --format-day              Output format starts with [YY]YYMMDD (default with -d)'/ &
-'  --format-pass             Output format starts with CYCLE, PASS (default with -p)'/ &
-'  --groups                  Create groups (applies to NetCDF output only)' / &
+'  --format-cycle            ASCII output format starts with CYCLE, [YY]YYMMDD (default with -c)'/ &
+'                            NetCDF output to include cycle variable (default with -c)' / &
+'  --format-day              ASCII output format starts with [YY]YYMMDD (default with -d)'/ &
+'                            NetCDF output to include date (time_mjd_floor) variable (default with -d)' / &
+'  --format-pass             ASCII output format starts with CYCLE, PASS (default with -p)'/ &
+'                            NetCDF output to include pass variable (default with -p)' / &
+'  --groups                  Create NetCDF groups (applies to NetCDF output only)' / &
 '  -f, --force               Force comparison, even when missions are not considered collinear'/ &
 '  -o, --output [OUTNAME]    Create NetCDF output instead of ASCII (default output'/ &
 '                            filename is "radsstat.nc")')
@@ -485,6 +488,10 @@ if (ascii) then
 else
 	call nfs (nf90_put_var (ncid, varid(1), nr, start(2:2)))
 	Pout%fileinfo(1) = rads_file (ncid, filename)
+	if (output_format == period_day) then
+		var => rads_varptr (S(1), 'time_mjd_floor')
+		call rads_put_var (S(1), Pout, var, (/ dble(floor(start_time/86400d0)) + 46066 /), start(2:2))
+	endif
 	if (output_format /= period_day) then
 		var => rads_varptr (S(1), 'cycle')
 		call rads_put_var (S(1), Pout, var, (/ dble(cycle) /), start(2:2))
@@ -613,6 +620,7 @@ grpid(1) = ncid
 ! Define "time" variables
 call nfs (nf90_def_var (ncid, 'nr', nf90_int4, dimid(1:1), varid(1)))
 call nfs (nf90_put_att (ncid, varid(1), 'long_name', 'number of measurements'))
+if (output_format == period_day) call rads_def_var (S(1), Pout, 'time_mjd_floor')
 if (output_format /= period_day) call rads_def_var (S(1), Pout, 'cycle')
 if (output_format == period_pass) call rads_def_var (S(1), Pout, 'pass')
 call rads_def_var (S(1), Pout, S(1)%time)
