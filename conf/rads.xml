@@ -4654,6 +4654,7 @@ Global RADS configuration file
 	</phase>
 </if>
 
+<!-- Sentinel-6B definition for test purposes only -->
 <if sat="6b">
 	<satellite>SNTNL-6B</satellite>
 	<satid>19</satid>
@@ -4661,19 +4662,12 @@ Global RADS configuration file
 	<inclination>66.04</inclination>
 	<frequency>13.575 5.3</frequency>
 	<xover_params>0.04 0.035</xover_params>
-	<phase name="1"> <!-- Preliminary -->
-		<mission>Drift Phase</mission>
-		<cycles>1 1</cycles>
-		<repeat>9.899811 254 5.69</repeat>
-		<ref_pass>2025-11-17T06:28:13 211.99 1 1 1</ref_pass>
-		<start_time>2025-11-17T06:28:15</start_time>
-	</phase>
-	<phase name="a"> <!-- Preliminary, very early reach of tandem -->
+	<phase name="a">
 		<mission>Exact Repeat Mission</mission>
-		<cycles>2 299</cycles>
+		<cycles>4 299</cycles>
 		<repeat>9.91564280 254</repeat>
-		<ref_pass>2025-11-26T01:09:46.000 99.92 2 1 113</ref_pass> <!-- Assuming 45s ahead of S6A -->
-		<start_time>2025-11-26T00:41:00</start_time>
+		<ref_pass>2020-12-27T08:33:32 99.92 5 1 458</ref_pass>
+		<start_time>2020-12-17T21:21:30</start_time>
 	</phase>
 </if>
 
