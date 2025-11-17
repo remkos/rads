@@ -331,7 +331,7 @@ nrec = sum(fin(1:nfile)%rec1 - fin(1:nfile)%rec0 + 1)
 610 format (a,'P',i3.3,'_',i3.3,'.nc') ! JA? and SWOT format
 611 format (a,i3.3,'_',i3.3,a,'.nc') ! S3? format
 612 format (a,'RED_',a,i3.3,'_',i3.3,a,'.nc') ! S6? format
-613 format (a,'_',i3.3,'_',i3.3,'.nc') ! CS format
+613 format (a,'_',i3.3,'_',i3.3,'.nc') ! CS2 format
 
 write (dirnm,605) trim(destdir),cycle_number
 inquire (file=dirnm,exist=exist)
