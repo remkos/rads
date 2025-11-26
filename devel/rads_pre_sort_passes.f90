@@ -105,7 +105,8 @@ else if (filenm(i:i+3) == 'SWOT' .and. filenm(i+11:i+11) >= 'f') then
 else if (filenm(i:i+1) == 'S6' .and. filenm(i+4:i+8) == 'P4_2_') then
 	! Sentinel-6 Level-2
 	if (filenm(i+10:i+11) == 'HR') ngrps = 2
-else if (filenm(i:) == 'standard_measurement.nc' .or. filenm(i:) == 'reduced_measurement.nc') then
+else if ((filenm(i:i+1) == 'S3' .and. filenm(i+4:i+8) == 'SR_2_') .or. &
+	filenm(i:) == 'standard_measurement.nc' .or. filenm(i:) == 'reduced_measurement.nc') then
 	! Sentinel-3 Level-2
 	i = index(filenm(:i-2),'/',.true.) + 1
 	tll = (/'time_01  ', 'lat_01   ', 'lon_01   '/)
