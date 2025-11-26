@@ -111,7 +111,7 @@ esac
 # For LR, do also _mle3, but only for F09 or earlier
 extra=
 case $type in
-	*lr*) grep -q _G...SEN6 $lst || extra="-x mle3" ;;
+	*lr*) grep -q .*S6._.*_G $lst || extra="-x mle3" ;;
 esac
 
 # General geophysical corrections

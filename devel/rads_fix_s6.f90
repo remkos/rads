@@ -79,10 +79,6 @@ do i = 1,rads_nopt
 		lrain = 1
 		if (ios == 0) lrain = 2
 	case ('all')
-		lcal1 = .true.
-		lsideB_range = .true.
-		lsideB_sig0 = .true.
-		lrange = .true.
 		lsig0 = .true.
 	case ('bias-range')
 		read (rads_opt(i)%arg, *, iostat=ios) bias_range
@@ -123,14 +119,14 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
+'  --sig0                    Add -5.67 dB (Baseline < F09) or +0.47 dB (Baseline F09) to HR sigma0' / &
+'  --all                     All of the above' / &
 '  --cal1[=T0,T1]            Replace CAL1 range and power by values from LTM file, averaged over time' / &
 '                            interval T0,T1 days around measurement time (default: -1,1) (L2 CONF < 011)' / &
 '  --sideB-range[=KU,C]      Add biases to range (Ku, C, in m) for Side B and CHDR < 005 (def: -0.002,0.000)' / &
 '  --sideB-sig0[=KU,C]       Add biases to sig0 (Ku, C, in dB) for Side B and CHDR < 005 (def: -0.07,+0.49)' / &
 '  --range                   Fix range biases known for PDAP v3.0 and v3.1' / &
 '                            Also fix result of temporary error in radar data base (RMC only, 34 gates)' / &
-'  --sig0                    Add -5.67 dB (Baseline < F09) or +0.47 dB (Baseline F09) to HR sigma0' / &
-'  --all                     All of the above' / &
 '  --rain[=KU,C]             Add biases to sigma0 (KU, C, in dB) before calling rain model' / &
 '                            (with --sig0 use default 1.23,1.64)' / &
 '  --wind[=MLE4,MLE3]        Add biases to sigma0 (MLE4, MLE3, in dB) before calling wind model' / &
