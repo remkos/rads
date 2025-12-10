@@ -4663,17 +4663,24 @@ Global RADS configuration file
 	<xover_params>0.04 0.035</xover_params>
 	<phase name="1"> <!-- Preliminary -->
 		<mission>Drift Phase</mission>
-		<cycles>1 4</cycles>
+		<cycles>1 3</cycles>
 		<repeat>9.877500 254 13.66</repeat>
 		<ref_pass>2025-11-27T03:31:42 75.80 2 1 128</ref_pass>
 		<start_time>2025-11-25</start_time>
 	</phase>
+	<phase name="1"> <!-- Preliminary -->
+		<mission>Drift Phase</mission>
+		<cycles>3 3</cycles>
+		<repeat>9.896970 254 6.69</repeat>
+		<ref_pass>2025-12-15T22:03:16.186 99.92 4 1 369</ref_pass>
+		<start_time>2025-12-09T09:11:20</start_time>
+	</phase>
 	<phase name="a"> <!-- Preliminary, scheduled start of tandem -->
 		<mission>Exact Repeat Mission</mission>
-		<cycles>5 99</cycles>
+		<cycles>4 99</cycles>
 		<repeat>9.91564280 254</repeat>
-		<ref_pass>2025-12-06T00:04:41 99.92 4 1 242</ref_pass> <!-- Assuming 45s ahead of S6A -->
-		<start_time>2025-12-18</start_time>
+		<ref_pass>2025-12-15T22:03:16.186 99.92 4 1 369</ref_pass>
+		<start_time>2025-12-15T21:35:10</start_time>
 	</phase>
 </if>
 
