@@ -4908,15 +4908,15 @@ Global RADS configuration file
 		<mission>Drift Phase</mission>
 		<cycles>3 3</cycles>
 		<repeat>9.896970 254 6.69</repeat>
-		<ref_pass>2025-12-15T22:03:16.186 99.92 4 1 369</ref_pass>
+		<ref_pass>2025-12-15T22:04:26 99.92 4 1 369</ref_pass>
 		<start_time>2025-12-09T09:11:20</start_time>
 	</phase>
 	<phase name="a"> <!-- Preliminary, scheduled start of tandem -->
 		<mission>Exact Repeat Mission</mission>
 		<cycles>4 99</cycles>
 		<repeat>9.91564280 254</repeat>
-		<ref_pass>2025-12-15T22:03:16.186 99.92 4 1 369</ref_pass>
-		<start_time>2025-12-15T21:35:10</start_time>
+		<ref_pass>2025-12-15T22:04:26 99.92 4 1 369</ref_pass>
+		<start_time>2025-12-15T21:36:15</start_time>
 	</phase>
 </if>
 
