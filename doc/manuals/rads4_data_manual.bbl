@@ -348,9 +348,9 @@ Roblou, L., F.~Lyard, J.~Dorandeu, J.~Lamouroux, and J.~Bouffard (2008),
   the Coastal Altimetry Workshop, Silver Spring, Maryland, 5-7 Feb 2008.
 
 \bibitem[{\textit{Rosmorduc et~al.}(2023)\textit{Rosmorduc, Roinard, Desai,
-  Desjonqueres, Callahan, and Bignalet-Cazalet}}]{rosmorduc2023}
-Rosmorduc, V., H.~Roinard, S.~D. Desai, J.~D. Desjonqueres, P.~S. Callahan, and
-  F.~Bignalet-Cazalet (2023), {TOPEX/Poseidon} {GDR-F} products handbook,
+  Desjonqu{\`e}res, Callahan, and Bignalet-Cazalet}}]{rosmorduc2023}
+Rosmorduc, V., H.~Roinard, S.~D. Desai, J.~D. Desjonqu{\`e}res, P.~S. Callahan,
+  and F.~Bignalet-Cazalet (2023), {TOPEX/Poseidon} {GDR-F} products handbook,
   \textit{{} JPL D-73899/SALP-MY-MAO-DP-17607-CN}, NASA/JPL and CNES.
 
 \bibitem[{\textit{Rudenko et~al.}(2011)\textit{Rudenko, Otten, Visser,
@@ -522,7 +522,7 @@ Wahr, J.~M., R.~S. Nerem, and S.~V. Bettadpur (2015), The pole tide and its
 \bibitem[{\textit{Wessel and Smith}(1996)}]{wessel1996}
 Wessel, P., and W.~H.~F. Smith (1996), A global, self-consistent, hierarchical,
   high-resolution shoreline, \textit{J.\ Geophys.\ Res.}, \textit{101}(B4),
-  8741--8743.
+  8741--8743, \doi{10.1029/96JB00104}.
 
 \bibitem[{\textit{Wessel et~al.}(2013)\textit{Wessel, Smith, Scharroo, Luis,
   and Wobbe}}]{wessel2013}
