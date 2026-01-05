@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2025  Remko Scharroo
+# Copyright (c) 2011-2026  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -70,7 +70,7 @@ for type in ${types}; do
 	rads_add_common   $options								>> "$log" 2>&1
 	rads_add_mfwam    $options --all --new					>> "$log" 2>&1
 # To support GDR-G with backward compatibility
-	grep -q .*S3._.*_G $lst && rads_add_tide $options --models=fes14		>> "$log" 2>&1
+	grep -q .*S3._.*_G $lst && rads_add_tide $options --models=fes14	>> "$log" 2>&1
 # Redetermine SSHA
 	rads_add_refframe $options -x -x plrm					>> "$log" 2>&1
 	rads_add_sla      $options -x -x plrm -Xgdr_g			>> "$log" 2>&1

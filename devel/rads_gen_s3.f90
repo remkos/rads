@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2025  Remko Scharroo and Eric Leuliette
+! Copyright (c) 2011-2026  Remko Scharroo and Eric Leuliette
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -66,7 +66,7 @@ program rads_gen_s3
 ! wind_speed_ecmwf_u - ECMWF wind speed (U)
 ! wind_speed_ecmwf_v - ECMWF wind speed (V)
 ! tide_{ocean,load}_got410 - GOT4.10c ocean and load tide
-! tide_{ocean,load}_{fes14,fes22} - FES2014 or FES2022b ocean and load tide
+! tide_{ocean,load}_{fes14,fes22} - FES2014 or FES2022B ocean and load tide
 ! tide_pole - Pole tide
 ! tide_solid - Solid earth tide
 ! topo_ace2 - ACE2 topography
@@ -306,8 +306,8 @@ do
 
 	if (arg(10:14) >= '07.11') then
 		mss_sol1_var = 'mss_hybrid23'
-		alt = 'alt_poeg'
 		tide_sol2 = 'fes22'
+		alt = 'alt_poeg'
 	endif
 
 ! Store input file name
