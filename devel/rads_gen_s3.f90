@@ -65,14 +65,14 @@ program rads_gen_s3
 ! wind_speed_rad - Radiometer wind speed
 ! wind_speed_ecmwf_u - ECMWF wind speed (U)
 ! wind_speed_ecmwf_v - ECMWF wind speed (V)
-! tide_ocean/load_got410 - GOT4.10c ocean and load tide
-! tide_ocean/load_fes14 - FES2014 ocean and load tide
+! tide_{ocean,load}_got410 - GOT4.10c ocean and load tide
+! tide_{ocean,load}_{fes14,fes22} - FES2014 or FES2022B ocean and load tide
 ! tide_pole - Pole tide
 ! tide_solid - Solid earth tide
 ! topo_ace2 - ACE2 topography
 ! geoid_egm2008 - EGM2008 geoid
-! mss_cnescls15 - CNES/CLS15 mean sea surface
-! mss_dtu15/mss_dtu18 - DTU15 or DTU18 mean sea surface
+! mss_{cnescls15,hybrid23} - CNES/CLS15 or Hybrid23 mean sea surface
+! mss_{dtu15,dtu18} - DTU15 or DTU18 mean sea surface
 ! tb_238 - Brightness temperature (23.8 GHz)
 ! tb_365 - Brightness temperature (36.5 GHz)
 ! flags, flags_plrm - Engineering flags
@@ -109,7 +109,7 @@ real(eightbytereal) :: equator_time
 ! Data variables
 
 integer(twobyteint), allocatable :: flags_plrm(:), flags_save(:)
-character(len=16) :: mss_sol1_var, mss_sol2_var, alt
+character(len=16) :: mss_sol1_var, mss_sol2_var, tide_sol2, alt
 integer :: latency = rads_nrt
 logical :: iono_alt_smooth, ipf651, ipf701, ipf703, ipf704
 
@@ -264,6 +264,7 @@ do
 	alt = 'alt_gdrf'
 	mss_sol1_var = 'mss_cnescls15'
 	mss_sol2_var = 'mss_dtu15'
+	tide_sol2 = 'fes22'
 	iono_alt_smooth = .false.
 	ipf651 = .false.
 	ipf701 = .false.
@@ -303,7 +304,8 @@ do
 ! Update MSS CNES/CLS again for IPF-SM-2 07.11 and switch to POE-G orbit standard
 
 	if (arg(10:14) >= '07.11') then
-		mss_sol1_var='mss_hybrid23'
+		mss_sol1_var = 'mss_hybrid23'
+		tide_sol2 = 'fes22'
 		alt = 'alt_poeg'
 	endif
 
@@ -401,9 +403,9 @@ do
 
 	call cpy_var (ncid, 'solid_earth_tide_01', 'tide_solid')
 	call cpy_var (ncid, 'ocean_tide_sol1_01 load_tide_sol1_01 SUB', 'tide_ocean_got410')
-	call cpy_var (ncid, 'ocean_tide_sol2_01 load_tide_sol2_01 SUB ocean_tide_non_eq_01 ADD', 'tide_ocean_fes14')
+	call cpy_var (ncid, 'ocean_tide_sol2_01 load_tide_sol2_01 SUB ocean_tide_non_eq_01 ADD', 'tide_ocean_' // tide_sol2)
 	call cpy_var (ncid, 'load_tide_sol1_01', 'tide_load_got410')
-	call cpy_var (ncid, 'load_tide_sol2_01', 'tide_load_fes14')
+	call cpy_var (ncid, 'load_tide_sol2_01', 'tide_load_' // tide_sol2)
 	call cpy_var (ncid, 'ocean_tide_eq_01', 'tide_equil')
 	call cpy_var (ncid, 'ocean_tide_non_eq_01', 'tide_non_equil')
 	call cpy_var (ncid, 'pole_tide_01', 'tide_pole')
