@@ -69,9 +69,11 @@ case ${sat} in
 	3a) rads_add_mfwam $options -C40-199 --all --new	>> "$log" 2>&1 ;;
 	3b) rads_add_mfwam $options -C21-199 --all --new	>> "$log" 2>&1 ;;
 esac
+# To support GDR-G with backward compatibility
+grep -q .*S3._.*_G $lst && rads_add_tide $options --models=fes14	>> "$log" 2>&1
 # Redetermine SSHA
 rads_add_refframe $options -x -x plrm					>> "$log" 2>&1
-rads_add_sla      $options -x -x plrm					>> "$log" 2>&1
+rads_add_sla      $options -x -x plrm -Xgdr_g			>> "$log" 2>&1
 
 date													>> "$log" 2>&1
 
