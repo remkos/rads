@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2025  Remko Scharroo
+! Copyright (c) 2011-2026  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -59,14 +59,14 @@ end type
 type(stat), allocatable :: box(:,:,:), tot(:)
 type(rads_sat) :: S(2)
 type(rads_pass) :: P(2), Pout
-logical :: ascii = .true., fullyear = .false., boz_format = .false., force = .false.
-logical :: echofilepaths = .false. , groups = .false., mask(4) = .false.
+logical :: ascii = .true., fullyear = .false., boz_format = .false., force = .false., first = .false., second = .false., &
+	echofilepaths = .false. , groups = .false., mask(4) = .false.
 
 ! Initialize RADS or issue help
 call synopsis
 call rads_set_options ('ab::c::d::flmo::p::q::r::s ' // &
-	'dt echo-file-paths force format-cycle format-day format-pass groups full-year min: mean-only minmax no-stddev ' // &
-	'output:: reject-on-nan: res:')
+	'dt echo-file-paths first force format-cycle format-day format-pass groups full-year min: mean-only minmax no-stddev ' // &
+	'output:: reject-on-nan: res: second')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 
@@ -140,6 +140,10 @@ do i = 1,rads_nopt
 		if (ios > 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	case ('f', 'force')
 		force = .true.
+	case ('first')
+		first = .true.
+	case ('second')
+		second = .true.
 	case ('o', 'output')
 		filename = rads_opt(i)%arg
 		if (filename == '') filename = 'radsstat.nc'
@@ -154,7 +158,7 @@ enddo
 ! At this point, lstat indicates the number of output columns, being either
 ! 0 = mean only in 1-D (netCDF) array
 ! 1 = mean only
-! 2 = mean. srddev
+! 2 = mean. stddev
 ! 3 = mean, min, amx
 ! 4 = mean, stddev, min, max
 mask(1) = .true.
@@ -265,6 +269,7 @@ if (rads_version ('Print RADS statistics per cycle, pass or day(s)')) return
 call rads_synopsis
 write (*,1300)
 1300 format (/ &
+'If two -S|--sat options are given, the collinear difference is computed (unless --first|--second)'/ &
 'Program specific [program_options] are:'/ &
 '  -r, --reject-on-nan VAR   Reject records if variable VAR is NaN (default: reject if SLA is NaN)'/ &
 '  -r NR                     Reject records if data item number NR on -V specifier is NaN'/ &
@@ -295,6 +300,8 @@ write (*,1300)
 '                            NetCDF output to include pass variable (default with -p)' / &
 '  --groups                  Create NetCDF groups (applies to NetCDF output only)' / &
 '  -f, --force               Force comparison, even when missions are not considered collinear'/ &
+'  --first                   Of collinears only provide the first satellite (second editing only)'/ &
+'  --second                  Of collinears only provide the second satellite (first for editing only)'/ &
 '  -o, --output [OUTNAME]    Create NetCDF output instead of ASCII (default output'/ &
 '                            filename is "radsstat.nc")')
 stop
@@ -337,7 +344,13 @@ if (S(2)%sat /= '') then
 					   P(2)%ndata, nint((P(2)%tll(:,1) - equator_time_2    + 1d6)/dt), idx)
 		do j = 1,nsel
 			call rads_get_var (S(2), P(2), S(2)%sel(j), a(1:))
-			z(:,j) = z(:,j) - a(idx(:))
+			if (first) then
+				where (isnan_(a(idx(:)))) z(:,j) = nan ! Blank out locations of NaN in second satellite
+			else if (second) then
+				where (isan_(z(:,j))) z(:,j) = a(idx(:)) ! Only copy second satellite where first is not NaN
+			else
+				z(:,j) = z(:,j) - a(idx(:))
+			endif
 		enddo
 		deallocate (a, idx)
 	else

@@ -1,5 +1,5 @@
 !****-------------------------------------------------------------------
-! Copyright (c) 2011-2025  Remko Scharroo
+! Copyright (c) 2011-2026  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -22,13 +22,13 @@ module rads_grid
 use typesizes
 type grid
 	character(len=160) :: filenm, xname, yname, zname, xunit, yunit, zunit
-	integer(fourbyteint) :: nx, ny, ntype, nxwrap
+	integer(fourbyteint) :: nx, ny, nl, ntype, nxwrap
 	real(eightbytereal) :: xmin, xmax, dx, ymin, ymax, dy, zmin, zmax, dz, z0, znan
 	integer(onebyteint), allocatable :: grid_int1(:,:)
 	integer(twobyteint), allocatable :: grid_int2(:,:)
 	integer(fourbyteint), allocatable :: grid_int4(:,:)
 	real(fourbytereal), allocatable :: grid_real(:,:)
-	real(eightbytereal), allocatable :: grid_dble(:,:)
+	real(fourbytereal), allocatable :: grid_real_3d(:,:,:)
 end type
 !
 ! PURPOSE
@@ -102,7 +102,7 @@ logical, intent(in), optional :: verbose
 !             3 = Illegal grid format
 !             4 = Error loading grid
 !****-------------------------------------------------------------------
-integer(fourbyteint) :: i,ncid,z_id
+integer(fourbyteint) :: i, ncid, z_id
 character(len=80) :: units
 
 if (present(verbose) .and. verbose) write (0,600) trim(filenm)
@@ -114,7 +114,7 @@ if (grid_load /= 0) then
 	return
 endif
 
-! Load entire data block.
+! Load entire data block
 select case (info%ntype)
 case (nf90_int1)
 	allocate (info%grid_int1(info%nx,info%ny))
@@ -125,12 +125,12 @@ case (nf90_int2)
 case (nf90_int4)
 	allocate (info%grid_int4(info%nx,info%ny))
 	i = nf90_get_var (ncid,z_id,info%grid_int4)
-case (nf90_real)
+case (nf90_real, nf90_double) ! Both real and double are read info real
 	allocate (info%grid_real(info%nx,info%ny))
 	i = nf90_get_var (ncid,z_id,info%grid_real)
-case default
-	allocate (info%grid_dble(info%nx,info%ny))
-	i = nf90_get_var (ncid,z_id,info%grid_dble)
+case default ! 3D is always done in real
+	allocate (info%grid_real_3d(info%nx,info%ny,info%nl))
+	i = nf90_get_var (ncid,z_id,info%grid_real_3d)
 end select
 
 if (i /= 0) then
@@ -150,8 +150,8 @@ return
 contains
 
 subroutine grid_load_nc
-integer(fourbyteint) :: i,l,x_id,y_id,nvars,dims(2),ndims,dims2(1),start(1)=1,stride(1)=1
-real(eightbytereal) :: dummy(2),x
+integer(fourbyteint) :: i, l, x_id, y_id, l_id, nvars, dims(3), ndims, dims2(1), start(1)=1, stride(1)=1
+real(eightbytereal) :: dummy(2), x
 
 ! Check if a suffix '?varname' is used
 l = index(filenm,'?')
@@ -169,25 +169,27 @@ if (l > 1) then  ! Varname is given
 		return
 	endif
 	if (nf90_inquire_variable(ncid,z_id,ndims=ndims,xtype=info%ntype) /= 0) return
-	if (ndims /= 2) then
-		call grid_error (3, 'Variable is not 2-D in '//trim(filenm))
+	if (ndims == 3) then
+		info%ntype = 100+nf90_double ! 3D grids are (for the time being) only read in double
+	else if (ndims /= 2) then
+		call grid_error (3, 'Variable is neither 2-D or 3-D in '//trim(filenm))
 		return
 	endif
 	if (nf90_inquire(ncid,nvariables=nvars) /= 0) return
 
-else ! Open grid file.
+else ! Open grid file
 
 	if (nf90_open(filenm,nf90_nowrite,ncid) /= 0) then
 		call grid_error (1, 'No such NetCDF file '//trim(filenm))
 		return
 	endif
 
-	! Look for first 2-dimensional (z) variable and determine
+	! Look for first 2- or 3-dimensional (z) variable and determine variable ID
 	if (nf90_inquire(ncid,nvariables=nvars) /= 0) return
 	z_id = -1
 	do i = 1,nvars
 		if (nf90_inquire_variable(ncid,i,ndims=ndims,xtype=info%ntype) /= 0) return
-		if (ndims == 2) then
+		if (ndims == 2 .or. ndims == 3) then
 			z_id = i
 			exit
 		endif
@@ -199,7 +201,7 @@ else ! Open grid file.
 endif
 
 ! Get the data type
-select case (info%ntype)
+select case (modulo(info%ntype,100))
 case (nf90_int1,nf90_int2,nf90_int4,nf90_real,nf90_double)
 case default
 	call grid_error (3, 'Unknown data type in '//trim(filenm))
@@ -207,25 +209,32 @@ case default
 end select
 
 ! Get the ids of the x and y variables
-if (nf90_inquire_variable(ncid,z_id,dimids=dims) /= 0) return
+if (nf90_inquire_variable(ncid,z_id,dimids=dims(1:ndims)) /= 0) return
 x_id = -1
 y_id = -1
+l_id = -1
 do i = 1,nvars
 	if (nf90_inquire_variable(ncid,i,ndims=ndims) /= 0) return
 	if (ndims == 1) then
 		if (nf90_inquire_variable(ncid,i,dimids=dims2) /= 0) return
 		if (dims2(1) == dims(1)) x_id=i
 		if (dims2(1) == dims(2)) y_id=i
+		if (dims2(1) == dims(3)) l_id=i
 	endif
 enddo
 if (x_id < 0 .or. y_id < 0) then
 	call grid_error (3, 'Could not find the x or y variables in '//trim(filenm))
 	return
 endif
+if (ndims == 3 .and. l_id < 0) then
+	call grid_error (3, 'Could not find the level variables in '//trim(filenm))
+	return
+endif
 
 ! Fill grid structure
 if (nf90_inquire_dimension(ncid,dims(1),len=info%nx) /= 0) return
 if (nf90_inquire_dimension(ncid,dims(2),len=info%ny) /= 0) return
+if (ndims == 3 .and. nf90_inquire_dimension(ncid,dims(3),len=info%nl) /= 0) return
 
 ! Get z-range, -scale and -offset and missing value
 if (nf90_get_att(ncid,z_id,'scale_factor',info%dz) /= 0) info%dz = 1d0
@@ -315,13 +324,13 @@ type (grid), intent(inout) :: info
 ! itself, only the memory allocated to store the grid values.
 !
 ! ARGUMENT
-! info : Grid info structure as returned by grid_load
+! info : Grid info structure as returned by <grid_load>
 !****-------------------------------------------------------------------
 if (allocated(info%grid_int1)) deallocate(info%grid_int1)
 if (allocated(info%grid_int2)) deallocate(info%grid_int2)
 if (allocated(info%grid_int4)) deallocate(info%grid_int4)
 if (allocated(info%grid_real)) deallocate(info%grid_real)
-if (allocated(info%grid_dble)) deallocate(info%grid_dble)
+if (allocated(info%grid_real_3d)) deallocate(info%grid_real_3d)
 info%ntype = 0
 end subroutine grid_free
 
@@ -330,10 +339,11 @@ end subroutine grid_free
 ! Look-up value in buffered grid
 !
 ! SYNOPSIS
-pure function grid_query (info, x, y)
+pure function grid_query (info, x, y, weight)
 use netcdf
 type(grid), intent(in) :: info
 real(eightbytereal), intent(in) :: x, y
+real(eightbytereal), intent(in), optional :: weight(:)
 real(eightbytereal) :: grid_query
 !
 ! This function looks up a single value in a buffered grid that
@@ -350,14 +360,15 @@ real(eightbytereal) :: grid_query
 ! wrapping, grid_query returns a NaN value.
 !
 ! ARGUMENTS
-! info : Grid info structure as returned by grid_load
-! x, y : x- and y-coordinate of the point to be queried
+! info   : Grid info structure as returned by grid_load
+! x, y   : x- and y-coordinate of the point to be queried
+! weight : weight to be given to each level (3D grids only)
 !
 ! RETURN VALUE
 ! grid_query : Value at the location (x, y)
 !****-------------------------------------------------------------------
 real(eightbytereal) :: z
-integer(fourbyteint) :: jx,jy
+integer(fourbyteint) :: jx, jy
 
 ! If x or y are NaN or beyond allowed range, return NaN
 if (.not.grid_inside (info, x, y)) then
@@ -378,16 +389,16 @@ jy = nint((y - info%ymin) / info%dy) + 1
 
 ! Lookup the value
 select case (info%ntype)
-case (nf90_int1)  ! BYTE
+case (nf90_int1)
 	z = info%grid_int1(jx,jy)
-case (nf90_int2)  ! SHORT
+case (nf90_int2)
 	z = info%grid_int2(jx,jy)
-case (nf90_int4)  ! INT
+case (nf90_int4)
 	z = info%grid_int4(jx,jy)
-case (nf90_real)  ! FLOAT
+case (nf90_real, nf90_double)
 	z = info%grid_real(jx,jy)
-case default      ! DOUBLE
-	z = info%grid_dble(jx,jy)
+case default
+	z = dot_product(info%grid_real_3d(jx,jy,:),weight)
 end select
 
 ! Check against missing value and scale
@@ -404,11 +415,12 @@ end function grid_query
 ! Bi-linear interpolation of buffered grid
 !
 ! SYNOPSIS
-pure function grid_lininter (info, x, y, phase)
+pure function grid_lininter (info, x, y, weight, phase)
 use netcdf
 type(grid), intent(in) :: info
 real(eightbytereal), intent(in) :: x, y
 logical, intent(in), optional :: phase
+real(eightbytereal), intent(in), optional :: weight(:)
 real(eightbytereal) :: grid_lininter
 !
 ! PURPOSE
@@ -434,14 +446,15 @@ real(eightbytereal) :: grid_lininter
 ! In that case, make sure that info%dz converts the values to radians.
 !
 ! ARGUMENTS
-! info  : Grid info structure as returned by grid_load
-! x, y  : x- and y-coordinate of the point to be interpolated
-! phase : (optional) if input values are phase, then TRUE.
+! info   : Grid info structure as returned by grid_load
+! x, y   : x- and y-coordinate of the point to be interpolated
+! weight : weight to be given to each level (3D grids only)
+! phase  : (optional) if input values are phase, then TRUE.
 !
 ! RETURN VALUE
 ! grid_lininter : Interpolated value at the location (x, y)
 !****-------------------------------------------------------------------
-real(eightbytereal) :: xj,yj,z(2,2),weight(2,2),wtot,vtot,zz
+real(eightbytereal) :: xj,yj,z(2,2),w(2,2),wtot,vtot,zz
 integer(fourbyteint) :: jx,jy,jx1,jy1
 
 ! If x or y are NaN or beyond allowed range, return NaN
@@ -473,28 +486,30 @@ jy1 = jy + 1
 
 ! Lookup 4 corners
 select case (info%ntype)
-case (nf90_int1)  ! BYTE
+case (nf90_int1)
 	z(1,:) = info%grid_int1(jx ,jy:jy1)
 	z(2,:) = info%grid_int1(jx1,jy:jy1)
-case (nf90_int2)  ! SHORT
+case (nf90_int2)
 	z(1,:) = info%grid_int2(jx ,jy:jy1)
 	z(2,:) = info%grid_int2(jx1,jy:jy1)
-case (nf90_int4)  ! INT
+case (nf90_int4)
 	z(1,:) = info%grid_int4(jx ,jy:jy1)
 	z(2,:) = info%grid_int4(jx1,jy:jy1)
-case (nf90_real)  ! FLOAT
+case (nf90_real, nf90_double)
 	z(1,:) = info%grid_real(jx ,jy:jy1)
 	z(2,:) = info%grid_real(jx1,jy:jy1)
-case default      ! DOUBLE
-	z(1,:) = info%grid_dble(jx ,jy:jy1)
-	z(2,:) = info%grid_dble(jx1,jy:jy1)
+case default
+	z(1,1) = dot_product(info%grid_real_3d(jx ,jy ,:),weight)
+	z(1,2) = dot_product(info%grid_real_3d(jx ,jy1,:),weight)
+	z(2,1) = dot_product(info%grid_real_3d(jx1,jy ,:),weight)
+	z(2,2) = dot_product(info%grid_real_3d(jx1,jy1,:),weight)
 end select
 
 ! Set corner weights
-weight(1,1) = (1-xj)*(1-yj)
-weight(1,2) = (1-xj)*   yj
-weight(2,1) =    xj *(1-yj)
-weight(2,2) =    xj *   yj
+w(1,1) = (1-xj)*(1-yj)
+w(1,2) = (1-xj)*   yj
+w(2,1) =    xj *(1-yj)
+w(2,2) =    xj *   yj
 
 ! Add up weights
 wtot = 0d0
@@ -504,8 +519,8 @@ if (.not.present(phase) .or. .not.phase) then
 		do jx = 1,2
 			zz = z(jx,jy)
 			if (zz == info%znan .or. zz /= zz) cycle
-			wtot = wtot + weight(jx,jy)
-			vtot = vtot + weight(jx,jy)*zz
+			wtot = wtot + w(jx,jy)
+			vtot = vtot + w(jx,jy)*zz
 		enddo
 	enddo
 	grid_lininter = vtot / wtot * info%dz + info%z0
@@ -515,8 +530,8 @@ else
 			zz = z(jx,jy)
 			if (zz == info%znan .or. zz /= zz) cycle
 			zz = zz * info%dz + info%z0
-			wtot = wtot + weight(jx,jy) * cos(zz)
-			vtot = vtot + weight(jx,jy) * sin(zz)
+			wtot = wtot + w(jx,jy) * cos(zz)
+			vtot = vtot + w(jx,jy) * sin(zz)
 		enddo
 	enddo
 	grid_lininter = atan2(vtot,wtot)
@@ -528,10 +543,11 @@ end function grid_lininter
 ! Bi-cubic spline interpolation of buffered grid
 !
 ! SYNOPSIS
-pure function grid_splinter (info, x, y)
+pure function grid_splinter (info, x, y, weight)
 use netcdf
 type(grid), intent(in) :: info
 real(eightbytereal), intent(in) :: x, y
+real(eightbytereal), intent(in), optional :: weight(:)
 real(eightbytereal) :: grid_splinter
 !
 ! PURPOSE
@@ -558,14 +574,15 @@ real(eightbytereal) :: grid_splinter
 ! a NaN value.
 !
 ! ARGUMENTS
-! info : Grid info structure as returned by grid_load
-! x, y : x- and y-coordinate of the point to be interpolated
+! info  : Grid info structure as returned by grid_load
+! x, y  : x- and y-coordinate of the point to be interpolated
+! weight : weight to be given to each level (3D grids only)
 !
 ! RETURN VALUE
 ! grid_splinter : Interpolated value at the location (x, y)
 !****-------------------------------------------------------------------
-integer(fourbyteint) :: jx,jy,j
-real(eightbytereal) :: xj,yj,z(6,6),zy(6),w(6),u(6)
+integer(fourbyteint) :: jx, jy, j, k
+real(eightbytereal) :: xj, yj, z(6,6), zy(6), w(6), u(6)
 
 ! If x or y are NaN or beyond allowed range, return NaN
 if (.not.grid_inside (info, x, y)) then
@@ -598,30 +615,34 @@ if (info%nxwrap == 0) then
 
 	! Load 6-by-6 subgrid
 	select case (info%ntype)
-	case (nf90_int1)  ! BYTE
+	case (nf90_int1)
 		z = info%grid_int1(jx+1:jx+6,jy+1:jy+6)
-	case (nf90_int2)  ! SHORT
+	case (nf90_int2)
 		z = info%grid_int2(jx+1:jx+6,jy+1:jy+6)
-	case (nf90_int4)  ! INT
+	case (nf90_int4)
 		z = info%grid_int4(jx+1:jx+6,jy+1:jy+6)
-	case (nf90_real)  ! FLOAT
+	case (nf90_real, nf90_double)
 		z = info%grid_real(jx+1:jx+6,jy+1:jy+6)
-	case default      ! DOUBLE
-		z = info%grid_dble(jx+1:jx+6,jy+1:jy+6)
+	case default
+		forall (k=1:6)
+			forall (j=1:6) z(j,k) = dot_product(info%grid_real_3d(modulo(jx+j-1,info%nxwrap)+1,jy+k,:),weight)
+		end forall
 	end select
 else
 	! Load 6-by-6 subgrid
 	select case (info%ntype)
-	case (nf90_int1)  ! BYTE
+	case (nf90_int1)
 		forall (j=1:6) z(j,:) = info%grid_int1(modulo(jx+j-1,info%nxwrap)+1,jy+1:jy+6)
-	case (nf90_int2)  ! SHORT
+	case (nf90_int2)
 		forall (j=1:6) z(j,:) = info%grid_int2(modulo(jx+j-1,info%nxwrap)+1,jy+1:jy+6)
-	case (nf90_int4)  ! INT
+	case (nf90_int4)
 		forall (j=1:6) z(j,:) = info%grid_int4(modulo(jx+j-1,info%nxwrap)+1,jy+1:jy+6)
-	case (nf90_real)  ! FLOAT
+	case (nf90_real, nf90_double)
 		forall (j=1:6) z(j,:) = info%grid_real(modulo(jx+j-1,info%nxwrap)+1,jy+1:jy+6)
-	case default      ! DOUBLE
-		forall (j=1:6) z(j,:) = info%grid_dble(modulo(jx+j-1,info%nxwrap)+1,jy+1:jy+6)
+	case default
+		forall (k=1:6)
+			forall (j=1:6) z(j,k) = dot_product(info%grid_real_3d(modulo(jx+j-1,info%nxwrap)+1,jy+k,:),weight)
+		end forall
 	end select
 endif
 
@@ -713,7 +734,7 @@ real(eightbytereal) :: grid_y
 ! <info%ny>. If <i> is out of range, NaN is returned.
 !
 ! ARGUMENTS
-! info : Grid info structure as returned by grid_load
+! info : Grid info structure as returned by <grid_load>
 ! i    : Vertical index of the grid pixel
 !
 ! RETURN VALUE

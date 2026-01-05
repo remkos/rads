@@ -1,5 +1,5 @@
 !****-------------------------------------------------------------------
-! Copyright (c) 2011-2025  Remko Scharroo
+! Copyright (c) 2011-2026  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -831,9 +831,10 @@ end subroutine quicksort
 ! Compute best fitting linear regression
 !
 ! SYNOPSIS
-pure subroutine regression (x, y, a, b, r, fit)
+pure subroutine regression (x, y, a, b, r, mse, n)
 real(eightbytereal), intent(in) :: x(:), y(:)
-real(eightbytereal), intent(out) :: a, b, r, fit
+real(eightbytereal), intent(out) :: a, b, r, mse
+integer(fourbyteint), intent(out) :: n
 !
 ! PURPOSE
 ! Compute best fitting straight line through a number of points
@@ -843,12 +844,13 @@ real(eightbytereal), intent(out) :: a, b, r, fit
 ! ARGUMENTS
 ! x     : x-coordinate
 ! y     : y-coordinate
-! a, b  : Coefficients of linear regression (intercept and slope)
-! r     : Regression
-! fit   : RMS of fit of regression to the data
+! a, b  : coefficients of linear regression (intercept and slope)
+! r     : regression coefficient
+! mse   : mean square error
+! n     : number of valid points on input
 !****-------------------------------------------------------------------
 real(eightbytereal) :: sumx,sumy,sumxx,sumxy,sumyy,uxx,uxy,uyy
-integer(fourbyteint) :: i,n
+integer(fourbyteint) :: i
 n = 0
 sumx = 0d0
 sumy = 0d0
@@ -864,14 +866,22 @@ do i = 1,size(x)
 	sumyy = sumyy + y(i)*y(i)
 	n = n + 1
 enddo
-
-uxx = n * sumxx - sumx * sumx
-uxy = n * sumxy - sumx * sumy
-uyy = n * sumyy - sumy * sumy
-b = uxy / uxx
-a = (sumy - b*sumx) / n
-r = uxy / sqrt(uxx*uyy)
-fit = sqrt((sumyy - a * sumy - b * sumxy) / n)
+if (n < 1) then
+	a = nan
+	b = nan
+else
+	uxx = n * sumxx - sumx * sumx
+	uxy = n * sumxy - sumx * sumy
+	uyy = n * sumyy - sumy * sumy
+	b = uxy / uxx
+	a = (sumy - b*sumx) / n
+	r = uxy / sqrt(uxx*uyy)
+	if (n < 3) then
+		mse = nan
+	else
+		mse = (sumyy - a * sumy - b * sumxy) / (n-2)
+	endif
+endif
 end subroutine regression
 
 !****f* rads_misc/is_number
@@ -1038,41 +1048,11 @@ integer(fourbyteint), intent(out), optional :: nr(:)
 ! rms   : Standard deviation of 1-Hz, dimension n
 ! nr    : (Optional) number of valid points, dimension n
 !****-------------------------------------------------------------------
-real(eightbytereal) :: sumx,sumy,sumxx,sumxy,sumyy,uxx,uxy,uyy,a,b,xx
-integer(fourbyteint) :: i, j, n
+real(eightbytereal) :: b, r, mse
+integer(fourbyteint) :: j, n
 do j = 1,size(y,2)
-	n = 0
-	sumx = 0d0
-	sumy = 0d0
-	sumxx = 0d0
-	sumxy = 0d0
-	sumyy = 0d0
-	do i = 1,size(y,1)
-		if (isnan_(x(i,j)) .or. isnan_(y(i,j))) cycle
-		xx = x(i,j) - x0(j)
-		sumx = sumx + xx
-		sumy = sumy + y(i,j)
-		sumxx = sumxx + xx*xx
-		sumxy = sumxy + xx*y(i,j)
-		sumyy = sumyy + y(i,j)*y(i,j)
-		n = n + 1
-	enddo
-	if (n < 1) then
-		mean(j) = nan
-		rms(j) = nan
-	else
-		uxx = n * sumxx - sumx * sumx
-		uxy = n * sumxy - sumx * sumy
-		uyy = n * sumyy - sumy * sumy
-		b = uxy / uxx
-		a = (sumy - b*sumx) / n
-		mean(j) = a
-		if (n < 3) then
-			rms(j) = nan
-		else
-			rms(j) = sqrt ((sumyy - a * sumy - b * sumxy) / (n-2))
-		endif
-	endif
+	call regression (x(:,j)-x0(j), y(:,j), mean(j), b, r, mse, n)
+	rms(j) = sqrt(mse)
 	if (present(nr)) nr(j) = n
 enddo
 end subroutine trend_1hz
