@@ -40,8 +40,7 @@ LDLIBS  = $(NETCDF_LIB) $(GRIB_LIB)
 # Shell or perl scripts
 SCRIPTS = rads_add_common rads_add_common_gdrg.sh rads_add_era5.sh \
 		rads_gen_3a.sh rads_gen_3a_new.sh rads_gen_3a_new_calval.sh rads_gen_3a_calval.sh \
-		rads_gen_3b.sh rads_gen_3b_new.sh rads_gen_3b_new_calval.sh rads_gen_3b_calval.sh \
-		rads_gen_6a_calval.sh rads_gen_6b_calval.sh \
+		rads_gen_6a_calval.sh \
 		rads_gen_c2_op.sh rads_gen_h2.sh \
 		rads_gen_j1.sh rads_gen_j2.sh \
 		rads_gen_j3.sh rads_gen_j3_calval.sh rads_gen_j3_new.sh rads_gen_j3_new_calval.sh \
@@ -50,18 +49,24 @@ SCRIPTS = rads_add_common rads_add_common_gdrg.sh rads_add_era5.sh \
 		rads_purge_older.sh rads_sandbox.sh hardlink.sh \
 		radscyclesindex
 
+# Programs created by linking to other programs
+PROGS_S3 = rads_gen_3b.sh rads_gen_3b_new.sh rads_gen_3b_new_calval.sh rads_gen_3b_calval.sh
+PROGS_S6 = rads_gen_6b_calval.sh
+
 #-----------------------------------------------------------------------
 # What to create?
 #-----------------------------------------------------------------------
 
-all:	$(PROGS)
+all:	$(PROGS) $(PROGS_S3) $(PROGS_S6)
 
 install:	all
 	$(INSTALL_DIR) $(bindir) $(datadir)/conf
 	$(INSTALL_PROGRAM) $(PROGS) $(bindir)
 	$(INSTALL_SCRIPT) $(SCRIPTS) $(bindir)
 	$(INSTALL_DATA) *.xml $(datadir)/conf
-	(cd $(bindir) ; $(LN_S) rads_add_dac rads_add_mog2d)
+	cd $(bindir) ; for p in $(PROGS_S3); do $(LN_S) rads_gen_3a$${p#rads_gen_3b} $$p ; done
+	cd $(bindir) ; for p in $(PROGS_S6); do $(LN_S) rads_gen_6a$${p#rads_gen_6b} $$p ; done
+	cd $(bindir) ; $(LN_S) rads_add_dac rads_add_mog2d
 
 man:	$(MAN)
 
@@ -88,6 +93,15 @@ $(PROGS):	rads_devel.o $(LIB)
 #-----------------------------------------------------------------------
 
 test:
+
+#-----------------------------------------------------------------------
+# Make links to executables
+#-----------------------------------------------------------------------
+
+rads_gen_3b%:	rads_gen_3a%
+	$(LN_S) rads_gen_3a$* $@
+rads_gen_6b%:	rads_gen_6a%
+	$(LN_S) rads_gen_6a$* $@
 
 #-----------------------------------------------------------------------
 # How to cleanup

@@ -34,7 +34,6 @@ rads_gen_c2_op		$options < "$lst"	>> "$log" 2>&1
 
 # General geophysical corrections
 rads_add_common   $options				>> "$log" 2>&1
-rads_add_iono     $options --all		>> "$log" 2>&1
 # Redetermine SSHA
 rads_add_refframe $options				>> "$log" 2>&1
 rads_add_sla      $options				>> "$log" 2>&1

@@ -89,7 +89,6 @@ esac
 
 rads_fix_jason    $options --all					>> "$log" 2>&1
 rads_add_common   $options							>> "$log" 2>&1
-rads_add_iono     $options --all					>> "$log" 2>&1
 
 if grep -q _2Pg $lst ; then
 	# For GDR-G we add the FES2014 model

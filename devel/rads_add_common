@@ -32,3 +32,5 @@ rads_add_sst      "$@" --all
 rads_add_seaice   "$@"
 rads_add_ncep     "$@" --dry --wet --air
 rads_add_era5     "$@" --all --new
+rads_add_dac      "$@" --ymd=19920202,20230101 --era5
+rads_add_iono     "$@" --all
