@@ -64,10 +64,11 @@ for type in ${types}; do
 # General geophysical corrections
 	rads_add_common   $options								>> "$log" 2>&1
 	rads_add_mfwam    $options --all --new					>> "$log" 2>&1
-	rads_add_iono     $options --all						>> "$log" 2>&1
+# To support GDR-G with backward compatibility
+	grep -q .*S3._.*_G $lst && rads_add_tide $options --models=fes14		>> "$log" 2>&1
 # Redetermine SSHA
 	rads_add_refframe $options -x -x plrm					>> "$log" 2>&1
-	rads_add_sla      $options -x -x plrm					>> "$log" 2>&1
+	rads_add_sla      $options -x -x plrm -Xgdr_g			>> "$log" 2>&1
 
 	date													>> "$log" 2>&1
 
