@@ -167,7 +167,7 @@ do
 
 	call nfs(nf90_get_att(ncid,nf90_global,'source',arg))
 	baseline = arg(21:21)
-	if (.not.(baseline >= 'F' .and. baseline <= 'G')) then
+	if (baseline < 'F' .or. baseline > 'G') then
 		call log_string ('Error: this is neither GDR-F or GDR-G', .true.)
 		cycle
 	endif
@@ -510,9 +510,9 @@ do
 		call cpy_var (ncid1, 'ocean_tide_fes load_tide_fes SUB ocean_tide_non_eq ADD', 'tide_ocean_' // tide_sol2)
 		call cpy_var (ncid1, 'load_tide_got', 'tide_load_' // tide_sol1)
 		call cpy_var (ncid1, 'load_tide_fes', 'tide_load_' // tide_sol2)
-	else ! ocean_tide_non_eq is already part of ocean_tide_sol2 in baseline G and later
+	else ! ocean_tide_non_eq is still not part of ocean_tide_sol2 in baseline G
 		call cpy_var (ncid1, 'ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_' // tide_sol1)
-		call cpy_var (ncid1, 'ocean_tide_sol2 load_tide_sol2 SUB', 'tide_ocean_' // tide_sol2)
+		call cpy_var (ncid1, 'ocean_tide_sol2 load_tide_sol2 SUB ocean_tide_non_eq ADD', 'tide_ocean_' // tide_sol2)
 		call cpy_var (ncid1, 'load_tide_sol1', 'tide_load_' // tide_sol1)
 		call cpy_var (ncid1, 'load_tide_sol2', 'tide_load_' // tide_sol2)
 	endif
