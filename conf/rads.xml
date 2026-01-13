@@ -561,7 +561,7 @@ Global RADS configuration file
 	<compress sat="j1 j2">int4 1e-4 1300e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
-<var name="alt_gdrf" field="427" sat="3a 3b 6a 6b j1 j2 j3 n1.f4a sa sw tx pn">
+<var name="alt_gdrf" field="427" sat="3a 3b 6a 6b c2 j1 j2 j3 n1.f4a sa sw tx pn">
 	<long_name>CNES GDR-F orbital altitude</long_name>
 	<standard_name>height_above_reference_ellipsoid</standard_name>
 	<source>CNES, GDR-F standards</source>
@@ -612,7 +612,7 @@ Global RADS configuration file
 <alias name="alt" field="4" sat="2a">alt_gdrd</alias>
 <alias name="alt" field="4" sat="6a 6b 3a 3b j3">alt_poeg alt_gdrf</alias>
 <alias name="alt" field="4" sat="j2 sa sw tx pn">alt_gdrf</alias>
-<alias name="alt" field="4" sat="c2">alt_gdre alt_cnes</alias>
+<alias name="alt" field="4" sat="c2">alt_gdrf alt_gdre</alias>
 <alias name="alt" field="4" sat="e1 e2">alt_reaper alt_gfz</alias>
 <alias name="alt" field="4" sat="e1.f4* e2.f4*">alt_reaper_deos</alias>
 <alias name="alt" field="4" sat="g1">alt_pgs7777</alias>
@@ -1894,7 +1894,6 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 </var>
-<!-- Possible future implementation?
 <var name="mdt_cnescls22">
 	<long_name>CNES/CLS 2022 mean dynamic topography</long_name>
 	<source>CNES/CLS 2022</source>
@@ -1904,7 +1903,6 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 </var>
--->
 
 <var name="latency">
 	<long_name>source product latency flag</long_name>
@@ -4421,6 +4419,16 @@ Global RADS configuration file
 	<format>f7.4</format>
 	<compress>int2 1e-4</compress>
 	<comment>Annual variation of sea level with respect to long-term mean sea level</comment>
+</var>
+
+<var name="surface_slope_cor" sat="c2">
+	<long_name>surface slope correction</long_name>
+	<source>Sandwell and Smith (2014), doi:10.1007/s00190-014-0720-1</source>
+	<units>m</units>
+	<data>surface_slope_cor</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Surface slope correction should be used with recent mean sea surface solutions</comment>
 </var>
 
 <var name="gia" field="5101 51">
