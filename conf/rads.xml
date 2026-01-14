@@ -4695,7 +4695,7 @@ Global RADS configuration file
 <if sat="c2">
 	<satellite>CRYOSAT2</satellite>
 	<satid>12</satid>
-	<dt1hz>0.980469</dt1hz>
+	<dt1hz>0.943437</dt1hz>
 	<inclination>92</inclination>
 	<frequency>13.575</frequency>
 	<xover_params>0.04 0.05</xover_params>
