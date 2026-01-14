@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2025  Remko Scharroo and Eric Leuliette
+! Copyright (c) 2011-2026  Remko Scharroo and Eric Leuliette
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -47,7 +47,7 @@ program rads_gen_s6
 ! time - Time since 1 Jan 85
 ! lat - Latitude
 ! lon - Longitude
-! alt_gdrf - Orbital altitude
+! alt_gdrf/alt_poeg - Orbital altitude
 ! alt_rate - Orbital altitude rate
 ! range_* - Ocean range (retracked)
 ! range_rms_* - Std dev of range
@@ -113,7 +113,7 @@ real(eightbytereal) :: first_measurement_time, last_measurement_time, equator_ti
 ! Data variables
 
 integer(twobyteint), allocatable :: flags_mle3(:), flags_nr(:), flags_save(:)
-character(len=16) :: mss_sol1, mss_sol2, tide_sol1, tide_sol2
+character(len=16) :: mss_sol1, mss_sol2, tide_sol1, tide_sol2, alt
 character(len=3) :: baseline
 character(len=8) :: chd_ver, cha_ver, cnf_ver
 integer :: latency = rads_nrt, nsat
@@ -294,11 +294,13 @@ do
 ! Set new model versions
 
 	if (baseline < 'G01') then
+		alt = 'alt_gdrf'
 		mss_sol1 = 'cnescls15'
 		mss_sol2 = 'dtu18'
 		tide_sol1 = 'got410'
 		tide_sol2 = 'fes14'
 	else
+		alt = 'alt_poeg'
 		mss_sol1 = 'hybrid23'
 		mss_sol2 = 'dtu21'
 		tide_sol1 = 'got410'
@@ -400,7 +402,7 @@ do
 	call new_var ('time', a)
 	call cpy_var (ncid1, 'latitude', 'lat')
 	call cpy_var (ncid1, 'longitude','lon')
-	call cpy_var (ncid1, 'altitude delta_ellipsoid_tp_wgs84 SUB', 'alt_gdrf')
+	call cpy_var (ncid1, 'altitude delta_ellipsoid_tp_wgs84 SUB', alt)
 	call cpy_var (ncid1, 'altitude_rate_mean_sea_surface', 'alt_rate')
 	call cpy_var (ncid1, 'orbit_type_flag', 'qual_orbit')
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2025  Remko Scharroo
+# Copyright (c) 2011-2026  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -42,14 +42,21 @@ TZ=UTC touch -t ${d0}0000 $mrk
 find -L igdr/c??? -name "SWOT_*.nc" -a -newer $mrk | sort > "$lst"
 rads_gen_swot < "$lst"											>> "$log" 2>&1
 
+extra=
+
 # Do the patches to all data
 
 rads_add_common   $options							>> "$log" 2>&1
 rads_add_mfwam    $options --wind					>> "$log" 2>&1
-rads_add_iono     $options --all					>> "$log" 2>&1
+
+# If not GDR-F, add the FES2014 model
+grep -q _2Pf $lst || rads_add_tide $options --models=fes14	>> "$log" 2>&1
+# If not GDR-G, add MLE3 support
+grep -q _2Pg $lst || extra="-x mle3 $extra"
+
 # Redetermine SSHA
-rads_add_refframe $options -x -x mle3				>> "$log" 2>&1
-rads_add_sla      $options -x -x mle3				>> "$log" 2>&1
+rads_add_refframe $options -x $extra				>> "$log" 2>&1
+rads_add_sla      $options -x $extra				>> "$log" 2>&1
 
 date												>> "$log" 2>&1
 

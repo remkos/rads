@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2025  Remko Scharroo
+# Copyright (c) 2011-2026  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -111,21 +111,22 @@ esac
 # For LR, do also _mle3, but only for F09 or earlier
 extra=
 case $type in
-	*lr*) grep -q _G...SEN6 $lst || extra="-x mle3" ;;
+	*lr*) grep -q .*S6._.*_G $lst || extra="-x mle3" ;;
 esac
 
 # General geophysical corrections
 rads_add_common   $options										>> "$log" 2>&1
 rads_add_mfwam    $options --all --new							>> "$log" 2>&1
-rads_add_iono     $options --all								>> "$log" 2>&1
-rads_add_orbit    $options -Valt_gps --dir=jplgpspoe -C5-112	>> "$log" 2>&1
-rads_add_orbit    $options -Valt_gps --dir=jplgpsmoe -C113-299	>> "$log" 2>&1
-rads_add_orbit    $options -Valt_std2400 -C4-152                >> "$log" 2>&1
+case $sat in
+	6a)	rads_add_orbit    $options -Valt_gps --dir=jplgpspoe -C5-112	>> "$log" 2>&1
+		rads_add_orbit    $options -Valt_gps --dir=jplgpsmoe -C113-299	>> "$log" 2>&1
+		rads_add_orbit    $options -Valt_std2400 -C4-168                >> "$log" 2>&1 ;;
+esac
 # To support GDR-G with backward compatibility
 grep -q .*S6._.*_G $lst && rads_add_tide $options --models=fes14		>> "$log" 2>&1
 # Redetermine SSHA
 rads_add_refframe $options -x -x nr $extra						>> "$log" 2>&1
-rads_add_sla      $options -x -x nr $extra						>> "$log" 2>&1
+rads_add_sla      $options -x -x nr $extra -Xgdr_g				>> "$log" 2>&1
 
 date															>> "$log" 2>&1
 

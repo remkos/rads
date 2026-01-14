@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2025  Remko Scharroo
+# Copyright (c) 2011-2026  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -46,7 +46,6 @@ rads_gen_saral < "$lst"							>> "$log" 2>&1
 
 # Do the patches to all data
 
-rads_add_iono    $options --all					>> "$log" 2>&1
 rads_add_common  $options						>> "$log" 2>&1
 rads_add_ssb     $options --all					>> "$log" 2>&1
 rads_add_ib      $options						>> "$log" 2>&1

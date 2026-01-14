@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2025  Remko Scharroo
+! Copyright (c) 2011-2026  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -28,29 +28,29 @@ use rads_devel
 use gimsubs
 use nicsubs
 
-! Data variables
-
-type(rads_sat) :: S
-type(rads_pass) :: P
-type(rads_var), pointer :: var
-type(giminfo) :: info
-
 ! Command line arguments
 
 character(rads_cmdl) :: path
 integer(fourbyteint) :: j, cyc, pass, ios
 real(eightbytereal) :: f, f_scaled
-integer(fourbyteint), parameter :: nmod = 2
+integer(fourbyteint), parameter :: nmod = 3
 logical :: model(nmod) = .false.
+
+! Data variables
+
+type(rads_sat) :: S
+type(rads_pass) :: P
+type(rads_var), pointer :: var
+type(giminfo) :: info(2)
 
 ! Other parameters
 
-real(eightbytereal), parameter :: sec1994 = 283996800d0
+real(eightbytereal), parameter :: jplg_start = 283996800d0, codg_start = 418438800d0 ! 1994-01-01T00 and 1998-04-06T01
 
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('gn gim nic09 all scale:')
+call rads_set_options ('cgjn code jpl gim nic09 all scale:')
 call rads_init (S)
 
 ! Determine conversion factor from TEC units to ionospheric delay in metres
@@ -68,21 +68,24 @@ call parseenv ('${ALTIM}/data/', path)
 
 do j = 1,rads_nopt
 	select case (rads_opt(j)%opt)
-	case ('g', 'gim')
+	case ('g', 'gim', 'j', 'jpl')
 		model(1) = .true.
-	case ('n', 'nic09')
+	case ('c', 'code')
 		model(2) = .true.
+	case ('n', 'nic09')
+		model(3) = .true.
 	case ('all')
 		model(1) = .true.
-		model(2) = .true.
+		model(3) = .true.
 	case ('scale')
 		read (rads_opt(j)%arg, *, iostat=ios) f_scaled ! Overrule config file
 	end select
 enddo
 f_scaled = f_scaled * f
 
-if (model(1)) info = giminit(trim(path)//'gim/jplg_',1)
-if (model(2)) call nicinit(trim(path)//'nic09/nic09_clim.nc',trim(path)//'nic09/nic09_gtec.nc')
+if (model(1)) info(1) = giminit(trim(path)//'gim/jplg_',max(1,rads_verbose))
+if (model(2)) info(2) = giminit(trim(path)//'gim/codg_',max(1,rads_verbose))
+if (model(3)) call nicinit(trim(path)//'nic09/nic09_clim.nc',trim(path)//'nic09/nic09_gtec.nc')
 
 ! Process all data files
 
@@ -107,9 +110,10 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
-'  -g, --gim                 Add JPL GIM model data (only for 1994-01-01 and later)' / &
+'  -g, --gim, -j, --jpl      Add JPL GIM model data (only for 1994-01-01 and later)' / &
 '  -n, --nic09               Add NIC09 ionosphere model' / &
 '  --all                     All of the above' / &
+'  -c, --code                Add CODE GIM model data (only for 1998-01-01 and later)' / &
 '  --scale=SCALE             Set scale factor (default is from rads.xml)')
 stop
 end subroutine synopsis
@@ -136,15 +140,21 @@ call rads_get_var (S, P, 'lon', lon, .true.)
 
 z = nan
 
-if (model(1) .and. time(1) > sec1994) then ! JPL GIM
+if (model(1) .and. time(1) > jplg_start) then ! JPL GIM
 	do i = 1,n
-		z(i,1) = f_scaled * gimtec(time(i),lat(i),lon(i),info)
+		z(i,1) = f_scaled * gimtec(time(i),lat(i),lon(i),info(1))
 	enddo
 endif
 
-if (model(2)) then ! NIC09
+if (model(2) .and. time(1) > codg_start) then ! CODE GIM
 	do i = 1,n
-		z(i,2) = f_scaled * nictec(time(i),lat(i),lon(i))
+		z(i,2) = f_scaled * gimtec(time(i),lat(i),lon(i),info(2))
+	enddo
+endif
+
+if (model(3)) then ! NIC09
+	do i = 1,n
+		z(i,3) = f_scaled * nictec(time(i),lat(i),lon(i))
 	enddo
 endif
 
@@ -161,10 +171,12 @@ endif
 call rads_put_history (S, P)
 
 if (ok(1)) call rads_def_var (S, P, 'iono_gim')
-if (ok(2)) call rads_def_var (S, P, 'iono_nic09')
+if (ok(2)) call rads_def_var (S, P, 'iono_gim')	! Temporarily uses the same variable
+if (ok(3)) call rads_def_var (S, P, 'iono_nic09')
 
 if (ok(1)) call rads_put_var (S, P, 'iono_gim', z(:,1))
-if (ok(2)) call rads_put_var (S, P, 'iono_nic09', z(:,2))
+if (ok(2)) call rads_put_var (S, P, 'iono_gim', z(:,2)) ! Temporarily uses the same variable
+if (ok(3)) call rads_put_var (S, P, 'iono_nic09', z(:,3))
 
 call log_records (n)
 end subroutine process_pass

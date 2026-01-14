@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2025  Remko Scharroo and Eric Leuliette
+! Copyright (c) 2011-2026  Remko Scharroo and Eric Leuliette
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -43,7 +43,7 @@ program rads_gen_s3
 ! time - Time since 1 Jan 85
 ! lat - Latitude
 ! lon - Longitude
-! alt_gdrf - Orbital altitude
+! alt_gdrf/alt_poeg - Orbital altitude
 ! alt_rate - Orbital altitude rate
 ! range_* - Ocean range (retracked)
 ! range_rms_* - Std dev of range
@@ -65,14 +65,14 @@ program rads_gen_s3
 ! wind_speed_rad - Radiometer wind speed
 ! wind_speed_ecmwf_u - ECMWF wind speed (U)
 ! wind_speed_ecmwf_v - ECMWF wind speed (V)
-! tide_ocean/load_got410 - GOT4.10c ocean and load tide
-! tide_ocean/load_fes14 - FES2014 ocean and load tide
+! tide_{ocean,load}_got410 - GOT4.10c ocean and load tide
+! tide_{ocean,load}_{fes14,fes22} - FES2014 or FES2022B ocean and load tide
 ! tide_pole - Pole tide
 ! tide_solid - Solid earth tide
 ! topo_ace2 - ACE2 topography
 ! geoid_egm2008 - EGM2008 geoid
-! mss_cnescls15 - CNES/CLS15 mean sea surface
-! mss_dtu15/mss_dtu18 - DTU15 or DTU18 mean sea surface
+! mss_{cnescls15,hybrid23} - CNES/CLS15 or Hybrid23 mean sea surface
+! mss_{dtu15,dtu18} - DTU15 or DTU18 mean sea surface
 ! tb_238 - Brightness temperature (23.8 GHz)
 ! tb_365 - Brightness temperature (36.5 GHz)
 ! flags, flags_plrm - Engineering flags
@@ -109,7 +109,7 @@ real(eightbytereal) :: equator_time
 ! Data variables
 
 integer(twobyteint), allocatable :: flags_plrm(:), flags_save(:)
-character(len=16) :: mss_sol1_var, mss_sol2_var
+character(len=16) :: mss_sol1_var, mss_sol2_var, tide_sol2, alt
 integer :: latency = rads_nrt
 logical :: iono_alt_smooth, ipf651, ipf701, ipf703, ipf704
 
@@ -261,8 +261,10 @@ do
 
 ! Default settings
 
+	alt = 'alt_gdrf'
 	mss_sol1_var = 'mss_cnescls15'
 	mss_sol2_var = 'mss_dtu15'
+	tide_sol2 = 'fes22'
 	iono_alt_smooth = .false.
 	ipf651 = .false.
 	ipf701 = .false.
@@ -276,10 +278,11 @@ do
 		iono_alt_smooth = .true.
 	endif
 
-! Update the version of MSS CNES/CLS and switch on internal tide IPF-SM-2 06.51 and later
+! Update the version of MSS CNES/CLS and switch on internal tide IPF-SM-2 06.51 and later.
+! Since the Combined MSS 2015 is now obsolete, it is here simply switched off.
 
 	if (arg(10:14) >= '06.51') then
-		mss_sol1_var = 'mss_comb15'
+		mss_sol1_var = ''
 		ipf651 = .true.
 	endif
 
@@ -297,6 +300,14 @@ do
 ! Include wave model fields
 
 	ipf704 = (arg(10:14) >= '07.04')
+
+! Update MSS CNES/CLS again for IPF-SM-2 07.11 and switch to POE-G orbit standard
+
+	if (arg(10:14) >= '07.11') then
+		mss_sol1_var = 'mss_hybrid23'
+		tide_sol2 = 'fes22'
+		alt = 'alt_poeg'
+	endif
 
 ! Store input file name
 
@@ -354,7 +365,7 @@ do
 	enddo
 	call cpy_var (ncid, 'lon_01','lon')
 	call get_var (ncid, 'alt_01', a)
-	call new_var ('alt_gdrf', a + dh)
+	call new_var (alt, a + dh)
 	! Note that GDR-E orbit standards were used for the earlier part of the mission until reprocessing.
 	! However this field is updated by rads_add_orbit hereafter.
 	call cpy_var (ncid, 'orb_alt_rate_01', 'alt_rate')
@@ -392,9 +403,9 @@ do
 
 	call cpy_var (ncid, 'solid_earth_tide_01', 'tide_solid')
 	call cpy_var (ncid, 'ocean_tide_sol1_01 load_tide_sol1_01 SUB', 'tide_ocean_got410')
-	call cpy_var (ncid, 'ocean_tide_sol2_01 load_tide_sol2_01 SUB ocean_tide_non_eq_01 ADD', 'tide_ocean_fes14')
+	call cpy_var (ncid, 'ocean_tide_sol2_01 load_tide_sol2_01 SUB ocean_tide_non_eq_01 ADD', 'tide_ocean_' // tide_sol2)
 	call cpy_var (ncid, 'load_tide_sol1_01', 'tide_load_got410')
-	call cpy_var (ncid, 'load_tide_sol2_01', 'tide_load_fes14')
+	call cpy_var (ncid, 'load_tide_sol2_01', 'tide_load_' // tide_sol2)
 	call cpy_var (ncid, 'ocean_tide_eq_01', 'tide_equil')
 	call cpy_var (ncid, 'ocean_tide_non_eq_01', 'tide_non_equil')
 	call cpy_var (ncid, 'pole_tide_01', 'tide_pole')
@@ -411,8 +422,10 @@ do
 	call get_var (ncid, 'geoid_01', a)
 	call new_var ('geoid_egm2008', a + dh)
 	call get_var (ncid, 'mean_sea_surf_sol1_01', a)
-	call new_var (mss_sol1_var, a + dh)
-	call get_var (ncid, 'mean_sea_surf_sol2_01', a)
+	if (mss_sol1_var /= '') then
+		call new_var (mss_sol1_var, a + dh)
+		call get_var (ncid, 'mean_sea_surf_sol2_01', a)
+	endif
 	call new_var (mss_sol2_var, a + dh)
 
 	call cpy_var (ncid, 'swh_ocean_01_ku', 'swh_ku')

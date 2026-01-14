@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2025  Remko Scharroo
+# Copyright (c) 2011-2026  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -45,12 +45,7 @@ rads_fix_reaper   $options --tide --tbias			>> "$log" 2>&1
 rads_add_flags    $options --file=$RADSROOT/ext/reaper/e${1}_flags.dat	>> "$log" 2>&1
 rads_add_orbit    $options -Valt_reaper_deos		>> "$log" 2>&1
 rads_add_ssb      $options --ssb=ssb_hyb			>> "$log" 2>&1
-case $ers in
-1) rads_add_iono  $options --nic09					>> "$log" 2>&1 ;;
-2) rads_add_iono  $options -C0-34 --nic09			>> "$log" 2>&1
-   rads_add_iono  $options -C35-85 --nic09 --gim 	>> "$log" 2>&1 ;;
-esac
-rads_add_mog2d    $options							>> "$log" 2>&1
+rads_add_dac      $options							>> "$log" 2>&1
 rads_add_common   $options							>> "$log" 2>&1
 # Redetermine SSHA
 rads_add_refframe $options							>> "$log" 2>&1

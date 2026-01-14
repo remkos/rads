@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-Copyright (c) 2011-2025  Remko Scharroo
+Copyright (c) 2011-2026  Remko Scharroo
 See LICENSE.TXT file for copying and redistribution conditions.
 
 This program is free software: you can redistribute it and/or modify
@@ -252,12 +252,21 @@ Global RADS configuration file
 	<format>f19.6</format>
 </var>
 <var name="time_mjd" field="105">
-	<long_name>Modified Julian Days</long_name>
+	<long_name>time in Modified Julian Days</long_name>
 	<standard_name>time</standard_name>
 	<units>days since 1858-11-17 00:00:00 UTC</units>
 	<data>time 86400 DIV 46066 ADD</data>
 	<comment>UTC time of measurement expressed in Modified Julian Days</comment>
 	<format>f12.6</format>
+</var>
+<var name="time_mjd_floor">
+	<long_name>time in Modified Julian Days</long_name>
+	<standard_name>time</standard_name>
+	<units>days since 1858-11-17 00:00:00 UTC</units>
+	<data>time 86400 DIV FLOOR 46066 ADD</data>
+	<comment>UTC time of measurement expressed in Modified Julian Days, rounded down</comment>
+	<compress>int4</compress>
+	<format>i6</format>
 </var>
 <var name="time_2000" field="106">
 	<long_name>time</long_name>
@@ -619,8 +628,22 @@ Global RADS configuration file
 	<compress>int4 1e-4 700e3</compress>
 	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
 </var>
+<var name="alt_poeg" sat="3a 3b 6a 6b j3">
+	<long_name>CNES POE-G orbital altitude</long_name>
+	<standard_name>height_above_reference_ellipsoid</standard_name>
+	<source>CNES, POE-G standards</source>
+	<parameters>gdr-g-poe</parameters>
+	<units>m</units>
+	<data>alt_poeg</data>
+	<format>f12.4</format>
+	<compress>int4 1e-4 700e3</compress>
+	<compress sat="6a 6b j1 j2 j3 tx pn">int4 1e-4 1300e3</compress>
+	<compress sat="sw">int4 1e-4 800e3</compress>
+	<comment>Altitude of satellite above the TOPEX reference ellipsoid</comment>
+</var>
 <alias name="alt" field="4" sat="2a">alt_gdrd</alias>
-<alias name="alt" field="4" sat="6a 6b 3a 3b j3 sa sw tx pn">alt_gdrf</alias>
+<alias name="alt" field="4" sat="6a 6b 3a 3b j3">alt_poeg alt_gdrf</alias>
+<alias name="alt" field="4" sat="sa sw tx pn">alt_gdrf</alias>
 <alias name="alt" field="4" sat="c2">alt_gdre alt_cnes</alias>
 <alias name="alt" field="4" sat="e1 e2">alt_reaper alt_gfz</alias>
 <alias name="alt" field="4" sat="g1">alt_pgs7777</alias>
@@ -691,6 +714,7 @@ Global RADS configuration file
 		<compress sat="2a">int4 1e-4 900e3</compress>
 		<compress sat="6a 6b j1 j2 j3 pn tx">int4 1e-4 1300e3</compress>
 		<compress sat="sw">int4 1e-4 800e3</compress>
+		<comment sat="j1 j2 j3">Latitudinal empirical correction has been added to the range</comment>
 	</var>
 	<alias name="range" field="6">range_ku</alias>
 </else>
@@ -712,6 +736,7 @@ Global RADS configuration file
 	<format>f12.4</format>
 	<compress>int4 1e-4 1300e3</compress>
 	<compress sat="sw">int4 1e-4 800e3</compress>
+	<comment sat="j2 j3">Latitudinal empirical correction has been added to the range</comment>
 </var>
 <var name="range_ku_plrm" field="612" sat="3a 3b c2">
 	<long_name>Ku-band range corrected for instr. effects (PLRM)</long_name>
@@ -733,6 +758,7 @@ Global RADS configuration file
 	<format>f12.4</format>
 	<compress>int4 1e-4 1300e3</compress>
 	<compress sat="sw">int4 1e-4 800e3</compress>
+	<comment sat="j2 j3">Latitudinal empirical correction has been added to the range</comment>
 </var>
 <alias name="range_ku_nr" sat="j3 sw">range_ku_adaptive</alias>
 <var name="range_ku_nr" field="612" sat="6a 6b">
@@ -768,6 +794,7 @@ Global RADS configuration file
 	<compress>int4 1e-4 1300e3</compress>
 	<compress sat="3a 3b">int4 1e-4 700e3</compress>
 	<compress sat="sw">int4 1e-4 800e3</compress>
+	<comment sat="j1 j2 j3">Latitudinal empirical correction has been added to the range</comment>
 </var>
 <var name="range_s" field="602" sat="n1">
 	<long_name>S-band range corrected for instr. effects</long_name>
@@ -1333,6 +1360,17 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Combined low and high frequency effect of atmospheric pressure and wind on sea surface height</comment>
 </var>
+<var name="dac_era5">
+	<long_name>TUGO dynamic atmospheric correction (ERA5 forcing)</long_name>
+	<source>CNES/CNRS-LEGOS/CLS TUGO HR barotropic model with ERA5 forcing</source>
+	<units>m</units>
+	<limits>-1 1</limits>
+	<plot_range>-0.4 0.6</plot_range>
+	<data>dac_era5</data>
+	<format>f7.4</format>
+	<compress>int2 1e-4</compress>
+	<comment>Combined low and high frequency effect of atmospheric pressure and wind on sea surface height</comment>
+</var>
 <var name="inv_bar_mok2d">
 	<long_name>MOK2D inverse barometer correction</long_name>
 	<units>m</units>
@@ -1357,6 +1395,8 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<comment>Effect of the static atmospheric pressure on sea surface, subtracting global mean</comment>
 </var>
+<alias name="dac_oper">inv_bar_mog2d</alias>
+<alias name="dac_era">inv_bar_mog2d_era</alias>
 <alias name="inv_bar">inv_bar_mog2d_era inv_bar_mog2d inv_bar_mok2d</alias>
 <alias name="dac" field="10">inv_bar_mog2d_era inv_bar_mog2d inv_bar_mok2d</alias>
 
@@ -4241,24 +4281,25 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<dimensions>0</dimensions>
 	<parameters>0</parameters>
-	<parameters sat="3a">  -8.9 0  0  0 0</parameters>
-	<parameters sat="3b"> -14.6 0  0  0 0</parameters>
-	<parameters sat="6a 6b"> -11.9 0  0  0 0</parameters>
-	<parameters sat="6a.hr* 6b.hr*">-21.5 0 0 0 0</parameters>
-	<parameters sat="c2"> -29   0  0  0 0</parameters>
-	<parameters sat="e1">  21   0  0  0 0</parameters>
-	<parameters sat="e2">  62   0  0  0 0</parameters>
-	<parameters sat="gs">   0 -65  0  0 5</parameters>
-	<parameters sat="g1">  69   0  0  0 0</parameters>
-	<parameters sat="j1">  85   0  0  0 0</parameters>
-	<parameters sat="j2"> -15.9 0  0  0 0</parameters>
-	<parameters sat="j3"> -23.9 0  0  0 0</parameters>
-	<parameters sat="n1"> 451   0  0  0 0</parameters>
-	<parameters sat="pn">  -3.1 0  0  0 0</parameters>
-	<parameters sat="sa"> -87   0  0  0 0</parameters>
-	<parameters sat="tx">  44.2 0  0  0 0</parameters> <!-- Side A -->
-	<parameters sat="tx">  11.3 0  0  0 0</parameters> <!-- Side B -->
-	<parameters sat="sw">  -6.0 0  0  0 0</parameters>
+	<parameters sat="3a">             -8.9 0  0  0 0</parameters>
+	<parameters sat="3b">            -14.6 0  0  0 0</parameters>
+	<parameters sat="6a 6b">         -20.0 0  0  0 0</parameters>
+	<parameters sat="6a.hr* 6b.hr*"> -33.0 0  0  0 0</parameters>
+	<parameters sat="c2">            -29   0  0  0 0</parameters>
+	<parameters sat="e1">             21   0  0  0 0</parameters>
+	<parameters sat="e2">             62   0  0  0 0</parameters>
+	<parameters sat="gs">              0 -65  0  0 5</parameters>
+	<parameters sat="g1">             69   0  0  0 0</parameters>
+	<parameters sat="j1">              9.5 0  0  0 0</parameters>
+	<parameters sat="j2">             10.8 0  0  0 0</parameters>
+	<parameters sat="j3">            -20.5 0  0  0 0</parameters>
+	<parameters sat="n1">            451   0  0  0 0</parameters>
+	<parameters sat="n1.f4a">        460.3 0  0  0 0</parameters>
+	<parameters sat="pn">             -3.1 0  0  0 0</parameters>
+	<parameters sat="sa">            -87   0  0  0 0</parameters>
+	<parameters sat="tx">             44.2 0  0  0 0</parameters> <!-- Side A -->
+	<parameters sat="tx">             11.3 0  0  0 0</parameters> <!-- Side B -->
+	<parameters sat="sw">             -6.0 0  0  0 0</parameters>
 </var>
 <var name="ref_frame_offset_mle3" field="3811" sat="6a 6b j2 j3 tx sw">
 	<long_name>reference frame offset (MLE3)</long_name>
@@ -4270,8 +4311,8 @@ Global RADS configuration file
 	<dimensions>0</dimensions>
 	<parameters>0</parameters>
 	<parameters sat="6a 6b"> -15.8 0  0  0 0</parameters>
-	<parameters sat="j2">  13.5 0  0  0 0</parameters>
-	<parameters sat="j3"> -10.2 0  0  0 0</parameters>
+	<parameters sat="j2">  22.1 0  0  0 0</parameters>
+	<parameters sat="j3">  -6.8 0  0  0 0</parameters>
 	<parameters sat="tx">  43.9 0  0  0 0</parameters> <!-- Side A -->
 	<parameters sat="tx">  10.4 0  0  0 0</parameters> <!-- Side B -->
 	<parameters sat="sw">   1.5 0  0  0 0</parameters>
@@ -4296,7 +4337,9 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<dimensions>0</dimensions>
 	<parameters>0</parameters>
-	<parameters sat="j3"> -49.0 0  0  0 0</parameters>
+	<parameters sat="j2"> -14.9 0  0  0 0</parameters>
+	<parameters sat="j3"> -45.6 0  0  0 0</parameters>
+	<parameters sat="n1"> 481.4 0  0  0 0</parameters>
 	<parameters sat="sw"> -36.0 0  0  0 0</parameters>
 </var>
 <alias name="ref_frame_offset_nr" sat="j3 sw">ref_frame_offset_adaptive</alias>
@@ -4848,20 +4891,33 @@ Global RADS configuration file
 	</phase>
 </if>
 
-<!-- Sentinel-6B definition for test purposes only -->
 <if sat="6b">
 	<satellite>SNTNL-6B</satellite>
-	<satid>19</satid>
+	<satid>20</satid>
 	<dt1hz>1.000000</dt1hz>
 	<inclination>66.04</inclination>
 	<frequency>13.575 5.3</frequency>
 	<xover_params>0.04 0.035</xover_params>
-	<phase name="a">
+	<phase name="1"> <!-- Preliminary -->
+		<mission>Drift Phase</mission>
+		<cycles>1 3</cycles>
+		<repeat>9.877500 254 13.66</repeat>
+		<ref_pass>2025-11-27T03:31:42 75.80 2 1 128</ref_pass>
+		<start_time>2025-11-25</start_time>
+	</phase>
+	<phase name="1"> <!-- Preliminary -->
+		<mission>Drift Phase</mission>
+		<cycles>3 3</cycles>
+		<repeat>9.896970 254 6.69</repeat>
+		<ref_pass>2025-12-15T22:04:26 99.92 4 1 369</ref_pass>
+		<start_time>2025-12-09T09:11:20</start_time>
+	</phase>
+	<phase name="a"> <!-- Preliminary, scheduled start of tandem -->
 		<mission>Exact Repeat Mission</mission>
-		<cycles>4 299</cycles>
+		<cycles>4 99</cycles>
 		<repeat>9.91564280 254</repeat>
-		<ref_pass>2020-12-27T08:33:32 99.92 5 1 458</ref_pass>
-		<start_time>2020-12-17T21:21:30</start_time>
+		<ref_pass>2025-12-15T22:04:26 99.92 4 1 369</ref_pass>
+		<start_time>2025-12-15T21:36:15</start_time>
 	</phase>
 </if>
 
@@ -5065,7 +5121,7 @@ Global RADS configuration file
 		<cycles>305 327</cycles>
 		<repeat>9.91564280 254</repeat>
 		<ref_pass>2016-10-17T09:24:22 98.51 306 1 38774</ref_pass>
-		<start_time>2016-10-14</start_time>
+		<start_time>2016-10-13</start_time>
 	</phase>
 	<phase name="c">
 		<mission>Geodetic Mission 1</mission>
@@ -5132,10 +5188,23 @@ Global RADS configuration file
 	</phase>
 	<phase name="c">
 		<mission>Second Tandem Mission</mission>
-		<cycles>500 599</cycles> <!-- To be updated at end of phase -->
+		<cycles>500 513</cycles>
 		<repeat>9.91564280 254</repeat>
-		<ref_pass>2025-02-01T14:52:10 99.92 501 1 42294</ref_pass> <!-- To be updated? -->
-		<start_time>2025-01-30</start_time> <!-- To be updated -->
+		<ref_pass>2025-02-01T14:52:10 99.92 501 1 42294</ref_pass>
+		<start_time>2025-01-30</start_time>
+	</phase>
+	<phase name="d">
+		<mission>Geodetic Mission 1</mission>
+		<cycles>600 699</cycles> <!-- To be updated at end of phase -->
+		<!--This is "real" cycle and pass, i.e. subcycle 601, pass 33-->
+		<repeat>367.8446 9472</repeat>
+		<ref_pass>2025-06-21T18:28:17 336.37 1 33 44090</ref_pass> <!-- To be updated? -->
+		<start_time>2025-06-18</start_time>
+		<subcycles start="601">
+			434 434 434 434 332 434 434 434 332
+			434 434 434 434 332 434 434 434 332
+			434 434 434 434 332
+		</subcycles>
 	</phase>
 </if>
 

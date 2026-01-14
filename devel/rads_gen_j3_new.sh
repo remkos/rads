@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2025  Remko Scharroo
+# Copyright (c) 2011-2026  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -23,13 +23,15 @@
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
 
+rads_open_sandbox j3
+
 types="ogdr igdr"
 
 date												>  "$log" 2>&1
 
 for type in ${types}; do
-    rads_open_sandbox j3.${type}
-    mrk=$RADSDATAROOT/.bookmark
+    mrk=${type}/.bookmark
+    lst=$SANDBOX/rads_gen_j3_tmp_${type}.lst
 
     case $type in
 	    ogdr)
@@ -60,16 +62,21 @@ for type in ${types}; do
     # Do the patches to all data
         rads_fix_jason    $options --all					>> "$log" 2>&1
         rads_add_common   $options							>> "$log" 2>&1
-        rads_add_iono     $options --all					>> "$log" 2>&1
-    # To support GDR-G with backward compatibility
-        grep -q _2Pg $lst && rads_add_tide $options --models=fes14		>> "$log" 2>&1
 
-    # Redetermine SSHA
-        rads_add_refframe $options -x -x mle3				>> "$log" 2>&1
-        rads_add_sla      $options -x -x mle3				>> "$log" 2>&1
+        if grep -q _2Pg $lst ; then
+            # For GDR-G we add the FES2014 model
+            rads_add_tide $options --models=fes14           >> "$log" 2>&1
+        else
+            # For GDR-F we add MLE3 support
+            extra="-x mle3 $extra"
+        fi
+
+        # Redetermine SSHA
+        rads_add_refframe $options -x $extra                >> "$log" 2>&1
+        rads_add_sla      $options -x $extra                >> "$log" 2>&1
     fi
     
-    rads_close_sandbox
     date												>> "$log" 2>&1
 done
 
+rads_close_sandbox

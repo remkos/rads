@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2025  Remko Scharroo
+! Copyright (c) 2011-2026  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -163,7 +163,7 @@ write (*,1310) box, lanczos
 '  -b, --box[=PARAMS]        Do the old box car filter with given parameters (MASK,IWIN,TWIN):' / &
 '                            * MASK: exclude data based on bitmap (default:',i5,')' / &
 '                            * IWIN: set editing range for iono data [cm] (default:',f4.0,')' / &
-'                            * TWIN: set box car filter length [sec] (default:' f4.0,')' / &
+'                            * TWIN: set box car filter length [sec] (default:',f4.0,')' / &
 '  -l, --lanczos[=PARAMS]    Do the median+Lanczos filter with given parameters:' / &
 '                            * Half-width of the median filter [points] (default:',i3,')' / &
 '                            * Minimum nr of valid points for median filter (default:',i3,')' / &

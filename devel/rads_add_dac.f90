@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2025  Remko Scharroo
+! Copyright (c) 2011-2026  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -13,29 +13,28 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*rads_add_mog2d -- Add MOG2D dynamic atmospheric correction to RADS data
+!*rads_add_dac -- Add dynamic atmospheric correction to RADS data
 !+
-! This program adds the MOG2D correction to RADS data. The MOG2D
+! This program adds the DAC to RADS data. The DAC
 ! serves as a replacement to the conventional IB correction.
-! The MOG2D model provides the high-frequency effect of wind and
+! The DAC models provides the high-frequency effect of wind and
 ! pressure loading on the ocean and is complemented by the
 ! low-frequency IB correction. The field number 1004 added to the
 ! data by this routine includes both the low- and high-frequency
 ! components.
 !
-! Input grids are found in the directory ${ALTIM}/data/dac
-! The grids are bzip2 compressed NetCDF files. The required grids
-! are unpacked and placed in /tmp before being used in this program.
+! By default, the DAC grids (forced by the operational ECMWF models)
+! are found in the directory ${ALTIM}/data/dac.
+! Other locations are specified herein for versions forced with
+! ERA-interim and ERA5.
 !
-! Interpolation is performed in 6-hourly grids of 0.25x0.25 degree
-! spacing; bi-linear in space, linear in time. Note that the MOG2D
-! grids have the order of the dimensions longitude and latitude
-! flipped around from what is standard, i.e., (lon,lat) instead of
-! (lat,lon).
+! The program will allocate the appropriate amount of memory, depending
+! on which set of DAC grids is used. The program can flip the
+! latitude and longitude dimensions as needed.
 !
-! usage: rads_add_mog2d [data-selectors] [options]
+! usage: rads_add_dac [data-selectors] [options]
 !-----------------------------------------------------------------------
-program rads_add_mog2d
+program rads_add_dac
 
 use rads
 use rads_misc
@@ -47,8 +46,8 @@ use netcdf
 
 type(rads_sat) :: S
 type(rads_pass) :: P
-integer(fourbyteint), parameter :: type_mog2d=0, type_era=1
-integer(fourbyteint) :: cyc, pass, j, type = type_mog2d
+integer(fourbyteint), parameter :: type_oper=0, type_era=1, type_era5=2
+integer(fourbyteint) :: cyc, pass, j, type = type_oper
 logical :: update = .false.
 
 
@@ -56,16 +55,16 @@ logical :: update = .false.
 
 character(rads_cmdl) :: path
 character(rads_varl) :: varnm
-integer(fourbyteint) :: hexold=-99999, first=1
-integer(fourbyteint), parameter :: nx=1441, ny=721
-real(eightbytereal), parameter :: x0=0d0, y0=-90d0, dx=0.25d0, dy=0.25d0
-real(eightbytereal) :: z0, dz
-integer(twobyteint) :: grids(nx,ny,2), tmp(ny,nx-1)
+integer(fourbyteint) :: hex_old=-99999, hex_size=21600, first=1 ! 'hex' is normally a 6-hour period
+integer(fourbyteint) :: nx, ny
+real(eightbytereal), parameter :: x0=0d0, y0=-90d0
+real(eightbytereal) :: res = 0.25d0, z0, dz
+integer(twobyteint), allocatable :: grids(:,:,:), tmp(:,:)
 
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('uet update era all')
+call rads_set_options ('uet update era era5 all')
 call rads_init (S)
 
 ! Check all options
@@ -75,22 +74,32 @@ do j = 1,rads_nopt
 		update = .true.
 	case ('e', 'era')
 		type = type_era
+	case ('era5')
+		type = type_era5
 	end select
 enddo
 
 ! Get template for path name and set variable name
 
 select case (type)
+case (type_era5)
+	call parseenv ('${ALTIM}/data/dac_era5/%Y/%m/dac_era5_%Y%m%d_%H.nc', path)
+	hex_size = 3600
+	res = 0.125d0
+	varnm = 'dac_era5'
 case (type_era)
-	call parseenv ('${RADSROOT}/ext/slcci/Products/DAC_ERA_Interim_20161115/%Y/dac_era_interim_%Y%m%d_%H', path)
+	call parseenv ('${RADSROOT}/ext/slcci/Products/DAC_ERA_Interim_20161115/%Y/dac_era_interim_%Y%m%d_%H.nc', path)
 	varnm = 'inv_bar_mog2d_era'
 case default
 	call parseenv ('${ALTIM}/data/dac/%Y/dac_dif_%Y%m%d_%H.nc', path)
 	varnm = 'inv_bar_mog2d'
 end select
 
-! Link variable
+! Allocate the appropriate memory
 
+nx = nint(360d0/res)+1
+ny = nint(180d0/res)+1
+allocate (grids(nx,ny,2), tmp(ny,nx-1))
 
 ! Process all data files
 
@@ -102,6 +111,8 @@ do cyc = S%cycles(1), S%cycles(2), S%cycles(3)
 	enddo
 enddo
 
+deallocate (grids, tmp)
+
 contains
 
 !-----------------------------------------------------------------------
@@ -110,13 +121,14 @@ contains
 
 subroutine synopsis (flag)
 character(len=*), optional :: flag
-if (rads_version ('Add MOG2D dynamic atmospheric correction to RADS data', flag=flag)) return
+if (rads_version ('Add dynamic atmospheric correction to RADS data', flag=flag)) return
 call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
 '  --all                     (Has no effect)'/ &
 '  -e, --era                 Use the DAC forced by ERA Interim (1991-2015 only)'/ &
+'  --era5                    Use the DAC forced by ERA5 (1992-2022 only)'/ &
 '  -u, --update              Update files only when there are changes')
 stop
 end subroutine synopsis
@@ -144,27 +156,27 @@ call rads_get_var (S, P, 'lon', lon, .true.)
 
 do i = 1,n
 
-	f2 = time(i)/21600d0 ! Number of 6-hourly blocks since 1985
+	f2 = time(i)/hex_size ! Number of (6-)hourly blocks since 1985
 	hex = int(f2)
 
 ! Load new grids when entering new 6-hour period
 
-	if (hex /= hexold) then
-		if (hex == hexold+1) then
+	if (hex /= hex_old) then
+		if (hex == hex_old+1) then
 			! Replace first (oldest) grid with a new grid
-			err = get_mog2d(hex+1,grids(:,:,first))
+			err = get_dac(hex+1,grids(:,:,first))
 			first = 3-first	! Switch notion of first and second grid
 		else
 			! Replace both grids
 			first = 1
-			err = get_mog2d(hex,grids(:,:,1)) .or. get_mog2d(hex+1,grids(:,:,2))
+			err = get_dac(hex,grids(:,:,1)) .or. get_dac(hex+1,grids(:,:,2))
 		endif
 		if (err) then
-			call log_string ('Warning: No MOG2D field for current time')
+			call log_string ('Warning: No DAC field for current time')
 			call log_records (0)
 			stop
 		endif
-		hexold = hex
+		hex_old = hex
 	endif
 
 ! Linearly interpolate in space and time
@@ -173,8 +185,8 @@ do i = 1,n
 	f2 = f2 - hex
 	f1 = 1d0 - f2
 
-	x = (lon(i)-x0)/dx+1
-	y = (lat(i)-y0)/dy+1
+	x = (lon(i)-x0)/res+1
+	y = (lat(i)-y0)/res+1
 	ix = int(x)
 	iy = int(y)
 	x = x - ix
@@ -218,25 +230,25 @@ call log_records (n)
 end subroutine process_pass
 
 !-----------------------------------------------------------------------
-! Get the MOG2D grid for "hex"
+! Get the DAC grid for time "hex"
 !-----------------------------------------------------------------------
 
-function get_mog2d (hex, grid)
+function get_dac (hex, grid)
 integer(fourbyteint) :: hex
-logical :: get_mog2d
+logical :: get_dac
 integer(twobyteint) :: grid(:,:)
 character(len=rads_cmdl) :: filenm
-integer(fourbyteint) ::	ncid,v_id,j,l,strf1985
+integer(fourbyteint) ::	ncid, v_id, j, l, strf1985
 real(eightbytereal) :: time
 
 600 format ('(',a,')')
 1300 format (a,': ',a)
 
-get_mog2d = .true.
+get_dac = .true.
 
 ! Determine file name
 
-l = strf1985(filenm, trim(path), hex*21600)
+l = strf1985(filenm, trim(path), hex*hex_size)
 
 ! Open input file
 
@@ -257,7 +269,7 @@ endif
 ! Get CNES JD and check against input
 
 if (nft(nf90_get_att(ncid,v_id,'Date_CNES_JD',time))) call fin('Error reading time')
-if (nint((time-12784)*24) /= hex*6) call fin('Hour does not match grid')
+if (nint((time-12784)*24) /= hex*(hex_size/3600)) call fin('Hour does not match grid')
 
 ! Get scale factor, offset and missing value
 
@@ -280,7 +292,7 @@ endif
 grid(nx,:) = grid(1,:)
 
 j = nf90_close(ncid)
-get_mog2d = .false.
-end function get_mog2d
+get_dac = .false.
+end function get_dac
 
-end program rads_add_mog2d
+end program rads_add_dac

@@ -19,7 +19,8 @@ integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, &
 ! RADS4 data sources
 integer(fourbyteint), parameter :: rads_src_none = 0, rads_src_nc_var = 10, &
 	rads_src_nc_att = 11, rads_src_math = 20, rads_src_grid_lininter = 30, &
-	rads_src_grid_splinter = 31, rads_src_grid_query = 32, rads_src_grid_linphase = 33, &
+	rads_src_grid_splinter = 31, rads_src_grid_query = 32, &
+	rads_src_grid_linphase = 33, rads_src_grid_season = 34, &
 	rads_src_constant = 40, rads_src_flags = 50, rads_src_tpj = 60
 ! RADS4 warnings
 integer(fourbyteint), parameter :: rads_warn_nc_file = -3
@@ -123,6 +124,7 @@ type :: rads_sat                                     ! Information on altimeter 
 	integer(fourbyteint) :: nvar, nsel               ! Nr of available and selected vars and aliases
 	logical :: n_hz_output                           ! Produce multi-Hz output
 	character(len=2) :: sat                          ! 2-Letter satellite abbreviation
+	character(len=3) :: sat3                         ! 3-Letter satellite abbreviation
 	integer(twobyteint) :: satid                     ! Numerical satellite identifier
 	type(rads_cyclist), pointer :: excl_cycles       ! Excluded cycles (if requested)
 	type(rads_var), pointer :: var(:)                ! List of available variables and aliases
@@ -176,7 +178,7 @@ integer(fourbyteint), save :: rads_nopt = 0          ! Number of command line op
 !	use rads
 !-----------------------------------------------------------------------
 ! COPYRIGHT
-! Copyright (c) 2011-2025  Remko Scharroo
+! Copyright (c) 2011-2026  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -740,7 +742,7 @@ type(rads_sat), intent(inout) :: S
 ! gfortran 4.3.4 to 4.4.1 segfault on the next line if this routine is made pure or elemental,
 ! so please leave it as a normal routine.
 S = rads_sat ('', '', '', '', '', null(), '', 1d0, (/13.8d0, nan/), 90d0, nan, nan, nan, 1, 1, rads_noerr, &
-	0, 0, 0, 0, 0, .false., '', 0, null(), null(), null(), null(), null(), null(), null(), null())
+	0, 0, 0, 0, 0, .false., '', '', 0, null(), null(), null(), null(), null(), null(), null(), null())
 end subroutine rads_init_sat_struct
 
 !****if* rads/rads_free_sat_struct
@@ -1806,7 +1808,7 @@ do i = 1,3 ! This loop is here to allow processing of aliases
 		call rads_get_var_nc_att
 	case (rads_src_math)
 		call rads_get_var_math
-	case (rads_src_grid_lininter, rads_src_grid_splinter, rads_src_grid_query, rads_src_grid_linphase)
+	case (rads_src_grid_lininter, rads_src_grid_splinter, rads_src_grid_query, rads_src_grid_linphase, rads_src_grid_season)
 		call rads_get_var_grid
 	case (rads_src_constant)
 		call rads_get_var_constant
@@ -2110,8 +2112,9 @@ end subroutine rads_get_var_math
 
 subroutine rads_get_var_grid ! Get data by interpolating a grid
 use rads_grid
-real (eightbytereal) :: x(P%ndata), y(P%ndata)
+real (eightbytereal) :: x(P%ndata), y(P%ndata), phase, weight(4)
 integer(fourbyteint) :: i
+real(eightbytereal), parameter :: sec2000 = 473299200d0, sec_to_phase = 2d0 * pi / 365.25d0 / 86400d0
 
 ! Load grid if not yet done
 if (info%grid%ntype /= 0) then	! Already loaded
@@ -2132,7 +2135,15 @@ else if (info%datasrc == rads_src_grid_lininter) then
 else if (info%datasrc == rads_src_grid_splinter) then
 	forall (i = 1:P%ndata) data(i) = grid_splinter (info%grid, x(i), y(i))
 else if (info%datasrc == rads_src_grid_linphase) then
-	forall (i = 1:P%ndata) data(i) = grid_lininter (info%grid, x(i), y(i), .true.)
+	forall (i = 1:P%ndata) data(i) = grid_lininter (info%grid, x(i), y(i), phase=.true.)
+else if (info%datasrc == rads_src_grid_season) then
+	phase = (P%equator_time - sec2000) * sec_to_phase
+	weight(1) = cos(phase)
+	weight(2) = sin(phase)
+	phase = phase * 2d0
+	weight(3) = cos(phase)
+	weight(4) = sin(phase)
+	forall (i = 1:P%ndata) data(i) = grid_lininter (info%grid, x(i), y(i), weight)
 else
 	forall (i = 1:P%ndata) data(i) = grid_query (info%grid, x(i), y(i))
 endif
@@ -2573,6 +2584,8 @@ do
 			info%datasrc = rads_src_grid_linphase
 		case ('grid_n', 'grid_q')
 			info%datasrc = rads_src_grid_query
+		case ('grid_t')
+			info%datasrc = rads_src_grid_season
 		case ('math')
 			info%datasrc = rads_src_math
 		case ('netcdf', 'nc_var', 'nc_att', 'nc')
@@ -2642,6 +2655,7 @@ do
 				if (attr(2,i)(:1) == 'c' .or. attr(2,i)(:1) == 's') info%datasrc = rads_src_grid_splinter
 				if (attr(2,i)(:1) == 'p') info%datasrc = rads_src_grid_linphase
 				if (attr(2,i)(:1) == 'q') info%datasrc = rads_src_grid_query
+				if (attr(2,i)(:1) == 't') info%datasrc = rads_src_grid_season
 			end select
 		enddo
 		allocate (info%grid)
@@ -2746,24 +2760,15 @@ integer :: i, j, l
 ! Start with S%spec given on command line.
 ! It will be replaced by the mission phase, if any.
 !
-! If three characters, this may be like "e2g".
-! Check if the first two characters match the list.
-l = len_trim(S%spec)
-if (l == 3) then
-	do i = 1,nval
-		if (S%spec(1:2) /= val(i)(1:2)) cycle
-		S%sat = val(i)(1:2)
-		S%spec = S%spec(3:3)	! Phase part
-		return
-	enddo
-endif
 ! If we have a '/' or ':' or '.', then separate specification
+l = len_trim(S%spec)
 j = scan(S%spec,'/:.')
 if (j > 0) l = j - 1
 ! Now scan for matching strings (beginning of string only)
 do i = 1,nval
 	if (index(' '//val(i), ' '//strtolower(S%spec(:l))) == 0) cycle
-	S%sat = val(i)(1:2)
+	S%sat = val(i)(1:2)		! 2-character abbreviation
+	S%sat3 = val(i)(4:6)	! 3-character abbreviation
 	S%spec = S%spec(l+1:)	! Everything after <sat>
 	j = scan(S%spec,'/:')
 	if (j == 0) then	! No phase indication
@@ -2775,6 +2780,20 @@ do i = 1,nval
 	endif
 	return
 enddo
+!
+! If three characters, this may be like "e2g".
+! Check if the first two characters match the list.
+l = len_trim(S%spec)
+if (l == 3) then
+	do i = 1,nval
+		if (S%spec(1:2) /= val(i)(1:2)) cycle
+		S%sat = val(i)(1:2)		! 2-character abbreviation
+		S%sat3 = val(i)(4:6)	! 3-charecter abbreviation
+		S%branch(1) = S%sat//'/'//S%spec(3:3)
+		S%spec = S%spec(3:3)	! Phase part
+		return
+	enddo
+endif
 call rads_exit ('No satellite found based on specification "'//trim(S%spec)//'"')
 end subroutine sat_translate
 

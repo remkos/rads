@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2025  Remko Scharroo and Eric Leuliette
+# Copyright (c) 2011-2026  Remko Scharroo and Eric Leuliette
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -44,7 +44,6 @@ rads_gen_c2_op		$options < "$lst"	>> "$log" 2>&1
 
 # General geophysical corrections
 rads_add_common   $options				>> "$log" 2>&1
-rads_add_iono     $options --all		>> "$log" 2>&1
 # Redetermine SSHA
 rads_add_refframe $options				>> "$log" 2>&1
 rads_add_sla      $options				>> "$log" 2>&1

@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2025  Remko Scharroo
+# Copyright (c) 2011-2026  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -19,7 +19,7 @@
 # The all standard_measurement.nc files in the named directory will be
 # processed.
 #
-# syntax: rads_gen_3.sh <directory>
+# syntax: rads_gen_3?.sh <directory>
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
 
@@ -52,10 +52,11 @@ case ${sat} in
 	3a) rads_add_mfwam $options -C40-199 --all --new	>> "$log" 2>&1 ;;
 	3b) rads_add_mfwam $options -C21-199 --all --new	>> "$log" 2>&1 ;;
 esac
-rads_add_iono     $options --all						>> "$log" 2>&1
+# To support GDR-G with backward compatibility
+grep -q .*S3._.*_G $lst && rads_add_tide $options --models=fes14	>> "$log" 2>&1
 # Redetermine SSHA
 rads_add_refframe $options -x -x plrm					>> "$log" 2>&1
-rads_add_sla      $options -x -x plrm					>> "$log" 2>&1
+rads_add_sla      $options -x -x plrm -Xgdr_g			>> "$log" 2>&1
 
 date													>> "$log" 2>&1
 

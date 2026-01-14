@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2025  Remko Scharroo and Eric Leuliette
+! Copyright (c) 2011-2026  Remko Scharroo and Eric Leuliette
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -40,7 +40,7 @@ program rads_gen_jason_gdrf
 ! time - Time since 1 Jan 85
 ! lat - Latitude
 ! lon - Longitude
-! alt_gdrf - Orbital altitude
+! alt_gdrf/alt_poeg - Orbital altitude
 ! alt_rate - Orbital altitude rate
 ! range_* - Ocean range (retracked)
 ! range_rms_* - Std dev of range
@@ -131,7 +131,7 @@ real(eightbytereal) :: equator_time
 ! Data variables
 
 integer(twobyteint), allocatable :: flags_mle3(:), flags_adaptive(:), flags_save(:)
-character(len=16) :: mss_sol1, mss_sol2, tide_sol1, tide_sol2
+character(len=16) :: mss_sol1, mss_sol2, tide_sol1, tide_sol2, alt
 character(len=1) :: baseline = 'F'
 integer :: latency = rads_nrt
 
@@ -167,7 +167,7 @@ do
 
 	call nfs(nf90_get_att(ncid,nf90_global,'source',arg))
 	baseline = arg(21:21)
-	if (.not.(baseline >= 'F' .and. baseline <= 'G')) then
+	if (baseline < 'F' .or. baseline > 'G') then
 		call log_string ('Error: this is neither GDR-F or GDR-G', .true.)
 		cycle
 	endif
@@ -241,6 +241,12 @@ do
 		read (infile(i+17:i+23),'(i3,1x,i3)') cyclenr, passnr
 	endif
 
+! Set mission phase based on equator_time
+
+	call rads_set_phase (S, equator_time)
+	! For Geodetic missions we compute the cycle and pass number
+	if (index(S%phase%mission,'Geodetic') > 0) call rads_time_to_cycle_pass (S, equator_time, cyclenr, passnr)
+
 ! Skip passes of which the cycle number or equator crossing time is outside the specified interval
 
 	if (equator_time < times(1) .or. equator_time > times(2) .or. cyclenr < cycles(1) .or. cyclenr > cycles(2)) then
@@ -248,10 +254,6 @@ do
 		call log_string ('Skipped', .true.)
 		cycle
 	endif
-
-! Set mission phase based on equator_time
-
-	call rads_set_phase (S, equator_time)
 
 ! Store relevant info
 
@@ -289,20 +291,20 @@ do
 ! Set new model versions
 
 	if (baseline < 'G') then
+		alt = 'alt_gdrf'
 		mss_sol1 = 'cnescls15'
 		mss_sol2 = 'dtu18'
 		tide_sol1 = 'got410'
 		tide_sol2 = 'fes14'
+		has_mle3 = .true.
 	else
+		alt = 'alt_poeg'
 		mss_sol1 = 'hybrid23'
 		mss_sol2 = 'dtu21'
 		tide_sol1 = 'got410'
 		tide_sol2 = 'fes22'
+		has_mle3 = .false.
 	endif
-
-! Determine if we have MLE3-derived variables (from GDR-G onward). If not, then we suppress all MLE3 variables.
-
-	has_mle3 = (nf90_inq_varid(ncidk,'wind_speed_alt_mle3',varid) == nf90_noerr)
 
 ! Compile flag bits
 
@@ -367,7 +369,7 @@ do
 	enddo
 	call cpy_var (ncid1, 'longitude','lon')
 	call get_var (ncid1, 'altitude', a)
-	call new_var ('alt_gdrf', a + dh)
+	call new_var (alt, a + dh)
 	call cpy_var (ncid1, 'altitude_rate', 'alt_rate')
 
 ! Range
@@ -508,9 +510,9 @@ do
 		call cpy_var (ncid1, 'ocean_tide_fes load_tide_fes SUB ocean_tide_non_eq ADD', 'tide_ocean_' // tide_sol2)
 		call cpy_var (ncid1, 'load_tide_got', 'tide_load_' // tide_sol1)
 		call cpy_var (ncid1, 'load_tide_fes', 'tide_load_' // tide_sol2)
-	else ! ocean_tide_non_eq is already part of ocean_tide_sol2 in baseline G and later
+	else ! ocean_tide_non_eq is still not part of ocean_tide_sol2 in baseline G
 		call cpy_var (ncid1, 'ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_' // tide_sol1)
-		call cpy_var (ncid1, 'ocean_tide_sol2 load_tide_sol2 SUB', 'tide_ocean_' // tide_sol2)
+		call cpy_var (ncid1, 'ocean_tide_sol2 load_tide_sol2 SUB ocean_tide_non_eq ADD', 'tide_ocean_' // tide_sol2)
 		call cpy_var (ncid1, 'load_tide_sol1', 'tide_load_' // tide_sol1)
 		call cpy_var (ncid1, 'load_tide_sol2', 'tide_load_' // tide_sol2)
 	endif

@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2025  Remko Scharroo and Eric Leuliette
+# Copyright (c) 2011-2026  Remko Scharroo and Eric Leuliette
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -56,7 +56,6 @@ rads_add_common   $options					>> "$log" 2>&1
 # Include GOT4.8 model and DUT18 MSS for Navy ALPS
 rads_add_tide     $options --models=got48	>> "$log" 2>&1
 rads_add_grid     $options -Vmss_dtu18 >> "$log" 2>&1
-rads_add_iono     $options --all			>> "$log" 2>&1
 # Redetermine SSHA
 rads_add_refframe $options					>> "$log" 2>&1
 rads_add_sla      $options					>> "$log" 2>&1
