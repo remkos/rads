@@ -644,7 +644,7 @@ Global RADS configuration file
 <alias name="alt" field="4" sat="2a">alt_gdrd</alias>
 <alias name="alt" field="4" sat="6a 6b 3a 3b j3">alt_poeg alt_gdrf</alias>
 <alias name="alt" field="4" sat="sa sw tx pn">alt_gdrf</alias>
-<alias name="alt" field="4" sat="c2">alt_gdre alt_cnes</alias>
+<alias name="alt" field="4" sat="c2">alt_gdrf alt_gdre</alias>
 <alias name="alt" field="4" sat="e1 e2">alt_reaper alt_gfz</alias>
 <alias name="alt" field="4" sat="g1">alt_pgs7777</alias>
 <alias name="alt" field="4" sat="gs">alt_gdrcp</alias>
