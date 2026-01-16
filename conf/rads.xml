@@ -4687,7 +4687,7 @@ Global RADS configuration file
 		<mission>Exact Repeat Mission</mission>
 		<cycles>4 99</cycles>
 		<repeat>9.91564280 254</repeat>
-		<ref_pass>2025-12-15T22:04:26 99.92 4 1 369</ref_pass>
+		<ref_pass>2025-12-25T20:02:54 99.92 5 1 496</ref_pass>
 		<start_time>2025-12-15T21:36:15</start_time>
 	</phase>
 </if>
