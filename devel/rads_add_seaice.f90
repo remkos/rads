@@ -45,7 +45,7 @@ logical :: update=.false.
 
 ! Data variables
 
-integer(fourbyteint) :: day1985old=-99999, j
+integer(fourbyteint) :: day1old=-99999, j
 real(eightbytereal), parameter :: lat_nh = 31d0, lat_sh = -39d0
 
 type :: proj
@@ -137,10 +137,10 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-integer(fourbyteint) :: i, j, ix, iy, day1985
+integer(fourbyteint) :: i, j, ix, iy
 real(eightbytereal) :: time(n), lat(n), lon(n), surf(n), ice(n), tmp(n)
-real(eightbytereal) :: wx, wy, wt, f(2,2,2), f2, fsum
-integer(fourbyteint) :: t1, t2
+real(eightbytereal) :: day, wx, wy, wt, f(2,2,2), fsum
+integer(fourbyteint) :: day1, day2
 integer(twobyteint) :: g(2,2,2)
 real(eightbytereal), parameter :: dz = 1d-2
 logical :: err
@@ -173,32 +173,33 @@ do i = 1,n
 		cycle
 	endif
 
-! Today and tomorrow
+! Yesterday, today and tomorrow.
+! The OSI SAF grids are for 12:00, so interpolation should be between
+! "yesterday" and "today" prior to 12:00 and "today" and "tomorrow" after 12:00.
 
-	t1 = floor(time(i)/86400)
-	t2 = t1 + 1
-	f2 = time(i)/86400d0 ! Number of days since 1985
-	day1985 = int(f2)
+	day = time(i)/86400 - 0.5d0 ! Time in days starting at noon
+	day1 = floor(day) ! First grid date at noon
+	day2 = day1 + 1 ! Second grid date at noon
 
-! Load new grids when entering new day
+! Load new grids when needed
 
-	if (day1985 /= day1985old) then
-		if (day1985 == day1985old+1) then
+	if (day1 /= day1old) then
+		if (day1 == day1old+1) then
 			! Copy the newest grids (2) to the oldest position (1)
 			h(1)%grid(:,:,1) = h(1)%grid(:,:,2)
 			h(2)%grid(:,:,1) = h(2)%grid(:,:,2)
 			! Replace newest grids
-			err = get_osiaf(day1985+1,h(1),2)
-			err = get_osiaf(day1985+1,h(2),2)
+			err = get_osiaf(day2,h(1),2)
+			err = get_osiaf(day2,h(2),2)
 		else
 			! Replace both grids
-			err = get_osiaf(day1985,h(1),1) .or. get_osiaf(day1985+1,h(1),2)
-			err = get_osiaf(day1985,h(2),1) .or. get_osiaf(day1985+1,h(2),2)
+			err = get_osiaf(day1,h(1),1) .or. get_osiaf(day2,h(1),2)
+			err = get_osiaf(day1,h(2),1) .or. get_osiaf(day2,h(2),2)
 		endif
 		if (err) then
 			call log_string ('Warning: No OSIAF field for current time')
 		endif
-		day1985old = day1985
+		day1old = day1
 	endif
 
 ! Compute the corresponding grid coordinates
@@ -237,9 +238,11 @@ do i = 1,n
 	f(:,1,:) = f(:,1,:) * (1d0-wy)
 	f(:,2,:) = f(:,2,:) * wy
 
-! Set weights for linear interpolation in time
+! Set weights for linear interpolation in time between the measurement time in
+! days (starting at noon) (day) and the dates (at noon) of the grids (day1 and day2).
+! Of course (day2 - day1) is always 1, but left here for completeness.
 
-	wt = (time(i)/86400d0 - t1)/(t2 - t1)
+	wt = (day - day1) / (day2 - day1)
 	f(:,:,1) = f(:,:,1) * (1d0-wt)
 	f(:,:,2) = f(:,:,2) * wt
 
