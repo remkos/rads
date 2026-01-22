@@ -37,13 +37,13 @@ logical :: lsig0 = .false., lssb = .false., nr_only = .false., lflag = .false.
 integer, parameter :: sig0_nx = 500
 real(eightbytereal) :: exp_ku_sigma0(sig0_nx), rms_exp_ku_sigma0(sig0_nx)
 real(eightbytereal) :: bias_range(2) = 0d0, bias_sig0(2) = 0d0, &
-	dwind(2) = (/ 1.29d0, 1.37d0 /), drain(2) = (/ 1.23d0, 1.64d0 /)
+	dwind(2) = 0.57d0, drain(2) = (/ 0.51d0, 0.72d0 /)
 real(eightbytereal), parameter :: sig0_dx = 0.1d0, gate_width = 0.3795d0, sign_error = 2 * 0.528d0
 
 ! Scan command line for options
 
 call synopsis ('--head')
-call rads_set_options (' range sig0 wind:: ssb rain:: all bias-range: bias-sig0: nr-only' // &
+call rads_set_options (' range sig0 wind:: ssb rain:: all bias-range: bias-sig0: nr-only p2p' // &
 	' flag-bit0')
 call rads_init (S)
 do i = 1,rads_nopt
@@ -70,6 +70,11 @@ do i = 1,rads_nopt
 		nr_only = .true.
 	case ('flag-bit0')
 		lflag = .true.
+	case ('p2p')
+		bias_sig0(1) = 10d0 * log10(4d0)	! Impact of reducing the waveform accumulation by factor 4
+		lrain = 1
+		lwind = 1
+		lssb = .true.
 	end select
 enddo
 
@@ -102,10 +107,12 @@ write (*,1310)
 'Additional [processing_options] are:' / &
 '  --sig0                    Add -5.67 dB (Baseline < F09) or +0.47 dB (Baseline F09) to HR sigma0' / &
 '  --all                     All of the above' / &
+'  --p2p                     Counter effects of reduced 2.2 kHz LR waveform accumulation,' / &
+'                            implies --rain --wind --ssb)' / &
 '  --rain[=KU,C]             Add biases to sigma0 (KU, C, in dB) before calling rain model' / &
-'                            (with --sig0 use default 1.23,1.64)' / &
+'                            (with --sig0 use default 0.51,0.72)' / &
 '  --wind[=MLE4,MLE3]        Add biases to sigma0 (MLE4, MLE3, in dB) before calling wind model' / &
-'                            (with --sig0 use default 1.29,1.37)' / &
+'                            (with --sig0 use default 0.57,0.57)' / &
 '  --ssb                     Update SSB (with --wind)' / &
 '  --bias-range=KU,C         Add additional bias to range (Ku, C, in m)' / &
 '  --bias-sig0=KU,C          Add additional bias to sig0 (Ku, C, in dB)' / &

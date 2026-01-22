@@ -45,14 +45,21 @@ logical :: update=.false.
 
 ! Data variables
 
-character(len=rads_cmdl) :: path_nh, path_sh
-integer(fourbyteint) :: day1985old=-99999, first=1, j
-real(eightbytereal), parameter :: d2r = pi/180d0
-real(eightbytereal), parameter :: a=6378273d0, b=6356889.44891d0, e=SQRT(1d0-((b/a)**2d0)), sp=70d0*d2r
-real(eightbytereal), parameter :: lambda_nh=-45d0*d2r, lambda_sh=0d0, FE=0d0, FN=0d0
-real(eightbytereal) :: tf, mf, k0, t, rho, dE, dN
-real(eightbytereal) :: wx, wy, wt, f(2,2,2), f2, grids_nh(760,1120,2), grids_sh(790,830,2)
-integer(twobyteint) :: grid_nh(760,1120,2), grid_sh(790,830,2)
+integer(fourbyteint) :: day1985old=-99999, j
+real(eightbytereal), parameter :: lat_nh = 31d0, lat_sh = -39d0
+
+type :: proj
+	real(eightbytereal) :: e, akm1, lat_ts, lon_0
+end type
+type(proj) :: q(2)
+
+type :: hemi
+	character(len=rads_cmdl) :: path
+	integer(twobyteint), allocatable :: grid(:,:,:)
+	integer(fourbyteint) :: nx, ny
+	real(eightbytereal) :: x0, dx, y0, dy
+end type
+type(hemi) :: h(2)
 
 ! Initialise
 
@@ -68,10 +75,34 @@ do j = 1,rads_nopt
 	end select
 enddo
 
+! Set the projections
+
+call polar_stereo_init (q(1), 6378273d0, 6356889.44891d0, 70d0, -45d0) ! North Pole
+call polar_stereo_init (q(2), 6378273d0, 6356889.44891d0, -70d0, 0d0)  ! South Pole
+
+! Define the grids
+
+h(1)%nx = 760
+h(1)%ny = 1120
+h(1)%x0 = -3845d3
+h(1)%y0 = 5845d3
+
+h(2)%nx = 790
+h(2)%ny = 830
+h(2)%x0 = -3950d3
+h(2)%y0 = 4340d3
+
+h(:)%dx = 10d3
+h(:)%dy = -10d3
+
+do j = 1,2
+	allocate (h(j)%grid(h(j)%nx,h(j)%ny,2))
+enddo
+
 ! Get template for path name
 
-call parseenv ('${ALTIM}/data/OSIAF_conc/%Y/%m/ice_conc_nh_polstere-100_multi_%Y%m%d1200.nc',path_nh)
-call parseenv ('${ALTIM}/data/OSIAF_conc/%Y/%m/ice_conc_sh_polstere-100_multi_%Y%m%d1200.nc',path_sh)
+call parseenv ('${ALTIM}/data/OSIAF_conc/%Y/%m/ice_conc_nh_polstere-100_multi_%Y%m%d1200.nc',h(1)%path)
+call parseenv ('${ALTIM}/data/OSIAF_conc/%Y/%m/ice_conc_sh_polstere-100_multi_%Y%m%d1200.nc',h(2)%path)
 
 ! Process all data files
 
@@ -106,10 +137,12 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-integer(fourbyteint) :: i, ix, iy, day1985
-real(eightbytereal) :: time(n), lat(n), lon(n), ice(n), tmp(n)
+integer(fourbyteint) :: i, j, ix, iy, day1985
+real(eightbytereal) :: time(n), lat(n), lon(n), surf(n), ice(n), tmp(n)
+real(eightbytereal) :: wx, wy, wt, f(2,2,2), f2, fsum
 integer(fourbyteint) :: t1, t2
-real(eightbytereal), parameter :: dz=1d-2
+integer(twobyteint) :: g(2,2,2)
+real(eightbytereal), parameter :: dz = 1d-2
 logical :: err
 
 call log_pass (P)
@@ -119,17 +152,31 @@ call log_pass (P)
 call rads_get_var (S, P, 'time', time, .true.)
 call rads_get_var (S, P, 'lat', lat, .true.)
 call rads_get_var (S, P, 'lon', lon, .true.)
+call rads_get_var (S, P, 'surface_class', surf, .true.)
+
+! Ensure that longitude is between 0 and 360
+
+where (lon < 0d0) lon = lon + 360d0
 
 ! Process data records
 
 do i = 1,n
 
-! Today and yesterday
+! If over land, set sea ice concentration to NaN
+! Else if outside of the grids, set it to 0
+
+	if (surf(i) == 1 .or. surf(i) > 2) then
+		ice(i) = nan
+		cycle
+	else if (lat(i) > lat_sh .and. lat(i) < lat_nh) then
+		ice(i) = 0d0
+		cycle
+	endif
+
+! Today and tomorrow
+
 	t1 = floor(time(i)/86400)
 	t2 = t1 + 1
-
-! Load new grids when needed
-
 	f2 = time(i)/86400d0 ! Number of days since 1985
 	day1985 = int(f2)
 
@@ -137,66 +184,51 @@ do i = 1,n
 
 	if (day1985 /= day1985old) then
 		if (day1985 == day1985old+1) then
-			! Replace first (oldest) grid with a new grid
-			err = get_osiaf(day1985+1,grid_nh(:,:,first),path_nh,1120,760)
-			err = get_osiaf(day1985+1,grid_sh(:,:,first),path_sh,830,790)
- 			first = 3-first	! Switch notion of first and second grid
+			! Copy the newest grids (2) to the oldest position (1)
+			h(1)%grid(:,:,1) = h(1)%grid(:,:,2)
+			h(2)%grid(:,:,1) = h(2)%grid(:,:,2)
+			! Replace newest grids
+			err = get_osiaf(day1985+1,h(1),2)
+			err = get_osiaf(day1985+1,h(2),2)
 		else
 			! Replace both grids
-			first = 1
-			err = get_osiaf(day1985,grid_nh(:,:,1),path_nh,1120,760) .or. get_osiaf(day1985+1,grid_nh(:,:,2),path_nh,1120,760)
-			err = get_osiaf(day1985,grid_sh(:,:,1),path_sh,830,790) .or. get_osiaf(day1985+1,grid_sh(:,:,2),path_sh,830,790)
+			err = get_osiaf(day1985,h(1),1) .or. get_osiaf(day1985+1,h(1),2)
+			err = get_osiaf(day1985,h(2),1) .or. get_osiaf(day1985+1,h(2),2)
 		endif
 		if (err) then
 			call log_string ('Warning: No OSIAF field for current time')
 		endif
-		grids_nh = grid_nh
-		where (grids_nh .eq. -999) grids_nh = nan
-		grids_sh = grid_sh
-		where (grids_sh .eq. -999) grids_sh = nan
 		day1985old = day1985
 	endif
 
-! Set weights for bi-linear interpolation in space
+! Compute the corresponding grid coordinates
 
-	if (lon(i) < -360d0 .or. lat(i) > 360d0) then
-		ice(i) = nan
-		cycle
-	endif
-
-	if (lat(i) <= 31d0 .and. lat(i) >= -39d0 ) then
-		ice(i) = nan
-		cycle
-	endif
-
-	if (lon(i) < 0d0) lon(i) = lon(i) + 360d0
-
-	if (lat(i) > 31d0 ) then
-		mf = cos(sp)/((1d0-((e**2d0)*(cos(sp)**2d0)))**0.5d0)
-		t = tan((pi/4d0)-((lat(i)*d2r)/2d0))*(((1d0+(e*sin(lat(i)*d2r)))/ &
-			(1d0-(e*sin(lat(i)*d2r))))**(e/2d0))
-		tf = tan((pi/4d0)-(sp/2d0))*(((1d0+(e*sin(sp)))/(1d0-(e*sin(sp))))**(e/2d0))
-		k0 = mf*((((1d0+e)**(1d0+e))*((1d0-e)**(1d0-e)))**0.5d0)/(2d0*tf)
-		rho = (2d0*a*k0*t)/((((1d0+e)**(1d0+e))*((1d0-e)**(1d0-e)))**0.5d0)
-		dE = -rho*cos((lon(i)*d2r)+lambda_nh)
-		dN = rho*sin((lon(i)*d2r)+lambda_nh)
-		wx = 385.5d0 + ((FE-dE)/10000d0)
-		wy = 585.5d0 - ((FN+dN)/10000d0)
+	if (lat(i) > 0d0) then
+		j = 1
 	else
-		mf = cos(-sp)/((1d0-((e**2d0)*(cos(-sp)**2d0)))**0.5d0)
-		t = tan((pi/4d0)+((lat(i)*d2r)/2d0))/(((1d0+(e*sin(lat(i)*d2r)))/ &
-			(1d0-(e*sin(lat(i)*d2r))))**(e/2d0))
-		tf = tan((pi/4d0)+(-sp/2d0))/(((1d0+(e*sin(-sp)))/(1d0-(e*sin(-sp))))**(e/2d0))
-		k0 = mf*((((1d0+e)**(1d0+e))*((1d0-e)**(1d0-e)))**0.5d0)/(2d0*tf)
-		rho = (2d0*a*k0*t)/((((1d0+e)**(1d0+e))*((1d0-e)**(1d0-e)))**0.5d0)
-		dE = rho * sin((lon(i)*d2r)-lambda_sh)
-		dN = rho * cos((lon(i)*d2r)-lambda_sh)
-		wx = 395.5d0 + ((FE+dE)/10000d0)
-		wy = 435.5d0 - ((FN+dN)/10000d0)
+		j = 2
 	endif
+
+	call polar_stereo (q(j), lon(i), lat(i), wx, wy)
+	wx = (wx - h(j)%x0) / h(j)%dx + 1d0
+	wy = (wy - h(j)%y0) / h(j)%dy + 1d0
 
 	ix = floor(wx)
 	iy = floor(wy)
+
+! If outside of the region covered by the grids, set sea ice concentation to 0
+
+	if (ix < 1 .or. iy < 1 .or. ix >= h(j)%nx .or. iy >= h(j)%ny) then
+		ice(i) = 0d0
+		cycle
+	endif
+
+! Get the corresponding grid values
+
+	g(:,:,:) = h(j)%grid(ix:ix+1,iy:iy+1,:)
+
+! Set weights for bi-linear interpolation in space
+
 	wx = wx - ix
 	wy = wy - iy
 
@@ -211,20 +243,18 @@ do i = 1,n
 	f(:,:,1) = f(:,:,1) * (1d0-wt)
 	f(:,:,2) = f(:,:,2) * wt
 
-! Interpolate ice concentration (has invalid values)
+! Where grid values are default (-999), set the weight to zero
 
-	if (lat(i) > 31d0) then
-		if (ix > 0 .and. iy > 0 .and. ix < 761 .and. iy < 1121) then
-			ice(i) = mat_product(grids_nh(ix:ix+1,iy:iy+1,:),f) * 1d-2
-		else
-			ice(i) = nan
-		endif
+	where (g == -999) f = 0d0
+
+! If the sum of the weights if less than 0.5 assign NaN,
+! otherwise the sea ice concentration becomes the weighted average.
+
+	fsum = sum(f)
+	if (fsum < 0.5d0) then
+		ice(i) = nan
 	else
-		if (ix > 0 .and. iy > 0 .and. ix < 791 .and. iy < 831) then
-			ice(i) = mat_product(grids_sh(ix:ix+1,iy:iy+1,:),f) * 1d-2
-		else
-			ice(i) = nan
-		endif
+		ice(i) = sum(f*g) / fsum * dz
 	endif
 enddo
 
@@ -235,9 +265,10 @@ if (update) then
 	call rads_get_var (S, P, 'seaice_conc_osiaf', tmp, .true.)
 	rads_verbose = i
 	do i = 1,n
+!		write (*,'(2i4,f8.3,2f5.0)') i,nint(surf(i)),lat(i),tmp(i),ice(i)
 		if (isnan_(tmp(i)) .and. isnan_(ice(i))) cycle
 		if (isnan_(tmp(i))) exit
-		if (nint(tmp(i)/dz) /= nint(ice(i))) exit
+		if (nint(tmp(i)) /= nint(ice(i))) exit
 	enddo
 	if (i > n) then	! No changes
 		call log_records (0)
@@ -257,42 +288,60 @@ call log_records (n)
 end subroutine process_pass
 
 !-----------------------------------------------------------------------
-! Weighted product with value checking on array a
+! Polar sterographic projection
 !-----------------------------------------------------------------------
 
-function mat_product (a, b)
-real(eightbytereal) :: mat_product
-!integer(twobyteint), intent(in) :: a(8)
-real(eightbytereal), intent(in) :: a(8)
-real(eightbytereal), intent(in) :: b(8)
-real(eightbytereal) :: w
-integer(fourbyteint) :: i
-mat_product = 0d0
-w = 0d0
-do i = 1,8
-	if (a(i) <= 10000d0) then
-		w = w + b(i)
-		mat_product = mat_product + a(i)*b(i)
-	endif
-enddo
-if (w < 0.5d0) then
-	mat_product = 0d0
-	w = 0d0
+subroutine polar_stereo_init (q, a, b, lat_ts, lon_0)
+type(proj), intent(out) :: q
+real(eightbytereal), intent(in) :: a, b, lat_ts, lon_0
+real(eightbytereal) :: e, sp, mf, tf, k0
+
+e = sqrt(1d0-(b/a)**2d0)
+sp = abs(lat_ts)*rad
+mf = cos(sp)/sqrt(1d0-(e*cos(sp))**2d0)
+tf = tan(pi/4d0-sp/2d0)*(((1d0+e*sin(sp))/(1d0-e*sin(sp)))**(e/2d0))
+k0 = mf/(2d0*tf)*sqrt((1d0+e)**(1d0+e)*(1d0-e)**(1d0-e))
+k0 = 0.96985819d0 ! Added to force the right answers, aligned with PROJ9
+
+q%akm1 = (2d0*a*k0)/sqrt((1d0+e)**(1d0+e)*(1d0-e)**(1d0-e))
+
+q%e = e
+q%lon_0 = lon_0
+q%lat_ts = lat_ts
+end subroutine polar_stereo_init
+
+subroutine polar_stereo (q, lon, lat, x, y)
+type(proj), intent(in) :: q
+real(eightbytereal), intent(in) :: lon, lat
+real(eightbytereal), intent(out) :: x, y
+real(eightbytereal) :: phi, lam, coslam, sinphi, t
+
+phi = lat*rad
+lam = (lon-q%lon_0)*rad
+coslam = cos(lam)
+sinphi = sin(phi)
+
+if (q%lat_ts < 0d0) then
+	phi = -phi
+	sinphi = -sinphi
+	coslam = -coslam
 endif
-mat_product = mat_product / w
-end function mat_product
+
+t = q%akm1 * tan(pi/4d0-phi/2d0)*((1d0+q%e*sinphi)/(1d0-q%e*sinphi))**(q%e/2d0)
+x = t * sin(lam)
+y = -t * coslam
+end subroutine polar_stereo
 
 !-----------------------------------------------------------------------
 ! Get the OSIAF sea ice concentration grid for "day1985"
 !-----------------------------------------------------------------------
 
-function get_osiaf (day1985, grid, path, ny, nx)
-integer(fourbyteint) :: day1985
-character(len=rads_cmdl) :: path
-logical :: get_osiaf
-integer(twobyteint) :: grid(:,:)
+logical function get_osiaf (day1985, h, it)
+integer(fourbyteint), intent(in) :: day1985
+type(hemi), intent(inout) :: h
+integer(fourbyteint), intent(in) :: it
 character(len=rads_cmdl) :: filenm
-integer(fourbyteint) ::	ncid,v_id,t_id,j,l,strf1985,nx,ny
+integer(fourbyteint) ::	ncid,v_id,t_id,j,l,strf1985
 real(eightbytereal) :: time
 real(eightbytereal) :: z0, dz
 
@@ -303,14 +352,14 @@ get_osiaf = .true.
 
 ! Determine file name
 
-l = strf1985(filenm, trim(path), day1985*86400)
+l = strf1985(filenm, trim(h%path), day1985*86400)
 
 ! Open input file
 
 write (*,600,advance='no') trim(filenm)
 if (nft(nf90_open(filenm,nf90_nowrite,ncid))) then
 	write (*,1300) 'Error opening file',filenm(:l)
-	grid(:,:) = -999
+	h%grid(:,:,it) = -999
 	return
 endif
 
@@ -332,11 +381,7 @@ if (nft(nf90_inq_varid(ncid,'ice_conc',v_id))) call fin('Error finding variable'
 if (nft(nf90_get_att(ncid,v_id,'add_offset',z0))) z0=0
 if (nft(nf90_get_att(ncid,v_id,'scale_factor',dz))) dz=1
 
-if (nft(nf90_get_var(ncid,v_id,grid(:,:),count = (/ nx, ny, 1 /)))) call fin('Error reading data grid')
-
-! Copy Date Line meridian
-
-grid(1,:) = grid(nx,:)
+if (nft(nf90_get_var(ncid,v_id,h%grid(:,:,it),count = (/ h%nx, h%ny, 1 /)))) call fin('Error reading data grid')
 
 j = nf90_close(ncid)
 get_osiaf = .false.

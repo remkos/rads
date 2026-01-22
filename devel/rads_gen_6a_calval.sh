@@ -101,6 +101,12 @@ date													>> "$log" 2>&1
 # Now continue with the post-processing
 rads_reuse_sandbox "${sat}.${type}1"
 
+# For limit period, change sigma0 and derived qualtities in S6B LR
+case ${sat}.${type} in
+	6b.lr*) rads_fix_s6 $options --ymd=20260114153540,20260124142000 --p2p >> "$log" 2>&1
+	        rads_fix_s6 $options --ymd=20260114153540,20260124142000 --p2p --nr-only >> "$log" 2>&1
+	        ;;
+esac
 rads_fix_s6       $options --all						>> "$log" 2>&1
 
 # Add MOE orbit (for NRT only)
