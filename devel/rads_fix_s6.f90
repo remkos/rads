@@ -33,7 +33,7 @@ use rads_grid
 character(len=rads_cmdl) :: aux_wind = '', aux_ssbk = '', aux_ssbc = '', aux_rain = ''
 integer(fourbyteint) :: i, cyc, pass, ios, lrain = 0, lwind = 0
 type(grid) :: info_wind, info_ssbk, info_ssbc
-logical :: lsig0 = .false., lssb = .false., nr_only = .false., lflag = .false.
+logical :: lsig0 = .false., lssb = .false., nr_only = .false., lflag = .false., lp2p = .false.
 integer, parameter :: sig0_nx = 500
 real(eightbytereal) :: exp_ku_sigma0(sig0_nx), rms_exp_ku_sigma0(sig0_nx)
 real(eightbytereal) :: bias_range(2) = 0d0, bias_sig0(2) = 0d0, &
@@ -71,6 +71,7 @@ do i = 1,rads_nopt
 	case ('flag-bit0')
 		lflag = .true.
 	case ('p2p')
+		lp2p = .true.
 		bias_sig0(1) = 10d0 * log10(4d0)	! Impact of reducing the waveform accumulation by factor 4
 		lrain = 1
 		lwind = 1
@@ -127,7 +128,7 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-real(eightbytereal) :: latency(n), range_ku(n), range_ku_mle3(n), range_c(n), &
+real(eightbytereal) :: time(n), latency(n), range_ku(n), range_ku_mle3(n), range_c(n), &
 	sig0_ku(n), sig0_ku_mle3(n), sig0_c(n), dsig0_atmos_ku(n), dsig0_atmos_c(n), dsig0_atten(n), &
 	swh_ku(n), swh_ku_mle3(n), wind_speed_alt(n), wind_speed_alt_mle3(n), qual_alt_rain_ice(n), flags(n), &
 	flags_mle3(n), flags_nr(n), ssb_cls(n), ssb_cls_mle3(n), ssb_cls_c(n)
@@ -238,7 +239,16 @@ if (do_sig0) then
 			sig0_c = sig0_c + dsig0(2)
 		endif
 	endif
-	sig0_ku = sig0_ku + dsig0(1)
+	if (lp2p) then ! Also check time range
+		if (P%start_time > S%time%info%limits(2) .or. P%end_time < S%time%info%limits(1)) then
+			call log_records(0)
+			return
+		endif
+		call rads_get_var (S, P, 'time', time, .true.)
+		where (time >= S%time%info%limits(1) .and. time <= S%time%info%limits(2)) sig0_ku = sig0_ku + dsig0(1)
+	else
+		sig0_ku = sig0_ku + dsig0(1)
+	endif
 endif
 
 ! Compute wind speed from 2D wind model after adding biases
