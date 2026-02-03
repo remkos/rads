@@ -103,7 +103,7 @@ Global RADS configuration file
 	<data sat="3a 3b">alt range_ku_plrm SUB dry_tropo SUB wet_tropo_plrm SUB iono_alt_plrm SUB dac SUB tide_solid SUB tide_ocean SUB tide_load SUB
 		tide_pole SUB ssb_plrm SUB mss SUB ref_frame_offset_plrm SUB</data>
 	<data sat="c2">alt range_ku_plrm SUB dry_tropo SUB wet_tropo SUB iono SUB dac SUB tide_solid SUB tide_ocean SUB tide_load SUB
-		tide_pole SUB ssb_plrm SUB mss SUB ref_frame_offset SUB</data>
+		tide_pole SUB ssb_plrm SUB mss SUB ref_frame_offset_plrm SUB</data>
 	<quality_flag>swh_ku_plrm sig0_ku_plrm range_rms_ku_plrm range_numval_ku_plrm flags_plrm swh_rms_ku_plrm sig0_rms_ku_plrm attitude</quality_flag>
 	<comment>Sea level determined from satellite altitude - PLRM range - all (PLRM) altimetric corrections</comment>
 </var>
@@ -4171,7 +4171,7 @@ Global RADS configuration file
 	<dimensions>0</dimensions>
 	<parameters sat="3a">  -6.9 0  0  0 0</parameters>
 	<parameters sat="3b"> -13.4 0  0  0 0</parameters>
-	<parameters sat="c2">   8.0 0  0  0 0</parameters>
+	<parameters sat="c2"> -20.2 0  0  0 0</parameters>
 </var>
 <var name="ref_frame_offset_adaptive" sat="j2 j3 n1.f4a sw">
 	<long_name>reference frame offset (adaptive retracking)</long_name>
