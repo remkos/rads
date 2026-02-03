@@ -4317,7 +4317,7 @@ Global RADS configuration file
 	<parameters sat="tx">  10.4 0  0  0 0</parameters> <!-- Side B -->
 	<parameters sat="sw">   1.5 0  0  0 0</parameters>
 </var>
-<var name="ref_frame_offset_plrm" field="3812" sat="3a 3b">
+<var name="ref_frame_offset_plrm" field="3812" sat="3a 3b c2">
 	<long_name>reference frame offset (PLRM)</long_name>
 	<units>m</units>
 	<data>ref_frame_offset_plrm</data>
@@ -4327,6 +4327,7 @@ Global RADS configuration file
 	<dimensions>0</dimensions>
 	<parameters sat="3a">  -6.9 0  0  0 0</parameters>
 	<parameters sat="3b"> -13.4 0  0  0 0</parameters>
+	<parameters sat="c2">   8.0 0  0  0 0</parameters>
 </var>
 <var name="ref_frame_offset_adaptive" sat="j3 sw">
 	<long_name>reference frame offset (adaptive retracking)</long_name>
