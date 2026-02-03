@@ -22,7 +22,7 @@ Do not correct sea level anomaly for reference frame offset
 <var name="sla_mle3" sat="6a 6b j2 j3 sw tx">
 	<data action="delete">ref_frame_offset_mle3 SUB</data>
 </var>
-<var name="sla_plrm" sat="3a 3b">
+<var name="sla_plrm" sat="3a 3b c2">
 	<data action="delete">ref_frame_offset_plrm SUB</data>
 </var>
 <var name="ref_frame_offset_adaptive" sat="j3 n1.f4a sw">
