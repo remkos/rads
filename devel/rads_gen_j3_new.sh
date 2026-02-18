@@ -73,7 +73,7 @@ for type in ${types}; do
 
         # Redetermine SSHA
         rads_add_refframe $options -x $extra                >> "$log" 2>&1
-        rads_add_sla      $options -x $extra                >> "$log" 2>&1
+        rads_add_sla      $options -x $extra -Xgdr_g        >> "$log" 2>&1
     fi
     
     date												>> "$log" 2>&1
