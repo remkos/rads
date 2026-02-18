@@ -66,7 +66,7 @@ grep -q _2Pg $lst || extra="-x mle3 $extra"
 
 # Redetermine SSHA
 rads_add_refframe $options -x $extra				>> "$log" 2>&1
-rads_add_sla      $options -x $extra				>> "$log" 2>&1
+rads_add_sla      $options -x $extra -Xgdr_g		>> "$log" 2>&1
 
 date												>> "$log" 2>&1
 
