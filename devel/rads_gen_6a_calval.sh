@@ -124,9 +124,10 @@ esac
 rads_add_common   $options										>> "$log" 2>&1
 rads_add_mfwam    $options --all --new							>> "$log" 2>&1
 case $sat in
-	6a)	rads_add_orbit    $options -Valt_gps --dir=jplgpspoe -C5-112	>> "$log" 2>&1
-		rads_add_orbit    $options -Valt_gps --dir=jplgpsmoe -C113-299	>> "$log" 2>&1
-		rads_add_orbit    $options -Valt_std2400 -C4-168                >> "$log" 2>&1 ;;
+	6?.??st*)	rads_add_orbit    $options -Valt_gps --dir=jplgpsmoe	>> "$log" 2>&1 ;;
+	6a*     )	rads_add_orbit    $options -Valt_gps --dir=jplgpspoe	>> "$log" 2>&1
+				rads_add_orbit    $options -Valt_std2400            	>> "$log" 2>&1 ;;
+	6b*     )	rads_add_orbit    $options -Valt_gps --dir=jplgpspoe	>> "$log" 2>&1 ;;
 esac
 # To support GDR-G with backward compatibility
 grep -q .*S6._.*_G $lst && rads_add_tide $options --models=fes14		>> "$log" 2>&1
