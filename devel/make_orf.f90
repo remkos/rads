@@ -77,6 +77,10 @@ enddo
 
 if (isnan_(S%time%info%limits(1))) S%time%info%limits(1) = max(S%phases(1)%start_time, rads_cycle_to_time (S, S%cycles(1)))
 if (isnan_(S%time%info%limits(2))) S%time%info%limits(2) = rads_cycle_to_time (S, S%cycles(2)+1)
+if (rads_verbose > 0) then
+	write (*,*) strf1985f(S%time%info%limits(1)),S%cycles(1), ": start"
+	write (*,*) strf1985f(S%time%info%limits(2)),S%cycles(2), ": stop"
+endif
 
 ! If no --dir option is given, figure out directory from variable selection
 
@@ -206,6 +210,7 @@ do j = 1,ndir
 	ios = getorb (info(i)%time, info(i)%lat, info(i)%lon, alt, dir(idir), rads_verbose > 0)
 	if (ios == 0) exit
 	idir = modulo(idir, ndir) + 1
+	if (rads_verbose > 0) write (*,*) strf1985f (info(i)%time)," : ",trim(dir(idir))
 enddo
 end subroutine get_orbit
 
