@@ -36,16 +36,17 @@ end type
 
 ! Data variables
 
-integer(fourbyteint), parameter :: morf = 500000
-integer(fourbyteint) :: norf = 0
+integer(fourbyteint), parameter :: morf = 500000, mdir = 4
+integer(fourbyteint) :: norf = 0, idir = 1, ndir = 0
 type(rads_sat) :: S
 type(orbit) :: info(-1:1), orf(morf), diff
 
 ! Command line arguments
 
-integer(fourbyteint) :: i
+integer(fourbyteint) :: i, j
 real(eightbytereal) :: dt = 1d0
-character(len=rads_cmdl) :: dir = ''
+character(len=rads_cmdl) :: dir(mdir) = ''
+logical :: extend = .true.
 
 ! Other variables
 
@@ -56,7 +57,7 @@ character(len=26) :: date
 ! Scan command line for options
 
 call synopsis
-call rads_set_options (' dir: dt: ext:')
+call rads_set_options (' dir: dt: no-ext')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
@@ -64,7 +65,11 @@ do i = 1,rads_nopt
 		read (rads_opt(i)%arg, *, iostat=ios) dt
 		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	case ('dir')
-		dir = rads_opt(i)%arg
+		ndir = ndir + 1
+		if (ndir > mdir) call rads_exit ('Too many --dir options')
+		dir(ndir) = rads_opt(i)%arg
+	case ('no-ext')
+		extend = .false.
 	end select
 enddo
 
@@ -72,23 +77,30 @@ enddo
 
 if (isnan_(S%time%info%limits(1))) S%time%info%limits(1) = max(S%phases(1)%start_time, rads_cycle_to_time (S, S%cycles(1)))
 if (isnan_(S%time%info%limits(2))) S%time%info%limits(2) = rads_cycle_to_time (S, S%cycles(2)+1)
+if (rads_verbose > 0) then
+	write (*,*) strf1985f(S%time%info%limits(1)),S%cycles(1), ": start"
+	write (*,*) strf1985f(S%time%info%limits(2)),S%cycles(2), ": stop"
+endif
 
-! If dir is not given, figure out directory from variable selection
+! If no --dir option is given, figure out directory from variable selection
 
-if (dir /= '') then
+if (ndir > 0) then
 	! skip
 else if (S%nsel == 0) then
 	call rads_exit ('Specify --dir <directory> or --var <alt_variable>')
 else
 	dir = S%sel(1)%info%parameters
+	ndir = 1
 endif
 
-! Add prefix ${ALTIM}/data/ODR.<satellite>/ to directory name
+! Add prefix ${ALTIM}/data/ODR.<satellite>/ to directory name(s)
 
-if (dir(:1) == '/' .or. dir(:2) == './') then
-else
-	call parseenv ('${ALTIM}/data/ODR.' // trim(S%satellite) // '/' // dir, dir)
-endif
+do j = 1,ndir
+	if (dir(j)(:1) == '/' .or. dir(j)(:2) == './') then
+	else
+		call parseenv ('${ALTIM}/data/ODR.' // trim(S%satellite) // '/' // dir(j), dir(j))
+	endif
+enddo
 
 ! Determine threshold of latitudes
 
@@ -127,17 +139,19 @@ enddo
 ! Extend the list until the upper time limit
 ! For computing steps into future, start with an equator crossing; it is more accurate
 
-if (abs(orf(norf)%lat) > min_lat) norf = norf - 1
-if (norf >= 5) then
-	diff%time = orf(norf)%time - orf(norf-4)%time
-	diff%lon = orf(norf)%lon - orf(norf-4)%lon
-	do
-		if (orf(norf-3)%time + diff%time > S%time%info%limits(2)) exit
-		norf = norf + 1
-		orf(norf)%time = orf(norf-4)%time + diff%time
-		orf(norf)%lon = orf(norf-4)%lon + diff%lon
-		orf(norf)%lat = orf(norf-4)%lat
-	enddo
+if (extend) then
+	if (abs(orf(norf)%lat) > min_lat) norf = norf - 1
+	if (norf >= 5) then
+		diff%time = orf(norf)%time - orf(norf-4)%time
+		diff%lon = orf(norf)%lon - orf(norf-4)%lon
+		do
+			if (orf(norf-3)%time + diff%time > S%time%info%limits(2)) exit
+			norf = norf + 1
+			orf(norf)%time = orf(norf-4)%time + diff%time
+			orf(norf)%lon = orf(norf-4)%lon + diff%lon
+			orf(norf)%lat = orf(norf-4)%lat
+		enddo
+	endif
 endif
 
 ! Print file header
@@ -179,7 +193,8 @@ write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:'/ &
 '  --dir STR                 Specify orbit directory path'/ &
-'  --dt DT                   Specify time stepping interval (s), default: 1')
+'  --dt DT                   Specify time stepping interval (s), default: 1'/ &
+'  --no-ext                  Do not automatically extend beyond end of orbit solution')
 stop
 end subroutine synopsis
 
@@ -189,9 +204,14 @@ end subroutine synopsis
 
 subroutine get_orbit (i)
 integer(fourbyteint), intent(in) :: i
-integer(fourbyteint) :: getorb
+integer(fourbyteint) :: getorb, j
 real(eightbytereal) :: alt
-ios = getorb (info(i)%time, info(i)%lat, info(i)%lon, alt, dir, rads_verbose > 0)
+do j = 1,ndir
+	ios = getorb (info(i)%time, info(i)%lat, info(i)%lon, alt, dir(idir), rads_verbose > 0)
+	if (ios == 0) exit
+	idir = modulo(idir, ndir) + 1
+	if (rads_verbose > 0) write (*,*) strf1985f (info(i)%time)," : ",trim(dir(idir))
+enddo
 end subroutine get_orbit
 
 !-----------------------------------------------------------------------
@@ -204,7 +224,7 @@ integer(fourbyteint) :: getorb
 if (sign(1d0,info(0)%lat) == sign(1d0,info(1)%lat)) return
 ! Find the root with two-step secant method
 time = info(0)%time - info(1)%lat / (info(1)%lat - info(0)%lat) * dt
-ios = getorb (time, lat, lon, alt, dir, rads_verbose > 0)
+ios = getorb (time, lat, lon, alt, dir(idir), rads_verbose > 0)
 time = time - lat / (lat - info(0)%lat) * (time - info(0)%time)
 call store_orf (time)
 end subroutine find_equator
@@ -235,7 +255,7 @@ integer(fourbyteint) :: getorb
 norf = norf + 1
 if (norf > morf) call rads_exit ('Too many ORF records')
 orf(norf)%time = time
-ios = getorb (time, orf(norf)%lat, orf(norf)%lon, alt, dir, rads_verbose > 0)
+ios = getorb (time, orf(norf)%lat, orf(norf)%lon, alt, dir(idir), rads_verbose > 0)
 time_step = 1200d0	! Jump 20 minutes (quarter revolution ahead)
 end subroutine store_orf
 
