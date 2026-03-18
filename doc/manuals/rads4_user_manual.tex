@@ -946,6 +946,7 @@ When either of these is used, no records are eliminated. However, the statistics
 Indicates that any record on which any of the selected variables are NaN is rejected and not taken into account in the statistics.
 \item[\soptc{c}{[N]}] Produce statistics per cycle or per N cycles
 \item[\soptc{d}{[N]}] Produce statistics per day (default) or per N days
+\item[\lopt{monthly}] Statistics per calendar month
 \item[\soptc{p}{[N]}] Produce statistics per pass or per N passes
 \item[\soptc{b}{[DX,DY]}] ~\\
 Average measurements by boxes of a given size in degrees (by default box-weighting with a size of 3x1 degrees is used)
@@ -962,7 +963,7 @@ Set the minimum bin size in seconds. The default is the maximum 1-Hz sampling ra
 \item[\loptc{res}{[DX,DY]}] Size of averaging boxes in degrees (default: 3,1)
 \item[\lopt{echo-file-paths}] Write to standard output the paths of the files before they are being read
 \item[\lopt{format-cycle}] Output format starts with CYCLE, [YY]YYMMDD (default with \sopt{c})
-\item[\lopt{format-day}] Output format starts with [YY]YYMMDD (default with \sopt{d})
+\item[\lopt{format-day}] Output format starts with [YY]YYMMDD (default with \sopt{d} or \lopt{monthly})
 \item[\lopt{format-pass}] Output format starts with CYCLE, PASS (default with \sopt{p})
 \item[\optc{o}{output}{[FILENAME]}] ~\\
 Create a netCDF output file. The default is ASCII output to standard output. Optionally specify a \emph{FILENAME}. The default netCDF output file name is \verb|radsstat.nc|.
