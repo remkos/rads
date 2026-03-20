@@ -4280,8 +4280,8 @@ Global RADS configuration file
 	<compress>int2 1e-4</compress>
 	<dimensions>0</dimensions>
 	<parameters>0</parameters>
-	<parameters sat="3a">             -8.9 0  0  0 0</parameters>
-	<parameters sat="3b">            -14.6 0  0  0 0</parameters>
+	<parameters sat="3a">            -14.8 0  0  0 0</parameters>
+	<parameters sat="3b">            -15.8 0  0  0 0</parameters>
 	<parameters sat="6a 6b">         -20.0 0  0  0 0</parameters>
 	<parameters sat="6a.hr* 6b.hr*"> -33.0 0  0  0 0</parameters>
 	<parameters sat="c2">            -29   0  0  0 0</parameters>
@@ -4316,7 +4316,7 @@ Global RADS configuration file
 	<parameters sat="tx">  10.4 0  0  0 0</parameters> <!-- Side B -->
 	<parameters sat="sw">   1.5 0  0  0 0</parameters>
 </var>
-<var name="ref_frame_offset_plrm" field="3812" sat="3a 3b">
+<var name="ref_frame_offset_plrm" field="3812" sat="3a 3b c2">
 	<long_name>reference frame offset (PLRM)</long_name>
 	<units>m</units>
 	<data>ref_frame_offset_plrm</data>
@@ -4324,8 +4324,9 @@ Global RADS configuration file
 	<default>0</default>
 	<compress>int2 1e-4</compress>
 	<dimensions>0</dimensions>
-	<parameters sat="3a">  -6.9 0  0  0 0</parameters>
-	<parameters sat="3b"> -13.4 0  0  0 0</parameters>
+	<parameters sat="3a"> -14.8 0  0  0 0</parameters>
+	<parameters sat="3b"> -15.8 0  0  0 0</parameters>
+	<parameters sat="c2"> -20.2 0  0  0 0</parameters>
 </var>
 <var name="ref_frame_offset_adaptive" sat="j3 sw">
 	<long_name>reference frame offset (adaptive retracking)</long_name>
