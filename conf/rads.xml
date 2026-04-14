@@ -4136,7 +4136,8 @@ Global RADS configuration file
 	<parameters sat="g1">             69   0  0  0 0</parameters>
 	<parameters sat="j1">              9.5 0  0  0 0</parameters>
 	<parameters sat="j2">             10.8 0  0  0 0</parameters>
-	<parameters sat="j3">            -20.5 0  0  0 0</parameters>
+	<parameters sat="j3">            -20.5 0  0  0 0</parameters> <!-- GDR-F -->
+	<parameters sat="j3">            -18.7 0  0  0 0</parameters> <!-- GDR-G -->
 	<parameters sat="n1">            451   0  0  0 0</parameters>
 	<parameters sat="n1.f4a">        460.3 0  0  0 0</parameters>
 	<parameters sat="pn">             -3.1 0  0  0 0</parameters>
@@ -4183,7 +4184,8 @@ Global RADS configuration file
 	<dimensions>0</dimensions>
 	<parameters>0</parameters>
 	<parameters sat="j2"> -14.9 0  0  0 0</parameters>
-	<parameters sat="j3"> -45.6 0  0  0 0</parameters>
+	<parameters sat="j3"> -45.6 0  0  0 0</parameters> <!-- GDR-F -->
+	<parameters sat="j3"> -42.8 0  0  0 0</parameters> <!-- GDR-G -->
 	<parameters sat="n1"> 481.4 0  0  0 0</parameters>
 	<parameters sat="sw"> -36.0 0  0  0 0</parameters>
 </var>
