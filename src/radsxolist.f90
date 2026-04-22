@@ -264,6 +264,7 @@ if (var0 == 1) fmt_str = trim(fmt_str) // trim(S%time%info%format) // ',1x,'
 ! Load all the "data variables" and complete the format string
 id_sla = 0
 id_alt_rate = 0
+is_alt = .false.
 do i = 1,nvar
 	call get_var_2d (i + id_offset, var(:,:,i), long_name(i))
 	j = nf90_inquire_variable (ncid, i + id_offset, varnm)
@@ -274,9 +275,11 @@ do i = 1,nvar
 		fmt_str = trim(fmt_str) // trim(ptr%info%format) // ',1x,' // trim(ptr%info%format) // ',1x,'
 	endif
 	boz(i) = ptr%info%boz_format
-	is_alt(i) = ptr%info%standard_name == 'height_above_reference_ellipsoid' .or. &
-		ptr%info%standard_name == 'sea_surface_height_above_sea_level'
-	if (varnm == 'sla') id_sla = i
+	if (ptr%info%standard_name == 'height_above_reference_ellipsoid' .or. &
+		ptr%info%standard_name == 'sea_surface_height_above_sea_level') then
+		is_alt(i) = .true.
+		if (id_sla == 0) id_sla = i
+	endif
 	if (varnm == 'alt_rate') id_alt_rate = i
 enddo
 fmt_str(len_trim(fmt_str)-3:) = ')'
