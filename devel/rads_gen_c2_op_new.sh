@@ -52,6 +52,9 @@ for type in ${types}; do
 	fi
 done
 
+# Pacth known anamalies
+rads_fix_c2       $options					>> "$log" 2>&1
+
 # General geophysical corrections
 rads_add_common   $options					>> "$log" 2>&1
 # Include GOT4.8 model and DUT18 MSS for Navy ALPS
