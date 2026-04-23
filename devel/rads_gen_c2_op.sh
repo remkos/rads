@@ -43,7 +43,7 @@ date >  "$log" 2>&1
 rads_gen_c2_op		$options < "$lst"			>> "$log" 2>&1
 
 # Patch known anomalies
-rads_fix_c2       $options				>> "$log" 2>&1
+rads_fix_c2         $options					>> "$log" 2>&1
 
 # General geophysical corrections
 rads_add_common		$options					>> "$log" 2>&1
