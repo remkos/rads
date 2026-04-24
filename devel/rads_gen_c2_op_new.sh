@@ -52,7 +52,7 @@ for type in ${types}; do
 done
 
 # Pacth known anamalies
-rads_fix_c2       $options					>> "$log" 2>&1
+rads_fix_c2       $options --all			>> "$log" 2>&1
 
 # General geophysical corrections
 rads_add_common   $options						>> "$log" 2>&1
