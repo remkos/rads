@@ -119,6 +119,7 @@ esac
 # For limited period, replace the S6B NTC orbit because of outgassing event
 case $type in
 	6b.??nt??) rads_add_orbit $options --ymd=20251226,20251230 -Valt_poeg --dir=poe_cnes	>> "$log" 2>&1 ;;
+esac
 
 # For LR, do also _mle3, but only for F09 or earlier
 extra=
