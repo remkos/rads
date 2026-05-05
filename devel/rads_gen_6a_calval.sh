@@ -101,10 +101,12 @@ date													>> "$log" 2>&1
 # Now continue with the post-processing
 rads_reuse_sandbox "${sat}.${type}1"
 
-# For limit period, change sigma0 and derived qualtities in S6B LR
+# For limited period, change sigma0 and derived qualtities in S6B LR because of P2P operation
 case ${sat}.${type} in
-	6b.lr*) rads_fix_s6 $options --ymd=20260114153540,20260124123005 --p2p >> "$log" 2>&1
-	        rads_fix_s6 $options --ymd=20260114153540,20260124123005 --p2p --nr-only >> "$log" 2>&1
+	6b.lr*) rads_fix_s6   $options --ymd=20260114153540,20260124123005 --p2p >> "$log" 2>&1
+	        rads_fix_s6   $options --ymd=20260114153540,20260124123005 --p2p --nr-only >> "$log" 2>&1
+	        rads_add_dual $options --ymd=20260114153540,20260124123005 -l >> "$log" 2>&1
+	        rads_add_dual $options --ymd=20260114153540,20260124123005 -l -x nr >> "$log" 2>&1
 	        ;;
 esac
 rads_fix_s6       $options --all						>> "$log" 2>&1
@@ -113,6 +115,10 @@ rads_fix_s6       $options --all						>> "$log" 2>&1
 case $type in
 	*nr*) rads_add_orbit  $options -Valt_gdrf --dir=moe_doris	>> "$log" 2>&1 ;;
 esac
+
+# For limited period, replace the S6B NTC orbit because of outgassing event
+case $type in
+	6b.??nt??) rads_add_orbit $options --ymd=20251226,20251230 -Valt_poeg --dir=poe_cnes	>> "$log" 2>&1 ;;
 
 # For LR, do also _mle3, but only for F09 or earlier
 extra=
@@ -123,14 +129,18 @@ esac
 # General geophysical corrections
 rads_add_common   $options										>> "$log" 2>&1
 rads_add_mfwam    $options --all --new							>> "$log" 2>&1
+
+# Various additional orbit solutions
 case $sat in
 	6?.??st*)	rads_add_orbit    $options -Valt_gps --dir=jplgpsmoe	>> "$log" 2>&1 ;;
 	6a*     )	rads_add_orbit    $options -Valt_gps --dir=jplgpspoe	>> "$log" 2>&1
 				rads_add_orbit    $options -Valt_std2400            	>> "$log" 2>&1 ;;
 	6b*     )	rads_add_orbit    $options -Valt_gps --dir=jplgpspoe	>> "$log" 2>&1 ;;
 esac
+
 # To support GDR-G with backward compatibility
 grep -q .*S6._.*_G $lst && rads_add_tide $options --models=fes14		>> "$log" 2>&1
+
 # Redetermine SSHA
 rads_add_refframe $options -x -x nr $extra						>> "$log" 2>&1
 rads_add_sla      $options -x -x nr $extra -Xgdr_g				>> "$log" 2>&1
