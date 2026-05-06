@@ -105,8 +105,8 @@ rads_reuse_sandbox "${sat}.${type}1"
 case ${sat}.${type} in
 	6b.lr*) rads_fix_s6   $options --ymd=20260114153540,20260124123005 --p2p >> "$log" 2>&1
 	        rads_fix_s6   $options --ymd=20260114153540,20260124123005 --p2p --nr-only >> "$log" 2>&1
-	        rads_add_dual $options --ymd=20260114153540,20260124123005 -l >> "$log" 2>&1
-	        rads_add_dual $options --ymd=20260114153540,20260124123005 -l -x nr >> "$log" 2>&1
+	        rads_add_dual $options --ymd=20260114153540,20260124123005 -rl >> "$log" 2>&1
+	        rads_add_dual $options --ymd=20260114153540,20260124123005 -rl -x nr >> "$log" 2>&1
 	        ;;
 esac
 rads_fix_s6       $options --all						>> "$log" 2>&1
@@ -118,7 +118,7 @@ esac
 
 # For limited period, replace the S6B NTC orbit because of outgassing event
 case $type in
-	6b.??nt??) rads_add_orbit $options --ymd=20251226,20251230 -Valt_poeg --dir=poe_cnes	>> "$log" 2>&1 ;;
+	6b.??nt*) rads_add_orbit $options --ymd=20251226,20251230 -Valt_poeg --dir=poe_cnes	>> "$log" 2>&1 ;;
 esac
 
 # For LR, do also _mle3, but only for F09 or earlier
