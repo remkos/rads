@@ -104,10 +104,10 @@ rads_reuse_sandbox "${sat}.${type}1"
 # For limited period, change sigma0 and derived qualtities in S6B LR because of P2P operation
 case ${sat}.${type} in
 	6b.lrnr*|6b.lrst*|6b.lrnt*)
-		rads_fix_s6   $options --ymd=20260114153540,20260124123005 --p2p >> "$log" 2>&1
-		rads_fix_s6   $options --ymd=20260114153540,20260124123005 --p2p --nr-only >> "$log" 2>&1
-		rads_add_dual $options --ymd=20260114153540,20260124123005 -rl >> "$log" 2>&1
-		rads_add_dual $options --ymd=20260114153540,20260124123005 -rl -x nr >> "$log" 2>&1
+		rads_fix_s6   $options --ymd=20260114145227,20260124123005 --p2p >> "$log" 2>&1
+		rads_fix_s6   $options --ymd=20260114145227,20260124123005 --p2p --nr-only >> "$log" 2>&1
+		rads_add_dual $options --ymd=20260114145227,20260124123005 -rl >> "$log" 2>&1
+		rads_add_dual $options --ymd=20260114145227,20260124123005 -rl -x nr >> "$log" 2>&1
 		;;
 esac
 rads_fix_s6       $options --all						>> "$log" 2>&1
