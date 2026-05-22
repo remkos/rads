@@ -63,7 +63,7 @@ case ('JA3')
 case ('SWT')
 	call parseenv ('${RADSROOT}/ext/sw/SWT_ORF.txt', line)
 case ('CS_', 'CS2')
-	call parseenv ('${ALTIM}/data/ODR.CRYOSAT2/orf.txt', line)
+	call parseenv ('${ALTIM}/data/ODR.CRYOSAT2/orf_d.txt', line)
 case ('SRL')
 	call parseenv ('${RADSROOT}/ext/sa/SRL_ORF.txt', line)
 	nr_passes = 1024
