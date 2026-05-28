@@ -2078,6 +2078,7 @@ use rads_misc
 use rads_math
 type(math_ll), pointer :: top
 integer(fourbyteint) :: i, i0, i1, istat
+character(len=rads_strl) :: dataname, dataname_save
 
 ! Start with a nullified 'top'
 nullify(top)
@@ -2087,10 +2088,22 @@ i1 = 0
 do
 	if (.not.next_word (info%dataname, i0, i1)) exit
 	if (i1 == i0) cycle
-	istat = math_eval (info%dataname(i0:i1-1), P%ndata, top)
-	if (istat /= 0) then  ! No command or value, likely to be a variable
-		call math_push (P%ndata,top)
-		call rads_get_var_by_name (S, P, info%dataname(i0:i1-1), top%data)
+	dataname = info%dataname(i0:i1-1)
+	istat = math_eval (dataname, P%ndata, top)
+	if (istat == 0) cycle  ! dataname is a command or value, so go to the next word
+	call math_push (P%ndata, top)
+
+	! If the variable is self-referential, then we must be looking for a netCDF variable
+	if (dataname == var%name) then
+		! Temporarily replace the full math statement with the single variable name
+		dataname_save = info%dataname
+		info%dataname = dataname
+		info%datasrc = rads_src_nc_var
+		call rads_get_var_common (S, P, var, top%data, .true.)
+		info%dataname = dataname_save
+		info%datasrc = rads_src_math
+	else
+		call rads_get_var_by_name (S, P, dataname, top%data)
 	endif
 	if (S%error /= rads_noerr) exit
 enddo
