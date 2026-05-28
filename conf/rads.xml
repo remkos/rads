@@ -3370,16 +3370,16 @@ Global RADS configuration file
 	<units>m</units>
 	<data>drange_ku</data>
 	<compress>int2 1e-3</compress>
-	<compress sat="6a 6b j2 j3 sw tx pn">int4 1e-4</compress>
 	<format>f6.3</format>
-	<format sat="6a 6b j2 j3 sw tx pn">f7.4</format>
+	<compress sat="6a 6b c2 j2 j3 sw tx pn">int2 1e-4 -4.0</compress>
+	<format sat="6a 6b c2 j2 j3 sw tx pn">f7.4</format>
 	<comment>Range correction already added to range</comment>
 </var>
 <var name="drange_ku_mle3" sat="6a 6b j2 j3 sw tx">
 	<long_name>net instrument correction to Ku-band range (MLE3)</long_name>
 	<units>m</units>
 	<data>drange_ku_mle3</data>
-	<compress>int4 1e-4</compress>
+	<compress>int2 1e-4 -4.0</compress>
 	<format>f7.4</format>
 	<comment>Range correction already added to range</comment>
 </var>
@@ -3387,8 +3387,8 @@ Global RADS configuration file
 	<long_name>net instrument correction to retracked Ku-band range (adaptive retracking)</long_name>
 	<units>m</units>
 	<data>drange_ku_adaptive</data>
-	<compress>int2 1e-3</compress>
-	<format>f6.3</format>
+	<compress>int2 1e-4 -4.0</compress>
+	<format>f7.4</format>
 	<comment>Range correction already added to range</comment>
 </var>
 <alias name="drange_ku_nr" sat="j2 j3 n1.f4a sw">drange_ku_adaptive</alias>
@@ -3396,8 +3396,8 @@ Global RADS configuration file
 	<long_name>net instrument correction to retracked Ku-band range (numerical retracking)</long_name>
 	<units>m</units>
 	<data>drange_ku_nr</data>
-	<compress>int2 1e-3</compress>
-	<format>f6.3</format>
+	<compress>int4 1e-4 -4.0</compress>
+	<format>f7.4</format>
 	<comment>Range correction already added to range</comment>
 </var>
 
@@ -3405,10 +3405,10 @@ Global RADS configuration file
 	<long_name>net instrument correction to C-band range</long_name>
 	<units>m</units>
 	<data>drange_c</data>
-	<compress>int2 1e-3</compress>
-	<compress sat="6a 6b j2 j3 sw tx">int4 1e-4</compress>
-	<format>f6.3</format>
-	<format sat="6a 6b j2 j3 sw tx">f7.4</format>
+	<compress>int2 1e-4 -4.0</compress>
+	<format>f7.4</format>
+	<compress sat="2a">int2 1e-3</compress>
+	<format sat="2a">f6.3</format>
 	<comment>Range correction already added to range</comment>
 </var>
 <var name="drange_cal" field="2702" sat="c2 e1 e2 gs">
@@ -3434,9 +3434,9 @@ Global RADS configuration file
 	<units>m</units>
 	<data>drange_fm</data>
 	<format>f6.3</format>
-	<format sat="tx">f7.4</format>
+	<format sat="c2 tx">f7.4</format>
 	<compress>int2 1e-3</compress>
-	<compress sat="tx">int2 1e-4</compress>
+	<compress sat="c2 tx">int2 1e-4</compress>
 	<comment>Range correction already added to range</comment>
 </var>
 <var name="drange_cg" field="2707" sat="pn tx">
