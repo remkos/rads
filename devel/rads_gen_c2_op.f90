@@ -305,6 +305,7 @@ do
 	call cpy_var (ncid, 'range_ocean_numval_01_ku', 'range_numval_ku')
 	call cpy_var (ncid, 'range_ocean_numval_01_plrm_ku', 'range_numval_ku_plrm')
 	call cpy_var (ncid, 'dop_cor_01_ku', 'drange_fm')
+	call cpy_var (ncid, 'int_path_cor_01 cog_cor_01 ADD mod_instr_cor_range_01_plrm_ku ADD', 'drange_ku')
 
 	! Add zero or meas altitude tropo measurements?
 	call cpy_var (ncid, 'mod_dry_tropo_cor_01', 'dry_tropo_ecmwf')
