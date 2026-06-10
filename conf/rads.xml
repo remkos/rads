@@ -4970,14 +4970,14 @@ Global RADS configuration file
 	<phase name="d">
 		<mission>Geodetic Mission 1</mission>
 		<cycles>600 699</cycles> <!-- To be updated at end of phase -->
-		<!--This is "real" cycle and pass, i.e. subcycle 601, pass 33-->
+		<!--This is "real" cycle and pass, i.e. subcycle 600, pass 283-->
 		<repeat>367.8446 9472</repeat>
-		<ref_pass>2025-06-21T18:28:17 336.37 1 33 44090</ref_pass> <!-- To be updated? -->
+		<ref_pass>2025-06-18T14:02:38 336.37 1 283 44049</ref_pass> <!-- To be updated? -->
 		<start_time>2025-06-18</start_time>
-		<subcycles start="601">
-			434 434 434 434 332 434 434 434 332
-			434 434 434 434 332 434 434 434 332
-			434 434 434 434 332
+		<subcycles start="600">
+			332 434 434 434 434 332 434 434 434
+			332 434 434 434 434 332 434 434 434
+			332 434 434 434 434
 		</subcycles>
 	</phase>
 </if>
