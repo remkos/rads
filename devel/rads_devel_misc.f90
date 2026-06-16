@@ -85,6 +85,14 @@ case ('S6B', 's6b', '6b')
 	call parseenv ('${ALTIM}/data/ODR.SNTNL-6B/orf.txt', line)
 case ('SWO')
 	call parseenv ('${ALTIM}/data/ODR.SWOT/orf.txt', line)
+case ('H2A', 'h2a', '2a')
+	call parseenv ('${ALTIM}/data/ODR.HY-2A/orf.txt', line)
+case ('H2B', 'h2b', '2b')
+	call parseenv ('${ALTIM}/data/ODR.HY-2B/orf.txt', line)
+case ('H2C', 'h2c', '2c')
+	call parseenv ('${ALTIM}/data/ODR.HY-2C/orf.txt', line)
+case ('H2D', 'h2d', '2d')
+	call parseenv ('${ALTIM}/data/ODR.HY-2D/orf.txt', line)
 case default
 	stop 'read_orf: wrong satellite code: '//sat
 end select
