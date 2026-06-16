@@ -29,6 +29,9 @@ Global RADS configuration file
 
 <satellites>
 	2a h2a hy-2a hy2a
+	2b h2b hy-2b hy2b
+	2c h2c hy-2c hy2c
+	2d h2d hy-2d hy2d
 	3a s3a sentinel-3a sentinel3a sntnl-3a
 	3b s3b sentinel-3b sentinel3b sntnl-3b
 	6a s6a s6mf sentinel-6a sentinel-6mf sentinel6a sntnl-6a
@@ -4551,6 +4554,54 @@ Global RADS configuration file
 		<repeat>14 386</repeat><!--Need to change-->
 		<ref_pass>2016-03-01T21:00:11 -41.18 116 105</ref_pass><!--May need to update this value-->
 		<start_time>2013-01-01</start_time><!--Need to change-->
+	</phase>
+</if>
+
+<if sat="2b">
+	<satellite>HY-2B</satellite>
+	<satid>21</satid>
+	<dt1hz>1.00</dt1hz><!--Approximate-->
+	<inclination>99.34</inclination>
+	<frequency>13.58 5.25</frequency>
+	<xover_params>0.05 0.05</xover_params><!--Need to verify-->
+	<phase name="a">
+		<mission>Exact Repeat Mission</mission>
+		<cycles>199 299</cycles><!--Need to change -->
+		<repeat>14 386</repeat>
+		<ref_pass>2026-06-15T20:34:31.581 322.97 200 1 38407</ref_pass><!--May need to update this value-->
+		<start_time>2026-06-01</start_time><!--Need to change-->
+	</phase>
+</if>
+
+<if sat="2c">
+	<satellite>HY-2C</satellite>
+	<satid>22</satid>
+	<dt1hz>1.00</dt1hz><!--Approximate-->
+	<inclination>66.11</inclination>
+	<frequency>13.58 5.25</frequency>
+	<xover_params>0.05 0.05</xover_params><!--Need to verify-->
+	<phase name="a">
+		<mission>Exact Repeat Mission</mission>
+		<cycles>210 299</cycles><!--Need to change -->
+		<repeat>9.904415 274</repeat>
+		<ref_pass>2026-06-05T23:02:32.684 3.22 211 1 40530</ref_pass><!--May need to update this value-->
+		<start_time>2026-06-01</start_time><!--Need to change-->
+	</phase>
+</if>
+
+<if sat="2d">
+	<satellite>HY-2D</satellite>
+	<satid>23</satid>
+	<dt1hz>1.00</dt1hz><!--Approximate-->
+	<inclination>66.11</inclination>
+	<frequency>13.58 5.25</frequency>
+	<xover_params>0.05 0.05</xover_params><!--Need to verify-->
+	<phase name="a">
+		<mission>Exact Repeat Mission</mission>
+		<cycles>186 299</cycles><!--Need to change -->
+		<repeat>9.904415 274</repeat>
+		<ref_pass>2026-06-13T05:51:19.066 325.12 187 1 35898</ref_pass><!--May need to update this value-->
+		<start_time>2026-06-01</start_time><!--Need to change-->
 	</phase>
 </if>
 
