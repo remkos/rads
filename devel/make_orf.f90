@@ -37,16 +37,15 @@ end type
 ! Data variables
 
 integer(fourbyteint), parameter :: morf = 500000, mdir = 4
-integer(fourbyteint) :: norf = 0, idir = 1, ndir = 0
+integer(fourbyteint) :: norf = 0, idir = 1, ndir = 0, maxorf
 type(rads_sat) :: S
 type(orbit) :: info(-1:1), orf(morf), diff
 
 ! Command line arguments
 
-integer(fourbyteint) :: i, j
+integer(fourbyteint) :: i, j, xorf = morf
 real(eightbytereal) :: dt = 1d0
 character(len=rads_cmdl) :: dir(mdir) = ''
-logical :: extend = .true.
 
 ! Other variables
 
@@ -57,7 +56,7 @@ character(len=26) :: date
 ! Scan command line for options
 
 call synopsis
-call rads_set_options (' dir: dt: no-ext')
+call rads_set_options (' dir: dt: ext: no-ext')
 call rads_init (S)
 do i = 1,rads_nopt
 	select case (rads_opt(i)%opt)
@@ -68,8 +67,11 @@ do i = 1,rads_nopt
 		ndir = ndir + 1
 		if (ndir > mdir) call rads_exit ('Too many --dir options')
 		dir(ndir) = rads_opt(i)%arg
+	case ('ext')
+		read (rads_opt(i)%arg, *, iostat=ios) xorf
+		xorf = xorf * 4
 	case ('no-ext')
-		extend = .false.
+		xorf = 0
 	end select
 enddo
 
@@ -136,16 +138,17 @@ do
 	endif
 enddo
 
-! Extend the list until the upper time limit
+! Extend the list until the upper time limit or the maximum number of extra orbits, whichever is first
 ! For computing steps into future, start with an equator crossing; it is more accurate
 
-if (extend) then
+if (xorf > 0) then
+	maxorf = min(morf, norf + xorf)
 	if (abs(orf(norf)%lat) > min_lat) norf = norf - 1
 	if (norf >= 5) then
 		diff%time = orf(norf)%time - orf(norf-4)%time
 		diff%lon = orf(norf)%lon - orf(norf-4)%lon
 		do
-			if (orf(norf-3)%time + diff%time > S%time%info%limits(2)) exit
+			if (orf(norf-3)%time + diff%time > S%time%info%limits(2) .or. norf >= maxorf) exit
 			norf = norf + 1
 			orf(norf)%time = orf(norf-4)%time + diff%time
 			orf(norf)%lon = orf(norf-4)%lon + diff%lon
@@ -194,7 +197,9 @@ write (*,1310)
 'Additional [processing_options] are:'/ &
 '  --dir STR                 Specify orbit directory path'/ &
 '  --dt DT                   Specify time stepping interval (s), default: 1'/ &
-'  --no-ext                  Do not automatically extend beyond end of orbit solution')
+'  --ext NR                  Extend the ORF file NR of orbits beyond the end of the orbit directory'/ &
+'  --no-ext, --ext=0         Do not automatically extend beyond end of orbit solution'//&
+'The ORF runs until the end of the time limit or until NR orbits after the end of the input, whichever comes first.')
 stop
 end subroutine synopsis
 
