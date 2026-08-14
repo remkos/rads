@@ -358,7 +358,7 @@ if (sat(:2) == 'JA') then
 else if (sat(:2) == 'SW') then
 	write (prdnm,610) product_name(:12),cycle_number,pass_number
 else if (sat(:2) == 'S3') then
-	write (prdnm,611) product_name(:15),cycle_number,pass_number,product_name(77:94)
+	write (prdnm,611) product_name(:15),cycle_number,pass_number,'_'//product_name(82:94)
 else if (sat(:2) == 'S6') then
 	write (prdnm,612) product_name(:13),product_name(92:95),cycle_number,pass_number,product_name(95:98)
 else if (sat(:2) == 'CS') then
