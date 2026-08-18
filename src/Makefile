@@ -13,6 +13,8 @@
 # GNU Lesser General Public License for more details.
 #-----------------------------------------------------------------------
 
+.NOTPARALLEL:	$(OBJS)
+
 include ../config.mk
 
 # Include file
