@@ -5005,7 +5005,8 @@ Global RADS configuration file
 		<start_time>2016-02-12</start_time>
 	</phase>
 	<phase name="b">
-		<mission>Interleaved Mission</mission>
+		<mission>Interleaved Mission</mission>:1
+
 		<cycles>300 401</cycles>
 		<repeat>9.91564280 254</repeat>
 		<ref_pass>2022-04-29T05:02:49 98.51 301 1 29366</ref_pass>
@@ -5020,12 +5021,25 @@ Global RADS configuration file
 	</phase>
 	<phase name="d">
 		<mission>Geodetic Mission 1</mission>
-		<cycles>600 699</cycles> <!-- To be updated at end of phase -->
+		<cycles>600 624</cycles>
 		<!--This is "real" cycle and pass, i.e. subcycle 600, pass 283-->
 		<repeat>367.8446 9472</repeat>
-		<ref_pass>2025-06-18T14:02:38 336.37 1 283 44049</ref_pass> <!-- To be updated? -->
+		<ref_pass>2025-06-18T14:02:38 336.37 1 283 44049</ref_pass>
 		<start_time>2025-06-18</start_time>
 		<subcycles start="600">
+			332 434 434 434 434 332 434 434 434
+			332 434 434 434 434 332 434 434 434
+			332 434 434 434 434
+		</subcycles>
+	</phase>
+	<phase name="e">
+		<mission>Geodetic Mission 2</mission>
+		<cycles>700 799</cycles> <!-- To be updated at end of phase -->
+		<!--This is "real" cycle and pass, i.e. subcycle 700, pass 73-->
+		<repeat>367.8446 9472</repeat>
+		<ref_pass>2026-06-26T04:01:37 336.42 1 73 48846</ref_pass> <!-- To be updated? -->
+		<start_time>2026-06-26</start_time>
+		<subcycles start="700">
 			332 434 434 434 434 332 434 434 434
 			332 434 434 434 434 332 434 434 434
 			332 434 434 434 434
