@@ -19,7 +19,7 @@ program rads_gen_s3
 
 ! This program reads Sentinel-3 NRT/STC/NTC files and converts them to the RADS format,
 ! written into files $RADSDATAROOT/data/SS/F/SSpPPPPcCCC.nc.
-!    SS = satellite (3a or 3b)
+!    SS = satellite (3a, 3b, 3c)
 !     F = phase (a)
 !  PPPP = relative pass number
 !   CCC = cycle number
@@ -157,6 +157,8 @@ do
 		arg = '3a'
 	case ('Sentinel 3B')
 		arg = '3b'
+	case ('Sentinel 3C')
+		arg = '3c'
 	case default
 		call log_string ('Error: wrong misson_name found in header', .true.)
 		cycle

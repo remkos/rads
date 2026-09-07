@@ -51,7 +51,8 @@ SCRIPTS = rads_add_common rads_add_common_gdrg.sh rads_add_era5.sh \
 		radscyclesindex
 
 # Programs created by linking to other programs
-PROGS_S3 = rads_gen_3b.sh rads_gen_3b_new.sh rads_gen_3b_new_calval.sh rads_gen_3b_calval.sh
+PROGS_S3 = rads_gen_3b.sh rads_gen_3b_new.sh rads_gen_3b_new_calval.sh rads_gen_3b_calval.sh \
+		rads_gen_3c.sh rads_gen_3c_new.sh rads_gen_3c_new_calval.sh rads_gen_3c_calval.sh
 PROGS_S6 = rads_gen_6b_calval.sh
 
 #-----------------------------------------------------------------------
@@ -65,8 +66,8 @@ install:	all
 	$(INSTALL_PROGRAM) $(PROGS) $(bindir)
 	$(INSTALL_SCRIPT) $(SCRIPTS) $(bindir)
 	$(INSTALL_DATA) *.xml $(datadir)/conf
-	cd $(bindir) ; for p in $(PROGS_S3); do $(LN_S) rads_gen_3a$${p#rads_gen_3b} $$p ; done
-	cd $(bindir) ; for p in $(PROGS_S6); do $(LN_S) rads_gen_6a$${p#rads_gen_6b} $$p ; done
+	cd $(bindir) ; for p in $(PROGS_S3); do $(LN_S) $${p/_3?/_3a} $$p ; done
+	cd $(bindir) ; for p in $(PROGS_S6); do $(LN_S) $${p/_6?/_6a} $$p ; done
 	cd $(bindir) ; $(LN_S) rads_add_dac rads_add_mog2d
 
 man:	$(MAN)

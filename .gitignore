@@ -16,6 +16,7 @@
 altim/
 confdefs.h
 config.mk
+conftest.dir
 data/
 devel/make_orf
 devel/ogdrsplit

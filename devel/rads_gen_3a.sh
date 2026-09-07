@@ -27,6 +27,7 @@
 case $0 in
 	*rads_gen_3a*) sat=3a ;;
 	*rads_gen_3b*) sat=3b ;;
+	*rads_gen_3c*) sat=3c ;;
 	*) echo "$0: unknown script" ; exit ;;
 esac
 
@@ -50,7 +51,7 @@ esac
 rads_add_common   $options								>> "$log" 2>&1
 case ${sat} in
 	3a) rads_add_mfwam $options -C40-199 --all --new	>> "$log" 2>&1 ;;
-	3b) rads_add_mfwam $options -C21-199 --all --new	>> "$log" 2>&1 ;;
+	3b|3c) rads_add_mfwam $options -C21-199 --all --new	>> "$log" 2>&1 ;;
 esac
 # To support GDR-G with backward compatibility
 grep -q .*S3._.*_G $lst && rads_add_tide $options --models=fes14	>> "$log" 2>&1
