@@ -33,9 +33,9 @@ use rads_grid
 character(len=rads_cmdl) :: aux_wind = '', aux_ssbk = '', aux_ssbc = '', aux_rain = ''
 integer(fourbyteint) :: i, cyc, pass, ios, lrain = 0, lwind = 0
 type(grid) :: info_wind, info_ssbk, info_ssbc
-logical :: lsig0 = .false., lssb = .false., lflag = .false., lp2p = .false.
+logical :: lsig0 = .false., lssb = .false., liono = .false., lflag = .false., lp2p = .false.
 integer, parameter :: sig0_nx = 500
-real(eightbytereal) :: exp_ku_sigma0(sig0_nx), rms_exp_ku_sigma0(sig0_nx)
+real(eightbytereal) :: exp_ku_sigma0(sig0_nx), rms_exp_ku_sigma0(sig0_nx), f
 real(eightbytereal) :: bias_range(3) = 0d0, bias_sig0(3) = 0d0, &
 	dwind(2) = (/ 0.57d0, 0.58d0 /), drain(3) = (/ 0.51d0, 0.52d0, 0.72d0 /)
 real(eightbytereal), parameter :: sig0_dx = 0.1d0, gate_width = 0.3795d0, sign_error = 2 * 0.528d0
@@ -43,13 +43,17 @@ real(eightbytereal), parameter :: sig0_dx = 0.1d0, gate_width = 0.3795d0, sign_e
 ! Scan command line
 
 call synopsis ('--head')
-call rads_set_options (' range sig0 wind:: ssb rain:: all bias-range: bias-sig0: p2p' // &
+call rads_set_options (' range sig0 wind:: ssb rain:: all iono bias-range: bias-sig0: p2p' // &
 	' flag-bit0')
 call rads_init (S)
 
 ! Change the defaults for HR
 
 if (S%branch(1)(:2) == 'hr') dwind = (/ 1.89d0, 2.02d0 /)
+
+! Determine conversion factor from range difference to ionospheric correction
+
+f = 1d0/(1d0-(S%frequency(1)/S%frequency(2))**2)
 
 ! Scan the command line for command-specific options
 
@@ -68,6 +72,9 @@ do i = 1,rads_nopt
 		lrain = 1
 		lwind = 1
 		lssb = .true.
+		liono = .true.
+	case ('iono')
+		liono = .true.
 	case ('bias-range')
 		read (rads_opt(i)%arg, *, iostat=ios) bias_range
 	case ('bias-sig0')
@@ -110,12 +117,13 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310 format (/ &
 'Additional [processing_options] are:' / &
-'  --all                     Same are --rain --wind --ssb' / &
 '  --rain[=KU,NR,C]          Add biases to sigma0 (Ku conv, Ku NR, C, in dB) before calling rain model' / &
 '                            (with --rain use default 0.51, 0.52, 0.72 for LR only)' / &
 '  --wind[=KU,NR]            Add bias to sigma0 (Ku conv, Ku NR, in dB) before calling wind model' / &
 '                            (with --wind use default 0.57, 0.58 for LR; 1.89, 2.02 for HR)' / &
 '  --ssb                     Update SSB (with --wind)' / &
+'  --iono                    Correct ionospheric corrections also for range biases (LR only)' / &
+'  --all                     Same are --rain --wind --ssb --iono' / &
 '  --bias-range=KU,NR,C      Add additional bias to range (Ku conv, Ku NR, C, in m)' / &
 '  --bias-sig0=KU,NR,C       Add additional bias to sig0 (Ku conv, Ku NR, C, in dB)' / &
 '  --p2p                     Counter effects of reduced 2.2 kHz LR waveform accumulation,' / &
@@ -133,10 +141,11 @@ integer(fourbyteint), intent(in) :: n
 real(eightbytereal) :: time(n), latency(n), range_ku(n), range_ku_nr(n), range_c(n), &
 	sig0_ku(n), sig0_ku_nr(n), sig0_c(n), dsig0_atmos_ku(n), dsig0_atmos_c(n), dsig0_atten(n), &
 	swh_ku(n), swh_ku_nr(n), wind_speed_alt(n), wind_speed_alt_nr(n), qual_alt_rain_ice(n), flags(n), &
-	flags_nr(n), ssb_cls(n), ssb_cls_nr(n), ssb_cls_c(n), ssb_cls_c_nr(n)
+	flags_nr(n), ssb_cls(n), ssb_cls_nr(n), ssb_cls_c(n), ssb_cls_c_nr(n), &
+	iono_alt(n), iono_alt_smooth(n), iono_alt_nr(n), iono_alt_smooth_nr(n)
 real(eightbytereal) :: drange(3), dsig0(3)
 logical :: lr, redundant, val, do_range = .false., do_sig0 = .false., do_wind = .false., &
-	do_ssb = .false., do_rain = .false., do_flag = .false.
+	do_ssb = .false., do_rain = .false., do_flag = .false., do_iono = .false.
 character(len=3) :: chd_ver, cnf_ver, baseline
 
 ! Initialise
@@ -182,6 +191,10 @@ do_ssb = (lssb .and. do_wind)
 
 if (lrain > 0 .and. lr) do_rain = (do_sig0 .or. lrain == 2)
 
+! iono: correct ionospheric corrections for range_bias
+
+do_iono = (lr .and. liono .and. do_range)
+
 ! flag bit 0: not needed for HR Side B
 
 do_flag = lflag .and. (lr .or. .not.redundant)
@@ -204,6 +217,19 @@ if (do_range) then
 	endif
 	range_ku = range_ku + drange(1)
 	range_ku_nr = range_ku_nr + drange(2)
+endif
+
+! Adjust ionospheric corrections for range bias
+
+if (do_iono) then
+	call rads_get_var (S, P, 'iono_alt', iono_alt, .true.)
+	call rads_get_var (S, P, 'iono_alt_smooth', iono_alt_smooth, .true.)
+	call rads_get_var (S, P, 'iono_alt_nr', iono_alt_nr, .true.)
+	call rads_get_var (S, P, 'iono_alt_smooth_nr', iono_alt_smooth_nr, .true.)
+	iono_alt = iono_alt + f * (drange(3) - drange(1))
+	iono_alt_smooth = iono_alt_smooth + f * (drange(3) - drange(1))
+	iono_alt_nr = iono_alt_nr + f * (drange(3) - drange(2))
+	iono_alt_smooth_nr = iono_alt_smooth_nr + f * (drange(3) - drange(2))
 endif
 
 ! Adjust sigma0 for offset
@@ -320,6 +346,13 @@ if (do_range) then
 	if (lr) call rads_def_var (S, P, 'range_c')
 endif
 
+if (do_iono) then
+	call rads_def_var (S, P, 'iono_alt')
+	call rads_def_var (S, P, 'iono_alt_smooth')
+	call rads_def_var (S, P, 'iono_alt_nr')
+	call rads_def_var (S, P, 'iono_alt_smooth_nr')
+endif
+
 if (do_sig0) then
 	call rads_def_var (S, P, 'sig0_ku')
 	call rads_def_var (S, P, 'sig0_ku_nr')
@@ -356,6 +389,13 @@ if (do_range) then
 	call rads_put_var (S, P, 'range_ku', range_ku)
 	call rads_put_var (S, P, 'range_ku_nr', range_ku_nr)
 	if (lr) call rads_put_var (S, P, 'range_c', range_c)
+endif
+
+if (do_iono) then
+	call rads_put_var (S, P, 'iono_alt', iono_alt)
+	call rads_put_var (S, P, 'iono_alt_smooth', iono_alt_smooth)
+	call rads_put_var (S, P, 'iono_alt_nr', iono_alt_nr)
+	call rads_put_var (S, P, 'iono_alt_smooth_nr', iono_alt_smooth_nr)
 endif
 
 if (do_sig0) then
