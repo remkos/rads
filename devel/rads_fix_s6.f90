@@ -37,7 +37,7 @@ logical :: lsig0 = .false., lssb = .false., liono = .false., lflag = .false., lp
 integer, parameter :: sig0_nx = 500
 real(eightbytereal) :: exp_ku_sigma0(sig0_nx), rms_exp_ku_sigma0(sig0_nx), f
 real(eightbytereal) :: bias_range(3) = 0d0, bias_sig0(3) = 0d0, &
-	dwind(2) = (/ 0.57d0, 0.58d0 /), drain(3) = (/ 0.51d0, 0.52d0, 0.72d0 /)
+	dwind(2) = 0d0, drain(3) = (/ 0.51d0, 0.52d0, 0.72d0 /)
 real(eightbytereal), parameter :: sig0_dx = 0.1d0, gate_width = 0.3795d0, sign_error = 2 * 0.528d0
 
 ! Scan command line
@@ -47,9 +47,20 @@ call rads_set_options (' range sig0 wind:: ssb rain:: all iono bias-range: bias-
 	' flag-bit0')
 call rads_init (S)
 
-! Change the defaults for HR
+! Set defaults
 
-if (S%branch(1)(:2) == 'hr') dwind = (/ 1.89d0, 2.02d0 /)
+select case (S%branch(1)(:5))
+case ('6a', '6a.lr')
+	dwind = (/ 0.57d0, 0.58d0 /)
+case ('6a.hr')
+	dwind = (/ 1.89d0, 2.02d0 /)
+case ('6b', '6b.lr')
+	dwind = (/ 0.65d0, 0.66d0 /)
+case ('6b.hr')
+	dwind = (/ 1.92d0, 2.07d0 /)
+case default
+	call rads_exit ('Unknown case '//S%branch(1)(:5))
+end select
 
 ! Determine conversion factor from range difference to ionospheric correction
 
@@ -120,7 +131,9 @@ write (*,1310)
 '  --rain[=KU,NR,C]          Add biases to sigma0 (Ku conv, Ku NR, C, in dB) before calling rain model' / &
 '                            (with --rain use default 0.51, 0.52, 0.72 for LR only)' / &
 '  --wind[=KU,NR]            Add bias to sigma0 (Ku conv, Ku NR, in dB) before calling wind model' / &
-'                            (with --wind use default 0.57, 0.58 for LR; 1.89, 2.02 for HR)' / &
+'                            (with --wind use defaults:' / &
+'                            S6A LR: 0.57, 0.58  S6A HR: 1.89, 2.02' / &
+'                            S6B LR: 0.65, 0.66  S6B HR: 1.92, 2.07)' / &
 '  --ssb                     Update SSB (with --wind)' / &
 '  --iono                    Correct ionospheric corrections also for range biases (LR only)' / &
 '  --all                     Same are --rain --wind --ssb --iono' / &
