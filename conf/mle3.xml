@@ -13,10 +13,10 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Lesser General Public License for more details.
 
 ** Description **
-Jason-2 and Jason-3: Use MLE3 data (instead of default MLE4)
+Jason-2, Jason-3, SWOT and TOPEX: Use MLE3 data (instead of default MLE4)
 -->
 
-<if sat="6a 6b j2 j3 sw tx">
+<if sat="j2 j3 sw tx">
 	<alias name="range">range_ku_mle3</alias>
 	<alias name="iono">iono_alt_smooth_mle3</alias>
 	<alias name="ssb">ssb_cls_mle3</alias>

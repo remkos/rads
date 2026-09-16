@@ -29,6 +29,20 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 This does not include explanations of changes to the code that generates the data base.
 
+### v4.8.1 (16 Sep 2026)
+Version to support the Cryo2ICE phase of CryoSat-2 and Jason-2 GDR-F products.
+* `rads.xml`
+  * Added support for Sentinel-6B (6b)
+  * Added support of CryoSat-2 Phase B (c2/b)
+  * Added new variables in j2 products from GDR-F
+  * Defined h2b, h2c, h2d, s3c
+  * Added support of Jason-3 LRO Phases (j3/d, j3/e)
+  * Removed mle3 variables from 6a and 6b since G01
+* `rads.f90`
+  * Extended to a maximum of 30 defined satellites
+* `radsstat`:
+  * Added options `--first` and `--second`
+
 ### v4.7.1 (31 Jan 2025)
 Version fully supported the ingestion of Jason-3 and Sentinel-6 GDR-G products, though GDR-G is not yet made standard for computing SLA
 * `rads.xml`:
