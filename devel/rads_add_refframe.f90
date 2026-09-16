@@ -167,10 +167,6 @@ else
 	enddo
 endif
 
-! If Jason-1 phase C, add 5 mm
-
-if (S%sat == 'j1' .and. S%phase%name == 'c') cor = cor + 5d-3
-
 ! Store all data fields.
 
 call rads_put_history (S, P)

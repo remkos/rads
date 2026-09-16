@@ -16,7 +16,7 @@ GNU Lesser General Public License for more details.
 Jason-2 and Jason-3: Use MLE3 data (instead of default MLE4)
 -->
 
-<if sat="j2 j3">
+<if sat="6a 6b j2 j3 sw tx">
 	<alias name="range">range_ku_mle3</alias>
 	<alias name="iono">iono_alt_smooth_mle3</alias>
 	<alias name="ssb">ssb_cls_mle3</alias>

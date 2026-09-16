@@ -19,7 +19,7 @@ program rads_gen_s3
 
 ! This program reads Sentinel-3 NRT/STC/NTC files and converts them to the RADS format,
 ! written into files $RADSDATAROOT/data/SS/F/SSpPPPPcCCC.nc.
-!    SS = satellite (3a or 3b)
+!    SS = satellite (3a, 3b, 3c)
 !     F = phase (a)
 !  PPPP = relative pass number
 !   CCC = cycle number
@@ -157,6 +157,8 @@ do
 		arg = '3a'
 	case ('Sentinel 3B')
 		arg = '3b'
+	case ('Sentinel 3C')
+		arg = '3c'
 	case default
 		call log_string ('Error: wrong misson_name found in header', .true.)
 		cycle
@@ -264,7 +266,7 @@ do
 	alt = 'alt_gdrf'
 	mss_sol1_var = 'mss_cnescls15'
 	mss_sol2_var = 'mss_dtu15'
-	tide_sol2 = 'fes22'
+	tide_sol2 = 'fes14'
 	iono_alt_smooth = .false.
 	ipf651 = .false.
 	ipf701 = .false.
@@ -302,6 +304,7 @@ do
 	ipf704 = (arg(10:14) >= '07.04')
 
 ! Update MSS CNES/CLS again for IPF-SM-2 07.11 and switch to POE-G orbit standard
+! Also change to FES22 tides
 
 	if (arg(10:14) >= '07.11') then
 		mss_sol1_var = 'mss_hybrid23'

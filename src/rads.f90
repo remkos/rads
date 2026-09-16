@@ -2271,7 +2271,7 @@ character(len=*), intent(in) :: filename
 ! S%error  : rads_noerr, rads_err_xml_parse, rads_err_xml_file
 !****-------------------------------------------------------------------
 type(xml_parse) :: X
-integer, parameter :: max_lvl = 20
+integer, parameter :: max_lvl = 30
 character(len=rads_varl) :: tag, name, tags(max_lvl)
 character(len=rads_naml) :: attr(2,max_lvl), val(max_lvl)
 character(len=6) :: src

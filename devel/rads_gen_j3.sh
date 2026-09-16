@@ -29,7 +29,6 @@ case $1 in
 esac
 
 rads_open_sandbox j3${type}
-lst=$SANDBOX/rads_gen_j3.lst
 
 date												>  "$log" 2>&1
 
@@ -40,7 +39,7 @@ for tar in "$@"; do
 		*.tgz) tar -xzf "$tar"; dir=`basename "$tar" .tgz` ;;
 		*) dir="$tar" ;;
 	esac
-	ls "$dir"/JA3_???_2Pf*.nc > "$lst"
+	ls "$dir"/JA3_???_2P*.nc > "$lst"
 	rads_gen_jason_gdrf	$options < "$lst"			>> "$log" 2>&1
 	case "$tar" in
 		*.t?z) chmod -R u+w "$dir"; rm -rf "$dir" ;;

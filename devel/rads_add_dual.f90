@@ -82,8 +82,7 @@ call synopsis ('--head')
 call rads_set_options ('nmx:b::l::r:: new mle: box:: lanczos:: ext: recompute::')
 call rads_init (S)
 
-! Determine conversion factor from TEC units to ionospheric delay in metres
-! and mean altitude.
+! Determine conversion factor from range difference to ionospheric correction
 
 f = 1d0/(1d0-(S%frequency(1)/S%frequency(2))**2)
 

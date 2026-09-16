@@ -27,6 +27,7 @@
 case $0 in
 	*rads_gen_3a*) sat=3a ;;
 	*rads_gen_3b*) sat=3b ;;
+	*rads_gen_3c*) sat=3c ;;
 	*) echo "$0: unknown script" ; exit ;;
 esac
 

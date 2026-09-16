@@ -51,7 +51,6 @@ program rads_gen_saral
 ! ssb_bm3 - SSB
 ! mss_cnescls11 - CLS01 MSS
 ! geoid_egm96 - EGM96 geoid
-! topo_dtm2000 - Bathymetry
 ! swh_ka - Significant wave height
 ! swh_rms_ka - Std dev of SWH
 ! sig0_ka - Sigma0
@@ -243,7 +242,6 @@ do
 	call cpy_var (ncid, 'mean_sea_surface_sol1', 'mss_cnescls15')	! Since GDR-F
 	call cpy_var (ncid, 'mean_sea_surface_sol2', 'mss_dtu15')		! Since GDR-F
 	call cpy_var (ncid, 'geoid', 'geoid_egm96')
-	call cpy_var (ncid, 'bathymetry', 'topo_dtm2000')
 	call cpy_var (ncid, 'inv_bar_corr', 'inv_bar_static')
 	if (latency == rads_nrt) then
 		call cpy_var (ncid, 'inv_bar_corr', 'inv_bar_mog2d')

@@ -408,7 +408,7 @@ do
 	call cpy_var (ncid, 'rad_liquid_water', 'liquid_water_rad')
 	call cpy_var (ncid, 'rad_water_vapor', 'water_vapor_rad')
 	call cpy_var (ncid, 'ssha')
-	call cpy_var (ncid, 'ssha_mle3')
+	call cpy_var (ncid, 'ssha_mle3', mle3)
 	a = latency
 	call new_var ('latency', a)
 
