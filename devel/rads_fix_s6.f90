@@ -33,18 +33,34 @@ use rads_grid
 character(len=rads_cmdl) :: aux_wind = '', aux_ssbk = '', aux_ssbc = '', aux_rain = ''
 integer(fourbyteint) :: i, cyc, pass, ios, lrain = 0, lwind = 0
 type(grid) :: info_wind, info_ssbk, info_ssbc
-logical :: lsig0 = .false., lssb = .false., liono = .false., lflag = .false., lp2p = .false., lg02 = .false.
+logical :: lsig0 = .false., lssb = .false., liono = .false., lflag = .false., lp2p = .false., lg02 = .false., lamr = .false.
 integer, parameter :: sig0_nx = 500
 real(eightbytereal) :: exp_ku_sigma0(sig0_nx), rms_exp_ku_sigma0(sig0_nx), f
 real(eightbytereal) :: bias_range(3) = 0d0, bias_swh(3) = 0d0, bias_sig0(3) = 0d0, &
 	dwind(2) = 0d0, drain(3) = (/ 0.51d0, 0.52d0, 0.72d0 /)
 real(eightbytereal), parameter :: sig0_dx = 0.1d0, gate_width = 0.3795d0, sign_error = 2 * 0.528d0
 
+! AMR variables to copy
+
+real(eightbytereal), parameter :: sec2000 = 473299200d0
+integer, parameter :: n_amr_var = 7
+type :: amr_type
+	character(len=rads_varl) :: amr_name, alt_name
+end type
+type(amr_type) :: amr_var(n_amr_var)
+! Assuming no change in flags
+amr_var(1) = amr_type ('rad_wind_speed', 'wind_speed_rad')
+amr_var(2) = amr_type ('rad_wet_tropo_cor', 'wet_tropo_rad')
+amr_var(3) = amr_type ('rad_tb_187', 'tb_187')
+amr_var(4) = amr_type ('rad_tb_238', 'tb_238')
+amr_var(5) = amr_type ('rad_tb_340', 'tb_340')
+amr_var(6) = amr_type ('rad_cloud_liquid_water', 'liquid_water_rad')
+amr_var(7) = amr_type ('rad_water_vapor', 'water_vapor_rad')
+
 ! Scan command line
 
 call synopsis ('--head')
-call rads_set_options (' range sig0 wind:: ssb rain:: all iono bias-range: bias-swh: bias-sig0: p2p g02' // &
-	' flag-bit0')
+call rads_set_options (' range sig0 wind:: ssb rain:: all iono bias-range: bias-swh: bias-sig0: p2p g02 amr flag-bit0')
 call rads_init (S)
 
 ! Set defaults
@@ -104,12 +120,20 @@ do i = 1,rads_nopt
 	case ('g02')
 		if (S%sat /= '6b') call rads_exit ('--g02 can be used only with Sentinel-6B')
 		lg02 = .true.
+		lrain = 1
+		lwind = 1
+		lssb = .true.
+		liono = .true.
+	case ('amr')
+		if (S%sat /= '6b') call rads_exit ('--amr can be used only with Sentinel-6B')
+		lamr = .true.
 	end select
 enddo
 
 ! If nothing selected, stop here
 
-if (.not.(lsig0 .or. lwind > 0 .or. lssb .or. lrain > 0 .or. lflag .or. any(bias_sig0 /= 0d0))) stop
+if (.not.(lsig0 .or. lwind > 0 .or. lssb .or. lrain > 0 .or. lflag .or. lp2p .or. lg02 .or. lamr .or. &
+	any(bias_range /= 0d0) .or. any(bias_swh /= 0d0) .or. any(bias_sig0 /= 0d0))) stop
 
 ! Run process for all files
 
@@ -142,13 +166,14 @@ write (*,1310)
 '                            S6B LR: 0.65, 0.66  S6B HR: 1.92, 2.07)' / &
 '  --ssb                     Update SSB (with --wind)' / &
 '  --iono                    Correct ionospheric corrections also for range biases (LR only)' / &
-'  --all                     Same are --rain --wind --ssb --iono' / &
+'  --all                     Same as --rain --wind --ssb --iono' / &
 '  --bias-range=KU,NR,C      Add additional bias to range (Ku conv, Ku NR, C, in m)' / &
 '  --bias-swh=KU,NR,C        Add additional bias to SWH (Ku conv, Ku NR, C, in m)' / &
 '  --bias-sig0=KU,NR,C       Add additional bias to sig0 (Ku conv, Ku NR, C, in dB)' / &
 '  --p2p                     Counter effects of reduced 2.2 kHz LR waveform accumulation,' / &
 '                            only for S6B, implies --rain --wind --ssb)' / &
-'  --g02                     Upgrade S6B OPE Side A data to G02 standards' / &
+'  --g02                     Upgrade S6B OPE Side A data to G02 standards, implies --all' / &
+'  --amr                     Update S6B AMR-C data' / &
 '  --flag-bit0               Clear (VAL=0) or set (VAL=1) flag bit 0 and update attributes')
 stop
 end subroutine synopsis
@@ -158,15 +183,24 @@ end subroutine synopsis
 !-----------------------------------------------------------------------
 
 subroutine process_pass (n)
+use netcdf
+use rads_netcdf
 integer(fourbyteint), intent(in) :: n
 real(eightbytereal) :: time(n), latency(n), range_ku(n), range_ku_nr(n), range_c(n), &
 	sig0_ku(n), sig0_ku_nr(n), sig0_c(n), dsig0_atmos_ku(n), dsig0_atmos_c(n), dsig0_atten(n), &
 	swh_ku(n), swh_ku_nr(n), swh_c(n), wind_speed_alt(n), wind_speed_alt_nr(n), qual_alt_rain_ice(n), &
 	flags(n), flags_nr(n), ssb_cls(n), ssb_cls_nr(n), ssb_cls_c(n), ssb_cls_c_nr(n), &
-	iono_alt(n), iono_alt_smooth(n), iono_alt_nr(n), iono_alt_smooth_nr(n)
-real(eightbytereal) :: drange(3), dswh(3), dsig0(3)
-logical :: lr, redundant, val, do_range, do_swh, do_sig0, do_wind, do_ssb, do_rain, do_flag, do_iono
+	iono_alt(n), iono_alt_smooth(n), iono_alt_nr(n), iono_alt_smooth_nr(n), tmp(n)
+real(eightbytereal) :: drange(3), dswh(3), dsig0(3), diono(3)
+real(eightbytereal), parameter :: dsig0_p2p = 10d0 * log10(4d0)	! Impact of reducing the waveform accumulation by factor 4
+real(eightbytereal), parameter :: dsig0_rmc = 0.016d0	! Change of residual_onboard_proc_rmc_chd
+real(eightbytereal), parameter :: p2p_start = 1295016747d0, p2p_end = 1295872205d0 ! Start and end time of P2P period (S6B Cycle 7)
+
+logical :: lr, redundant, val, do_p2p, do_range, do_swh, do_sig0, do_wind, do_ssb, do_rain, do_flag, do_iono
 character(len=3) :: chd_ver, cnf_ver, baseline
+character(len=rads_cmdl) :: amr_fname
+integer :: ncid, i, j, l, idx(n), n_amr_val
+real(eightbytereal), allocatable :: amr_val(:)
 
 ! Initialise
 
@@ -175,6 +209,7 @@ drange = bias_range
 dsig0 = bias_sig0
 dswh = bias_swh
 drain = 0d0
+diono = f * (drange(3) - drange)
 
 ! Determine if LR/HR, OPE/VAL, CHD and CONF versions
 
@@ -197,19 +232,24 @@ call rads_get_var (S, P, 'latency', latency, .true.)
 if (lg02) then
 	drange = 0d0
 	dsig0 = 0d0
+	dswh = 0d0
 	if (val) call rads_exit ('--g02 only supported for S6B OPE data')
-	call rads_get_var (S, P, 'time', time, .true.)
 
 	! Side A updates
-	if (time(1) < 1306000800) then
+	if (.not.redundant) then
 		! AR4322: 3.4 mm for Side A with CHAN 001, with 5.4 mm subtracted to make Side B unchanged with the fix
-		drange(2) = -2.0d-3 ! All NR ranges
+		drange(2) = drange(2) - 2.05d-3 ! All NR ranges
+		! CHAN 002: combined effect on range and sigma0
+		drange = drange + 0.15d-3 ! On all ranges
+		dsig0 = dsig0 - 0.033d0
+		diono = drange(3) - drange
 		! CHDN 002: add -0.8 mm to HR range, -6/8 mm to HR SWH and -0.10 dB to Sigma0 for Side A with CHDN 001
 		if (lr) then
 			dsig0(1:2) = dsig0(1:2) - 0.10d0 ! All LR Ku-band sigma0
 		else
 			drange(1:2) = drange(1:2) - 0.8d-3 ! All HR Ku-band ranges
 			dswh(1:2) = dswh(1:2) - (/ 8d-3, 6d-3 /) ! HR Ku-band SWH: -8 mm for SAMOSA, -6 mm for NR
+			dsig0(1:2) = dsig0(1:2) - 0.014d0 ! All HR Ku-band sigma0 (RMC to be adjusted later)
 		endif
 		! L2 CONF 026: change of sig0 biases for wind speed
 		if (lr) then
@@ -220,13 +260,17 @@ if (lg02) then
 	endif
 endif
 
+! p2p: only for LR Cycle 7
+
+do_p2p = (lp2p .and. lr .and. P%cycle == 7)
+
 ! bias_range: apply bias to ranges
 
 do_range = any(drange /= 0d0)
 
 ! iono: correct ionospheric corrections for range_bias
 
-do_iono = (lr .and. liono .and. do_range)
+do_iono = (liono .and. any(diono /= 0))
 
 ! bias_swh: apply bias to sigma0
 
@@ -246,7 +290,7 @@ do_ssb = (lssb .and. (do_wind .or. do_swh))
 
 ! rain: apply biases before calling rain model
 
-do_rain = ((lrain == 1 .and. do_sig0) .or. lrain == 2)
+do_rain = lr .and. ((lrain == 1 .and. do_sig0) .or. lrain == 2)
 
 ! flag bit 0: not needed for HR Side B
 
@@ -254,7 +298,7 @@ do_flag = lflag .and. (lr .or. .not.redundant)
 
 ! If nothing to change, skip
 
-if (.not.(do_range .or. do_iono .or. do_swh .or. do_sig0 .or. do_wind .or. do_ssb .or. do_rain .or. do_flag)) then
+if (.not.(do_range .or. do_iono .or. do_swh .or. do_sig0 .or. do_wind .or. do_ssb .or. do_rain .or. lamr .or. do_flag)) then
 	call log_records(0)
 	return
 endif
@@ -272,19 +316,6 @@ if (do_range) then
 	range_ku_nr = range_ku_nr + drange(2)
 endif
 
-! Adjust ionospheric corrections for range bias
-
-if (do_iono) then
-	call rads_get_var (S, P, 'iono_alt', iono_alt, .true.)
-	call rads_get_var (S, P, 'iono_alt_smooth', iono_alt_smooth, .true.)
-	call rads_get_var (S, P, 'iono_alt_nr', iono_alt_nr, .true.)
-	call rads_get_var (S, P, 'iono_alt_smooth_nr', iono_alt_smooth_nr, .true.)
-	iono_alt = iono_alt + f * (drange(3) - drange(1))
-	iono_alt_smooth = iono_alt_smooth + f * (drange(3) - drange(1))
-	iono_alt_nr = iono_alt_nr + f * (drange(3) - drange(2))
-	iono_alt_smooth_nr = iono_alt_smooth_nr + f * (drange(3) - drange(2))
-endif
-
 ! Adjust SWH for offset
 
 if (do_swh) then
@@ -296,32 +327,94 @@ if (do_swh) then
 	endif
 	swh_ku = swh_ku + dswh(1)
 	swh_ku_nr = swh_ku_nr + dswh(2)
+
+! Other cases for which the retreive wave height
+
+else if (do_wind .or. do_ssb) then
+	call rads_get_var (S, P, 'swh_ku', swh_ku, .true.)
+	call rads_get_var (S, P, 'swh_ku_nr', swh_ku_nr, .true.)
+endif
+
+! Insert reprocessed AMR data
+
+if (lamr) then
+	! Open the corresponding (reprocessed) AMR data file
+	l = len_trim(P%fileinfo(1)%name)
+	call parseenv ('${RADSROOT}/ext/6b/amr_rep/' // P%fileinfo(1)%name(l-18:l), amr_fname)
+	l = index(amr_fname, 'amr_rep/')
+	write (*, 600) trim(amr_fname(l:))
+	call nfs(nf90_open (amr_fname, nf90_nowrite, ncid))
+	call nfs(nf90_inquire_dimension (ncid, 1, len=n_amr_val))
+	allocate (amr_val(0:n_amr_val))
+	amr_val = nan
+	! Match RADS and AMR passes based on time
+	call get_var (ncid, 'time', amr_val(1:))
+	amr_val = amr_val + sec2000
+	call rads_get_var (S, P, 'time', time, .true.)
+	idx = 0
+	do i = 1,n
+		j = minloc(abs(amr_val(1:)-time(i)), 1)
+		if (abs(amr_val(j)-time(i)) < 0.5d0) idx(i) = j
+	enddo
+	! Get original sigma0 and atmospheric correction
+	call rads_get_var (S, P, 'sig0_ku', sig0_ku)
+	call rads_get_var (S, P, 'sig0_ku_nr', sig0_ku_nr)
+	call rads_get_var (S, P, 'dsig0_atmos_ku', tmp)
+	! Correct sigma0 for the new atmospheric correction
+	call get_var (ncid, 'rad_atm_cor_sig0_ku', amr_val(1:))
+	dsig0_atmos_ku = amr_val(idx)
+	sig0_ku = sig0_ku - tmp + dsig0_atmos_ku
+	sig0_ku_nr = sig0_ku_nr - tmp + dsig0_atmos_ku
+	if (lr) then
+		call rads_get_var (S, P, 'sig0_c', sig0_c)
+		call rads_get_var (S, P, 'dsig0_atmos_c', tmp)
+		call get_var (ncid, 'rad_atm_cor_sig0_c', amr_val(1:))
+		dsig0_atmos_c = amr_val(idx)
+		sig0_c = sig0_c - tmp + dsig0_atmos_c
+	endif
+	deallocate (amr_val)
+600 format ('(Reading ',a,') ... ', $)
+
+! Other cases for which to retrieve sigma0
+
+else if (do_sig0 .or. do_wind .or. do_rain .or. do_p2p) then
+	call rads_get_var (S, P, 'sig0_ku', sig0_ku, .true.)
+	call rads_get_var (S, P, 'sig0_ku_nr', sig0_ku_nr, .true.)
+	call rads_get_var (S, P, 'dsig0_atmos_ku', dsig0_atmos_ku, .true.)
+	if (lr) then
+		call rads_get_var (S, P, 'sig0_c', sig0_c, .true.)
+		call rads_get_var (S, P, 'dsig0_atmos_c', dsig0_atmos_c, .true.)
+	endif
+endif
+
+! Correct sigma0 for P2P effect
+
+if (do_p2p) then
+	call rads_get_var (S, P, 'time', time, .true.)
+	where (time >= p2p_start .and. time <= p2p_end)
+		sig0_ku = sig0_ku + dsig0_p2p
+		sig0_ku_nr = sig0_ku_nr + dsig0_p2p
+	endwhere
+endif
+
+! Adjust RMC sigma0
+
+if (lg02 .and. .not.lr .and. .not.redundant) then
+	call rads_get_var (S, P, 'flag_alt_oper_mode', tmp)
+	where (tmp == 2)
+		sig0_ku = sig0_ku + dsig0_rmc
+		sig0_ku_nr = sig0_ku_nr + dsig0_rmc
+	endwhere
 endif
 
 ! Adjust sigma0 for offset
 
 if (do_sig0) then
-	call rads_get_var (S, P, 'sig0_ku', sig0_ku, .true.)
-	call rads_get_var (S, P, 'sig0_ku_nr', sig0_ku_nr, .true.)
-	if (lr) then
-		call rads_get_var (S, P, 'sig0_c', sig0_c, .true.)
-		sig0_c = sig0_c + dsig0(3)
-	endif
-	if (lp2p) then ! Also check time range
-		if (P%start_time > S%time%info%limits(2) .or. P%end_time < S%time%info%limits(1)) then
-			call log_records(0)
-			return
-		endif
-		if (.not.lg02) call rads_get_var (S, P, 'time', time, .true.)
-		where (time >= S%time%info%limits(1) .and. time <= S%time%info%limits(2))
-			sig0_ku = sig0_ku + dsig0(1)
-			sig0_ku_nr = sig0_ku_nr + dsig0(2)
-		endwhere
-	else
-		sig0_ku = sig0_ku + dsig0(1)
-		sig0_ku_nr = sig0_ku_nr + dsig0(2)
-	endif
+	sig0_ku = sig0_ku + dsig0(1)
+	sig0_ku_nr = sig0_ku_nr + dsig0(2)
+	if (lr) sig0_c = sig0_c + dsig0(3)
 endif
+if (lamr) do_sig0 = .true. ! To write out corrected sigma0
 
 ! Compute wind speed from 2D wind model after adding biases
 ! Load wind model if required
@@ -334,14 +427,14 @@ if (do_wind) then
 	else if (need_file('AUX_WNDH_S6A_002.nc', aux_wind)) then
 		if (grid_load(aux_wind,info_wind) /= 0) call rads_exit ('Error loading '//trim(aux_wind))
 	endif
-
-	call rads_get_var (S, P, 'swh_ku', swh_ku, .true.)
-	if (.not.do_sig0) call rads_get_var (S, P, 'sig0_ku', sig0_ku, .true.)
 	call grid_inter (info_wind, n, sig0_ku + dwind(1), swh_ku, wind_speed_alt)
-
-	call rads_get_var (S, P, 'swh_ku_nr', swh_ku_nr, .true.)
-	if (.not.do_sig0) call rads_get_var (S, P, 'sig0_ku_nr', sig0_ku_nr, .true.)
 	call grid_inter (info_wind, n, sig0_ku_nr + dwind(2), swh_ku_nr, wind_speed_alt_nr)
+
+! Other cases for which to retireve wind speed
+
+else if (do_ssb) then
+	call rads_get_var (S, P, 'wind_speed_alt', wind_speed_alt, .true.)
+	call rads_get_var (S, P, 'wind_speed_alt_nr', wind_speed_alt_nr, .true.)
 endif
 
 ! Compute SSB from 2D model after updating wind
@@ -349,11 +442,13 @@ endif
 
 if (do_ssb) then
 	if (lr) then
-		if (need_file('AUX_SBLK_S6A_002.nc', aux_ssbk)) then
-			if (grid_load(aux_ssbk,info_ssbk) /= 0) call rads_exit ('Error loading '//trim(aux_ssbk))
-		endif
 		if (need_file('AUX_SBLC_S6A_002.nc', aux_ssbc)) then
 			if (grid_load(aux_ssbc,info_ssbc) /= 0) call rads_exit ('Error loading '//trim(aux_ssbc))
+		endif
+		call grid_inter (info_ssbc, n, wind_speed_alt, swh_ku, ssb_cls_c)
+		call grid_inter (info_ssbc, n, wind_speed_alt_nr, swh_ku_nr, ssb_cls_c_nr)
+		if (need_file('AUX_SBLK_S6A_002.nc', aux_ssbk)) then
+			if (grid_load(aux_ssbk,info_ssbk) /= 0) call rads_exit ('Error loading '//trim(aux_ssbk))
 		endif
 	else
 		if (need_file('AUX_SBHK_S6A_002.nc', aux_ssbk)) then
@@ -362,23 +457,36 @@ if (do_ssb) then
 	endif
 	call grid_inter (info_ssbk, n, wind_speed_alt, swh_ku, ssb_cls)
 	call grid_inter (info_ssbk, n, wind_speed_alt_nr, swh_ku_nr, ssb_cls_nr)
-	if (lr) then
-		call grid_inter (info_ssbc, n, wind_speed_alt, swh_ku, ssb_cls_c)
-		call grid_inter (info_ssbc, n, wind_speed_alt_nr, swh_ku_nr, ssb_cls_c_nr)
+	if (lr) then ! Compute average contributions to ionospheric correction
+		call rads_get_var (S, P, 'ssb_cls_c', tmp)
+		diono(1) = diono(1) + mean(ssb_cls_c - tmp)
+		call rads_get_var (S, P, 'ssb_cls_c_nr', tmp)
+		diono(2) = diono(2) + mean(ssb_cls_c_nr - tmp)
+		call rads_get_var (S, P, 'ssb_cls', tmp)
+		diono(1) = diono(1) - mean(ssb_cls - tmp)
+		call rads_get_var (S, P, 'ssb_cls_nr', tmp)
+		diono(2) = diono(2) - mean(ssb_cls_nr - tmp)
 	endif
+endif
+
+! Adjust ionospheric corrections for range bias
+
+if (do_iono) then
+	call rads_get_var (S, P, 'iono_alt', iono_alt, .true.)
+	call rads_get_var (S, P, 'iono_alt_smooth', iono_alt_smooth, .true.)
+	call rads_get_var (S, P, 'iono_alt_nr', iono_alt_nr, .true.)
+	call rads_get_var (S, P, 'iono_alt_smooth_nr', iono_alt_smooth_nr, .true.)
+	diono = f * diono
+	iono_alt = iono_alt + diono(1)
+	iono_alt_smooth = iono_alt_smooth + diono(1)
+	iono_alt_nr = iono_alt_nr + diono(2)
+	iono_alt_smooth_nr = iono_alt_smooth_nr + diono(2)
 endif
 
 ! Determine rain flag after adding biases
 
 if (do_rain) then
 	if (need_file('AUX_SIGL_S6A_001.nc', aux_rain)) call rain_table
-	if (.not.do_sig0) then
-		call rads_get_var (S, P, 'sig0_ku', sig0_ku, .true.)
-		call rads_get_var (S, P, 'sig0_ku_nr', sig0_ku_nr, .true.)
-		call rads_get_var (S, P, 'sig0_c', sig0_c, .true.)
-	endif
-	call rads_get_var (S, P, 'dsig0_atmos_ku', dsig0_atmos_ku, .true.)
-	call rads_get_var (S, P, 'dsig0_atmos_c', dsig0_atmos_c, .true.)
 	call rads_get_var (S, P, 'qual_alt_rain_ice', qual_alt_rain_ice, .true.)
 	call rads_get_var (S, P, 'flags', flags, .true.)
 	call rads_get_var (S, P, 'flags_nr', flags_nr, .true.)
@@ -455,6 +563,14 @@ if (do_rain .or. do_flag) then
 	call rads_def_var (S, P, 'flags_nr')
 endif
 
+if (lamr) then
+	do i = 1,n_amr_var
+		call rads_def_var (S, P, amr_var(i)%alt_name)
+	enddo
+	call rads_def_var (S, P, 'dsig0_atmos_ku')
+	if (lr) call rads_def_var (S, P, 'dsig0_atmos_c')
+endif
+
 ! Write out all the data
 
 if (do_range) then
@@ -504,6 +620,17 @@ endif
 if (do_rain .or. do_flag) then
 	call rads_put_var (S, P, 'flags', flags)
 	call rads_put_var (S, P, 'flags_nr', flags_nr)
+endif
+
+if (lamr) then
+	allocate (amr_val(0:n_amr_val))
+	do i = 1,n_amr_var
+		call get_var (ncid, amr_var(i)%amr_name, amr_val(1:))
+		call rads_put_var (S, P, amr_var(i)%alt_name, amr_val(idx))
+	enddo
+	deallocate (amr_val)
+	call rads_put_var (S, P, 'dsig0_atmos_ku', dsig0_atmos_ku)
+	if (lr) call rads_put_var (S, P, 'dsig0_atmos_c', dsig0_atmos_c)
 endif
 
 call log_records (n)
@@ -644,5 +771,14 @@ else
 	enddo
 endif
 end subroutine set_flag
+
+! Computre mean
+
+pure function mean (x)
+real(eightbytereal), intent(in) :: x(:)
+real(eightbytereal) :: mean, y
+integer(fourbyteint) :: n
+call mean_variance (x, mean, y, n)
+end function mean
 
 end program rads_fix_s6
