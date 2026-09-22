@@ -113,7 +113,6 @@ do i = 1,rads_nopt
 	case ('p2p')
 		lp2p = .true.
 		if (S%sat /= '6b') call rads_exit ('--p2p can be used only with Sentinel-6B')
-		bias_sig0(1:2) = 10d0 * log10(4d0)	! Impact of reducing the waveform accumulation by factor 4
 		lrain = 1
 		lwind = 1
 		lssb = .true.
@@ -414,7 +413,7 @@ if (do_sig0) then
 	sig0_ku_nr = sig0_ku_nr + dsig0(2)
 	if (lr) sig0_c = sig0_c + dsig0(3)
 endif
-if (lamr) do_sig0 = .true. ! To write out corrected sigma0
+if (lamr .or. do_p2p) do_sig0 = .true. ! To write out corrected sigma0
 
 ! Compute wind speed from 2D wind model after adding biases
 ! Load wind model if required
@@ -631,6 +630,7 @@ if (lamr) then
 	deallocate (amr_val)
 	call rads_put_var (S, P, 'dsig0_atmos_ku', dsig0_atmos_ku)
 	if (lr) call rads_put_var (S, P, 'dsig0_atmos_c', dsig0_atmos_c)
+	call nfs(nf90_close(ncid))
 endif
 
 call log_records (n)
