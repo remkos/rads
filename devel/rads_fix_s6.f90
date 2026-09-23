@@ -36,7 +36,7 @@ type(grid) :: info_wind, info_ssbk, info_ssbc
 logical :: lsig0 = .false., lssb = .false., liono = .false., lflag = .false., lp2p = .false., lg02 = .false., lamr = .false.
 integer, parameter :: sig0_nx = 500
 real(eightbytereal) :: exp_ku_sigma0(sig0_nx), rms_exp_ku_sigma0(sig0_nx), f
-real(eightbytereal) :: bias_range(3) = 0d0, bias_swh(3) = 0d0, bias_sig0(3) = 0d0, &
+real(eightbytereal) :: bias_range(3) = 0d0, bias_swh(3) = 0d0, bias_sig0(3) = 0d0, bias_off_nadir(2) = 0d0, &
 	dwind(2) = 0d0, drain(3) = (/ 0.51d0, 0.52d0, 0.72d0 /)
 real(eightbytereal), parameter :: sig0_dx = 0.1d0, gate_width = 0.3795d0, sign_error = 2 * 0.528d0
 
@@ -60,7 +60,8 @@ amr_var(7) = amr_type ('rad_water_vapor', 'water_vapor_rad')
 ! Scan command line
 
 call synopsis ('--head')
-call rads_set_options (' range sig0 wind:: ssb rain:: all iono bias-range: bias-swh: bias-sig0: p2p g02 amr flag-bit0')
+call rads_set_options ( &
+	' range sig0 wind:: ssb rain:: all iono bias-range: bias-swh: bias-sig0: bias-off-nadir: p2p g02 amr flag-bit0')
 call rads_init (S)
 
 ! Set defaults
@@ -108,6 +109,8 @@ do i = 1,rads_nopt
 		read (rads_opt(i)%arg, *, iostat=ios) bias_swh
 	case ('bias-sig0')
 		read (rads_opt(i)%arg, *, iostat=ios) bias_sig0
+	case ('bias-off-nadir')
+		read (rads_opt(i)%arg, *, iostat=ios) bias_off_nadir
 	case ('flag-bit0')
 		lflag = .true.
 	case ('p2p')
@@ -132,7 +135,7 @@ enddo
 ! If nothing selected, stop here
 
 if (.not.(lsig0 .or. lwind > 0 .or. lssb .or. lrain > 0 .or. lflag .or. lp2p .or. lg02 .or. lamr .or. &
-	any(bias_range /= 0d0) .or. any(bias_swh /= 0d0) .or. any(bias_sig0 /= 0d0))) stop
+	any(bias_range /= 0d0) .or. any(bias_swh /= 0d0) .or. any(bias_sig0 /= 0d0) .or. any(bias_off_nadir /= 0d0))) stop
 
 ! Run process for all files
 
@@ -169,6 +172,7 @@ write (*,1310)
 '  --bias-range=KU,NR,C      Add additional bias to range (Ku conv, Ku NR, C, in m)' / &
 '  --bias-swh=KU,NR,C        Add additional bias to SWH (Ku conv, Ku NR, C, in m)' / &
 '  --bias-sig0=KU,NR,C       Add additional bias to sig0 (Ku conv, Ku NR, C, in dB)' / &
+'  --bias-off-nadir=KU,NR    Add additional bias to off nadir angle (Ku conv, Ku NR, in deg**2)' / &
 '  --p2p                     Counter effects of reduced 2.2 kHz LR waveform accumulation,' / &
 '                            only for S6B, implies --rain --wind --ssb)' / &
 '  --g02                     Upgrade S6B OPE Side A data to G02 standards, implies --all' / &
@@ -187,15 +191,16 @@ use rads_netcdf
 integer(fourbyteint), intent(in) :: n
 real(eightbytereal) :: time(n), latency(n), range_ku(n), range_ku_nr(n), range_c(n), &
 	sig0_ku(n), sig0_ku_nr(n), sig0_c(n), dsig0_atmos_ku(n), dsig0_atmos_c(n), dsig0_atten(n), &
-	swh_ku(n), swh_ku_nr(n), swh_c(n), wind_speed_alt(n), wind_speed_alt_nr(n), qual_alt_rain_ice(n), &
-	flags(n), flags_nr(n), ssb_cls(n), ssb_cls_nr(n), ssb_cls_c(n), ssb_cls_c_nr(n), &
+	off_nadir_angle2_wf_ku(n), off_nadir_angle2_wf_ku_nr(n), swh_ku(n), swh_ku_nr(n), swh_c(n), &
+	wind_speed_alt(n), wind_speed_alt_nr(n), qual_alt_rain_ice(n), flags(n), flags_nr(n), &
+	ssb_cls(n), ssb_cls_nr(n), ssb_cls_c(n), ssb_cls_c_nr(n), &
 	iono_alt(n), iono_alt_smooth(n), iono_alt_nr(n), iono_alt_smooth_nr(n), tmp(n)
 real(eightbytereal) :: drange(3), dswh(3), dsig0(3), diono(3)
 real(eightbytereal), parameter :: dsig0_p2p = 10d0 * log10(4d0)	! Impact of reducing the waveform accumulation by factor 4
 real(eightbytereal), parameter :: dsig0_rmc = 0.016d0	! Change of residual_onboard_proc_rmc_chd
 real(eightbytereal), parameter :: p2p_start = 1295016747d0, p2p_end = 1295872205d0 ! Start and end time of P2P period (S6B Cycle 7)
 
-logical :: lr, redundant, val, do_p2p, do_range, do_swh, do_sig0, do_wind, do_ssb, do_rain, do_flag, do_iono
+logical :: lr, redundant, val, do_p2p, do_range, do_swh, do_sig0, do_off_nadir, do_wind, do_ssb, do_rain, do_flag, do_iono
 character(len=3) :: chd_ver, cnf_ver, baseline
 character(len=rads_cmdl) :: amr_fname
 integer :: ncid, i, j, l, idx(n), n_amr_val
@@ -245,6 +250,7 @@ if (lg02) then
 		! CHDN 002: add -0.8 mm to HR range, -6/8 mm to HR SWH and -0.10 dB to Sigma0 for Side A with CHDN 001
 		if (lr) then
 			dsig0(1:2) = dsig0(1:2) - 0.10d0 ! All LR Ku-band sigma0
+			bias_off_nadir = (/ -0.0072d0, -0.0075d0 /) ! All LR Ku-band off-nadir angles
 		else
 			drange(1:2) = drange(1:2) - 0.8d-3 ! All HR Ku-band ranges
 			dswh(1:2) = dswh(1:2) - (/ 8d-3, 6d-3 /) ! HR Ku-band SWH: -8 mm for SAMOSA, -6 mm for NR
@@ -279,6 +285,10 @@ do_swh = any(dswh /= 0d0)
 
 do_sig0 = any(dsig0 /= 0d0)
 
+! bias_off_nadir: apply bias to off-nadir angle
+
+do_off_nadir = (lr .and. any(bias_off_nadir /= 0d0))
+
 ! wind: apply biases before calling wind model
 
 do_wind = ((lwind == 1 .and. do_sig0) .or. lwind == 2)
@@ -297,7 +307,8 @@ do_flag = lflag .and. (lr .or. .not.redundant)
 
 ! If nothing to change, skip
 
-if (.not.(do_range .or. do_iono .or. do_swh .or. do_sig0 .or. do_wind .or. do_ssb .or. do_rain .or. lamr .or. do_flag)) then
+if (.not.(do_range .or. do_iono .or. do_swh .or. do_sig0 .or. do_off_nadir .or. &
+	do_wind .or. do_ssb .or. do_rain .or. lamr .or. do_flag)) then
 	call log_records(0)
 	return
 endif
@@ -414,6 +425,15 @@ if (do_sig0) then
 	if (lr) sig0_c = sig0_c + dsig0(3)
 endif
 if (lamr .or. do_p2p) do_sig0 = .true. ! To write out corrected sigma0
+
+! Adjust off nadir angle for offset
+
+if (do_off_nadir) then
+	call rads_get_var (S, P, 'off_nadir_angle2_wf_ku', off_nadir_angle2_wf_ku)
+	call rads_get_var (S, P, 'off_nadir_angle2_wf_ku_nr', off_nadir_angle2_wf_ku_nr)
+	off_nadir_angle2_wf_ku = off_nadir_angle2_wf_ku + bias_off_nadir(1)
+	off_nadir_angle2_wf_ku_nr = off_nadir_angle2_wf_ku_nr + bias_off_nadir(2)
+endif
 
 ! Compute wind speed from 2D wind model after adding biases
 ! Load wind model if required
@@ -538,6 +558,11 @@ if (do_sig0) then
 	if (lr) call rads_def_var (S, P, 'sig0_c')
 endif
 
+if (do_off_nadir) then
+	call rads_def_var (S, P, 'off_nadir_angle2_wf_ku')
+	call rads_def_var (S, P, 'off_nadir_angle2_wf_ku_nr')
+endif
+
 if (do_wind) then
 	call rads_def_var (S, P, 'wind_speed_alt')
 	call rads_def_var (S, P, 'wind_speed_alt_nr')
@@ -595,6 +620,11 @@ if (do_sig0) then
 	call rads_put_var (S, P, 'sig0_ku', sig0_ku)
 	call rads_put_var (S, P, 'sig0_ku_nr', sig0_ku_nr)
 	if (lr) call rads_put_var (S, P, 'sig0_c', sig0_c)
+endif
+
+if (do_off_nadir) then
+	call rads_put_var (S, P, 'off_nadir_angle2_wf_ku', off_nadir_angle2_wf_ku)
+	call rads_put_var (S, P, 'off_nadir_angle2_wf_ku_nr', off_nadir_angle2_wf_ku_nr)
 endif
 
 if (do_wind) then
