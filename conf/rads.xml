@@ -4686,19 +4686,26 @@ Global RADS configuration file
 	</phase>
 </if>
 
-<if sat="3c"><!--TEMPORARY COPY OF SENTINEL-3C for TEST purposes-->
+<if sat="3c">
 	<satellite>SNTNL-3C</satellite>
 	<satid>24</satid>
 	<dt1hz>1.000000</dt1hz><!--By design!-->
 	<inclination>98.65</inclination>
 	<frequency>13.575 5.41</frequency>
 	<xover_params>0.05 0.05</xover_params><!--Need to verify-->
-	<phase name="b">
-		<mission>Exact Repeat Mission</mission>
-		<cycles>19 199</cycles><!--Need to update this value-->
+	<phase name="1">
+		<mission>Initial Drift Phase</mission>
+		<cycles>2 2</cycles>
 		<repeat>27 770</repeat>
-		<ref_pass>2018-11-23T10:08:38 177.820 19 101 3018</ref_pass>
-		<start_time>2018-11-23T09:46:00</start_time>
+		<ref_pass>2026-10-01T00:04:51 328.931 2 289 228</ref_pass>
+		<start_time>2026-09-30</start_time>
+	</phase>
+	<phase name="a">
+		<mission>Exact Repeat Mission</mission>
+		<cycles>4 99</cycles><!--Need to update this value-->
+		<repeat>27 770</repeat>
+		<ref_pass>2026-10-01T11:52:34 151.996 4 75 235</ref_pass>
+		<start_time>2026-10-01T12:17:40</start_time>
 	</phase>
 </if>
 
