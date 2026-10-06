@@ -29,6 +29,9 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 This does not include explanations of changes to the code that generates the data base.
 
+### v4.8.2
+Version integrates the EnviSat FDR4ALT and Sentinel-3 products
+
 ### v4.8.1 (16 Sep 2026)
 Version to support the Cryo2ICE phase of CryoSat-2 and Jason-2 GDR-F products.
 * `rads.xml`
