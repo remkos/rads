@@ -5060,7 +5060,7 @@ Global RADS configuration file
 		<cycles>700 799</cycles> <!-- To be updated at end of phase -->
 		<!--This is "real" cycle and pass, i.e. subcycle 700, pass 73-->
 		<repeat>367.8446 9472</repeat>
-		<ref_pass>2026-06-26T04:01:37 336.42 1 73 48846</ref_pass> <!-- To be updated? -->
+		<ref_pass>2026-06-26T04:01:37 132.25 1 73 48846</ref_pass> <!-- To be updated? -->
 		<start_time>2026-06-26</start_time>
 		<subcycles start="700">
 			332 434 434 434 434 332 434 434 434
