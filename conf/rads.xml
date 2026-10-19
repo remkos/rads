@@ -4681,7 +4681,7 @@ Global RADS configuration file
 		<mission>Exact Repeat Mission</mission>
 		<cycles>19 199</cycles><!--Need to update this value-->
 		<repeat>27 770</repeat>
-		<ref_pass>2018-11-23T10:08:38 177.820 19 101 3018</ref_pass>
+		<ref_pass>2018-12-16T21:59:09 0.16 20 1 3353</ref_pass>
 		<start_time>2018-11-23T09:46:00</start_time>
 	</phase>
 </if>
@@ -4695,17 +4695,17 @@ Global RADS configuration file
 	<xover_params>0.05 0.05</xover_params><!--Need to verify-->
 	<phase name="1">
 		<mission>Initial Drift Phase</mission>
-		<cycles>2 2</cycles>
-		<repeat>27 770</repeat>
-		<ref_pass>2026-10-01T00:04:51 328.931 2 289 228</ref_pass>
+		<cycles>4 9</cycles>
+		<repeat>3.999757 114 0.082</repeat>
+		<ref_pass>2026-10-02T19:52:28 32.02 5 1 254</ref_pass>
 		<start_time>2026-09-30</start_time>
 	</phase>
 	<phase name="a">
-		<mission>Exact Repeat Mission</mission>
-		<cycles>4 99</cycles><!--Need to update this value-->
+		<mission>Tandem Phase 1</mission>
+		<cycles>10 99</cycles><!--Need to update this value-->
 		<repeat>27 770</repeat>
-		<ref_pass>2026-10-01T11:52:34 151.996 4 75 235</ref_pass>
-		<start_time>2026-10-01T12:17:40</start_time>
+		<ref_pass>2026-10-17T21:59:54 0.16 10 1 469</ref_pass><!-- 30 sec ahead of S3B. To be updated.-->
+		<start_time>2026-10-22T12:00:00</start_time><!--Need to update this value-->
 	</phase>
 </if>
 
