@@ -4695,17 +4695,18 @@ Global RADS configuration file
 	<xover_params>0.05 0.05</xover_params><!--Need to verify-->
 	<phase name="1">
 		<mission>Initial Drift Phase</mission>
-		<cycles>4 9</cycles>
-		<repeat>3.999757 114 0.082</repeat>
-		<ref_pass>2026-10-02T19:52:28 32.02 5 1 254</ref_pass>
+		<cycles>2 2</cycles>
+		<repeat>27.998299 798 0.574</repeat><!--This is a fake 28-day repeat based on a 4-day repeat
+		<repeat>3.999757 114 0.082</repeat>-->
+		<ref_pass>2026-10-01T11:52:35 152.00 2 103 235</ref_pass>
 		<start_time>2026-09-30</start_time>
 	</phase>
 	<phase name="a">
 		<mission>Tandem Phase 1</mission>
-		<cycles>10 99</cycles><!--Need to update this value-->
+		<cycles>3 99</cycles><!--Need to update this value-->
 		<repeat>27 770</repeat>
-		<ref_pass>2026-10-17T21:59:54 0.16 10 1 469</ref_pass><!-- 30 sec ahead of S3B. To be updated.-->
-		<start_time>2026-10-22T12:00:00</start_time><!--Need to update this value-->
+		<ref_pass>2026-10-17T21:59:54 0.16 3 1 469</ref_pass><!-- 29 sec ahead of S3B. To be updated.-->
+		<start_time>2026-10-22T14:20:44</start_time>
 	</phase>
 </if>
 
