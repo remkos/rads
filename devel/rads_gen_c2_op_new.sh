@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2021  Remko Scharroo and Eric Leuliette
+# Copyright (c) 2011-2026  Remko Scharroo and Eric Leuliette
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -35,13 +35,12 @@ while getopts "nigd:" arg; do
 	esac
 done
 
-d0=`date -u -v -${days}d +%Y%m%d 2>&1` || d0=`date -u --date="${days} days ago" +%Y%m%d`
+d0=$(date -u -v -${days}d +%Y%m%d 2>/dev/null || date -u --date="${days} days ago" +%Y%m%d)
 
-dir=c2
-rads_open_sandbox $dir
+rads_open_sandbox c2
 
 for type in ${types}; do
-	mrk=$type/.bookmark
+	mrk=$RADSDATAROOT/.bookmark
 	TZ=UTC touch -t ${d0}0000 "$mrk"
 	find $type/ -name "*.nc" -a -newer "$mrk" | sort > "$lst"
 	date >>  "$log" 2>&1
@@ -52,22 +51,25 @@ for type in ${types}; do
 	fi
 done
 
-# General geophysical corrections
-rads_add_common   $options					>> "$log" 2>&1
-# Include GOT4.8 model for Navy
-rads_add_tide     $options --models=got48	>> "$log" 2>&1
-rads_add_iono     $options --all			>> "$log" 2>&1
-# Redetermine SSHA
-rads_add_refframe $options					>> "$log" 2>&1
-rads_add_sla      $options					>> "$log" 2>&1
+# Pacth known anamalies
+rads_fix_c2       $options --all			>> "$log" 2>&1
 
-date										>> "$log" 2>&1
+# General geophysical corrections
+rads_add_common   $options						>> "$log" 2>&1
+# Include GOT4.8 model and DUT18 MSS for Navy ALPS
+rads_add_tide     $options --models=got48		>> "$log" 2>&1
+rads_add_grid     $options -Vmss_dtu18			>> "$log" 2>&1
+# Redetermine SSHA
+rads_add_refframe $options -x -x plrm			>> "$log" 2>&1
+rads_add_sla      $options -x -x plrm -Xgdr_g	>> "$log" 2>&1
+
+date											>> "$log" 2>&1
 
 # Set Navy and NHC data aside
 files_iop=`grep IOP $log | grep written | awk '{print $NF}' | awk -F/ '{printf "%s/%s\n",$3,$4}' | sort | uniq`
 files_nop=`grep NOP $log | grep written | awk '{print $NF}' | awk -F/ '{printf "%s/%s\n",$3,$4}' | sort | uniq`
 
-pushd $SANDBOX/c2/a
+pushd $SANDBOX/c2/b
 for file in ${files_iop[*]} ; do
 	bfile=`basename $file`
 	cp $file $RADSROOT/ext/c2/to_navy/igdr/$bfile

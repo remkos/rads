@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2021  Remko Scharroo
+! Copyright (c) 2011-2026  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -347,11 +347,11 @@ do
 		call cpy_var (ncid, 'ocean_tide_sol2 load_tide_sol2 SUB ocean_tide_non_equil ADD', 'tide_ocean_fes14')
 		call cpy_var (ncid, 'load_tide_sol1', 'tide_load_got410')
 		call cpy_var (ncid, 'load_tide_sol2', 'tide_load_fes14')
-	else
-		call cpy_var (ncid, 'ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got48')
-		call cpy_var (ncid, 'ocean_tide_sol2 load_tide_sol2 SUB ocean_tide_non_equil ADD', 'tide_ocean_fes04')
-		call cpy_var (ncid, 'load_tide_sol1', 'tide_load_got48')
-		call cpy_var (ncid, 'load_tide_sol2', 'tide_load_fes04')
+!	else
+!		call cpy_var (ncid, 'ocean_tide_sol1 load_tide_sol1 SUB', 'tide_ocean_got48')
+!		call cpy_var (ncid, 'ocean_tide_sol2 load_tide_sol2 SUB ocean_tide_non_equil ADD', 'tide_ocean_fes04')
+!		call cpy_var (ncid, 'load_tide_sol1', 'tide_load_got48')
+!		call cpy_var (ncid, 'load_tide_sol2', 'tide_load_fes04')
 	endif
 	call cpy_var (ncid, 'ocean_tide_equil', 'tide_equil')
 	call cpy_var (ncid, 'ocean_tide_non_equil', 'tide_non_equil')
@@ -361,13 +361,13 @@ do
 	call cpy_var (ncid, 'sea_state_bias_c', 'ssb_cls_c')
 	if (gdre) then
 		call cpy_var (ncid, 'geoid', 'geoid_egm2008')
-	else
-		call cpy_var (ncid, 'geoid', 'geoid_egm96')
+!	else
+!		call cpy_var (ncid, 'geoid', 'geoid_egm96')
 	endif
-	if (S%sat == 'j2' .and. S%phase%name == 'c') then
+	if (S%sat == 'j2' .and. S%phase%name >= 'c') then
 		call cpy_var (ncid, 'mean_sea_surface', 'mss_cnescls15')
-	else
-		call cpy_var (ncid, 'mean_sea_surface', 'mss_cnescls11')
+!	else
+!		call cpy_var (ncid, 'mean_sea_surface', 'mss_cnescls11')
 	endif
 	call cpy_var (ncid, 'swh_ku')
 	call cpy_var (ncid, 'swh_ku_mle3', mle3)
@@ -386,7 +386,7 @@ do
 	call cpy_var (ncid, 'range_numval_ku')
 	call cpy_var (ncid, 'range_numval_ku_mle3', mle3)
 	call cpy_var (ncid, 'range_numval_c')
-	call cpy_var (ncid, 'bathymetry', 'topo_dtm2000')
+!	call cpy_var (ncid, 'bathymetry', 'topo_dtm2000')
 	call cpy_var (ncid, 'tb_187')
 	call cpy_var (ncid, 'tb_238')
 	call cpy_var (ncid, 'tb_340')
@@ -408,7 +408,7 @@ do
 	call cpy_var (ncid, 'rad_liquid_water', 'liquid_water_rad')
 	call cpy_var (ncid, 'rad_water_vapor', 'water_vapor_rad')
 	call cpy_var (ncid, 'ssha')
-	call cpy_var (ncid, 'ssha_mle3')
+	call cpy_var (ncid, 'ssha_mle3', mle3)
 	a = latency
 	call new_var ('latency', a)
 

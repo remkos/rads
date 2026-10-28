@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2021  Remko Scharroo
+! Copyright (c) 2011-2026  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -43,15 +43,14 @@ program rads_gen_saral
 ! inv_bar_static - Inverse barometer
 ! inv_bar_mog2d - MOG2D
 ! tide_solid - Solid earth tide
-! tide_ocean_fes04 - FES2008 ocean tide
+! tide_ocean_fes14 - FES2014 ocean tide
 ! tide_ocean_got48 - GOT4.8 ocean tide
-! tide_load_fes04 - FES2008 load tide
+! tide_load_fes14 - FES2014 load tide
 ! tide_load_got48 - GOT4.8 load tide
 ! tide_pole - Pole tide
 ! ssb_bm3 - SSB
 ! mss_cnescls11 - CLS01 MSS
 ! geoid_egm96 - EGM96 geoid
-! topo_dtm2000 - Bathymetry
 ! swh_ka - Significant wave height
 ! swh_rms_ka - Std dev of SWH
 ! sig0_ka - Sigma0
@@ -243,7 +242,6 @@ do
 	call cpy_var (ncid, 'mean_sea_surface_sol1', 'mss_cnescls15')	! Since GDR-F
 	call cpy_var (ncid, 'mean_sea_surface_sol2', 'mss_dtu15')		! Since GDR-F
 	call cpy_var (ncid, 'geoid', 'geoid_egm96')
-	call cpy_var (ncid, 'bathymetry', 'topo_dtm2000')
 	call cpy_var (ncid, 'inv_bar_corr', 'inv_bar_static')
 	if (latency == rads_nrt) then
 		call cpy_var (ncid, 'inv_bar_corr', 'inv_bar_mog2d')

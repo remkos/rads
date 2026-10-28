@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2021  Remko Scharroo
+# Copyright (c) 2011-2026  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -40,7 +40,7 @@ done
 
 # Process only OGDR/IGDR data for the last ($days+1) days (including current)
 
-d0=`date -u -v -${days}d +%Y%m%d 2>&1` || d0=`date -u --date="${days} days ago" +%Y%m%d`
+d0=$(date -u -v -${days}d +%Y%m%d 2>/dev/null || date -u --date="${days} days ago" +%Y%m%d)
 
 # Run this for ogdr, igdr, or gdr depending on the arguments on the command line.
 # Default is doing all three!
@@ -52,38 +52,25 @@ lst=$SANDBOX/rads_gen_j3_tmp.lst
 
 date													>  "$log" 2>&1
 
-omrk=${type}/.bookmark
-TZ=UTC touch -t ${d0}0000 $omrk
+mrk=$RADSDATAROOT/.bookmark
+TZ=UTC touch -t ${d0}0000 $mrk
 case $type in
 	gdr)
-		find -L ${type}/cycle_??? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
+		find -L ${type}/cycle_??? -name "JA3_*.nc" -a -newer $mrk | sort > "$lst"
 		if [ -s "$lst" ]; then
 			rads_gen_jason_gdrf $options < "$lst"		>> "$log" 2>&1
 		fi
 		;;
 	*)
-		find -L ${type}/c??? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
+		find -L ${type}/c??? -name "JA3_*.nc" -a -newer $mrk | sort > "$lst"
 		rads_gen_jason_gdrf --ymd=$d0 $options < "$lst"	>> "$log" 2>&1
 		;;
 esac
 
-rads_close_sandbox
+date												>> "$log" 2>&1
 
-# Now process do the same again, and do the post-processing
-
-rads_open_sandbox j3.${type}
-case $type in
-	gdr)
-		find -L ${type}/cycle_??? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
-		if [ -s "$lst" ]; then
-			rads_gen_jason_gdrf $options < "$lst"								>> "$log" 2>&1
-		fi
-		;;
-	*)
-		find -L ${type}/c??? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
-		rads_gen_jason_gdrf --ymd=$d0 $options < "$lst"							>> "$log" 2>&1
-		;;
-esac
+# Now continue with the post-processing
+rads_reuse_sandbox "j3.${type}"
 
 # Add MOE orbit (for OGDR only)
 case $type in
@@ -102,10 +89,18 @@ esac
 
 rads_fix_jason    $options --all					>> "$log" 2>&1
 rads_add_common   $options							>> "$log" 2>&1
-rads_add_iono     $options --all					>> "$log" 2>&1
+
+if grep -q _2Pg $lst ; then
+	# For GDR-G we add the FES2014 model
+	rads_add_tide $options --models=fes14			>> "$log" 2>&1
+else
+	# For GDR-F we add MLE3 support
+	extra="-x mle3 $extra"
+fi
+
 # Redetermine SSHA
-rads_add_refframe $options -x -x mle3 $extra		>> "$log" 2>&1
-rads_add_sla      $options -x -x mle3 $extra		>> "$log" 2>&1
+rads_add_refframe $options -x $extra				>> "$log" 2>&1
+rads_add_sla      $options -x $extra -Xgdr_g		>> "$log" 2>&1
 
 date												>> "$log" 2>&1
 

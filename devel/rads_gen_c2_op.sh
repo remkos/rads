@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2021  Remko Scharroo and Eric Leuliette
+# Copyright (c) 2011-2026  Remko Scharroo and Eric Leuliette
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -23,22 +23,34 @@
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
 
+# Do only latest files when using -d<days>
+d0=20000101
+case $1 in
+	-d*)	days=${1:2}; shift
+		d0=$(date -u -v -${days}d +%Y%m%d 2>/dev/null || date -u --date="${days} days ago" +%Y%m%d) ;;
+esac
+
 # Exit when no directory names are provided
 [[ $# -eq 0 ]] && exit
 
 rads_open_sandbox c2
 
-find "$@" -name "*.nc"| sort > "$lst"
+mrk=$RADSDATAROOT/.bookmark
+TZ=UTC touch -t ${d0}0000 "$mrk"
+find "$@" -name "*.nc" -a -newer $mrk | sort -r > "$lst"
 date >  "$log" 2>&1
-rads_gen_c2_op		$options < "$lst"	>> "$log" 2>&1
+
+rads_gen_c2_op		$options < "$lst"			>> "$log" 2>&1
+
+# Patch known anomalies
+rads_fix_c2         $options --all				>> "$log" 2>&1
 
 # General geophysical corrections
-rads_add_common   $options				>> "$log" 2>&1
-rads_add_iono     $options --all		>> "$log" 2>&1
+rads_add_common		$options					>> "$log" 2>&1
 # Redetermine SSHA
-rads_add_refframe $options				>> "$log" 2>&1
-rads_add_sla      $options				>> "$log" 2>&1
+rads_add_refframe	$options -x -x plrm			>> "$log" 2>&1
+rads_add_sla		$options -x -x plrm -Xgdr_g	>> "$log" 2>&1
 
-date									>> "$log" 2>&1
+date											>> "$log" 2>&1
 
 rads_close_sandbox

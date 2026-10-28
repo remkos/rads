@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2021  Remko Scharroo
+! Copyright (c) 2011-2026  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -17,14 +17,14 @@ module rads_devel_netcdf
 use typesizes
 use rads, only: rads_sat, rads_pass, rads_var
 
-integer(fourbyteint), parameter :: mrec=3700, mvar=120
+integer(fourbyteint), parameter :: mrec=3700, mvar=140
 integer(fourbyteint) :: nvar, nrec=0
 real(eightbytereal), allocatable :: a(:)
 integer(twobyteint), allocatable :: flags(:)
 type :: var_
 	type(rads_var), pointer :: v ! Pointer to rads_var struct
 	real(eightbytereal) :: d(mrec) ! Data array
-	logical :: empty ! .true. if all NaN
+	logical :: empty, zero, skip_empty ! .true. if all NaN or all zero
 endtype
 type(var_) :: var(mvar)
 
@@ -45,114 +45,112 @@ type(rads_pass) :: P
 ! Copy variable 'varin' from input (GDR) file to 'varout' in RADS output file.
 ! When 'varout' is omitted, varout=varin.
 ! When 'do' is present and false, the action is skipped.
-private :: cpy_var_1_do, cpy_var_2_do, cpy_var_1, cpy_var_2
+private :: cpy_var_1, cpy_var_2
 interface cpy_var
 	module procedure cpy_var_1
-	module procedure cpy_var_1_do
 	module procedure cpy_var_2
-	module procedure cpy_var_2_do
 end interface cpy_var
 
 contains
 
-subroutine cpy_var_1 (ncid, varin)
+subroutine cpy_var_1 (ncid, varin, do, skip_empty)
 use rads_netcdf
 integer(fourbyteint), intent(in) :: ncid
 character(len=*), intent(in) :: varin
+logical, optional, intent(in) :: do, skip_empty
+if (present(do) .and. .not.do) return
 call get_var (ncid, varin, a)
-call new_var (varin, a)
+call new_var (varin, a, skip_empty)
 end subroutine cpy_var_1
 
-subroutine cpy_var_1_do (ncid, varin, do)
-use rads_netcdf
-integer(fourbyteint), intent(in) :: ncid
-character(len=*), intent(in) :: varin
-logical, intent(in) :: do
-if (.not.do) return
-call get_var (ncid, varin, a)
-call new_var (varin, a)
-end subroutine cpy_var_1_do
-
-subroutine cpy_var_2 (ncid, varin, varout)
+subroutine cpy_var_2 (ncid, varin, varout, do, skip_empty)
 use rads_netcdf
 integer(fourbyteint), intent(in) :: ncid
 character(len=*), intent(in) :: varin, varout
+logical, optional, intent(in) :: do, skip_empty
+if (present(do) .and. .not.do) return
 call get_var (ncid, varin, a)
-call new_var (varout, a)
+call new_var (varout, a, skip_empty)
 end subroutine cpy_var_2
-
-subroutine cpy_var_2_do (ncid, varin, varout, do)
-use rads_netcdf
-integer(fourbyteint), intent(in) :: ncid
-character(len=*), intent(in) :: varin, varout
-logical, intent(in) :: do
-if (.not.do) return
-call get_var (ncid, varin, a)
-call new_var (varout, a)
-end subroutine cpy_var_2_do
 
 !-----------------------------------------------------------------------
 ! Create new RADS variable
 !-----------------------------------------------------------------------
 
-subroutine new_var (varnm, data)
+subroutine new_var (varnm, data, skip_empty)
 use rads
 ! Write variables one after the other to the output file
 character(len=*), intent(in) :: varnm
 real(eightbytereal), intent(in) :: data(:)
+logical, optional, intent(in) :: skip_empty
 nvar = nvar + 1
 if (nvar > mvar) stop 'Too many variables allocated by new_var'
 var(nvar)%v => rads_varptr (S, varnm)
 var(nvar)%d(1:size(data)) = data
+var(nvar)%skip_empty = (present(skip_empty) .and. skip_empty)
 end subroutine new_var
 
 !-----------------------------------------------------------------------
 ! Write content of memory to a single pass of RADS data
 !-----------------------------------------------------------------------
 
-subroutine put_rads
+subroutine put_rads (skip_create)
 use rads
 use rads_misc
 use rads_devel
+logical, optional :: skip_create
 integer(fourbyteint) :: i
 
-! Check which variables are empty
+! Check which variables are empty or all zero
 do i = 1,nvar
-	var(i)%empty = all(isnan_(var(i)%d(1:nrec)))
+	if (var(i)%skip_empty) then
+		var(i)%skip_empty = all(isnan_(var(i)%d(1:nrec)))
+		var(i)%empty = .false.
+	else
+		var(i)%empty = all(isnan_(var(i)%d(1:nrec)))
+	endif
+	var(i)%zero = all(var(i)%d(1:nrec) == 0d0)
 enddo
+
+! Write out the empty variables to be skipped
+if (any(var(1:nvar)%skip_empty)) then
+	write (rads_log_unit,551,advance='no') 'Skip empty:'
+	do i = 1,nvar
+		if (var(i)%skip_empty) write (rads_log_unit,551,advance='no') trim(var(i)%v%name)
+	enddo
+	write (rads_log_unit,551,advance='no') '...'
+endif
+
+! Write out the empty variables to be kept
 if (any(var(1:nvar)%empty)) then
 	write (rads_log_unit,551,advance='no') 'Empty:'
 	do i = 1,nvar
 		if (var(i)%empty) write (rads_log_unit,551,advance='no') trim(var(i)%v%name)
 	enddo
-	write (rads_log_unit,551,advance='no') '... '
+	write (rads_log_unit,551,advance='no') '...'
 endif
-551 format (1x,a)
+551 format (a,1x)
 
 ! Do the same for records that are all zero
-do i = 1,nvar
-	var(i)%empty = all(var(i)%d(1:nrec) == 0d0)
-enddo
-if (any(var(1:nvar)%empty)) then
+if (any(var(1:nvar)%zero)) then
 	write (rads_log_unit,551,advance='no') 'All zero:'
 	do i = 1,nvar
-		if (var(i)%empty) write (rads_log_unit,551,advance='no') trim(var(i)%v%name)
+		if (var(i)%zero) write (rads_log_unit,551,advance='no') trim(var(i)%v%name)
 	enddo
-	write (rads_log_unit,551,advance='no') '... '
+	write (rads_log_unit,551,advance='no') '...'
 endif
 
-
 ! Open output file
-call rads_create_pass (S, P, nrec)
+if (.not.(present(skip_create) .and. skip_create)) call rads_create_pass (S, P, nrec)
 
 ! Define all variables
 do i = 1,nvar
-	call rads_def_var (S, P, var(i)%v)
+	if (.not.var(i)%skip_empty) call rads_def_var (S, P, var(i)%v)
 enddo
 
 ! Fill all the data fields
 do i = 1,nvar
-	call rads_put_var (S, P, var(i)%v, var(i)%d(1:nrec))
+	if (.not.var(i)%skip_empty) call rads_put_var (S, P, var(i)%v, var(i)%d(1:nrec))
 enddo
 
 ! Close the data file
@@ -162,7 +160,7 @@ call rads_close_pass (S, P)
 end subroutine put_rads
 
 !-----------------------------------------------------------------------
-! nc2f: Load flag field, then set corresponding bit in RADS
+! nc2f  : Load flag field, then set corresponding bit in RADS
 ! ncid  : source NetCDF ID
 ! varnm : source variable name
 ! bit   : RADS bit to be set when value == 1
@@ -190,7 +188,11 @@ if (ndims == 2) then	! Reduce 2D flags to 1D array
 else
 	call nfs(nf90_get_var(ncid,varid,flag(1:nrec)))
 endif
-if (present(ge)) then	! Set flag when value >= ge
+if (present(ge) .and. present(le)) then ! Set flag when ge <= value <= le
+	do i = 1,nrec
+		if (flag(i) >= ge .and. flag(i) <= le) flags(i) = ibset(flags(i),bit)
+	enddo
+else if (present(ge)) then	! Set flag when value >= ge
 	do i = 1,nrec
 		if (flag(i) >= ge) flags(i) = ibset(flags(i),bit)
 	enddo

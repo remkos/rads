@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2021  Remko Scharroo
+! Copyright (c) 2011-2026  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -68,7 +68,7 @@ if (.not.luso) stop
 
 ! Load the USO table
 
-call parseenv ('${RADSROOT}/altim/data/tables/S3B.cor_uso_freq.daily.csv', uso_filenm)
+call parseenv ('${ALTIM}/data/tables/S3B.cor_uso_freq.daily.csv', uso_filenm)
 call log_string ('(' // trim(uso_filenm) // ')')
 i = getlun()
 open (unit=i, file=uso_filenm, status='old', iostat=ios)
@@ -125,6 +125,13 @@ real(eightbytereal) :: range_ku(n), range_ku_plrm(n), range_c(n), uso_scale
 
 call log_pass (P)
 
+! Do this routine only for Baseline < 005
+
+if (P%original(38:40) >= '005') then
+	call log_records(0)
+	return
+endif
+
 ! Get the USO scale factor
 
 call get_uso (P%equator_time / 86400d0, uso_scale)
@@ -139,6 +146,12 @@ call rads_get_var (S, P, 'range_c', range_c, .true.)
 
 call rads_put_passinfo (S, P)
 call rads_put_history (S, P)
+
+! Redefine the variables
+
+call rads_def_var (S, P, 'range_ku')
+call rads_def_var (S, P, 'range_ku_plrm')
+call rads_def_var (S, P, 'range_c')
 
 ! Write out all the data
 

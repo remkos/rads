@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2021  Remko Scharroo
+# Copyright (c) 2011-2026  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -24,34 +24,59 @@
 . rads_sandbox.sh
 
 rads_open_sandbox j3
-lst=$SANDBOX/rads_gen_j3_new.lst
-imrk=igdr/.bookmark
-omrk=ogdr/.bookmark
 
-date																	>  "$log" 2>&1
+types="ogdr igdr"
 
-# Process only OGDR data for the last three days (including current)
-d0=`date -u -v -2d +%Y%m%d 2>&1` || d0=`date -u --date="2 days ago" +%Y%m%d`
-TZ=UTC touch -t ${d0}0000 $omrk
-find -L ogdr/c[0-8]?? -name "JA3_*.nc" -a -newer $omrk | sort > "$lst"
-rads_gen_jason_gdrf --ymd=$d0 < "$lst"									>> "$log" 2>&1
-rads_add_orbit   $options -Valt_cnes --dir=gdr-e-moe --equator --rate	>> "$log" 2>&1
+date												>  "$log" 2>&1
 
-# Now process all IGDR data that came in during the last four days (including current)
-d0=`date -u -v -3d +%Y%m%d 2>&1` || d0=`date -u --date="3 days ago" +%Y%m%d`
-TZ=UTC touch -t ${d0}0000 $imrk
-find -L igdr/c??? -name "JA3_*.nc" -a -newer $imrk | sort > "$lst"
-rads_gen_jason_gdrf < "$lst"											>> "$log" 2>&1
+for type in ${types}; do
+    mrk=${type}/.bookmark
+    lst=$SANDBOX/rads_gen_j3_tmp_${type}.lst
 
-# Do the patches to all data
+    case $type in
+	    ogdr)
+            # Process only OGDR data for the last three days (including current)
+            days=2
+            d0=$(date -u -v -${days}d +%Y%m%d 2>/dev/null || date -u --date="${days} days ago" +%Y%m%d)
+            TZ=UTC touch -t ${d0}0000 $mrk
+            find -L ${type}/c[0-8]?? -name "JA3_*.nc" -a -newer $mrk | sort > "$lst"
+            ;;
+	    igdr)
+            # Process all IGDR data that came in during the last four days (including current)
+            days=3
+            d0=$(date -u -v -${days}d +%Y%m%d 2>/dev/null || date -u --date="${days} days ago" +%Y%m%d)
+            TZ=UTC touch -t ${d0}0000 $mrk
+            find -L ${type}/c??? -name "JA3_*.nc" -a -newer $mrk | sort > "$lst"
+            ;;
+    esac
+    
+    if [ -s "$lst" ]; then
+        rads_gen_jason_gdrf --ymd=$d0 $options < "$lst"	>> "$log" 2>&1
 
-rads_fix_jason    $options --all					>> "$log" 2>&1
-rads_add_common   $options							>> "$log" 2>&1
-rads_add_iono     $options --all					>> "$log" 2>&1
-# Redetermine SSHA
-rads_add_refframe $options -x -x mle3				>> "$log" 2>&1
-rads_add_sla      $options -x -x mle3				>> "$log" 2>&1
+    # Add MOE orbit (for OGDR only)
+        case $type in
+	        ogdr) rads_add_orbit $options -Valt_cnes --dir=gdr-e-moe --equator --rate	>> "$log" 2>&1
+		        ;;
+        esac
 
-date												>> "$log" 2>&1
+    # Do the patches to all data
+        rads_fix_jason    $options --all					>> "$log" 2>&1
+        rads_add_common   $options							>> "$log" 2>&1
+
+        if grep -q _2Pg $lst ; then
+            # For GDR-G we add the FES2014 model
+            rads_add_tide $options --models=fes14           >> "$log" 2>&1
+        else
+            # For GDR-F we add MLE3 support
+            extra="-x mle3 $extra"
+        fi
+
+        # Redetermine SSHA
+        rads_add_refframe $options -x $extra                >> "$log" 2>&1
+        rads_add_sla      $options -x $extra -Xgdr_g        >> "$log" 2>&1
+    fi
+    
+    date												>> "$log" 2>&1
+done
 
 rads_close_sandbox

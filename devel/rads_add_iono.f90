@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2021  Remko Scharroo
+! Copyright (c) 2011-2026  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -28,25 +28,29 @@ use rads_devel
 use gimsubs
 use nicsubs
 
+! Command line arguments
+
+character(rads_cmdl) :: path
+integer(fourbyteint) :: j, cyc, pass, ios
+real(eightbytereal) :: f, f_scaled
+integer(fourbyteint), parameter :: nmod = 3
+logical :: model(nmod) = .false.
+
 ! Data variables
 
 type(rads_sat) :: S
 type(rads_pass) :: P
 type(rads_var), pointer :: var
-type(giminfo) :: info
+type(giminfo) :: info(2)
 
-! Command line arguments
+! Other parameters
 
-character(rads_cmdl) :: path
-integer(fourbyteint) :: j, cyc, pass
-real(eightbytereal) :: f, f_scaled
-integer(fourbyteint), parameter :: nmod = 3
-logical :: model(nmod) = .false.
+real(eightbytereal), parameter :: jplg_start = 283996800d0, codg_start = 418438800d0 ! 1994-01-01T00 and 1998-04-06T01
 
 ! Initialise
 
 call synopsis ('--head')
-call rads_set_options ('gin gim iri2007 nic09 all')
+call rads_set_options ('cgjn code jpl gim nic09 all scale:')
 call rads_init (S)
 
 ! Determine conversion factor from TEC units to ionospheric delay in metres
@@ -55,7 +59,6 @@ call rads_init (S)
 f = -0.4028d0/S%frequency(1)**2	! freq in GHz from rads.xml; f = factor from TEC to meters
 var => rads_varptr (S, 'iono_gim')
 read (var%info%parameters, *) f_scaled ! Get the ionosphere scaling parameter
-f_scaled = f_scaled * f
 
 ! Get ${ALTIM}/data directory
 
@@ -65,19 +68,23 @@ call parseenv ('${ALTIM}/data/', path)
 
 do j = 1,rads_nopt
 	select case (rads_opt(j)%opt)
-	case ('g', 'gim')
+	case ('g', 'gim', 'j', 'jpl')
 		model(1) = .true.
-	case ('i', 'iri2007')
-		call rads_message ('IRI2007 no longer supported')
+	case ('c', 'code')
+		model(2) = .true.
 	case ('n', 'nic09')
 		model(3) = .true.
 	case ('all')
 		model(1) = .true.
 		model(3) = .true.
+	case ('scale')
+		read (rads_opt(j)%arg, *, iostat=ios) f_scaled ! Overrule config file
 	end select
 enddo
+f_scaled = f_scaled * f
 
-if (model(1)) info = giminit(trim(path)//'gim/jplg_',1)
+if (model(1)) info(1) = giminit(trim(path)//'gim/jplg_',max(1,rads_verbose))
+if (model(2)) info(2) = giminit(trim(path)//'gim/codg_',max(1,rads_verbose))
 if (model(3)) call nicinit(trim(path)//'nic09/nic09_clim.nc',trim(path)//'nic09/nic09_gtec.nc')
 
 ! Process all data files
@@ -103,10 +110,11 @@ call synopsis_devel (' [processing_options]')
 write (*,1310)
 1310  format (/ &
 'Additional [processing_options] are:'/ &
-'  -g, --gim                 Add JPL GIM model data' / &
+'  -g, --gim, -j, --jpl      Add JPL GIM model data (only for 1994-01-01 and later)' / &
 '  -n, --nic09               Add NIC09 ionosphere model' / &
 '  --all                     All of the above' / &
-'  -i  --iri2007             IRI2007 ionosphere model NO LONGER SUPPORTED')
+'  -c, --code                Add CODE GIM model data (only for 1998-01-01 and later)' / &
+'  --scale=SCALE             Set scale factor (default is from rads.xml)')
 stop
 end subroutine synopsis
 
@@ -116,8 +124,8 @@ end subroutine synopsis
 
 subroutine process_pass (n)
 integer(fourbyteint), intent(in) :: n
-integer(fourbyteint) :: i, j, ii, iold
-real(eightbytereal) :: time(n), lat(n), lon(n), alt(n), tec1(n), z(n,nmod), dtime, d
+integer(fourbyteint) :: i, j
+real(eightbytereal) :: time(n), lat(n), lon(n), z(n,nmod)
 logical :: ok(nmod)
 
 call log_pass (P)
@@ -127,30 +135,21 @@ call log_pass (P)
 call rads_get_var (S, P, 'time', time, .true.)
 call rads_get_var (S, P, 'lat', lat, .true.)
 call rads_get_var (S, P, 'lon', lon, .true.)
-call rads_get_var (S, P, 'alt', alt, .true.)
 
 ! Now do all models
 
-if (model(1)) then ! JPL GIM
+z = nan
+
+if (model(1) .and. time(1) > jplg_start) then ! JPL GIM
 	do i = 1,n
-		z(i,1) = f_scaled * gimtec(time(i),lat(i),lon(i),info)
+		z(i,1) = f_scaled * gimtec(time(i),lat(i),lon(i),info(1))
 	enddo
 endif
 
-if (model(2)) then ! IRI2007 (no longer supported)
-	! Compute IRI every 10 seconds, then interpolate linearly in time
-	iold = 1
+if (model(2) .and. time(1) > codg_start) then ! CODE GIM
 	do i = 1,n
-		dtime = time(i) - time(iold)
-		if (dtime < 10d0 .and. i > 1 .and. i < n) cycle
-!		call iri2007tec(0,time(i),lat(i),lon(i),alt(i),alt(i),tec1(i),tec2)
-		do ii = iold+1,i-1
-			d = (time(ii)-time(iold)) / dtime
-			tec1(ii) = (1d0-d) * tec1(iold) + d * tec1(i)
-		enddo
-		iold = i
+		z(i,2) = f_scaled * gimtec(time(i),lat(i),lon(i),info(2))
 	enddo
-	z(:,2) = f * tec1
 endif
 
 if (model(3)) then ! NIC09
@@ -172,11 +171,11 @@ endif
 call rads_put_history (S, P)
 
 if (ok(1)) call rads_def_var (S, P, 'iono_gim')
-if (ok(2)) call rads_def_var (S, P, 'iono_iri2007')
+if (ok(2)) call rads_def_var (S, P, 'iono_gim')	! Temporarily uses the same variable
 if (ok(3)) call rads_def_var (S, P, 'iono_nic09')
 
 if (ok(1)) call rads_put_var (S, P, 'iono_gim', z(:,1))
-if (ok(2)) call rads_put_var (S, P, 'iono_iri2007', z(:,2))
+if (ok(2)) call rads_put_var (S, P, 'iono_gim', z(:,2)) ! Temporarily uses the same variable
 if (ok(3)) call rads_put_var (S, P, 'iono_nic09', z(:,3))
 
 call log_records (n)

@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2021  Remko Scharroo
+# Copyright (c) 2011-2026  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -24,36 +24,35 @@
 . rads_sandbox.sh
 
 rads_open_sandbox sa
-lst=$SANDBOX/rads_gen_saral_new.lst
-imrk=igdr/.bookmark
-omrk=ogdr/.bookmark
+mrk=$RADSDATAROOT/.bookmark
 
 date											>  "$log" 2>&1
 
 # Process only OGDR data for the last three days (including current)
 
-d0=`date -u -v -2d +%Y%m%d 2>&1` || d0=`date -u --date="2 days ago" +%Y%m%d`
-TZ=UTC touch -t ${d0}0000 $omrk
-find ogdr/c??? -name "SRL_*.nc" -a -newer $omrk | sort > "$lst"
+days=2
+d0=$(date -u -v -${days}d +%Y%m%d 2>/dev/null || date -u --date="${days} days ago" +%Y%m%d)
+TZ=UTC touch -t ${d0}0000 $mrk
+find ogdr/c??? -name "SRL_*.nc" -a -newer $mrk | sort > "$lst"
 rads_gen_saral --ymd=$d0 < "$lst"					>> "$log" 2>&1
 
 # Now process all IGDR data that came in during the last four days (including current)
 
-d0=`date -u -v -3d +%Y%m%d 2>&1` || d0=`date -u --date="3 days ago" +%Y%m%d`
-TZ=UTC touch -t ${d0}0000 $imrk
-find igdr/c??? -name "SRL_*.nc" -a -newer $imrk | sort > "$lst"
+days=3
+d0=$(date -u -v -${days}d +%Y%m%d 2>/dev/null || date -u --date="${days} days ago" +%Y%m%d)
+TZ=UTC touch -t ${d0}0000 $mrk
+find igdr/c??? -name "SRL_*.nc" -a -newer $mrk | sort > "$lst"
 rads_gen_saral < "$lst"							>> "$log" 2>&1
 
 # Do the patches to all data
 
-rads_add_iono    $options --all					>> "$log" 2>&1
 rads_add_common  $options						>> "$log" 2>&1
 rads_add_ssb     $options --all					>> "$log" 2>&1
 rads_add_ib      $options						>> "$log" 2>&1
 rads_add_ww3_222 $options --all					>> "$log" 2>&1
 # Redetermine SSHA
 rads_add_refframe $options						>> "$log" 2>&1
-rads_add_sla      $options						>> "$log" 2>&1
+rads_add_sla      $options -Xgdr_g				>> "$log" 2>&1
 
 date											>> "$log" 2>&1
 

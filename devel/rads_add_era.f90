@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2021  Remko Scharroo
+! Copyright (c) 2011-2026  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -342,7 +342,7 @@ get_gribs = .true.
 
 ! Load new file and load common variables
 
-l = strf1985(filenm, path, hex*21600)
+l = strf1985(filenm, trim(path), hex*21600)
 
 if (filenm /= old_filenm) then
 	if (gribid /= -1) call grib_release(gribid)

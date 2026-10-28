@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2021  Remko Scharroo
+# Copyright (c) 2011-2026  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,47 +14,60 @@
 # GNU Lesser General Public License for more details.
 #-----------------------------------------------------------------------
 #
-# Convert TOPEX Retracked GDR files to RADS
+# Convert SWOT files to RADS
 #
-# syntax: rads_gen_tx_rgdr.sh <directories>
+# syntax: rads_gen_sw.sh [ .<type> ] <directories>
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
 
-rads_open_sandbox tx.r50
-lst=$SANDBOX/rads_gen_tx_rgdr.lst
+# Exit when no directory names are provided
+[[ $# -eq 0 ]] && exit
 
-date													>  "$log" 2>&1
+type=
+case $1 in
+	.*) type=$1; shift ;;
+esac
+
+rads_open_sandbox sw${type}
+lst=$SANDBOX/rads_gen_sw.lst
+
+date												>  "$log" 2>&1
 
 for tar in "$@"; do
 	case "$tar" in
+		*cycle[0-9][0-9][0-9]) dir=${tar/cycle/cycle_}; mv "$tar" "$dir" ;;
 		*.txz) tar -xJf "$tar"; dir=`basename "$tar" .txz` ;;
 		*.tgz) tar -xzf "$tar"; dir=`basename "$tar" .tgz` ;;
 		*) dir="$tar" ;;
 	esac
-	ls "$dir"/RGDR_*.nc > "$lst"
-	rads_gen_tx_rgdr $options < "$lst"						>> "$log" 2>&1
+	ls "$dir"/SWOT_???_2Pf*.nc > "$lst"
+	rads_gen_swot	$options < "$lst"			>> "$log" 2>&1
 	case "$tar" in
 		*.t?z) chmod -R u+w "$dir"; rm -rf "$dir" ;;
 	esac
 done
 
+# Add adaptive retracker for NTC
+
+case $type in
+	ogdr|igdr) extra= ;;
+	        *) extra="-x adaptive" ;;
+esac
+
 # Do the patches to all data
 
-rads_add_iono     $options -C1-220 --iri2007 --nic09	>> "$log" 2>&1
-rads_add_iono     $options -C221-481 --all				>> "$log" 2>&1
-rads_add_common   $options								>> "$log" 2>&1
-rads_add_dual     $options								>> "$log" 2>&1
-#rads_add_ncep    $options -gdwu --sig0-saral			>> "$log" 2>&1
-#rads_fix_tp      $options								>> "$log" 2>&1
-rads_add_mog2d    $options								>> "$log" 2>&1
-rads_add_ib       $options								>> "$log" 2>&1
-rads_add_orbit    $options -Valt_gdrcp					>> "$log" 2>&1
-rads_add_orbit    $options -Valt_std1204 --equator --loc-7 --rate	>> "$log" 2>&1
-rads_add_ww3_314  $options -C269-481 --all				>> "$log" 2>&1
-# Redetermine SSHA
-rads_add_refframe $options								>> "$log" 2>&1
-rads_add_sla      $options								>> "$log" 2>&1
+rads_add_common   $options							>> "$log" 2>&1
+rads_add_mfwam    $options --wind					>> "$log" 2>&1
 
-date													>> "$log" 2>&1
+# If not GDR-F, add the FES2014 model
+grep -q _2Pf $lst || rads_add_tide $options --models=fes14	>> "$log" 2>&1
+# If not GDR-G, add MLE3 support
+grep -q _2Pg $lst || extra="-x mle3 $extra"
+
+# Redetermine SSHA
+rads_add_refframe $options -x $extra				>> "$log" 2>&1
+rads_add_sla      $options -x $extra -Xgdr_g		>> "$log" 2>&1
+
+date												>> "$log" 2>&1
 
 rads_close_sandbox

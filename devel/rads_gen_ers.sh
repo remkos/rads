@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2021  Remko Scharroo
+# Copyright (c) 2011-2024  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,35 +14,50 @@
 # GNU Lesser General Public License for more details.
 #-----------------------------------------------------------------------
 #
-# Convert Sentinel-3B SRAL L2 files to RADS
+# Convert Envisat GDR v3 files to RADS
 #
-# The all standard_measurement.nc files in the named directory will be
-# processed.
-#
-# syntax: rads_gen_3b.sh <directory>
+# syntax: rads_gen_n1_gdr.sh <directories>
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
 
 # Exit when no directory names are provided
 [[ $# -eq 0 ]] && exit
 
-rads_open_sandbox 3b
-lst=$SANDBOX/rads_gen_3b.lst
+# Make a temporary list file
+tmplst=$(mktemp ${TMPDIR:-/tmp}/rads.XXXXXX)
+find "$@" -name "*.nc"| sort > "$tmplst"
+
+# If list is empty, exit
+[[ ! -s $tmplst ]] && rm -f "$tmplst" && exit
+
+# Determine which satellite
+sat=e1
+grep -q E2_REAP_ERS "$tmplst" && sat=e2
+
+rads_open_sandbox $sat.f4a
+
+mv -f "$tmplst" "$lst"
 
 date													>  "$log" 2>&1
+rads_gen_reaper   $options < "$lst"						>> "$log" 2>&1
 
-find "$@" -name "*.nc" | sort > "$lst"
-rads_gen_s3 	  $options --min-rec=6 < "$lst"			>> "$log" 2>&1
-rads_fix_s3		  $options --all						>> "$log" 2>&1
+# Add the FDR4ALT data. Each type will need to be added one at a time
 
-# General geophysical corrections
-rads_add_grid     $options -Vangle_coast                >> "$log" 2>&1
+date													>> "$log" 2>&1
+for tdp in TDP_OC TDP_WA TDPATM ; do
+	find $RADSROOT/ext/FDR4ALT/$tdp/er${sat:1:1}/c??? -name "*.nc" | sort > "$lst"
+	rads_add_f4a_ers  $options < "$lst"					>> "$log" 2>&1
+done
+
+# Do the patches to all data
+
+date													>> "$log" 2>&1
+rads_add_tide     $options --models=fes14				>> "$log" 2>&1
 rads_add_common   $options								>> "$log" 2>&1
-rads_add_mfwam    $options -C21-199 --all				>> "$log" 2>&1
-rads_add_iono     $options --all						>> "$log" 2>&1
+
 # Redetermine SSHA
-rads_add_refframe $options -x -x plrm					>> "$log" 2>&1
-rads_add_sla      $options -x -x plrm					>> "$log" 2>&1
+rads_add_refframe $options								>> "$log" 2>&1
+rads_add_sla      $options								>> "$log" 2>&1
 
 date													>> "$log" 2>&1
 

@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2021  Remko Scharroo
+! Copyright (c) 2011-2026  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -13,15 +13,15 @@
 ! GNU Lesser General Public License for more details.
 !-----------------------------------------------------------------------
 
-!*rads_pre_sort_passes -- Sort (combine and split) Sentinel-6, -3 or Jason GDR-F into pass files
+!*rads_pre_sort_passes -- Sort (combine and split) Sentinel-3, -6, SWOT or Jason GDR-F/G into pass files
 !
 ! Read Sentinel-3/6 standard or reduced granules or orbits and
 ! combine them (and split them) into pass files.
-! This works also for Jason-3 GDR-F OGDR files in GDR-F format.
+! This works also for Jason-3 and SWOT OGDR files in GDR-F or GDR-G format.
 ! The input file names are read from
 ! standard input. The individual pass files will be named
 ! <destdir>/cCCC/SSS_*_CCC_PPP_*.nc, where SSS is the satellite abbreviation
-! (S3A, S3B, S6A, JA3), CCC is the cycle number and PPP the pass number.
+! (S3A, S3B, S6A, JA3, SWOT), CCC is the cycle number and PPP the pass number.
 ! The directory <destdir>/cCCC will be created if needed.
 !
 ! This program relies on the availability of the satellite's ORF files.
@@ -37,7 +37,8 @@ use netcdf
 
 ! Struct for orbit info
 
-type(orfinfo) :: orf(300000)
+integer(fourbyteint), parameter :: mpass = 300000 ! Enough for 30 years
+type(orfinfo) :: orf(mpass)
 
 ! Scruct to store input file information
 
@@ -46,7 +47,7 @@ type :: fileinfo
 	real(eightbytereal) :: time0, time1, lat0, lat1, lon0, lon1
 	character(len=rads_cmdl) :: filenm
 end type
-type(fileinfo) :: fin(50)
+type(fileinfo) :: fin(150)
 
 ! Group names
 
@@ -61,14 +62,11 @@ character(len=15) :: newer_than = '00000000T000000'
 character(len=3) :: sat
 character(len=9) :: tll(3) = (/'time     ', 'latitude ', 'longitude'/)
 character(len=1) :: timesep = 'T'
-integer(fourbyteint), parameter :: mpass = 254 * 500
 real(eightbytereal), parameter :: sec2000 = 473299200d0
 integer(fourbyteint) :: i0, i, j, ngrps = 3, timegrp = 1, ncid1(0:3), nrec, ios, varid, in_max = huge(fourbyteint), &
-	nfile = 0, ipass = 1, ipass0 = 0, verbose_level = 3, cycle_number, pass_number, abs_orbit_number
-integer(fourbyteint) :: p, q, r, dpass
+	nfile = 0, ipass = 1, ipass0 = 0, verbose_level = 3, cycle_number, pass_number
 real(eightbytereal), allocatable :: time(:), lat(:), lon(:)
-real(eightbytereal) :: last_time = 0
-character(len=1) :: ascending_flag = 'A'
+real(eightbytereal) :: last_time = 0d0
 logical :: first = .true., check_pass = .false.
 
 ! Print description, if requested
@@ -98,13 +96,17 @@ read (*,'(a)',iostat=ios) filenm
 if (ios /= 0) stop
 
 i = index(filenm,'/',.true.) + 1
-if (filenm(i:i+1) == 'JA' .and. filenm(i+10:i+10) == 'f') then
+if (filenm(i:i+1) == 'JA' .and. filenm(i+10:i+10) >= 'f') then
 	! Jason GDR-F
+	timesep = ' '
+else if (filenm(i:i+3) == 'SWOT' .and. filenm(i+11:i+11) >= 'f') then
+	! SWOT GDR-F
 	timesep = ' '
 else if (filenm(i:i+1) == 'S6' .and. filenm(i+4:i+8) == 'P4_2_') then
 	! Sentinel-6 Level-2
 	if (filenm(i+10:i+11) == 'HR') ngrps = 2
-else if (filenm(i:) == 'standard_measurement.nc' .or. filenm(i:) == 'reduced_measurement.nc') then
+else if ((filenm(i:i+1) == 'S3' .and. filenm(i+4:i+8) == 'SR_2_') .or. &
+	filenm(i:) == 'standard_measurement.nc' .or. filenm(i:) == 'reduced_measurement.nc') then
 	! Sentinel-3 Level-2
 	i = index(filenm(:i-2),'/',.true.) + 1
 	tll = (/'time_01  ', 'lat_01   ', 'lon_01   '/)
@@ -169,21 +171,7 @@ do
 
 ! Read global attributes
 
-	if (sat(:2) /= 'JA') call nfs(nf90_get_att(ncid1(0),nf90_global,'product_name',product_name))
-	if (sat(:2) /= 'CS') then
-		call nfs(nf90_get_att(ncid1(0),nf90_global,'cycle_number',cycle_number))
-		call nfs(nf90_get_att(ncid1(0),nf90_global,'pass_number',pass_number))
-	else
-		call nfs(nf90_get_att(ncid1(0),nf90_global,'abs_orbit_number',abs_orbit_number))
- 		call nfs(nf90_get_att(ncid1(0),nf90_global,'ascending_flag',ascending_flag))
-		dpass = 1
-		if (ascending_flag(1:1) == 'A') dpass = 2
-		p = 2*abs_orbit_number - 1 + dpass - 19
-		q = modulo (p, 10688)
-		r = modulo (q, 2462)
-		cycle_number = (p / 10688) * 13 + (q / 2462) * 3 + r / 840 + 1
-		pass_number = modulo (r, 840) + 1
-	endif
+	if (sat(:2) /= 'JA' .and. sat(:2) /= 'SW') call nfs(nf90_get_att(ncid1(0),nf90_global,'product_name',product_name))
 
 ! Read the time dimension
 
@@ -234,7 +222,6 @@ do
 
 	call which_pass (time(i0))
 	if (ipass /= ipass0) call write_output
-	last_time = time(nrec)
 
 ! Two reasons to split a file into two pieces:
 
@@ -254,6 +241,7 @@ do
 	enddo
 ! - Register the remaining bit
 	call fill_fin (i0, nrec)
+	last_time = time(nrec)
 
 ! Deallocate time and location arrays
 
@@ -273,7 +261,7 @@ contains
 subroutine fill_fin (i0, i1)
 integer, intent(in) :: i0, i1
 nfile = nfile + 1
-if (nfile > 50) call rads_exit ('Number of granules too large (> 50)')
+if (nfile > 150) call rads_exit ('Number of granules too large (> 150)')
 fin(nfile)%ncid = ncid1
 fin(nfile)%nrec = nrec
 fin(nfile)%filenm = filenm
@@ -298,11 +286,11 @@ subroutine which_pass (time)
 real(eightbytereal), intent(in) :: time
 do while (time < orf(ipass)%starttime)
 	ipass = ipass - 1
-	if (ipass < 1) call rads_exit ('Times are beyond limits of ORF file')
+	if (ipass < 1) call rads_exit ('Time is before the start of the ORF file')
 enddo
 do while (time > orf(ipass+1)%starttime)
 	ipass = ipass + 1
-	if (orf(ipass)%cycle < 0) call rads_exit ('Times are beyond limits of ORF file')
+	if (orf(ipass)%cycle < 0) call rads_exit ('Time is after the end of the ORF file')
 enddo
 end subroutine which_pass
 
@@ -316,6 +304,14 @@ real(eightbytereal) :: equator_time, equator_longitude, x
 character(len=rads_naml) :: dirnm, prdnm, outnm
 logical :: exist
 
+! How many records are buffered for output?
+! Skip if there is nothing left
+
+if (nfile == 0 .or. ipass0 == 0) then
+	ipass0 = ipass
+	return
+endif
+
 ! Retrieve the pass variables
 
 cycle_number = orf(ipass0)%cycle
@@ -328,16 +324,12 @@ equator_time = orf(ipass0)%eqtime + sec2000
 equator_longitude = orf(ipass0)%eqlon
 ipass0 = ipass
 
-! How many records are buffered for output?
-! Skip if there is nothing left
-
-if (nfile == 0 .or. ipass0 == 0) return
 nrec = sum(fin(1:nfile)%rec1 - fin(1:nfile)%rec0 + 1)
 
 ! Open the output file. Make directory if needed.
 
 605 format (a,'/c',i3.3)
-610 format (a,'P',i3.3,'_',i3.3,'.nc') ! JA? format
+610 format (a,'P',i3.3,'_',i3.3,'.nc') ! JA? and SWOT format
 611 format (a,i3.3,'_',i3.3,a,'.nc') ! S3? format
 612 format (a,'RED_',a,i3.3,'_',i3.3,a,'.nc') ! S6? format
 613 format (a,'_',i3.3,'_',i3.3,'.nc') ! CS format
@@ -347,8 +339,10 @@ inquire (file=dirnm,exist=exist)
 if (.not.exist) call system('mkdir -p '//dirnm)
 if (sat(:2) == 'JA') then
 	write (prdnm,610) product_name(:11),cycle_number,pass_number
+else if (sat(:2) == 'SW') then
+	write (prdnm,610) product_name(:12),cycle_number,pass_number
 else if (sat(:2) == 'S3') then
-	write (prdnm,611) product_name(:15),cycle_number,pass_number,product_name(77:94)
+	write (prdnm,611) product_name(:15),cycle_number,pass_number,'_'//product_name(82:94)
 else if (sat(:2) == 'S6') then
 	write (prdnm,612) product_name(:13),product_name(92:95),cycle_number,pass_number,product_name(95:98)
 else if (sat(:2) == 'CS') then
@@ -356,12 +350,13 @@ else if (sat(:2) == 'CS') then
 endif
 outnm = trim(dirnm) // '/' // trim(prdnm)
 inquire (file=outnm,exist=exist)
+if (verbose_level >= 5) write (*,*) "outnm, exist =", trim(outnm), exist
 
 ! If exist, then keep the file if the buffer is smaller or equal in size
 ! If it is larger, delete the existing file
 
 if (exist) then
-	call nfs(netcdf_open(outnm,nf90_write,ncid2))
+	call nfs(netcdf_open(outnm,nf90_nowrite,ncid2))
 	if (verbose_level >= 5) write (*,*) "ncid2 =", ncid2
 	call nfs(nf90_inquire_dimension(ncid2(timegrp),1,len=nout))
 	if (verbose_level >= 5) write (*,*) "nout =",nout
@@ -375,6 +370,9 @@ if (exist) then
 	call nfs(nf90_get_att(ncid2(0),nf90_global,'equator_time',date(3)))
 	x = strp1985f (date(3))
 	if (abs(x - equator_time) > 0.5d-3) then
+		! Reopen for writing to insert updated equator time
+		call nfs(nf90_close(ncid2(0)))
+		call nfs(netcdf_open(outnm,nf90_write,ncid2))
 		date(3) = strf1985f(equator_time, timesep)
 		call nfs(nf90_put_att(ncid2(0),nf90_global,'equator_time',date(3)))
 		if (verbose_level >= 1) write (*,620) 'Updating', 1, nout, nout, date(1:2), '>', trim(outnm)
@@ -383,7 +381,7 @@ if (exist) then
 	call nfs(nf90_close(ncid2(0)))
 	if (nrec <= nout) then
 		do i = 1, nfile
-			! Release NetCDF file when reaching end
+			! Release input NetCDF file when reaching end
 			if (fin(i)%rec1 == fin(i)%nrec) call nfs(nf90_close(fin(i)%ncid(0)))
 		enddo
 		if (verbose_level >= 2) write (*,620) 'Keeping ', 1, nout, nout, date(1:2), '>', trim(outnm)

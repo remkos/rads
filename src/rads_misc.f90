@@ -1,5 +1,5 @@
 !****-------------------------------------------------------------------
-! Copyright (c) 2011-2021  Remko Scharroo
+! Copyright (c) 2011-2026  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -18,7 +18,7 @@ use typesizes
 
 ! These are used by getopt
 integer, save :: getopt_ind = 1, getopt_chr = 2
-character(len=320), private, save :: getopt_arg
+character(len=640), private, save :: getopt_arg
 logical, private, save :: getopt_new = .true., getopt_end = .false., getopt_opt = .false.
 
 ! Provide a NaN parameter
@@ -542,7 +542,7 @@ character(len=*), intent(inout) :: string
 ! string : Upon input: default value for string.
 !        : Upon output: contents of the environment variable or default.
 !****-------------------------------------------------------------------
-character(len=320) :: temp
+character(len=640) :: temp
 call getenv (env,temp)
 if (temp /= ' ') string = temp
 end subroutine checkenv
@@ -571,7 +571,7 @@ character(len=*), intent(inout) :: output
 ! input  : String to be parsed.
 ! output : String with environment variables replaced.
 !****-------------------------------------------------------------------
-character(len=320) :: env
+character(len=640) :: env
 integer :: j, k = 0, l, m, n
 output = input
 do
@@ -831,9 +831,10 @@ end subroutine quicksort
 ! Compute best fitting linear regression
 !
 ! SYNOPSIS
-pure subroutine regression (x, y, a, b, r, fit)
+pure subroutine regression (x, y, a, b, r, mse, n)
 real(eightbytereal), intent(in) :: x(:), y(:)
-real(eightbytereal), intent(out) :: a, b, r, fit
+real(eightbytereal), intent(out) :: a, b, r, mse
+integer(fourbyteint), intent(out) :: n
 !
 ! PURPOSE
 ! Compute best fitting straight line through a number of points
@@ -843,12 +844,13 @@ real(eightbytereal), intent(out) :: a, b, r, fit
 ! ARGUMENTS
 ! x     : x-coordinate
 ! y     : y-coordinate
-! a, b  : Coefficients of linear regression (intercept and slope)
-! r     : Regression
-! fit   : RMS of fit of regression to the data
+! a, b  : coefficients of linear regression (intercept and slope)
+! r     : regression coefficient
+! mse   : mean square error
+! n     : number of valid points on input
 !****-------------------------------------------------------------------
 real(eightbytereal) :: sumx,sumy,sumxx,sumxy,sumyy,uxx,uxy,uyy
-integer(fourbyteint) :: i,n
+integer(fourbyteint) :: i
 n = 0
 sumx = 0d0
 sumy = 0d0
@@ -864,14 +866,22 @@ do i = 1,size(x)
 	sumyy = sumyy + y(i)*y(i)
 	n = n + 1
 enddo
-
-uxx = n * sumxx - sumx * sumx
-uxy = n * sumxy - sumx * sumy
-uyy = n * sumyy - sumy * sumy
-b = uxy / uxx
-a = (sumy - b*sumx) / n
-r = uxy / sqrt(uxx*uyy)
-fit = sqrt((sumyy - a * sumy - b * sumxy) / n)
+if (n < 1) then
+	a = nan
+	b = nan
+else
+	uxx = n * sumxx - sumx * sumx
+	uxy = n * sumxy - sumx * sumy
+	uyy = n * sumyy - sumy * sumy
+	b = uxy / uxx
+	a = (sumy - b*sumx) / n
+	r = uxy / sqrt(uxx*uyy)
+	if (n < 3) then
+		mse = nan
+	else
+		mse = (sumyy - a * sumy - b * sumxy) / (n-2)
+	endif
+endif
 end subroutine regression
 
 !****f* rads_misc/is_number
@@ -965,9 +975,10 @@ end function next_word
 ! Compute mean and rms of multi-Hz array
 !
 ! SYNOPSIS
-pure subroutine mean_1hz (y, mean, rms)
+pure subroutine mean_1hz (y, mean, rms, nr)
 real(eightbytereal), intent(in) :: y(:,:)
 real(eightbytereal), intent(out) :: mean(:), rms(:)
+integer(fourbyteint), intent(out), optional :: nr(:)
 !
 ! PURPOSE
 ! Compute mean and stddev values from multi-Hz array <y(m,n)> where <m> is
@@ -981,6 +992,7 @@ real(eightbytereal), intent(out) :: mean(:), rms(:)
 ! y     : Input array of dimension (m,n)
 ! mean  : Average of y per 1-Hz, dimension n
 ! rms   : Standard deviation of 1-Hz, dimension n
+! nr    : (Optional) number of valid points, dimension n
 !****-------------------------------------------------------------------
 integer(fourbyteint) :: i, j, n
 do j = 1,size(y,2)
@@ -1003,6 +1015,7 @@ do j = 1,size(y,2)
 	else
 		rms(j) = sqrt ((rms(j) - n * mean(j)**2) / (n - 1))
 	endif
+	if (present(nr)) nr(j) = n
 enddo
 end subroutine mean_1hz
 
@@ -1011,9 +1024,10 @@ end subroutine mean_1hz
 ! Compute mean and rms of multi-Hz array with trend removal
 !
 ! SYNOPSIS
-pure subroutine trend_1hz (x, x0, y, mean, rms)
+pure subroutine trend_1hz (x, x0, y, mean, rms, nr)
 real(eightbytereal), intent(in) :: x(:,:), x0(:), y(:,:)
 real(eightbytereal), intent(out) :: mean(:), rms(:)
+integer(fourbyteint), intent(out), optional :: nr(:)
 !
 ! PURPOSE
 ! Compute mean and stddev values from multi-Hz array <y(m,n)> where <m> is
@@ -1032,42 +1046,14 @@ real(eightbytereal), intent(out) :: mean(:), rms(:)
 ! y     : Input array of dimension (m,n)
 ! mean  : Average of y per 1-Hz, dimension n
 ! rms   : Standard deviation of 1-Hz, dimension n
+! nr    : (Optional) number of valid points, dimension n
 !****-------------------------------------------------------------------
-real(eightbytereal) :: sumx,sumy,sumxx,sumxy,sumyy,uxx,uxy,uyy,a,b,xx
-integer(fourbyteint) :: i, j, n
+real(eightbytereal) :: b, r, mse
+integer(fourbyteint) :: j, n
 do j = 1,size(y,2)
-	n = 0
-	sumx = 0d0
-	sumy = 0d0
-	sumxx = 0d0
-	sumxy = 0d0
-	sumyy = 0d0
-	do i = 1,size(y,1)
-		if (isnan_(x(i,j)) .or. isnan_(y(i,j))) cycle
-		xx = x(i,j) - x0(j)
-		sumx = sumx + xx
-		sumy = sumy + y(i,j)
-		sumxx = sumxx + xx*xx
-		sumxy = sumxy + xx*y(i,j)
-		sumyy = sumyy + y(i,j)*y(i,j)
-		n = n + 1
-	enddo
-	if (n < 1) then
-		mean(j) = nan
-		rms(j) = nan
-	else
-		uxx = n * sumxx - sumx * sumx
-		uxy = n * sumxy - sumx * sumy
-		uyy = n * sumyy - sumy * sumy
-		b = uxy / uxx
-		a = (sumy - b*sumx) / n
-		mean(j) = a
-		if (n < 3) then
-			rms(j) = nan
-		else
-			rms(j) = sqrt ((sumyy - a * sumy - b * sumxy) / (n-2))
-		endif
-	endif
+	call regression (x(:,j)-x0(j), y(:,j), mean(j), b, r, mse, n)
+	rms(j) = sqrt(mse)
+	if (present(nr)) nr(j) = n
 enddo
 end subroutine trend_1hz
 

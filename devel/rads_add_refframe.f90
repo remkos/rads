@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2021  Remko Scharroo
+! Copyright (c) 2011-2026  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -166,10 +166,6 @@ else
 		enddo
 	enddo
 endif
-
-! If Jason-1 phase C, add 5 mm
-
-if (S%sat == 'j1' .and. S%phase%name == 'c') cor = cor + 5d-3
 
 ! Store all data fields.
 

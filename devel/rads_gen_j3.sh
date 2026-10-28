@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2021  Remko Scharroo
+# Copyright (c) 2011-2026  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -29,7 +29,6 @@ case $1 in
 esac
 
 rads_open_sandbox j3${type}
-lst=$SANDBOX/rads_gen_j3.lst
 
 date												>  "$log" 2>&1
 
@@ -40,7 +39,7 @@ for tar in "$@"; do
 		*.tgz) tar -xzf "$tar"; dir=`basename "$tar" .tgz` ;;
 		*) dir="$tar" ;;
 	esac
-	ls "$dir"/JA3_???_2Pf*.nc > "$lst"
+	ls "$dir"/JA3_???_2P*.nc > "$lst"
 	rads_gen_jason_gdrf	$options < "$lst"			>> "$log" 2>&1
 	case "$tar" in
 		*.t?z) chmod -R u+w "$dir"; rm -rf "$dir" ;;
@@ -58,11 +57,22 @@ esac
 
 rads_fix_jason    $options --all					>> "$log" 2>&1
 rads_add_common   $options							>> "$log" 2>&1
-rads_add_ww3_222  $options --all					>> "$log" 2>&1
-rads_add_iono     $options --all					>> "$log" 2>&1
+rads_add_mfwam    $options -C107-999 --wind			>> "$log" 2>&1
+rads_add_orbit    $options -Valt_gps --dir=jplgpspoe -C0-360	>> "$log" 2>&1
+rads_add_orbit    $options -Valt_gps --dir=jplgpsmoe -C360-999	>> "$log" 2>&1
+rads_add_orbit    $options -Valt_std2400 -C1-513    >> "$log" 2>&1
+
+if grep -q _2Pg $lst ; then
+	# For GDR-G we add the FES2014 model
+	rads_add_tide $options --models=fes14			>> "$log" 2>&1
+else
+	# For GDR-F we add MLE3 support
+	extra="-x mle3 $extra"
+fi
+
 # Redetermine SSHA
-rads_add_refframe $options -x -x mle3 $extra		>> "$log" 2>&1
-rads_add_sla      $options -x -x mle3 $extra		>> "$log" 2>&1
+rads_add_refframe $options -x $extra				>> "$log" 2>&1
+rads_add_sla      $options -x $extra -Xgdr_g		>> "$log" 2>&1
 
 date												>> "$log" 2>&1
 

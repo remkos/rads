@@ -1,9 +1,26 @@
-\begin{thebibliography}{7}
+\begin{thebibliography}{9}
 \providecommand{\natexlab}[1]{#1}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
   \providecommand{\doi}{doi:\discretionary{}{}{}\begingroup
   \urlstyle{rm}\Url}\fi
+
+\bibitem[{\textit{Bignalet-Cazalet et~al.}(2021)\textit{Bignalet-Cazalet,
+  Couhert, Queruel, Urien, Carr{\`e}re, Tran, and Jettou}}]{bignalet2021}
+Bignalet-Cazalet, F., A.~Couhert, N.~Queruel, S.~Urien, L.~Carr{\`e}re,
+  N.~Tran, and G.~Jettou (2021), {SARAL/AltiKa} products handbook, \textit{{}
+  SALP-MU-M-OP-15984-CN, issue 3.1}, CNES and ISRO, \doi{SARAL}.
+
+\bibitem[{\textit{Bouffard}(2015)}]{bouffard2015}
+Bouffard, J. (2015), {CryoSat-2}: Level 2 products evolutions and quality
+  improvements in {Baseline C}, \textit{{} XCRY-GSEG-EOPG-TN-15-0004}, ESA.
+
+\bibitem[{\textit{Cheney et~al.}(1991)\textit{Cheney, Doyle, Douglas, Agreen,
+  Miller, Timmerman, and McAdoo}}]{cheney1991a}
+Cheney, R.~E., N.~S. Doyle, B.~C. Douglas, R.~W. Agreen, L.~Miller, E.~L.
+  Timmerman, and D.~C. McAdoo (1991), The complete {Geosat} altimeter {GDR}
+  handbook, \textit{NOAA Tech.\ Memo. NOS NGS-7}, National Ocean Service,
+  Rockville, Maryland.
 
 \bibitem[{\textit{Francis}(1990)}]{francis1990a}
 Francis, C.~R. (1990), The {ERS-1} radar altimeter, paper presented at the 2nd
@@ -17,12 +34,6 @@ Francis, C.~R., et~al. (1995), The {ERS-2} spacecraft and its payload,
 Francis, C.~R., et~al. (1991), The {ERS-1} spacecraft and its payload,
   \textit{ESA Bulletin}, \textit{65}, 26--48.
 
-\bibitem[{\textit{Fu et~al.}(1994)\textit{Fu, Christensen, Yamarone, Lefebvre,
-  M{\'e}nard, Dorrer, and Escudier}}]{fu1994}
-Fu, L.-L., E.~J. Christensen, C.~A. Yamarone, M.~Lefebvre, Y.~M{\'e}nard,
-  M.~Dorrer, and P.~Escudier (1994), {TOPEX} mission overview, \textit{J.\
-  Geophys.\ Res.}, \textit{99}(C12), 24,369--24,382.
-
 \bibitem[{\textit{Lambin et~al.}(2010)}]{lambin2010}
 Lambin, J., et~al. (2010), The {OSTM/Jason-2} mission, \textit{Mar.\ Geod.},
   \textit{33}(S1), 4--25, \doi{10.1080/01490419.2010.491030}.
@@ -33,9 +44,10 @@ M{\'e}nard, Y., L.-L. Fu, P.~Escudier, B.~J. Haines, G.~Kunstmann, F.~Parisot,
   J.~Perbos, P.~Vincent, and S.~D. Desai (2003), The {Jason-1} mission,
   \textit{J.\ Mar.\ Geod.}, \textit{Jason-1}.
 
-\bibitem[{\textit{Wingham et~al.}(2006)}]{wingham2006}
-Wingham, D.~J., et~al. (2006), {CryoSat}: A mission to determine the
-  fluctuations in {Earth's} land and marine ice fields, \textit{Adv.\ Space
-  Res.}, \textit{37}(4), 841--871, \doi{10.1016/j.asr.2005.07.027}.
+\bibitem[{\textit{Rosmorduc et~al.}(2023)\textit{Rosmorduc, Roinard, Desai,
+  Desjonqueres, Callahan, and Bignalet-Cazalet}}]{rosmorduc2023}
+Rosmorduc, V., H.~Roinard, S.~D. Desai, J.~D. Desjonqueres, P.~S. Callahan, and
+  F.~Bignalet-Cazalet (2023), {TOPEX/Poseidon} {GDR-F} products handbook,
+  \textit{{} JPL D-73899/SALP-MY-MAO-DP-17607-CN}, NASA/JPL and CNES.
 
 \end{thebibliography}

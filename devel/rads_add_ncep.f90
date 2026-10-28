@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------
-! Copyright (c) 2011-2021  Remko Scharroo
+! Copyright (c) 2011-2026  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -79,7 +79,7 @@ integer(fourbyteint) :: j, cyc, pass
 
 ! Data elements
 
-character(len=rads_naml) :: path
+character(len=rads_cmdl) :: path
 integer(fourbyteint) :: hex, hexold=-99999
 type(airtideinfo) :: airinfo
 real(eightbytereal), parameter :: rad2=2d0*atan(1d0)/45d0
@@ -483,7 +483,7 @@ character(len=rads_cmdl) :: fn, arg
 integer(fourbyteint) :: ncid,x_id,y_id,t_id,v_id,i,h1985,tmin,tmax,start(3)=1,l,strf1985
 real(eightbytereal) :: time(2)
 integer(fourbyteint) :: nx,ny,nt,hour
-real(eightbytereal), allocatable :: tmp(:,:)
+real(fourbytereal), allocatable :: tmp(:,:)
 
 600 format ('(',a,1x,i0,')')
 get_grid = .true.
@@ -491,7 +491,7 @@ get_grid = .true.
 ! Determine file name
 
 hour = hex * 6
-l = strf1985 (fn, filenm, hour*3600)
+l = strf1985 (fn, trim(filenm), hour*3600)
 i = index(fn,'/',.true.)
 write (*,600,advance='no') fn(i+1:l),hex
 
@@ -570,7 +570,7 @@ if (nft(nf90_get_att(ncid,v_id,'missing_value',info%znan))) info%znan = nan
 ! Determine other header values and allocate buffer
 
 if (info%ntype == 0) then
-	info%ntype = nf90_double
+	info%ntype = nf90_real
 	info%nx = nx
 	info%dx = 360d0 / nx
 	info%xmin = 0d0
@@ -580,7 +580,7 @@ if (info%ntype == 0) then
 	info%ymin = -90d0
 	info%ymax = 90d0
 	info%nxwrap = nx
-	allocate (info%grid_dble(nx,ny))
+	allocate (info%grid_real(nx,ny))
 endif
 
 ! Read only the required grid
@@ -591,7 +591,7 @@ if (nft(nf90_get_var(ncid,v_id,tmp,start))) call fin('Error reading data grid')
 
 ! Reverse the order of the latitudes
 
-info%grid_dble(:,1:ny) = tmp(:,ny:1:-1)
+info%grid_real(:,1:ny) = tmp(:,ny:1:-1)
 deallocate (tmp)
 
 i = nf90_close(ncid)
@@ -610,7 +610,7 @@ type(grid), intent(out) :: info
 logical :: get_grib
 character(len=rads_cmdl) :: fn
 integer(fourbyteint) :: fileid,gribid,i,j,k,l,status,strf1985,nx,ny
-real(eightbytereal), allocatable :: tmp(:)
+real(fourbytereal), allocatable :: tmp(:)
 
 600 format ('(',a,')')
 1300 format (a,': ',a)
@@ -618,7 +618,7 @@ real(eightbytereal), allocatable :: tmp(:)
 ! Determine file name
 
 get_grib = .true.
-l = strf1985(fn, filenm, hex*21600)
+l = strf1985(fn, trim(filenm), hex*21600)
 i = index(fn, '/', .true.)
 write (*,600,advance='no') fn(i+1:l)
 
@@ -646,7 +646,7 @@ call grib_get(gribid,'Nj',ny,status)
 
 ! Set up info struct
 
-info%ntype = nf90_double
+info%ntype = nf90_real
 info%nx = nx
 info%dx = 360d0 / nx
 info%xmin = 0d0
@@ -659,7 +659,7 @@ info%nxwrap = nx
 info%z0 = 0d0
 info%dz = 1d0
 info%znan = nan
-allocate(info%grid_dble(nx,ny),tmp(nx*ny))
+allocate(info%grid_real(nx,ny),tmp(nx*ny))
 
 ! Get grid data. Swap the grid upside down.
 
@@ -668,7 +668,7 @@ k = 0
 do j = ny,1,-1
 	do i = 1,nx
 		k = k + 1
-		info%grid_dble(i,j) = tmp(k)
+		info%grid_real(i,j) = tmp(k)
 	enddo
 enddo
 deallocate(tmp)

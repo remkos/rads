@@ -29,11 +29,135 @@ Please submit your bug reports or feature requests, and track existing ones, on 
 Following is a history of releases on [GitHub](https://github.com/remkos/rads/releases), newest to oldest.
 This does not include explanations of changes to the code that generates the data base.
 
+### v4.8.1 (16 Sep 2026)
+Version to support the Cryo2ICE phase of CryoSat-2 and Jason-2 GDR-F products.
+* `rads.xml`
+  * Added support for Sentinel-6B (6b)
+  * Added support of CryoSat-2 Phase B (c2/b)
+  * Added new variables in j2 products from GDR-F
+  * Defined h2b, h2c, h2d, s3c
+  * Added support of Jason-3 LRO Phases (j3/d, j3/e)
+  * Removed mle3 variables from 6a and 6b since G01
+* `rads.f90`
+  * Extended to a maximum of 30 defined satellites
+* `radsstat`:
+  * Added options `--first` and `--second`
+
+### v4.7.1 (31 Jan 2025)
+Version fully supported the ingestion of Jason-3 and Sentinel-6 GDR-G products, though GDR-G is not yet made standard for computing SLA
+* `rads.xml`:
+  * Added support for the Jason-3 Second Tandem (Phase j3/c)
+  * Added variables for Sentinel-6B.
+* Added `gdr_f.xml`:
+  * Confuguration file that forces the standards currently used in RADS, i.e. mss\_dtu15, ocean\_tide\_fes14, and load\_tide\_fes14;
+    with the current `rads.xml` there is no effect.
+* Added `gdr_g.xml`:
+  * Confuguration file that forces the GDR-G, i.e. mss\_hybrid23, ocean\_tide\_fes22, and load\_tide\_fes22;
+    use `-Xgdr_g` on the command line to activate this. In the next version this will become the default.
+* `rads_fix_s6`:
+  * Removed applying a bias to HR sigma0 starting from GDR-G, so this will become affective when that data becomes available.
+
+### v4.7.0 (24 Jul 2024)
+Version with GDR-G variables added, though not yet made standard for computing SLA
+* `rads.xml`
+  * Added GDR-G variables mss\_dtu21, mss\_hybrid23, ocean\_tide\_fes22, load\_tide\_fes22
+  * Updated OI SST from v2 to v2.1
+  * Added JPL GPS orbits (6a and j3)
+
+### v4.6.3 (20 May 2024)
+* `rads.xml`:
+  * Correct comment for drange_cg
+  * Add/update alt_gps orbits for j2, j3, 6a
+  * Update orbit info for ERS-1/2 and Envisat
+  * Fix add\_offset for all SWOT ranges
+  * Set new ref\_frame\_offset* for SWOT (#195)
+  * Set proper limits for flag\_alt\_oper\_mode (6a c2 tx pn)
+* `radsxogen`:
+  * Correctly report maximum tie interval in xovers (#196)
+* Fix handling of if/elseif/else in xml (#197)
+
+### v4.6.2 (1 Mar 2024)
+* `rads.xml`
+  * Extended SWOT mission back to cycle 102
+* Updated `configure` file using `autoconf` 2.72
+
+### v4.6.0 (15 Feb 2024)
+* Documentation
+  * made a lot of corrections and updates.
+  * removed obsolete variables, indicated deprecated variables slated to be removed.
+  * updates to include tx/pn reprocessed data.
+  * described better the original data sources.
+  * corrected in the tables which data are available for which satellites.
+* `rads.xml`
+  * updates to include tx/pn reprocessed (GDR-F) data and removed old tx/pn RGDR data.
+  * removed obsolete variables.
+  * corrected `sat` options to correctly identify which data are available for which satellites.
+  * added alias `tpx` for TOPEX.
+* Updated `config.sub` and `config.guess`
+
+### v4.5.2 (20 Oct 2023)
+* Documentation
+  * replaced name of rads2asc4 by rads2asc; same for other *4 executables.
+* `rads.xml`:
+  * updated `ref_frame_offset*` for JA3 (#180)
+  * introduced `ref_frame_offset*` for S6A (#180)
+  * prepared for SWOT Calval and Science Orbits with cycle numbers shifted -300 and +300 respectively to make them time ordered.
+  * added all necessary information for SWOT nadir (sw)
+  * adaptations for S6A baseline F08 and prepared for baseline F09
+  * introduce `flag_manoeuvre` properfly (#177)
+  * update SSB model info for S3A/
+  * increase cycle limit for SRAL
+  * fix wrong scale on `ssb_3d`, `ssb_3d_adaptive`, `ssb_adaptive`
+  * added `*_nr` variables for 6a
+  * updated
+* `radsstat`:
+  * allow to compute statistics for the difference between two satellites/missions
+  * introduced `-c/N`, `--mean-only`, and `--groups` options
+  * do not add attribute `coordinates` to variables.
+  * do not write out phase in ASCII header (#188)
+  * extend info in global attributes
+* Increased number of characters allowed per option to 640.
+* Updated manuals
+* Updated `config.sub` and `config.guess`
+* Corrected flag bit 0 for S6A (#192)
+
+### v4.4.0 (27 Apr 2022)
+* `rads.xml`:
+  * prepared for Jason-3 Interleaved Orbit (Phase B)
+  * align lower limit of `range_numval_ku_adaptive` with `range_numval_ku` (for j3)
+  * added `mss_dtu21` (#174)
+  * fix formatting of flag mask of 6a, j2, j3
+  * add `*_adaptive` variables for j3 (#173)
+  * update `ref_frame_offset` for j3 (#178)
+  * correct `standard_name` for `mean_wave_period`
+  * remove `ssb_tran2012` from S6A (it was never included in the data files)
+  * change limits on sig0 for j3 as result of no longer biasing sig0
+  * add `mss_comb15`
+  * update limits for `range_numval_ku` (6a), `range_numval_ku_plrm` (3a 3b c2)
+  * Update attributes of `ssb_cls`, `ssb_cls_c`, `ssb_mle3` for JA3 and S6A
+  * Removed `ssb_hyb` from configuration of c2
+  * including SARAL GDR-F wave model
+* `radsstat`:
+  * improve matching time stamps
+  * fix problems (#171)
+  * introduced `--no-stddev`
+  * introduce check on collinearity as well as `--force` and `--dt` options
+  * can now also do differences (along collinear tracks)
+  * updated documentation
+* `radscolin`:
+  * added `--eqtime` option
+  * option `--force`: also apply to rogue equator crossing times
+  * use inclination to check if missions are collinear
+* `radsxolist`: activated `--dual-asc` and `--dual-des` options
+* Add MFWAM fields to S3A, S3B, S6A
+* Updated manuals
+* Updated `config.sub` and `config.guess`
+
 ### v4.3.7 (10 Mar 2021)
-* Switch CryoSat-2 (c2) data over from NOAA=generated IGDR to NOP/IOP/GOP products
+* Switch CryoSat-2 (c2) data over from NOAA-generated IGDR to NOP/IOP/GOP products
 * Updated `config.sub` and `config.guess`
 * `rads.xml` prepared for Sentinel-6A (6a)
-* Switch SARAL (sa) data over to GDR-F; Change default ssb for SARAL to i`ssb_tran2019` (which is what GDR-F does)
+* Switch SARAL (sa) data over to GDR-F; Change default ssb for SARAL to `ssb_tran2019` (which is what GDR-F does)
 * Switch Jason data production over to GDR-F
 
 ### v4.3.6 (15 Aug 2019)

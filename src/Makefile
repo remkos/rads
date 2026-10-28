@@ -1,5 +1,5 @@
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2021  Remko Scharroo
+# Copyright (c) 2011-2026  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -12,6 +12,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
 #-----------------------------------------------------------------------
+
+.NOTPARALLEL:	$(OBJS)
 
 include ../config.mk
 
@@ -58,9 +60,9 @@ install:	all
 	$(INSTALL_DATA) $(MODS) $(includedir)
 	$(INSTALL_PROGRAM) $(PROGS) $(bindir)
 	$(INSTALL_SCRIPT) $(SCRIPTS) $(bindir)
-	for p in $(PROGS_L1); do ( cd $(bindir) ; $(LN_S) rads2adr $$p ) ; done
-	for p in $(PROGS_L2); do ( cd $(bindir) ; $(LN_S) radsxolist $$p ) ; done
-	for p in $(PROGS_L4); do ( cd $(bindir) ; $(LN_S) $${p%4} $$p ) ; done
+	cd $(bindir) ; for p in $(PROGS_L1); do $(LN_S) rads2adr $$p ; done
+	cd $(bindir) ; for p in $(PROGS_L2); do $(LN_S) radsxolist $$p ; done
+	cd $(bindir) ; for p in $(PROGS_L4); do $(LN_S) $${p%4} $$p ; done
 
 #-----------------------------------------------------------------------
 # Object dependencies

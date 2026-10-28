@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2021  Remko Scharroo
+# Copyright (c) 2011-2026  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -43,14 +43,13 @@ done
 
 # Do the patches to all data
 
-rads_add_iono    $options --all							>> "$log" 2>&1
 rads_add_common  $options								>> "$log" 2>&1
 rads_add_ssb     $options --all							>> "$log" 2>&1
 rads_add_ib      $options								>> "$log" 2>&1
 rads_add_ww3_222 $options --all							>> "$log" 2>&1
 # Redetermine SSHA
 rads_add_refframe $options								>> "$log" 2>&1
-rads_add_sla      $options								>> "$log" 2>&1
+rads_add_sla      $options -Xgdr_g						>> "$log" 2>&1
 
 date													>> "$log" 2>&1
 

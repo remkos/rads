@@ -10,7 +10,7 @@ use rads_grid, only: grid
 ! * Parameters
 ! Dimensions
 integer(fourbyteint), parameter :: rads_var_chunk = 100, rads_varl = 40, &
-	rads_naml = 160, rads_cmdl = 320, rads_strl = 1600, rads_hstl = 3200, &
+	rads_naml = 160, rads_cmdl = 640, rads_strl = 1600, rads_hstl = 4800, &
 	rads_cyclistl = 50, rads_optl = 50, rads_max_branches = 5
 ! RADS4 data types
 integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, &
@@ -19,7 +19,8 @@ integer(fourbyteint), parameter :: rads_type_other = 0, rads_type_sla = 1, &
 ! RADS4 data sources
 integer(fourbyteint), parameter :: rads_src_none = 0, rads_src_nc_var = 10, &
 	rads_src_nc_att = 11, rads_src_math = 20, rads_src_grid_lininter = 30, &
-	rads_src_grid_splinter = 31, rads_src_grid_query = 32, rads_src_grid_linphase = 33, &
+	rads_src_grid_splinter = 31, rads_src_grid_query = 32, &
+	rads_src_grid_linphase = 33, rads_src_grid_season = 34, &
 	rads_src_constant = 40, rads_src_flags = 50, rads_src_tpj = 60
 ! RADS4 warnings
 integer(fourbyteint), parameter :: rads_warn_nc_file = -3
@@ -123,6 +124,7 @@ type :: rads_sat                                     ! Information on altimeter 
 	integer(fourbyteint) :: nvar, nsel               ! Nr of available and selected vars and aliases
 	logical :: n_hz_output                           ! Produce multi-Hz output
 	character(len=2) :: sat                          ! 2-Letter satellite abbreviation
+	character(len=3) :: sat3                         ! 3-Letter satellite abbreviation
 	integer(twobyteint) :: satid                     ! Numerical satellite identifier
 	type(rads_cyclist), pointer :: excl_cycles       ! Excluded cycles (if requested)
 	type(rads_var), pointer :: var(:)                ! List of available variables and aliases
@@ -176,7 +178,7 @@ integer(fourbyteint), save :: rads_nopt = 0          ! Number of command line op
 !	use rads
 !-----------------------------------------------------------------------
 ! COPYRIGHT
-! Copyright (c) 2011-2021  Remko Scharroo
+! Copyright (c) 2011-2026  Remko Scharroo
 ! See LICENSE.TXT file for copying and redistribution conditions.
 !
 ! This program is free software: you can redistribute it and/or modify
@@ -344,7 +346,7 @@ end interface rads_get_var
 ! Define variable(s) to be written to RADS data file
 !
 ! SYNTAX
-! subroutine rads_def_var (S, P, var, nctype, scale_factor, add_offset, ndims, varid)
+! subroutine rads_def_var (S, P, var, nctype, scale_factor, add_offset, ndims, coordinates, varid)
 ! type(rads_sat), intent(inout) :: S
 ! type(rads_pass), intent(inout) :: P
 ! type(rads_var), intent(in) :: var <or> var(:)
@@ -362,19 +364,22 @@ end interface rads_get_var
 !
 ! The optional arguments <nctype>, <scale_factor>, <add_offset>, <ndims>  can
 ! be used to overrule those value in the <var%info> struct.
+! The optional argument <coordinates> can be used to switch off the addition of the
+! 'coordinates' attribute. Default is 'on' for most variables.
 !
 ! ARGUMENTS
-! S        : Satellite/mission dependent structure
-! P        : Pass structure
-! var      : Structure(s) of variable(s) of type(rads_var) or name of variable
-! nctype   : (optional) Data type in NetCDF file
+! S            : Satellite/mission dependent structure
+! P            : Pass structure
+! var          : Structure(s) of variable(s) of type(rads_var) or name of variable
+! nctype       : (optional) Data type in NetCDF file
 ! scale_factor : (optional) Value of the scale_factor attribute
-! add_offset : (optional) Value of the add_offset attribute
-! ndims    : (optional) Number of dimensions of the variable
-! varid    : variable ID of created NetCDF variable
+! add_offset   : (optional) Value of the add_offset attribute
+! ndims        : (optional) Number of dimensions of the variable
+! coordinates  : (optional) No not add coordinates attribute if .false. (default is .true.)
+! varid        : variable ID of created NetCDF variable
 !
 ! ERROR CODE
-! S%error  : rads_noerr, rads_err_nc_var
+! S%error      : rads_noerr, rads_err_nc_var
 !****-------------------------------------------------------------------
 private :: rads_def_var_by_var_0d, rads_def_var_by_var_1d, rads_def_var_by_name
 interface rads_def_var
@@ -737,7 +742,7 @@ type(rads_sat), intent(inout) :: S
 ! gfortran 4.3.4 to 4.4.1 segfault on the next line if this routine is made pure or elemental,
 ! so please leave it as a normal routine.
 S = rads_sat ('', '', '', '', '', null(), '', 1d0, (/13.8d0, nan/), 90d0, nan, nan, nan, 1, 1, rads_noerr, &
-	0, 0, 0, 0, 0, .false., '', 0, null(), null(), null(), null(), null(), null(), null(), null())
+	0, 0, 0, 0, 0, .false., '', '', 0, null(), null(), null(), null(), null(), null(), null(), null())
 end subroutine rads_init_sat_struct
 
 !****if* rads/rads_free_sat_struct
@@ -1064,18 +1069,21 @@ contains
 
 subroutine rads_parse_option (opt)
 type(rads_option), intent(in) :: opt
-integer :: j, k0, k1, ios
+integer :: j, k0, k1, ios, ival(3)
 real(eightbytereal) :: val(2)
 ! Scan a single command line argument (option)
 val = nan
 j = index(opt%arg, '=')
 select case (opt%opt)
 case ('C', 'cycle')
-	S%cycles(2) = -1
-	S%cycles(3) = 1
-	call read_val (opt%arg, S%cycles, '/-', iostat=ios)
+	ival(2) = -1
+	ival(3) = 1
+	call read_val (opt%arg, ival, '/-', iostat=ios)
 	if (ios > 0) call rads_opt_error (opt%opt, opt%arg)
-	if (S%cycles(2) < 0) S%cycles(2) = S%cycles(1)
+	if (ival(2) < 0) ival(2) = ival(1)
+	S%cycles(1) = max(S%cycles(1),ival(1))
+	S%cycles(2) = min(S%cycles(2),ival(2))
+	S%cycles(3) = ival(3)
 case ('P', 'pass')
 	if (opt%arg(:1) == 'a') then ! Only ascending passes
 		S%passes(1) = S%passes(1)/2*2+1
@@ -1360,7 +1368,7 @@ if (pass < S%passes(1) .or. pass > S%passes(2) .or. pass > S%phase%passes) then
 endif
 
 ! Predict equator crossing info
-call rads_predict_equator (S, P, cycle, pass)
+call rads_predict_equator (S, P)
 
 ! Do checking of pass ends on the time criteria (only when such are given)
 if (.not.all(isnan_(S%time%info%limits))) then
@@ -1800,7 +1808,7 @@ do i = 1,3 ! This loop is here to allow processing of aliases
 		call rads_get_var_nc_att
 	case (rads_src_math)
 		call rads_get_var_math
-	case (rads_src_grid_lininter, rads_src_grid_splinter, rads_src_grid_query, rads_src_grid_linphase)
+	case (rads_src_grid_lininter, rads_src_grid_splinter, rads_src_grid_query, rads_src_grid_linphase, rads_src_grid_season)
 		call rads_get_var_grid
 	case (rads_src_constant)
 		call rads_get_var_constant
@@ -2070,6 +2078,7 @@ use rads_misc
 use rads_math
 type(math_ll), pointer :: top
 integer(fourbyteint) :: i, i0, i1, istat
+character(len=rads_strl) :: dataname, dataname_save
 
 ! Start with a nullified 'top'
 nullify(top)
@@ -2079,10 +2088,22 @@ i1 = 0
 do
 	if (.not.next_word (info%dataname, i0, i1)) exit
 	if (i1 == i0) cycle
-	istat = math_eval (info%dataname(i0:i1-1), P%ndata, top)
-	if (istat /= 0) then  ! No command or value, likely to be a variable
-		call math_push (P%ndata,top)
-		call rads_get_var_by_name (S, P, info%dataname(i0:i1-1), top%data)
+	dataname = info%dataname(i0:i1-1)
+	istat = math_eval (dataname, P%ndata, top)
+	if (istat == 0) cycle  ! dataname is a command or value, so go to the next word
+	call math_push (P%ndata, top)
+
+	! If the variable is self-referential, then we must be looking for a netCDF variable
+	if (dataname == var%name) then
+		! Temporarily replace the full math statement with the single variable name
+		dataname_save = info%dataname
+		info%dataname = dataname
+		info%datasrc = rads_src_nc_var
+		call rads_get_var_common (S, P, var, top%data, .true.)
+		info%dataname = dataname_save
+		info%datasrc = rads_src_math
+	else
+		call rads_get_var_by_name (S, P, dataname, top%data)
 	endif
 	if (S%error /= rads_noerr) exit
 enddo
@@ -2104,8 +2125,9 @@ end subroutine rads_get_var_math
 
 subroutine rads_get_var_grid ! Get data by interpolating a grid
 use rads_grid
-real (eightbytereal) :: x(P%ndata), y(P%ndata)
+real (eightbytereal) :: x(P%ndata), y(P%ndata), phase, weight(4)
 integer(fourbyteint) :: i
+real(eightbytereal), parameter :: sec2000 = 473299200d0, sec_to_phase = 2d0 * pi / 365.25d0 / 86400d0
 
 ! Load grid if not yet done
 if (info%grid%ntype /= 0) then	! Already loaded
@@ -2126,7 +2148,15 @@ else if (info%datasrc == rads_src_grid_lininter) then
 else if (info%datasrc == rads_src_grid_splinter) then
 	forall (i = 1:P%ndata) data(i) = grid_splinter (info%grid, x(i), y(i))
 else if (info%datasrc == rads_src_grid_linphase) then
-	forall (i = 1:P%ndata) data(i) = grid_lininter (info%grid, x(i), y(i), .true.)
+	forall (i = 1:P%ndata) data(i) = grid_lininter (info%grid, x(i), y(i), phase=.true.)
+else if (info%datasrc == rads_src_grid_season) then
+	phase = (P%equator_time - sec2000) * sec_to_phase
+	weight(1) = cos(phase)
+	weight(2) = sin(phase)
+	phase = phase * 2d0
+	weight(3) = cos(phase)
+	weight(4) = sin(phase)
+	forall (i = 1:P%ndata) data(i) = grid_lininter (info%grid, x(i), y(i), weight)
 else
 	forall (i = 1:P%ndata) data(i) = grid_query (info%grid, x(i), y(i))
 endif
@@ -2241,13 +2271,13 @@ character(len=*), intent(in) :: filename
 ! S%error  : rads_noerr, rads_err_xml_parse, rads_err_xml_file
 !****-------------------------------------------------------------------
 type(xml_parse) :: X
-integer, parameter :: max_lvl = 20
+integer, parameter :: max_lvl = 30
 character(len=rads_varl) :: tag, name, tags(max_lvl)
 character(len=rads_naml) :: attr(2,max_lvl), val(max_lvl)
 character(len=6) :: src
 integer :: nattr, nval, i, j, ios, skip, skip_level
 integer(twobyteint) :: field(2)
-logical :: endtag, endskip
+logical :: endtag, else_skip(max_lvl)
 real(eightbytereal) :: node_rate
 type(rads_varinfo), pointer :: info, info_block
 type(rads_var), pointer :: var, var_block
@@ -2255,7 +2285,7 @@ type(rads_phase), pointer :: phase
 
 ! Initialise
 S%error = rads_noerr
-endskip = .true.
+else_skip = .false.
 skip_level = 0
 nullify (var_block, info_block, phase)
 
@@ -2279,8 +2309,8 @@ do
 	if (endtag) then
 		if (tag /= tags(X%level+1)) &
 			call xmlparse_error ('Closing tag </'//trim(tag)//'> follows opening tag <'//trim(tags(X%level+1))//'>')
-		endskip = (X%level < skip_level)
-		if (endskip) skip_level = 0  ! Stop skipping when descended back below the starting level
+		if (skip_level == 0 .and. (tag == 'if' .or. tag == 'elseif')) else_skip(X%level+1) = .true. ! Mark that a following elseif or else needs to be skipped
+		if (X%level < skip_level) skip_level = 0  ! Stop skipping when descended back below the starting level
 		if (tag == 'var') nullify (var_block, info_block) ! Stop processing <var> block
 		if (tag == 'phase') nullify (phase)   ! Stop processing <phase> block
 		cycle  ! Ignore all other end tags
@@ -2291,11 +2321,13 @@ do
 	info => info_block
 
 	! Special actions for <else> and <elseif>
-	! These will issue a 'skip' when previous <if> was not skipped
+	! These will issue a 'skip' when a previous <if> or <elseif> was not skipped
 	if (tag == 'else' .or. tag == 'elseif') then
 		if (tags(X%level) /= 'if' .and. tags(X%level) /= 'elseif') &
 			call xmlparse_error ('Opening tag <'//trim(tag)//'> follows closing tag </'//trim(tags(X%level))//'>')
-		if (.not.endskip .and. skip_level == 0) skip_level = X%level
+		if (else_skip(X%level) .and. X%level > skip_level) skip_level = X%level
+	else
+		else_skip(X%level) = .false.
 	endif
 
 	! Process opening tags
@@ -2314,25 +2346,23 @@ do
 	! a) Tag contains attribute "sat="
 	! b) The attribute value contains the satellite abbreviaton, or
 	!    the attribute value starts with "!" and does not contain the satellite abbreviation
-	!    (In both cases "*.r" matches all branches with extension ".r")
-	! c) The satellite abbreviation is not set to "??"
+	! c) "6a.hr*" matches all branches that start with "6a.hr"
+	! d) The satellite abbreviation is not set to "??"
 	!
-	! Example 1: for original TOPEX (tx)
-	! sat="tx" => pass
-	! sat="tx.r" => skip
-	! sat="*.r" => skip
-	! sat="j1" => skip
-	! sat="j1 tx" => pass
-	! sat="!j1" => pass
-	! sat="!j1 tx" => skip
+	! Example 1: for Sentinel-6 (LR) data (6a)
+	! sat="6a" => pass
+	! sat="6a.hr" => skip
+	! sat="j3" => skip
+	! sat="j3 6a" => pass
+	! sat="!j3" => pass
+	! sat="!j3 6a" => skip
 	!
-	! Example 2: for TOPEX Retracked (tx.r)
-	! sat="tx" => pass
-	! sat="tx.r" => pass
-	! sat="*.r" => pass
-	! sat="!j1" => pass
-	! sat="!tx" => skip
-	! sat="!tx.r" => skip
+	! Example 2: for Sentinel-6 HR (6a.hr)
+	! sat="6a" => pass
+	! sat="6a.hr" => pass
+	! sat="!j3" => pass
+	! sat="!6a" => skip
+	! sat="!6a.hr" => skip
 	!
 	! Additionally: check for var="name" option. This will temporarily overrule var and info.
 	! They are reset to var_block and info_block on the next cycle of the loop.
@@ -2347,8 +2377,8 @@ do
 				skip = -1
 			else if ((attr(2,i)(:1) == '!') .eqv. &
 				(index(attr(2,i),S%sat//' ') == 0 .and. index(attr(2,i),trim(S%branch(1))//' ') == 0 &
-					.and. index(attr(2,i),'*'//trim(S%branch(1)(3:))//' ') == 0)) then
-				skip=-1
+					.and. index(attr(2,i),S%branch(1)(:5)//'* ') == 0)) then
+				skip = -1
 			endif
 		case ('var')
 			var => rads_varptr (S, attr(2,i), null())
@@ -2448,7 +2478,11 @@ do
 		if (associated(var)) then	! Within <var> block, we do not need "name" attribute
 			call rads_set_alias (S, var%name, var%name // ' ' // val(1), field)
 		else if (has_name (field)) then
-			call rads_set_alias (S, name, val(1), field)
+			if (val(1)(1:1) == ',' .or. val(1)(1:1) == '/') then
+				call rads_set_alias (S, name, trim(name) // val(1), field)
+			else
+				call rads_set_alias (S, name, val(1), field)
+			endif
 		endif
 
 	case ('var')
@@ -2563,6 +2597,8 @@ do
 			info%datasrc = rads_src_grid_linphase
 		case ('grid_n', 'grid_q')
 			info%datasrc = rads_src_grid_query
+		case ('grid_t')
+			info%datasrc = rads_src_grid_season
 		case ('math')
 			info%datasrc = rads_src_math
 		case ('netcdf', 'nc_var', 'nc_att', 'nc')
@@ -2632,6 +2668,7 @@ do
 				if (attr(2,i)(:1) == 'c' .or. attr(2,i)(:1) == 's') info%datasrc = rads_src_grid_splinter
 				if (attr(2,i)(:1) == 'p') info%datasrc = rads_src_grid_linphase
 				if (attr(2,i)(:1) == 'q') info%datasrc = rads_src_grid_query
+				if (attr(2,i)(:1) == 't') info%datasrc = rads_src_grid_season
 			end select
 		enddo
 		allocate (info%grid)
@@ -2736,24 +2773,15 @@ integer :: i, j, l
 ! Start with S%spec given on command line.
 ! It will be replaced by the mission phase, if any.
 !
-! If three characters, this may be like "e2g".
-! Check if the first two characters match the list.
-l = len_trim(S%spec)
-if (l == 3) then
-	do i = 1,nval
-		if (S%spec(1:2) /= val(i)(1:2)) cycle
-		S%sat = val(i)(1:2)
-		S%spec = S%spec(3:3)	! Phase part
-		return
-	enddo
-endif
 ! If we have a '/' or ':' or '.', then separate specification
+l = len_trim(S%spec)
 j = scan(S%spec,'/:.')
 if (j > 0) l = j - 1
 ! Now scan for matching strings (beginning of string only)
 do i = 1,nval
 	if (index(' '//val(i), ' '//strtolower(S%spec(:l))) == 0) cycle
-	S%sat = val(i)(1:2)
+	S%sat = val(i)(1:2)		! 2-character abbreviation
+	S%sat3 = val(i)(4:6)	! 3-character abbreviation
 	S%spec = S%spec(l+1:)	! Everything after <sat>
 	j = scan(S%spec,'/:')
 	if (j == 0) then	! No phase indication
@@ -2765,6 +2793,20 @@ do i = 1,nval
 	endif
 	return
 enddo
+!
+! If three characters, this may be like "e2g".
+! Check if the first two characters match the list.
+l = len_trim(S%spec)
+if (l == 3) then
+	do i = 1,nval
+		if (S%spec(1:2) /= val(i)(1:2)) cycle
+		S%sat = val(i)(1:2)		! 2-character abbreviation
+		S%sat3 = val(i)(4:6)	! 3-charecter abbreviation
+		S%branch(1) = S%sat//'/'//S%spec(3:3)
+		S%spec = S%spec(3:3)	! Phase part
+		return
+	enddo
+endif
 call rads_exit ('No satellite found based on specification "'//trim(S%spec)//'"')
 end subroutine sat_translate
 
@@ -3022,8 +3064,8 @@ integer(fourbyteint), intent(out), optional :: iostat
 ! ARGUMENTS
 ! S        : Satellite/mission dependent structure
 ! varname  : Variable name
-! lo, hi   : Lower and upper limit
-! string   : String of up to two values, with separating whitespace
+! lo, hi   : (optional) Lower and upper limit
+! string   : (optional) String of up to two values, with separating whitespace
 !            or comma or slash.
 ! iostat   : (optional) iostat code from reading string
 !
@@ -3064,7 +3106,7 @@ else if (info%datatype == rads_type_time) then
 		S%cycles(2) = min(S%cycles(2), rads_time_to_cycle (S, time()+sec1970))
 	endif
 else if (var%name == 'flags') then
-	call rads_set_limits_by_flagmask (S, info%limits)
+	call rads_set_limits_by_flagmask (S, info%limits, .true.)
 endif
 end subroutine rads_set_limits_info
 end subroutine rads_set_limits
@@ -3074,9 +3116,20 @@ end subroutine rads_set_limits
 ! Set limits based on flagmask
 !
 ! SYNOPSIS
-subroutine rads_set_limits_by_flagmask (S, limits)
+subroutine rads_set_limits_by_flagmask (S, limits, force)
+use rads_misc
 type(rads_sat), intent(inout) :: S
 real(eightbytereal), intent(inout) :: limits(2)
+logical, optional :: force
+!
+! PURPOSE
+! Set the limits of individual quality/flag variables based on the traditional flagmask.
+! Do not overrule already set limits, unless the optional input 'forece'
+!
+! ARGUMENTS
+! S        : Satellite/mission dependent structure
+! limits(2): Two components of the flagmask 1=do not allow, 2=require
+! force    : (optional) Force overruling already existing limits
 !****-------------------------------------------------------------------
 integer :: i, ios, mask(2), bits(2)
 mask = 0
@@ -3084,6 +3137,8 @@ where (limits == limits) mask = nint(limits) ! Because it is not guaranteed for 
 ! Loop through all variables to find those with field between 2501 and 2516
 do i = 1,S%nvar
 	if (.not.any(S%var(i)%field >= 2501 .and. S%var(i)%field <= 2516)) cycle
+	! Do not overrule already set limits, unless 'force' is provided
+	if (any(isan_(S%var(i)%info%limits)) .and. .not.(present(force) .and. force)) cycle
 	bits = (/0,1/) ! Default values
 	read (S%var(i)%info%dataname, *, iostat=ios) bits
 	if (S%var(i)%info%dataname == 'surface_type') then
@@ -3106,11 +3161,9 @@ do i = 1,S%nvar
 			S%var(i)%info%limits(1) = 2 ! non-ocean
 		endif
 	else if (S%var(i)%info%datatype == rads_type_flagmasks) then
-		if (all(ibits(mask,bits(1),bits(2)) == 0)) cycle
 		S%var(i)%info%limits(1) = ibits(mask(1),bits(1),bits(2))
 		S%var(i)%info%limits(2) = ibits(mask(2),bits(1),bits(2))
 	else ! rads_type_flagvalues
-		if (all(ibits(mask,bits(1),bits(2)) == 0)) cycle
 		S%var(i)%info%limits(2) = ibits(not(mask(1)),bits(1),bits(2))
 		S%var(i)%info%limits(1) = ibits(mask(2),bits(1),bits(2))
 	endif
@@ -3675,7 +3728,7 @@ write (iunit, 1300) trim(progname)
 '                            considered non-option arguments, even if they begin with a hyphen')
 end subroutine rads_synopsis
 
-!****if* rads/rads_get_phase
+!****if* rads/rads_init_phase
 ! SUMMARY
 ! Add new mission phase and get pointer to satellite phase info
 !
@@ -3800,14 +3853,14 @@ end subroutine rads_set_phase_by_time
 ! Predict equator crossing time and longitude
 !
 ! SYNOPSIS
-subroutine rads_predict_equator (S, P, cycle, pass)
+subroutine rads_predict_equator (S, P)
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
-integer(fourbyteint), intent(in) :: cycle, pass
 !
 ! PURPOSE
 ! This routine estimates the equator time and longitude, as well
-! as the start and end time of a given <cycle> and <pass>.
+! as the start and end time of given cycle number and pass number
+! stored in the pass struct <P>..
 !
 ! The routine works for exact repeat orbits as well as drifting
 ! orbits.
@@ -3818,8 +3871,6 @@ integer(fourbyteint), intent(in) :: cycle, pass
 ! ARGUMENTS
 ! S        : Satellite/mission dependent structure
 ! P        : Pass structure
-! cycle    : Cycle number
-! pass     : Pass number
 !
 ! ERROR CODE
 ! S%error  : rads_noerr, rads_err_nophase
@@ -3828,18 +3879,18 @@ integer(fourbyteint) :: cc, pp
 real(eightbytereal) :: d, e
 logical :: error
 
+ cc = P%cycle
+ pp = P%pass
+
 ! If the cycle is out of range for the current phase, look for a new phase
-call rads_set_phase (S, cycle, error)
+call rads_set_phase (S, cc, error)
 if (error) return
 
 ! For constructions with subcycles, convert first to "real" cycle/pass number
 if (associated(S%phase%subcycles)) then
-	cc = cycle - S%phase%subcycles%i
-	pp = S%phase%subcycles%list(modulo(cc,S%phase%subcycles%n)+1) + pass
+	cc = cc - S%phase%subcycles%i
+	pp = S%phase%subcycles%list(modulo(cc,S%phase%subcycles%n)+1) + pp
 	cc = cc / S%phase%subcycles%n + 1
-else
-	cc = cycle
-	pp = pass
 endif
 
 ! Now do the estimation process
@@ -3876,11 +3927,11 @@ integer(fourbyteint), intent(out), optional :: abs_orbit
 ! appropriate structure containing the phase information.
 !
 ! ARGUMENTS
-! S        : Satellite/mission dependent structure
-! time     : Time in seconds since 1985
-! cycle    : Cycle number in which <time> falls
-! pass     : Pass number in which <time> falls
-! abs_orbit: Absolute orbit number (optional)
+! S            : Satellite/mission dependent structure
+! time         : Time in seconds since 1985
+! cycle        : Cycle number in which <time> falls
+! pass         : Pass number in which <time> falls
+! abs_orbit    : Absolute orbit number (optional)
 !****-------------------------------------------------------------------
 integer :: i, j, n
 real(eightbytereal) :: d, t0, x
@@ -4404,7 +4455,7 @@ enddo
 e = nf90_put_att (ncid, nf90_global, 'original', P%original)
 end subroutine rads_put_history
 
-subroutine rads_def_var_by_var_0d (S, P, var, nctype, scale_factor, add_offset, ndims, varid)
+subroutine rads_def_var_by_var_0d (S, P, var, nctype, scale_factor, add_offset, ndims, coordinates, varid)
 use netcdf
 use rads_netcdf
 type(rads_sat), intent(inout) :: S
@@ -4412,6 +4463,7 @@ type(rads_pass), intent(inout) :: P
 type(rads_var), intent(in) :: var
 integer(fourbyteint), intent(in), optional :: nctype, ndims
 real(eightbytereal), intent(in), optional :: scale_factor, add_offset
+logical, intent(in), optional :: coordinates
 integer(fourbyteint), intent(out), optional :: varid
 type(rads_varinfo), pointer :: info
 integer(fourbyteint) :: e, n, xtype, ncid, varid_
@@ -4497,7 +4549,8 @@ endif
 if (info%quality_flag /= '') e = e + nf90_put_att (ncid, varid_, 'quality_flag', info%quality_flag)
 if (info%scale_factor /= 1d0) e = e + nf90_put_att (ncid, varid_, 'scale_factor', info%scale_factor)
 if (info%add_offset /= 0d0)  e = e + nf90_put_att (ncid, varid_, 'add_offset', info%add_offset)
-if (info%datatype >= rads_type_time .or. info%dataname(:1) == ':' .or. info%ndims < 1) then
+if (info%datatype >= rads_type_time .or. info%dataname(:1) == ':' .or. info%ndims < 1 .or. &
+	(present(coordinates) .and. .not.coordinates)) then
 	! Do not add coordinate attribute for some data types
 else if (info%ndims > 1 .and. S%n_hz_output .and. P%n_hz > 1) then
 	! For multi-Hz data: use 'lon_#hz lat_#hz'
@@ -4511,6 +4564,7 @@ if (var%field(1) /= rads_nofield) e = e + nf90_put_att (ncid, varid_, 'field', v
 if (info%comment /= '') e = e + nf90_put_att (ncid, varid_, 'comment', info%comment)
 if (e /= 0) call rads_error (S, rads_err_nc_var, &
 	'Error writing attributes for variable "'//trim(var%name)//'" in file', P)
+e = e + nf90_put_att (ncid, varid_, 'created_by', trim(S%command))
 info%cycle = P%cycle
 info%pass = P%pass
 if (present(varid)) varid = varid_
@@ -4528,31 +4582,33 @@ end function count_spaces
 
 end subroutine rads_def_var_by_var_0d
 
-subroutine rads_def_var_by_var_1d (S, P, var, nctype, scale_factor, add_offset, ndims, varid)
+subroutine rads_def_var_by_var_1d (S, P, var, nctype, scale_factor, add_offset, ndims, coordinates, varid)
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 type(rads_var), intent(in) :: var(:)
 integer(fourbyteint), intent(in), optional :: nctype, ndims
 real(eightbytereal), intent(in), optional :: scale_factor, add_offset
+logical, intent(in), optional :: coordinates
 integer(fourbyteint), intent(out), optional :: varid
 integer :: i
 do i = 1,size(var)
-	call rads_def_var_by_var_0d (S, P, var(i), nctype, scale_factor, add_offset, ndims, varid)
+	call rads_def_var_by_var_0d (S, P, var(i), nctype, scale_factor, add_offset, ndims, coordinates, varid)
 	if (S%error /= rads_noerr) return
 enddo
 end subroutine rads_def_var_by_var_1d
 
-subroutine rads_def_var_by_name (S, P, varname, nctype, scale_factor, add_offset, ndims, varid)
+subroutine rads_def_var_by_name (S, P, varname, nctype, scale_factor, add_offset, ndims, coordinates, varid)
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 character(len=*), intent(in) :: varname
 integer(fourbyteint), intent(in), optional :: nctype, ndims
 real(eightbytereal), intent(in), optional :: scale_factor, add_offset
+logical, intent(in), optional :: coordinates
 integer(fourbyteint), intent(out), optional :: varid
 type(rads_var), pointer :: var
 var => rads_varptr (S, varname)
 if (S%error /= rads_noerr) return
-call rads_def_var_by_var_0d (S, P, var, nctype, scale_factor, add_offset, ndims, varid)
+call rads_def_var_by_var_0d (S, P, var, nctype, scale_factor, add_offset, ndims, coordinates, varid)
 if (S%error /= rads_noerr) return
 end subroutine rads_def_var_by_name
 

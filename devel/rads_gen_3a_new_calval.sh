@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2021  Remko Scharroo
+# Copyright (c) 2011-2026  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,14 +14,22 @@
 # GNU Lesser General Public License for more details.
 #-----------------------------------------------------------------------
 #
-# Convert latest Sentinel-3A NRT and STC files to RADS
+# Convert latest Sentinel-3 NRT and STC files to RADS
 #
 # The most recently updated data in the NRT and STC directories
 # will be processed.
 #
-# syntax: rads_gen_3a_calval_new.sh
+# syntax: rads_gen_3?_calval_new.sh
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
+
+# Which satellite?
+case $0 in
+	*rads_gen_3a*) sat=3a ;;
+	*rads_gen_3b*) sat=3b ;;
+	*rads_gen_3c*) sat=3c ;;
+	*) echo "$0: unknown script" ; exit ;;
+esac
 
 # Process NRT/STC/NTC data
 days=${days:-3}
@@ -34,39 +42,39 @@ while getopts "nsd:" arg; do
 	esac
 done
 
-d0=`date -u -v -${days}d +%Y%m%d 2>&1` || d0=`date -u --date="${days} days ago" +%Y%m%d`
+d0=$(date -u -v -${days}d +%Y%m%d 2>/dev/null || date -u --date="${days} days ago" +%Y%m%d)
 
 for type in ${types}; do
-	mrk=$type/.bookmark
+	rads_open_sandbox "${sat}.${type}0"
+
+	date													>  "$log" 2>&1
+	mrk=$RADSDATAROOT/.bookmark
 	TZ=UTC touch -t ${d0}0000 "$mrk"
-
-	dir=3a.${type}0
-	rads_open_sandbox $dir
 	find $type/c??? -name "*.nc" -a -newer "$mrk" | sort > "$lst"
-	date >  "$log" 2>&1
-	rads_gen_s3		$options --min-rec=6 --ymd=$d0 < "$lst"	>> "$log" 2>&1
-	rads_close_sandbox
-
-# Now process do the same again, and do the post-processing
-	dir=3a.${type}1
-	rads_open_sandbox $dir
-	find $type/c??? -name "*.nc" -a -newer "$mrk" | sort > "$lst"
-	date >  "$log" 2>&1
+# Exit when no file names are provided
+	[[ ! -s "$lst" ]] && rm -rf "$SANDBOX" && exit
+# Process "unadultered" files
 	rads_gen_s3		$options --min-rec=6 --ymd=$d0 < "$lst"	>> "$log" 2>&1
 
-# Add MOE orbit (for NRT and STC only)
+# Now continue with the post-processing
+	rads_reuse_sandbox "${sat}.${type}1"
+
+	date													>> "$log" 2>&1
+
+# Add MOE orbit (for NRT and STC only) and CPOD POE (for NTC/REP only)
 	case $type in
-		nr*|st*) rads_add_orbit  $options -Valt_cnes --dir=moe_doris	>> "$log" 2>&1
+		nr*|st*) rads_add_orbit  $options -Valt_cnes --dir=moe_doris	>> "$log" 2>&1 ;;
+		*)	     rads_add_orbit  $options -Valt_cpod					>> "$log" 2>&1 ;;
 	esac
 
 # General geophysical corrections
-    rads_add_grid     $options -Vangle_coast                >> "$log" 2>&1
 	rads_add_common   $options								>> "$log" 2>&1
-	rads_add_mfwam    $options --all						>> "$log" 2>&1
-	rads_add_iono     $options --all						>> "$log" 2>&1
+	rads_add_mfwam    $options --all --new					>> "$log" 2>&1
+# To support GDR-G with backward compatibility
+	grep -q .*S3._.*_G $lst && rads_add_tide $options --models=fes14	>> "$log" 2>&1
 # Redetermine SSHA
 	rads_add_refframe $options -x -x plrm					>> "$log" 2>&1
-	rads_add_sla      $options -x -x plrm					>> "$log" 2>&1
+	rads_add_sla      $options -x -x plrm -Xgdr_g			>> "$log" 2>&1
 
 	date													>> "$log" 2>&1
 

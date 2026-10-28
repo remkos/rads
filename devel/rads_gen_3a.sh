@@ -1,6 +1,6 @@
 #!/bin/bash
 #-----------------------------------------------------------------------
-# Copyright (c) 2011-2021  Remko Scharroo
+# Copyright (c) 2011-2026  Remko Scharroo
 # See LICENSE.TXT file for copying and redistribution conditions.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,34 +14,50 @@
 # GNU Lesser General Public License for more details.
 #-----------------------------------------------------------------------
 #
-# Convert Sentinel-3A SRAL L2 files to RADS
+# Convert Sentinel-3 SRAL L2 files to RADS
 #
 # The all standard_measurement.nc files in the named directory will be
 # processed.
 #
-# syntax: rads_gen_3a.sh <directory>
+# syntax: rads_gen_3?.sh <directory>
 #-----------------------------------------------------------------------
 . rads_sandbox.sh
+
+# Which satellite?
+case $0 in
+	*rads_gen_3a*) sat=3a ;;
+	*rads_gen_3b*) sat=3b ;;
+	*rads_gen_3c*) sat=3c ;;
+	*) echo "$0: unknown script" ; exit ;;
+esac
 
 # Exit when no directory names are provided
 [[ $# -eq 0 ]] && exit
 
-rads_open_sandbox 3a
-lst=$SANDBOX/rads_gen_3a.lst
+rads_open_sandbox ${sat}
 
 date													>  "$log" 2>&1
 
 find "$@" -name "*.nc" | sort > $lst
 rads_gen_s3 	  $options --min-rec=6 < $lst			>> "$log" 2>&1
 
+# Add MOE orbit (for NRT and STC only) and CPOD POE (for NTC/REP only)
+case $type in
+	nr*|st*) rads_add_orbit  $options -Valt_cnes --dir=moe_doris	>> "$log" 2>&1 ;;
+	*)	     rads_add_orbit  $options -Valt_cpod					>> "$log" 2>&1 ;;
+esac
+
 # General geophysical corrections
-rads_add_grid     $options -Vangle_coast                >> "$log" 2>&1
 rads_add_common   $options								>> "$log" 2>&1
-rads_add_mfwam    $options -C40-199 --all				>> "$log" 2>&1
-rads_add_iono     $options --all						>> "$log" 2>&1
+case ${sat} in
+	3a) rads_add_mfwam $options -C40-199 --all --new	>> "$log" 2>&1 ;;
+	3b|3c) rads_add_mfwam $options -C21-199 --all --new	>> "$log" 2>&1 ;;
+esac
+# To support GDR-G with backward compatibility
+grep -q .*S3._.*_G $lst && rads_add_tide $options --models=fes14	>> "$log" 2>&1
 # Redetermine SSHA
 rads_add_refframe $options -x -x plrm					>> "$log" 2>&1
-rads_add_sla      $options -x -x plrm					>> "$log" 2>&1
+rads_add_sla      $options -x -x plrm -Xgdr_g			>> "$log" 2>&1
 
 date													>> "$log" 2>&1
 
