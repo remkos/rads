@@ -48,7 +48,7 @@ SCRIPTS = rads_add_common rads_add_common_gdrg.sh rads_add_era5.sh \
 		rads_gen_n1_gdr.sh rads_gen_tp_gdrf.sh rads_gen_saral.sh rads_gen_saral_new.sh \
 		rads_gen_sw.sh rads_gen_sw_new.sh rads_gen_sw_new_calval.sh rads_gen_sw_calval.sh \
 		rads_purge_older.sh rads_sandbox.sh hardlink.sh \
-		radscyclesindex
+		radscyclesindex.sh radscyclesindex
 
 # Programs created by linking to other programs
 PROGS_S3 = rads_gen_3b.sh rads_gen_3b_new.sh rads_gen_3b_new_calval.sh rads_gen_3b_calval.sh \
