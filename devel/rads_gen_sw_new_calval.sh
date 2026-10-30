@@ -38,7 +38,7 @@ done
 
 # Process only OGDR/IGDR data for the last ($days+1) days (including current)
 
-d0=$(date -u -v -${days}d +%Y%m%d 2>/dev/null || date -u --date="${days} days ago" +%Y%m%d)
+d0=$($gdate -u --date="${days} days ago" +%Y%m%d)
 
 # Run this for ogdr, igdr, or gdr depending on the arguments on the command line.
 # Default is doing all three!

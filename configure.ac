@@ -149,7 +149,7 @@ if test "x$enable_devel" = "xyes"; then
 	# Version 4.* uses -Wtabs, Version 5.* (and later?) uses -Wno-tabs
 	case "$FC" in
 	gfortran*) $FC --version | grep -q " 4."
-		if test $? == 1 ; then
+		if test $? -eq 1 ; then
 			opt=" -Wall -Wno-tabs -fimplicit-none"
 		else
 			opt=" -Wall -Wtabs -fimplicit-none"
@@ -251,7 +251,7 @@ else
 fi
 
 # -----------------------------------------------------------------
-# Allow user to set --with-lapack-lib
+# Allow user to set --with-lapack-lib (for developers only)
 # -----------------------------------------------------------------
 AC_MSG_CHECKING([for lapack options (for developers)])
 LAPACK_LIB=
@@ -263,6 +263,25 @@ if test "x$with_devel" = "xyes" ; then
 fi
 AC_MSG_RESULT([$LAPACK_LIB])
 AC_SUBST(LAPACK_LIB)
+
+# -----------------------------------------------------------------
+# Find GNU date command (required for developers)
+# -----------------------------------------------------------------
+AC_MSG_CHECKING([for GNU date command (required for developers)])
+gdate=date
+$gdate -d now >& /dev/null
+if test $? -eq 1 ; then
+	gdate=gdate
+	$gdate -d now >& /dev/null
+	if test $? -eq 1 ; then
+		gdate=
+		if test "x$with_devel" = "xyes" ; then
+			AC_MSG_ERROR([No GNU-compatible date command found; install it first!])
+		fi
+	fi
+fi
+AC_MSG_RESULT([$gdate])
+AC_SUBST(gdate)
 
 # -----------------------------------------------------------------
 # Do we have big or little endian

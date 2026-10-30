@@ -37,14 +37,14 @@ for type in ${types}; do
 	    ogdr)
             # Process only OGDR data for the last three days (including current)
             days=2
-            d0=$(date -u -v -${days}d +%Y%m%d 2>/dev/null || date -u --date="${days} days ago" +%Y%m%d)
+            d0=$($gdate -u --date="${days} days ago" +%Y%m%d)
             TZ=UTC touch -t ${d0}0000 $mrk
             find -L ${type}/c[0-8]?? -name "JA3_*.nc" -a -newer $mrk | sort > "$lst"
             ;;
 	    igdr)
             # Process all IGDR data that came in during the last four days (including current)
             days=3
-            d0=$(date -u -v -${days}d +%Y%m%d 2>/dev/null || date -u --date="${days} days ago" +%Y%m%d)
+            d0=$($gdate -u --date="${days} days ago" +%Y%m%d)
             TZ=UTC touch -t ${d0}0000 $mrk
             find -L ${type}/c??? -name "JA3_*.nc" -a -newer $mrk | sort > "$lst"
             ;;

@@ -35,6 +35,8 @@ libs="-L${libdir} -lrads @NETCDF_LIB@"
 version="@PACKAGE_NAME@ @PACKAGE_VERSION@"
 vernum="@PACKAGE_VERSION@"
 
+gdate="@gdate@"
+
 usage()
 {
     cat <<EOF
@@ -55,6 +57,7 @@ Available values for OPTION include:
   --datadir     RADS data directory
   --version     RADS library name and version
   --vernum      RADS library version number
+  --gdate       GNU-compatible date command
 EOF
 
     exit $1
@@ -79,6 +82,8 @@ This $version has been built with the following features:
   --version     -> $version
   --vernum      -> $vernum
 
+  --gdate       -> $gdate
+
 EOF
 }
 
@@ -102,6 +107,7 @@ while test $# -gt 0; do
 	--datadir)		echo "$datadir" ;;
 	--version)		echo $version ;;
 	--vernum)		echo $vernum ;;
+    --gdate)        echo "$gdate" ;;
 	*)				echo "$0: unknown option: $1"; usage 1 ;;
 	esac
 	shift
