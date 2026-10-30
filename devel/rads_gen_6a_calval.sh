@@ -40,7 +40,7 @@ tmplst=$(mktemp ${TMPDIR:-/tmp}/rads.XXXXXX)
 d0=20000101
 case $1 in
 	-d*)	days=${1:2}; shift
-		d0=$(date -u -v -${days}d +%Y%m%d 2>/dev/null || date -u --date="${days} days ago" +%Y%m%d) ;;
+		d0=$($gdate -u --date="${days} days ago" +%Y%m%d) ;;
 	-|"")	cat - > "$tmplst"; shift ;;
 	*)	[[ ! -d "$1" ]] && cat "$1" > "$tmplst" ;;
 esac

@@ -635,6 +635,7 @@ INSTALL_PROGRAM
 RANLIB
 LN_S
 LITTLE_ENDIAN
+gdate
 LAPACK_LIB
 NETCDF_LIB
 NETCDF_INC
@@ -5202,7 +5203,7 @@ if test "x$enable_devel" = "xyes"; then
 	# Version 4.* uses -Wtabs, Version 5.* (and later?) uses -Wno-tabs
 	case "$FC" in
 	gfortran*) $FC --version | grep -q " 4."
-		if test $? == 1 ; then
+		if test $? -eq 1 ; then
 			opt=" -Wall -Wno-tabs -fimplicit-none"
 		else
 			opt=" -Wall -Wtabs -fimplicit-none"
@@ -5317,7 +5318,7 @@ printf '%s\n' "$as_me: WARNING: no" >&2;}
 fi
 
 # -----------------------------------------------------------------
-# Allow user to set --with-lapack-lib
+# Allow user to set --with-lapack-lib (for developers only)
 # -----------------------------------------------------------------
 { printf '%s\n' "$as_me:${as_lineno-$LINENO}: checking for lapack options (for developers)" >&5
 printf %s "checking for lapack options (for developers)... " >&6; }
@@ -5330,6 +5331,27 @@ if test "x$with_devel" = "xyes" ; then
 fi
 { printf '%s\n' "$as_me:${as_lineno-$LINENO}: result: $LAPACK_LIB" >&5
 printf '%s\n' "$LAPACK_LIB" >&6; }
+
+
+# -----------------------------------------------------------------
+# Find GNU date command (required for developers)
+# -----------------------------------------------------------------
+{ printf '%s\n' "$as_me:${as_lineno-$LINENO}: checking for GNU date command (required for developers)" >&5
+printf %s "checking for GNU date command (required for developers)... " >&6; }
+gdate=date
+$gdate -d now >& /dev/null
+if test $? -eq 1 ; then
+	gdate=gdate
+	$gdate -d now >& /dev/null
+	if test $? -eq 1 ; then
+		gdate=
+		if test "x$with_devel" = "xyes" ; then
+			as_fn_error $? "No GNU-compatible date command found; install it first!" "$LINENO" 5
+		fi
+	fi
+fi
+{ printf '%s\n' "$as_me:${as_lineno-$LINENO}: result: $gdate" >&5
+printf '%s\n' "$gdate" >&6; }
 
 
 # -----------------------------------------------------------------

@@ -26,6 +26,7 @@
 
 export RADSDATAROOT=`rads-config --datadir`
 export RADSROOT="${RADSDATAROOT%/data*}"
+export gdate=`rads-config --gdate`
 
 rads_job=`basename $0 .sh`
 
@@ -35,8 +36,8 @@ rads_open_sandbox () {
 	ln -s "$RADSDATAROOT/nml" "$RADSDATAROOT/conf" "$SANDBOX"
 	export RADSDATAROOT="$SANDBOX"
 	options="-S$rads_sat $opt"
-	log=$RADSDATAROOT/${rads_job}-`date -u +%Y%m%d-%H%M%S`.log
-	lst=$RADSDATAROOT/${rads_job}-`date -u +%Y%m%d-%H%M%S`.lst
+	log=$RADSDATAROOT/${rads_job}-$($gdate -u +%Y%m%d-%H%M%S).log
+	lst=$RADSDATAROOT/${rads_job}-$($gdate -u +%Y%m%d-%H%M%S).lst
 }
 
 rads_reuse_sandbox () {

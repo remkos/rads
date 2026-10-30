@@ -3,14 +3,11 @@
 # Make cycle index out of pass index (read from standard input).
 
 set -euo pipefail
-
-# Check which "date" program to use
-
-for date in gdate date --- ; do [[ $($date -d now 2> /dev/null) ]] && break ; done ; [[ $date == "---" ]] && exit
+gdate=$(rads-config --gdate)
 
 convdate_sec() {
     local sec="${1:-0}"
-    $date -u -d "1985-01-01 00:00:00 UTC + $sec seconds" +%y%m%d%H%M%S.%3N
+    $gdate -u -d "1985-01-01 00:00:00 UTC + $sec seconds" +%y%m%d%H%M%S.%3N
 }
 
 declare -A starttime endtime number npass phases passes

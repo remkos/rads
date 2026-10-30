@@ -30,14 +30,14 @@ date																	>  "$log" 2>&1
 
 # Process only OGDR data for the last three days (including current)
 days=2
-d0=$(date -u -v -${days}d +%Y%m%d 2>/dev/null || date -u --date="${days} days ago" +%Y%m%d)
+d0=$($gdate -u --date="${days} days ago" +%Y%m%d)
 TZ=UTC touch -t ${d0}0000 $mrk
 find -L ogdr/c[0-8]?? -name "SWOT_*.nc" -a -newer $mrk | sort > "$lst"
 rads_gen_swot --ymd=$d0 < "$lst"									>> "$log" 2>&1
 
 # Now process all IGDR data that came in during the last four days (including current)
 days=3
-d0=$(date -u -v -${days}d +%Y%m%d 2>/dev/null || date -u --date="${days} days ago" +%Y%m%d)
+d0=$($gdate -u --date="${days} days ago" +%Y%m%d)
 TZ=UTC touch -t ${d0}0000 $mrk
 find -L igdr/c??? -name "SWOT_*.nc" -a -newer $mrk | sort > "$lst"
 rads_gen_swot < "$lst"											>> "$log" 2>&1
