@@ -131,9 +131,7 @@ do j = 1,msat
 			call rads_open_pass (S(j), P, cycle, pass)
 			if (P%ndata > 0) then
 				allocate (data(P%ndata,nvar+2))
-				do l = 1,nvar+2
-					call rads_get_var (S(j), P, S(j)%sel(l), data(:,l))
-				enddo
+				call rads_get_vars (S(j), P, data)
 				do i = 1,P%ndata
 					if (any(isnan_(data(i,:)))) cycle
 					k = nint((data(i,1:2) - lo)/res)+1

@@ -514,9 +514,7 @@ if (P%ndata == 0) return
 
 ! Allocate enough memory for the data and get all of it
 allocate (data(P%ndata,nsel),keep(P%ndata))
-do i = 1,nsel
-	call rads_get_var (S, P, S%sel(i), data(:,i))
-enddo
+call rads_get_vars (S, P, data)
 
 ! Determine which records are kept
 if (reject < 0) then	! Reject if any is NaN

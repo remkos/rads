@@ -182,9 +182,7 @@ endif
 nselpass = 0
 
 ! Read the data
-do i = 1,nsel
-	call rads_get_var (S, P, S%sel(i), data(:,i))
-enddo
+call rads_get_vars (S, P, data)
 
 ! Loop through the data
 do i = 1,ndata,step

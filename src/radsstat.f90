@@ -271,7 +271,7 @@ if (rads_version ('Print RADS statistics per cycle, pass or day(s)')) return
 call rads_synopsis
 write (*,1300)
 1300 format (/ &
-'If two -S|--sat options are given, the collinear difference is computed (unless --first|--second)'/ &
+'If two -S|--sat options are given, the collinear difference is computed (unless --first|--second)'// &
 'Program specific [program_options] are:'/ &
 '  -r, --reject-on-nan VAR   Reject records if variable VAR is NaN (default: reject if SLA is NaN)'/ &
 '  -r NR                     Reject records if data item number NR on -V specifier is NaN'/ &
@@ -323,9 +323,7 @@ real(eightbytereal) :: equator_time_2
 
 ! Read the data for this pass
 z(:,0) = P(1)%tll(:,1)	! Store time
-do j = 1,nsel
-	call rads_get_var (S(1), P(1), S(1)%sel(j), z(:,j))
-enddo
+call rads_get_vars (S(1), P(1), z(:,1:nsel))
 
 if (S(2)%sat /= '') then
 	call rads_open_pass (S(2), P(2), S(2)%cycles(1) - S(1)%cycles(1) + cycle, pass, echofilepaths=echofilepaths)

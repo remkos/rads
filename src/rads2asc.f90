@@ -232,9 +232,7 @@ if (outname == '') then
 endif
 
 ! Read the data
-do i = 1,nsel
-	call rads_get_var (S, P, S%sel(i), data(:,i))
-enddo
+call rads_get_vars (S, P, data)
 nselpass = 0
 
 ! Loop through the data

@@ -341,6 +341,43 @@ interface rads_get_var
 	module procedure rads_get_var_by_name_2d
 end interface rads_get_var
 
+!****f* rads/rads_get_vars
+! SUMMARY
+! Read all selected variables (data) from RADS file or compute for each
+! variable the difference between two variables.
+!
+! SYNTAX
+! recursive subroutine rads_get_vars (S, P, data, noedit)
+! type(rads_sat), intent(inout) :: S
+! type(rads_pass), intent(inout) :: P
+! real(eightbytereal), intent(out) :: data(:,:)
+! logical, intent(in), optional :: noedit
+!
+! PURPOSE
+! This routine loads the data from a all selected variables in to the
+! buffer <data>, of which the first index is the along-track position and the
+! second for the various variables. This command must be preceeded by <rads_open_pass>.
+!
+! The array <data> must be at the correct size to contain the entire
+! pass of data, i.e., it must have the dimensions (P%ndata:S%nsel).
+! If no data are available and no default value and no secondary aliases
+! then NaN is returned in the array <data>.
+!
+! ARGUMENTS
+! S        : Satellite/mission dependent structure
+! P        : Pass dependent structure
+! data     : Data returned by this routine
+! noedit   : (optional) Set to .true. to skip editing on limits and/or
+!            quality flags; set to .false. to allow editing (default)
+!
+! ERROR CODE
+! S%error  : rads_noerr, rads_err_var, rads_err_memory, rads_err_source
+!****-------------------------------------------------------------------
+private :: rads_get_vars_1
+interface rads_get_vars
+	module procedure rads_get_vars_1
+end interface rads_get_vars
+
 !****if* rads/rads_def_var
 ! SUMMARY
 ! Define variable(s) to be written to RADS data file
@@ -2240,6 +2277,21 @@ enddo
 end subroutine rads_update_stat
 
 end subroutine rads_get_var_common
+
+! rads_get_vars_1: rads_get_vars for a single satellite
+recursive subroutine rads_get_vars_1 (S, P, data, noedit)
+type(rads_sat), intent(inout) :: S
+type(rads_pass), intent(inout) :: P
+real(eightbytereal), intent(out) :: data(:,:)
+logical, intent(in), optional :: noedit
+integer :: j
+! Check that the dimensions are sufficient
+if (any(size(data) < (/ P%ndata, S%nsel /))) call rads_exit ('Insufficient memory allocated in rads_get_vars')
+! Read all the variable
+do j = 1,S%nsel
+	call rads_get_var (S, P, S%sel(j), data(:,j), noedit)
+enddo
+end subroutine rads_get_vars_1
 
 !****f* rads/rads_read_xml
 ! SUMMARY
