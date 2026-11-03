@@ -26,9 +26,9 @@ use rads_time
 
 character(len=rads_cmdl) :: grid_name=''
 character(len=rads_strl) :: format_string=''
-integer(fourbyteint) :: minnr=2, n(2), k(2), i, j, l, cycle, pass, ios, nvar, nsat
-real(eightbytereal) :: lo(2), hi(2), res(2), x, y, limits(3,2)
-logical :: c(2)=.false.
+integer(fourbyteint) :: minnr=2, n(2), i, j, k(2), l, cycle, pass, ios, nvar, nsat, nstep=1
+real(eightbytereal) :: lo(2), hi(2), res(2), x, y, limits(3,2), dt = 0d0
+logical :: c(2) = .false., force = .false.
 type :: stat
 	integer(fourbyteint) :: nr
 	real(eightbytereal) :: mean, sum2
@@ -37,11 +37,11 @@ type(stat), allocatable :: box(:,:,:)
 real(eightbytereal), allocatable :: data(:,:)
 integer(fourbyteint), parameter :: msat = 20
 type(rads_sat) :: S(msat)
-type(rads_pass) :: P
+type(rads_pass) :: P(2)
 
 ! Initialize RADS or issue help
 call synopsis
-call rads_set_options ('x:y:c::o: x: y: res: min: output: grd: line-format:')
+call rads_set_options ('x:y:c::o:f x: y: res: min: output: grd: line-format: diff force dt:')
 call rads_init (S)
 if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 
@@ -50,13 +50,12 @@ if (any(S%error /= rads_noerr)) call rads_exit ('Fatal error')
 nsat = 0
 do j = 1,msat
 	if (S(j)%sat == '') exit
-	if (S(j)%nsel == 0) then
-		call rads_parse_varlist (S(j), 'lon,lat,sla')
-	else if (S(j)%nsel < 3) then
-		call rads_exit ('-V|--var needs at least three elements')
-	endif
-	nsat = nsat + 1
+	if (S(j)%nsel == 0) call rads_parse_varlist (S(j), 'lon,lat,sla')
+	if (S(j)%nsel /= S(j)%nsel) call rads_exit ('Unequal amount of variables requested for different missions')
+	if (S(j)%nsel < 3) call rads_exit ('-V|--var needs at least three elements')
+	nsat = j
 enddo
+
 nvar = S(1)%nsel - 2
 if (nsat == 0) call rads_exit ('Specify at least one satellite')
 
@@ -93,6 +92,13 @@ do i = 1,rads_nopt
 		grid_name = rads_opt(i)%arg
 	case ('line-format')
 		format_string = rads_opt(i)%arg
+	case ('diff')
+		nstep = 2
+	case ('f', 'force')
+		force = .true.
+	case ('dt')
+		read (rads_opt(i)%arg, *, iostat=ios) dt
+		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	end select
 enddo
 
@@ -124,25 +130,30 @@ box = stat(0, 0d0, 0d0)
 if (grid_name == '') call write_header
 
 ! Fill the grid pass by pass and keep stats, using West (1979)
-do j = 1,msat
-	if (S(j)%sat == '') exit
+do j = 1,nsat,nstep
 	do cycle = S(j)%cycles(1), S(j)%cycles(2), S(j)%cycles(3)
 		do pass = S(j)%passes(1), S(j)%passes(2), S(j)%passes(3)
-			call rads_open_pass (S(j), P, cycle, pass)
-			if (P%ndata > 0) then
-				allocate (data(P%ndata,nvar+2))
-				call rads_get_vars (S(j), P, data)
-				do i = 1,P%ndata
-					if (any(isnan_(data(i,:)))) cycle
-					k = nint((data(i,1:2) - lo)/res)+1
-					k = max(1,min(k,n))
-					do l = 1,nvar
-						call update_stat (box(k(1),k(2),l), data(i,l+2))
-					enddo
-				enddo
-				deallocate (data)
+			call rads_open_pass (S(j), P(1), cycle, pass)
+			if (P(1)%ndata <= 0) cycle
+			allocate (data(P(1)%ndata,S(j)%nsel))
+			call rads_get_vars (S(j), P(1), data)
+
+			if (nstep == 2) then
+				call rads_open_pass_match (S(j:j+1), P(1:2), force)
+				call rads_get_vars_match (S(j:j+1), P(1:2), data(:,:), dt, -2)
+				call rads_close_pass (S(j+1), P(2))
 			endif
-			call rads_close_pass (S(j), P)
+
+			do i = 1,P(1)%ndata
+				if (any(isnan_(data(i,:)))) cycle
+				k = nint((data(i,1:2) - lo)/res)+1
+				k = max(1,min(k,n))
+				do l = 3,S(j)%nsel
+					call update_stat (box(k(1),k(2),l-2), data(i,l))
+				enddo
+			enddo
+			call rads_close_pass (S(j), P(1))
+			deallocate (data)
 		enddo
 	enddo
 enddo
@@ -182,7 +193,7 @@ call rads_synopsis
 write (*,1300)
 1300 format (/ &
 'Program specific [program_options] are:'/ &
-'  -V, --var X,Y,Z[,...]     Variables for x, y and z (default: lon,lat,sla); multiple z''s may be specified' / &
+'  -V, --var X,Y,Z[,...]     Variables for x, y and z (default: lon,lat,sla); multiple z''s may be specified'/ &
 '  --x X0,X1[,DX]            Set x-range and interval (default: as set by default limits and --res)'/ &
 '  --y Y0,Y1[,DY]            Set y-range and interval (default: as set by default limits and --res)'/ &
 '  --res DX[,DY]             Set resolution in x and y (default: 1)'/ &
@@ -191,7 +202,11 @@ write (*,1300)
 '                            Create NetCDF grid (suppresses ASCII)'/ &
 '  --line-format FORMAT      Format to be used for ASCII output (default is determined by variables)'/ &
 '  -c                        Boundaries are cell oriented'/ &
-'  -c[x|y]                   Only [x|y]-boundaries are cell oriented')
+'  -c[x|y]                   Only [x|y]-boundaries are cell oriented'/ &
+'For collinear missions only:' / &
+' --diff                     Do difference between odd and even -S arguments'/ &
+'  -f, --force               Force comparison, even when missions are not considered collinear'/ &
+'  --dt DT                   Set minimum bin size in seconds (default is determined by satellite)')
 stop
 end subroutine synopsis
 
@@ -224,8 +239,8 @@ integer :: j
 622 format ('#    (',i2,') nr of measurements')
 
 write (*,600) timestamp(), trim(S(1)%command)
-do j = 1,msat
-	if (S(j)%sat /= '') write (*,610) trim(S(j)%sat),trim(S(j)%phase%name),S(j)%cycles(1:2),S(j)%passes(1:2)
+do j = 1,nsat
+	write (*,610) trim(S(j)%sat),trim(S(j)%phase%name),S(j)%cycles(1:2),S(j)%passes(1:2)
 enddo
 write (*,620) (trim(S(1)%sel(j)%long_name),trim(S(1)%sel(j)%info%units),j=1,2)
 do j = 1,nvar

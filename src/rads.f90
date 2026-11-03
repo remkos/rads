@@ -1562,7 +1562,7 @@ S%total_inside = S%total_inside + P%ndata
 
 end subroutine rads_open_pass
 
-!****f* rads/rads_open_pass
+!****f* rads/rads_open_pass_match
 ! SUMMARY
 ! Open RADS pass file
 !
@@ -1581,7 +1581,7 @@ logical, intent(in), optional :: force, echofilepaths
 ! S        : Satellite/mission dependent structures of the already loaded
 !            pass and the matching pass.
 ! P        : Pass structures of the already loaded pass and the matching pass.
-! force    : (optional) bypass the check on colliniarity
+! force    : (optional) bypass the check on collinearity
 ! echofilepaths : (optional) Print to standard output the file path before
 !            it is being checked for existence.
 !
@@ -1589,9 +1589,10 @@ logical, intent(in), optional :: force, echofilepaths
 ! S%error  : rads_noerr, rads_warn_nc_file, rads_err_nc_parse
 !****-------------------------------------------------------------------
 call rads_open_pass (S(2), P(2), S(2)%cycles(1) - S(1)%cycles(1) + P(1)%cycle, P(1)%pass, echofilepaths=echofilepaths)
-if (force) then
+if (present(force) .and. force) then
 	! Skip the next check, do collinear anyway
-else if (S(2)%phase%passes /= S(1)%phase%passes .or. S(2)%phase%ref_lon /= S(1)%phase%ref_lon) then
+else if (S(1)%inclination /= S(2)%inclination .or. &
+	S(2)%phase%passes /= S(1)%phase%passes .or. S(2)%phase%ref_lon /= S(1)%phase%ref_lon) then
 	! Pass ranges should be the same for all satellites, otherwise we do not have collinear tracks
 	call rads_exit ('Satellite missions '//S(2)%sat//'/'//trim(S(2)%phase%name)// &
 		' and '//S(1)%sat//'/'//trim(S(1)%phase%name)//' are not collinear')
@@ -2317,7 +2318,7 @@ do j = 1,S%nsel
 enddo
 end subroutine rads_get_vars
 
-!****f* rads/rads_get_vars
+!****f* rads/rads_get_vars_match
 ! SUMMARY
 ! Compute the difference of the variable in a matching pass file
 !
@@ -2348,11 +2349,12 @@ logical, intent(in), optional :: noedit
 ! S        : Satellite/mission dependent structures for loaded and matching satellite
 ! P        : Pass dependent structure for loaded and matching pass
 ! data     : Data returned by this routine
-! dt       : Minimum size of the bins used to determine colliniarity
+! dt       : Minimum size of the bins used to determine collinearity
 !            (default is based on the satellites)
-! mode     : =0, subtract matching pass data from what is in <data>
+! mode     : =0, subtract matching pass data from what is in <data> (default)
 !          : =1, provide data already in <data> unless there is no match
 !          : =2, provide data from the matching pass unless there is no match
+!          : =-2, subtract matching pass data from all but the first 2 variables
 ! noedit   : (optional) Set to .true. to skip editing on limits and/or
 !            quality flags; set to .false. to allow editing (default)
 !
@@ -2362,12 +2364,23 @@ logical, intent(in), optional :: noedit
 real(eightbytereal), allocatable :: tmp(:)
 integer, allocatable :: idx(:)
 real(eightbytereal) :: equator_time_2, binsize
-integer :: j
+integer :: j, j0, jmode
 
 ! If there are no data in the matching pass, return all NaN
 if (P(2)%ndata <= 0) then
 	data = nan
 	return
+endif
+
+! Switches depending on mode
+j0 = 1
+if (.not.present(mode)) then
+	jmode = 0
+else if (mode == -2) then
+	jmode = 0
+	j0 = 3
+else
+	jmode = mode
 endif
 
 ! Determine the binsize
@@ -2383,11 +2396,11 @@ if (abs(P(1)%equator_time - P(2)%equator_time) < 1d0) equator_time_2 = P(1)%equa
 ! The little delta of 1 microsecond is to avoid bin jump at equator when it is xx.5000000
 call make_idx (P(1)%ndata, nint((P(1)%tll(:,1) - P(1)%equator_time + 1d6)/binsize), &
 			   P(2)%ndata, nint((P(2)%tll(:,1) - equator_time_2    + 1d6)/binsize), idx)
-do j = lbound(data,2), ubound(data,2)
+do j = j0, S(1)%nsel
 	call rads_get_var (S(2), P(2), S(2)%sel(j), tmp(1:), noedit)
-	if (.not.present(mode) .or. mode == 0) then
+	if (jmode == 0) then
 		data(:,j) = data(:,j) - tmp(idx(:)) ! Compute the difference
-	else if (mode == 1) then
+	else if (jmode == 1) then
 		where (isnan_(tmp(idx(:)))) data(:,j) = nan ! Blank out locations of NaN in second satellite
 	else
 		where (isan_(data(:,j))) data(:,j) = tmp(idx(:)) ! Only copy second satellite where first is not NaN

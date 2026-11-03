@@ -145,14 +145,14 @@ do i = 1,rads_nopt
 		match_mode = 1
 	case ('second')
 		match_mode = 2
+	case ('dt')
+		read (rads_opt(i)%arg, *, iostat=ios) dt
+		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	case ('o', 'output')
 		filename = rads_opt(i)%arg
 		if (filename == '') filename = 'radsstat.nc'
 	case ('r', 'reject-on-nan')
 		call parse_r_option (S(1), rads_opt(i)%opt, rads_opt(i)%arg)
-	case ('dt')
-		read (rads_opt(i)%arg, *, iostat=ios) dt
-		if (ios /= 0) call rads_opt_error (rads_opt(i)%opt, rads_opt(i)%arg)
 	end select
 enddo
 
@@ -289,7 +289,6 @@ write (*,1300)
 '  -l, --minmax              Output min and max in addition to mean and stddev'/ &
 '  --no-stddev               Output mean values only' / &
 '  --mean-only               Output mean values only in 1-D array (applies to NetCDF output only)' / &
-'  --dt DT                   Set minimum bin size in seconds (default is determined by satellite)'/ &
 '  --full-year               Write date as YYYYMMDD instead of the default YYMMDD'/ &
 '  --min MINNR               Minimum number of measurements per statistics record (default: 2)'/ &
 '  --res DX,DY               Size of averaging boxes in degrees (default: 3,1)'/ &
@@ -301,11 +300,13 @@ write (*,1300)
 '  --format-pass             ASCII output format starts with CYCLE, PASS (default with -p)'/ &
 '                            NetCDF output to include pass variable (default with -p)' / &
 '  --groups                  Create NetCDF groups (applies to NetCDF output only)' / &
-'  -f, --force               Force comparison, even when missions are not considered collinear'/ &
-'  --first                   Of collinears only provide the first satellite (second editing only)'/ &
-'  --second                  Of collinears only provide the second satellite (first for editing only)'/ &
 '  -o, --output [OUTNAME]    Create NetCDF output instead of ASCII (default output'/ &
-'                            filename is "radsstat.nc")')
+'                            filename is "radsstat.nc")'/ &
+'For collinear missions only:' / &
+'  -f, --force               Force comparison, even when missions are not considered collinear'/ &
+'  --first                   Only provide the first satellite (second editing only)'/ &
+'  --second                  Only provide the second satellite (first for editing only)'/ &
+'  --dt DT                   Set minimum bin size in seconds (default is determined by satellite)')
 stop
 end subroutine synopsis
 
