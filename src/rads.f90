@@ -341,43 +341,6 @@ interface rads_get_var
 	module procedure rads_get_var_by_name_2d
 end interface rads_get_var
 
-!****f* rads/rads_get_vars
-! SUMMARY
-! Read all selected variables (data) from RADS file or compute for each
-! variable the difference between two variables.
-!
-! SYNTAX
-! recursive subroutine rads_get_vars (S, P, data, noedit)
-! type(rads_sat), intent(inout) :: S
-! type(rads_pass), intent(inout) :: P
-! real(eightbytereal), intent(out) :: data(:,:)
-! logical, intent(in), optional :: noedit
-!
-! PURPOSE
-! This routine loads the data from a all selected variables in to the
-! buffer <data>, of which the first index is the along-track position and the
-! second for the various variables. This command must be preceeded by <rads_open_pass>.
-!
-! The array <data> must be at the correct size to contain the entire
-! pass of data, i.e., it must have the dimensions (P%ndata:S%nsel).
-! If no data are available and no default value and no secondary aliases
-! then NaN is returned in the array <data>.
-!
-! ARGUMENTS
-! S        : Satellite/mission dependent structure
-! P        : Pass dependent structure
-! data     : Data returned by this routine
-! noedit   : (optional) Set to .true. to skip editing on limits and/or
-!            quality flags; set to .false. to allow editing (default)
-!
-! ERROR CODE
-! S%error  : rads_noerr, rads_err_var, rads_err_memory, rads_err_source
-!****-------------------------------------------------------------------
-private :: rads_get_vars_1
-interface rads_get_vars
-	module procedure rads_get_vars_1
-end interface rads_get_vars
-
 !****if* rads/rads_def_var
 ! SUMMARY
 ! Define variable(s) to be written to RADS data file
@@ -1599,6 +1562,42 @@ S%total_inside = S%total_inside + P%ndata
 
 end subroutine rads_open_pass
 
+!****f* rads/rads_open_pass
+! SUMMARY
+! Open RADS pass file
+!
+! SYNOPSIS
+subroutine rads_open_pass_match (S, P, force, echofilepaths)
+type(rads_sat), intent(inout) :: S(2)
+type(rads_pass), intent(inout) :: P(2)
+logical, intent(in), optional :: force, echofilepaths
+!
+! PURPOSE
+! This routine opens a NetCDF file for access to the RADS machinery.
+! The pass P(2) of S(2) is loaded that matches the already loaded
+! pass P(1) from S(1).
+!
+! ARGUMENTS
+! S        : Satellite/mission dependent structures of the already loaded
+!            pass and the matching pass.
+! P        : Pass structures of the already loaded pass and the matching pass.
+! force    : (optional) bypass the check on colliniarity
+! echofilepaths : (optional) Print to standard output the file path before
+!            it is being checked for existence.
+!
+! ERROR CODE
+! S%error  : rads_noerr, rads_warn_nc_file, rads_err_nc_parse
+!****-------------------------------------------------------------------
+call rads_open_pass (S(2), P(2), S(2)%cycles(1) - S(1)%cycles(1) + P(1)%cycle, P(1)%pass, echofilepaths=echofilepaths)
+if (force) then
+	! Skip the next check, do collinear anyway
+else if (S(2)%phase%passes /= S(1)%phase%passes .or. S(2)%phase%ref_lon /= S(1)%phase%ref_lon) then
+	! Pass ranges should be the same for all satellites, otherwise we do not have collinear tracks
+	call rads_exit ('Satellite missions '//S(2)%sat//'/'//trim(S(2)%phase%name)// &
+		' and '//S(1)%sat//'/'//trim(S(1)%phase%name)//' are not collinear')
+endif
+end subroutine rads_open_pass_match
+
 !****f* rads/rads_close_pass
 ! SUMMARY
 ! Close RADS pass file
@@ -2278,12 +2277,37 @@ end subroutine rads_update_stat
 
 end subroutine rads_get_var_common
 
-! rads_get_vars_1: rads_get_vars for a single satellite
-recursive subroutine rads_get_vars_1 (S, P, data, noedit)
+!****f* rads/rads_get_vars
+! SUMMARY
+! Read all selected variables (data) from RADS file
+!
+! SYNTAX
+recursive subroutine rads_get_vars (S, P, data, noedit)
 type(rads_sat), intent(inout) :: S
 type(rads_pass), intent(inout) :: P
 real(eightbytereal), intent(out) :: data(:,:)
 logical, intent(in), optional :: noedit
+!
+! PURPOSE
+! This routine loads the data from a all selected variables in to the
+! buffer <data>, of which the first index is the along-track position and the
+! second for the various variables. This command must be preceeded by <rads_open_pass>.
+!
+! The array <data> must be at the correct size to contain the entire
+! pass of data, i.e., it must have the dimensions (P%ndata:S%nsel).
+! If no data are available and no default value and no secondary aliases
+! then NaN is returned in the array <data>.
+!
+! ARGUMENTS
+! S        : Satellite/mission dependent structure
+! P        : Pass dependent structure
+! data     : Data returned by this routine
+! noedit   : (optional) Set to .true. to skip editing on limits and/or
+!            quality flags; set to .false. to allow editing (default)
+!
+! ERROR CODE
+! S%error  : rads_noerr, rads_err_var, rads_err_memory, rads_err_source
+!****-------------------------------------------------------------------
 integer :: j
 ! Check that the dimensions are sufficient
 if (any(size(data) < (/ P%ndata, S%nsel /))) call rads_exit ('Insufficient memory allocated in rads_get_vars')
@@ -2291,7 +2315,107 @@ if (any(size(data) < (/ P%ndata, S%nsel /))) call rads_exit ('Insufficient memor
 do j = 1,S%nsel
 	call rads_get_var (S, P, S%sel(j), data(:,j), noedit)
 enddo
-end subroutine rads_get_vars_1
+end subroutine rads_get_vars
+
+!****f* rads/rads_get_vars
+! SUMMARY
+! Compute the difference of the variable in a matching pass file
+!
+! SYNTAX
+recursive subroutine rads_get_vars_match (S, P, data, dt, mode, noedit)
+use rads_misc
+type(rads_sat), intent(inout) :: S(2)
+type(rads_pass), intent(inout) :: P(2)
+real(eightbytereal), intent(inout) :: data(:,:)
+real(eightbytereal), intent(in), optional :: dt
+integer, optional :: mode
+logical, intent(in), optional :: noedit
+!
+! PURPOSE
+! This routine loads the data from a all selected variables for the satellite
+! S(2) pass P(2). Depending on <mode> it is then either subtracted from or
+! replacing values that are already available in <data>.
+!
+! In doing so, the times from the equator are matched so that the data points are
+! collinear.
+!
+! This command must be preceeded by <rads_open_pass> for both P(1) and P(2).
+!
+! If no data are available in P(2) and no default value and no secondary aliases
+! then NaN is returned in the array <data>.
+!
+! ARGUMENTS
+! S        : Satellite/mission dependent structures for loaded and matching satellite
+! P        : Pass dependent structure for loaded and matching pass
+! data     : Data returned by this routine
+! dt       : Minimum size of the bins used to determine colliniarity
+!            (default is based on the satellites)
+! mode     : =0, subtract matching pass data from what is in <data>
+!          : =1, provide data already in <data> unless there is no match
+!          : =2, provide data from the matching pass unless there is no match
+! noedit   : (optional) Set to .true. to skip editing on limits and/or
+!            quality flags; set to .false. to allow editing (default)
+!
+! ERROR CODE
+! S%error  : rads_noerr, rads_err_var, rads_err_memory, rads_err_source
+!****-------------------------------------------------------------------
+real(eightbytereal), allocatable :: tmp(:)
+integer, allocatable :: idx(:)
+real(eightbytereal) :: equator_time_2, binsize
+integer :: j
+
+! If there are no data in the matching pass, return all NaN
+if (P(2)%ndata <= 0) then
+	data = nan
+	return
+endif
+
+! Determine the binsize
+binsize = maxval(S%dt1hz)
+if (present(dt)) binsize = max(dt,binsize)
+
+! Find the matching data points
+allocate (tmp(0:P(2)%ndata), idx(P(1)%ndata))
+tmp(0) = nan
+! If the equator times are almost the same, use the same
+equator_time_2 = P(2)%equator_time
+if (abs(P(1)%equator_time - P(2)%equator_time) < 1d0) equator_time_2 = P(1)%equator_time
+! The little delta of 1 microsecond is to avoid bin jump at equator when it is xx.5000000
+call make_idx (P(1)%ndata, nint((P(1)%tll(:,1) - P(1)%equator_time + 1d6)/binsize), &
+			   P(2)%ndata, nint((P(2)%tll(:,1) - equator_time_2    + 1d6)/binsize), idx)
+do j = lbound(data,2), ubound(data,2)
+	call rads_get_var (S(2), P(2), S(2)%sel(j), tmp(1:), noedit)
+	if (.not.present(mode) .or. mode == 0) then
+		data(:,j) = data(:,j) - tmp(idx(:)) ! Compute the difference
+	else if (mode == 1) then
+		where (isnan_(tmp(idx(:)))) data(:,j) = nan ! Blank out locations of NaN in second satellite
+	else
+		where (isan_(data(:,j))) data(:,j) = tmp(idx(:)) ! Only copy second satellite where first is not NaN
+	endif
+enddo
+
+deallocate (tmp, idx)
+
+contains
+
+subroutine make_idx (na, ta, nb, tb, idx)
+integer(fourbyteint), intent(in) :: na, ta(:), nb, tb(:)
+integer(fourbyteint), intent(out) :: idx(:)
+integer(fourbyteint) :: ia, ib
+idx = 0
+ib = 1
+do ia = 1,na
+	do while (tb(ib) < ta(ia) .and. ib < nb)
+		ib = ib + 1
+	enddo
+	if (tb(ib) == ta(ia)) idx(ia) = ib
+	if (ib < nb .and. tb(ib+1) == tb(ib)) ib = ib + 1 ! Encourage indexing to the next point if two points are in the same bin
+!	write (*,*) ia, idx(ia), ia - idx(ia), ta(ia), tb(ia), P(1)%tll(ia,1), P(2)%tll(ia,1)
+enddo
+! write (*,*) P(1)%equator_time, P(2)%equator_time
+end subroutine make_idx
+
+end subroutine rads_get_vars_match
 
 !****f* rads/rads_read_xml
 ! SUMMARY

@@ -48,7 +48,7 @@ character(len=*), parameter :: wtype(0:3)=(/ &
 character(len=rads_strl) :: format_string
 character(len=rads_cmdl) :: filename = ''
 integer(fourbyteint), parameter :: period_day=1, period_month=2, period_pass=3, period_cycle=4
-integer(fourbyteint) :: nr, minnr=2, cycle, pass, i, output_format=0, &
+integer(fourbyteint) :: nr, minnr=2, cycle, pass, i, output_format=0, match_mode = 0, &
 	period=period_day, wmode=0, nx, ny, kx, ky, ios, sizes(2), ncid, varid(2), grpid(4) = 0
 real(eightbytereal), allocatable :: lat_w(:)
 real(eightbytereal) :: sini, step=1d0, x0, y0, res(2)=(/3d0,1d0/), start_time, end_time, dt = 0d0
@@ -59,7 +59,7 @@ end type
 type(stat), allocatable :: box(:,:,:), tot(:)
 type(rads_sat) :: S(2)
 type(rads_pass) :: P(2), Pout
-logical :: ascii = .true., fullyear = .false., boz_format = .false., force = .false., first = .false., second = .false., &
+logical :: ascii = .true., fullyear = .false., boz_format = .false., force = .false., &
 	echofilepaths = .false. , groups = .false., mask(4) = .false.
 
 ! Initialize RADS or issue help
@@ -79,7 +79,6 @@ do i = 1,2
 	if (S(i)%cycles(3) /= S(1)%cycles(3)) call rads_exit ('Cycle step size should be the same for all missions')
 	if (S(i)%inclination /= S(1)%inclination) &
 		call rads_exit ('Missions need to have the same inclination to be considered collinear')
-	dt = max(dt,S(i)%dt1hz)
 enddo
 
 ! Scan command line arguments
@@ -143,9 +142,9 @@ do i = 1,rads_nopt
 	case ('f', 'force')
 		force = .true.
 	case ('first')
-		first = .true.
+		match_mode = 1
 	case ('second')
-		second = .true.
+		match_mode = 2
 	case ('o', 'output')
 		filename = rads_opt(i)%arg
 		if (filename == '') filename = 'radsstat.nc'
@@ -316,47 +315,15 @@ end subroutine synopsis
 subroutine process_pass (ndata, nsel)
 integer(fourbyteint), intent(in) :: ndata, nsel
 real(eightbytereal) :: z(ndata,0:nsel)
-real(eightbytereal), allocatable :: a(:)
-integer, allocatable :: idx(:)
 integer(fourbyteint) :: i, j, yy, mm, dd, mjd
-real(eightbytereal) :: equator_time_2
 
 ! Read the data for this pass
 z(:,0) = P(1)%tll(:,1)	! Store time
 call rads_get_vars (S(1), P(1), z(:,1:nsel))
 
 if (S(2)%sat /= '') then
-	call rads_open_pass (S(2), P(2), S(2)%cycles(1) - S(1)%cycles(1) + cycle, pass, echofilepaths=echofilepaths)
-	if (force) then
-		! Skip the next check, do collinear anyway
-	else if (S(2)%phase%passes /= S(1)%phase%passes .or. S(2)%phase%ref_lon /= S(1)%phase%ref_lon) then
-		! Pass ranges should be the same for all satellites, otherwise we do not have collinear tracks
-		call rads_exit ('Satellite missions '//S(2)%sat//'/'//trim(S(2)%phase%name)// &
-			' and '//S(1)%sat//'/'//trim(S(1)%phase%name)//' are not collinear')
-	endif
-	if (P(2)%ndata > 0) then
-		allocate (a(0:P(2)%ndata), idx(P(1)%ndata))
-		a(0) = nan
-		! If the equator times are almost the same, use the same
-		equator_time_2 = P(2)%equator_time
-		if (abs(P(1)%equator_time - P(2)%equator_time) < 1d0) equator_time_2 = P(1)%equator_time
-		! The little delta of 1 microsecond is to avoid bin jump at equator when it is xx.5000000
-		call make_idx (P(1)%ndata, nint((P(1)%tll(:,1) - P(1)%equator_time + 1d6)/dt), &
-					   P(2)%ndata, nint((P(2)%tll(:,1) - equator_time_2    + 1d6)/dt), idx)
-		do j = 1,nsel
-			call rads_get_var (S(2), P(2), S(2)%sel(j), a(1:))
-			if (first) then
-				where (isnan_(a(idx(:)))) z(:,j) = nan ! Blank out locations of NaN in second satellite
-			else if (second) then
-				where (isan_(z(:,j))) z(:,j) = a(idx(:)) ! Only copy second satellite where first is not NaN
-			else
-				z(:,j) = z(:,j) - a(idx(:))
-			endif
-		enddo
-		deallocate (a, idx)
-	else
-		z(:,1:) = nan
-	endif
+	call rads_open_pass_match (S, P, force, echofilepaths)
+	call rads_get_vars_match (S, P, z(:,1:nsel), dt, match_mode)
 	call rads_close_pass (S(2), P(2))
 endif
 
@@ -402,26 +369,6 @@ do i = 1,ndata
 	nr = nr + 1
 enddo
 end subroutine process_pass
-
-!***********************************************************************
-! Create index from pass A to pass B by linking the common times
-
-subroutine make_idx (na, ta, nb, tb, idx)
-integer(fourbyteint), intent(in) :: na, ta(:), nb, tb(:)
-integer(fourbyteint), intent(out) :: idx(:)
-integer(fourbyteint) :: ia, ib
-idx = 0
-ib = 1
-do ia = 1,na
-	do while (tb(ib) < ta(ia) .and. ib < nb)
-		ib = ib + 1
-	enddo
-	if (tb(ib) == ta(ia)) idx(ia) = ib
-	if (ib < nb .and. tb(ib+1) == tb(ib)) ib = ib + 1 ! Encourage indexing to the next point if two points are in the same bin
-!	write (*,*) ia, idx(ia), ia - idx(ia), ta(ia), tb(ia), P(1)%tll(ia,1), P(2)%tll(ia,1)
-enddo
-! write (*,*) P(1)%equator_time, P(2)%equator_time
-end subroutine make_idx
 
 !***********************************************************************
 ! Update statistics inside a given box
