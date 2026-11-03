@@ -295,9 +295,9 @@ So the command line arguments overrule the local preferences and which overrule 
 
 The XML configuration file is ``human readable'' and is described in the next section.
 
-\section{RADS4 configuration file}
+\section{RADS configuration file}
 \label{sec:rads.xml}
-The RADS4 configuration file \file{rads.xml} controls:
+The RADS configuration file \file{rads.xml} controls:
 \begin{itemize}
 \item Information about the various altimeter missions, such as repeat period, number of passes per cycle, etc.
 \item Information about all the variables available for each mission, including editing criteria, format for writing to ascii, and the complete information needed to store the variable upon creation of the database.
@@ -331,8 +331,8 @@ The various names of the tags used in the configuration file are described below
 \end{verbatim}
 \item[\ctag{global_attributes}] specifies the global attributes that are always to be written to the output file, line by line. The first word on each line is the name of the global attribute, the rest is its value.
 \item[\ctag{satellites}] specifies, line by line, the 2- and 3-character abbreviations for the altimeter missions. The rest of each line is used to specify alternative names which can be searched for substrings.
-\item[\ctag{var}] identifies a block of tags that describe a single variable. The tag needs to include an option such as \verb|name="alt_gdre"| to specify the variable name, and optionally (for example) \verb|field=425| which specify the field numbers used in RADS3. A condition like \verb|sat="j1 j2"| can also be added as an option in this tag.
-\item[\ctag{alias}] specifies an alias (i.e. an alternative name) for a previously specified variable. The tag should at least include an option such as \verb|name="alt"| to specify the name of the alias, and optionally the field number used in RADS3 (e.g. \verb|field=4|). Again, a condition like \verb|sat="j1"| can be added. If more than one value is given, then it means that the alias will point to the first variable, unless it is not available, then it points to the second. For example:
+\item[\ctag{var}] identifies a block of tags that describe a single variable. The tag needs to include an option such as \verb|name="alt_gdre"| to specify the variable name, and optionally (for example) \verb|field=425| which specify the field numbers used in RADS v3. A condition like \verb|sat="j1 j2"| can also be added as an option in this tag.
+\item[\ctag{alias}] specifies an alias (i.e. an alternative name) for a previously specified variable. The tag should at least include an option such as \verb|name="alt"| to specify the name of the alias, and optionally the field number used in RADS v3 (e.g. \verb|field=4|). Again, a condition like \verb|sat="j1"| can be added. If more than one value is given, then it means that the alias will point to the first variable, unless it is not available, then it points to the second. For example:
 \begin{verbatim}
     <alias name="alt" field="4" sat="j2">alt_gdre alt_gdrd</alias>
 \end{verbatim}
@@ -349,7 +349,7 @@ The following tags can only occur within a \ctag{var}-block (with one exception,
 \item[\ctag{flag_mask}] specifies the meanings of a flag word made up of bits. For example \verb|left front up| means that when the LSB is raised "left" is true, and the next bits indicate if "front" or "up" are true.
 \item[\ctag{limits}] specifies the range of "good" values. Any value less than the lower limit or greater than the upper limit result in the variable to be set to NaN. In case the variable is a \ctag{flag_mask}, then the first value indicates the mask of bits that should not be set, the second value the bits that should be set, otherwise the result will yield NaN.
 \item[\ctag{plot_range}] specifies a suggested range for plotting the variable. It is not used for any processing, except for the \prog{radsvar} program.
-\item[\ctag{parameters}] is used for the RADS4 database creation and has no impact on any user programs.
+\item[\ctag{parameters}] is used for the RADS database creation and has no impact on any user programs.
 \item[\ctag{data}] specifies the variable name as used in the input RADS netCDF data files (normally the same as the variable name), but could also be used to specify a mathematical statement that derives the variable from others, or to interpolate values from a grid. More about this in Section~\ref{sec:data-tag}.
 \item[\ctag{quality_flag}] indicates which variables are checked to determine the quality of the current variable. If any of the specified variables lead to NaN (not-a-number), the corresponding value of the current variable is set to NaN as well.
 \item[\ctag{dimension}] is the dimension of the variable. Default is 1-dimensional. Some variables can be 2-dimensional.
@@ -423,15 +423,15 @@ In the above, date (and time) epochs can be written as \emph{yyyy}-\emph{mm}-\em
 \label{ch:utilities}
 
 \section{Command line interface}
-The RADS4 commands share a very similar layout of the arguments that can be used on the command line. The common features of the command line interface, are explained in this Section. In later Sections we will explain the syntax and use of each of the RADS4 commands.
+The RADS commands share a very similar layout of the arguments that can be used on the command line. The common features of the command line interface, are explained in this Section. In later Sections we will explain the syntax and use of each of the RADS commands.
 
-To learn the syntax of any of the RADS4 commands, simply use the argument \lopt{help} after the command name. Let us start off with an \textbf{excerpt} of the help of the \prog{radsstat} program obtained when typing:
+To learn the syntax of any of the RADS commands, simply use the argument \lopt{help} after the command name. Let us start off with an \textbf{excerpt} of the help of the \prog{radsstat} program obtained when typing:
 \begin{verbatim}
 $ radsstat --help
 \end{verbatim}
 \script{sub/radsstat-h.out}
 
-The command line for every RADS4 program consists of a few of the following components:
+The command line for every RADS program consists of a few of the following components:
 \begin{description}
 \item[program name] always starts the command line.
 \item[required arguments] need to be part of the command line for proper operation; in the above example it specifies the satellite mission.
@@ -495,7 +495,7 @@ For example, either of the following syntaxes can be used:
 
 \section{Common options}
 \label{sec:common_options}
-As indicated above, the RADS4 commands have a lot of options in common. Most of these use short options in upper case. Long options are always lower case.
+As indicated above, the RADS commands have a lot of options in common. Most of these use short options in upper case. Long options are always lower case.
 
 \subsection{Common data selectors}
 Below, in alphabetical order, are the command line options used to select data from the RADS database.
@@ -508,10 +508,10 @@ Assign \emph{VAR1} as an alias of \emph{VAR2}. This means that when \emph{VAR1} 
 Select data from cycle \emph{C0} to cycle \emph{C1}. If the latter is omitted, only data from cycle \emph{C0} is selected. Adding \emph{DC} will run through the cycles with a step of \emph{DC}, skipping the intermediate ones. The arguments \emph{C0}, \emph{C1} and \emph{DC} can be separated by commas, slashes, or the minus sign. So \soptb{C}{1/3} selects cycles 1 through 3. If omitted, data from all cycles (throughout all mission phases) are selected.
 
 \item[\optc{F}{fmt}{VAR=FMT}~~~~\loptc{format}{VAR=FMT}] ~\\
-For variable \emph{VAR} use the Fortran format \emph{FMT} in ASCII output. E.g., \soptb{F}{sla=f8.4}. This can also be achieved with the ctag{format} tag in a RADS4 configuration file.
+For variable \emph{VAR} use the Fortran format \emph{FMT} in ASCII output. E.g., \soptb{F}{sla=f8.4}. This can also be achieved with the ctag{format} tag in a RADS configuration file.
 
 \item[\optc{L}{limits}{VAR=MIN,MAX}] ~\\
-Specify the valid range for the selection of a variable. Outside this range the variable will be set to NaN. This is an alternative to using the \ctag{limits} tag in a RADS4 configuration file.
+Specify the valid range for the selection of a variable. Outside this range the variable will be set to NaN. This is an alternative to using the \ctag{limits} tag in a RADS configuration file.
 
 \item[\loptc{lat}{LAT0,LAT1}] ~\\
 Select data in the latitude range from \emph{LAT0} to \emph{LAT1} in degrees. This is equivalent to using \loptc{limits}{{\rm lat=}LAT0,LAT1}. The south to north range has to be specified on the interval from --90\deg{} to 90\deg{}. Examples:
@@ -519,7 +519,7 @@ Select data in the latitude range from \emph{LAT0} to \emph{LAT1} in degrees. Th
 \loptb{lat}{-40,-20}~~ \= Select data between 40\deg{}S and 20\deg{}S \\
 \loptb{lat}{0,90} \> Selects entire northern hemisphere
 \end{tabbing}
-When omitted, the default range specified in the RADS4 configuration file is used. By default, this is --90\deg{} to +90\deg{}.
+When omitted, the default range specified in the RADS configuration file is used. By default, this is --90\deg{} to +90\deg{}.
 
 
 \item[\loptc{lon}{LON0,LON1}] ~\\
@@ -529,7 +529,7 @@ Select data in the longitude range from \emph{LON0} to \emph{LON1} in degrees. T
 \loptb{lon}{320,340} \> Same, but output will have only positive longitudes
 \end{tabbing}
 The shift by 360\deg{} (either way) is automatically made.
-When omitted, the default range specified in the RADS4 configuration file is used, which is normally --180\deg{} to 180\deg{}.
+When omitted, the default range specified in the RADS configuration file is used, which is normally --180\deg{} to 180\deg{}.
 
 \item[\optc{P}{pass}{P0[,P1[,DP]]}] ~\\
 Select data from pass \emph{P0} to pass \emph{P1} (out of each selected cycle). If the latter is omitted, only data from pass \emph{P0} is selected. Adding \emph{DP} will run through the passes with a step of \emph{DP}, skipping the intermediate ones. The arguments \emph{P0}, \emph{P1} and \emph{DP} can be separated by commas, slashes, or the minus sign. So \soptb{P}{1-100} selects passes 1 through 100. If omitted, data from all passes in each of the select cycles is selected.
@@ -537,7 +537,7 @@ Select data from pass \emph{P0} to pass \emph{P1} (out of each selected cycle). 
 In addition, one can use \soptb{P}{a} (or \loptb{pass}{asc}) to select only ascending passes, whereas \soptb{P}{d} (or \loptb{pass}{des}) is used to select only descending passes.
 
 \item[\optc{Q}{quality-flag}{VAR=FLAG}] ~\\
-Check the variable \emph{FLAG} when validating the variable \emph{VAR}. This means that in any event that the variable \emph{FLAG} is set to NaN (is out of bounds), then \emph{VAR} is also set to NaN as well. This is identical to using the \ctag{quality_flag} tag in a RADS4 configuration file.
+Check the variable \emph{FLAG} when validating the variable \emph{VAR}. This means that in any event that the variable \emph{FLAG} is set to NaN (is out of bounds), then \emph{VAR} is also set to NaN as well. This is identical to using the \ctag{quality_flag} tag in a RADS configuration file.
 
 \item[\optc{R}{region}{LON0,LON1,LAT0,LAT1}] ~\\
 Select data within the longitude range from \emph{LON0} to \emph{LON1} and the latitude range of \emph{LAT0} to \emph{LAT1}, both in degrees. This is equivalent to using both the \lopt{lon} and \lopt{lat} options.
@@ -548,13 +548,13 @@ Select data within a circular region with a spherical radius \emph{RADIUS} degre
 \item[\optc{S}{sat}{SAT[/PHASE]}] ~\\
 Select data from a given satellite \emph{SAT}. Many variants of the satellite name can be used. Either the 2-character code, the 3-character code, or a substring of the satellite name listed in Table~\ref{tab:rads4_sats}.
 
-This is a required option and needs to be given for all RADS4 programs. Optionally, one can also indicate the mission phase \emph{PHASE}, separated from the satellite by a slash. (For backwards compatibility with RADS3 also a colon can be used, but this is discouraged).
+This is a required option and needs to be given for all RADS programs. Optionally, one can also indicate the mission phase \emph{PHASE}, separated from the satellite by a slash. (For backwards compatibility with RADS v3 also a colon can be used, but this is discouraged).
 
 \item[\loptc{sla}{SLA0,SLA1}] ~\\
 Specify the range of for sea level anomaly in meters (if requested). This is the same as \loptc{limits}{{\rm sla=}SLA0,SLA1}.
 
 \item[\loptc{time}{T0,T1}~~~~\loptc{ymd}{T0,T1}~~~~\loptc{doy}{T0,T1}~~~~\loptc{sec}{T0,T1}] ~\\
-Select data only in the time interval from \emph{T0} to \emph{T1}. RADS4 is generally quite efficient in figuring out the time format when using the generic \lopt{time}, but best is to use instead \lopt{ymd} with time in the format \emph{[YY]YYMMDD[HHMMSS]}, \lopt{doy} for \emph{[YY]YYDDD} (year and day of year), or \lopt{sec} for time in seconds from 1 Jan 1985. Decimal points to indicate fractional days or seconds are also allowed.
+Select data only in the time interval from \emph{T0} to \emph{T1}. RADS is generally quite efficient in figuring out the time format when using the generic \lopt{time}, but best is to use instead \lopt{ymd} with time in the format \emph{[YY]YYMMDD[HHMMSS]}, \lopt{doy} for \emph{[YY]YYDDD} (year and day of year), or \lopt{sec} for time in seconds from 1 Jan 1985. Decimal points to indicate fractional days or seconds are also allowed.
 
 The following examples all select data between 1 January 1999, 12:00 UTC and 31 December 2001, 00:00 UTC:
 \begin{tabbing}
@@ -565,22 +565,22 @@ The following examples all select data between 1 January 1999, 12:00 UTC and 31 
 \loptb{ymd}{990101120000,011231} \> ~~~ but with \lopt{ymd} one can also use "HHMMSS". \\
 \loptb{sec}{441806400,536371200} \> The old-fashioned seconds since 1985 are still there as well.
 \end{tabbing}
-One will notice that the data selection is very fast. RADS4 will not go through all the data sets to get the right data, but will use its "knowledge" of the repeat cycles and passes to quickly select the appropriate cycles and passes and scan only those.
+One will notice that the data selection is very fast. RADS will not go through all the data sets to get the right data, but will use its "knowledge" of the repeat cycles and passes to quickly select the appropriate cycles and passes and scan only those.
 
 \item[\optc{V}{var}{VAR1,...}] ~\\
-Select one or more variables from the RADS database. Any number of variables can be selected in one go by adding their names to the list, separated by commas or slashes. Also the old RADS3 numerical field numbers for the variables can be used!
+Select one or more variables from the RADS database. Any number of variables can be selected in one go by adding their names to the list, separated by commas or slashes. Also the old RADS v3 numerical field numbers for the variables can be used!
 
 \item[\optc{X}{xml}{XMLFILE}] ~\\
 Load the configuration file \emph{XMLFILE} in addition to the default configuration files (\file{$RADSDATAROOT/conf/rads.xml}, and---if available---\file{$HOME/.rads/rads.xml} and \file{rads.xml} in the current working directory).
 
 \item[\optc{Z}{compress}{VAR=TYPE[,SCALE[,OFFSET]]}] ~\\
-Specify how the variable \emph{VAR} is to be stored in a netCDF output file. \emph{TYPE} is one of: int1, int2, int4, real, dble. \emph{SCALE} and \emph{OFFSET} are optional with a default of 1 and 0. This is identical to using the \ctag{compress} tag in a RADS4 configuration file. One can also use \lopt{cmp}.
+Specify how the variable \emph{VAR} is to be stored in a netCDF output file. \emph{TYPE} is one of: int1, int2, int4, real, dble. \emph{SCALE} and \emph{OFFSET} are optional with a default of 1 and 0. This is identical to using the \ctag{compress} tag in a RADS configuration file. One can also use \lopt{cmp}.
 \end{description}
 
 In all lists, shown as separated by commas above, one can also use slashes, as is done in the \prog{GMT} program syntax.
 
 \subsection{Backward compatibility}
-For backward compatibility with RADS3 a number of options are still allowed, even though their use is deprecated.
+For backward compatibility with RADS v3 a number of options are still allowed, even though their use is deprecated.
 \begin{description}
 \item[\soptc{h}{H0,H1}] ~\\
 Specify the range from SLA (in meters). This has been replaced by \loptc{sla}{H0,H1}.
@@ -592,10 +592,10 @@ Make field number \emph{I} (in the range 1 to 99) and alias of field number \emp
 Select variables to be read. Same as \loptc{var}{VAR1,...}, except that using \loptc{sel} signals some additional backward compatible options.
 \end{description}
 
-In addition, again to support backward compatibility with RADS3, the user can omit the double hyphen in front of the RADS3 data selectors like \url{sel=}, \url{sat=}, \url{cycle=}, \url{pass=}, etc. But it is highly recommended to use the new options instead.
+In addition, again to support backward compatibility with RADS v3, the user can omit the double hyphen in front of the RADS v3 data selectors like \url{sel=}, \url{sat=}, \url{cycle=}, \url{pass=}, etc. But it is highly recommended to use the new options instead.
 
 \subsection{Other common options}
-Additional common options in RADS4 are:
+Additional common options in RADS are:
 \begin{description}
 \item[\loptc{args}{FILENAME}] ~\\
 Get any of the command line arguments from a file named \emph{FILENAME} with one option per line.
@@ -645,13 +645,11 @@ $ \prog{radsxogen} [\emph{common options}] \soptb{S}{e1} [\emph{e1 options}] \so
 
 \section{rads2asc}
 \label{sec:rads2asc}
-The program \prog{rads2asc} lists a selection of the RADS4 data base in one ASCII file or in several pass-by-pass ASCII files. These files contain a header per pass with a description of the data content followed by one record for each measurement that passes the selection criteria. The records are built up of columns, separated by white space, listing various data fields. Which data fields are listed (and in which order they are listed) is determined by the command line argument \sopt{V} or \lopt{var}.
+The program \prog{rads2asc} lists a selection of the RADS data base in one ASCII file or in several pass-by-pass ASCII files. These files contain a header per pass with a description of the data content followed by one record for each measurement that passes the selection criteria. The records are built up of columns, separated by white space, listing various data fields. Which data fields are listed (and in which order they are listed) is determined by the command line argument \sopt{V} or \lopt{var}.
 
 In the output, the data that has not passed the editing criteria will be represented by "NaN" (Not-a-Number). If the sea level anomaly field suffers that fate, the record will not be listed in the output file, unless the \sopt{r} option is used (or \soptb{r}{0} or \soptb{r}{none}).
 
 If the argument \soptc{o}{OUTNAME} or \loptc{output}{OUTNAME} is used, the output will go into one file (named \file{OUTNAME}). Otherwise, pass files are created with the names \verb|SSpPPPPcCCC.asc|, similar to what is described in Chapter~\ref{ch:intro}.
-
-This program can be called as \prog{rads2asc}, or as \prog{rads2asc} to avoid conflicts with an already installed RADS3.
 
 For more details, see the description of the command line options in the next Sections.
 
@@ -659,7 +657,7 @@ For more details, see the description of the command line options in the next Se
 \script{sub/rads2asc.hlp}
 
 \subsection{Common options}
-For a full explanation of the command line options that are common to most RADS4 programs, see Section~\ref{sec:common_options}.
+For a full explanation of the command line options that are common to most RADS programs, see Section~\ref{sec:common_options}.
 
 \subsection{Program specific options}
 The command line options that are specific to \prog{rads2asc} are listed here.
@@ -667,12 +665,12 @@ The command line options that are specific to \prog{rads2asc} are listed here.
 \item[\optc{r}{reject-on-nan}{VAR}] ~\\
 Do not output records when the value of variable \emph{VAR}, given as an argument to the \sopt{V} or \lopt{VAR} option, is set to NaN. By default records for which the sea level anomaly (if requested) is set to NaN are rejected.
 \item[\optc{r}{reject-on-nan}{NR}] ~\\
-For backward compatibility with RADS3, this will eliminate records when the value of item number \emph{NR} on the \sopt{V} option is NaN.
+For backward compatibility with RADS v3, this will eliminate records when the value of item number \emph{NR} on the \sopt{V} option is NaN.
 \item[\soptb{r}{0}~~~~\soptb{r}{none}~~~~\sopt{r}] ~\\
 When either of these is used, no records are eliminated and all NaN values are kept.
 \item[\soptb{r}{n}~~~~\soptb{r}{any}] ~\\
 Indicates that a line should not be printed when a value in any of the data columns is NaN.
-\item[\sopt{f}] This only counts when using \lopt{sel} instead of \lopt{var}, in order to be backward compatible with RADS3. When using\lopt{sel} normally time, latitude and longitude are automatically added as output columns. With \sopt{f} those columns are not automatically added, i.e., you will have to add them to the list of variables.
+\item[\sopt{f}] This only counts when using \lopt{sel} instead of \lopt{var}, in order to be backward compatible with RADS v3. When using\lopt{sel} normally time, latitude and longitude are automatically added as output columns. With \sopt{f} those columns are not automatically added, i.e., you will have to add them to the list of variables.
 \item[\soptb{s}{c|p}] ~\\
 Include statistics per cycle (c) or pass (p). Those will by included in the output with lines starting with '\verb|# min :|', '\verb|# max :|', '\verb|# mean:|', and '\verb|# std :|' followed by the cycle number, the number of valid passes in the cycle (c) or the pass number itself (p), the number of valid records in that cycle (c) or pass (p), and then the statistics (minimum, maximum, mean, and standard deviation) of each column.
 \item[\loptc{step}{N}] ~\\
@@ -700,7 +698,7 @@ The resulting ASCII output file \file{rads2asc.asc} will look like this:
 \label{sec:rads2grd}
 The program \prog{rads2grd} is a quick-and-dirty gridding program for RADS data. No smoothing or interpolation is performed. The data are simply collected in cells of predefined size, after which the mean and standard deviation in each cell is computed.
 
-The boundaries of the grid are specified by the limits set in the RADS4 configuration files, or by the appropriate common command line arguments \lopt{limits}, lopt{lat}, or \lopt{lon}. The cell size is determined by the option \lopt{res}. Alternatively, the options \lopt{x} and \lopt{y} can be used to set both the range and interval along both coordinate axis of the grid. The use of grid-node oriented or cell oriented boundaries is controlled by the \sopt{-c} option. The required minimum number of measurements per cell can be specified with the \lopt{min} option. Cells with a number of points less than the required number will not be part of the output.
+The boundaries of the grid are specified by the limits set in the RADS configuration files, or by the appropriate common command line arguments \lopt{limits}, lopt{lat}, or \lopt{lon}. The cell size is determined by the option \lopt{res}. Alternatively, the options \lopt{x} and \lopt{y} can be used to set both the range and interval along both coordinate axis of the grid. The use of grid-node oriented or cell oriented boundaries is controlled by the \sopt{-c} option. The required minimum number of measurements per cell can be specified with the \lopt{min} option. Cells with a number of points less than the required number will not be part of the output.
 
 The grid program not only grids sea level anomaly in longitude-latitude space, but any data field in any other space specified by the \sopt{V} (or \lopt{var}) option. For example, a non-parametric sea state bias model can be created by gridding the sea level anomalies in wind-wave space, in which case \sopt{wind_speed,swh,sla} is used.
 
@@ -715,13 +713,11 @@ There are two ways to produce output:
 The output is a list of ASCII records per cell: $x$ and $y$ of the centre of the cell, mean of $z$, standard deviation of $z$, number
 of points. Cells with a number of points less than the required number are not listed. This output can be used directly in GMT.
 
-This program can be called as \prog{rads2grd}, or as \prog{rads2grd} to avoid conflicts with an already installed RADS3.
-
 \subsection{Syntax}
 \script{sub/rads2grd.hlp}
 
 \subsection{Common options}
-For a full explanation of the command line options that are common to most RADS4 programs, see Section~\ref{sec:common_options}.
+For a full explanation of the command line options that are common to most RADS programs, see Section~\ref{sec:common_options}.
 Note that the \sopt{V} and \lopt{var} options have a slightly different meaning in this program (see below) than in most others.
 
 \subsection{Program specific options}
@@ -730,17 +726,17 @@ The command line options that are specific to \prog{rads2grd} are listed here.
 \item[\optc{V}{var}{X,Y,Z[,...]}] ~\\
 Specify the variables for the ordinates \emph{X} and \emph{Y}, and the variable to be gridded (\emph{Z}). One can specify one or more variables for \emph{Z}; each will be part of the output.
 \item[\loptc{x}{X0,X1[,DX]}] ~\\
-Set the x-range and optional interval. The default range is determined by the limits set in the RADS4 configuration file. The interval can also be set with the \lopt{res} option.
+Set the x-range and optional interval. The default range is determined by the limits set in the RADS configuration file. The interval can also be set with the \lopt{res} option.
 \item[\loptc{x}{X0,X1[,DX]}] ~\\
-Set the y-range and optional interval. The default range is determined by the limits set in the RADS4 configuration file. The interval can also be set with the \lopt{res} option.
+Set the y-range and optional interval. The default range is determined by the limits set in the RADS configuration file. The interval can also be set with the \lopt{res} option.
 \item[\loptc{res}{DX[,DY]}] ~\\
 Set the resolution of the x- and y-coordinate. If only one number is given the same number is used for both coordinates. The default resolution is 1$\times$1.
 \item[\loptc{min}{MINNR}] ~\\
 Specify the minimum number of points in the grid cell. The default is 2.
 \item[\optc{o}{output}{GRIDNAME}] ~\\
-Create a netCDF file with the name \emph{GRIDNAME} containing the output grids. This suppresses the ASCII output. For backward compatibility with RADS3, one can also use \lopt{grd}.
+Create a netCDF file with the name \emph{GRIDNAME} containing the output grids. This suppresses the ASCII output. For backward compatibility with RADS v3, one can also use \lopt{grd}.
 \item[\loptc{line-format}{FORMAT}] ~\\
-Format to be used for ASCII output. The default is determined by the specific Fortran formats for each variable specified in the RADS4 configuration file.
+Format to be used for ASCII output. The default is determined by the specific Fortran formats for each variable specified in the RADS configuration file.
 \item[\soptb{c}{[x|y]}]
 Determines that the boundaries of the x-y space are cell-oriented, instead of grid-oriented. When using \soptb{c}{x} this applies only to the x-coordinate, when using \soptb{c}{y} it applies only to the y-coordinate. When using \sopt{c} without argument, it applies to both coordinates.
 \end{description}
@@ -763,9 +759,9 @@ To list its contents, use the \prog{ncdump} command. The result will look like t
 
 \section{rads2nc}
 \label{sec:rads2nc}
-The RADS4 program \prog{rads2nc} works similar to \prog{rads2asc} (Section~\ref{sec:rads2asc}). Instead of writing output to one or more ASCII files, it creates one or more netCDF files. This significantly reduces the output size, and can be convenient for reading into third-party programs.
+The RADS program \prog{rads2nc} works similar to \prog{rads2asc} (Section~\ref{sec:rads2asc}). Instead of writing output to one or more ASCII files, it creates one or more netCDF files. This significantly reduces the output size, and can be convenient for reading into third-party programs.
 
-By default, \prog{rads2nc} will create pass-by-pass netCDF files, named \verb|SSpPPPPcCCC.nc|, with only the information of the netCDF variables given on the command line using the \sopt{V} or \lopt{var} options. The variables are edited given the selection criteria in the RADS4 configurations files or elsewhere on the command line. Values regarded 'invalid' will be set to the \verb|_FillValue| in the netCDF files (or NaN in case of floating numbers). They will show up as an underscore (\verb|_|) in the output of \prog{ncdump}.
+By default, \prog{rads2nc} will create pass-by-pass netCDF files, named \verb|SSpPPPPcCCC.nc|, with only the information of the netCDF variables given on the command line using the \sopt{V} or \lopt{var} options. The variables are edited given the selection criteria in the RADS configurations files or elsewhere on the command line. Values regarded 'invalid' will be set to the \verb|_FillValue| in the netCDF files (or NaN in case of floating numbers). They will show up as an underscore (\verb|_|) in the output of \prog{ncdump}.
 
 The output can also be captured in a single netCDF file or in a different directory than the current working directory. See the description of the option \sopt{o} or \lopt{output} below.
 
@@ -775,7 +771,7 @@ For more details, see the description of the command line options in the next Se
 \script{sub/rads2nc.hlp}
 
 \subsection{Common options}
-For a full explanation of the command line options that are common to most RADS4 programs, see Section~\ref{sec:common_options}.
+For a full explanation of the command line options that are common to most RADS programs, see Section~\ref{sec:common_options}.
 
 \subsection{Program specific options}
 The command line options that are specific to \prog{rads2nc} are listed here. Notice that they have some in common with \prog{rads2asc} (Section~\ref{sec:rads2asc}).
@@ -783,7 +779,7 @@ The command line options that are specific to \prog{rads2nc} are listed here. No
 \item[\optc{r}{reject-on-nan}{VAR}] ~\\
 Do not output records when the value of variable \emph{VAR}, given as an argument to the \sopt{V} or \lopt{VAR} option, is set to NaN. By default records for which the sea level anomaly (if requested) is set to NaN are rejected.
 \item[\optc{r}{reject-on-nan}{NR}] ~\\
-For backward compatibility with RADS3, this will eliminate records when the value of item number \emph{NR} on the \sopt{V} option is NaN.
+For backward compatibility with RADS v3, this will eliminate records when the value of item number \emph{NR} on the \sopt{V} option is NaN.
 \item[\soptb{r}{0}~~~~\soptb{r}{none}~~~~\sopt{r}] ~\\
 When either of these is used, no records are eliminated and all NaN values are kept.
 \item[\soptb{r}{n}~~~~\soptb{r}{any}] ~\\
@@ -815,13 +811,11 @@ The program will output only those bins in which valid sea level anomalies can b
 
 The output is one record for each bin, containing the variables selected by the \sopt{V} or \lopt{var} option, for each of the specified cycles. The output can be either ASCII (the default) or netCDF (with the \sopt{o} or \lopt{output}) option. In the case of ASCII, normally only the passes with some valid data are output. Using the option \sopt{k} or \lopt{keep} keeps all passes, irrespectively.
 
-This program can be called as \prog{radscolin}, or as \prog{rads2colin4} to avoid conflicts with an already installed RADS3.
-
 \subsection{Syntax}
 \script{sub/radscolin.hlp}
 
 \subsection{Common options}
-For a full explanation of the command line options that are common to most RADS4 programs, see Section~\ref{sec:common_options}.
+For a full explanation of the command line options that are common to most RADS programs, see Section~\ref{sec:common_options}.
 
 \subsection{Program specific options}
 The command line options that are specific to \prog{radscolin} are listed here. Notice that the \sopt{r} option is somewhat different than that of \prog{rads2asc} (Section~\ref{sec:rads2asc}) and \prog{rads2nc} (Section~\ref{sec:rads2nc}).
@@ -880,7 +874,7 @@ $ radscolin -S e2 -C 0,2 -P 915,1000,2 -R -8,42,28,48 -V lat,sla,swh -r
 
 \section{radspassesindex}
 \label{sec:radspassesindex}
-The RADS4 program \prog{radspassessindex} works the same as the program by the same name in RADS3. It provides a quick index of the information of pass files. It can be used either in predictive mode (not reading any files) or actually reading the meta data in RADS files. Output is in ASCII format.
+The RADS program \prog{radspassessindex} works the same as the program by the same name in RADS version 3. It provides a quick index of the information of pass files. It can be used either in predictive mode (not reading any files) or actually reading the meta data in RADS files. Output is in ASCII format.
 The information printed is:
 \begin{itemize}
 \item Phase name
@@ -899,7 +893,7 @@ For more details, see the description of the command line options in the next Se
 \script{sub/radspassesindex.hlp}
 
 \subsection{Common options}
-For a full explanation of the command line options that are common to most RADS4 programs, see Section~\ref{sec:common_options}.
+For a full explanation of the command line options that are common to most RADS programs, see Section~\ref{sec:common_options}.
 
 \subsection{Program specific options}
 The command line options that are specific to \prog{radspassesindex} are listed here.
@@ -927,11 +921,18 @@ These statistics can be per day (\sopt{d}), per pass (\sopt{p}), or per cycle (\
 The user can use the regular common options \sopt{C} or \lopt{--ymd} to limit the period over which these statistics are calculated.
 The program then produces for each interval ASCII output with the statistics for each variable.
 
+Instead of compiling the statistics for a single satellite, \prog{radsstat} can also give the statistics of two collinear satellites or of the data from two flavours of data for the same satellite. This is done by using the \sopt{S} option twice, for example:
+\begin{verbatim}
+$ radsstat --ymd=20250131,20250602 -S j3 -S 6a ...
+$ radsstat -C20-29 -S6a.lr -S6a.hr ...
+\end{verbatim}
+The first example makes the statistics of the difference between Jason-3 and Sentinel-6MF during the Second Tandem. The second compares LR and HR data from Sentinel-6MF during cycles 20 through 29.
+
 \subsection{Syntax}
 \script{sub/radsstat.hlp}
 
 \subsection{Common options}
-For a full explanation of the command line options that are common to most RADS4 programs, see Section~\ref{sec:common_options}.
+For a full explanation of the command line options that are common to most RADS programs, see Section~\ref{sec:common_options}.
 
 \subsection{Program specific options}
 The command line options that are specific to \prog{radsstat} are listed here. Notice that the \sopt{r} option is somewhat different than that of \prog{rads2asc} (Section~\ref{sec:rads2asc}) and \prog{rads2nc} (Section~\ref{sec:rads2nc}).
@@ -939,7 +940,7 @@ The command line options that are specific to \prog{radsstat} are listed here. N
 \item[\optc{r}{reject-on-nan}{VAR}] ~\\
 Do not take into account any records on which the value of variable \emph{VAR}, given as an argument to the \sopt{V} or \lopt{VAR} option, is set to NaN. By default records for which the sea level anomaly (if requested) is set to NaN are rejected.
 \item[\optc{r}{reject-on-nan}{NR}] ~\\
-For backward compatibility with RADS3, this will eliminate records where the value of item number \emph{NR} on the \sopt{V} option is NaN.
+For backward compatibility with RADS v3, this will eliminate records where the value of item number \emph{NR} on the \sopt{V} option is NaN.
 \item[\soptb{r}{0}~~~~\soptb{r}{none}~~~~\sopt{r}] ~\\
 When either of these is used, no records are eliminated. However, the statistics are based only on the non-NaN values for each variable individually.
 \item[\soptb{r}{n}~~~~\soptb{r}{any}] ~\\
