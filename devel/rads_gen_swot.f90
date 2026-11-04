@@ -40,7 +40,7 @@ program rads_gen_swot
 ! time - Time since 1 Jan 85
 ! lat - Latitude
 ! lon - Longitude
-! alt_gdrf - Orbital altitude
+! alt_gdrf/alt_poeg - Orbital altitude
 ! alt_rate - Orbital altitude rate
 ! range_* - Ocean range (retracked)
 ! range_rms_* - Std dev of range
@@ -131,7 +131,7 @@ real(eightbytereal) :: equator_time
 ! Data variables
 
 integer(twobyteint), allocatable :: flags_mle3(:), flags_adaptive(:), flags_save(:)
-character(len=16) :: mss_sol1, mss_sol2, tide_sol1, tide_sol2
+character(len=16) :: mss_sol1, mss_sol2, tide_sol1, tide_sol2, alt_sol
 character(len=1) :: baseline = 'F'
 integer :: latency = rads_nrt
 
@@ -269,6 +269,14 @@ do
 		cyclenr = cyclenr + 300
 	endif
 
+! Set orbit solution
+
+	if (baseline == 'G' .or. cyclenr >= 353) then
+		alt_sol = 'alt_poeg'
+	else
+		alt_sol = 'alt_gdrf'
+	endif
+
 ! Store relevant info
 
 	call rads_init_pass_struct (S, P)
@@ -372,7 +380,7 @@ do
 	enddo
 	call cpy_var (ncid1, 'longitude','lon')
 	call get_var (ncid1, 'altitude', a)
-	call new_var ('alt_gdrf', a + dh)
+	call new_var (alt_sol, a + dh)
 	call cpy_var (ncid1, 'altitude_rate', 'alt_rate')
 
 ! Range
